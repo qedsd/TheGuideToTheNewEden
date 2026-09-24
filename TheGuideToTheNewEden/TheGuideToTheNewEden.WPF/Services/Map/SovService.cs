@@ -2,6 +2,9 @@ using System.IO;
 
 namespace TheGuideToTheNewEden.WPF.Services.Map;
 
+/// <summary>一次主权装载的结果：数据（失败时为空或旧缓存）+ 成败标记。</summary>
+public readonly record struct SovLoadResult(IReadOnlyList<SovInfo> Infos, bool Success);
+
 /// <summary>一个联盟在星图上的主权数据（分组号用于"多个联盟同色"的分组展示）。</summary>
 public sealed class SovInfo
 {
@@ -101,20 +104,19 @@ public static class SovService
         }
     }
 
-    /// <summary>
-    /// 拉取（或复用缓存）主权数据。失败时返回上一次缓存（可能为空），不抛异常。
-    /// </summary>
-    public static async Task<List<SovInfo>> LoadAsync(bool forceRefresh = false)
+    /// <summary>拉取（或复用缓存）主权数据。失败时返回上一次缓存（可能为空），不抛异常，用 <see cref="SovLoadResult.Success"/> 区分成败。</summary>
+    public static async Task<SovLoadResult> LoadAsync(bool forceRefresh = false)
     {
         lock (Locker)
         {
             if (!forceRefresh && _cache is not null && (DateTime.UtcNow - _cacheTime).TotalMinutes < CacheMinutes)
             {
-                return _cache;
+                return new SovLoadResult(_cache, true);
             }
         }
 
         var result = new List<SovInfo>();
+        var success = false;
         try
         {
             // ESI 的 /sovereignty/map 被标记为"兼容日期 2026-05-19 后移除"（建议换 GetSovereigntySystemsAsync）。
@@ -128,6 +130,7 @@ public static class SovService
             }
             else
             {
+                success = true;
                 foreach (var group in resp.Model.Where(p => p.AllianceId is > 0).GroupBy(p => p.AllianceId!.Value))
                 {
                     var info = new SovInfo
@@ -162,15 +165,17 @@ public static class SovService
 
         lock (Locker)
         {
-            if (result.Count > 0 || _cache is null)
+            // 只缓存成功结果：失败时旧缓存原样保留（可再试），首次失败也不落 30 分钟的空缓存——
+            // 原实现 `_cache is null` 分支会把空结果当"合法数据"存住，半小时内重试全部命中空缓存（实机踩坑）。
+            if (success)
             {
                 _cache = result;
                 _cacheTime = DateTime.UtcNow;
                 _systemIndex = null; // 数据换了，反查索引重建
             }
 
-            AssignGroups(_cache);
-            return _cache;
+            AssignGroups(result);
+            return new SovLoadResult(result, success);
         }
     }
 

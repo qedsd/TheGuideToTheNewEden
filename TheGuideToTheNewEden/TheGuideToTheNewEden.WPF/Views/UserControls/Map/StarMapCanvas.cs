@@ -6,6 +6,7 @@ using System.Windows.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using SkiaSharp.Views.WPF;
+using TheGuideToTheNewEden.WPF.Services.Map;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls.Map;
 
@@ -119,6 +120,7 @@ public class StarMapCanvas : SKElement
     private List<CharacterMarker> _characters = [];
     private readonly Dictionary<long, SKBitmap?> _characterImages = [];
     private readonly Dictionary<long, SKBitmap> _sovIcons = [];
+    private readonly Dictionary<long, (SKImage Image, SKBitmap Src)> _sovLogoSprites = [];   // 联盟→圆形徽标精灵（v18：圆裁+描边预烘，Src 用于检测源位图更换）
     private readonly Dictionary<int, SKBitmap?> _intelShipImages = [];
     private IReadOnlyList<int> _routePath = [];
     private IReadOnlyList<int> _routeWaypoints = [];
@@ -148,11 +150,24 @@ public class StarMapCanvas : SKElement
     private double _pulsePhase;
     private readonly Stopwatch _clock = Stopwatch.StartNew();
 
-    // 底图缓存：视图未变时动画帧只重绘覆盖层，避免 8k 节点全量重绘
+    // 底图缓存（v21 pad-and-shift）：key **不含 offset**——纯拖动时固定 zoom 下世界层只整体平移，
+    // 命中缓存只做 1:1 裁切贴图（零重画），拖出 pad 边界才重新烘焙；zoom/尺寸/dpi/数据/模式/fade 任一变化仍全量重建。
     private SKBitmap? _baseCache;
-    private (double zoom, double ox, double oy, int w, int h, float dpi, int dataVer, int colorMode)? _baseKey;
+    private (double zoom, int w, int h, float dpi, int dataVer, int colorMode, int sovFadeFrame)? _baseKey;
+    private double _baseBakeOffsetX, _baseBakeOffsetY;   // 烘焙时的视口偏移：拖动位移 = 当前 − 烘焙（决定裁切窗口与重建时机）
     private int _dataVersion;
     private MapColorMode _currentColorMode = MapColorMode.Security;
+
+    // v21 拖动优化（pad-and-shift）参数
+    private const float BasePadDips = 256f;
+    private float _basePadUsed;                 // 当前缓存实际使用的 pad（DIP）；0 = 超预算回退模式（旧行为）
+    private float _bakePad;                     // 烘焙期间的 pad；0 = 普通帧（各绘制方法据此把出屏裁剪外扩到 pad 环）
+    private SKBitmap? _bgUnderlay;              // 背景渐变底（**屏幕锚定**，烘进 pad 位图会随拖动漂移 → 单独半分辨率缓存）
+    private (int W, int H, float Dpi, bool Light)? _bgKey;
+#pragma warning disable CS0618
+    private readonly SKPaint _bgBlitPaint = new() { FilterQuality = SKFilterQuality.Low };
+    private readonly SKPaint _baseBlitPaint = new() { FilterQuality = SKFilterQuality.Low };   // 底图贴图（拖动位移常为亚像素，双线性防像素爬行）
+#pragma warning restore CS0618
 
     // ---------- 绘制资源 ----------
     /// <summary>
@@ -543,9 +558,14 @@ public class StarMapCanvas : SKElement
             return;
         }
 
-        if (_sovIcons.TryGetValue(allianceId, out var old) && old is not null)
+        // 同一引用重复回调（VM 缓存命中路径每次装载都会发）不能 Dispose：旧精灵还引用它（ReferenceEquals 判重）
+        if (_sovIcons.TryGetValue(allianceId, out var old) && old is not null && !ReferenceEquals(old, bitmap))
         {
             old.Dispose();
+        }
+        else if (old is not null && ReferenceEquals(old, bitmap))
+        {
+            return;   // 已是这张图，无需失效重建
         }
 
         _sovIcons[allianceId] = bitmap;
@@ -733,6 +753,7 @@ public class StarMapCanvas : SKElement
         _offsetX = p.X - wx * newZoom;
         _offsetY = p.Y - wy * newZoom;
         _zoom = newZoom;
+        Debug.WriteLine(_zoom);
         _animDuration = TimeSpan.Zero; // 手动缩放打断飞行动画
         InvalidateVisual();
         e.Handled = true;
@@ -841,6 +862,7 @@ public class StarMapCanvas : SKElement
 
         // DPI 缩放：之后全部使用 DIP 坐标
         var dpiScale = e.Info.Width / w;
+        _renderDpiScale = dpiScale;
         canvas.Scale(dpiScale, dpiScale);
 
         if (_needFit)
@@ -872,14 +894,32 @@ public class StarMapCanvas : SKElement
         var zmult = _fitZoom > 0 ? _zoom / _fitZoom : 1;
         var nodeR = NodeRadius(zmult);
 
-        // 底图缓存：视图/数据未变时直接贴图，动画帧只叠加覆盖层
-        var key = (_zoom, _offsetX, _offsetY, (int)w, (int)h, dpiScale, _dataVersion, (int)_currentColorMode);
-        if (_baseCache is null || _baseKey is null || _baseKey.Value != key)
+        // 底图缓存（v21 pad-and-shift）：key **不含 offset**。纯拖动（zoom/尺寸/dpi/数据/模式/fade 全不变）命中缓存 →
+        // 世界层零重画，只从 pad 位图按当前位移裁切 1:1 贴图；位移超出 pad 边界 → 以当前视口为中心重新烘焙。
+        // key 必须含 _sovFadeFrame：fade 期间每帧自增 → 强制 RebuildBase 真画推进淡化（既有机制不变）。
+        var key = (_zoom, (int)w, (int)h, dpiScale, _dataVersion, (int)_currentColorMode, _sovFadeFrame);
+        var padOk = _basePadUsed > 0;
+        var dx = _offsetX - _baseBakeOffsetX;
+        var dy = _offsetY - _baseBakeOffsetY;
+        var cacheHit = _baseCache is not null && _baseKey is not null && _baseKey.Value == key
+            && padOk && Math.Abs(dx) <= _basePadUsed && Math.Abs(dy) <= _basePadUsed;
+        if (_baseCache is null || _baseKey is null || !cacheHit)
         {
             RebuildBase(e.Info.Width, e.Info.Height, w, h, zmult, nodeR);
             _baseKey = key;
+            dx = 0; dy = 0;   // 刚烘焙：烘焙 offset = 当前 offset，无位移
         }
-        canvas.DrawBitmap(_baseCache, new SKRect(0, 0, w, h));
+
+        // 屏幕锚定层：渐变底（半分辨率缓存贴图）+ 视差星尘（速度与地图不同，必须实时画）
+        DrawBgUnderlay(canvas, e.Info.Width, e.Info.Height, w, h);
+        using (var bgPaint = new SKPaint())
+        {
+            DrawStarLayer(canvas, bgPaint, _starsFar, 0.22, zmult);
+            DrawStarLayer(canvas, bgPaint, _starsNear, 0.5, zmult);
+        }
+
+        // 世界层：pad 缓存命中 = 1:1 裁切贴图（零重画）；pad=0 回退 = 全图贴（旧行为）
+        DrawBaseLayer(canvas, w, h, dx, dy);
 
         using var paint = new SKPaint { IsAntialias = true };
 
@@ -918,6 +958,9 @@ public class StarMapCanvas : SKElement
         _baseCache?.Dispose();
         _baseCache = null;
         _baseKey = null;
+        _bgUnderlay?.Dispose();
+        _bgUnderlay = null;
+        _bgKey = null;
 
         foreach (var kv in _glowCache)
         {
@@ -925,6 +968,21 @@ public class StarMapCanvas : SKElement
         }
 
         _glowCache.Clear();
+
+        foreach (var kv in _sovLogoSprites)
+        {
+            kv.Value.Image.Dispose();
+        }
+
+        _sovLogoSprites.Clear();
+
+        _sovVectorOffscreenCanvas?.Dispose();
+        _sovVectorOffscreenCanvas = null;
+        _sovVectorOffscreen?.Dispose();
+        _sovVectorOffscreen = null;
+        _sovScreenCache?.Dispose();
+        _sovScreenCache = null;
+        _sovScreenKey = null;
     }
 
     /// <summary>重建底图缓存（背景 + 星尘 + 星门连线 + 跳桥点线 + 全部节点与标签）。</summary>
@@ -932,24 +990,110 @@ public class StarMapCanvas : SKElement
     /// 位图按尺寸复用：拖拽 / 滚轮 / 飞行动画期间每帧都会重建底图，尺寸不变时不再重新分配，
     /// 避免每帧 new SKBitmap（4K + 高 DPI 下约 30MB/帧）带来的 LOH 压力。
     /// </remarks>
+    /// <summary>
+    /// 贴底图层：pad 缓存有效时从 pad 位图按拖动位移裁出当前视口的 1:1 子矩形；否则全图贴（pad=0 旧行为）。
+    /// 拖动位移常为亚像素（DPI 缩放/分数偏移），双线性采样防止像素爬行。
+    /// </summary>
+    private void DrawBaseLayer(SKCanvas canvas, float w, float h, double dx, double dy)
+    {
+        if (_baseCache is null)
+        {
+            return;
+        }
+
+        if (_basePadUsed > 0)
+        {
+            // pad 位图：设备像素域。烘焙时屏幕坐标 s 的内容落在位图 (s+pad)×scale 处；
+            // 内容在烘焙后移动了 dx（当前 offset − 烘焙 offset）→ 采样窗口起点 = pad − dx。
+            //（符号反了会变成"拖动方向镜像"——实测踩过）
+            var dpi = (float)(_baseKey?.dpi ?? 1);
+            var src = new SKRect(
+                (float)((_basePadUsed - dx) * dpi),
+                (float)((_basePadUsed - dy) * dpi),
+                (float)((_basePadUsed - dx + w) * dpi),
+                (float)((_basePadUsed - dy + h) * dpi));
+            #pragma warning disable CS0618
+            canvas.DrawBitmap(_baseCache, src, new SKRect(0, 0, w, h), _baseBlitPaint);
+            #pragma warning restore CS0618
+        }
+        else
+        {
+            canvas.DrawBitmap(_baseCache, new SKRect(0, 0, w, h));
+        }
+    }
+
+    /// <summary>背景渐变底（半分辨率烘焙、整帧贴图）：**屏幕锚定**，烘进 pad 位图会随拖动漂移 → 独立缓存。</summary>
+    private void DrawBgUnderlay(SKCanvas canvas, int deviceW, int deviceH, float w, float h)
+    {
+        var bw = Math.Max(1, deviceW / 2);
+        var bh = Math.Max(1, deviceH / 2);
+        var k = (bw, bh, (float)_renderDpiScale, _light);
+        if (_bgUnderlay is null || _bgKey != k)
+        {
+            _bgUnderlay?.Dispose();
+            _bgUnderlay = new SKBitmap(bw, bh);
+            using var c = new SKCanvas(_bgUnderlay);
+            c.Clear(BgBase);
+            c.Scale(bw / w, bh / h);
+            using var p = new SKPaint();
+            DrawBackgroundGradientOnly(c, p, w, h);
+            _bgKey = k;
+        }
+
+        #pragma warning disable CS0618
+        canvas.DrawBitmap(_bgUnderlay, new SKRect(0, 0, w, h), _bgBlitPaint);
+        #pragma warning restore CS0618
+    }
+
+    private void DrawBackgroundGradientOnly(SKCanvas canvas, SKPaint paint, float w, float h)
+    {
+        using var bg = SKShader.CreateRadialGradient(
+            new SKPoint(w * 0.5f, h * 0.42f), Math.Max(w, h) * 0.85f,
+            [BgCenter, BgMid, BgEdge],
+            [0f, 0.55f, 1f], SKShaderTileMode.Clamp);
+        paint.Shader = bg;
+        paint.Style = SKPaintStyle.Fill;
+        canvas.DrawRect(0, 0, w, h, paint);
+        paint.Shader = null;
+    }
+
     private void RebuildBase(int deviceW, int deviceH, float w, float h, double zmult, float nodeR)
     {
+        // v21 拖动优化（pad-and-shift）：底图只烘**世界层**（晕染/连线/跳桥/节点/标签，透明底），
+        // 烘焙视口 = 视口 + 四周 BasePadDips DIP；纯拖动帧命中缓存只做 1:1 裁切贴图（零重画），
+        // 拖出 pad 边界才重新烘焙（重建频率从"每帧"降到"每 256DIP"）。
+        // 屏幕锚定内容（渐变底/视差星尘）烘进去会随拖动漂移/速度不对 → 留在实时层。
+        // pad 预算：pad 位图像素 ≤ 2.25× 视口设备像素（每边 256DIP；4K 约 33MB）；超预算退 pad=0（旧行为）。
+        var devicePixels = (double)deviceW * deviceH;
+        var pad = (float)(devicePixels * 2.25 <= 24_000_000 ? BasePadDips : 0);
+        _basePadUsed = pad;
+        _bakePad = pad;
+
+        // 烘焙视口（DIP）：pad>0 = (-pad,-pad, w+pad, h+pad)；pad=0 = (0,0,w,h)
+        // 烘焙 offset 记录为当前视口：贴图裁切按 (当前 offset − 烘焙 offset + pad) 定位。
+        _baseBakeOffsetX = _offsetX;
+        _baseBakeOffsetY = _offsetY;
+        var vpW = w + pad * 2;
+        var vpH = h + pad * 2;
+        var bakeW = (int)Math.Ceiling(vpW * deviceW / w);
+        var bakeH = (int)Math.Ceiling(vpH * deviceH / h);
         var cache = _baseCache;
-        if (cache is null || cache.Width != deviceW || cache.Height != deviceH)
+        if (cache is null || cache.Width != bakeW || cache.Height != bakeH)
         {
             _baseCache?.Dispose();
-            _baseCache = new SKBitmap(deviceW, deviceH);
+            _baseCache = new SKBitmap(bakeW, bakeH);
             cache = _baseCache;
         }
 
         using var baseCanvas = new SKCanvas(cache);
-        baseCanvas.Clear(BgBase);
-        baseCanvas.Scale(deviceW / w, deviceH / h);
+        baseCanvas.Clear(SKColors.Transparent);   // 世界层透明底；渐变/星尘在实时层先画
+        baseCanvas.Scale(bakeW / vpW, bakeH / vpH);
+        baseCanvas.Translate(pad, pad);   // 屏幕坐标 s（含烘焙 offset）→ 位图 (s+pad)×scale；与 offset 数值无关
+
         using var paint = new SKPaint { IsAntialias = true };
         using var font = new SKFont(_typeface, 10);
 
-        DrawBackground(baseCanvas, paint, w, h, zmult);
-        DrawHeatMap(baseCanvas, paint, w, h);
+        DrawHeatMap(baseCanvas, paint, vpW, vpH);
         DrawLinks(baseCanvas, paint, zmult);
         if (_showBridges && _bridges.Count > 0)
         {
@@ -957,6 +1101,7 @@ public class StarMapCanvas : SKElement
         }
 
         DrawNodes(baseCanvas, paint, font, zmult, nodeR);
+        _bakePad = 0;
     }
 
     // ---------- 热力图（行星资源 / 击杀 / 通行） ----------
@@ -1020,6 +1165,61 @@ public class StarMapCanvas : SKElement
     /// <summary>热力网格偏移复位（回到默认的左上角对齐）。</summary>
     public void ResetHeatGridOffset() => SetHeatGridOffset(0, 0);
 
+    // ---------- 热力：主权聚合（联盟疆域凸包） ----------
+
+    private bool _heatBySov;                                        // 图例开关：热力按主权联盟聚合
+    private bool _sovActive;                                        // 本次重建实际生效（主权数据可用才置位，否则回退格子）
+    private readonly List<(long GroupId, SKPoint Center, SKPoint Size)> _sovBlobs = [];   // 联盟疆域片（连通分量聚类，飞地各成一片）：片中心+包围盒宽高（归一化）
+    private readonly Dictionary<long, string> _sovNames = [];       // 联盟分组号 → 联盟名（主权文字提示）
+    private Dictionary<long, (double Sum, List<SKPoint> Pts)>? _sovLastByGroup;   // 最近一次主权聚合数据（晕染层跟随缩放重建时用）
+    private SKBitmap? _sovLayer;                                    // 当前显示的晕染位图（3200 固定宽，只在数据变化时后台重烘一次）
+    private SKBitmap? _sovFadeFrom;                                 // 交叉淡化中的旧层（仅数据变化交接时触发，300ms 后 Dispose）
+    private SKBitmap? _sovBuiltLayer;                               // 后台线程烘好、待下帧交接的新层
+    private DateTime _sovFadeStart;                                 // 交叉淡化开始时刻
+    private volatile bool _sovBuilding;                             // 后台构建中（节流，避免重复排队）
+    private int _sovBuildId;                                        // 数据版本号：RebuildHeatGrid 时自增，作废后台构建结果
+    private double _renderDpiScale = 1;                             // 当前 DPI 缩放（OnRender 每帧更新，显示宽换算用）
+    private System.Windows.Threading.DispatcherTimer? _sovFadeTimer;   // 交叉淡化驱动：缩放停止后 OnRender 不再被触发，需 timer 推进 fade 帧
+    private int _sovFadeFrame;                                      // fade 帧计数：fade 期间让 baseCache 缓存 key 变化，强制每帧真画（否则冻结在混合态）
+
+    /// <summary>热力当前是否按主权联盟聚合（开关值；实际绘制以 <see cref="_sovActive"/> 回退结果为准）。</summary>
+    public bool HeatBySov => _heatBySov;
+
+    private bool _showSovShading = true;                            // 主权着色模式的疆域晕染层开关（只影响主权模式；热力模式色块由各自的"热力"开关管）
+
+    /// <summary>主权着色模式的疆域晕染层是否显示。</summary>
+    public bool SovShadingVisible => _showSovShading;
+
+    /// <summary>
+    /// 设置主权着色模式的疆域晕染层显隐（关闭后该模式只画联盟色圆点与主权名标签）。
+    /// 只影响主权模式；热力模式的色块显隐走 <see cref="SetHeatMapVisible"/>。变化才重画。
+    /// </summary>
+    public void SetSovShadingVisible(bool visible)
+    {
+        if (_showSovShading == visible)
+        {
+            return;
+        }
+
+        _showSovShading = visible;
+        _dataVersion++;
+        InvalidateVisual();
+    }
+
+    /// <summary>切换热力聚合方式：true = 按主权联盟疆域（凸包色块），false = 几何等距格子。变化才重建。</summary>
+    public void SetHeatBySovereignty(bool enabled)
+    {
+        if (_heatBySov == enabled)
+        {
+            return;
+        }
+
+        _heatBySov = enabled;
+        RebuildHeatGrid();
+        _dataVersion++;
+        InvalidateVisual();
+    }
+
     private Dictionary<long, double> _heatCells = [];    // 格子 → 聚合值
     private Dictionary<long, double> _heatRanks = [];    // 格子 → 分位 0..1（全图相对排名）
     private bool _heatRanksBuilt;
@@ -1066,13 +1266,88 @@ public class StarMapCanvas : SKElement
     {
         _heatCells = [];
         _heatRanks = [];
+        _sovLayer?.Dispose();
+        _sovLayer = null;
+        _sovFadeFrom?.Dispose();
+        _sovFadeFrom = null;
+        _sovBuiltLayer?.Dispose();
+        _sovBuiltLayer = null;
+        _sovBuildId++;          // 作废还在后台构建的旧数据层
+        _sovLastByGroup = null;
+        _sovBlobs.Clear();
+        _sovNames.Clear();
+        _sovActive = false;
         _heatRanksBuilt = false;
-        if (!IsHeatMode || !GetHeatMapVisible(_currentColorMode) || _nodes.Length == 0 || _worldW <= 0)
+        // 主权着色模式：叠加疆域晕染层（与节点联盟圆点同色系背景强化），无格子热力
+        var isSovMode = _currentColorMode == MapColorMode.Sovereignty;
+        if (!isSovMode && (!IsHeatMode || !GetHeatMapVisible(_currentColorMode)) || _nodes.Length == 0 || _worldW <= 0)
         {
             return;
         }
 
         var isResource = _currentColorMode == MapColorMode.PlanetResource;
+
+        // 主权聚合：每个联盟（GroupId>0）一块"疆域晕染"，热度 = 联盟内星系数值合计（主权模式下每星系计 1）；
+        // 热力模式无主权数据/无匹配 → 回退几何格子；主权模式无数据 → 不画
+        if (_heatBySov || isSovMode)
+        {
+            // 联盟名（主权文字提示，一片一个）；主权强刷后 GroupId 会重排 → 每次重建随 SovService.Current 刷新
+            foreach (var info in SovService.Current)
+            {
+                if (info.GroupId > 0 && !string.IsNullOrEmpty(info.AllianceName))
+                {
+                    _sovNames[info.GroupId] = info.AllianceName;
+                }
+            }
+
+            var byGroup = new Dictionary<long, (double Sum, List<SKPoint> Pts)>();
+            foreach (var node in _nodes)
+            {
+                // 主权模式：无热度语义，每星系计 1（透明度分位 = 星系数排名）；热力模式：按当前数值
+                var value = isSovMode ? 1.0 : isResource ? node.Resource : node.Heat;
+                if (value <= 0 || node.GroupId <= 0)
+                {
+                    continue;
+                }
+
+                if (!byGroup.TryGetValue(node.GroupId, out var entry))
+                {
+                    entry = (0, new List<SKPoint>());
+                    byGroup[node.GroupId] = entry;
+                }
+
+                entry.Sum += value;
+                entry.Pts.Add(new SKPoint((float)node.NX, (float)node.NY));
+                byGroup[node.GroupId] = entry;
+            }
+
+            if (byGroup.Count > 0)
+            {
+                // 聚类用固定虚拟分辨率（1000 基准 = 各向同性世界坐标），dotR 虚拟 20 = 世界长边 2%，连片阈值 2.2 倍
+                var virtualH = 1000f * (float)(_worldH / _worldW);
+                foreach (var (groupId, entry) in byGroup)
+                {
+                    foreach (var (center, size) in ClusterSovBlobs(entry.Pts, 1000f, virtualH, 20f))
+                    {
+                        _sovBlobs.Add((groupId, center, size));
+                    }
+                }
+
+                _sovLastByGroup = byGroup;      // 缓存聚合数据：矢量直绘与位图共用（剖面/分位完全同源）
+                // 位图只在数据变化时后台重烘一次（固定 6000 宽）：渲染期按"显示宽 > 6000 即切矢量"分流，
+                // 缩放全程零重烘——重烘竞态（快速缩放时倍率冲过整数档）从机制上消失。
+                BeginSovLayerRebuild(6000);
+                _sovActive = true;
+                _heatRanksBuilt = true;
+                return;
+            }
+        }
+
+        if (isSovMode)
+        {
+            return;   // 主权模式没有格子热力语义（主权数据缺失时宁可不画，也不落格子）
+        }
+
         var step = _worldW / HeatGridCells;
         foreach (var node in _nodes)
         {
@@ -1137,6 +1412,146 @@ public class StarMapCanvas : SKElement
             return;
         }
 
+        if (_sovActive)
+        {
+            // 晕染开关关闭（用户设置）：跳过全部晕染绘制，仅保留主权名标签（高倍看单个星座时仍有信息价值）；
+            // 聚合数据/位图烘焙照常（成本低、频率低，切回开关无需重建）。
+            if (!_showSovShading)
+            {
+                DrawSovLabels(canvas, w, h);
+                return;
+            }
+
+            // 晕染渲染终案（09-23 v16）：**位图服务"显示宽 ≤ 6000"域（缩放永不重烘），更深放大走矢量直绘**。
+            // 机制依据（用户日志四组突变精确对齐 GPU 采样整数倍率档）：位图放大倍率必须远离整数档——
+            // 6000 宽位图的整数 2x 档在显示宽 12000 处，域内最大放大仅 1.875x，安全余量充足；
+            // 矢量径向渐变解析连续，与位图 stamp 同剖面同分位 alpha（v15 修正 Skia "Shader 覆盖 paint.Color"
+            // 陷阱后两侧真正等价），切换边界无浓度变化。
+            // v16 性能（用户"放大后还是很卡"）：深放大时屏内软斑互相重叠上千层（fill rate 爆炸）——
+            // ① 位图域 3200→6000（过渡区最重的渲染回到一次 DrawBitmap）；② 矢量域贪心去重（同联盟
+            // 间距 ≥ 软斑半径的才画、保留点画 2 层补偿叠加浓度），深度放大从 ~700 斑降到 ~10 斑。
+            // v17 性能（用户"缩放到 12516→14769 还是明显卡顿"）：矢量域分位/排序/去重结果按数据版本
+            // 缓存（EnsureSovVectorCaches），绘制循环零 GC 分配；DrawRect→DrawCircle 再省 ~21% fill。
+            if (_sovBuiltLayer is not null)
+            {
+                // 后台构建完成 → 交接，旧层开始 300ms 淡出（首层无旧层、直接显示）
+                _sovFadeFrom = _sovLayer;
+                _sovLayer = _sovBuiltLayer;
+                _sovBuiltLayer = null;
+                _sovFadeStart = DateTime.UtcNow;
+                _sovScreenKey = null;   // 屏幕预缩放缓存烘自旧层，内容已失效（_sovBuildId 在 RebuildHeatGrid 开头就自增，靠它作废不覆盖此处）
+                StartSovFadeTimer();
+            }
+
+            var vectorMode = _sovLayer is null || _worldW * _zoom * _renderDpiScale > 6000.0;
+            if (vectorMode)
+            {
+                // 放大域 / 首层未就绪：矢量直绘（无位图参与 → 无采样档位、无重烘竞态、零后台成本）
+                if (_sovFadeFrom is not null)
+                {
+                    _sovFadeFrom.Dispose();
+                    _sovFadeFrom = null;
+                    _sovFadeTimer?.Stop();
+                }
+
+                DrawSovVectorSpots(canvas);
+            }
+            else
+            {
+                // 缩小域：位图铺世界（6000 宽位图此时被缩小/最大 1.875x 放大显示，双线性连续、无整数档可跨）
+                // v20 拖动优化：纯拖动（zoom/dpi/数据版本不变）时晕染屏幕投影只平移不变 → 把 6000 宽源按当前
+                // zoom 预缩放成屏幕分辨率缓存，拖动帧退化为 1:1 贴图。全图视野下每帧全屏双线性重采样（6000 宽
+                // 源→屏宽）是拖动卡顿主因（帧时间近翻倍）。
+                // 内存护栏：缓存 = 投影的设备像素尺寸，深位图域投影可达 6000 宽（~80MB）不可接受；
+                // 投影超 ~12M 设备像素（贴合视图远达不到，中深度放大才触达）退回逐帧重采样。
+                var projW = _worldW * _zoom * _renderDpiScale;
+                var projH = _worldH * _zoom * _renderDpiScale;
+                var cacheable = _sovLayer is not null && projW * projH <= 12_000_000;
+                var screenKey = (_zoom, _renderDpiScale, _sovBuildId);
+                // 视图稳定检测：上一帧 key 与本帧相同 → zoom 已停变（拖动中/静止），缓存可建可命中；
+                // key 连续变化（滚轮缩放/飞行动画中）→ 不重建（用旧缓存或退回重采样），等稳定一帧后再建
+                var viewStable = _sovScreenPrevKey == screenKey;
+                _sovScreenPrevKey = screenKey;
+                var hasScreenCache = cacheable
+                    && viewStable
+                    && _sovScreenCache is not null
+                    && _sovScreenKey == screenKey
+                    && _sovScreenCache.Width == Math.Max(1, (int)Math.Ceiling(projW))
+                    && _sovScreenCache.Height == Math.Max(1, (int)Math.Ceiling(projH));
+                if (cacheable && viewStable && !hasScreenCache)
+                {
+                    var cw = Math.Max(1, (int)Math.Ceiling(projW));
+                    var ch = Math.Max(1, (int)Math.Ceiling(projH));
+                    _sovScreenCache?.Dispose();
+                    _sovScreenCache = new SKBitmap(cw, ch);
+                    using (var sc = new SKCanvas(_sovScreenCache))
+                    {
+                        sc.Clear(SKColors.Transparent);
+                        var src = new SKRect(0, 0, _sovLayer!.Width, _sovLayer.Height);
+                        var dst = new SKRect(0, 0, cw, ch);
+                        #pragma warning disable CS0618
+                        sc.DrawBitmap(_sovLayer!, src, dst, new SKPaint { FilterQuality = SKFilterQuality.Low });
+                        #pragma warning restore CS0618
+                    }
+
+                    _sovScreenKey = screenKey;
+                }
+
+                // 画布当前已带 ×dpi 变换：dest 用 DIP 坐标，经变换后恰为缓存的设备像素尺寸 → 1:1 贴图
+                var dest = SKRect.Create((float)_offsetX, (float)_offsetY, (float)(_worldW * _zoom), (float)(_worldH * _zoom));
+                #pragma warning disable CS0618
+                if (_sovFadeFrom is not null)
+                {
+                    // fade 期间新旧两层内容不同：旧层走逐帧重采样（fade 仅 300ms，可接受），新层尽量走缓存
+                    var t = (float)Math.Clamp((DateTime.UtcNow - _sovFadeStart).TotalMilliseconds / 300.0, 0, 1);
+                    paint.FilterQuality = SKFilterQuality.Low;
+                    paint.Color = new SKColor(0, 0, 0, (byte)(255 * (1 - t) * SovAlphaDamp));
+                    canvas.DrawBitmap(_sovFadeFrom, dest, paint);
+                    paint.Color = new SKColor(0, 0, 0, (byte)(255 * t * SovAlphaDamp));
+                    if (hasScreenCache)
+                    {
+                        paint.FilterQuality = SKFilterQuality.None;
+                        canvas.DrawBitmap(_sovScreenCache!, dest, paint);
+                    }
+                    else
+                    {
+                        canvas.DrawBitmap(_sovLayer!, dest, paint);
+                    }
+
+                    paint.Color = SKColors.Black;
+                    paint.FilterQuality = SKFilterQuality.None;
+                    if (t >= 1)
+                    {
+                        _sovFadeFrom.Dispose();
+                        _sovFadeFrom = null;
+                        _sovFadeTimer?.Stop();
+                    }
+                }
+                else if (hasScreenCache)
+                {
+                    // 拖动常规路径：1:1 贴图（无重采样）
+                    paint.FilterQuality = SKFilterQuality.None;
+                    paint.Color = new SKColor(0, 0, 0, (byte)(255 * SovAlphaDamp));   // 全局阻尼：与矢量域同步调浅
+                    canvas.DrawBitmap(_sovScreenCache!, dest, paint);
+                    paint.Color = SKColors.Black;
+                }
+                else
+                {
+                    // 超预算回退：逐帧重采样（旧行为）
+                    paint.FilterQuality = SKFilterQuality.Low;
+                    paint.Color = new SKColor(0, 0, 0, (byte)(255 * SovAlphaDamp));   // 全局阻尼：与矢量域同步调浅
+                    canvas.DrawBitmap(_sovLayer!, dest, paint);
+                    paint.Color = SKColors.Black;
+                    paint.FilterQuality = SKFilterQuality.None;
+                }
+                #pragma warning restore CS0618
+            }
+
+            // 标签独立于晕染显隐：高倍看单个星座时主权名仍有信息价值
+            DrawSovLabels(canvas, w, h);
+            return;
+        }
+
         // 注意：NX/NY 是"归一化世界坐标"，屏幕换算要和 NodePos 一致——必须带上 _worldW / _worldH 因子
         var stepX = _worldW / HeatGridCells;
         var stepY = stepX;
@@ -1147,6 +1562,10 @@ public class StarMapCanvas : SKElement
             return;   // 缩太小：色块比节点还小，没有观察价值
         }
 
+        var cullW = w + _bakePad * 2;    // 烘焙帧含 pad 环：环内色块也要烘（拖动帧会裁到）
+        var cullH = h + _bakePad * 2;
+        var cullOx = -_bakePad;
+        var cullOy = -_bakePad;
         paint.Style = SKPaintStyle.Fill;
         foreach (var key in _heatRanks.Keys)
         {
@@ -1155,7 +1574,7 @@ public class StarMapCanvas : SKElement
             var cy = (int)(uint)key;
             var left = (float)((cx * stepX + HeatGridOffsetX) * _worldW * _zoom + _offsetX);
             var top = (float)((cy * stepY + HeatGridOffsetY) * _worldH * _zoom + _offsetY);
-            if (left + cellW < 0 || top + cellH < 0 || left > w || top > h)
+            if (left + cellW < cullOx || top + cellH < cullOy || left > cullOx + cullW || top > cullOy + cullH)
             {
                 continue;
             }
@@ -1165,6 +1584,559 @@ public class StarMapCanvas : SKElement
             canvas.DrawRoundRect(new SKRect(left + 0.5f, top + 0.5f, left + cellW - 0.5f, top + cellH - 0.5f), 3f, 3f, paint);
         }
     }
+
+    /// <summary>主权层归一化坐标 → 屏幕（与 NodePos 同一换算）。</summary>
+    private SKPoint HeatSovToScreen(SKPoint p) =>
+        new((float)(p.X * _worldW * _zoom + _offsetX), (float)(p.Y * _worldH * _zoom + _offsetY));
+
+    /// <summary>
+    /// 交叉淡化期间每帧驱动重绘：缩放停止后 OnRender 不会再被触发，fade 需要 300ms 内连续多帧才能推进
+    /// （此前 fade 冻结在半途的根因）。t≥1 后绘制侧自动 Stop。
+    /// </summary>
+    private void StartSovFadeTimer()
+    {
+        if (_sovFadeTimer is null)
+        {
+            _sovFadeTimer = new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Render)
+            {
+                Interval = TimeSpan.FromMilliseconds(33)
+            };
+            _sovFadeTimer.Tick += (_, _) =>
+            {
+                if (_sovFadeFrom is null)
+                {
+                    _sovFadeTimer.Stop();
+                    return;
+                }
+
+                _sovFadeFrame++;   // 推进缓存 key：fade 每帧真画（见底图缓存 key 注释）
+                InvalidateVisual();
+            };
+        }
+
+        _sovFadeTimer.Start();
+    }
+
+    /// <summary>
+    /// 后台线程烘 6000 宽软斑晕染位图；只在数据变化（RebuildHeatGrid）时调用一次，渲染期缩放零重烘。
+    /// 完成后通过 _sovBuiltLayer 交接，渲染线程下帧开始 300ms 交叉淡化。
+    /// 携带发起时的 _sovBuildId：数据重建后（RebuildHeatGrid 自增）结果作废丢弃。
+    /// </summary>
+    private void BeginSovLayerRebuild(int targetW)
+    {
+        if (_sovBuilding || _sovLastByGroup is null)
+        {
+            return;
+        }
+
+        _sovBuilding = true;
+        var byGroup = _sovLastByGroup;
+        var buildId = _sovBuildId;
+        var wPx = targetW;
+        var hPx = Math.Max(16, (int)Math.Round((double)wPx * _worldH / _worldW));
+        Task.Run(() =>
+        {
+            var bmp = RenderSovBitmap(byGroup, wPx, hPx);
+            if (buildId == _sovBuildId)
+            {
+                _sovBuiltLayer = bmp;   // 交接给渲染线程（数据未失效）
+            }
+            else
+            {
+                bmp.Dispose();          // 构建期间数据已重建，结果作废
+            }
+
+            _sovBuilding = false;
+        });
+    }
+
+    private readonly Dictionary<long, SKBitmap> _sovStampByGroup = [];   // 联盟 → 彩色软斑（剖面 alpha + 联盟色，缓存复用；groupId→色恒定故不清理）
+
+    /// <summary>
+    /// 联盟彩色软斑位图（128px 径向渐变：中心不透明 → 0.4 处 55% → 边缘透明，剖面近似高斯）。
+    /// 关键：这是<b>解析定义</b>的剖面，缩放贴到任何分辨率下采样到的都是同一个连续函数——
+    /// 跨分辨率重建的位图内容因此一致，重建前后不再有系统性浓度差（blur 是离散卷积，分辨率一变结果就变）。
+    /// 注意 SkiaSharp 的 DrawBitmap 只用 paint 的 <b>alpha</b> 调制位图（RGB 被忽略），所以必须按联盟色烘焙彩色 stamp。
+    /// </summary>
+    private SKBitmap GetSovStamp(long groupId)
+    {
+        if (_sovStampByGroup.TryGetValue(groupId, out var stamp))
+        {
+            return stamp;
+        }
+
+        const int sz = 128;
+        stamp = new SKBitmap(sz, sz);
+        using var c = new SKCanvas(stamp);
+        var color = SovGroupColor(groupId, 0.5);
+        using var shader = SKShader.CreateRadialGradient(
+            new SKPoint(sz / 2f, sz / 2f),
+            sz / 2f,
+            new[] { new SKColor(color.Red, color.Green, color.Blue, 255), new SKColor(color.Red, color.Green, color.Blue, 140), new SKColor(color.Red, color.Green, color.Blue, 0) },
+            new[] { 0f, 0.4f, 1f },
+            SKShaderTileMode.Clamp);
+        using var p = new SKPaint { Shader = shader };
+        c.DrawRect(0, 0, sz, sz, p);
+        _sovStampByGroup[groupId] = stamp;
+        return stamp;
+    }
+
+    /// <summary>
+    /// 深放大域晕染矢量直绘（v19 改为 1/8 分辨率离屏烘焙 + 一次双线性拉伸铺屏）：
+    /// 贪心去重的间距阈值 = 软斑**半径**（0.048 世界单位），相邻保留斑圆心距 = R、半径也是 R
+    /// → 每联盟软斑覆盖 ≈ π×屏幕面积 × 屏内联盟数（20~40）= 每帧十几~几十倍屏幕面积的
+    /// 抗锯齿径向渐变填充。SKElement 是 CPU 光栅——这才是深放大卡顿的量级来源（与 zoom 无关恒定存在，
+    /// 所以 v17 消 GC、v18 消徽标裁剪都无效）。晕染是大半径低频浓度场，1/8 分辨率烘焙 + 双线性放大视觉无损：
+    /// 渐变 fill ÷64，拉伸倍率恒定 8x（不随缩放变化 → v13 的"整数采样档"机制不适用），
+    /// 内容逐帧按当前 zoom 重烘、over 算子逐像素独立 → 合成结果与直绘等价（仅高频模糊，斑点剖面本就是低频）。
+    /// 分位/排序/去重骨架仍按数据版本缓存（<see cref="EnsureSovVectorCaches"/>），
+    /// 离屏缓冲/画布/blit 画笔跨帧复用——稳态零 GC。
+    /// </summary>
+    private void DrawSovVectorSpots(SKCanvas canvas)
+    {
+        EnsureSovVectorCaches();
+        if (_sovVectorCaches.Count == 0)
+        {
+            return;
+        }
+
+        var w = ActualWidth + _bakePad * 2;    // 烘焙帧含 pad 环：环内软斑也要烘（拖动帧会裁到）
+        var h = ActualHeight + _bakePad * 2;
+        var cullOx = -_bakePad;               // 烘焙帧的坐标原点平移：软斑中心在 (-pad..w+pad) 范围内参与绘制
+        var cullOy = -_bakePad;
+        var spotScreenR = (float)(0.048 * _worldW * _zoom);   // 软斑半径：世界长边 2%（dotR）×2.4（spotR/dotR），与位图侧同源
+        if (spotScreenR < 2f)
+        {
+            return;
+        }
+
+        var dpi = (float)_renderDpiScale;
+        var bw = Math.Max(1, (int)Math.Ceiling(w * dpi * SovVectorOffscreenScale));
+        var bh = Math.Max(1, (int)Math.Ceiling(h * dpi * SovVectorOffscreenScale));
+        if (_sovVectorOffscreen is null || _sovVectorOffscreen.Width != bw || _sovVectorOffscreen.Height != bh)
+        {
+            _sovVectorOffscreenCanvas?.Dispose();
+            _sovVectorOffscreen?.Dispose();
+            _sovVectorOffscreen = new SKBitmap(bw, bh);
+            _sovVectorOffscreenCanvas = new SKCanvas(_sovVectorOffscreen);
+        }
+
+        var off = _sovVectorOffscreenCanvas!;
+        off.SetMatrix(SKMatrix.Identity);   // 复用画布：重置上帧矩阵（循环内 Save/Restore 自平衡，剪裁不残留）
+        off.Clear(SKColors.Transparent);
+        off.Scale(dpi * SovVectorOffscreenScale, dpi * SovVectorOffscreenScale);
+
+        var drawn = 0;
+        foreach (var (groupId, cache) in _sovVectorCaches)
+        {
+            var kept = cache.Kept;
+            for (var i = 0; i < kept.Count; i++)
+            {
+                var (p, k) = kept[i];
+                var cx = (float)(p.X * _worldW * _zoom + _offsetX);
+                var cy = (float)(p.Y * _worldH * _zoom + _offsetY);
+                if (cx < cullOx - spotScreenR || cy < cullOy - spotScreenR
+                    || cx > cullOx + w + spotScreenR || cy > cullOy + h + spotScreenR)
+                {
+                    continue;   // 软斑整体出（烘焙）视口
+                }
+
+                // 单位渐变（半径 1，中心原点）+ 画布变换平移缩放：缓存 paint 与屏幕位置解耦
+                var paint = GetSovVectorPaint(groupId, cache.T, cache.Color, cache.PaintAlpha, k);
+                off.Save();
+                off.Translate(cx - cullOx, cy - cullOy);   // 烘焙帧：软斑中心平移进离屏缓冲坐标系
+                off.Scale(spotScreenR, spotScreenR);
+                off.DrawCircle(0, 0, 1, paint);
+                off.Restore();
+                drawn++;
+            }
+        }
+
+        TrimSovVectorPaints();
+
+        // 一次双线性拉伸铺屏（主画布已含 DPI 缩放 → 目标矩形用逻辑坐标；Low = 双线性，缺省 None 会马赛克）
+        // 全局 alpha 阻尼（SovAlphaDamp）：DrawImage/DrawBitmap 只吃 paint alpha → 一处乘法调浅整个矢量域
+        #pragma warning disable CS0618
+        if (_sovBlitPaint is null)
+        {
+            _sovBlitPaint = new SKPaint { FilterQuality = SKFilterQuality.Low };
+        }
+
+        _sovBlitPaint.Color = new SKColor(0, 0, 0, (byte)(255 * SovAlphaDamp));
+        #pragma warning restore CS0618
+        // 缓冲坐标 = 屏幕坐标 + pad（软斑画在 cx+pad）。烘焙帧画布已 Translate(pad,pad)：
+        // dest 原点必须是 −pad，缓冲像素 b 才落在画布点 b−pad = 屏幕坐标 s（再经 Translate 变成位图 (s+pad)×scale，与世界层对齐）。
+        // 写成 (0,0,w,h) 会双重 +pad → 整层晕染向右下漂移 2×pad 且左/上环空缺（实机截图踩过）。
+        var destL = -_bakePad;
+        var destT = -_bakePad;
+        canvas.DrawBitmap(_sovVectorOffscreen!, new SKRect(destL, destT, destL + (float)w, destT + (float)h), _sovBlitPaint);
+
+#if DEBUG
+        if (++_sovVecLogFrame % 90 == 1)
+        {
+            Debug.WriteLine($"[SOV-VEC] off={bw}x{bh} spots={drawn} spotR={spotScreenR:F0} zoom={_zoom:F0}");
+        }
+#endif
+    }
+
+    /// <summary>矢量晕染离屏烘焙分辨率（相对物理像素；1/8 → 渐变 fill 降 64 倍，双线性放大视觉无损）。</summary>
+    private const float SovVectorOffscreenScale = 1f / 8f;
+
+    /// <summary>晕染全局 alpha 阻尼（09-24 用户"颜色深了点，可以调浅点"）：两个域的叠加浓度等比调浅。
+    /// **必须同时作用于位图域与矢量域**——单侧调浅会让显示宽 6000 的切换边界重新出现浓度台阶。
+    /// 觉得还深就调小（0.80），太浅调大（0.90~1.0）。</summary>
+    private const float SovAlphaDamp = 0.5f;
+
+    private SKBitmap? _sovVectorOffscreen;              // 矢量晕染离屏缓冲（尺寸随窗口变化才重分配）
+    private SKCanvas? _sovVectorOffscreenCanvas;        // 离屏画布（跨帧复用）
+    private SKPaint? _sovBlitPaint;                     // 铺屏画笔（双线性，跨帧复用）
+    private SKBitmap? _sovScreenCache;                  // 位图域晕染预缩放到屏幕分辨率的缓存（v20 拖动优化：拖动帧 1:1 贴图，
+                                                        // 省掉每帧 6000 宽源的全屏双线性重采样——全图视野拖动卡顿的根因）
+    private (double Zoom, double Dpi, int BuildId)? _sovScreenKey;   // 预缩放缓存的生效条件（zoom/dpi/数据版本任一变化即失效）
+    private (double Zoom, double Dpi, int BuildId)? _sovScreenPrevKey;   // 上一帧的视图 key：连续两帧相同（视图稳定）才构建缓存，
+                                                                        // 滚轮缩放期间每帧 key 都变 → 退回直接重采样（避免每帧重建反而更糟）
+#if DEBUG
+    private int _sovVecLogFrame;                        // [SOV-VEC] 诊断日志节流
+#endif
+
+    private sealed class SovGroupVectorCache
+    {
+        public double T;                                       // 联盟热度全图分位（0~1）
+        public byte PaintAlpha;                                // 画笔基础 alpha（55 + t*130）
+        public SKColor Color;                                  // 联盟色
+        public List<(SKPoint P, int K)> Kept = [];             // 贪心去重骨架点 + 吸收星系数（世界域常量，跨帧复用）
+    }
+
+    private readonly Dictionary<long, SovGroupVectorCache> _sovVectorCaches = [];      // 联盟 → 预计算缓存（数据版本内常量）
+    private int _sovVectorCacheVersion = -1;                     // 缓存对应的数据版本（_sovBuildId）
+
+    /// <summary>
+    /// 矢量域预计算缓存（v17）：分位表 / 排序 / 贪心去重结果全部是**世界域常量**（与 zoom/offset 无关），
+    /// 却在每帧重算（OrderBy/ToList/Zip/分位字典）→ 深放大滚动帧率被 GC 拖垮。
+    /// 按 _sovBuildId 版本只构建一次；版本变化时先释放画笔缓存（联盟色/分位/吸收数可能全部重排）。
+    /// </summary>
+    private void EnsureSovVectorCaches()
+    {
+        if (_sovVectorCacheVersion == _sovBuildId && _sovVectorCaches.Count > 0)
+        {
+            return;
+        }
+
+        foreach (var grp in _sovVectorPaints.Values)
+        {
+            foreach (var pnt in grp.Values)
+            {
+                pnt.Dispose();
+            }
+
+            grp.Clear();
+        }
+
+        _sovVectorCaches.Clear();
+        _sovVectorCacheVersion = _sovBuildId;
+        if (_sovLastByGroup is null)
+        {
+            return;
+        }
+
+        var rankByValue = BuildQuantileMap(_sovLastByGroup.Values.Select(e => e.Sum).OrderBy(p => p).ToList());
+        const float minDist = 0.048f;                        // 软斑世界半径（NX/NY 归一化坐标，各向同性基准）
+        var minDistSq = minDist * minDist;
+        foreach (var (groupId, entry) in _sovLastByGroup)
+        {
+            if (entry.Pts.Count == 0)
+            {
+                continue;
+            }
+
+            var t = rankByValue.TryGetValue(entry.Sum, out var tv) ? tv : 0;
+            var cache = new SovGroupVectorCache
+            {
+                T = t,
+                Color = SovGroupColor(groupId, 0.5),
+                PaintAlpha = (byte)Math.Clamp(55 + (t * 130), 55, 185),
+            };
+            var pts = entry.Pts;
+            if (pts.Count == 1)
+            {
+                cache.Kept.Add((pts[0], 1));
+            }
+            else
+            {
+                var sorted = pts.OrderBy(p => p.X).ToList();   // 数据版本内仅一次
+                cache.Kept.Add((sorted[0], 1));
+                for (var i = 1; i < sorted.Count; i++)
+                {
+                    var p = sorted[i];
+                    var dx = p.X - cache.Kept[^1].P.X;
+                    var dy = p.Y - cache.Kept[^1].P.Y;
+                    if (dx * dx + dy * dy >= minDistSq)
+                    {
+                        cache.Kept.Add((p, 1));
+                    }
+                    else
+                    {
+                        var last = cache.Kept[^1];
+                        cache.Kept[^1] = (last.P, last.K + 1);   // 被前一保留点吸收
+                    }
+                }
+            }
+
+            _sovVectorCaches[groupId] = cache;
+        }
+    }
+
+    private readonly Dictionary<long, Dictionary<(double Rank, int K), SKPaint>> _sovVectorPaints = [];   // (联盟, 分位, 吸收数) → 画笔（跨帧缓存）
+
+    /// <summary>画笔缓存随预计算缓存一起失效（EnsureSovVectorCaches 版本变化时释放），此处仅保留结构性判活。</summary>
+
+    /// <summary>
+    /// 取（或建）指定联盟+分位+k 层吸收的单位径向渐变画笔：坐标单位化（中心原点、半径 1），与画布变换配合。
+    /// alpha = k 层叠加浓度 1-(1-a)^k（a = 分位 alpha/255）预烘进渐变顶点色——与位图侧 k 层逐点叠加的合成结果对齐
+    /// （Skia 规则：带 Shader 的 paint，Color 被完全覆盖，所以 alpha 必须进顶点色）。
+    /// k 只取 [1..6]+饱和 7 档（≥7 档间浓度差 &lt;1/255 已不可分辨）——缓存组合数有界。
+    /// </summary>
+    private SKPaint GetSovVectorPaint(long groupId, double t, SKColor color, byte alpha, int k)
+    {
+        var kIdx = Math.Min(k, 7);
+        if (!_sovVectorPaints.TryGetValue(groupId, out var byRank))
+        {
+            byRank = [];
+            _sovVectorPaints[groupId] = byRank;
+        }
+
+        if (byRank.TryGetValue((t, kIdx), out var cached))
+        {
+            return cached;
+        }
+
+        // k 层叠加浓度（源叠加非线性合成）：中心 a1 = 1-(1-a)^k，0.4 位处剖面值同步合成
+        var a = alpha / 255.0;
+        var centerA = (int)Math.Round(255 * (1 - Math.Pow(1 - a, kIdx)));
+        var midA = (int)Math.Round(255 * (1 - Math.Pow(1 - (a * 140 / 255.0), kIdx)));
+        var shader = SKShader.CreateRadialGradient(
+            new SKPoint(0, 0),
+            1f,
+            new[] { new SKColor(color.Red, color.Green, color.Blue, (byte)centerA), new SKColor(color.Red, color.Green, color.Blue, (byte)midA), new SKColor(color.Red, color.Green, color.Blue, 0) },
+            new[] { 0f, 0.4f, 1f },
+            SKShaderTileMode.Clamp);
+        var paint = new SKPaint { IsAntialias = true, Shader = shader };
+        byRank[(t, kIdx)] = paint;
+        return paint;
+    }
+
+    /// <summary>缓存上限保护：联盟×分位组合数超过 256 时全量清空（正常 ≤ 40 联盟 × ~几档，不会触达）。</summary>
+    private void TrimSovVectorPaints()
+    {
+        var count = 0;
+        foreach (var grp in _sovVectorPaints.Values)
+        {
+            count += grp.Count;
+        }
+
+        if (count > 256)
+        {
+            foreach (var grp in _sovVectorPaints.Values)
+            {
+                foreach (var pnt in grp.Values)
+                {
+                    pnt.Dispose();
+                }
+
+                grp.Clear();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 烘主权疆域晕染位图（软斑盖章法）：每个有热度星系按联盟色把单位软斑缩放贴上，相邻星系自然连成疆域、空隙保留；
+    /// 透明度 = 联盟热度全图分位（与格子同公式）；联盟重叠区后画覆盖前画，不脏混。
+    /// 比 blur 快一个量级，且跨分辨率内容一致（重建不再带来观感跳变）。纯 CPU 位图操作，可后台调用。
+    /// </summary>
+    private SKBitmap RenderSovBitmap(Dictionary<long, (double Sum, List<SKPoint> Pts)> byGroup, int wPx, int hPx)
+    {
+        var bmp = new SKBitmap(wPx, hPx);
+        using var layerCanvas = new SKCanvas(bmp);
+        layerCanvas.Clear(SKColors.Transparent);
+
+        var dotR = 0.02f * wPx;              // 星系核半径 = 世界长边 2%：相邻星系连片、大空隙保留
+        var spotR = dotR * 2.4f;             // 软斑可视半径（剖面渐变到 0），略大于核半径保证相邻连片
+        using var dot = new SKPaint();
+        var rankByValue = BuildQuantileMap(byGroup.Values.Select(e => e.Sum).OrderBy(p => p).ToList());
+        foreach (var (groupId, entry) in byGroup)
+        {
+            var t = rankByValue[entry.Sum];
+            var stamp = GetSovStamp(groupId);
+            // DrawBitmap 只用 paint 的 alpha 调制位图（RGB 由 stamp 自带）
+            dot.Color = new SKColor(255, 255, 255, (byte)Math.Clamp(55 + (t * 130), 55, 185));
+            foreach (var p in entry.Pts)
+            {
+                var cx = p.X * wPx;
+                var cy = p.Y * hPx;
+                layerCanvas.DrawBitmap(stamp, new SKRect(cx - spotR, cy - spotR, cx + spotR, cy + spotR), dot);
+            }
+        }
+
+        return bmp;
+    }
+
+    /// <summary>
+    /// 联盟疆域连通分量聚类：像素距离 &lt; 圆斑连片阈值（dotR×2.2）的星系算同一片——相邻星系晕染自然融合，
+    /// 飞地/跨区长跳与主体断开各成一片。网格哈希邻桶 BFS，约 O(n)。
+    /// 返回每片的包围盒中心与宽高（归一化世界坐标）。
+    /// </summary>
+    private static List<(SKPoint Center, SKPoint Size)> ClusterSovBlobs(List<SKPoint> pts, float wPx, float hPx, float dotR)
+    {
+        var n = pts.Count;
+        var result = new List<(SKPoint Center, SKPoint Size)>();
+        if (n == 0)
+        {
+            return result;
+        }
+
+        var link = dotR * 2.2f;   // 判连片的像素距离：两个圆斑视觉上明显相触
+        var linkSq = link * link;
+        var px = new float[n];
+        var py = new float[n];
+        var buckets = new Dictionary<long, List<int>>(n);
+        for (var i = 0; i < n; i++)
+        {
+            px[i] = pts[i].X * wPx;
+            py[i] = pts[i].Y * hPx;
+            var key = ((long)(px[i] / link) << 32) ^ (uint)(py[i] / link);
+            if (!buckets.TryGetValue(key, out var list))
+            {
+                list = [];
+                buckets[key] = list;
+            }
+            list.Add(i);
+        }
+
+        var visited = new bool[n];
+        var queue = new Queue<int>();
+        for (var seed = 0; seed < n; seed++)
+        {
+            if (visited[seed])
+            {
+                continue;
+            }
+
+            visited[seed] = true;
+            queue.Enqueue(seed);
+            float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+            while (queue.Count > 0)
+            {
+                var i = queue.Dequeue();
+                minX = Math.Min(minX, px[i]); minY = Math.Min(minY, py[i]);
+                maxX = Math.Max(maxX, px[i]); maxY = Math.Max(maxY, py[i]);
+                var bx = (int)(px[i] / link);
+                var by = (int)(py[i] / link);
+                for (var dx = -1; dx <= 1; dx++)
+                {
+                    for (var dy = -1; dy <= 1; dy++)
+                    {
+                        if (!buckets.TryGetValue(((long)(bx + dx) << 32) ^ (uint)(by + dy), out var list))
+                        {
+                            continue;
+                        }
+                        foreach (var j in list)
+                        {
+                            if (visited[j])
+                            {
+                                continue;
+                            }
+                            var ddx = px[j] - px[i];
+                            var ddy = py[j] - py[i];
+                            if (ddx * ddx + ddy * ddy <= linkSq)
+                            {
+                                visited[j] = true;
+                                queue.Enqueue(j);
+                            }
+                        }
+                    }
+                }
+            }
+
+            result.Add((new SKPoint((minX + maxX) / 2 / wPx, (minY + maxY) / 2 / hPx),
+                        new SKPoint((maxX - minX) / wPx, (maxY - minY) / hPx)));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// 主权文字提示：每片联盟疆域中心画一个联盟名（飞地各画各的）。字号随缩放（整图适配≈9px，封顶 20px），
+    /// 且随片大小自适应——目标文字宽≈片屏宽 1.6 倍（允许横跨疆域边缘），压到 5px 以下的极小碎片跳过；
+    /// 片按包围盒面积降序"大片优先占位"，与已画文字矩形重叠的让位跳过（防低缩放叠成一锅粥）。
+    /// 纯色字（无描边）：浅色主题 = 深联盟色，深色主题 = 亮联盟色（与圆点同色相）。
+    /// </summary>
+    private void DrawSovLabels(SKCanvas canvas, float w, float h)
+    {
+        if (_sovBlobs.Count == 0)
+        {
+            return;
+        }
+
+        var zmult = _fitZoom > 0 ? _zoom / _fitZoom : 1;
+        var fontPx = (float)Math.Clamp(12 * zmult, 6, 20);
+        using var font = new SKFont(_typefaceBold, fontPx);
+        using var fill = new SKPaint { IsAntialias = true };
+
+        // 大片优先：每片独立参与排序与占位（同一联盟的多片各是各的候选）
+        var entries = new List<(long GroupId, SKPoint Center, float Area, float ScreenW)>(_sovBlobs.Count);
+        foreach (var blob in _sovBlobs)
+        {
+            entries.Add((blob.GroupId, blob.Center, blob.Size.X * blob.Size.Y, blob.Size.X * (float)(_worldW * _zoom)));
+        }
+        entries.Sort((a, b) => b.Area.CompareTo(a.Area));
+
+        var placed = new List<SKRect>(entries.Count);
+        foreach (var entry in entries)
+        {
+            if (!_sovNames.TryGetValue(entry.GroupId, out var name) || string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+
+            var p = HeatSovToScreen(entry.Center);
+            var baseWidth = font.MeasureText(name);
+            // 字号自适应：目标文字宽度≈片屏宽 1.6 倍（允许横跨疆域边缘，参考官方星图）；反解后超过全局字号则封顶，
+            // 压到 5px 以下的极小碎片跳过。重叠让位兜底密度。
+            var fitPx = baseWidth > 0 ? entry.ScreenW * 1.6f * fontPx / baseWidth : 0;
+            var px = Math.Clamp(fitPx, 0, fontPx);
+            if (px < 5f)
+            {
+                continue;
+            }
+            font.Size = px;
+            var textWidth = font.MeasureText(name);
+            if (p.X + textWidth / 2 < 0 || p.X - textWidth / 2 > w || p.Y < -20 || p.Y > h + 20)
+            {
+                continue;   // 整体出屏
+            }
+
+            var rect = SKRect.Create(p.X - textWidth / 2 - 1, p.Y - px * 0.55f, textWidth + 2, px * 1.1f);
+            var overlapped = false;
+            foreach (var r in placed)
+            {
+                if (r.IntersectsWithInclusive(rect))
+                {
+                    overlapped = true;
+                    break;
+                }
+            }
+            if (overlapped)
+            {
+                continue;   // 与已画文字重叠，让位给更大的片
+            }
+            placed.Add(rect);
+
+            // 文字色：同联盟色相；浅色底用深字（V 低）、深色底用亮字（与圆点同亮度）
+            var hue = (float)((entry.GroupId * 137.508) % 360);
+            fill.Color = _light ? FromHsv(hue, 0.75f, 0.38f) : FromHsv(hue, 0.62f, 0.95f);
+            canvas.DrawText(name, p.X - textWidth / 2, p.Y + px * 0.36f, font, fill);
+        }
+    }
+
     private float NodeRadius(double zmult) => (float)Math.Clamp(1.5 * Math.Pow(zmult, 0.42), 1.2, 26);
 
     /// <summary>
@@ -1249,15 +2221,17 @@ public class StarMapCanvas : SKElement
 
         paint.Style = SKPaintStyle.Stroke;
         paint.StrokeWidth = Math.Max(0.5f, (float)(0.75 * Math.Pow(zmult, 0.25)));
-        var w = ActualWidth;
-        var h = ActualHeight;
+        var w = ActualWidth + _bakePad;   // 烘焙帧含 pad 环：环内连线也要烘（拖动帧会裁到）；左界见 cullOx
+        var h = ActualHeight + _bakePad;
+        var cullOx = -_bakePad;
+        var cullOy = -_bakePad;
         foreach (var (a, b) in _links)
         {
             var na = _nodes[a];
             var nb = _nodes[b];
             var pa = NodePos(na);
             var pb = NodePos(nb);
-            if (Math.Max(pa.X, pb.X) < 0 || Math.Min(pa.X, pb.X) > w || Math.Max(pa.Y, pb.Y) < 0 || Math.Min(pa.Y, pb.Y) > h)
+            if (Math.Max(pa.X, pb.X) < cullOx || Math.Min(pa.X, pb.X) > w || Math.Max(pa.Y, pb.Y) < cullOy || Math.Min(pa.Y, pb.Y) > h)
             {
                 continue;
             }
@@ -1277,8 +2251,10 @@ public class StarMapCanvas : SKElement
     /// <summary>跳桥点线（画进底图缓存；与 WinUI 版一致用点线区分星门实线）。</summary>
     private void DrawBridges(SKCanvas canvas, SKPaint paint)
     {
-        var w = ActualWidth;
-        var h = ActualHeight;
+        var w = ActualWidth + _bakePad;   // 烘焙帧含 pad 环；左界见 cullOx
+        var h = ActualHeight + _bakePad;
+        var cullOx = -_bakePad;
+        var cullOy = -_bakePad;
         using var dash = SKPathEffect.CreateDash([2f, 4f], 0f);
         paint.Style = SKPaintStyle.Stroke;
         paint.StrokeWidth = 1.6f;
@@ -1293,7 +2269,7 @@ public class StarMapCanvas : SKElement
 
             var pa = NodePos(_nodes[ia]);
             var pb = NodePos(_nodes[ib]);
-            if (Math.Max(pa.X, pb.X) < 0 || Math.Min(pa.X, pb.X) > w || Math.Max(pa.Y, pb.Y) < 0 || Math.Min(pa.Y, pb.Y) > h)
+            if (Math.Max(pa.X, pb.X) < cullOx || Math.Min(pa.X, pb.X) > w || Math.Max(pa.Y, pb.Y) < cullOy || Math.Min(pa.Y, pb.Y) > h)
             {
                 continue;
             }
@@ -1335,20 +2311,26 @@ public class StarMapCanvas : SKElement
     private void DrawNodes(SKCanvas canvas, SKPaint paint, SKFont font, double zmult, float nodeR)
     {
         paint.Style = SKPaintStyle.Fill;
-        var w = ActualWidth;
-        var h = ActualHeight;
-        var showSec = zmult >= 13;
-        var showName = zmult >= 5.5;
+        var w = ActualWidth + _bakePad;   // 烘焙帧含 pad 环：环内节点也要烘（拖动帧会裁到）；左界见 cullOx
+        var h = ActualHeight + _bakePad;
+        var cullOx = -_bakePad;
+        var cullOy = -_bakePad;
+        // LOD 连续渐显（09-23 实测：离散开关在翻转帧瞬间全图 8000 标签出现/消失，被感知为"浓度突变"）：
+        // zmult 5.5→7.5（name）、13→15（sec）线性 0→1，完全显示后 alpha 封顶——缩放跨阈值变成平滑淡入。
+        var secA = Math.Clamp((zmult - 13) / 2.0, 0, 1);
+        var nameA = Math.Clamp((zmult - 5.5) / 2.0, 0, 1);
+        var showSec = secA > 0;
+        var showName = nameA > 0;
         var glowR = nodeR * GlowScale(zmult);
         var glowAlpha = (byte)GlowAlpha(zmult);
 
         var secTextSize = (float)Math.Clamp(zmult * 0.55, 6, 11);
         var nameTextSize = (float)Math.Clamp(zmult * 0.7, 6.5, 12.5);
-
+        var secBadgeOn = secA > 0.04f;   // 渐显尾部 alpha<10/255 不可见，整屏跳过（省 MeasureText/底圈/文字）
         foreach (var node in _nodes)
         {
             var p = NodePos(node);
-            if (p.X < -glowR || p.Y < -glowR || p.X > w + glowR || p.Y > h + glowR)
+            if (p.X < cullOx - glowR || p.Y < cullOy - glowR || p.X > w + glowR || p.Y > h + glowR)
             {
                 node.Visible = false;
                 continue;
@@ -1377,29 +2359,27 @@ public class StarMapCanvas : SKElement
                 canvas.DrawCircle(p, nodeR * 0.45f, paint);
             }
 
-            // 主权模式：圆点上叠加联盟徽标（图标未到位 / 节点太小 / 被筛掉时保留分组色圆点）
+            // 主权模式：圆点上叠加联盟徽标（图标未到位 / 节点太小 / 被筛掉时保留分组色圆点）。
+            // v18 性能关键：原实现每节点每帧 new SKPath + ClipPath(antialias) + Save/Restore——
+            // 抗锯齿裁剪蒙版逐节点重建，可见节点峰值区（zmult≈10~14，数百节点）帧率被拖垮。
+            // 改为每联盟一枚预烘圆形精灵（圆裁+白描边都在精灵里），此处只剩一次 DrawImage。
             if (_currentColorMode == MapColorMode.Sovereignty
                 && node.Enabled
                 && node.AllianceId > 0
-                && _sovIcons.TryGetValue(node.AllianceId, out var logo)
-                && logo is not null
                 && nodeR >= 2.4f)
             {
-                var iconR = nodeR * 1.3f;
-                using var clip = new SKPath();
-                clip.AddCircle(p.X, p.Y, iconR, SKPathDirection.Clockwise);
-                canvas.Save();
-                canvas.ClipPath(clip, antialias: true);
-                canvas.DrawBitmap(logo, new SKRect(p.X - iconR, p.Y - iconR, p.X + iconR, p.Y + iconR));
-                canvas.Restore();
-                paint.Style = SKPaintStyle.Stroke;
-                paint.StrokeWidth = 1f;
-                paint.Color = new SKColor(255, 255, 255, 90);
-                canvas.DrawCircle(p.X, p.Y, iconR, paint);
-                paint.Style = SKPaintStyle.Fill;
+                var sprite = GetSovLogoSprite(node.AllianceId);
+                if (sprite is not null)
+                {
+                    var iconR = nodeR * 1.3f;
+                    var half = iconR + 0.5f;   // 精灵含 0.5px 白描边外扩
+                    paint.Color = SKColors.White;
+                    canvas.DrawImage(sprite, new SKRect(p.X - half, p.Y - half, p.X + half, p.Y + half), paint);
+                    paint.Style = SKPaintStyle.Fill;
+                }
             }
 
-            if (showSec)
+            if (secBadgeOn && showSec)
             {
                 // 内圈文字随着色模式变化（安等 / 分组号 / 行星资源值 / 击杀·通行量）；无数据就不画（连底圈一起省掉）
                 var label = FormatNodeLabel(node);
@@ -1408,9 +2388,9 @@ public class StarMapCanvas : SKElement
                     font.Typeface = _typefaceBold;
                     font.Size = secTextSize;
                     var width = font.MeasureText(label);
-                    paint.Color = BadgeBg(210);
+                    paint.Color = BadgeBg((byte)(210 * secA));
                     canvas.DrawCircle(p, secTextSize * 0.85f + 2.5f, paint);
-                    paint.Color = BadgeText(230);
+                    paint.Color = BadgeText((byte)(230 * secA));
                     canvas.DrawText(label, p.X - width / 2, p.Y + secTextSize * 0.36f, font, paint);
                     font.Typeface = _typeface;
                 }
@@ -1419,10 +2399,62 @@ public class StarMapCanvas : SKElement
             if (showName)
             {
                 font.Size = nameTextSize;
-                paint.Color = NameText((byte)Math.Clamp(60 + zmult * 12, 80, 235));
+                paint.Color = NameText((byte)(Math.Clamp(60 + zmult * 12, 80, 235) * nameA));
                 canvas.DrawText(node.Name, p.X + nodeR + 3, p.Y - nodeR - 2, font, paint);
             }
         }
+    }
+
+    /// <summary>
+    /// 取（或烘）指定联盟的圆形徽标精灵（v18）：源位图按联盟色圆形裁剪 + 0.5px 白描边，
+    /// 一次烘焙成 128px SKImage 后每节点一次 DrawImage——替代每帧每节点 SKPath 裁剪。
+    /// 源位图更换（SetSovIcon）时自动重烘；无源图标返回 null（调用方保留分组色圆点）。
+    /// </summary>
+    private SKImage? GetSovLogoSprite(long allianceId)
+    {
+        if (!_sovIcons.TryGetValue(allianceId, out var src) || src is null)
+        {
+            return null;
+        }
+
+        if (_sovLogoSprites.TryGetValue(allianceId, out var cached) && ReferenceEquals(cached.Src, src))
+        {
+            return cached.Image;
+        }
+
+        // 换过源图：先丢弃旧精灵
+        if (_sovLogoSprites.TryGetValue(allianceId, out var old))
+        {
+            old.Image.Dispose();
+            _sovLogoSprites.Remove(allianceId);
+        }
+
+        const int sz = 128;
+        var bmp = new SKBitmap(sz, sz);
+        using (var c2 = new SKCanvas(bmp))
+        {
+            c2.Clear(SKColors.Transparent);
+            var r = sz / 2f - 0.5f;   // 留 0.5px 给描边
+            using var clip = new SKPath();
+            clip.AddCircle(sz / 2f, sz / 2f, r, SKPathDirection.Clockwise);
+            c2.Save();
+            c2.ClipPath(clip, antialias: true);
+            c2.DrawBitmap(src, new SKRect(0, 0, sz, sz));
+            c2.Restore();
+            using var ring = new SKPaint
+            {
+                IsAntialias = true,
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = 1f,
+                Color = new SKColor(255, 255, 255, 90),
+            };
+            c2.DrawCircle(sz / 2f, sz / 2f, r, ring);
+        }
+
+        var image = SKImage.FromBitmap(bmp);
+        bmp.Dispose();
+        _sovLogoSprites[allianceId] = (image, src);
+        return image;
     }
 
     /// <summary>取（或生成）指定颜色的外发光精灵。颜色量化到 5bit/通道，缓存上限 96。</summary>

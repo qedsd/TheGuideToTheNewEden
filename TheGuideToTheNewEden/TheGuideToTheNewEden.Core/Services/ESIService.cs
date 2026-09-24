@@ -154,9 +154,25 @@ namespace TheGuideToTheNewEden.Core.Services
             return Config.DefaultGameServer == Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
         }
 
+        // EVEStandard 库把 HttpClient 存在 **static** 字段里（EVEStandardAPI.http / APIBase.http 都是 static），
+        // 每次 new EVEStandardAPI 都会覆盖全局 client——旧 client 失去引用后被 GC 回收，
+        // 仍在途的请求会随机 NRE（HttpConnection.WriteAsciiString，用户实测 GetSystemKillsAsync 抛出）。
+        // 所以必须按服务器缓存复用实例，禁止每次调用新建。
+        private static readonly Dictionary<EVEStandard.Enumerations.DataSource, EVEStandard.EVEStandardAPI> esiClients = new Dictionary<EVEStandard.Enumerations.DataSource, EVEStandard.EVEStandardAPI>();
+        private static readonly object esiClientsLock = new object();
+
         public static EVEStandard.EVEStandardAPI GetDefaultESI()
         {
-            return new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", GetDataSource(), EVEStandard.Enumerations.CompatibilityDate.v2025_12_16,TimeSpan.FromSeconds(30));
+            var dataSource = GetDataSource();
+            lock (esiClientsLock)
+            {
+                if (!esiClients.TryGetValue(dataSource, out var esi))
+                {
+                    esi = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, EVEStandard.Enumerations.CompatibilityDate.v2025_12_16, TimeSpan.FromSeconds(30));
+                    esiClients[dataSource] = esi;
+                }
+                return esi;
+            }
         }
         public static EVEStandard.Models.API.AuthDTO ToEVEStandardSSO(AuthorizedCharacterData character)
         {

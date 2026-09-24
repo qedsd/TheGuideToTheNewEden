@@ -135,6 +135,7 @@
     <sys:String x:Key="General_No">否</sys:String>
     <sys:String x:Key="General_Yes">是</sys:String>
     <sys:String x:Key="General_Close">关闭</sys:String>
+    <sys:String x:Key="General_Retry">重试</sys:String>
     <sys:String x:Key="General_Sec">安等</sys:String>
     <sys:String x:Key="General_Add">添加</sys:String>
     <sys:String x:Key="General_Save">保存</sys:String>
@@ -1447,6 +1448,8 @@
     <sys:String x:Key="MapTool_Sov_Reset">重置分组</sys:String>
     <sys:String x:Key="MapTool_Sov_Reload">重新拉取</sys:String>
     <sys:String x:Key="MapTool_Sov_Status">共 {0} 个主权联盟</sys:String>
+    <sys:String x:Key="MapPage_LoadingSov">正在装载主权数据…</sys:String>
+    <sys:String x:Key="MapPage_SovLoadFailed">主权数据装载失败，请检查网络后重试。</sys:String>
     <sys:String x:Key="MapTool_Sov_Saved">已保存</sys:String>
     <sys:String x:Key="MapTool_Sov_ResetDone">已重置为 1..N</sys:String>
     <sys:String x:Key="MapTool_Bridge_Show">在星图上显示跳桥</sys:String>
@@ -1504,4 +1507,5 @@
     <sys:String x:Key="MapPage_HeatGridSize">大小</sys:String>
     <sys:String x:Key="MapPage_HeatOffset">网格偏移</sys:String>
     <sys:String x:Key="MapPage_HeatOffsetReset">复位</sys:String>
+    <sys:String x:Key="MapPage_HeatBySov">主权聚合</sys:String>
 </ResourceDictionary>

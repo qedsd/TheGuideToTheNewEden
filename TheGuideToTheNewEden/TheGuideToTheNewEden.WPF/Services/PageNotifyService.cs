@@ -46,6 +46,10 @@ public static class PageNotifyService
     public static void Error(string message)
         => OnUi(() => _host?.Show(message, SymbolRegular.ErrorCircle24, "SystemFillColorCriticalBrush", ErrorDuration));
 
+    /// <summary>错误通知 + 可选动作按钮（如"重试"；点击后先移除通知再执行回调）。</summary>
+    public static void Error(string message, string? actionText, Action? action)
+        => OnUi(() => _host?.Show(message, SymbolRegular.ErrorCircle24, "SystemFillColorCriticalBrush", ErrorDuration, actionText, action));
+
     public static void Info(string message)
         => OnUi(() => _host?.Show(message, SymbolRegular.Info24, "SystemAccentColorPrimaryBrush", InfoDuration));
 

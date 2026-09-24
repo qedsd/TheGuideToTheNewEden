@@ -47,6 +47,16 @@ public partial class MapPage : Page
         UpdateLegend();
         _viewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
         _viewModel.SovIconLoaded += (_, e) => MapCanvas.SetSovIcon(e.AllianceId, e.Bitmap);
+        // 主权强刷完成（分组窗"重新拉取"/失败后重试成功）：数据版本变了，主权模式下重画着色
+        _viewModel.SovReloaded += (_, _) =>
+        {
+            if (_viewModel.ColorMode == MapColorMode.Sovereignty)
+            {
+                MapCanvas.SetColorMode(MapColorMode.Sovereignty, _viewModel.KillsMax, _viewModel.JumpsMax, _viewModel.ResourceMax);
+            }
+
+            MapCanvas.SetHeatBySovereignty(HeatSovToggle.IsChecked == true);
+        };
         _viewModel.IntelShipImageLoaded += (_, e) => MapCanvas.SetIntelShipImage(e.ShipTypeId, e.Bitmap);
         _viewModel.PortraitLoaded += (_, e) => MapCanvas.SetCharacterImage(e.CharacterId, e.Bitmap);
         _viewModel.NavigationCompleted += (_, _) => MapCanvas.SetRoute(_viewModel.LastPath, _viewModel.LastWaypointIndices);
@@ -82,8 +92,16 @@ public partial class MapPage : Page
         MapCanvas.SetHeatMapVisible(MapColorMode.Kills, heat.ShowHeatKills);
         MapCanvas.SetHeatMapVisible(MapColorMode.Jumps, heat.ShowHeatJumps);
         MapCanvas.SetHeatMapVisible(MapColorMode.PlanetResource, heat.ShowHeatPlanetResource);
+        MapCanvas.SetSovShadingVisible(heat.ShowSovShading);
         MapCanvas.SetHeatGridSize(heat.HeatGridSize);
         MapCanvas.SetHeatGridOffset(heat.HeatGridOffsetX, heat.HeatGridOffsetY);
+        if (heat.HeatBySovereignty && !_viewModel.IsSovLoaded)
+        {
+            // 配置记忆了主权聚合：启动时先拉主权数据（磁盘缓存通常瞬时），再设画布开关——
+            // 否则 Set 时节点分组号全 0，主权分支空跑回退几何格子，且后续无人触发重建（用户实测"默认勾上但显示方块"）。
+            await _viewModel.ApplySovAsync();
+        }
+        MapCanvas.SetHeatBySovereignty(heat.HeatBySovereignty);
         BridgesToggle.IsChecked = _viewModel.ShowBridges;
         var kindIndex = Array.IndexOf(MapPageViewModel.ResourceKinds, _viewModel.ResourceKind);
         if (kindIndex >= 0)
@@ -255,6 +273,10 @@ public partial class MapPage : Page
     /// <summary>程序化回显 <see cref="HeatSizeSlider"/> 时置位（滑条拖动才落盘）。</summary>
     private bool _suppressHeatSize;
 
+    /// <summary>程序化回显 <see cref="HeatSovToggle"/> 时置位（用户点击才落盘/切换）。</summary>
+    private bool _suppressHeatSov;
+    private bool _suppressSovShading;
+
     /// <summary>
     /// 更新左下角的色阶图例：标题取当前着色模式，色条与两端标签按模式的语义解释——
     /// 安等 = 左「1.0 高安」→ 右「0.0 / 负 低安」；行星资源 / 击杀 / 通行 = 左「低」→ 右「高」；
@@ -294,12 +316,27 @@ public partial class MapPage : Page
         // 热力色块开关：只在行星资源 / 击杀 / 通行三种模式下显示，随模式回显各自的记忆状态
         var isHeatMode = mode is MapColorMode.Kills or MapColorMode.Jumps or MapColorMode.PlanetResource;
         LegendHeatRow.Visibility = isHeatMode ? Visibility.Visible : Visibility.Collapsed;
-        LegendHeatOffsetRow.Visibility = LegendHeatRow.Visibility;
+        // 主权晕染开关：只在主权着色模式下显示
+        var isSovMode = mode == MapColorMode.Sovereignty;
+        LegendSovShadingRow.Visibility = isSovMode ? Visibility.Visible : Visibility.Collapsed;
+        if (isSovMode)
+        {
+            _suppressSovShading = true;
+            SovShadingToggle.IsChecked = MapCanvas.SovShadingVisible;
+            _suppressSovShading = false;
+        }
+
+        // 大小滑条与偏移按钮只对几何格子聚合有意义 → 主权聚合开启时隐藏
+        var bySov = MapCanvas.HeatBySov;
+        LegendHeatSizeRow.Visibility = isHeatMode && !bySov ? Visibility.Visible : Visibility.Collapsed;
+        LegendHeatOffsetRow.Visibility = isHeatMode && !bySov ? Visibility.Visible : Visibility.Collapsed;
         if (isHeatMode)
         {
             _suppressHeatToggle = true;
             _suppressHeatSize = true;
+            _suppressHeatSov = true;
             HeatToggle.IsChecked = MapCanvas.GetHeatMapVisible(mode);
+            HeatSovToggle.IsChecked = bySov;
             // 滑条显示"大小档位"（1..100，越大块越大）：格数按同一线性映射反解（越界值由滑条自身钳到 [Min,Max]）
             var sliderSpan = HeatSizeSlider.Maximum - HeatSizeSlider.Minimum;
             var cellSpan = (double)(StarMapCanvas.MaxHeatGridCells - StarMapCanvas.MinHeatGridCells);
@@ -307,6 +344,7 @@ public partial class MapPage : Page
             HeatSizeText.Text = ((int)Math.Round(HeatSizeSlider.Value)).ToString();
             _suppressHeatToggle = false;
             _suppressHeatSize = false;
+            _suppressHeatSov = false;
         }
     }
 
@@ -426,6 +464,53 @@ public partial class MapPage : Page
         var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
         canvas.HeatGridOffsetX = MapCanvas.HeatGridOffsetX;
         canvas.HeatGridOffsetY = MapCanvas.HeatGridOffsetY;
+        MapSettingService.Save();
+    }
+
+    /// <summary>
+    /// 热力聚合方式切换（图例「主权聚合」）：true = 按主权联盟疆域凸包着色，false = 几何格子。
+    /// 首次勾选时若主权数据未加载，先 <see cref="MapPageViewModel.ApplySovAsync"/>（有磁盘缓存，通常瞬时；首拉 ESI 完成后写节点 GroupId 再重建）。
+    /// 主权数据不可用（未加载/该图无主权星系）时画布自动回退几何格子。
+    /// </summary>
+    private async void HeatSovToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_suppressHeatSov || MapCanvas is null)
+        {
+            return;
+        }
+
+        var bySov = HeatSovToggle.IsChecked == true;
+        if (bySov && !_viewModel.IsSovLoaded)
+        {
+            await _viewModel.ApplySovAsync();
+            if (MapCanvas is null)   // 等待期间页面可能已卸载
+            {
+                return;
+            }
+        }
+
+        MapCanvas.SetHeatBySovereignty(bySov);
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        canvas.HeatBySovereignty = bySov;
+        MapSettingService.Save();
+        UpdateLegend();   // 按聚合方式重排大小/偏移行显隐
+    }
+
+    /// <summary>
+    /// 主权晕染开关（左下角图例面板，只影响主权着色模式的疆域晕染层；主权名标签不受影响）。
+    /// 运行态由画布记忆并立即重画，MapSettings.json 的 Canvas 节持久化。
+    /// </summary>
+    private void SovShadingToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_suppressSovShading || MapCanvas is null)
+        {
+            return;
+        }
+
+        var visible = SovShadingToggle.IsChecked == true;
+        MapCanvas.SetSovShadingVisible(visible);
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        canvas.ShowSovShading = visible;
         MapSettingService.Save();
     }
 

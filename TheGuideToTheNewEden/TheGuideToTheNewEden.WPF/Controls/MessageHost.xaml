@@ -54,6 +54,7 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <ui:SymbolIcon
@@ -70,8 +71,29 @@
                             Text="{Binding Text}"
                             TextWrapping="Wrap" />
 
+                        <!--  可选动作按钮（如"重试"）：ActionText 为空时隐藏，不需要额外转换器  -->
                         <Button
                             Grid.Column="2"
+                            Margin="8,0,0,0"
+                            Padding="10,2"
+                            VerticalAlignment="Top"
+                            MinHeight="26"
+                            Content="{Binding ActionText}"
+                            Click="OnActionClick">
+                            <Button.Style>
+                                <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActionText}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button
+                            Grid.Column="3"
                             Width="28"
                             Height="28"
                             Margin="8,0,0,0"

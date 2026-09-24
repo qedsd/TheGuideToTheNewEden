@@ -2299,6 +2299,92 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 66：主权装载的等待提示 + 失败可重试（用户反馈"加载主权时需要加入等待提示，并且现在加载失败后无提示、不可重试"）
+
+- **实机根因先行**：读 `bin\...\Log\20260924.txt` 发现 `ListSovereigntyOfSystemsAsync` 当天**反复真实失败**（SSL 握手
+  `Received an unexpected EOF or 0 bytes from the transport stream`），而 `SovService.LoadAsync` 把异常全部吞掉
+  （只 `Core.Log.Error`，返回可能是空的 `_cache`），UI 层完全无感——"无提示不可重试"就是这条链的直接后果。
+- **顺带修掉一个隐藏 bug（`SovService.LoadAsync` 缓存策略）**：原代码 `if (result.Count > 0 || _cache is null)`
+  在**首次加载失败**（`_cache` 还是 null）时会把空结果当合法数据缓存 30 分钟——期间任何重试都命中空缓存"假成功"。
+  改为**只缓存成功结果**（`success` 标记：ESI 返回 Model 非 null 即成功），失败时旧缓存原样保留、`_cacheTime` 不动。
+  签名改为返回 `SovLoadResult(IReadOnlyList<SovInfo> Infos, bool Success)`（readonly record struct），
+  缓存命中路径返回 `(cache, true)`；调用方 `SovGroupSettingView.ReloadAsync` 同步适配（失败时状态栏显示失败文案）。
+- **`MapPageViewModel.ApplySovAsync` 重写**：
+  ① `_sovLoading` 防重入（等待期间顶栏切模式 / 分组窗保存 / 通知重试可能并发触发；`finally` 复位）；
+  ② 全程 `PageNotifyService.ShowWaiting("正在装载主权数据…")`（新键 `MapPage_LoadingSov`），`try/finally HideWaiting`；
+  ③ 失败时右下角 `PageNotifyService.Error(…, "重试", RetrySovLoadAsync)`（新键 `MapPage_SovLoadFailed` / `General_Retry`），
+  **不写节点、不置 `_sovLoaded`**（与成功路径区分，下次进页面/重试仍会真拉）；
+  ④ 成功路径与原逻辑一致（填 GroupId/AllianceId → `RequestSovIcons`）。
+- **重试链路**：通知"重试"按钮 → `RetrySovLoadAsync()` → `ApplySovAsync(forceRefresh: true)`（绕过 30 分钟缓存）→
+  成功后发新事件 `SovReloaded` → 页面处理器里主权着色模式下 `SetColorMode(Sovereignty,…)` 重画 + `SetHeatBySovereignty(HeatSovToggle)` 同步热力聚合层。
+  事件只由重试路径发（常规调用方在 await 返回后自行重画，避免重复重画）。
+- **`MessageHost` 支持动作按钮**：`MessageItem` 增 `ActionText`/`Action`，`Show(...)` 增可选参数，模板加第 3 列按钮
+  （`DataTrigger Binding ActionText Value={x:Null}` 控制显隐，**不新增转换器**；样式 `BasedOn={StaticResource {x:Type Button}}`
+  保住 WPF-UI 隐式外观——§5 第 1 条）；点击先移除通知再执行回调（`OnActionClick`）。
+  `PageNotifyService.Error` 增带动作的重载（旧两参签名不变，既有调用零改动）。
+- **本地化**：新增 3 键（`MapPage_LoadingSov` / `MapPage_SovLoadFailed` / `General_Retry`），两文件 **1445 键**、0 重复、键集一致（脚本核对）。
+- **构建**：0 错误（14 增量基线，无新增警告）。资源键 / DynamicResource 引用 / 语言键查重三项自查通过。
+- **未实机核验**：等待遮罩显示/消失、失败通知 + 重试按钮、重试成功后主权重画，需用户断网实测一次。
+- **修复：部分星系不显示联盟徽标（用户截图：SONS of BANE 区域成片星系只有分组色圆点，同区域另一串星系正常）**：
+  **按联盟整体缺失**（同一片全缺/全有，不是个别节点）指向"该联盟徽标获取失败"——`RequestSovIcons` 把联盟 ID 写进
+  `_sovIconsRequested`（防重入 HashSet）的时机在**下载之前**，而下载链路任一步失败（网络异常/HTTP null/解码失败，
+  与 ESI 同源的 SSL EOF 同样会打断徽标下载）只是 `return`：**占位永远不撤销**，本会话内该联盟徽标再无人请求。
+  修法：下载抽成 `RequestSovIconCore(allianceId, attempt)`——失败撤销占位 + 退避重试（15s×attempt，上限 5 次，
+  退避期间检查缓存防并发成功后重复拉），超上限放弃、等下次 `ApplySovAsync`（重试/分组窗"重新拉取"成功）整体再触发；
+  空/解码失败从静默 `return` 改为抛异常走统一重试。**通则：防重入占位必须与"成功"绑定，失败要放行重试，否则一次抖动 = 永久缺失。**
+  顺带修 `SetSovIcon` 隐患：VM 缓存命中路径每次装载都回调同一张位图，原实现先 `Dispose` 旧图再存同一张**已释放**的图
+  （下次重烘精灵 `DrawBitmap` 必炸）；改为 `ReferenceEquals` 判同直接 return（图没变就不用失效重建）。
+- **构建**：0 错误（14 基线，无新增）。徽标重试链未实机核验。
+- **等待改页内指示（用户反馈"加载主权数据的等待效果不要使用全局的等待效果，而是当前页的，避免影响切换其他功能"）**：
+  `ApplySovAsync` 撤掉 `PageNotifyService.ShowWaiting/HideWaiting`（全局遮罩会挡住切其他页面/功能的操作），改为 VM 暴露
+  `IsSovLoading`（INPC，`Set(ref …)`）+ MapPage 画布**顶部中央轻量指示条**（`SpinnerIcon` + `MapPage_LoadingSov` 文案，
+  HUD 配色随主题，`IsHitTestVisible=False` **不拦截鼠标**——装载是后台增强，期间缩放/平移/切模式照常可用）。
+  失败通知仍走右下角非阻塞 + 重试按钮。与 KillStreamPage 的 `IsConnecting` 同一套页内等待范式（§1 约定）。
+- **主权晕染开关（用户"添加开关控制是否显示晕染"）**：热力模式的色块（含主权聚合）早由图例「热力」开关
+  （`SetHeatMapVisible`）控制，**真正没有开关的是主权着色模式的疆域晕染**（`DrawHeatMap` 的 `_sovActive` 分支无条件绘制）。
+  - `MapCanvasConfig`（Core）增 `ShowSovShading`（默认 true，JSON 缺字段用默认值——既有约定）；
+  - `StarMapCanvas` 增 `SovShadingVisible` / `SetSovShadingVisible`（变化才 `_dataVersion++` + 重画）；`DrawHeatMap` 主权分支
+    入口检查开关：关闭时**只跳过晕染绘制、保留主权名标签**（`DrawSovLabels` 有意独立于晕染显隐），聚合数据/位图烘焙照常
+    （成本低、频率低，切回开关无需重建）；
+  - MapPage 图例面板增 `LegendSovShadingRow`（勾选 `SovShadingToggle`，**仅主权模式显示**；热力模式三个开关行不变），
+    `UpdateLegend` 回显状态，`SovShadingToggle_Changed` → 画布 + `MapSettings.json` Canvas 节持久化（与 `HeatToggle_Changed`
+    同范式），启动回填在 `MapPage_Loaded` 各模式热力开关处；
+  - 本地化：开关文案与热力模式统一复用 `MapPage_HeatBlocks`（zh「热力」/ en "Heat"，用户要求命名一致），
+    初版专键 `MapPage_SovShading` 已删，两文件 1445 键、0 重复、键集一致（脚本核对）。
+- **构建**：0 错误（35 全量基线，Core 重编带入 JournalEntry 等既有警告，本次改动文件 0 警告）。未实机核验。
+- **v20 性能：打开晕染后全图视野拖动明显不流畅（用户实测）**。根因：底图缓存 key 含 `_offsetX/_offsetY` → 拖动每帧全量重画底图，
+  位图域晕染每帧多做一次「6000 宽源 → 全屏」双线性重采样（fade 期间两次）——全图视野 dest≈全屏，帧时间近翻倍。
+  纯拖动时晕染屏幕投影**只平移不变**（内容是 zoom 的函数）→ 预缩放到屏幕分辨率缓存：
+  - `StarMapCanvas` 增 `_sovScreenCache`（6000 宽源按当前 zoom 预缩放的设备像素位图）+ `_sovScreenKey`
+    （`(_zoom, dpi, _sovBuildId)`，任一变化即失效）+ `_sovScreenPrevKey`（**视图稳定检测**：连续两帧 key 相同才构建——
+    滚轮缩放期间每帧 key 都变，若无此检测会每帧重建反而比旧行为更糟）；
+  - 拖动帧 1:1 贴图（`FilterQuality.None`，无重采样）；缩放动画帧退回逐帧重采样（旧行为，无回归）；
+  - **内存护栏**：缓存尺寸 = 投影设备像素，位图域深处可达 6000 宽（~80MB）→ 投影 >12M 像素（贴合视图远达不到）不缓存、退回旧行为；
+  - `_sovBuiltLayer` 交接换层时显式 `_sovScreenKey = null` 作废（`_sovBuildId` 在 RebuildHeatGrid 开头已自增，交接处不变，不能靠它失效）；
+    `ReleaseCaches` 同步释放。
+  - fade 期间：新层尽量走缓存（fade 只调 alpha，缓存内容仍有效），旧层走逐帧重采样（仅 300ms）。
+- **v21 性能：v20 后拖动仍不够流畅（用户实测"好点，但还是不够流畅"）→ pad-and-shift 拖动帧零重画**。
+  v20 只消了晕染重采样，底图本体（背景渐变+星尘+星门线+节点+标签）拖动每帧仍全量重画（key 含 offset）。
+  纯拖动时固定 zoom 下世界层只是整体平移 → 底图烘成"视口+四周 256DIP pad"的**透明底世界层**（晕染/连线/跳桥/节点/标签），
+  拖动帧只按位移 1:1 裁切贴图，拖出 pad 才重烘——重建从"每帧"降到"每 256DIP"：
+  - key 去掉 offset（7 元组），新增 `_baseBakeOffsetX/Y`（烘焙视口记录）与位移命中判定 `|dx|,|dy| ≤ pad`；
+  - **屏幕锚定内容拆出烘焙**：渐变底（`DrawBgUnderlay`，半分辨率缓存，烘进 pad 会随拖动漂移）与视差星尘
+    （平移速度与地图不同，必须实时画）留在实时层每帧轻量绘制；
+  - **pad 环感知**：DrawLinks/DrawBridges/DrawNodes/网格热力/矢量晕染离屏的出屏剔除按 `_bakePad` 外扩
+    （否则环内内容缺失，拖动时边缘露白）；矢量离屏缓冲坐标 = 屏幕坐标+pad，烘焙帧画布 Translate(pad,pad) 后天然对齐，dest 不变；
+  - 双线性贴图（拖动位移常为亚像素，防像素爬行）；pad 预算：pad 位图 ≤ 2.25× 视口设备像素（4K 约 33MB），超预算退 pad=0 旧行为；
+  - fade 期间 key 每帧变（既有机制）→ 烘焙帧照旧，淡出结束即恢复零重画。
+  通则：**拖动流畅度 = 让拖动帧只做 blit。世界域内容按 pad 预烘焙，屏幕锚定/视差内容实时画。**
+- **v21 修正（实机截图：晕染色斑整体脱离联盟星簇向右下漂移 + 拖动方向镜像）**——两处坐标系符号错误：
+  1. `DrawBaseLayer` 裁切源起点写成 `(pad + dx)`。正确推导：烘焙时世界点 W 落位图 `(sBake+pad)·scale`（sBake=烘焙时屏幕坐标），
+     拖动后在屏上应在 `sNow = sBake + dx` → 采样窗口起点 = `(pad − dx)·dpi`。**符号反 = 拖动方向镜像**。
+  2. 矢量晕染离屏铺屏 dest 写成 `(0,0,w,h)`。缓冲坐标 = 屏幕坐标+pad（软斑画在 cx+pad），烘焙画布又 Translate(pad,pad)
+     → dest 原点必须 = `−pad`（缓冲像素 b → 画布点 b−pad = 屏幕坐标 s → 位图 (s+pad)·scale 与世界层对齐）。
+     **写成 0 = 双重 +pad → 整层向右下漂移 2×pad 且左/上环空缺**（截图里色斑脱离星簇正是它）。
+  通则：**pad-and-shift 的两个坐标系变换（烘焙入位图 +pad、裁切出位图 −dx）方向必须各自推导一遍，不能凭直觉对称补。**
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

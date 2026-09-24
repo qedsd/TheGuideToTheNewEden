@@ -1440,6 +1440,9 @@
     <sys:String x:Key="MapTool_Sov_Reset">Reset groups</sys:String>
     <sys:String x:Key="MapTool_Sov_Reload">Reload</sys:String>
     <sys:String x:Key="MapTool_Sov_Status">{0} sovereign alliances</sys:String>
+    <sys:String x:Key="MapPage_LoadingSov">Loading sovereignty data…</sys:String>
+    <sys:String x:Key="MapPage_SovLoadFailed">Failed to load sovereignty data. Check your network and retry.</sys:String>
+    <sys:String x:Key="General_Retry">Retry</sys:String>
     <sys:String x:Key="MapTool_Sov_Saved">Saved</sys:String>
     <sys:String x:Key="MapTool_Sov_ResetDone">Reset to 1..N</sys:String>
     <sys:String x:Key="MapTool_Bridge_Show">Show jump bridges on map</sys:String>
@@ -1497,4 +1500,5 @@
     <sys:String x:Key="MapPage_HeatGridSize">Size</sys:String>
     <sys:String x:Key="MapPage_HeatOffset">Offset</sys:String>
     <sys:String x:Key="MapPage_HeatOffsetReset">Reset</sys:String>
+    <sys:String x:Key="MapPage_HeatBySov">By sovereignty</sys:String>
 </ResourceDictionary>

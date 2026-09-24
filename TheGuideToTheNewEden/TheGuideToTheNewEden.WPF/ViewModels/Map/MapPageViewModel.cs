@@ -10,6 +10,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Models.Map;
+using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Map;
 using TheGuideToTheNewEden.WPF.Views.UserControls.Map;
@@ -886,42 +887,94 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     // ---------- 着色：主权 ----------
 
     private bool _sovLoaded;
+    private bool _sovLoading;
+    private bool _isSovLoading;
 
-    /// <summary>装载（或复用）主权数据并按分组号写入节点。</summary>
+    /// <summary>主权数据装载中（页内等待指示，不用全局遮罩——避免挡住切换其他页面/功能）。</summary>
+    public bool IsSovLoading
+    {
+        get => _isSovLoading;
+        private set => Set(ref _isSovLoading, value);
+    }
+
+    /// <summary>装载完成后主权数据重新可用（失败重试成功时发一次，页面据此重画着色）。</summary>
+    public event EventHandler? SovReloaded;
+
+    /// <summary>装载（或复用）主权数据并按分组号写入节点。页内等待指示；失败弹带"重试"按钮的通知。</summary>
     public async Task ApplySovAsync(bool forceRefresh = false)
     {
-        var infos = await SovService.LoadAsync(forceRefresh);
-        var map = new Dictionary<int, long>();
-        var alliances = new Dictionary<int, long>();
-        foreach (var info in infos)
+        // 防重入：等待期间顶栏切模式 / 分组窗保存 / 通知重试可能并发触发多次装载
+        if (_sovLoading)
         {
-            foreach (var systemId in info.SystemIds)
+            return;
+        }
+
+        _sovLoading = true;
+        IsSovLoading = true;
+        try
+        {
+            var loadResult = await SovService.LoadAsync(forceRefresh);
+
+            if (!loadResult.Success)
             {
-                // **修复**：原来写反成 if (map.ContainsKey(systemId))——map 初始为空，条件永远不成立，
-                // 分组号根本填不进去 → 所有星系 GroupId=0，主权模式整图灰色回退、无分组号文字（用户实测反馈）。
-                // 同一星系理论上只属于一个联盟；防御性处理：先到先得。
-                if (map.ContainsKey(systemId))
-                {
-                    continue;
-                }
-
-                map[systemId] = info.GroupId;
-                alliances[systemId] = info.AllianceId;
+                // 右下角错误通知 + "重试"按钮（强刷缓存再拉 ESI）；点击后由 SovReloaded 触发重画
+                PageNotifyService.Error(
+                    FindString("MapPage_SovLoadFailed"),
+                    FindString("General_Retry"),
+                    () => _ = RetrySovLoadAsync());
+                return;
             }
-        }
 
-        foreach (var node in _nodeById.Values)
+            var infos = loadResult.Infos;
+            var map = new Dictionary<int, long>();
+            var alliances = new Dictionary<int, long>();
+            foreach (var info in infos)
+            {
+                foreach (var systemId in info.SystemIds)
+                {
+                    // **修复**：原来写反成 if (map.ContainsKey(systemId))——map 初始为空，条件永远不成立，
+                    // 分组号根本填不进去 → 所有星系 GroupId=0，主权模式整图灰色回退、无分组号文字（用户实测反馈）。
+                    // 同一星系理论上只属于一个联盟；防御性处理：先到先得。
+                    if (map.ContainsKey(systemId))
+                    {
+                        continue;
+                    }
+
+                    map[systemId] = info.GroupId;
+                    alliances[systemId] = info.AllianceId;
+                }
+            }
+
+            foreach (var node in _nodeById.Values)
+            {
+                node.GroupId = map.TryGetValue(node.Id, out var groupId) ? groupId : 0;
+                node.AllianceId = alliances.TryGetValue(node.Id, out var allianceId) ? allianceId : 0;
+            }
+
+            _sovLoaded = true;
+            OnPropertyChanged(nameof(SelectedSovText));
+            RequestSovIcons(infos);
+            // 常规调用方（页面各事件处理器）在 await 返回后自行重画；重试路径的额外重画见 RetrySovLoadAsync
+        }
+        finally
         {
-            node.GroupId = map.TryGetValue(node.Id, out var groupId) ? groupId : 0;
-            node.AllianceId = alliances.TryGetValue(node.Id, out var allianceId) ? allianceId : 0;
+            _sovLoading = false;
+            IsSovLoading = false;
         }
-
-        _sovLoaded = true;
-        OnPropertyChanged(nameof(SelectedSovText));
-        RequestSovIcons(infos);
         // 注意：这里绝不能再发 ColorModeChanged——页面处理器收到后会再次调 ApplySovAsync，
         // 而本方法在缓存命中时全程同步执行 → 同步无限递归 → StackOverflowException（阶段 64 实机）。
         // 重着色由页面在事件处理器末尾统一调 MapCanvas.SetColorMode 完成。
+    }
+
+    /// <summary>失败通知里的"重试"：强刷重拉，成功后发 <see cref="SovReloaded"/> 让页面重画着色。</summary>
+    private async Task RetrySovLoadAsync()
+    {
+        await ApplySovAsync(forceRefresh: true);
+        // 失败时 ApplySovAsync 内部已再弹带重试的通知；这里只在成功后补发重画信号
+        if (_sovLoaded && !_sovLoading)
+        {
+            SovReloaded?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     public bool IsSovLoaded => _sovLoaded;
@@ -930,6 +983,10 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
     private readonly Dictionary<long, SKBitmap> _sovIconCache = [];
     private readonly HashSet<long> _sovIconsRequested = [];
+    private readonly object _sovIconLock = new();
+
+    /// <summary>徽标下载失败重试上限（退避 15s/30s/45s/60s；全失败则等下次 <see cref="ApplySovAsync"/> 再触发）。</summary>
+    private const int SovIconMaxAttempts = 5;
 
     /// <summary>联盟徽标下载完成（主权模式的圆点图标；逐个回调，画布自行重建底图）。</summary>
     public event EventHandler<(long AllianceId, SKBitmap Bitmap)>? SovIconLoaded;
@@ -937,6 +994,8 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     /// <summary>
     /// 为所有主权联盟请求徽标（images.evetech / 国服 evepc，64px）：内存缓存 + "已请求"去重，
     /// 命中缓存直接回调，未命中后台下载、解码后回到 UI 线程发事件。与角色头像（<see cref="OnCharacterLocations"/>）同一套做法。
+    /// **失败可重试**：下载/解码任一步失败都撤销"已请求"占位并按次数退避重试（用户实测：首拉失败后
+    /// 该联盟徽标整个会话缺失，星图上只剩分组色圆点——占位不撤销就永远没人再请求它）。
     /// </summary>
     private void RequestSovIcons(IReadOnlyList<SovInfo> infos)
     {
@@ -953,37 +1012,66 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var url = GameImageHelper.BuildAllianceLogoUrl(info.AllianceId, 64);
-                    if (url is null)
-                    {
-                        return;
-                    }
-
-                    var bytes = await Core.Helpers.HttpHelper.GetByteArrayAsync(url);
-                    if (bytes is not { Length: > 0 })
-                    {
-                        return;
-                    }
-
-                    var bitmap = SKBitmap.Decode(bytes);
-                    if (bitmap is null)
-                    {
-                        return;
-                    }
-
-                    _sovIconCache[info.AllianceId] = bitmap;
-                    await _dispatcher.BeginInvoke(() => SovIconLoaded?.Invoke(this, (info.AllianceId, bitmap)));
-                }
-                catch (Exception ex)
-                {
-                    Core.Log.Error(ex);
-                }
-            });
+            RequestSovIconCore(info.AllianceId, attempt: 1);
         }
+    }
+
+    /// <summary>单个联盟徽标下载（后台线程）：成功回调；失败撤销占位并退避重试，超过上限放弃（等下次装载再试）。</summary>
+    private void RequestSovIconCore(long allianceId, int attempt)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var url = GameImageHelper.BuildAllianceLogoUrl(allianceId, 64);
+                if (url is null)
+                {
+                    return;
+                }
+
+                var bytes = await Core.Helpers.HttpHelper.GetByteArrayAsync(url);
+                if (bytes is not { Length: > 0 })
+                {
+                    throw new InvalidOperationException($"联盟徽标下载为空：{allianceId}");
+                }
+
+                var bitmap = SKBitmap.Decode(bytes);
+                if (bitmap is null)
+                {
+                    throw new InvalidOperationException($"联盟徽标解码失败：{allianceId}");
+                }
+
+                _sovIconCache[allianceId] = bitmap;
+                await _dispatcher.BeginInvoke(() => SovIconLoaded?.Invoke(this, (allianceId, bitmap)));
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                if (attempt < SovIconMaxAttempts)
+                {
+                    // 撤销"已请求"占位（放行后续重试），退避后重拉
+                    lock (_sovIconLock)
+                    {
+                        _sovIconsRequested.Remove(allianceId);
+                    }
+
+                    var delay = TimeSpan.FromSeconds(15 * attempt);
+                    await Task.Delay(delay);
+                    if (_sovIconCache.ContainsKey(allianceId))
+                    {
+                        return;   // 退避期间别的路径已成功
+                    }
+
+                    lock (_sovIconLock)
+                    {
+                        _sovIconsRequested.Add(allianceId);
+                    }
+
+                    RequestSovIconCore(allianceId, attempt + 1);
+                }
+                // 超过上限：占位保留，等下次 ApplySovAsync（分组窗"重新拉取"/重试成功）再整体触发
+            }
+        });
     }
 
     // ---------- 着色：行星资源 ----------

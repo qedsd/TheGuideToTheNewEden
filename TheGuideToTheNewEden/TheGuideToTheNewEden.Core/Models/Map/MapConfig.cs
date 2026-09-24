@@ -71,6 +71,22 @@ namespace TheGuideToTheNewEden.Core.Models.Map
             get => _heatGridOffsetY;
             set => SetProperty(ref _heatGridOffsetY, value);
         }
+
+        private bool _heatBySovereignty;
+        /// <summary>热力是否按主权联盟聚合（联盟疆域凸包色块），false = 几何等距格子。</summary>
+        public bool HeatBySovereignty
+        {
+            get => _heatBySovereignty;
+            set => SetProperty(ref _heatBySovereignty, value);
+        }
+
+        private bool _showSovShading = true;
+        /// <summary>主权着色模式的疆域晕染层是否显示（关闭后仅保留联盟色圆点与主权名标签）。</summary>
+        public bool ShowSovShading
+        {
+            get => _showSovShading;
+            set => SetProperty(ref _showSovShading, value);
+        }
     }
     public class MapIntelConfig : ObservableObject
     {

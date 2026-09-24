@@ -16,6 +16,12 @@ public sealed class MessageItem
 
     /// <summary>图标前景色（按资源键在创建时解析一次；通知是短生命周期的，不跟随主题切换）。</summary>
     public Brush? Foreground { get; init; }
+
+    /// <summary>动作按钮文案（如"重试"；null 不显示按钮）。</summary>
+    public string? ActionText { get; init; }
+
+    /// <summary>动作按钮点击回调（点击后本条通知自动移除）。</summary>
+    public Action? Action { get; init; }
 }
 
 /// <summary>
@@ -35,13 +41,15 @@ public partial class MessageHost : UserControl
     }
 
     /// <summary>推入一条通知，<paramref name="milliseconds"/> 后自动移除。</summary>
-    public void Show(string text, SymbolRegular symbol, string brushKey, int milliseconds)
+    public void Show(string text, SymbolRegular symbol, string brushKey, int milliseconds, string? actionText = null, Action? action = null)
     {
         var item = new MessageItem
         {
             Text = text,
             Symbol = symbol,
             Foreground = Application.Current?.TryFindResource(brushKey) as Brush,
+            ActionText = actionText,
+            Action = action,
         };
 
         _items.Insert(0, item);
@@ -66,6 +74,15 @@ public partial class MessageHost : UserControl
         if (sender is FrameworkElement { DataContext: MessageItem item })
         {
             _items.Remove(item);
+        }
+    }
+
+    private void OnActionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: MessageItem item })
+        {
+            _items.Remove(item);   // 触发动作前先移除，避免等待遮罩亮着时通知还挂着
+            item.Action?.Invoke();
         }
     }
 }

@@ -25,7 +25,14 @@ public partial class SovGroupSettingView : UserControl
 
     private async Task ReloadAsync(bool forceRefresh)
     {
-        var infos = await SovService.LoadAsync(forceRefresh);
+        var loadResult = await SovService.LoadAsync(forceRefresh);
+        if (!loadResult.Success)
+        {
+            StatusText.Text = Application.Current?.TryFindResource("MapPage_SovLoadFailed") as string ?? "Load failed";
+            return;
+        }
+
+        var infos = loadResult.Infos;
         Groups.Clear();
         foreach (var info in infos)
         {

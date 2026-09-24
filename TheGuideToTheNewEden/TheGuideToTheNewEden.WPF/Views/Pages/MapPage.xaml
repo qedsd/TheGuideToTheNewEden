@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:map="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.Map"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
@@ -470,7 +471,23 @@
                         FontSize="11"
                         Foreground="{DynamicResource HudDim}"
                         TextWrapping="Wrap" />
-                    <!--  热力色块开关 + 大小滑条：同一行，只在行星资源 / 击杀 / 通行三种模式下显示，逐类型独立记忆（落 MapSettings.json）  -->
+                    <!--  主权晕染开关：仅主权着色模式下显示（文案与热力模式统一叫「热力」；标签不受影响）  -->
+                    <StackPanel
+                        x:Name="LegendSovShadingRow"
+                        Margin="0,6,0,0"
+                        Orientation="Horizontal"
+                        Visibility="Collapsed">
+                        <CheckBox
+                            x:Name="SovShadingToggle"
+                            Margin="-12,0,0,0"
+                            VerticalAlignment="Center"
+                            Checked="SovShadingToggle_Changed"
+                            Content="{DynamicResource MapPage_HeatBlocks}"
+                            FontSize="12"
+                            Foreground="{DynamicResource HudText}"
+                            Unchecked="SovShadingToggle_Changed" />
+                    </StackPanel>
+                    <!--  热力开关行：色块显隐 + 聚合方式（主权联盟疆域 / 几何格子），只在行星资源 / 击杀 / 通行三模式下显示  -->
                     <StackPanel
                         x:Name="LegendHeatRow"
                         Margin="0,6,0,0"
@@ -485,9 +502,25 @@
                             FontSize="12"
                             Foreground="{DynamicResource HudText}"
                             Unchecked="HeatToggle_Changed" />
-                        <!--  色块大小：滑条值越大块越大（内部镜像换算为网格格数 8..120），全局一份设置  -->
+                        <CheckBox
+                            x:Name="HeatSovToggle"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Checked="HeatSovToggle_Changed"
+                            Content="{DynamicResource MapPage_HeatBySov}"
+                            FontSize="12"
+                            Foreground="{DynamicResource HudText}"
+                            ToolTip="{DynamicResource MapPage_HeatBySov}"
+                            Unchecked="HeatSovToggle_Changed" />
+                    </StackPanel>
+                    <!--  色块大小：滑条值越大块越大（1..100 档位线性映射画布格数范围），仅几何格子聚合时显示  -->
+                    <StackPanel
+                        x:Name="LegendHeatSizeRow"
+                        Margin="0,4,0,0"
+                        Orientation="Horizontal"
+                        Visibility="Collapsed">
                         <TextBlock
-                            Margin="-40,0,0,0"
+                            Margin="-12,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="11"
                             Foreground="{DynamicResource HudDim}"
@@ -495,7 +528,7 @@
                         <Slider
                             x:Name="HeatSizeSlider"
                             Width="100"
-                            Margin="0,0,0,0"
+                            Margin="8,0,0,0"
                             VerticalAlignment="Center"
                             IsMoveToPointEnabled="True"
                             IsSnapToTickEnabled="True"
@@ -585,6 +618,31 @@
                         HorizontalAlignment="Center"
                         Foreground="{DynamicResource HudDim}"
                         Text="{DynamicResource MapPage_Loading}" />
+                </StackPanel>
+            </Border>
+
+            <!--  主权装载中：页内轻量指示（不用全局遮罩——装载是后台增强，不挡缩放/平移/切换其他功能）  -->
+            <Border
+                Padding="14,8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,64,0,0"
+                Background="{DynamicResource HudBg}"
+                BorderBrush="{DynamicResource HudBorder}"
+                BorderThickness="1"
+                CornerRadius="8"
+                IsHitTestVisible="False"
+                Visibility="{Binding IsSovLoading, Converter={StaticResource BoolToVis}}">
+                <StackPanel Orientation="Horizontal">
+                    <controls:SpinnerIcon
+                        FontSize="16"
+                        Foreground="{DynamicResource HudAccent}"
+                        IsActive="{Binding IsSovLoading}" />
+                    <TextBlock
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource HudDim}"
+                        Text="{DynamicResource MapPage_LoadingSov}" />
                 </StackPanel>
             </Border>
 
