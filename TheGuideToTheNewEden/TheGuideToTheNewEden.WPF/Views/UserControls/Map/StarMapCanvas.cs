@@ -1336,7 +1336,8 @@ public class StarMapCanvas : SKElement
                 _sovLastByGroup = byGroup;      // 缓存聚合数据：矢量直绘与位图共用（剖面/分位完全同源）
                 // 位图只在数据变化时后台重烘一次（固定 6000 宽）：渲染期按"显示宽 > 6000 即切矢量"分流，
                 // 缩放全程零重烘——重烘竞态（快速缩放时倍率冲过整数档）从机制上消失。
-                BeginSovLayerRebuild(6000);
+                // 热力模式（行星资源/击杀/通行）用热度色带表达聚合值排名；主权模式保留联盟身份色。
+                BeginSovLayerRebuild(6000, heatColor: !isSovMode);
                 _sovActive = true;
                 _heatRanksBuilt = true;
                 return;
@@ -1415,8 +1416,9 @@ public class StarMapCanvas : SKElement
         if (_sovActive)
         {
             // 晕染开关关闭（用户设置）：跳过全部晕染绘制，仅保留主权名标签（高倍看单个星座时仍有信息价值）；
+            // 开关按语义只管主权着色模式的疆域晕染——热力+主权聚合的色块只受各模式"热力"开关管。
             // 聚合数据/位图烘焙照常（成本低、频率低，切回开关无需重建）。
-            if (!_showSovShading)
+            if (_currentColorMode == MapColorMode.Sovereignty && !_showSovShading)
             {
                 DrawSovLabels(canvas, w, h);
                 return;
@@ -1621,8 +1623,9 @@ public class StarMapCanvas : SKElement
     /// 后台线程烘 6000 宽软斑晕染位图；只在数据变化（RebuildHeatGrid）时调用一次，渲染期缩放零重烘。
     /// 完成后通过 _sovBuiltLayer 交接，渲染线程下帧开始 300ms 交叉淡化。
     /// 携带发起时的 _sovBuildId：数据重建后（RebuildHeatGrid 自增）结果作废丢弃。
+    /// heatColor：热力模式软斑用 <see cref="SecurityColor"/> 分位档色（颜色表达聚合值排名）；主权模式用联盟身份色。
     /// </summary>
-    private void BeginSovLayerRebuild(int targetW)
+    private void BeginSovLayerRebuild(int targetW, bool heatColor)
     {
         if (_sovBuilding || _sovLastByGroup is null)
         {
@@ -1636,7 +1639,7 @@ public class StarMapCanvas : SKElement
         var hPx = Math.Max(16, (int)Math.Round((double)wPx * _worldH / _worldW));
         Task.Run(() =>
         {
-            var bmp = RenderSovBitmap(byGroup, wPx, hPx);
+            var bmp = RenderSovBitmap(byGroup, wPx, hPx, heatColor);
             if (buildId == _sovBuildId)
             {
                 _sovBuiltLayer = bmp;   // 交接给渲染线程（数据未失效）
@@ -1678,6 +1681,35 @@ public class StarMapCanvas : SKElement
         using var p = new SKPaint { Shader = shader };
         c.DrawRect(0, 0, sz, sz, p);
         _sovStampByGroup[groupId] = stamp;
+        return stamp;
+    }
+
+    private readonly Dictionary<SKColor, SKBitmap> _heatStampByColor = [];   // 热度档→软斑（SecurityColor 只有 11 档，按色缓存即有界）
+
+    /// <summary>
+    /// 热度色带软斑（热力模式的主权聚合晕染用）：剖面与 <see cref="GetSovStamp"/> 完全一致，
+    /// 颜色取 <see cref="SecurityColor"/> 分位档——色块颜色本身表达聚合值的相对排名，
+    /// 而不是联盟身份色（身份色 + 透明度微差读不出热度，观感等同主权疆域图）。
+    /// </summary>
+    private SKBitmap GetHeatStamp(SKColor color)
+    {
+        if (_heatStampByColor.TryGetValue(color, out var stamp))
+        {
+            return stamp;
+        }
+
+        const int sz = 128;
+        stamp = new SKBitmap(sz, sz);
+        using var c = new SKCanvas(stamp);
+        using var shader = SKShader.CreateRadialGradient(
+            new SKPoint(sz / 2f, sz / 2f),
+            sz / 2f,
+            new[] { new SKColor(color.Red, color.Green, color.Blue, 255), new SKColor(color.Red, color.Green, color.Blue, 140), new SKColor(color.Red, color.Green, color.Blue, 0) },
+            new[] { 0f, 0.4f, 1f },
+            SKShaderTileMode.Clamp);
+        using var p = new SKPaint { Shader = shader };
+        c.DrawRect(0, 0, sz, sz, p);
+        _heatStampByColor[color] = stamp;
         return stamp;
     }
 
@@ -1853,7 +1885,8 @@ public class StarMapCanvas : SKElement
             var cache = new SovGroupVectorCache
             {
                 T = t,
-                Color = SovGroupColor(groupId, 0.5),
+                // 主权模式：联盟身份色；热力模式：热度色带分位档（与位图侧 GetHeatStamp 同源，颜色表达聚合值排名）
+                Color = _currentColorMode == MapColorMode.Sovereignty ? SovGroupColor(groupId, 0.5) : SecurityColor(t),
                 PaintAlpha = (byte)Math.Clamp(55 + (t * 130), 55, 185),
             };
             var pts = entry.Pts;
@@ -1953,7 +1986,7 @@ public class StarMapCanvas : SKElement
     /// 透明度 = 联盟热度全图分位（与格子同公式）；联盟重叠区后画覆盖前画，不脏混。
     /// 比 blur 快一个量级，且跨分辨率内容一致（重建不再带来观感跳变）。纯 CPU 位图操作，可后台调用。
     /// </summary>
-    private SKBitmap RenderSovBitmap(Dictionary<long, (double Sum, List<SKPoint> Pts)> byGroup, int wPx, int hPx)
+    private SKBitmap RenderSovBitmap(Dictionary<long, (double Sum, List<SKPoint> Pts)> byGroup, int wPx, int hPx, bool heatColor)
     {
         var bmp = new SKBitmap(wPx, hPx);
         using var layerCanvas = new SKCanvas(bmp);
@@ -1966,7 +1999,7 @@ public class StarMapCanvas : SKElement
         foreach (var (groupId, entry) in byGroup)
         {
             var t = rankByValue[entry.Sum];
-            var stamp = GetSovStamp(groupId);
+            var stamp = heatColor ? GetHeatStamp(SecurityColor(t)) : GetSovStamp(groupId);
             // DrawBitmap 只用 paint 的 alpha 调制位图（RGB 由 stamp 自带）
             dot.Color = new SKColor(255, 255, 255, (byte)Math.Clamp(55 + (t * 130), 55, 185));
             foreach (var p in entry.Pts)
@@ -2325,7 +2358,7 @@ public class StarMapCanvas : SKElement
         var glowAlpha = (byte)GlowAlpha(zmult);
 
         var secTextSize = (float)Math.Clamp(zmult * 0.55, 6, 11);
-        var nameTextSize = (float)Math.Clamp(zmult * 0.7, 6.5, 12.5);
+        var nameTextSize = (float)Math.Clamp(zmult * 0.8, 9, 18);
         var secBadgeOn = secA > 0.04f;   // 渐显尾部 alpha<10/255 不可见，整屏跳过（省 MeasureText/底圈/文字）
         foreach (var node in _nodes)
         {
@@ -2371,7 +2404,7 @@ public class StarMapCanvas : SKElement
                 var sprite = GetSovLogoSprite(node.AllianceId);
                 if (sprite is not null)
                 {
-                    var iconR = nodeR * 1.3f;
+                    var iconR = nodeR * 2.4f;
                     var half = iconR + 0.5f;   // 精灵含 0.5px 白描边外扩
                     paint.Color = SKColors.White;
                     canvas.DrawImage(sprite, new SKRect(p.X - half, p.Y - half, p.X + half, p.Y + half), paint);
@@ -2456,7 +2489,6 @@ public class StarMapCanvas : SKElement
         _sovLogoSprites[allianceId] = (image, src);
         return image;
     }
-
     /// <summary>取（或生成）指定颜色的外发光精灵。颜色量化到 5bit/通道，缓存上限 96。</summary>
     private SKImage GetGlowImage(SKColor color)
     {
