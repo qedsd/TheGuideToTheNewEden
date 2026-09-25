@@ -1344,6 +1344,7 @@
     <sys:String x:Key="MapPage_ColorKills">Kill heat</sys:String>
     <sys:String x:Key="MapPage_ColorJumps">Traffic heat</sys:String>
     <sys:String x:Key="MapPage_Characters">Characters</sys:String>
+    <sys:String x:Key="MapPage_Logos">Factions</sys:String>
     <sys:String x:Key="MapPage_Intel">Intel</sys:String>
     <sys:String x:Key="MapPage_ResetView">Reset view</sys:String>
     <sys:String x:Key="MapPage_Clear">Clear</sys:String>
@@ -1493,9 +1494,9 @@
     <sys:String x:Key="MapPage_Legend_High">High</sys:String>
     <sys:String x:Key="MapPage_Legend_HighSec">1.0 (hisec)</sys:String>
     <sys:String x:Key="MapPage_Legend_LowSec">0.0 / negative (lowsec)</sys:String>
-    <sys:String x:Key="MapPage_Legend_SecNote">Node colour and inner text both show that system's security status; negative status shares the lowest step with 0.0.</sys:String>
-    <sys:String x:Key="MapPage_Legend_HeatNote">Blocks = aggregated heat per area (whole-map rank); dots are neutral — zoom in for exact values.</sys:String>
-    <sys:String x:Key="MapPage_Legend_SovNote">Systems of the same alliance share one colour; zoomed in, the node shows the alliance logo.</sys:String>
+    <sys:String x:Key="MapPage_Legend_SecNote">Node colour shows that system's security status; zoomed in, it appears beside the name.</sys:String>
+    <sys:String x:Key="MapPage_Legend_HeatNote">Blocks = aggregated heat per area (whole-map rank); zoom in for exact values on the second line under the name, coloured by the same heat rank as the dot.</sys:String>
+    <sys:String x:Key="MapPage_Legend_SovNote">Systems of the same alliance share one colour; the node shows the alliance logo by default.</sys:String>
     <sys:String x:Key="MapPage_HeatBlocks">Heat</sys:String>
     <sys:String x:Key="MapPage_HeatGridSize">Size</sys:String>
     <sys:String x:Key="MapPage_HeatOffset">Offset</sys:String>

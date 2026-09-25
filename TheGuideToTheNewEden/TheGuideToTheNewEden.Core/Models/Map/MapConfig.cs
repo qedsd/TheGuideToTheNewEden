@@ -87,6 +87,14 @@ namespace TheGuideToTheNewEden.Core.Models.Map
             get => _showSovShading;
             set => SetProperty(ref _showSovShading, value);
         }
+
+        private bool _showLogos = true;
+        /// <summary>圆点是否叠加联盟/势力徽标（顶栏「势力」开关，EVE 官方星图样式）。</summary>
+        public bool ShowLogos
+        {
+            get => _showLogos;
+            set => SetProperty(ref _showLogos, value);
+        }
     }
     public class MapIntelConfig : ObservableObject
     {

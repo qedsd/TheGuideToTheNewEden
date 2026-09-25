@@ -93,16 +93,17 @@ public partial class MapPage : Page
         MapCanvas.SetHeatMapVisible(MapColorMode.Jumps, heat.ShowHeatJumps);
         MapCanvas.SetHeatMapVisible(MapColorMode.PlanetResource, heat.ShowHeatPlanetResource);
         MapCanvas.SetSovShadingVisible(heat.ShowSovShading);
+        MapCanvas.SetLogosVisible(heat.ShowLogos);
         MapCanvas.SetHeatGridSize(heat.HeatGridSize);
         MapCanvas.SetHeatGridOffset(heat.HeatGridOffsetX, heat.HeatGridOffsetY);
-        if (heat.HeatBySovereignty && !_viewModel.IsSovLoaded)
-        {
-            // 配置记忆了主权聚合：启动时先拉主权数据（磁盘缓存通常瞬时），再设画布开关——
-            // 否则 Set 时节点分组号全 0，主权分支空跑回退几何格子，且后续无人触发重建（用户实测"默认勾上但显示方块"）。
-            await _viewModel.ApplySovAsync();
-        }
+        // EVE 样式：圆点默认叠加联盟徽标（所有着色模式，非仅主权模式）→ 启动即拉主权数据
+        //（磁盘缓存通常瞬时；首次无缓存才走 ESI）。不拉的话只有进过主权模式后徽标才亮。
+        await _viewModel.ApplySovAsync();
         MapCanvas.SetHeatBySovereignty(heat.HeatBySovereignty);
         BridgesToggle.IsChecked = _viewModel.ShowBridges;
+        _suppressLogos = true;
+        LogosToggle.IsChecked = heat.ShowLogos;
+        _suppressLogos = false;
         var kindIndex = Array.IndexOf(MapPageViewModel.ResourceKinds, _viewModel.ResourceKind);
         if (kindIndex >= 0)
         {
@@ -276,6 +277,7 @@ public partial class MapPage : Page
     /// <summary>程序化回显 <see cref="HeatSovToggle"/> 时置位（用户点击才落盘/切换）。</summary>
     private bool _suppressHeatSov;
     private bool _suppressSovShading;
+    private bool _suppressLogos;
 
     /// <summary>
     /// 更新左下角的色阶图例：标题取当前着色模式，色条与两端标签按模式的语义解释——
@@ -511,6 +513,24 @@ public partial class MapPage : Page
         MapCanvas.SetSovShadingVisible(visible);
         var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
         canvas.ShowSovShading = visible;
+        MapSettingService.Save();
+    }
+
+    /// <summary>
+    /// 势力开关（顶栏，角色复选框右侧）：控制圆点是否叠加联盟/势力徽标。
+    /// 运行态由画布记忆并失效底图缓存重画，MapSettings.json 的 Canvas 节持久化。
+    /// </summary>
+    private void LogosToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_suppressLogos || MapCanvas is null)
+        {
+            return;
+        }
+
+        var visible = LogosToggle.IsChecked == true;
+        MapCanvas.SetLogosVisible(visible);
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        canvas.ShowLogos = visible;
         MapSettingService.Save();
     }
 

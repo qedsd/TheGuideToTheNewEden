@@ -46,8 +46,15 @@ public sealed class MapSystemNode
     /// <summary>该星系所属主权分组（SOV 着色用；0 = 无主权）。</summary>
     public long GroupId { get; set; }
 
-    /// <summary>该星系所属主权联盟 ID（0 = 无主权；主权模式圆点叠加联盟徽标用）。</summary>
+    /// <summary>该星系所属主权联盟 ID（0 = 无主权；圆点叠加联盟徽标用）。</summary>
     public long AllianceId { get; set; }
+
+    /// <summary>
+    /// 该星系所属 NPC 帝国/势力 ID（0 = 无 / 数据源未接入；圆点叠加势力徽标用）。
+    /// EVE 官方星图样式：高安非 00 区域圆点显示 NPC 势力徽标。
+    /// 本地库（main.db mapSolarSystems）没有 factionID 列，映射数据源待接入（SetFactionIcon 注入图标）。
+    /// </summary>
+    public long FactionId { get; set; }
 
     /// <summary>行星资源值（行星资源着色用；-1 表示无数据）。</summary>
     public double Resource { get; set; } = -1;
@@ -549,7 +556,8 @@ public class StarMapCanvas : SKElement
     }
 
     /// <summary>
-    /// 设置联盟徽标（主权模式的节点图标，画进底图缓存 → 每来一个就使缓存失效重建一次）。
+    /// 设置实体徽标位图（联盟或 NPC 势力，画进底图缓存 → 每来一个就使缓存失效重建一次）。
+    /// ID 段不重叠（势力 5xxxxx，联盟 99000000+），与联盟徽标共用一个源图缓存。
     /// </summary>
     public void SetSovIcon(long allianceId, SKBitmap? bitmap)
     {
@@ -569,6 +577,29 @@ public class StarMapCanvas : SKElement
         }
 
         _sovIcons[allianceId] = bitmap;
+        _dataVersion++;
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// 设置 NPC 势力徽标（高安非 00 区域圆点图标；EVE 官方星图样式），直接复用联盟徽标管线。
+    /// 数据源待接入：本地库没有星系→势力映射（mapSolarSystems 无 factionID 列），
+    /// 接入方拿到映射后按势力查图标调本方法注入，并为节点填 <see cref="MapSystemNode.FactionId"/>。
+    /// </summary>
+    public void SetFactionIcon(long factionId, SKBitmap? bitmap) => SetSovIcon(factionId, bitmap);
+
+    /// <summary>
+    /// 设置是否显示实体徽标（顶栏「势力」开关）：徽标烘进底图缓存，变化需失效重建。
+    /// 关闭后圆点恢复纯模式色（热度分位色 / 安等色 / 主权分组色），下方文字不受影响。
+    /// </summary>
+    public void SetLogosVisible(bool visible)
+    {
+        if (_showLogos == visible)
+        {
+            return;
+        }
+
+        _showLogos = visible;
         _dataVersion++;
         InvalidateVisual();
     }
@@ -1186,6 +1217,7 @@ public class StarMapCanvas : SKElement
     public bool HeatBySov => _heatBySov;
 
     private bool _showSovShading = true;                            // 主权着色模式的疆域晕染层开关（只影响主权模式；热力模式色块由各自的"热力"开关管）
+    private bool _showLogos = true;                                 // 顶栏开关：圆点是否叠加联盟/势力徽标（EVE 官方星图样式）
 
     /// <summary>主权着色模式的疆域晕染层是否显示。</summary>
     public bool SovShadingVisible => _showSovShading;
@@ -2349,17 +2381,14 @@ public class StarMapCanvas : SKElement
         var cullOx = -_bakePad;
         var cullOy = -_bakePad;
         // LOD 连续渐显（09-23 实测：离散开关在翻转帧瞬间全图 8000 标签出现/消失，被感知为"浓度突变"）：
-        // zmult 5.5→7.5（name）、13→15（sec）线性 0→1，完全显示后 alpha 封顶——缩放跨阈值变成平滑淡入。
-        var secA = Math.Clamp((zmult - 13) / 2.0, 0, 1);
+        // zmult 5.5→7.5（name）线性 0→1，完全显示后 alpha 封顶——缩放跨阈值变成平滑淡入。
         var nameA = Math.Clamp((zmult - 5.5) / 2.0, 0, 1);
-        var showSec = secA > 0;
         var showName = nameA > 0;
-        var glowR = nodeR * GlowScale(zmult);
+        var glowR = nodeR * GlowScale(zmult) * 2.76f;   // 剔除余量：覆盖"圆点扩大到容纳徽标"（2.4×1.15）后的外发光半径
         var glowAlpha = (byte)GlowAlpha(zmult);
 
         var secTextSize = (float)Math.Clamp(zmult * 0.55, 6, 11);
         var nameTextSize = (float)Math.Clamp(zmult * 0.8, 9, 18);
-        var secBadgeOn = secA > 0.04f;   // 渐显尾部 alpha<10/255 不可见，整屏跳过（省 MeasureText/底圈/文字）
         foreach (var node in _nodes)
         {
             var p = NodePos(node);
@@ -2372,18 +2401,46 @@ public class StarMapCanvas : SKElement
 
             var c = node.Enabled ? node.Color : DimColor(node.Color);
 
+            // EVE 官方星图样式：圆点默认叠加实体徽标（所有着色模式）——有主权 → 联盟徽标；
+            // 高安非 00 → NPC 势力徽标（FactionId 数据源未接入前为 0，不画）。
+            // 未达门槛 / 图标未到位：圆点保持原始尺寸（纯模式色）；
+            // 达门槛且有图标：圆点扩大到恰好容纳徽标（徽标保持 2.4×nodeR 的原始大小，外沿留一圈模式色环）。
+            // v18 性能关键：原实现每节点每帧 new SKPath + ClipPath(antialias) + Save/Restore——
+            // 抗锯齿裁剪蒙版逐节点重建，可见节点峰值区（zmult≈10~14，数百节点）帧率被拖垮。
+            // 改为每实体一枚预烘圆形精灵（圆裁+白描边都在精灵里），此处只剩一次 DrawImage。
+            var dotR = nodeR;
+            SKImage? logoSprite = null;
+            var iconR = 0f;
+            if (_showLogos && node.Enabled && nodeR >= 3f)
+            {
+                var entityId = node.AllianceId > 0 ? node.AllianceId : node.FactionId;
+                if (entityId > 0)
+                {
+                    logoSprite = GetSovLogoSprite(entityId);
+                    if (logoSprite is not null)
+                    {
+                        iconR = nodeR * 2.4f;
+                        dotR = iconR * 1.15f;   // 圆点扩大：容纳徽标 + ~15% 模式色环
+                    }
+                }
+            }
+
             // 外发光（精灵缓存；低缩放时透明度趋近 0，避免 8k 节点糊成一片）
             if (glowAlpha > 3)
             {
                 var glow = GetGlowImage(c);
-                var dest = new SKRect(p.X - glowR, p.Y - glowR, p.X + glowR, p.Y + glowR);
+                // 扩大后的圆点（有徽标）：光晕按"圆点半径 ×1.35"收紧，不再随 dotR × GlowScale 线性膨胀
+                var gr = dotR > nodeR
+                    ? Math.Max(dotR * 2f, nodeR * GlowScale(zmult))
+                    : dotR * GlowScale(zmult);
+                var dest = new SKRect(p.X - gr, p.Y - gr, p.X + gr, p.Y + gr);
                 paint.Color = new SKColor(255, 255, 255, glowAlpha);
                 canvas.DrawImage(glow, dest, paint);
             }
 
-            // 实心节点
+            // 实心节点（有徽标时为扩大后的半径）
             paint.Color = c;
-            canvas.DrawCircle(p, nodeR, paint);
+            canvas.DrawCircle(p, dotR, paint);
 
             // 高倍缩放：白色内核
             if (zmult > 30)
@@ -2392,56 +2449,63 @@ public class StarMapCanvas : SKElement
                 canvas.DrawCircle(p, nodeR * 0.45f, paint);
             }
 
-            // 主权模式：圆点上叠加联盟徽标（图标未到位 / 节点太小 / 被筛掉时保留分组色圆点）。
-            // v18 性能关键：原实现每节点每帧 new SKPath + ClipPath(antialias) + Save/Restore——
-            // 抗锯齿裁剪蒙版逐节点重建，可见节点峰值区（zmult≈10~14，数百节点）帧率被拖垮。
-            // 改为每联盟一枚预烘圆形精灵（圆裁+白描边都在精灵里），此处只剩一次 DrawImage。
-            if (_currentColorMode == MapColorMode.Sovereignty
-                && node.Enabled
-                && node.AllianceId > 0
-                && nodeR >= 2.4f)
+            if (logoSprite is not null)
             {
-                var sprite = GetSovLogoSprite(node.AllianceId);
-                if (sprite is not null)
-                {
-                    var iconR = nodeR * 2.4f;
-                    var half = iconR + 0.5f;   // 精灵含 0.5px 白描边外扩
-                    paint.Color = SKColors.White;
-                    canvas.DrawImage(sprite, new SKRect(p.X - half, p.Y - half, p.X + half, p.Y + half), paint);
-                    paint.Style = SKPaintStyle.Fill;
-                }
+                var half = iconR + 0.5f;   // 精灵含 0.5px 白描边外扩
+                paint.Color = SKColors.White;
+                canvas.DrawImage(logoSprite, new SKRect(p.X - half, p.Y - half, p.X + half, p.Y + half), paint);
+                paint.Style = SKPaintStyle.Fill;
             }
 
-            if (secBadgeOn && showSec)
-            {
-                // 内圈文字随着色模式变化（安等 / 分组号 / 行星资源值 / 击杀·通行量）；无数据就不画（连底圈一起省掉）
-                var label = FormatNodeLabel(node);
-                if (label.Length > 0)
-                {
-                    font.Typeface = _typefaceBold;
-                    font.Size = secTextSize;
-                    var width = font.MeasureText(label);
-                    paint.Color = BadgeBg((byte)(210 * secA));
-                    canvas.DrawCircle(p, secTextSize * 0.85f + 2.5f, paint);
-                    paint.Color = BadgeText((byte)(230 * secA));
-                    canvas.DrawText(label, p.X - width / 2, p.Y + secTextSize * 0.36f, font, paint);
-                    font.Typeface = _typeface;
-                }
-            }
+            // 内圈徽章已取消：安等在名字右侧，资源值/热度值在名字下方第二行
+            //（其颜色沿用原圆点的热度分位色，排名信息不丢）。
 
             if (showName)
             {
+                // EVE 官方星图样式：名字居中在圆点下方；安等小一号、按安等配色（红→青），
+                // 不参与取中，缀在名字右侧并相对名字垂直居中（对齐两者字面中线）。
                 font.Size = nameTextSize;
+                var nameWidth = font.MeasureText(node.Name);
+                var startX = p.X - nameWidth / 2;
+                var baseY = p.Y + dotR + nameTextSize * 1.2f + 2f;   // dotR：有徽标时为扩大后的圆点外沿
                 paint.Color = NameText((byte)(Math.Clamp(60 + zmult * 12, 80, 235) * nameA));
-                canvas.DrawText(node.Name, p.X + nodeR + 3, p.Y - nodeR - 2, font, paint);
+                canvas.DrawText(node.Name, startX, baseY, font, paint);
+                var secLabel = FormatSecurity(node.Security);
+                if (secLabel.Length > 0)
+                {
+                    font.Typeface = _typefaceBold;
+                    font.Size = secTextSize;
+                    var secBaseY = baseY - nameTextSize * 0.35f + secTextSize * 0.35f;
+                    var sc = SecurityColor(node.Security);
+                    paint.Color = new SKColor(sc.Red, sc.Green, sc.Blue, (byte)(235 * nameA));
+                    canvas.DrawText(secLabel, startX + nameWidth + 4, secBaseY, font, paint);
+                    font.Typeface = _typeface;
+                }
+
+                // 热度模式第二行：该星系的资源值 / 击杀·通行热度值，居中排在名字下方。
+                // 颜色 = 圆点在热度模式下的分位色（ApplyNodeColors 里 node.Color = SecurityColor(全图分位)）——
+                // 圆点被实体徽标盖住后，颜色所承载的相对排名信息改由这行数值本身表达。
+                if (_currentColorMode is MapColorMode.PlanetResource or MapColorMode.Kills or MapColorMode.Jumps)
+                {
+                    var value = _currentColorMode == MapColorMode.PlanetResource ? node.Resource : node.Heat;
+                    if (value > 0)
+                    {
+                        font.Typeface = _typefaceBold;
+                        font.Size = secTextSize;
+                        var valueLabel = NormalizeCount((long)Math.Round(value));
+                        paint.Color = new SKColor(node.Color.Red, node.Color.Green, node.Color.Blue, (byte)(235 * nameA));
+                        canvas.DrawText(valueLabel, p.X - font.MeasureText(valueLabel) / 2, baseY + secTextSize * 1.4f, font, paint);
+                        font.Typeface = _typeface;
+                    }
+                }
             }
         }
     }
 
     /// <summary>
-    /// 取（或烘）指定联盟的圆形徽标精灵（v18）：源位图按联盟色圆形裁剪 + 0.5px 白描边，
+    /// 取（或烘）指定实体（联盟或 NPC 势力）的圆形徽标精灵：源位图圆形裁剪 + 0.5px 白描边，
     /// 一次烘焙成 128px SKImage 后每节点一次 DrawImage——替代每帧每节点 SKPath 裁剪。
-    /// 源位图更换（SetSovIcon）时自动重烘；无源图标返回 null（调用方保留分组色圆点）。
+    /// 源位图更换（SetSovIcon / SetFactionIcon）时自动重烘；无源图标返回 null（调用方保留模式色圆点）。
     /// </summary>
     private SKImage? GetSovLogoSprite(long allianceId)
     {
@@ -2532,20 +2596,6 @@ public class StarMapCanvas : SKElement
 
     /// <summary>节点上的安全等级文本（负安等按实际显示，见 <see cref="Helpers.MapTextHelper.FormatSecurity"/>）。</summary>
     private static string FormatSecurity(double sec) => Helpers.MapTextHelper.FormatSecurity(Math.Max(sec, -1));
-
-    /// <summary>
-    /// 节点内圈文字（对着色模式变化，与 WinUI 的 <c>InnerText</c> 语义一致）：
-    /// 安等模式 = 安全等级；主权模式 = **分组号**（无主权不显示）；行星资源模式 = **该星系资源值**；
-    /// 击杀 / 通行模式 = **热度值**。无数据返回空串（调用方连底圈一起省掉）。
-    /// </summary>
-    private string FormatNodeLabel(MapSystemNode node) => _currentColorMode switch
-    {
-        // 主权模式：圆点显示联盟徽标即可，不再画分组号徽章（用户定论"显示联盟徽标即可，不需要再显示编号"）
-        MapColorMode.Sovereignty => string.Empty,
-        MapColorMode.PlanetResource => node.Resource >= 0 ? NormalizeCount((long)Math.Round(node.Resource)) : string.Empty,
-        MapColorMode.Kills or MapColorMode.Jumps => node.Heat >= 0 ? NormalizeCount((long)Math.Round(node.Heat)) : string.Empty,
-        _ => FormatSecurity(node.Security),
-    };
 
     /// <summary>大数字缩写（1.2k / 3.4m / 5.6b / 7.8t；0 显示 "0"），与 WinUI 的 ISKNormalize 口径一致。</summary>
     private static string NormalizeCount(long value)

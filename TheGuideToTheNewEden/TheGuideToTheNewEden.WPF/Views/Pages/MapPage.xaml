@@ -191,6 +191,14 @@
                         Checked="CharactersToggle_Changed"
                         Content="{DynamicResource MapPage_Characters}"
                         Unchecked="CharactersToggle_Changed" />
+                    <!--  势力（圆点叠加联盟/势力徽标）  -->
+                    <CheckBox
+                        x:Name="LogosToggle"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Checked="LogosToggle_Changed"
+                        Content="{DynamicResource MapPage_Logos}"
+                        Unchecked="LogosToggle_Changed" />
                     <!--  工具（导航 / 情报等入口都在这个下拉里）  -->
                     <ui:Button
                         x:Name="ToolsButton"
