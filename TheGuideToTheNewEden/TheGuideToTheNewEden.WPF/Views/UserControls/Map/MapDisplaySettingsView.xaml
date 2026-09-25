@@ -1,0 +1,24 @@
+<UserControl x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.Map.MapDisplaySettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TabControl
+            x:Name="GroupTabs"
+            Grid.Row="0"
+            Margin="8,8,8,0"
+            Background="Transparent"
+            BorderThickness="0" />
+        <ui:Button
+            Grid.Row="1"
+            Margin="12"
+            HorizontalAlignment="Left"
+            Appearance="Primary"
+            Click="Reset_Click"
+            Content="{DynamicResource MapDisplay_Reset}" />
+    </Grid>
+</UserControl>

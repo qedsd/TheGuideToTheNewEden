@@ -199,6 +199,18 @@
                         Checked="LogosToggle_Changed"
                         Content="{DynamicResource MapPage_Logos}"
                         Unchecked="LogosToggle_Changed" />
+                    <!--  显示设置（实时调参弹窗）  -->
+                    <ui:Button
+                        x:Name="DisplaySettingsButton"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Appearance="Secondary"
+                        Click="DisplaySettingsButton_Click"
+                        Content="{DynamicResource MapPage_DisplaySettings}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Settings24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <!--  工具（导航 / 情报等入口都在这个下拉里）  -->
                     <ui:Button
                         x:Name="ToolsButton"

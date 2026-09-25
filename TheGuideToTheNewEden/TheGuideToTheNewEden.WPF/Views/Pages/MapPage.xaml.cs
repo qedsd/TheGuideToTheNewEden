@@ -25,6 +25,7 @@ public partial class MapPage : Page
     private ToolWindow? _bridgeWindow;
     private ToolWindow? _sovWindow;
     private ToolWindow? _detailWindow;
+    private ToolWindow? _displayWindow;
     private ToolWindow? _intelWindow;
     private ToolWindow? _navWindow;
 
@@ -94,6 +95,7 @@ public partial class MapPage : Page
         MapCanvas.SetHeatMapVisible(MapColorMode.PlanetResource, heat.ShowHeatPlanetResource);
         MapCanvas.SetSovShadingVisible(heat.ShowSovShading);
         MapCanvas.SetLogosVisible(heat.ShowLogos);
+        MapCanvas.SetDisplayOptions(MapSettingService.Value.Display ??= new MapDisplayConfig());
         MapCanvas.SetHeatGridSize(heat.HeatGridSize);
         MapCanvas.SetHeatGridOffset(heat.HeatGridOffsetX, heat.HeatGridOffsetY);
         // EVE 样式：圆点默认叠加联盟徽标（所有着色模式，非仅主权模式）→ 启动即拉主权数据
@@ -122,7 +124,7 @@ public partial class MapPage : Page
     /// </summary>
     private void MapPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        foreach (var window in new[] { _coverWindow, _resourceWindow, _bridgeWindow, _sovWindow, _detailWindow, _navWindow })
+        foreach (var window in new[] { _coverWindow, _resourceWindow, _bridgeWindow, _sovWindow, _detailWindow, _navWindow, _displayWindow })
         {
             if (window is null)
             {
@@ -532,6 +534,29 @@ public partial class MapPage : Page
         var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
         canvas.ShowLogos = visible;
         MapSettingService.Save();
+    }
+
+    /// <summary>
+    /// 显示设置弹窗（顶栏按钮）：分组滑杆实时调整星图显示参数（节点/徽标/光晕/文字/热力），
+    /// 参数对象持久化在 MapSettings.json 的 Display 节；窗口实例复用（点 X 隐藏）。
+    /// 默认置顶（边看星图边调参），标题栏提供置顶切换按钮。
+    /// </summary>
+    private void DisplaySettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_displayWindow is null)
+        {
+            var view = new MapDisplaySettingsView(
+                MapSettingService.Value.Display ??= new MapDisplayConfig(),
+                applyCallback: () => MapCanvas?.RefreshDisplayOptions(),
+                saveCallback: () => MapSettingService.Save());
+            _displayWindow = CreateToolWindow(view, "MapPage_DisplaySettings", 480, 640);
+            _displayWindow.ShowTopmostButton = true;   // 标题栏置顶切换按钮
+            _displayWindow.SetAlwaysOnTop();           // 默认置顶
+            _displayWindow.Closed += (_, _) => _displayWindow = null;
+        }
+
+        _displayWindow.Show();
+        _displayWindow.Activate();
     }
 
     private void ApplyBridges()

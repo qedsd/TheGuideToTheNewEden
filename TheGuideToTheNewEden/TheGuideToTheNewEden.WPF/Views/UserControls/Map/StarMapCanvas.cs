@@ -6,6 +6,7 @@ using System.Windows.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using SkiaSharp.Views.WPF;
+using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.WPF.Services.Map;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls.Map;
@@ -604,6 +605,27 @@ public class StarMapCanvas : SKElement
         InvalidateVisual();
     }
 
+    /// <summary>注入显示参数对象（持有引用持久化对象；后续滑杆改动走 <see cref="RefreshDisplayOptions"/>）。</summary>
+    public void SetDisplayOptions(MapDisplayConfig options)
+    {
+        _opts = options ?? new MapDisplayConfig();
+        RebuildHeatGrid();   // 晕染/格子 alpha 烘在缓存层里，参数变化必须重建（无数据时内部自行短路）
+        _dataVersion++;
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// 显示参数被修改（弹窗滑杆实时生效）：失效底图缓存重画。
+    /// 热力格子 alpha 在 DrawHeatMap 里实时读取即可；但主权晕染 alpha 烘在主权层位图与矢量缓存中
+    /// （按 <c>_sovBuildId</c> 缓存），必须先 <see cref="RebuildHeatGrid"/> 递增版本触发重烘，否则滑杆无感。
+    /// </summary>
+    public void RefreshDisplayOptions()
+    {
+        RebuildHeatGrid();
+        _dataVersion++;
+        InvalidateVisual();
+    }
+
     /// <summary>设置航线（途经星系 Id 列表，含中间路径）；waypointIndices 为关键航点在 path 中的下标。</summary>
     public void SetRoute(IReadOnlyList<int> path, IReadOnlyList<int> waypointIndices)
     {
@@ -743,7 +765,7 @@ public class StarMapCanvas : SKElement
         ? new SKColor(72, 88, 122, (byte)Math.Min(255, a * 3 / 2))
         : new SKColor(c.Red, c.Green, c.Blue, a);
 
-    private float LinkAlpha(double zmult) => (float)Math.Clamp((zmult - 1.05) * (_light ? 80f : 55f), 0, _light ? 120f : 80f);
+    private float LinkAlpha(double zmult) => (float)Math.Clamp((zmult - _opts.LinkFadeStart) * (_light ? 80f : 55f), 0, _light ? 120f : 80f);
 
     private SKColor Accent(byte a) => _light ? new SKColor(9, 132, 160, a) : new SKColor(125, 249, 255, a);
     private SKColor AccentDim(byte a) => _light ? new SKColor(10, 116, 144, a) : new SKColor(150, 235, 255, a);
@@ -1218,6 +1240,7 @@ public class StarMapCanvas : SKElement
 
     private bool _showSovShading = true;                            // 主权着色模式的疆域晕染层开关（只影响主权模式；热力模式色块由各自的"热力"开关管）
     private bool _showLogos = true;                                 // 顶栏开关：圆点是否叠加联盟/势力徽标（EVE 官方星图样式）
+    private MapDisplayConfig _opts = new();                         // 显示参数（顶栏「显示设置」弹窗实时可调，MapSettings.json 持久化）
 
     /// <summary>主权着色模式的疆域晕染层是否显示。</summary>
     public bool SovShadingVisible => _showSovShading;
@@ -1614,7 +1637,7 @@ public class StarMapCanvas : SKElement
             }
 
             var color = SecurityColor(t);
-            paint.Color = new SKColor(color.Red, color.Green, color.Blue, (byte)Math.Clamp(40 + (t * 150), 40, 185));
+            paint.Color = new SKColor(color.Red, color.Green, color.Blue, (byte)Math.Clamp(_opts.HeatAlphaBase + (t * _opts.HeatAlphaSlope), _opts.HeatAlphaBase, _opts.HeatAlphaMax));
             canvas.DrawRoundRect(new SKRect(left + 0.5f, top + 0.5f, left + cellW - 0.5f, top + cellH - 0.5f), 3f, 3f, paint);
         }
     }
@@ -1849,7 +1872,8 @@ public class StarMapCanvas : SKElement
     /// <summary>晕染全局 alpha 阻尼（09-24 用户"颜色深了点，可以调浅点"）：两个域的叠加浓度等比调浅。
     /// **必须同时作用于位图域与矢量域**——单侧调浅会让显示宽 6000 的切换边界重新出现浓度台阶。
     /// 觉得还深就调小（0.80），太浅调大（0.90~1.0）。</summary>
-    private const float SovAlphaDamp = 0.5f;
+    /// <summary>主权晕染位图整体阻尼（显示参数可调；1 = 不衰减）。</summary>
+    private float SovAlphaDamp => (float)_opts.SovAlphaDamp;
 
     private SKBitmap? _sovVectorOffscreen;              // 矢量晕染离屏缓冲（尺寸随窗口变化才重分配）
     private SKCanvas? _sovVectorOffscreenCanvas;        // 离屏画布（跨帧复用）
@@ -1919,7 +1943,7 @@ public class StarMapCanvas : SKElement
                 T = t,
                 // 主权模式：联盟身份色；热力模式：热度色带分位档（与位图侧 GetHeatStamp 同源，颜色表达聚合值排名）
                 Color = _currentColorMode == MapColorMode.Sovereignty ? SovGroupColor(groupId, 0.5) : SecurityColor(t),
-                PaintAlpha = (byte)Math.Clamp(55 + (t * 130), 55, 185),
+                PaintAlpha = (byte)Math.Clamp(_opts.SovBlobAlphaBase + (t * _opts.SovBlobAlphaSlope), _opts.SovBlobAlphaBase, _opts.SovBlobAlphaMax),
             };
             var pts = entry.Pts;
             if (pts.Count == 1)
@@ -2033,7 +2057,7 @@ public class StarMapCanvas : SKElement
             var t = rankByValue[entry.Sum];
             var stamp = heatColor ? GetHeatStamp(SecurityColor(t)) : GetSovStamp(groupId);
             // DrawBitmap 只用 paint 的 alpha 调制位图（RGB 由 stamp 自带）
-            dot.Color = new SKColor(255, 255, 255, (byte)Math.Clamp(55 + (t * 130), 55, 185));
+            dot.Color = new SKColor(255, 255, 255, (byte)Math.Clamp(_opts.SovBlobAlphaBase + (t * _opts.SovBlobAlphaSlope), _opts.SovBlobAlphaBase, _opts.SovBlobAlphaMax));
             foreach (var p in entry.Pts)
             {
                 var cx = p.X * wPx;
@@ -2202,17 +2226,16 @@ public class StarMapCanvas : SKElement
         }
     }
 
-    private float NodeRadius(double zmult) => (float)Math.Clamp(1.5 * Math.Pow(zmult, 0.42), 1.2, 26);
+    private float NodeRadius(double zmult) => (float)Math.Clamp(_opts.NodeRadiusBase * Math.Pow(zmult, _opts.NodeRadiusPower), _opts.NodeRadiusMin, _opts.NodeRadiusMax);
 
     /// <summary>
     /// 节点外发光的透明度：**整图适配（zmult≈1）时几乎不发光**，放大后才渐显。
     /// 不这样收敛，8k 个节点的光晕在低缩放会互相叠加糊成一片（实测反馈"缩小状态下一片模糊"）。
-    /// 1.0 → 0；1.6 → 33；2.0 → 55；3.0 → 110；5.0+ → 220（封顶）。
     /// </summary>
-    private float GlowAlpha(double zmult) => (float)Math.Clamp((zmult - 1.0) * 55, 0, 220) * (_light ? 0.45f : 1f);
+    private float GlowAlpha(double zmult) => (float)Math.Clamp((zmult - 1.0) * _opts.GlowAlphaSlope, 0, _opts.GlowAlphaMax) * (_light ? 0.45f : 1f);
 
-    /// <summary>外发光半径相对节点半径的倍数：低缩放收敛到 1.15（贴着节点），高缩放展开到 3.4。</summary>
-    private static float GlowScale(double zmult) => (float)Math.Clamp(1.15 + (zmult - 1.0) * 0.45, 1.15, 3.4);
+    /// <summary>外发光半径相对节点半径的倍数：低缩放收敛到基倍（贴着节点），高缩放展开到上限。</summary>
+    private float GlowScale(double zmult) => (float)Math.Clamp(_opts.GlowScaleBase + (zmult - 1.0) * _opts.GlowScaleSlope, _opts.GlowScaleBase, _opts.GlowScaleMax);
 
     private SKPoint NodePos(MapSystemNode node) =>
         new((float)(node.NX * _worldW * _zoom + _offsetX), (float)(node.NY * _worldH * _zoom + _offsetY));
@@ -2285,7 +2308,7 @@ public class StarMapCanvas : SKElement
         }
 
         paint.Style = SKPaintStyle.Stroke;
-        paint.StrokeWidth = Math.Max(0.5f, (float)(0.75 * Math.Pow(zmult, 0.25)));
+        paint.StrokeWidth = Math.Max(0.5f, (float)(_opts.LinkWidthBase * Math.Pow(zmult, _opts.LinkWidthPower)));
         var w = ActualWidth + _bakePad;   // 烘焙帧含 pad 环：环内连线也要烘（拖动帧会裁到）；左界见 cullOx
         var h = ActualHeight + _bakePad;
         var cullOx = -_bakePad;
@@ -2381,14 +2404,16 @@ public class StarMapCanvas : SKElement
         var cullOx = -_bakePad;
         var cullOy = -_bakePad;
         // LOD 连续渐显（09-23 实测：离散开关在翻转帧瞬间全图 8000 标签出现/消失，被感知为"浓度突变"）：
-        // zmult 5.5→7.5（name）线性 0→1，完全显示后 alpha 封顶——缩放跨阈值变成平滑淡入。
-        var nameA = Math.Clamp((zmult - 5.5) / 2.0, 0, 1);
+        // 名字文字在 NameFadeStart→End 线性 0→1，完全显示后 alpha 封顶——缩放跨阈值变成平滑淡入。
+        var fadeSpan = Math.Max(0.1, _opts.NameFadeEnd - _opts.NameFadeStart);
+        var nameA = Math.Clamp((zmult - _opts.NameFadeStart) / fadeSpan, 0, 1);
         var showName = nameA > 0;
-        var glowR = nodeR * GlowScale(zmult) * 2.76f;   // 剔除余量：覆盖"圆点扩大到容纳徽标"（2.4×1.15）后的外发光半径
+        var cullFactor = Math.Max(1f, (float)(_opts.LogoScale * _opts.LogoRingFactor));   // 剔除余量覆盖"圆点扩大容纳徽标"后的外发光
+        var glowR = nodeR * GlowScale(zmult) * cullFactor;
         var glowAlpha = (byte)GlowAlpha(zmult);
 
-        var secTextSize = (float)Math.Clamp(zmult * 0.55, 6, 11);
-        var nameTextSize = (float)Math.Clamp(zmult * 0.8, 9, 18);
+        var secTextSize = (float)Math.Clamp(zmult * _opts.SecSizeSlope, _opts.SecSizeMin, _opts.SecSizeMax);
+        var nameTextSize = (float)Math.Clamp(zmult * _opts.NameSizeSlope, _opts.NameSizeMin, _opts.NameSizeMax);
         foreach (var node in _nodes)
         {
             var p = NodePos(node);
@@ -2411,7 +2436,7 @@ public class StarMapCanvas : SKElement
             var dotR = nodeR;
             SKImage? logoSprite = null;
             var iconR = 0f;
-            if (_showLogos && node.Enabled && nodeR >= 3f)
+            if (_showLogos && node.Enabled && nodeR >= _opts.LogoGate)
             {
                 var entityId = node.AllianceId > 0 ? node.AllianceId : node.FactionId;
                 if (entityId > 0)
@@ -2419,8 +2444,8 @@ public class StarMapCanvas : SKElement
                     logoSprite = GetSovLogoSprite(entityId);
                     if (logoSprite is not null)
                     {
-                        iconR = nodeR * 2.4f;
-                        dotR = iconR * 1.15f;   // 圆点扩大：容纳徽标 + ~15% 模式色环
+                        iconR = nodeR * (float)_opts.LogoScale;
+                        dotR = iconR * (float)_opts.LogoRingFactor;   // 圆点扩大：容纳徽标 + 一圈模式色环
                     }
                 }
             }
@@ -2429,9 +2454,9 @@ public class StarMapCanvas : SKElement
             if (glowAlpha > 3)
             {
                 var glow = GetGlowImage(c);
-                // 扩大后的圆点（有徽标）：光晕按"圆点半径 ×1.35"收紧，不再随 dotR × GlowScale 线性膨胀
+                // 扩大后的圆点（有徽标）：光晕按"圆点半径 × LogoGlowFactor"收紧，不随 dotR × GlowScale 线性膨胀
                 var gr = dotR > nodeR
-                    ? Math.Max(dotR * 2f, nodeR * GlowScale(zmult))
+                    ? Math.Max(dotR * (float)_opts.LogoGlowFactor, nodeR * GlowScale(zmult))
                     : dotR * GlowScale(zmult);
                 var dest = new SKRect(p.X - gr, p.Y - gr, p.X + gr, p.Y + gr);
                 paint.Color = new SKColor(255, 255, 255, glowAlpha);
@@ -2443,10 +2468,10 @@ public class StarMapCanvas : SKElement
             canvas.DrawCircle(p, dotR, paint);
 
             // 高倍缩放：白色内核
-            if (zmult > 30)
+            if (zmult > _opts.KernelZoom)
             {
-                paint.Color = Kernel((byte)Math.Clamp((zmult - 30) * 4, 0, 160));
-                canvas.DrawCircle(p, nodeR * 0.45f, paint);
+                paint.Color = Kernel((byte)Math.Clamp((zmult - _opts.KernelZoom) * 4, 0, 160));
+                canvas.DrawCircle(p, nodeR * (float)_opts.KernelScale, paint);
             }
 
             if (logoSprite is not null)
@@ -2467,18 +2492,18 @@ public class StarMapCanvas : SKElement
                 font.Size = nameTextSize;
                 var nameWidth = font.MeasureText(node.Name);
                 var startX = p.X - nameWidth / 2;
-                var baseY = p.Y + dotR + nameTextSize * 1.2f + 2f;   // dotR：有徽标时为扩大后的圆点外沿
-                paint.Color = NameText((byte)(Math.Clamp(60 + zmult * 12, 80, 235) * nameA));
+                var baseY = p.Y + dotR + nameTextSize * (float)_opts.NameDotGap + (float)_opts.TextPad;   // dotR：有徽标时为扩大后的圆点外沿
+                paint.Color = NameText((byte)(Math.Clamp(_opts.NameAlphaBase + zmult * _opts.NameAlphaSlope, _opts.NameAlphaMin, _opts.NameAlphaMax) * nameA));
                 canvas.DrawText(node.Name, startX, baseY, font, paint);
                 var secLabel = FormatSecurity(node.Security);
                 if (secLabel.Length > 0)
                 {
                     font.Typeface = _typefaceBold;
                     font.Size = secTextSize;
-                    var secBaseY = baseY - nameTextSize * 0.35f + secTextSize * 0.35f;
+                    var secBaseY = baseY - nameTextSize * (float)_opts.SecAlignFactor + secTextSize * (float)_opts.SecAlignFactor;
                     var sc = SecurityColor(node.Security);
                     paint.Color = new SKColor(sc.Red, sc.Green, sc.Blue, (byte)(235 * nameA));
-                    canvas.DrawText(secLabel, startX + nameWidth + 4, secBaseY, font, paint);
+                    canvas.DrawText(secLabel, startX + nameWidth + (float)_opts.SecGap, secBaseY, font, paint);
                     font.Typeface = _typeface;
                 }
 
@@ -2494,7 +2519,7 @@ public class StarMapCanvas : SKElement
                         font.Size = secTextSize;
                         var valueLabel = NormalizeCount((long)Math.Round(value));
                         paint.Color = new SKColor(node.Color.Red, node.Color.Green, node.Color.Blue, (byte)(235 * nameA));
-                        canvas.DrawText(valueLabel, p.X - font.MeasureText(valueLabel) / 2, baseY + secTextSize * 1.4f, font, paint);
+                        canvas.DrawText(valueLabel, p.X - font.MeasureText(valueLabel) / 2, baseY + secTextSize * (float)_opts.ValueLineSpacing, font, paint);
                         font.Typeface = _typeface;
                     }
                 }
