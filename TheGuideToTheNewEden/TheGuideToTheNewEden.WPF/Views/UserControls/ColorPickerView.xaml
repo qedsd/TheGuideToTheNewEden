@@ -1,0 +1,80 @@
+﻿<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.ColorPickerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    <!--  通用颜色选择器：ARGB 滑杆 + 数值输入 + 十六进制输入，软件内随处复用  -->
+    <StackPanel>
+        <Border Height="24" CornerRadius="4">
+            <Border.Background>
+                <SolidColorBrush x:Name="PreviewBrush" Color="Red" />
+            </Border.Background>
+        </Border>
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="88" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,0,8,0" Text="A" />
+            <Slider
+                Grid.Row="0" Grid.Column="1" x:Name="ASlider"
+                Maximum="255" SmallChange="1"
+                ValueChanged="Component_ValueChanged" />
+            <ui:NumberBox
+                Grid.Row="0" Grid.Column="2" x:Name="ANumber"
+                Margin="8,0,0,0" Maximum="255" Minimum="0" SmallChange="1"
+                SpinButtonPlacementMode="Hidden" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                ValueChanged="Component_ValueChanged" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,6,8,0" Text="R" />
+            <Slider
+                Grid.Row="1" Grid.Column="1" x:Name="RSlider" Margin="0,6,0,0"
+                Maximum="255" SmallChange="1"
+                ValueChanged="Component_ValueChanged" />
+            <ui:NumberBox
+                Grid.Row="1" Grid.Column="2" x:Name="RNumber"
+                Margin="8,6,0,0" Maximum="255" Minimum="0" SmallChange="1"
+                SpinButtonPlacementMode="Hidden" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                ValueChanged="Component_ValueChanged" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,6,8,0" Text="G" />
+            <Slider
+                Grid.Row="2" Grid.Column="1" x:Name="GSlider" Margin="0,6,0,0"
+                Maximum="255" SmallChange="1"
+                ValueChanged="Component_ValueChanged" />
+            <ui:NumberBox
+                Grid.Row="2" Grid.Column="2" x:Name="GNumber"
+                Margin="8,6,0,0" Maximum="255" Minimum="0" SmallChange="1"
+                SpinButtonPlacementMode="Hidden" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                ValueChanged="Component_ValueChanged" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,6,8,0" Text="B" />
+            <Slider
+                Grid.Row="3" Grid.Column="1" x:Name="BSlider" Margin="0,6,0,0"
+                Maximum="255" SmallChange="1"
+                ValueChanged="Component_ValueChanged" />
+            <ui:NumberBox
+                Grid.Row="3" Grid.Column="2" x:Name="BNumber"
+                Margin="8,6,0,0" Maximum="255" Minimum="0" SmallChange="1"
+                SpinButtonPlacementMode="Hidden" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                ValueChanged="Component_ValueChanged" />
+        </Grid>
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Text="HEX" />
+            <ui:TextBox
+                Grid.Column="1"
+                x:Name="HexBox"
+                KeyDown="HexBox_KeyDown"
+                LostFocus="HexBox_LostFocus"
+                PlaceholderText="#RRGGBB / #AARRGGBB" />
+        </Grid>
+    </StackPanel>
+</UserControl>

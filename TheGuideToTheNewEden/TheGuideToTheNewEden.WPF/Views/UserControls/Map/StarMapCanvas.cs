@@ -44,8 +44,12 @@ public sealed class MapSystemNode
     /// <summary>热度值（击杀/通行量），着色模式为热度时使用；-1 表示无数据。</summary>
     public double Heat { get; set; } = -1;
 
-    /// <summary>该星系所属主权分组（SOV 着色用；0 = 无主权）。</summary>
-    public long GroupId { get; set; }
+    /// <summary>
+    /// 该星系的主权展示实体（0 = 无主权 / 未装载；&gt;0 = 未分组联盟 ID；&lt;0 = 命名分组，-1 起编号）。
+    /// 分组概念：多个联盟可划入同一命名分组（同色同标签、热力主权聚合按组合并）；
+    /// 未分组联盟独立展示。名称/颜色由 <see cref="SetSovEntities"/> 注入的实体表给出。
+    /// </summary>
+    public long SovEntityId { get; set; }
 
     /// <summary>该星系所属主权联盟 ID（0 = 无主权；圆点叠加联盟徽标用）。</summary>
     public long AllianceId { get; set; }
@@ -65,6 +69,9 @@ public sealed class MapSystemNode
 
     public bool Visible { get; internal set; }
 }
+
+/// <summary>主权展示实体：一个命名分组（含多个联盟）或一个未分组联盟（星图主权着色/晕染/标签的基本单位）。</summary>
+public sealed record SovEntityInfo(long Key, string Name, SKColor Color);
 
 /// <summary>情报红圈标记（一个星系一条，聚合该星系的 ZKB 击杀与频道情报）。</summary>
 public sealed class IntelMarker
@@ -625,6 +632,26 @@ public class StarMapCanvas : SKElement
         _dataVersion++;
         InvalidateVisual();
     }
+
+    /// <summary>
+    /// 注入主权展示实体表（分组或未分组联盟；键 &lt;0 = 分组、&gt;0 = 联盟）：
+    /// 主权着色的圆点色、晕染软斑色、疆域标签的名称与颜色都取自这里。由 ViewModel 装载主权后推送。
+    /// </summary>
+    public void SetSovEntities(IEnumerable<SovEntityInfo> entities)
+    {
+        _sovEntities.Clear();
+        foreach (var entity in entities)
+        {
+            _sovEntities[entity.Key] = entity;
+        }
+
+        _dataVersion++;
+        InvalidateVisual();
+    }
+
+    /// <summary>取主权展示实体颜色（未注册的键按绝对值散列自动配色兜底）。</summary>
+    private SKColor SovEntityColor(long key) =>
+        _sovEntities.TryGetValue(key, out var entity) ? entity.Color : SovGroupColor(Math.Abs(key), 0.5);
 
     /// <summary>设置航线（途经星系 Id 列表，含中间路径）；waypointIndices 为关键航点在 path 中的下标。</summary>
     public void SetRoute(IReadOnlyList<int> path, IReadOnlyList<int> waypointIndices)
@@ -1222,8 +1249,8 @@ public class StarMapCanvas : SKElement
 
     private bool _heatBySov;                                        // 图例开关：热力按主权联盟聚合
     private bool _sovActive;                                        // 本次重建实际生效（主权数据可用才置位，否则回退格子）
-    private readonly List<(long GroupId, SKPoint Center, SKPoint Size)> _sovBlobs = [];   // 联盟疆域片（连通分量聚类，飞地各成一片）：片中心+包围盒宽高（归一化）
-    private readonly Dictionary<long, string> _sovNames = [];       // 联盟分组号 → 联盟名（主权文字提示）
+    private readonly List<(long Key, SKPoint Center, SKPoint Size)> _sovBlobs = [];   // 主权实体疆域片（连通分量聚类，飞地各成一片）：片中心+包围盒宽高（归一化）
+    private readonly Dictionary<long, SovEntityInfo> _sovEntities = [];   // 主权展示实体注册表：键 → 名称/颜色（分组或未分组联盟；由 VM 注入）
     private Dictionary<long, (double Sum, List<SKPoint> Pts)>? _sovLastByGroup;   // 最近一次主权聚合数据（晕染层跟随缩放重建时用）
     private SKBitmap? _sovLayer;                                    // 当前显示的晕染位图（3200 固定宽，只在数据变化时后台重烘一次）
     private SKBitmap? _sovFadeFrom;                                 // 交叉淡化中的旧层（仅数据变化交接时触发，300ms 后 Dispose）
@@ -1330,7 +1357,6 @@ public class StarMapCanvas : SKElement
         _sovBuildId++;          // 作废还在后台构建的旧数据层
         _sovLastByGroup = null;
         _sovBlobs.Clear();
-        _sovNames.Clear();
         _sovActive = false;
         _heatRanksBuilt = false;
         // 主权着色模式：叠加疆域晕染层（与节点联盟圆点同色系背景强化），无格子热力
@@ -1342,38 +1368,30 @@ public class StarMapCanvas : SKElement
 
         var isResource = _currentColorMode == MapColorMode.PlanetResource;
 
-        // 主权聚合：每个联盟（GroupId>0）一块"疆域晕染"，热度 = 联盟内星系数值合计（主权模式下每星系计 1）；
+        // 主权聚合：每个展示实体（命名分组或未分组联盟，SovEntityId≠0）一块"疆域晕染"，
+        // 热度 = 实体内星系数值合计（主权模式下每星系计 1）；
         // 热力模式无主权数据/无匹配 → 回退几何格子；主权模式无数据 → 不画
         if (_heatBySov || isSovMode)
         {
-            // 联盟名（主权文字提示，一片一个）；主权强刷后 GroupId 会重排 → 每次重建随 SovService.Current 刷新
-            foreach (var info in SovService.Current)
-            {
-                if (info.GroupId > 0 && !string.IsNullOrEmpty(info.AllianceName))
-                {
-                    _sovNames[info.GroupId] = info.AllianceName;
-                }
-            }
-
             var byGroup = new Dictionary<long, (double Sum, List<SKPoint> Pts)>();
             foreach (var node in _nodes)
             {
                 // 主权模式：无热度语义，每星系计 1（透明度分位 = 星系数排名）；热力模式：按当前数值
                 var value = isSovMode ? 1.0 : isResource ? node.Resource : node.Heat;
-                if (value <= 0 || node.GroupId <= 0)
+                if (value <= 0 || node.SovEntityId == 0)
                 {
                     continue;
                 }
 
-                if (!byGroup.TryGetValue(node.GroupId, out var entry))
+                if (!byGroup.TryGetValue(node.SovEntityId, out var entry))
                 {
                     entry = (0, new List<SKPoint>());
-                    byGroup[node.GroupId] = entry;
+                    byGroup[node.SovEntityId] = entry;
                 }
 
                 entry.Sum += value;
                 entry.Pts.Add(new SKPoint((float)node.NX, (float)node.NY));
-                byGroup[node.GroupId] = entry;
+                byGroup[node.SovEntityId] = entry;
             }
 
             if (byGroup.Count > 0)
@@ -1726,7 +1744,7 @@ public class StarMapCanvas : SKElement
         const int sz = 128;
         stamp = new SKBitmap(sz, sz);
         using var c = new SKCanvas(stamp);
-        var color = SovGroupColor(groupId, 0.5);
+        var color = SovEntityColor(groupId);
         using var shader = SKShader.CreateRadialGradient(
             new SKPoint(sz / 2f, sz / 2f),
             sz / 2f,
@@ -1941,8 +1959,8 @@ public class StarMapCanvas : SKElement
             var cache = new SovGroupVectorCache
             {
                 T = t,
-                // 主权模式：联盟身份色；热力模式：热度色带分位档（与位图侧 GetHeatStamp 同源，颜色表达聚合值排名）
-                Color = _currentColorMode == MapColorMode.Sovereignty ? SovGroupColor(groupId, 0.5) : SecurityColor(t),
+                // 主权模式：展示实体色（分组色/联盟色）；热力模式：热度色带分位档（与位图侧 GetHeatStamp 同源）
+                Color = _currentColorMode == MapColorMode.Sovereignty ? SovEntityColor(groupId) : SecurityColor(t),
                 PaintAlpha = (byte)Math.Clamp(_opts.SovBlobAlphaBase + (t * _opts.SovBlobAlphaSlope), _opts.SovBlobAlphaBase, _opts.SovBlobAlphaMax),
             };
             var pts = entry.Pts;
@@ -2170,21 +2188,23 @@ public class StarMapCanvas : SKElement
         using var font = new SKFont(_typefaceBold, fontPx);
         using var fill = new SKPaint { IsAntialias = true };
 
-        // 大片优先：每片独立参与排序与占位（同一联盟的多片各是各的候选）
-        var entries = new List<(long GroupId, SKPoint Center, float Area, float ScreenW)>(_sovBlobs.Count);
+        // 大片优先：每片独立参与排序与占位（同一实体的多片各是各的候选）
+        var entries = new List<(long Key, SKPoint Center, float Area, float ScreenW)>(_sovBlobs.Count);
         foreach (var blob in _sovBlobs)
         {
-            entries.Add((blob.GroupId, blob.Center, blob.Size.X * blob.Size.Y, blob.Size.X * (float)(_worldW * _zoom)));
+            entries.Add((blob.Key, blob.Center, blob.Size.X * blob.Size.Y, blob.Size.X * (float)(_worldW * _zoom)));
         }
         entries.Sort((a, b) => b.Area.CompareTo(a.Area));
 
         var placed = new List<SKRect>(entries.Count);
         foreach (var entry in entries)
         {
-            if (!_sovNames.TryGetValue(entry.GroupId, out var name) || string.IsNullOrEmpty(name))
+            if (!_sovEntities.TryGetValue(entry.Key, out var entity) || string.IsNullOrEmpty(entity.Name))
             {
                 continue;
             }
+
+            var name = entity.Name;
 
             var p = HeatSovToScreen(entry.Center);
             var baseWidth = font.MeasureText(name);
@@ -2219,9 +2239,8 @@ public class StarMapCanvas : SKElement
             }
             placed.Add(rect);
 
-            // 文字色：同联盟色相；浅色底用深字（V 低）、深色底用亮字（与圆点同亮度）
-            var hue = (float)((entry.GroupId * 137.508) % 360);
-            fill.Color = _light ? FromHsv(hue, 0.75f, 0.38f) : FromHsv(hue, 0.62f, 0.95f);
+            // 文字色：实体色（分组色/联盟色）；浅色底压暗、深色底提亮，保持与圆点同色系
+            fill.Color = _light ? LerpColor(entity.Color, SKColors.Black, 0.55f) : LerpColor(entity.Color, SKColors.White, 0.25f);
             canvas.DrawText(name, p.X - textWidth / 2, p.Y + px * 0.36f, font, fill);
         }
     }
@@ -2463,7 +2482,7 @@ public class StarMapCanvas : SKElement
                 canvas.DrawImage(glow, dest, paint);
             }
 
-            // 实心节点（有徽标时为扩大后的半径）
+            // 实心节点（有徽标时为扩大后的半径）3
             paint.Color = c;
             canvas.DrawCircle(p, dotR, paint);
 
@@ -3097,7 +3116,7 @@ public class StarMapCanvas : SKElement
                 {
                     // 无主权星系（GroupId ≤ 0）直接用中性灰：原回退"灰化安等色"在低安区呈红棕色，
                     // 容易被误读成"某个联盟的分组色"——主权模式语义应为"只有有主权的星系才参与配色"（用户追问后修正）
-                    MapColorMode.Sovereignty => node.GroupId > 0 ? SovGroupColor(node.GroupId, node.Security) : NeutralColor,
+                    MapColorMode.Sovereignty => node.SovEntityId != 0 ? SovEntityColor(node.SovEntityId) : NeutralColor,
                     _ => SecurityColor(node.Security),
                 };
             }

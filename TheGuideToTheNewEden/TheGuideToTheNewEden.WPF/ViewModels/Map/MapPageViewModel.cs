@@ -8,6 +8,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.Character;
+using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Models.Map;
 using TheGuideToTheNewEden.WPF.Services;
@@ -900,7 +901,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     /// <summary>装载完成后主权数据重新可用（失败重试成功时发一次，页面据此重画着色）。</summary>
     public event EventHandler? SovReloaded;
 
-    /// <summary>装载（或复用）主权数据并按分组号写入节点。页内等待指示；失败弹带"重试"按钮的通知。</summary>
+    /// <summary>装载（或复用）主权数据并按展示实体（分组/未分组联盟）写入节点。页内等待指示；失败弹带"重试"按钮的通知。</summary>
     public async Task ApplySovAsync(bool forceRefresh = false)
     {
         // 防重入：等待期间顶栏切模式 / 分组窗保存 / 通知重试可能并发触发多次装载
@@ -926,34 +927,73 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
             }
 
             var infos = loadResult.Infos;
+
+            // 默认分组种子（对照 2025-09 主权势力图）：只套一次（DefaultsSeeded 持久化），
+            // 按联盟名把主要联盟物化进命名分组；势力图上"Neutral States"的联盟不入组、独立展示。
+            var sov = MapSettingService.Value.Sov ??= new MapSovGroupConfig();
+            if (!sov.DefaultsSeeded)
+            {
+                SeedDefaultGroups(sov, infos);
+                MapSettingService.Save();
+            }
+
+            // 解析主权展示实体：命名分组（可含多个联盟，键为负 -1 起）优先；
+            // 不在任何分组里的联盟独立展示（键 = 联盟 ID，自动配色或用户覆盖色）。
+            // 分组/配色配置在 MapSettings.json 的 Sov 节（分组设置窗编辑）。
+            var allianceToEntity = new Dictionary<long, long>();
+            var entities = new List<SovEntityInfo>();
+            for (var i = 0; i < sov.Groups.Count; i++)
+            {
+                var group = sov.Groups[i];
+                var key = -(i + 1);
+                entities.Add(new SovEntityInfo(key, group.Name, ParseHexColor(group.Color) ?? StarMapCanvas.SovGroupColor(key, 0.5)));
+                foreach (var allianceId in group.AllianceIds)
+                {
+                    allianceToEntity[allianceId] = key;
+                }
+            }
+
+            foreach (var info in infos)
+            {
+                if (allianceToEntity.ContainsKey(info.AllianceId))
+                {
+                    continue;
+                }
+
+                var color = ParseHexColor(sov.AllianceColors.TryGetValue(info.AllianceId, out var hex) ? hex : null)
+                    ?? StarMapCanvas.SovGroupColor(info.AllianceId, 0.5);
+                entities.Add(new SovEntityInfo(info.AllianceId, info.AllianceName, color));
+                allianceToEntity[info.AllianceId] = info.AllianceId;
+            }
+
             var map = new Dictionary<int, long>();
             var alliances = new Dictionary<int, long>();
             foreach (var info in infos)
             {
+                var key = allianceToEntity[info.AllianceId];
                 foreach (var systemId in info.SystemIds)
                 {
-                    // **修复**：原来写反成 if (map.ContainsKey(systemId))——map 初始为空，条件永远不成立，
-                    // 分组号根本填不进去 → 所有星系 GroupId=0，主权模式整图灰色回退、无分组号文字（用户实测反馈）。
-                    // 同一星系理论上只属于一个联盟；防御性处理：先到先得。
+                    // 同一星系理论上只属于一个联盟；防御性处理：先到先得
                     if (map.ContainsKey(systemId))
                     {
                         continue;
                     }
 
-                    map[systemId] = info.GroupId;
+                    map[systemId] = key;
                     alliances[systemId] = info.AllianceId;
                 }
             }
 
             foreach (var node in _nodeById.Values)
             {
-                node.GroupId = map.TryGetValue(node.Id, out var groupId) ? groupId : 0;
+                node.SovEntityId = map.TryGetValue(node.Id, out var entityKey) ? entityKey : 0;
                 node.AllianceId = alliances.TryGetValue(node.Id, out var allianceId) ? allianceId : 0;
             }
 
             _sovLoaded = true;
             OnPropertyChanged(nameof(SelectedSovText));
             RequestSovIcons(infos);
+            SovEntitiesChanged?.Invoke(this, entities);
             // 常规调用方（页面各事件处理器）在 await 返回后自行重画；重试路径的额外重画见 RetrySovLoadAsync
         }
         finally
@@ -978,6 +1018,56 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     }
 
     public bool IsSovLoaded => _sovLoaded;
+
+    /// <summary>主权展示实体表解析完成（页面据此调 <c>MapCanvas.SetSovEntities</c> 更新着色/晕染/标签）。</summary>
+    public event EventHandler<IReadOnlyList<SovEntityInfo>>? SovEntitiesChanged;
+
+    /// <summary>hex 颜色串（#RRGGBB）→ SKColor；空串/非法返回 null（调用方走自动配色）。</summary>
+    private static SKColor? ParseHexColor(string? hex)
+    {
+        if (string.IsNullOrWhiteSpace(hex))
+        {
+            return null;
+        }
+
+        try
+        {
+            return SKColor.Parse(hex.Trim());
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 套用默认分组种子（对照主权势力图的联盟阵营，见 <see cref="MapSovGroupConfig.DefaultGroups"/>）：
+    /// 按**联盟名**从本次 ESI 主权数据里解析联盟 ID，物化为 <c>AllianceIds</c>（匹配不到的成员丢弃）；
+    /// 非空分组追加到配置并置 <c>DefaultsSeeded</c>（只套一次，之后以用户编辑为准）。调用方负责落盘。
+    /// </summary>
+    private static void SeedDefaultGroups(MapSovGroupConfig sov, IReadOnlyList<SovInfo> infos)
+    {
+        foreach (var template in MapSovGroupConfig.DefaultGroups())
+        {
+            var ids = infos
+                .Where(info => template.AllianceNames.Contains(info.AllianceName))
+                .Select(info => info.AllianceId)
+                .ToList();
+            if (ids.Count == 0)
+            {
+                continue;   // 势力图上存在、当前主权数据里没有的联盟：跳过该成员，分组整体不落空组
+            }
+
+            sov.Groups.Add(new MapSovGroup
+            {
+                Name = template.Name,
+                Color = template.Color,
+                AllianceIds = ids,
+            });
+        }
+
+        sov.DefaultsSeeded = true;
+    }
 
     // ---------- 主权：联盟徽标 ----------
 

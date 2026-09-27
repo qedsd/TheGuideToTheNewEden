@@ -5,27 +5,24 @@ namespace TheGuideToTheNewEden.WPF.Services.Map;
 /// <summary>一次主权装载的结果：数据（失败时为空或旧缓存）+ 成败标记。</summary>
 public readonly record struct SovLoadResult(IReadOnlyList<SovInfo> Infos, bool Success);
 
-/// <summary>一个联盟在星图上的主权数据（分组号用于"多个联盟同色"的分组展示）。</summary>
+/// <summary>一个联盟在星图上的主权数据（按联盟聚合；分组/配色由 <see cref="MapSovGroupConfig"/> 在 VM 侧解析）。</summary>
 public sealed class SovInfo
 {
     public long AllianceId { get; set; }
     public string AllianceName { get; set; } = string.Empty;
     public HashSet<int> SystemIds { get; set; } = [];
 
-    /// <summary>分组号（&lt;1 表示未分配，由 <see cref="SovService.AssignGroups"/> 补齐）。</summary>
-    public long GroupId { get; set; }
-
     public int Count => SystemIds.Count;
 }
 
 /// <summary>
-/// 星图主权（SOV）数据：ESI <c>Sovereignty.ListSovereigntyOfSystemsAsync</c> 的联盟聚合 + 联盟名解析，
-/// 分组号持久化在 <c>Configs/SOVGroup.json</c>（**与 WinUI 版同路径同格式**：每行 <c>联盟ID 分组ID</c>）。
-/// 结果在内存里缓存 <see cref="CacheMinutes"/> 分钟。
+/// 星图主权（SOV）数据：ESI <c>Sovereignty.ListSovereigntyOfSystemsAsync</c> 的联盟聚合 + 联盟名解析。
+/// 旧的分组号机制（Configs/SOVGroup.json，联盟ID→分组号）已弃用：
+/// 新分组为命名分组（名称+颜色+多联盟成员），配置持久化在 MapSettings.json 的 <c>Sov</c> 节，
+/// 由星图页 ViewModel 在装载后解析为节点展示实体。结果在内存里缓存 <see cref="CacheMinutes"/> 分钟。
 /// </summary>
 public static class SovService
 {
-    private static readonly string GroupFilePath = Path.Combine(SettingsService.DataPath, "Configs", "SOVGroup.json");
     private const int CacheMinutes = 30;
 
     private static readonly object Locker = new();
@@ -79,9 +76,6 @@ public static class SovService
 
     /// <summary>取星系的主权联盟名（未加载或无主权返回空串）。</summary>
     public static string GetSovName(int systemId) => GetSovInfo(systemId)?.AllianceName ?? string.Empty;
-
-    /// <summary>取星系的主权分组号（未加载或无主权返回 0）。</summary>
-    public static long GetGroupId(int systemId) => GetSovInfo(systemId)?.GroupId ?? 0;
 
     public static bool IsLoaded
     {
@@ -174,120 +168,7 @@ public static class SovService
                 _systemIndex = null; // 数据换了，反查索引重建
             }
 
-            AssignGroups(result);
             return new SovLoadResult(result, success);
-        }
-    }
-
-    /// <summary>把分组号补齐（读 SOVGroup.json；未登记的分组按当前最大分组 +1 递增）。</summary>
-    public static void AssignGroups(List<SovInfo>? infos)
-    {
-        if (infos is null || infos.Count == 0)
-        {
-            return;
-        }
-
-        var groups = ReadGroups();
-        var next = groups.Count > 0 ? groups.Values.Max() + 1 : 1;
-        foreach (var info in infos)
-        {
-            if (groups.TryGetValue(info.AllianceId, out var groupId) && groupId > 0)
-            {
-                info.GroupId = groupId;
-            }
-            else
-            {
-                info.GroupId = next++;
-                groups[info.AllianceId] = info.GroupId;
-            }
-        }
-
-        WriteGroups(groups);
-    }
-
-    /// <summary>把所有分组重置为 1..N（按系统数降序，与 WinUI 的"重置分组"一致）。</summary>
-    public static void ResetGroupsToDefault(List<SovInfo> infos)
-    {
-        if (infos.Count == 0)
-        {
-            return;
-        }
-
-        var groups = new Dictionary<long, long>();
-        long groupId = 1;
-        foreach (var info in infos.OrderByDescending(p => p.Count))
-        {
-            info.GroupId = groupId;
-            groups[info.AllianceId] = groupId;
-            groupId++;
-        }
-
-        WriteGroups(groups);
-    }
-
-    /// <summary>把当前分组号落盘（分组编辑窗"确认"时调用）。</summary>
-    public static void SaveGroups(IEnumerable<SovInfo> infos)
-    {
-        var groups = new Dictionary<long, long>();
-        foreach (var info in infos)
-        {
-            if (info.GroupId > 0)
-            {
-                groups[info.AllianceId] = info.GroupId;
-            }
-        }
-
-        WriteGroups(groups);
-    }
-
-    /// <summary>读分组文件（每行 <c>联盟ID 分组ID</c>，空格分隔；文件不存在返回空表）。</summary>
-    public static Dictionary<long, long> ReadGroups()
-    {
-        var result = new Dictionary<long, long>();
-        try
-        {
-            if (!File.Exists(GroupFilePath))
-            {
-                return result;
-            }
-
-            foreach (var line in File.ReadAllLines(GroupFilePath))
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-
-                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 2 && long.TryParse(parts[0], out var allianceId) && long.TryParse(parts[1], out var groupId))
-                {
-                    result[allianceId] = groupId;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-        }
-
-        return result;
-    }
-
-    private static void WriteGroups(Dictionary<long, long> groups)
-    {
-        try
-        {
-            var folder = Path.GetDirectoryName(GroupFilePath);
-            if (!string.IsNullOrEmpty(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
-
-            File.WriteAllLines(GroupFilePath, groups.OrderBy(p => p.Value).Select(p => $"{p.Key} {p.Value}"));
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
         }
     }
 }

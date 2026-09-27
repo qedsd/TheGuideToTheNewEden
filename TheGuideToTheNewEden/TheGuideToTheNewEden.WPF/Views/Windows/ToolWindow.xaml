@@ -14,7 +14,11 @@
     WindowBackdropType="Mica"
     WindowStartupLocation="CenterOwner">
 
-    <Grid>
+    <!--
+        根部设置主题前景色：内容里未显式设置 Foreground 的文字（TextBlock 等）由此继承，
+        深浅主题自动跟随。否则继承到的是 WPF 默认黑（探针实测），深色外观下黑字不可读。
+    -->
+    <Grid TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

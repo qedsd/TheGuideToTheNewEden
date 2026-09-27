@@ -48,6 +48,8 @@ public partial class MapPage : Page
         UpdateLegend();
         _viewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
         _viewModel.SovIconLoaded += (_, e) => MapCanvas.SetSovIcon(e.AllianceId, e.Bitmap);
+        // 主权展示实体（分组/未分组联盟 → 名称+颜色）解析完成：推给画布更新着色/晕染/标签
+        _viewModel.SovEntitiesChanged += (_, entities) => MapCanvas.SetSovEntities(entities);
         // 主权强刷完成（分组窗"重新拉取"/失败后重试成功）：数据版本变了，主权模式下重画着色
         _viewModel.SovReloaded += (_, _) =>
         {

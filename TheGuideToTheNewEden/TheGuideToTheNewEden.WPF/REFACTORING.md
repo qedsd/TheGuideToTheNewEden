@@ -2385,6 +2385,67 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 67：星图 EVE 官方风格重排 + 主权命名分组重写 + 显示参数实时调参面板（用户多轮反馈迭代）
+
+- **节点重排（EVE 官方星图样式，多轮迭代定稿）**：
+  - 星系名 + 安等移到圆点**下方**（名字居中、安等小一号按安等配色缀在右侧并相对名字垂直居中，不参与取中）；
+  - 圆点默认叠加**实体徽标**（所有着色模式；有主权 → 联盟徽标，高安非 00 → NPC 势力徽标）——
+    未达门槛（`nodeR < LogoGate`）保持纯模式色圆点，达门槛圆点**扩大到容纳徽标**（徽标 `nodeR×LogoScale`，
+    外沿留一圈模式色环 `LogoRingFactor`），绘制顺序改为"先解析徽标 → 画扩大圆点 → 发光 → 徽标"；
+  - 行星资源/击杀/通行的数值改为**名字下方第二行**（颜色 = 圆点在热度模式下的分位色，
+    圆点被徽标盖住后由数值颜色承担排名信息），内圈徽章机制整个移除（`FormatNodeLabel` 删除）；
+  - 扩大圆点的光晕收紧（`dotR×LogoGlowFactor` 与 `GlowScale` 取大者），不再随 dotR 线性膨胀（用户"光晕亮瞎眼"）；
+  - 文字避让半径 `dotR`（有徽标时 = 扩大后的圆点外沿），视口剔除余量同步放大。
+  - 本地库无 factionID 列（三库核查过），NPC 势力映射与图标**留空待接入**：`MapSystemNode.FactionId`（默认 0）
+    + `StarMapCanvas.SetFactionIcon`（复用联盟徽标管线，ID 段不重叠）。
+- **顶栏新增两个控件**：
+  - 「势力」复选框（角色右侧）：`_showLogos` / `SetLogosVisible`（失效底图重建），`MapCanvasConfig.ShowLogos` 持久化；
+  - 「显示设置」按钮：`MapDisplaySettingsView` 弹窗（ToolWindow 宿主、置顶可切换），**42 个显示参数分组滑杆实时调参**
+    （节点半径公式/白核/徽标门槛·大小·色环·光晕/光晕公式/名字与安等字号与淡入与透明度与布局间距/连线/热力与晕染 alpha/阻尼），
+    参数收拢为 Core `MapDisplayConfig`（`MapConfig.Display` 持久化，默认值 = 历史调优结果）；
+    画布 `SetDisplayOptions`（持引用）+ `RefreshDisplayOptions`（每次都 `RebuildHeatGrid`——晕染 alpha 烘在按
+    `_sovBuildId` 缓存的层里，只 `dataVersion++` 不会重烘，用户实测"晕染透明度滑杆无感"即此）；
+    滑杆改动防抖 500ms 落盘；「恢复默认」一键还原。
+- **通用颜色选择器 `Views/UserControls/ColorPickerView`**（软件级复用）：A/R/G/B 滑杆与 NumberBox 双向联动
+  （方向感知：谁改同步另一侧）+ HEX 输入（#RGB/#RRGGBB/#AARRGGBB，回车/失焦确认，非法回退）+ 预览；
+  `SetColor`（程序化初始化，抑制事件）/ `ColorChanged` / `SelectedColor`。
+- **主权分组重写（弃用"分组号"）**：
+  - 新概念：**命名分组**（自定义名称 + 任意颜色 + 多个联盟成员）= 一个"展示实体"；
+    未分组联盟独立展示（自动散列配色，可逐联盟覆盖色）。旧 `Configs/SOVGroup.json`（联盟ID→分组号）弃用不迁移；
+  - 数据：Core `MapConfig.Sov`（`MapSovGroupConfig`：Groups[{Name,Color,AllianceIds}] + AllianceColors 覆盖表），
+    存 MapSettings.json；`SovService` 剥离分组号机制（AssignGroups/Reset/Save/Read/Write/GetGroupId 全删）；
+  - 解析：`ApplySovAsync` 把每个联盟解析为展示实体——**分组键为负（-1 起）、未分组联盟键 = 联盟 ID**（互不冲突），
+    写 `node.SovEntityId`（原 `GroupId` 字段改名）+ 构建实体表经新事件 `SovEntitiesChanged` 推给画布
+    `SetSovEntities`；主权着色/晕染软斑/疆域标签的名称与颜色全部取自实体表（标签色随实体色明暗自适应主题）；
+  - **分组设置窗重排为三列**（左=全部联盟，仅未分组+搜索框；中=分组列表：色块/名称/成员数/删除；
+    右=分组详细：选中分组的成员行[色块｜联盟｜领地数｜移出]）；颜色编辑为
+    `ColorPickerView` 弹层（**延迟到鼠标释放后打开**——`StaysOpen=False` 的 Popup 在按下瞬间打开，
+    同一次点击的 MouseUp 会立刻命中"点外面"判定 → 弹层闪退，实测踩坑）；
+    热力色块晕染（主权聚合）颜色化：热力模式下软斑用 `SecurityColor` 分位档而非联盟身份色（位图/矢量两路径同改）；
+  - `MapSovGroupConfig`/`MapSovGroup` 在 Core（netstandard2.1/C# 8）：**集合表达式 `[]` 不可用**，用 `new List<>`（§9.58）。
+- **显示设置参数与旧硬编码的映射**：门槛（用户先后调过 2.4/5/3 → 收拢为 `LogoGate`，默认 5）、徽标倍率 2.4、
+  色环 1.15、光晕 1.35、名字字号 (0.8,9,18) 等全部入 `MapDisplayConfig`；
+  **注意**：收拢后用户手调的门槛值会被配置默认值覆盖一次（本版默认 5），需在弹窗里重调（会持久化）。
+- **修复（用户反馈"行星资源下打开主权聚合没有晕染"）**：`DrawHeatMap` 的 `!_showSovShading` 早退分支
+  原本对**所有** `_sovActive` 情形生效（含热力+主权聚合），把热力晕染连同主权晕染一起拦掉，只画联盟名——
+  收窄为 `主权着色模式 && !_showSovShading`（开关语义回归注释所写"只影响主权模式"）。
+- **修复（用户反馈"晕染透明度三个滑杆无感"）**：晕染 alpha 烘在主权层位图/矢量缓存（按 `_sovBuildId` 判活），
+  `RefreshDisplayOptions` 只 `dataVersion++` 不会触发重烘——补 `RebuildHeatGrid()`（`SetDisplayOptions` 同）；
+  热力格子 alpha 是绘制时实时读的所以一直正常，两类参数生效机制不同是本次排查的关键。
+- **修复（用户反馈"黑字"多轮）**：最终根因 + 修法见 §9.61（ToolWindow 继承链前景为 WPF 默认黑，
+  根部注入主题前景色；分组视图文字全部走主题画刷）。排查中走了"硬编码深底白字"的弯路（红底诊断标记
+  验证"代码是否在跑"），记录在案但已回退为主题画刷方案。
+- **本地化**：新增键 `MapPage_DisplaySettings`/`MapDisplay_*`（弹窗+42 参数+分组）/`MapTool_Sov_*`（分组窗改版）
+  共 60+ 键，zh/en 两文件键集一致。
+- **默认分组种子（用户"对照势力图给星图分组创建默认相同分组，把联盟都各自分组归属"）**：Core `MapSovGroupConfig`
+  内置 `DefaultGroups()`（对照 2025-09 主权势力图：Winter Coalition[紫] / Imperium[黄] / The Initiative.[绿] /
+  Red Menace Coalition[暗红]，成员按**联盟名**预置，与 ESI 联盟名逐字一致——含尾部句点）；
+  `ApplySovAsync` 首次装载时物化：按名匹配 → 写 AllianceIds → 非空组入配置 → `DefaultsSeeded=true` 落盘（只套一次，
+  之后以用户编辑为准）；势力图上"Neutral States"的联盟不入组、独立展示（自动配色）。
+  注意：种子套用**不清理**已有分组（用户测试期的分组保留、可在分组窗删除）；成员匹配不到时丢弃该成员、整组不落空。
+- **构建**：0 错误。徽标在亮主题下的观感、NPC 势力徽标接入（等数据源）为后续项。
+
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -2702,6 +2763,15 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
    同族：`ApplyResourceAsync`（行星资源）。**规矩**：数据应用方法只改数据 + 发"数据变了"的窄事件（或什么都不发）；
    "重新着色/刷新 UI"由**事件处理器末尾**统一做（页面本来就在末尾 `SetColorMode`）；两件事绝不能互相触发。
    判据：StackOverflow 且没有业务堆栈（栈已耗尽打不出帧）→ 沿"谁会同步调用谁"画环，重点查"事件处理器 → 服务方法 → 同一事件"。
+61. **ToolWindow（及一切自建窗口）根节点必须注入主题前景色，否则内容里"没显式设置 Foreground 的文字"全是黑字**（阶段 67
+   主权分组窗多轮"黑字修不掉"的根因，**最小探针实测**）：WPF 控件默认前景 = `SystemColors.ControlText`（黑），WPF-UI 的
+   `ApplicationThemeManager.Apply` 只换 App 级主题字典（探针证实切换正常、后创建的 FluentWindow 正确回落 App 级），
+   **不会替你设置窗口根 Foreground**——于是 `TextBlock`（不设 Foreground 时）继承到黑；同窗口里显式写了
+   `{DynamicResource TextFillColorSecondaryBrush}` 的小字其实是半透明白（小字号 + 半透明极易误判成"同一画刷深浅不一"，
+   排查时别被带偏）。修法：`ToolWindow.xaml` 根 Grid 加 `TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"`，
+   内容沿可视树继承、深浅主题自动跟随（一次修复所有工具窗）。
+   **排查范式**：远程猜库模板不如写探针——`Application` + ThemesDictionary/ControlsDictionary + Apply + 建窗（不 Show），
+   直接打印各作用域 `TextFillColorPrimaryBrush` 的实际色值与合并字典 Source，五分钟出真相。
 
 
 ---
@@ -2826,15 +2896,16 @@ Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / �
 Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多开用转换器
 ```
 
-### 星图模块（阶段 62 起 SkiaSharp 重设计渲染；阶段 63 功能补齐）
+### 星图模块（阶段 62 起 SkiaSharp 重设计渲染；阶段 63 功能补齐；阶段 67 EVE 风格节点重排 + 命名分组 + 显示参数面板）
 ```
 Views/UserControls/Map/StarMapCanvas.cs   核心画布（SKElement）：深空背景/星尘/星门连线/跳桥点线/发光节点
                                           （安等·主权·行星资源·击杀·通行五种着色）/LOD 标签、底图缓存（位图按尺寸复用）
                                           + 发光精灵缓存、缩放平移/命中/悬停/选中、情报红圈与舰船图标、角色标记、
-                                          航线折线、一跳覆盖圈、定位飞行与涟漪高亮；MapColorMode/MapSystemNode/IntelMarker 同文件
+                                          航线折线、一跳覆盖圈、定位飞行与涟漪高亮；EVE 风格节点（实体徽标/下方文字/热度第二行）；
+                                          MapColorMode/MapSystemNode（SovEntityId/AllianceId/FactionId）/IntelMarker/SovEntityInfo 同文件
 Services/Map/MapSettingService.cs         Configs/MapSettings.json（Core MapConfig，与 WinUI 共用）
 Services/Map/JumpBridgeSettingService.cs  Configs/JumpBridgeSetting.json（与 WinUI 同格式）+ 双向桥梁字典/增删/显示开关/SettingChanged
-Services/Map/SovService.cs                主权：ESI 聚合 + 联盟名解析 + Configs/SOVGroup.json 分组读写/重置 + 30 分钟缓存
+Services/Map/SovService.cs                主权：ESI 聚合 + 联盟名解析 + 30 分钟缓存（只按联盟聚合；命名分组由 MapConfig.Sov 在 VM 侧解析）
 Services/Map/MapResourceService.cs        行星资源：00 星系聚合（Power/Workforce/岩浆气/超离子冰）+ 星域汇总 + 设施升级表 + 天体/行星明细
 Services/Map/ChannelIntelManager.cs       运行中预警会话聚合 + IgnoreJumps 开关 + 情报事件聚合（对齐 WinUI 同名单例）
 Services/Map/CharacterLocationService.cs  授权角色 ESI 位置轮询（"显示角色"）
@@ -2846,10 +2917,11 @@ Views/Pages/MapPage.xaml(.cs)             星图页（顶栏搜索/星域/着色
 Views/UserControls/Map/OneJumpCoverView.xaml(.cs)      一跳覆盖窗
 Views/UserControls/Map/MapSystemDetailView.xaml(.cs)   星系详情窗（五页签）
 Views/UserControls/Map/PlanetResourceListView.xaml(.cs) 行星资源清单窗（三页签）
-Views/UserControls/Map/SovGroupSettingView.xaml(.cs)   主权分组编辑窗（分组号 + 色块预览 + 重置/重新拉取）
-Views/UserControls/Map/JumpBridgeSettingView.xaml(.cs) 跳桥设置窗（星系名或 ID 增删 + 显示开关）
+Views/UserControls/Map/SovGroupSettingView.xaml(.cs)   主权分组编辑窗（三列：全部联盟/分组管理/分组详细；命名分组+多联盟+任意颜色，弃用分组号）
+Views/UserControls/Map/MapDisplaySettingsView.xaml(.cs) 显示参数实时调参弹窗（42 参数分组滑杆 + 恢复默认；MapDisplayConfig 持久化）
+Views/UserControls/ColorPickerView.xaml(.cs)  通用颜色选择器（ARGB 滑杆/数值双向联动 + HEX 输入，软件级复用）
 Converters/NullToVisibilityConverter.cs   null → Collapsed（信息卡显隐）
-Converters/SovGroupColorConverter.cs      分组号 → 刷子（复用画布配色算法，保证设置窗预览与图上一致）
+Views/UserControls/Map/JumpBridgeSettingView.xaml(.cs) 跳桥设置窗（星系名或 ID 增删 + 显示开关）
 ```
 
 ### 主窗口

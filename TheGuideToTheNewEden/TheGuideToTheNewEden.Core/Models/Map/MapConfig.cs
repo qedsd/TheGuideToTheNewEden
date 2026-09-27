@@ -17,9 +17,93 @@ namespace TheGuideToTheNewEden.Core.Models.Map
         public MapCanvasConfig Canvas { get; set; } = new MapCanvasConfig();
 
         /// <summary>
-        /// 星图画布显示参数（WPF 版，顶栏「显示设置」弹窗实时可调）。
+        /// 星图显示参数（WPF 版，顶栏「显示设置」弹窗实时可调）。
         /// </summary>
         public MapDisplayConfig Display { get; set; } = new MapDisplayConfig();
+
+        /// <summary>
+        /// 主权分组（WPF 版）：命名分组 + 未分组联盟配色，顶栏「主权分组」窗编辑。
+        /// </summary>
+        public MapSovGroupConfig Sov { get; set; } = new MapSovGroupConfig();
+    }
+
+    /// <summary>
+    /// 主权分组配置：一个"分组"可包含多个联盟（疆域同色同标签、热力主权聚合按组合并）；
+    /// 不在任何分组里的联盟各自独立展示（自动配色，可用 <see cref="AllianceColors"/> 覆盖）。
+    /// 颜色为 hex 字符串（如 <c>#7DB8FF</c>）；空串 = 自动配色（按联盟 ID 散列）。
+    /// </summary>
+    public class MapSovGroupConfig
+    {
+        public List<MapSovGroup> Groups { get; set; } = new List<MapSovGroup>();
+
+        /// <summary>未分组联盟的自定义颜色覆盖（联盟 ID → hex；缺省用自动配色）。</summary>
+        public Dictionary<long, string> AllianceColors { get; set; } = new Dictionary<long, string>();
+
+        /// <summary>默认分组种子是否已套用（只套一次；之后以用户在分组窗里的编辑为准）。</summary>
+        public bool DefaultsSeeded { get; set; }
+
+        /// <summary>
+        /// 默认分组种子：对照 2025-09 新伊甸主权势力图（Winter Coalition / Imperium / The Initiative. / Red Menace）
+        /// 预置主要联盟阵营归属；成员按**联盟名**匹配（与 ESI 主权数据的联盟名一致），
+        /// 由 VM 在首次主权装载时物化为联盟 ID 写入 <see cref="Groups"/>。势力图上"Neutral States"的联盟不入组、独立展示。
+        /// </summary>
+        public static List<MapSovGroup> DefaultGroups() => new List<MapSovGroup>
+        {
+            new MapSovGroup
+            {
+                Name = "Winter Coalition",
+                Color = "#C9A3D4",
+                AllianceNames = new List<string>
+                {
+                    "Fraternity.",
+                    "Northern Coalition.",
+                    "Test Alliance Please Ignore",
+                    "Solyaris Chtonium",
+                    "Brotherhood of Spacers",
+                    "No Visual.",
+                },
+            },
+            new MapSovGroup
+            {
+                Name = "Imperium",
+                Color = "#D9C46B",
+                AllianceNames = new List<string>
+                {
+                    "Goonswarm Federation",
+                    "Brave Collective",
+                    "Sigma Grindset",
+                    "Dracarys.",
+                    "Fanatic Legion.",
+                    "Burning Contingent Holdings",
+                },
+            },
+            new MapSovGroup
+            {
+                Name = "The Initiative.",
+                Color = "#7FBF6E",
+                AllianceNames = new List<string> { "The Initiative." },
+            },
+            new MapSovGroup
+            {
+                Name = "Red Menace Coalition",
+                Color = "#9C2B2B",
+                AllianceNames = new List<string>
+                {
+                    "Curatores Veritatis Alliance",
+                    "Kindred Diplomacy",
+                },
+            },
+        };
+    }
+
+    public class MapSovGroup
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public List<long> AllianceIds { get; set; } = new List<long>();
+
+        /// <summary>默认种子用的**联盟名**成员表（物化为 AllianceIds 后清空；分组窗保存只写 AllianceIds）。</summary>
+        public List<string> AllianceNames { get; set; } = new List<string>();
     }
 
     /// <summary>
