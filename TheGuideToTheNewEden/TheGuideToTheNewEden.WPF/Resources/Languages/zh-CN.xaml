@@ -38,6 +38,158 @@
     <sys:String x:Key="Nav.Tools_Taskbar">分屏</sys:String>
     <sys:String x:Key="Nav.Settings">设置</sys:String>
 
+    <!--  虫洞页  -->
+    <sys:String x:Key="WormholePage_ModeBrowser">洞系浏览</sys:String>
+    <sys:String x:Key="WormholePage_ModePortalLibrary">洞口库</sys:String>
+    <sys:String x:Key="WormholePage_Search">搜索虫洞...</sys:String>
+    <sys:String x:Key="WormholePage_LoadFailed">虫洞数据加载失败</sys:String>
+    <sys:String x:Key="WormholePage_SystemsCount">个星系</sys:String>
+    <sys:String x:Key="WormholePage_NoSelection">在左侧选择一个虫洞星系查看详情</sys:String>
+    <sys:String x:Key="WormholePage_CopyName">复制星系名</sys:String>
+    <sys:String x:Key="WormholePage_CopyDone">星系名已复制</sys:String>
+
+    <sys:String x:Key="WormholePage_ClassFilter_All">全部等级</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaFilter_All">全部天象</sys:String>
+    <sys:String x:Key="WormholePage_NoStatics">无永联洞</sys:String>
+    <sys:String x:Key="WormholePage_NoWanderings">无漫游洞</sys:String>
+
+    <sys:String x:Key="WormholePage_Class">等级</sys:String>
+    <sys:String x:Key="WormholePage_Static">永联</sys:String>
+    <sys:String x:Key="WormholePage_Wandering">漫游</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena">天象</sys:String>
+    <sys:String x:Key="WormholePage_Planet">星球</sys:String>
+    <sys:String x:Key="WormholePage_Moon">月球</sys:String>
+    <sys:String x:Key="WormholePage_Other">其他</sys:String>
+    <sys:String x:Key="WormholePage_Links">友链</sys:String>
+
+    <sys:String x:Key="WormholePage_Class_1">c1</sys:String>
+    <sys:String x:Key="WormholePage_Class_2">c2</sys:String>
+    <sys:String x:Key="WormholePage_Class_3">c3</sys:String>
+    <sys:String x:Key="WormholePage_Class_4">c4</sys:String>
+    <sys:String x:Key="WormholePage_Class_5">c5</sys:String>
+    <sys:String x:Key="WormholePage_Class_6">c6</sys:String>
+    <sys:String x:Key="WormholePage_Class_12">c12 希拉</sys:String>
+    <sys:String x:Key="WormholePage_Class_13">c13 破碎虫洞</sys:String>
+    <sys:String x:Key="WormholePage_Class_14">c14 流浪者岗哨虫洞</sys:String>
+    <sys:String x:Key="WormholePage_Class_15">c15 流浪者碉堡虫洞</sys:String>
+    <sys:String x:Key="WormholePage_Class_16">c16 流浪者游哨虫洞</sys:String>
+    <sys:String x:Key="WormholePage_Class_17">c17 流浪者合流虫洞</sys:String>
+    <sys:String x:Key="WormholePage_Class_18">c18 流浪者堡垒虫洞</sys:String>
+    <sys:String x:Key="WormholePage_Class_100">高安</sys:String>
+    <sys:String x:Key="WormholePage_Class_101">低安</sys:String>
+    <sys:String x:Key="WormholePage_Class_102">00</sys:String>
+
+    <sys:String x:Key="WormholePage_ClassDesc_1">入门级虫洞：PVE 与 PVP 强度最低，适合初学者熟悉洞内机制。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_2">拥有通往已知空间（高安/低安/00）的静态洞，进出方便。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_3">最受欢迎的 PVE 洞：静态洞直通已知空间，气云与数据/遗迹点丰富。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_4">通常依赖洞链进出，PVE 收益更高、难度更大。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_5">旗舰可入，PVE 收益与 PVP 烈度高，常见资本舰作战。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_6">顶级虫洞：收益与烈度最高，通常由大型军团常驻开发。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_12">希拉（Thera）：神秘的公共虫洞星系，有多个固定洞口与空间站。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_13">破碎虫洞：仅护卫舰级别可入，天体破碎、效果特殊。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_14">流浪者空间：Drifter 敌人与特殊机制，危险且神秘。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_15">流浪者空间：Drifter 敌人与特殊机制，危险且神秘。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_16">流浪者空间：Drifter 敌人与特殊机制，危险且神秘。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_17">流浪者空间：Drifter 敌人与特殊机制，危险且神秘。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_18">流浪者空间：Drifter 敌人与特殊机制，危险且神秘。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_100">高安：新伊甸最安全的空域（安全等级 ≥ 0.5），海关与星城严查犯罪。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_101">低安：刑法宽松的争议空域，PVP 风险中等。</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_102">00：由玩家势力控制的无法律空域，风险与机遇并存。</sys:String>
+
+    <sys:String x:Key="WormholePage_Phenomena_-1">无</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_0">红巨星</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_1">激变变星</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_2">磁星</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_3">脉冲星</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_4">沃尔夫-拉叶星</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_5">黑洞</sys:String>
+
+    <sys:String x:Key="WormholePage_PhenomenaDesc_-1">该星系没有特殊天象效果。</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_0">热能伤害提升，对过热战术与装配有影响。</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_1">电容回充与能量中和类效果增强，电容战术显著。</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_2">全类武器伤害提升，但舰船机动与炮台追踪受罚，战斗烈度最高的天象。</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_3">护盾容量大幅提升而装甲维修量下降，适合护盾抗性配船。</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_4">装甲维修量与小/中型武器伤害提升，适合装甲抗性配船。</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_5">舰船与导弹速度提升、减速网效果下降，机动性极强。</sys:String>
+
+    <sys:String x:Key="WormholePage_PortalSearch">搜索洞口代号（如 B274）</sys:String>
+    <sys:String x:Key="WormholePage_PortalDest_All">全部通往</sys:String>
+    <sys:String x:Key="WormholePage_RespawnFilter_All">全部再生</sys:String>
+    <sys:String x:Key="WormholePage_PortalsCount">种洞口</sys:String>
+    <sys:String x:Key="WormholePage_PortalLibraryTip">双击行查看详情与过洞计算</sys:String>
+
+    <sys:String x:Key="WormholePage_PortalTitle">洞口 {0}</sys:String>
+    <sys:String x:Key="WormholePage_Portal">洞口</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Destination">通往</sys:String>
+    <sys:String x:Key="WormholePage_Portal_AppearsIn">位于</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Lifetime">最大稳定时间</sys:String>
+    <sys:String x:Key="WormholePage_Portal_MaxMassPerJump">最大跳跃质量</sys:String>
+    <sys:String x:Key="WormholePage_Portal_TotalJumpMass">最大稳定质量</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Respawn">再生位置</sys:String>
+    <sys:String x:Key="WormholePage_Portal_MassRegen">再生质量</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Respawn_Static">固定</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Respawn_Wandering">随机</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Note">备注</sys:String>
+    <sys:String x:Key="WormholePage_Portal_MassSection">质量数据</sys:String>
+
+    <sys:String x:Key="WormholePage_Calculator_Title">过洞计算器</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_Note">以游戏内船体质量面板值计算（EVE 过洞判定即使用该值）；已消耗质量填 0 表示新洞。</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_Ship">选择舰船</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_ShipMass">舰船质量 (kg)</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_MassHint">输入质量（kg）</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_UsedMass">已消耗质量 (kg)</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_InputHint">选择舰船或输入舰船质量开始计算。</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_NoData">该洞口缺少质量数据。</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_TooHeavy">✗ 超过最大跳跃质量，无法通过</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_TooHeavyDetail">舰船质量 {0}，超过该洞口的单跳上限 {1}。</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_CanPass">✓ 单跳可通过</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_PassesLeft">按当前总质量池还可通过约 {0} 艘（剩余 {1}）。</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_RegenDays">剩余总质量 {0} 不足一跳，按每日再生 {2} 约需 {1} 天恢复。</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_MassDepleted">剩余总质量 {0} 已不足通过一艘，且该洞口无再生质量。</sys:String>
+
+    <sys:String x:Key="WormholePage_ShipClass_Frigate">护卫舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Destroyer">驱逐舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Cruiser">巡洋舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Battlecruiser">战列巡洋舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Industrial">工业舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Battleship">战列舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Dreadnought">无畏舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Carrier">航母</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_ForceAux">强援舰</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Supercarrier">超级航母</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Titan">泰坦</sys:String>
+
+    <sys:String x:Key="WormholePage_ZKB">ZKB分析</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DataFrom">过去{0}天内{1}个击杀</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range200">最近 200 条击杀</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range400">最近 400 条击杀</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range600">最近 600 条击杀</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range800">最近 800 条击杀</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Detail">查看详细</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_NoSelection">选中虫洞星系后自动分析其 zKillboard 活跃度</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Loading">正在从 zKillboard 获取击杀数据...</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_NoData">该星系最近没有击杀记录</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Failed">ZKB 数据获取失败</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Kills">击杀</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Isk">ISK 损失</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Span">时间跨度</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_SpanDays">约 {0} 天</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_MostActiveCorporations">最活跃军团</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_MostActiveAlliances">最活跃联盟</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_TopShips">热门船型（被击毁）</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_ActivityChart">活跃时段分布（本地时间）</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_ActivityChartNote">按“星期 × 本地小时”统计击杀数，可用于判断敌方作息。</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek1">周一</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek2">周二</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek3">周三</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek4">周四</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek5">周五</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek6">周六</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek7">周天</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DaysAgo">天前</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_HoursAgo">小时前</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_ActiveNow">刚刚活跃</sys:String>
+
     <!--  设置页  -->
     <sys:String x:Key="Settings.Title">设置</sys:String>
     <sys:String x:Key="Settings.Appearance">外观</sys:String>

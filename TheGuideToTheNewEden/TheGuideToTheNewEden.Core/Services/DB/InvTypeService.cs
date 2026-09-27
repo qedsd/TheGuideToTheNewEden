@@ -67,6 +67,19 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+
+        /// <summary>
+        /// 按 ID 批量查舰船质量（虫洞过洞计算用）。
+        /// Mass 列只有 <see cref="InvTypeMass"/> 映射，正常 <see cref="InvType"/> 查询拿不到。
+        /// </summary>
+        public static async Task<List<InvTypeMass>> QueryTypeMassAsync(List<int> typeIds)
+        {
+            if (typeIds == null || typeIds.Count == 0)
+            {
+                return new List<InvTypeMass>();
+            }
+            return await DBService.MainDb.Queryable<InvTypeMass>().Where(p => typeIds.Contains(p.TypeID)).ToListAsync();
+        }
         public static List<InvType> QueryTypesInGroup(List<int> groupIds)
         {
             var types = DBService.MainDb.Queryable<InvType>().Where(p => p.MarketGroupID != null && groupIds.Contains((int)p.MarketGroupID)).ToList();

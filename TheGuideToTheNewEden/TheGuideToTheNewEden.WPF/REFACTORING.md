@@ -2445,6 +2445,55 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   注意：种子套用**不清理**已有分组（用户测试期的分组保留、可在分组窗删除）；成员匹配不到时丢弃该成员、整组不落空。
 - **构建**：0 错误。徽标在亮主题下的观感、NPC 势力徽标接入（等数据源）为后续项。
 
+### 阶段 68：虫洞模块迁移 —— 洞系浏览重设计 + 洞口库 + 过洞计算器 + ZKB 活跃度分析增强（非逐行照搬）
+
+> 占位页 `WormholePage.cs`（阶段 1）替换为真实实现，类名/命名空间不变，`MainWindow.xaml` 的导航注册零改动。
+
+- **页面结构（对应 WinUI `WormholePage`，两列卡片布局保留并重设计）**：顶栏"洞系浏览 / 洞口库"两种模式切换；
+  浏览模式左卡 = 搜索框 + 结果列表（235px）+ 洞系详情，右卡 = ZKB 分析；列表条目带等级徽章与天象。
+  新增 ViewModel `ViewModels/WormholeViewModel.cs`（WinUI 把逻辑散在 VM + code-behind，此处收敛），
+  展示模型 `Models/Wormhole/WormholeModels.cs`（`WormholeListItem`/`WormholeDetail`/`PortalButtonModel`/
+  `StellarItem`/`PortalRow`/`ActiveEntityItem`/`ShipTypeStatItem`/`ShipMassOption` + `WormholeFormat` 工具类）。
+- **相对 WinUI 的增强（结合虫洞玩家实际需求）**：
+  1. **筛选**：按等级（c1-c6/c12-c18）与天象过滤全部 2600+ 洞系（WinUI 只有名称模糊搜索）；
+  2. **等级/天象说明**：详情卡新增 `WormholePage_ClassDesc_*`（c1-c6 玩法定位、希拉/破碎/流浪者简介、
+     高低安 00 定义）与 `WormholePage_PhenomenaDesc_*`（六种天象的定性效果描述，不写具体数值避免误导，
+     精确数值经友链 Chruker 查询）；
+  3. **洞口按钮带通往摘要**：永联/漫游洞按钮下方直接显示"通往 c3 · 高安"（WinUI 只显示代号，需点开才知道）；
+  4. **洞口库模式**：全部 WormholePortal（116 种）以 `ui:DataGrid` 列出（代号/通往/位于/稳定时间/单跳质量/
+     总质量/再生质量/再生/备注），支持按代号搜索、按通往空间（高安/低安/00/c1-c6/希拉/破碎）与
+     再生类型筛选，双击行打开详情——把 anoik 的 wormholes 列表离线内置；
+  5. **洞口详情窗（`WormholePortalView`，ToolWindow 宿主，阶段 65 范式）**：基础信息 + 质量数据（完整千分位 +
+     括号备注）+ **过洞计算器** + Anoik/Ellatha 外链；
+  6. **过洞计算器**：选内置代表舰船（护卫→泰坦 11 档，经 SDE `types.mass` 查**真实船体质量**）或手输质量 kg、
+     可填已消耗质量，输出：单跳可过性（对比 MaxMassPerJump）、按当前总质量池还可过几艘
+     （(Total-已耗)/船体质量）、质量池不足时按 MassRegen 估算恢复天数——打洞/舰队过洞的日常刚需；
+  7. **复制星系名**按钮（游戏内输入洞名高频操作）。
+- **ZKB 分析增强**：数据层不走 WinUI 的"1 页 200 条 + 逐条 ESI 补详情"，改为直接调
+  `ZKB.GetKillmailDetailsAsync`（响应自带完整 killmail）按页拉取（200/400/600/800 可选，失败重试一次，
+  与 `ZkbQueryService` 的约定一致）；统计 = 概要三格（击杀数/ISK 损失/时间跨度，ISK 用 `IskFormatHelper`）
+  + 最活跃军团/联盟 Top3（受害方+全部攻方各计一次，口径同 WinUI；名称走 `ZkbQueryService.ResolveNamesAsync`
+  批量解析，头像 `GameImageHelper`）+ **新增**：被击毁船型 Top5、活跃时段分布图（7 系列堆叠柱状图，
+  LiveCharts `StackedColumnSeries<double>`，X=本地小时 0-23、Y=击杀数、颜色按星期用 Okabe-Ito 色盲友好色板，
+  常量 SKColor 无法走 DynamicResource 故不随主题）；军团/联盟行可点击 → `KbNavigation.OpenEntity` 进应用内 KB 页。
+- **Core**：新增 `DBModels/InvTypeMass.cs`（`types` 表轻量映射，专取 `Mass` 列——`InvType` 未映射该列）+
+  `InvTypeService.QueryTypeMassAsync(List<int>)`；DB 访问仍全部收口在 Core。
+- **本地化**：新增 `WormholePage_*` 约 110 键（zh/en 键集一致）；等级/天象/洞口字段类文案**沿用 WinUI 语言文件原文**
+  （含 en 的 c14 Sentinel/c15 Barbican/c16 Vidette/c17 Conflux/c18 Redoubt Drifter），并顺手修正 WinUI 的两处
+  en 缺陷（`WormholePage_Portal` en 仍为"洞口"→ Portal、`WormholePage_Phenomena_-1` en 仍为"无"→ None）。
+- **踩坑（本轮实际发生）**：
+  1. **命名空间遮蔽类型**：`Models/Wormhole/` 命名空间以 `Wormhole` 结尾，文件内裸写 `Wormhole` 会解析成
+     命名空间而非 Core 的 `Wormhole` 类型（CS0118）——文件内引用 Core 类型一律写全限定名（已在类注释说明）；
+  2. **`NumberBox.ValueChanged` 是 RoutedEvent**（WPF-UI 自定义委托），为稳妥改挂 TextBox 基类的
+     `TextChanged`（签名兼容且击键即触发）；
+  3. **后台线程动 ObservableCollection 会炸**：`LoadAsync`/`LoadDetailAsync`/`AnalyzeKbAsync` 里凡是 await 之后
+     还要填充集合/触发集合绑定续体的，一律**不加 `ConfigureAwait(false)`** 让续体回 UI 线程（纯计算段不受限）；
+  4. `Run.Text` 不接 `{DynamicResource}`（弃用 `<Run>` 拼接，改为横向 `StackPanel` 两个 `TextBlock`）。
+- **星图联动不做的原因**：星图画布按 `!IsSpecial()`（ID ≥ 31000000）排除了虫洞星系，`ToSystem(id)` 无节点可定位；
+  外链（Anoik/Dotlan/Ellatha/Zkillboard/Chruker，system 维度）已覆盖出站跳转需求。
+- **构建**：0 错误。未实机核验（本轮仅静态验证）；已知取舍：活动分布图配色不随主题（Skia 画笔）、
+  洞口库备注列取两条质量备注去重拼接（DB 无独立备注行）、ZKB 范围为"最近 N 条"（zKB 接口无时间过滤）。
+
 
 ## 8. 已知限制与待办
 

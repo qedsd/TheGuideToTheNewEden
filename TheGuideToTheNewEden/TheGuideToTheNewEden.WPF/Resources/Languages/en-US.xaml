@@ -38,6 +38,158 @@
     <sys:String x:Key="Nav.Tools_Taskbar">Split Screen</sys:String>
     <sys:String x:Key="Nav.Settings">Settings</sys:String>
 
+    <!--  Wormhole page  -->
+    <sys:String x:Key="WormholePage_ModeBrowser">Systems</sys:String>
+    <sys:String x:Key="WormholePage_ModePortalLibrary">Portal Library</sys:String>
+    <sys:String x:Key="WormholePage_Search">Search for wormholes...</sys:String>
+    <sys:String x:Key="WormholePage_LoadFailed">Failed to load wormhole data</sys:String>
+    <sys:String x:Key="WormholePage_SystemsCount">systems</sys:String>
+    <sys:String x:Key="WormholePage_NoSelection">Select a wormhole system on the left to view its details</sys:String>
+    <sys:String x:Key="WormholePage_CopyName">Copy system name</sys:String>
+    <sys:String x:Key="WormholePage_CopyDone">System name copied</sys:String>
+
+    <sys:String x:Key="WormholePage_ClassFilter_All">All classes</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaFilter_All">All phenomena</sys:String>
+    <sys:String x:Key="WormholePage_NoStatics">No static portals</sys:String>
+    <sys:String x:Key="WormholePage_NoWanderings">No wandering portals</sys:String>
+
+    <sys:String x:Key="WormholePage_Class">Class</sys:String>
+    <sys:String x:Key="WormholePage_Static">Static</sys:String>
+    <sys:String x:Key="WormholePage_Wandering">Wandering</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena">Phenomena</sys:String>
+    <sys:String x:Key="WormholePage_Planet">Planet</sys:String>
+    <sys:String x:Key="WormholePage_Moon">Moon</sys:String>
+    <sys:String x:Key="WormholePage_Other">Other</sys:String>
+    <sys:String x:Key="WormholePage_Links">Links</sys:String>
+
+    <sys:String x:Key="WormholePage_Class_1">c1</sys:String>
+    <sys:String x:Key="WormholePage_Class_2">c2</sys:String>
+    <sys:String x:Key="WormholePage_Class_3">c3</sys:String>
+    <sys:String x:Key="WormholePage_Class_4">c4</sys:String>
+    <sys:String x:Key="WormholePage_Class_5">c5</sys:String>
+    <sys:String x:Key="WormholePage_Class_6">c6</sys:String>
+    <sys:String x:Key="WormholePage_Class_12">c12 Thera</sys:String>
+    <sys:String x:Key="WormholePage_Class_13">c13 Shattered Frigate</sys:String>
+    <sys:String x:Key="WormholePage_Class_14">c14 Sentinel Drifter</sys:String>
+    <sys:String x:Key="WormholePage_Class_15">c15 Barbican Drifter</sys:String>
+    <sys:String x:Key="WormholePage_Class_16">c16 Vidette Drifter</sys:String>
+    <sys:String x:Key="WormholePage_Class_17">c17 Conflux Drifter</sys:String>
+    <sys:String x:Key="WormholePage_Class_18">c18 Redoubt Drifter</sys:String>
+    <sys:String x:Key="WormholePage_Class_100">Highsec</sys:String>
+    <sys:String x:Key="WormholePage_Class_101">Lowsec</sys:String>
+    <sys:String x:Key="WormholePage_Class_102">Nullsec</sys:String>
+
+    <sys:String x:Key="WormholePage_ClassDesc_1">Entry-level wormhole: lowest PVE/PVP intensity, good for learning W-space mechanics.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_2">Has static portals to known space (highsec/lowsec/nullsec), easy access.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_3">The most popular PVE class: static to known space, rich in gas and data/relic sites.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_4">Usually accessed via wormhole chains; higher PVE rewards and difficulty.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_5">Capitals allowed; high PVE rewards and PVP intensity, capital fights are common.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_6">Top-tier wormholes: highest rewards and intensity, usually home to large corporations.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_12">Thera: the mysterious public wormhole system with several fixed portals and stations.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_13">Shattered wormhole: frigate-sized hulls only, shattered planets and unique effects.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_14">Drifter space: Drifter enemies and unique mechanics — dangerous and mysterious.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_15">Drifter space: Drifter enemies and unique mechanics — dangerous and mysterious.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_16">Drifter space: Drifter enemies and unique mechanics — dangerous and mysterious.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_17">Drifter space: Drifter enemies and unique mechanics — dangerous and mysterious.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_18">Drifter space: Drifter enemies and unique mechanics — dangerous and mysterious.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_100">Highsec: the safest space in New Eden (security ≥ 0.5).</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_101">Lowsec: contested space with lax law enforcement.</sys:String>
+    <sys:String x:Key="WormholePage_ClassDesc_102">Nullsec: lawless space controlled by player alliances.</sys:String>
+
+    <sys:String x:Key="WormholePage_Phenomena_-1">None</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_0">Red Giant</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_1">Cataclysmic Variable</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_2">Magnetar</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_3">Pulsar</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_4">Wolf-Rayet Star</sys:String>
+    <sys:String x:Key="WormholePage_Phenomena_5">Black Hole</sys:String>
+
+    <sys:String x:Key="WormholePage_PhenomenaDesc_-1">This system has no special celestial effect.</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_0">Thermal damage is increased — affects fitting and overheating tactics.</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_1">Capacitor recharge and energy neutralization are amplified — cap warfare matters.</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_2">All weapon damage increased, but ship agility and turret tracking are penalized — the most combat-intense effect.</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_3">Shield capacity greatly increased while armor repair amount is reduced — favor shield fits.</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_4">Armor repair amount and small/medium weapon damage increased — favor armor fits.</sys:String>
+    <sys:String x:Key="WormholePage_PhenomenaDesc_5">Ship and missile velocity increased, stasis webifier strength reduced — extreme mobility.</sys:String>
+
+    <sys:String x:Key="WormholePage_PortalSearch">Search portal code (e.g. B274)</sys:String>
+    <sys:String x:Key="WormholePage_PortalDest_All">All destinations</sys:String>
+    <sys:String x:Key="WormholePage_RespawnFilter_All">All respawn types</sys:String>
+    <sys:String x:Key="WormholePage_PortalsCount">portal types</sys:String>
+    <sys:String x:Key="WormholePage_PortalLibraryTip">Double-click a row for details &amp; mass calculator</sys:String>
+
+    <sys:String x:Key="WormholePage_PortalTitle">Portal {0}</sys:String>
+    <sys:String x:Key="WormholePage_Portal">Portal</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Destination">Destination</sys:String>
+    <sys:String x:Key="WormholePage_Portal_AppearsIn">Appears In</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Lifetime">Max Stable Time</sys:String>
+    <sys:String x:Key="WormholePage_Portal_MaxMassPerJump">Max Mass per Jump</sys:String>
+    <sys:String x:Key="WormholePage_Portal_TotalJumpMass">Total Jump Mass</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Respawn">Respawn</sys:String>
+    <sys:String x:Key="WormholePage_Portal_MassRegen">Mass Regen</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Respawn_Static">Static</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Respawn_Wandering">Wandering</sys:String>
+    <sys:String x:Key="WormholePage_Portal_Note">Notes</sys:String>
+    <sys:String x:Key="WormholePage_Portal_MassSection">Mass Data</sys:String>
+
+    <sys:String x:Key="WormholePage_Calculator_Title">Jump Mass Calculator</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_Note">Uses the hull mass shown in-game (exactly what EVE checks for wormhole jumps); set used mass to 0 for a fresh portal.</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_Ship">Select ship</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_ShipMass">Ship mass (kg)</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_MassHint">Mass in kg</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_UsedMass">Used mass (kg)</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_InputHint">Select a ship or enter a mass to calculate.</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_NoData">This portal has no mass data.</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_TooHeavy">✗ Exceeds max jump mass — cannot pass</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_TooHeavyDetail">Ship mass {0} exceeds the portal's per-jump limit {1}.</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_CanPass">✓ Can pass</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_PassesLeft">About {0} more jumps possible with the remaining {1} of total mass.</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_RegenDays">Remaining mass {0} is not enough; with daily regen {2} it takes about {1} days.</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_MassDepleted">Remaining mass {0} is insufficient for one jump and this portal has no mass regen.</sys:String>
+
+    <sys:String x:Key="WormholePage_ShipClass_Frigate">Frigate</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Destroyer">Destroyer</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Cruiser">Cruiser</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Battlecruiser">Battlecruiser</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Industrial">Industrial</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Battleship">Battleship</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Dreadnought">Dreadnought</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Carrier">Carrier</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_ForceAux">Force Auxiliary</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Supercarrier">Supercarrier</sys:String>
+    <sys:String x:Key="WormholePage_ShipClass_Titan">Titan</sys:String>
+
+    <sys:String x:Key="WormholePage_ZKB">ZKB Analysis</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DataFrom">{1} kills in the last {0} days</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range200">Last 200 kills</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range400">Last 400 kills</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range600">Last 600 kills</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Range800">Last 800 kills</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Detail">ZKB Detail</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_NoSelection">Select a wormhole system to analyze its zKillboard activity</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Loading">Fetching kills from zKillboard...</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_NoData">No kills recorded in this system recently</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Failed">Failed to fetch ZKB data</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Kills">Kills</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Isk">ISK Lost</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_Span">Time Span</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_SpanDays">~{0} days</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_MostActiveCorporations">Most Active Corporations</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_MostActiveAlliances">Most Active Alliances</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_TopShips">Most Destroyed Ships</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_ActivityChart">Activity by Hour (local time)</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_ActivityChartNote">Kills grouped by weekday × local hour — useful for reading enemy activity patterns.</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek1">Mon</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek2">Tue</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek3">Wed</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek4">Thu</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek5">Fri</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek6">Sat</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DayOfWeek7">Sun</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_DaysAgo">days ago</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_HoursAgo">hours ago</sys:String>
+    <sys:String x:Key="WormholePage_ZKB_ActiveNow">active now</sys:String>
+
     <!--  Settings  -->
     <sys:String x:Key="Settings.Title">Settings</sys:String>
     <sys:String x:Key="Settings.Appearance">Appearance</sys:String>
