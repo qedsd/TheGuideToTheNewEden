@@ -80,6 +80,53 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return await DBService.MainDb.Queryable<InvTypeMass>().Where(p => typeIds.Contains(p.TypeID)).ToListAsync();
         }
+
+        /// <summary>
+        /// 查询全部玩家可用舰船的类型与质量（过洞计算器"选择具体舰船"用）：
+        /// groups 表取 CategoryID=6（舰船）的组，再从 types 表按组取 Mass；
+        /// MarketGroupID 非空排除 NPC 专属船，名称按需本地化。
+        /// </summary>
+        public static async Task<List<InvTypeMass>> QueryShipMassAsync()
+        {
+            var shipGroupIds = DBService.MainDb.Queryable<InvGroup>().Where(p => p.CategoryID == 6).Select(p => p.GroupID).ToList();
+            if (shipGroupIds == null || shipGroupIds.Count == 0)
+            {
+                return new List<InvTypeMass>();
+            }
+
+            var types = await DBService.MainDb.Queryable<InvTypeMass>()
+                .Where(p => shipGroupIds.Contains(p.GroupID) && p.Mass > 0 && p.MarketGroupID != null)
+                .ToListAsync();
+            if (types == null || types.Count == 0)
+            {
+                return new List<InvTypeMass>();
+            }
+
+            if (DBService.NeedLocalization)
+            {
+                var localized = await LocalDbService.TranInvTypesAsync(types.Select(p => p.TypeID).ToList());
+                if (localized != null && localized.Count > 0)
+                {
+                    var nameById = new Dictionary<int, string>();
+                    foreach (var item in localized)
+                    {
+                        if (!string.IsNullOrEmpty(item.TypeName))
+                        {
+                            nameById[item.TypeID] = item.TypeName;
+                        }
+                    }
+                    foreach (var type in types)
+                    {
+                        if (nameById.TryGetValue(type.TypeID, out var name))
+                        {
+                            type.TypeName = name;
+                        }
+                    }
+                }
+            }
+            return types;
+        }
+
         public static List<InvType> QueryTypesInGroup(List<int> groupIds)
         {
             var types = DBService.MainDb.Queryable<InvType>().Where(p => p.MarketGroupID != null && groupIds.Contains((int)p.MarketGroupID)).ToList();

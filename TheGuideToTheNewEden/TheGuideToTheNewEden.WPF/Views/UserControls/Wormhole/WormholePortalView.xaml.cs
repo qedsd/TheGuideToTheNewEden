@@ -50,11 +50,14 @@ public sealed class PortalDetailModel
 public partial class WormholePortalView : UserControl
 {
     private readonly PortalDetailModel _model;
+    private readonly IReadOnlyList<ShipSearchItem>? _shipSearchItems;
+    private bool _updatingSearch;
 
-    public WormholePortalView(WormholePortal portal, IReadOnlyList<ShipMassOption>? shipOptions)
+    public WormholePortalView(WormholePortal portal, IReadOnlyList<ShipMassOption>? shipOptions, IReadOnlyList<ShipSearchItem>? allShips = null)
     {
         InitializeComponent();
         _model = new PortalDetailModel(portal);
+        _shipSearchItems = allShips;
         DataContext = _model;
 
         if (shipOptions is { Count: > 0 })
@@ -70,14 +73,77 @@ public partial class WormholePortalView : UserControl
     {
         if (ShipCombo.SelectedItem is ShipMassOption option)
         {
+            _updatingSearch = true;
+            ShipSearchBox.Text = string.Empty;
+            _updatingSearch = false;
+            ShipSearchList.ItemsSource = null;
+            ShipSearchFlyout.Hide();
+
             ShipMassBox.Value = Math.Round(option.Mass);
         }
+    }
+
+    /// <summary>输入即搜：有内容自动弹出 Flyout 展示匹配（取前 30 条），清空则收起。</summary>
+    private void OnShipSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_updatingSearch || _model is null || ShipSearchList is null || _shipSearchItems is not { Count: > 0 })
+        {
+            return;
+        }
+
+        var text = ShipSearchBox.Text?.Trim() ?? string.Empty;
+        if (text.Length == 0)
+        {
+            ShipSearchFlyout.Hide();
+            ShipSearchList.ItemsSource = null;
+            return;
+        }
+
+        var matches = _shipSearchItems
+            .Where(p => p.Name.Contains(text, StringComparison.OrdinalIgnoreCase))
+            .Take(30)
+            .ToList();
+        if (matches.Count == 0)
+        {
+            ShipSearchList.ItemsSource = null;
+            ShipSearchFlyout.Hide();
+            return;
+        }
+
+        ShipSearchList.ItemsSource = matches;
+        // 宽度自适应：下限对齐搜索框宽度，上限由 XAML 的 MaxWidth 限制（长船名走省略号，不出横向滚动条）
+        ShipSearchPanel.MinWidth = Math.Max(200, ShipSearchHost.ActualWidth);
+        ShipSearchFlyout.Show();
+    }
+
+    /// <summary>选中具体舰船：把真实质量填进"舰船质量"（会自动触发一次重算），关闭 Flyout。</summary>
+    private void OnShipSearchSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (ShipSearchList.SelectedItem is not ShipSearchItem item)
+        {
+            return;
+        }
+
+        _updatingSearch = true;
+        ShipSearchBox.Text = item.Name;
+        _updatingSearch = false;
+        ShipSearchList.ItemsSource = null;
+        ShipSearchFlyout.Hide();
+
+        ShipMassBox.Value = Math.Round(item.Mass);
     }
 
     private void OnMassValueChanged(object sender, RoutedEventArgs e) => UpdateResult();
 
     private void UpdateResult()
     {
+        // InitializeComponent 期间给 UsedMassBox 赋 Value="0" 就会触发 TextChanged 回到这里，
+        // 此时 _model 尚未赋值（NullReferenceException），构造末尾还会再调一次，直接跳过。
+        if (_model is null || ShipMassBox is null || UsedMassBox is null)
+        {
+            return;
+        }
+
         var shipMass = ShipMassBox.Value ?? 0;
         var usedMass = Math.Max(0, UsedMassBox.Value ?? 0);
         var portal = _model.Portal;

@@ -23,25 +23,26 @@
         <DataTemplate x:Key="WormholeListItemTemplate" DataType="{x:Type models:WormholeListItem}">
             <Grid Margin="10,6">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <!--  徽章底色按等级取星图安全等级色板（c1 浅蓝 … c13 红），文字按底色亮度取黑/白  -->
                 <Border
-                    Grid.Column="0"
-                    Width="34"
+                    Grid.Column="1"
+                    Width="Auto"
                     Margin="0,0,10,0"
                     Padding="4,2"
                     VerticalAlignment="Center"
-                    Background="{DynamicResource SystemFillColorNeutralBrush}"
+                    Background="{Binding ClassBadgeBrush}"
                     CornerRadius="4">
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="11"
+                        FontSize="12"
                         FontWeight="SemiBold"
-                        Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                        Text="{Binding ClassName}" />
+                        Foreground="{Binding ClassBadgeTextBrush}"
+                        Text="{Binding ClassNameShort}" />
                 </Border>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <TextBlock
                         FontSize="13"
                         FontWeight="SemiBold"
@@ -90,14 +91,20 @@
         </DataTemplate>
 
         <!--  ZKB 活跃实体行（军团/联盟）  -->
+        <!--
+            整行铺满：WPF-UI 的隐式 Button 样式把 HorizontalAlignment 设成 Left（=内容宽度），
+            裸写 <Button> 时内部 Grid 会被压成"头像+名称+计数"的内容宽度——名称不再裁剪、计数列
+            紧贴名称、"N 天前"叠在名称上（实机截图实测）。这里改用键控样式 SettingsRowButton：
+            它不带 BasedOn，不继承隐式样式的对齐设置，模板的 ContentPresenter 是 Stretch。
+            另外显式写 HorizontalAlignment="Stretch"，避免以后有人给它加 BasedOn 时又退回内容宽度。
+        -->
         <DataTemplate x:Key="ActiveEntityTemplate" DataType="{x:Type models:ActiveEntityItem}">
             <Button
                 Margin="0,2"
                 Padding="4,4"
-                HorizontalContentAlignment="Stretch"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="OnEntityButtonClick">
+                HorizontalAlignment="Stretch"
+                Click="OnEntityButtonClick"
+                Style="{DynamicResource SettingsRowButton}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -221,7 +228,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- ============ 顶栏：标题 + 模式切换 ============ -->
+        <!--  ============ 顶栏：标题 + 模式切换 ============  -->
         <Grid Grid.Row="0" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -256,7 +263,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- ============ 模式一：洞系浏览 ============ -->
+        <!--  ============ 模式一：洞系浏览 ============  -->
         <Grid x:Name="BrowserPanel" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="380" />
@@ -264,7 +271,7 @@
                 <ColumnDefinition Width="0.85*" MinWidth="320" />
             </Grid.ColumnDefinitions>
 
-            <!-- 左卡：搜索 + 列表 + 详情 -->
+            <!--  左卡：搜索 + 列表 + 详情  -->
             <controls:CardControl Grid.Column="0">
                 <controls:CardControl.Header>
                     <Grid Margin="4,0">
@@ -313,12 +320,12 @@
                 </controls:CardControl.Header>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="235" />
+                        <ColumnDefinition Width="200" />
                         <ColumnDefinition Width="1" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- 列表 -->
+                    <!--  列表  -->
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
@@ -326,8 +333,9 @@
                         </Grid.RowDefinitions>
                         <ListBox
                             x:Name="WormholeList"
-                            BorderThickness="0"
                             Background="Transparent"
+                            BorderThickness="0"
+                            ItemContainerStyle="{DynamicResource StretchListItem}"
                             ItemTemplate="{StaticResource WormholeListItemTemplate}"
                             ItemsSource="{Binding FilteredWormholes}"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -348,11 +356,9 @@
                         </StackPanel>
                     </Grid>
 
-                    <Border
-                        Grid.Column="1"
-                        Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                    <Border Grid.Column="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
-                    <!-- 详情 -->
+                    <!--  详情  -->
                     <Grid Grid.Column="2">
                         <TextBlock
                             Margin="12"
@@ -368,7 +374,7 @@
                             VerticalScrollBarVisibility="Auto"
                             Visibility="{Binding Detail, Converter={StaticResource NullToVis}}">
                             <StackPanel Margin="12,4,12,0">
-                                <!-- 标题行 -->
+                                <!--  标题行  -->
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -389,17 +395,17 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <!-- 等级 + 天象 -->
+                                <!--  等级 + 天象（徽章配色与列表一致）  -->
                                 <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
                                     <Border
                                         Padding="8,3"
                                         VerticalAlignment="Center"
-                                        Background="{DynamicResource SystemFillColorNeutralBrush}"
+                                        Background="{Binding Detail.ClassBadgeBrush}"
                                         CornerRadius="4">
                                         <TextBlock
                                             FontSize="12"
                                             FontWeight="SemiBold"
-                                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                            Foreground="{Binding Detail.ClassBadgeTextBrush}"
                                             Text="{Binding Detail.ClassName}" />
                                     </Border>
                                     <TextBlock
@@ -429,17 +435,17 @@
                                     Text="{Binding Detail.PhenomenaDescription}"
                                     TextWrapping="Wrap" />
 
-                                <!-- 永联洞 -->
+                                <!--  永联洞  -->
                                 <TextBlock
+                                    Margin="0,14,0,6"
                                     FontSize="12"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Margin="0,14,0,6"
                                     Text="{DynamicResource WormholePage_Static}" />
                                 <ItemsControl
+                                    ItemTemplate="{StaticResource PortalButtonTemplate}"
                                     ItemsPanel="{StaticResource WrapPanelTemplate}"
                                     ItemsSource="{Binding Detail.StaticsPortals}"
-                                    ItemTemplate="{StaticResource PortalButtonTemplate}"
                                     Visibility="{Binding Detail.HasStatics, Converter={StaticResource BoolToVis}}" />
                                 <TextBlock
                                     FontSize="11.5"
@@ -447,17 +453,17 @@
                                     Text="{DynamicResource WormholePage_NoStatics}"
                                     Visibility="{Binding Detail.HasStatics, Converter={StaticResource InverseBoolToVis}}" />
 
-                                <!-- 漫游洞 -->
+                                <!--  漫游洞  -->
                                 <TextBlock
+                                    Margin="0,14,0,6"
                                     FontSize="12"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Margin="0,14,0,6"
                                     Text="{DynamicResource WormholePage_Wandering}" />
                                 <ItemsControl
+                                    ItemTemplate="{StaticResource PortalButtonTemplate}"
                                     ItemsPanel="{StaticResource WrapPanelTemplate}"
                                     ItemsSource="{Binding Detail.WanderingPortals}"
-                                    ItemTemplate="{StaticResource PortalButtonTemplate}"
                                     Visibility="{Binding Detail.HasWanderings, Converter={StaticResource BoolToVis}}" />
                                 <TextBlock
                                     FontSize="11.5"
@@ -465,39 +471,42 @@
                                     Text="{DynamicResource WormholePage_NoWanderings}"
                                     Visibility="{Binding Detail.HasWanderings, Converter={StaticResource InverseBoolToVis}}" />
 
-                                <!-- 天体 -->
+                                <!--  天体  -->
                                 <TabControl Margin="0,14,0,0">
                                     <TabItem Header="{DynamicResource WormholePage_Planet}">
-                                        <ListView
-                                            BorderThickness="0"
+                                        <ListBox
+                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             Background="Transparent"
+                                            BorderThickness="0"
                                             ItemTemplate="{StaticResource StellarItemTemplate}"
                                             ItemsSource="{Binding Detail.Planets}" />
                                     </TabItem>
                                     <TabItem Header="{DynamicResource WormholePage_Moon}">
-                                        <ListView
-                                            BorderThickness="0"
+                                        <ListBox
+                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             Background="Transparent"
+                                            BorderThickness="0"
                                             ItemTemplate="{StaticResource StellarItemTemplate}"
                                             ItemsSource="{Binding Detail.Moons}" />
                                     </TabItem>
                                     <TabItem Header="{DynamicResource WormholePage_Other}">
-                                        <ListView
-                                            BorderThickness="0"
+                                        <ListBox
+                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             Background="Transparent"
+                                            BorderThickness="0"
                                             ItemTemplate="{StaticResource StellarItemTemplate}"
                                             ItemsSource="{Binding Detail.Others}" />
                                     </TabItem>
                                 </TabControl>
 
-                                <!-- 友链 -->
+                                <!--  友链  -->
                                 <TextBlock
+                                    Margin="0,14,0,6"
                                     FontSize="12"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Margin="0,14,0,6"
                                     Text="{DynamicResource WormholePage_Links}" />
-                                <ItemsControl ItemsSource="{Binding LinkNames}" ItemTemplate="{StaticResource LinkButtonTemplate}">
+                                <ItemsControl ItemTemplate="{StaticResource LinkButtonTemplate}" ItemsSource="{Binding LinkNames}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <WrapPanel />
@@ -510,7 +519,7 @@
                 </Grid>
             </controls:CardControl>
 
-            <!-- 右卡：ZKB 分析 -->
+            <!--  右卡：ZKB 分析  -->
             <controls:CardControl Grid.Column="2">
                 <controls:CardControl.Header>
                     <Grid Margin="4,0">
@@ -552,7 +561,7 @@
                     </Grid>
                 </controls:CardControl.Header>
                 <Grid>
-                    <!-- 未选择 -->
+                    <!--  未选择  -->
                     <TextBlock
                         Margin="12"
                         HorizontalAlignment="Center"
@@ -562,7 +571,7 @@
                         TextWrapping="Wrap"
                         Visibility="{Binding Detail, Converter={StaticResource NullToVis}, ConverterParameter=Inverse}" />
 
-                    <!-- 加载中 -->
+                    <!--  加载中  -->
                     <StackPanel
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -576,12 +585,24 @@
                             Text="{DynamicResource WormholePage_ZKB_Loading}" />
                     </StackPanel>
 
-                    <!-- 统计结果 -->
-                    <ScrollViewer
-                        VerticalScrollBarVisibility="Auto"
-                        Visibility="{Binding HasKbData, Converter={StaticResource BoolToVis}}">
+                    <!--  空态：无数据 / 取数失败。成功出数据（HasKbData）后隐藏  -->
+                    <!--
+                        KbSummary 是 VM 里唯一的空态文案出口，此前没有任何绑定，
+                        于是 zKB 返回空（或失败）时整张卡片只剩空白：既没数字也没提示。
+                    -->
+                    <TextBlock
+                        Margin="12"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding KbSummary}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasKbData, Converter={StaticResource InverseBoolToVis}}" />
+
+                    <!--  统计结果  -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding HasKbData, Converter={StaticResource BoolToVis}}">
                         <StackPanel Margin="12,8,12,8">
-                            <!-- 概要三格 -->
+                            <!--  概要三格  -->
                             <UniformGrid Columns="3">
                                 <StackPanel HorizontalAlignment="Center">
                                     <TextBlock
@@ -606,7 +627,7 @@
                                         HorizontalAlignment="Center"
                                         FontSize="17"
                                         FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorCautionBrush}"
+                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
                                         Text="{Binding KbIskText}" />
                                 </StackPanel>
                                 <StackPanel HorizontalAlignment="Center">
@@ -624,34 +645,34 @@
                                 </StackPanel>
                             </UniformGrid>
 
-                            <!-- 最活跃军团 -->
+                            <!--  最活跃军团  -->
                             <TextBlock
                                 Margin="0,14,0,4"
                                 FontSize="12"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{DynamicResource WormholePage_ZKB_MostActiveCorporations}" />
-                            <ItemsControl ItemsSource="{Binding TopCorporations}" ItemTemplate="{StaticResource ActiveEntityTemplate}" />
+                            <ItemsControl ItemTemplate="{StaticResource ActiveEntityTemplate}" ItemsSource="{Binding TopCorporations}" />
 
-                            <!-- 最活跃联盟 -->
+                            <!--  最活跃联盟  -->
                             <TextBlock
                                 Margin="0,10,0,4"
                                 FontSize="12"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{DynamicResource WormholePage_ZKB_MostActiveAlliances}" />
-                            <ItemsControl ItemsSource="{Binding TopAlliances}" ItemTemplate="{StaticResource ActiveEntityTemplate}" />
+                            <ItemsControl ItemTemplate="{StaticResource ActiveEntityTemplate}" ItemsSource="{Binding TopAlliances}" />
 
-                            <!-- 热门船型（新增） -->
+                            <!--  热门船型（新增）  -->
                             <TextBlock
                                 Margin="0,10,0,4"
                                 FontSize="12"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{DynamicResource WormholePage_ZKB_TopShips}" />
-                            <ItemsControl ItemsSource="{Binding TopShips}" ItemTemplate="{StaticResource ShipStatTemplate}" />
+                            <ItemsControl ItemTemplate="{StaticResource ShipStatTemplate}" ItemsSource="{Binding TopShips}" />
 
-                            <!-- 活跃时段（新增：堆叠柱状图，本地时间） -->
+                            <!--  活跃时段（新增：堆叠柱状图，本地时间）  -->
                             <TextBlock
                                 Margin="0,12,0,0"
                                 FontSize="12"
@@ -675,7 +696,7 @@
             </controls:CardControl>
         </Grid>
 
-        <!-- ============ 模式二：洞口库 ============ -->
+        <!--  ============ 模式二：洞口库 ============  -->
         <controls:CardControl
             x:Name="PortalLibraryPanel"
             Grid.Row="1"
@@ -700,12 +721,13 @@
                         <ComboBoxItem Content="{DynamicResource WormholePage_Class_100}" />
                         <ComboBoxItem Content="{DynamicResource WormholePage_Class_101}" />
                         <ComboBoxItem Content="{DynamicResource WormholePage_Class_102}" />
-                        <ComboBoxItem Content="{DynamicResource WormholePage_ClassFilter_C1}" />
-                        <ComboBoxItem Content="{DynamicResource WormholePage_ClassFilter_C2}" />
-                        <ComboBoxItem Content="{DynamicResource WormholePage_ClassFilter_C3}" />
-                        <ComboBoxItem Content="{DynamicResource WormholePage_ClassFilter_C4}" />
-                        <ComboBoxItem Content="{DynamicResource WormholePage_ClassFilter_C5}" />
-                        <ComboBoxItem Content="{DynamicResource WormholePage_ClassFilter_C6}" />
+                        <!--  c1-c6 复用 WormholePage_Class_1..6：ClassFilter_C* 这组键在语言文件里不存在（下拉会显示键名）  -->
+                        <ComboBoxItem Content="{DynamicResource WormholePage_Class_1}" />
+                        <ComboBoxItem Content="{DynamicResource WormholePage_Class_2}" />
+                        <ComboBoxItem Content="{DynamicResource WormholePage_Class_3}" />
+                        <ComboBoxItem Content="{DynamicResource WormholePage_Class_4}" />
+                        <ComboBoxItem Content="{DynamicResource WormholePage_Class_5}" />
+                        <ComboBoxItem Content="{DynamicResource WormholePage_Class_6}" />
                         <ComboBoxItem Content="{DynamicResource WormholePage_Class_12}" />
                         <ComboBoxItem Content="{DynamicResource WormholePage_Class_13}" />
                     </ComboBox>
@@ -727,11 +749,11 @@
                 <ui:DataGrid
                     x:Name="PortalGrid"
                     Margin="4"
-                    Style="{StaticResource WormholeGridStyle}"
                     ItemsSource="{Binding FilteredPortals}"
                     MouseDoubleClick="OnPortalGridDoubleClick"
                     RowHeight="34"
-                    ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    Style="{StaticResource WormholeGridStyle}">
                     <DataGrid.Columns>
                         <DataGridTextColumn
                             Width="88"

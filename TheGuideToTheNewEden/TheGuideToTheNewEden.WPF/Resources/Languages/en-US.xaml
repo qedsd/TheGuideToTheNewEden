@@ -135,6 +135,8 @@
     <sys:String x:Key="WormholePage_Calculator_Title">Jump Mass Calculator</sys:String>
     <sys:String x:Key="WormholePage_Calculator_Note">Uses the hull mass shown in-game (exactly what EVE checks for wormhole jumps); set used mass to 0 for a fresh portal.</sys:String>
     <sys:String x:Key="WormholePage_Calculator_Ship">Select ship</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_ShipSearch">Specific ship</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_ShipSearchHint">Type to search all ships</sys:String>
     <sys:String x:Key="WormholePage_Calculator_ShipMass">Ship mass (kg)</sys:String>
     <sys:String x:Key="WormholePage_Calculator_MassHint">Mass in kg</sys:String>
     <sys:String x:Key="WormholePage_Calculator_UsedMass">Used mass (kg)</sys:String>
@@ -950,6 +952,7 @@
     <sys:String x:Key="ChannelMonitorPage_ChannelLogs">Channel Logs</sys:String>
     <sys:String x:Key="ChannelMonitorPage_Start">Start Monitor</sys:String>
     <sys:String x:Key="ChannelMonitorPage_Stop">Stop Monitor</sys:String>
+    <sys:String x:Key="ChannelMonitorPage_RefreshList">Refreshing list</sys:String>
     <sys:String x:Key="GameLogMonitorPage_CharacterList">Characters</sys:String>
     <sys:String x:Key="GameLogMonitorPage_Setting">Setting</sys:String>
     <sys:String x:Key="GameLogMonitorPage_StartTime">Start Time</sys:String>
@@ -1082,6 +1085,7 @@
     <sys:String x:Key="GamePreviewPage_NeedTwoWindows">At least two visible preview windows are required</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoLayoutApplied">Preview windows arranged</sys:String>
     <sys:String x:Key="GamePreviewPage_UniformSizeApplied">Uniform size applied</sys:String>
+    <sys:String x:Key="GamePreviewPage_ApplyToAll">Apply to other settings</sys:String>
     <sys:String x:Key="GamePreviewPage_ApplyToAllDone">Applied to other settings</sys:String>
     <sys:String x:Key="GamePreviewPage_HotkeyFailed">Failed to register hotkey: {0}</sys:String>
     <sys:String x:Key="GamePreviewPage_NoGroupMember">No previewing member in this group</sys:String>
@@ -1126,6 +1130,7 @@
     <sys:String x:Key="ChannelScanPage_AddIgnored_Alliance">Ignore this alliance</sys:String>
     <sys:String x:Key="ChannelScanPage_ReloadResultZKB">Reload ZKB Info</sys:String>
     <!--  Channel - Market  -->
+    <sys:String x:Key="ChannelMarketPage_Running">Calculating</sys:String>
     <sys:String x:Key="ChannelMarket_Items">items</sys:String>
     <sys:String x:Key="ChannelMarket_NoChannel">No channel selected</sys:String>
     <sys:String x:Key="ChannelMarket_Started">Channel monitor started</sys:String>

@@ -271,10 +271,20 @@ public sealed class NavResultItem
     public double DistanceLy { get; init; }
     /// <summary>0 起点 / 1 星门 / 2 旗舰跳 / 3 跳桥。</summary>
     public int NavType { get; init; }
-    public string NavTypeText { get; init; } = string.Empty;
+    /// <summary>本跳类型文案：求值时按当前语言解析（换语言后重算绑定即生效）。</summary>
+    public string NavTypeText => FindString(NavType switch
+    {
+        0 => "MapPage_Nav_Start",
+        1 => "MapPage_Nav_Gate",
+        2 => "MapPage_Nav_Capital",
+        _ => "MapPage_Nav_Bridge",
+    });
     /// <summary>本跳预计燃料（仅旗舰跳有值）。</summary>
     public double Fuel { get; init; }
     public string FuelText => Fuel > 0 ? Fuel.ToString("N2") : string.Empty;
+
+    private static string FindString(string key) =>
+        System.Windows.Application.Current?.TryFindResource(key) as string ?? key;
 }
 
 /// <summary>星系 ESI 统计（详情页与信息卡共用）。</summary>
@@ -658,6 +668,46 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     public event EventHandler<(long CharacterId, SKBitmap Bitmap)>? PortraitLoaded;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public MapPageViewModel()
+    {
+        // 页面（NavigationCacheMode="Required"）与 VM 都常驻，语言事件无需退订。
+        // 星图里"求值时本地化"的文案（导航结果的"本跳类型"等）由 LanguageService 统一重算绑定；
+        // 这里只管两处**生成时就把文案拼进对象**的：「全部星域」哨兵项（MapRegion 是 Core 的普通模型、
+        // 不会发通知，只能换新实例让下拉重建该项）。
+        Services.LanguageService.LanguageChanged += OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged(object? sender, string language)
+    {
+        RefreshAllRegionsSentinel(Regions, () => SelectedLocateRegion, item => SelectedLocateRegion = item);
+        RefreshAllRegionsSentinel(FilterRegions, () => FilterRegion, item => FilterRegion = item);
+    }
+
+    /// <summary>
+    /// 用新实例替换「全部星域」哨兵（<c>RegionID = 0</c>），并把原先指向哨兵的选择挪到新实例上
+    /// ——<see cref="MapRegion"/> 没有值相等语义，不挪会让下拉显示空白。
+    /// </summary>
+    private static void RefreshAllRegionsSentinel(
+        ObservableCollection<MapRegion> regions,
+        Func<MapRegion?> currentSelection,
+        Action<MapRegion> select)
+    {
+        if (regions.Count == 0 || regions[0].RegionID != 0)
+        {
+            return;
+        }
+
+        var old = regions[0];
+        var wasSelected = ReferenceEquals(currentSelection(), old);
+        var replacement = new MapRegion { RegionID = 0, RegionName = FindString("MapPage_Filter_AllRegions") };
+        regions[0] = replacement;
+
+        if (wasSelected)
+        {
+            select(replacement);
+        }
+    }
 
     // ---------- 数据装载 ----------
 
@@ -2408,13 +2458,6 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 RegionName = node.RegionName,
                 DistanceLy = ly,
                 NavType = navType,
-                NavTypeText = navType switch
-                {
-                    0 => FindString("MapPage_Nav_Start"),
-                    1 => FindString("MapPage_Nav_Gate"),
-                    2 => FindString("MapPage_Nav_Capital"),
-                    _ => FindString("MapPage_Nav_Bridge"),
-                },
                 Fuel = fuel,
             });
         }

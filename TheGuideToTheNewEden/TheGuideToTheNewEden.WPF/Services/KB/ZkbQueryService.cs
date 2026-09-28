@@ -993,7 +993,7 @@ public static class ZkbQueryService
 
             groups.Add(new KillStatisticGroup
             {
-                Title = FindString(TopAllTimeTitleKey(stat.Type)),
+                TitleKey = TopAllTimeTitleKey(stat.Type),
                 Items = items,
             });
         }

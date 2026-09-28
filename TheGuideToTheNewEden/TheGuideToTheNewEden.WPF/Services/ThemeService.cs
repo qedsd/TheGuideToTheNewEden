@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
 
@@ -70,6 +71,8 @@ public static class ThemeService
             CurrentAccent = color;
             ApplicationAccentColorManager.Apply(color, Theme);
         }
+
+        SyncSystemAccentBrushes();
     }
 
     public static void ToggleTheme()
@@ -81,8 +84,39 @@ public static class ThemeService
     {
         CurrentAccent = color;
         ApplicationAccentColorManager.Apply(color, Theme);
+        SyncSystemAccentBrushes();
         SettingsService.SetColor(SettingsService.AccentColorKey, color);
         SettingsService.Save();
         ThemeChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 把 <c>SystemAccentColorPrimary/Secondary/TertiaryBrush</c> 与 AccentColorManager 刚更新过的
+    /// <c>SystemAccentColor*Color</c> 对齐。
+    ///
+    /// WPF-UI 的 <c>ApplicationAccentColorManager.Apply</c> 只写四个 <b>Color</b> 资源和
+    /// <c>Accent*</c> 系画刷，<b>从不更新这三个画刷</b>——它们来自 <c>Resources/Accent.xaml</c> 的
+    /// <c>StaticResource</c>，永远停留在编译时的系统默认蓝 <c>#0067C0</c>。本项目有 30+ 处引用
+    /// 这三个画刷（KB/ZKB 页链接与强调、翻译选中高亮、通知条、虫洞与洞口详情标题……），
+    /// 在自定义主题色下全部不变色（用户实机反馈：主题色是绿的、虫洞名字却是蓝的）。
+    /// </summary>
+    private static void SyncSystemAccentBrushes()
+    {
+        var resources = Application.Current.Resources;
+        SyncSystemAccentBrush(resources, "SystemAccentColorPrimary");
+        SyncSystemAccentBrush(resources, "SystemAccentColorSecondary");
+        SyncSystemAccentBrush(resources, "SystemAccentColorTertiary");
+    }
+
+    private static void SyncSystemAccentBrush(ResourceDictionary resources, string colorKey)
+    {
+        if (resources[colorKey] is not Color color)
+        {
+            return;
+        }
+
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        resources[colorKey + "Brush"] = brush;
     }
 }

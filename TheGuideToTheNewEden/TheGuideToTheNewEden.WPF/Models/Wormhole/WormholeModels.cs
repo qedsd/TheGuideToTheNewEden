@@ -26,6 +26,18 @@ public sealed class WormholeListItem
 
     public string ClassName => FindString($"WormholePage_Class_{Wormhole.Class}");
 
+    /// <summary>
+    /// 列表徽章用的短等级名：c12-c18 的全名很长（如 "c13 Shattered Frigate" / "c18 流浪者堡垒虫洞"），
+    /// 会把列表里的星系名挤没，这里只显示 cN；详情卡仍用 <see cref="ClassName"/> 显示全名。
+    /// </summary>
+    public string ClassNameShort => Wormhole.Class is >= 12 and <= 18 ? $"c{Wormhole.Class}" : ClassName;
+
+    /// <summary>列表徽章底色：照搬星图安全等级色板（c1 浅蓝 … c13 红）。</summary>
+    public System.Windows.Media.Brush ClassBadgeBrush => WormholeClassColor.Badge(Wormhole.Class);
+
+    /// <summary>列表徽章文字色：按底色亮度取黑/白。</summary>
+    public System.Windows.Media.Brush ClassBadgeTextBrush => WormholeClassColor.BadgeText(Wormhole.Class);
+
     public int Phenomena => Wormhole.Phenomena;
 
     public string PhenomenaName => FindString($"WormholePage_Phenomena_{Wormhole.Phenomena}");
@@ -74,6 +86,66 @@ public static class WormholeFormat
 
     private static string FindString(string key) =>
         System.Windows.Application.Current?.TryFindResource(key) as string ?? key;
+}
+
+/// <summary>
+/// 虫洞等级徽章配色：**照搬星图的安全等级色板**（<c>StarMapCanvas.Palette</c>，0.0 深红 → 1.0 浅蓝共 11 档），
+/// 直接引用画布那一份定义，避免两处硬编码走样。映射按用户的"危险度类比"：
+/// c1..c3 = 10..8（浅蓝→绿，类比高安）；c4 = 5（黄）；c5/c6 = 3/2（橙红，类比低安）；c12..c18 = 0（红，类比 00，
+/// 其中 c13 破碎也在内）；高安/低安/00 按同样语义取 10/3/0 档。
+/// </summary>
+internal static class WormholeClassColor
+{
+    private static readonly IReadOnlyDictionary<int, int> PaletteIndexByClass = new Dictionary<int, int>
+    {
+        [1] = 10,
+        [2] = 9,
+        [3] = 8,
+        [4] = 5,
+        [5] = 3,
+        [6] = 2,
+        [12] = 0,
+        [13] = 0,
+        [14] = 0,
+        [15] = 0,
+        [16] = 0,
+        [17] = 0,
+        [18] = 0,
+        [100] = 10, // 高安（1.0 档）
+        [101] = 3,  // 低安（橙红档）
+        [102] = 0,  // 00（0.0 档）
+    };
+
+    /// <summary>徽章底色（等级不在表内时退回中性灰，观感同原 SystemFillColorNeutral）。</summary>
+    public static System.Windows.Media.Brush Badge(int wormholeClass)
+    {
+        return ToBrush(ClassColor(wormholeClass));
+    }
+
+    /// <summary>徽章文字色：按底色亮度取黑/白（阈值与设置页的对比色逻辑一致），保证浅蓝/黄底上文字可读。</summary>
+    public static System.Windows.Media.Brush BadgeText(int wormholeClass)
+    {
+        var color = ClassColor(wormholeClass);
+        var luminance = (0.299 * color.Red) + (0.587 * color.Green) + (0.114 * color.Blue);
+        return ToBrush(luminance > 140
+            ? new SkiaSharp.SKColor(0x1B, 0x1B, 0x1B)
+            : SkiaSharp.SKColors.White);
+    }
+
+    private static SkiaSharp.SKColor ClassColor(int wormholeClass)
+    {
+        return PaletteIndexByClass.TryGetValue(wormholeClass, out var index)
+            ? Views.UserControls.Map.StarMapCanvas.Palette[index]
+            : new SkiaSharp.SKColor(0x88, 0x88, 0x88);
+    }
+
+    private static System.Windows.Media.Brush ToBrush(SkiaSharp.SKColor color)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(
+            System.Windows.Media.Color.FromRgb(color.Red, color.Green, color.Blue));
+        brush.Freeze();
+        return brush;
+    }
 }
 
 /// <summary>
@@ -132,6 +204,11 @@ public sealed class WormholeDetail
     public string Name => Wormhole.Name;
 
     public string ClassName => FindString($"WormholePage_Class_{Wormhole.Class}");
+
+    /// <summary>详情卡徽章底色/文字色：与列表徽章同一份等级配色（c1 浅蓝 … c13 红）。</summary>
+    public System.Windows.Media.Brush ClassBadgeBrush => WormholeClassColor.Badge(Wormhole.Class);
+
+    public System.Windows.Media.Brush ClassBadgeTextBrush => WormholeClassColor.BadgeText(Wormhole.Class);
 
     public string PhenomenaName => FindString($"WormholePage_Phenomena_{Wormhole.Phenomena}");
 
@@ -281,12 +358,37 @@ public sealed class ShipMassOption
 {
     public string Name { get; init; } = string.Empty;
 
+    /// <summary>
+    /// 类别语言键后缀（如 <c>Frigate</c>）。
+    /// 存**键**而不是拼好的文案：文案在求值时解析，换语言后重算绑定即可生效（存字符串就要等重启）。
+    /// </summary>
+    public string CategoryKey { get; init; } = string.Empty;
+
     /// <summary>类别说明（如"战列舰 · Dominix 实测质量"）。</summary>
-    public string Category { get; init; } = string.Empty;
+    public string Category => FindString($"WormholePage_ShipClass_{CategoryKey}");
 
     public double Mass { get; init; }
 
     public int TypeId { get; init; }
 
     public string Display => $"{Name}（{Category}）";
+
+    private static string FindString(string key) =>
+        System.Windows.Application.Current?.TryFindResource(key) as string ?? key;
+}
+
+/// <summary>
+/// 过洞计算器"具体舰船"候选项：SDE 全量玩家舰船（名称已本地化），按名称搜索、选中即取真实质量。
+/// </summary>
+public sealed class ShipSearchItem
+{
+    public int TypeId { get; init; }
+
+    public string Name { get; init; } = string.Empty;
+
+    public double Mass { get; init; }
+
+    public string MassText => WormholeFormat.MassToFullText((long)Mass);
+
+    public string Display => $"{Name} · {MassText}";
 }

@@ -70,6 +70,30 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
         _yAxis = new Axis { TextSize = 11, MinLimit = 0, Labeler = v => ((int)v).ToString() };
         XAxes = [_xAxis];
         YAxes = [_yAxis];
+
+        // 页面（NavigationCacheMode="Required"）与 VM 都常驻，语言事件无需退订。
+        // 模型里"求值时本地化"的文案（列表条目/详情/天前）由 LanguageService 统一重算绑定；
+        // 这里只管**生成时就把文案烤进对象**的两处：活动分布图的星期图例、ZKB 概要文案。
+        Services.LanguageService.LanguageChanged += OnLanguageChanged;
+    }
+
+    /// <summary>
+    /// 换语言后重建"生成时已本地化"的内容：LiveCharts 的系列名与 KbSummary/KbSpanText 都是
+    /// 组数据时拼好的字符串，重算绑定救不回来，必须按缓存的原始数据重新生成一次（不重新取数）。
+    /// </summary>
+    private void OnLanguageChanged(object? sender, string language)
+    {
+        if (_hourDayCounts is not null)
+        {
+            BuildActivitySeries(_hourDayCounts);
+        }
+
+        if (_kbSummaryKind == KbSummaryKind.Data)
+        {
+            KbSpanText = string.Format(FindString("WormholePage_ZKB_SpanDays"), _kbStatisticsSpanDays.ToString("N0"));
+        }
+
+        UpdateKbSummaryText();
     }
 
     // ==================================================================
@@ -341,10 +365,50 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
     private bool _hasKbData;
     public bool HasKbData { get => _hasKbData; private set => Set(ref _hasKbData, value); }
 
-    /// <summary>概要：击杀数 / ISK 损失 / 时间跨度（新增于 WinUI：三格概要）。</summary>
-    public string KbKillsText { get; private set; } = string.Empty;
-    public string KbIskText { get; private set; } = string.Empty;
-    public string KbSpanText { get; private set; } = string.Empty;
+    /// <summary>概要/空态文案的来源状态：文案本身在 <see cref="UpdateKbSummaryText"/> 里按当前语言现拼。</summary>
+    private enum KbSummaryKind
+    {
+        None,
+        Data,
+        NoData,
+        Failed,
+    }
+
+    private KbSummaryKind _kbSummaryKind = KbSummaryKind.None;
+    private double _kbStatisticsSpanDays;
+    private int _kbStatisticsKills;
+
+    /// <summary>星期 × 小时计数矩阵（分析结果缓存，换语言时用它重建图例，不重新取数）。</summary>
+    private int[,]? _hourDayCounts;
+
+    /// <summary>
+    /// 按当前语言拼 <see cref="KbSummary"/>：取数成功是"过去 N 天内 M 个击杀"，
+    /// 没取到数据是"该星系最近没有击杀记录"，请求失败是"ZKB 数据获取失败"。
+    /// 之所以不直接在取数流程里写死字符串，是为了**换语言能重拼**（否则要等下次取数才更新）。
+    /// </summary>
+    private void UpdateKbSummaryText() => KbSummary = _kbSummaryKind switch
+    {
+        KbSummaryKind.Data => string.Format(
+            FindString("WormholePage_ZKB_DataFrom"),
+            _kbStatisticsSpanDays.ToString("N0"),
+            _kbStatisticsKills.ToString("N0")),
+        KbSummaryKind.NoData => FindString("WormholePage_ZKB_NoData"),
+        KbSummaryKind.Failed => FindString("WormholePage_ZKB_Failed"),
+        _ => string.Empty,
+    };
+
+    private string _kbKillsText = string.Empty;
+    private string _kbIskText = string.Empty;
+    private string _kbSpanText = string.Empty;
+
+    /// <summary>
+    /// 概要：击杀数 / ISK 损失 / 时间跨度（新增于 WinUI：三格概要）。
+    /// 必须是"带通知"的属性：三个值在取数完成后才赋值，普通自动属性只会在绑定首次求值时
+    /// 被读到一次（那时还是空串）→ 界面上只剩三个标题、数字永远不出现。
+    /// </summary>
+    public string KbKillsText { get => _kbKillsText; private set => Set(ref _kbKillsText, value); }
+    public string KbIskText { get => _kbIskText; private set => Set(ref _kbIskText, value); }
+    public string KbSpanText { get => _kbSpanText; private set => Set(ref _kbSpanText, value); }
 
     public ObservableCollection<ActiveEntityItem> TopCorporations { get; } = [];
     public ObservableCollection<ActiveEntityItem> TopAlliances { get; } = [];
@@ -389,7 +453,12 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
 
         IsKbLoading = true;
         HasKbData = false;
+        _kbSummaryKind = KbSummaryKind.None;
+        _hourDayCounts = null;
         KbSummary = string.Empty;
+        KbKillsText = string.Empty;
+        KbIskText = string.Empty;
+        KbSpanText = string.Empty;
         TopCorporations.Clear();
         TopAlliances.Clear();
         TopShips.Clear();
@@ -429,7 +498,8 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
 
             if (details.Count == 0)
             {
-                KbSummary = FindString("WormholePage_ZKB_NoData");
+                _kbSummaryKind = KbSummaryKind.NoData;
+                UpdateKbSummaryText();
                 return;
             }
 
@@ -456,15 +526,17 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
                 TopShips.Add(item);
             }
 
+            _hourDayCounts = analysis.HourDayCounts;
             BuildActivitySeries(analysis.HourDayCounts);
-            HasKbData = true;
+            // 概要三格先落值再翻开统计区（HasKbData 一置真，绑定就要求值了）
             KbKillsText = analysis.TotalKills.ToString("N0");
             KbIskText = Helpers.IskFormatHelper.Format(analysis.TotalIsk);
             KbSpanText = string.Format(FindString("WormholePage_ZKB_SpanDays"), analysis.SpanDays.ToString("N0"));
-            KbSummary = string.Format(
-                FindString("WormholePage_ZKB_DataFrom"),
-                analysis.SpanDays.ToString("N0"),
-                analysis.TotalKills.ToString("N0"));
+            HasKbData = true;
+            _kbStatisticsSpanDays = analysis.SpanDays;
+            _kbStatisticsKills = analysis.TotalKills;
+            _kbSummaryKind = KbSummaryKind.Data;
+            UpdateKbSummaryText();
         }
         catch (OperationCanceledException)
         {
@@ -473,7 +545,15 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
         catch (System.Exception ex)
         {
             Core.Log.Error(ex);
-            Services.PageNotifyService.Error($"{FindString("WormholePage_ZKB_Failed")}: {ex.Message}");
+            var failed = FindString("WormholePage_ZKB_Failed");
+            // 卡片里留一条常驻提示：右下角通知一闪而过，空卡片说不清是"没数据"还是"没取到"
+            if (!token.IsCancellationRequested)
+            {
+                _kbSummaryKind = KbSummaryKind.Failed;
+                UpdateKbSummaryText();
+            }
+
+            Services.PageNotifyService.Error($"{failed}: {ex.Message}");
         }
         finally
         {
@@ -784,6 +864,9 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
 
     public List<ShipMassOption> ShipOptions { get; private set; } = [];
 
+    /// <summary>全量舰船（过洞计算器"选择具体舰船"搜索用）：SDE 全部玩家舰船 + 真实质量，仅加载一次。</summary>
+    public IReadOnlyList<ShipSearchItem>? AllShipItems { get; private set; }
+
     /// <summary>加载内置代表舰船的精确质量（SDE types.mass）。</summary>
     public async Task LoadShipOptionsAsync()
     {
@@ -821,11 +904,42 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
                 {
                     TypeId = p.typeId,
                     Name = map[p.typeId].TypeName ?? p.typeId.ToString(),
-                    Category = FindString($"WormholePage_ShipClass_{p.key}"),
+                    CategoryKey = p.key,
                     Mass = map[p.typeId].Mass,
                 })
                 .ToList();
             Raise(nameof(ShipOptions));
+        }
+        catch (System.Exception ex)
+        {
+            Core.Log.Error(ex);
+        }
+    }
+
+    /// <summary>
+    /// 加载全部玩家舰船（SDE types.mass，名称已按需本地化）供过洞计算器按名搜索，仅加载一次。
+    /// </summary>
+    public async Task LoadAllShipsAsync()
+    {
+        if (AllShipItems is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            var ships = await InvTypeService.QueryShipMassAsync().ConfigureAwait(false);
+            AllShipItems = ships?
+                .Where(p => !string.IsNullOrEmpty(p.TypeName) && p.Mass > 0)
+                .OrderBy(p => p.TypeName, System.StringComparer.OrdinalIgnoreCase)
+                .Select(p => new ShipSearchItem
+                {
+                    TypeId = p.TypeID,
+                    Name = p.TypeName,
+                    Mass = p.Mass,
+                })
+                .ToList() ?? [];
+            Raise(nameof(AllShipItems));
         }
         catch (System.Exception ex)
         {

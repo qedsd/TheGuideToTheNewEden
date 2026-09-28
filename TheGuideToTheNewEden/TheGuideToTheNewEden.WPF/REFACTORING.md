@@ -1620,6 +1620,10 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 35 | WPF 版在**未更新的 Windows 10 21H1（19043.985）**上**启动即崩**（`0x80131506`，故障模块 `KERNELBASE.dll`，无托管异常、无日志） | .NET 9 起的 WPF 与该系统补丁级别不兼容——同机 .NET Framework / 6 / 8 的 WPF 与任何控制台程序都正常 | TFM 由 `net10.0-windows10.0.19041` 回退为 **`net8.0-windows10.0.19041`**（LTS），平台版本 `10.0.19041` 保留；连带 `AssemblyName` → `TheGuideToTheNewEden`、`H.NotifyIcon.Wpf` → 2.3.0。见阶段 49。**已实机验证**：net8 产物在该机上正常运行 |
 | 36 | **授权回调的转发进程会清空共享的 `settings.json`**（每次欧服授权回调，以及"程序已在运行时又双击一次图标"都会触发） | 阶段 48 把单实例判定提前到 `CoreInitializer.Init()` 之前，转发进程不再 `Initialize()` 设置 → `App.OnExit` 里的 `SettingsService.Save()` 用**空字典**覆盖 `Configs/settings.json`。且实测在 `Startup` 里 `Shutdown()` **仍会触发 `Exit`**，所以这段清理必然执行 | 入口改为自定义 `Program.Main`（`<StartupObject>`）：非首实例**在创建 `Application` 之前**就转交并 `return`，`Exit` 不再触发；单实例状态从 `App` 迁到 `Program`（碰 `App` 的静态成员会连带加载 WPF 栈）。见阶段 50 |
 | 37 | 欧服授权回调**必然要多起一个客户端进程**（协议激活只能"运行一条命令行"，无法把 URL 投递给已运行的进程） | 自定义 URL 协议是 Windows 上唯一由注册表驱动的机制，它只能表达"运行某个命令"；而同一个 SSO 应用不允许登记第二个 Callback URL，所以两种通道只能二选一（阶段 51 用户确认） | 改用**本地回环**：浏览器把回调直接打进主实例监听的 `http://localhost:<port>/callback/`，零第二进程、零注册表依赖。注册表那套的代码与界面已在阶段 52 **全部删除**。见阶段 51 / 52 |
+| 38 | 虫洞 ZKB 分析卡：军团/联盟行的**计数与"N 天前"叠在名称上**，且"概要三格"**只有标题没有数字** | ① 行模板用裸 `<Button>`，而 WPF-UI 隐式样式把 `HorizontalAlignment` 设为 `Left`（=内容宽度）→ 内部 Grid 不铺满、`*` 列不填充、`TextTrimming` 失效、`Auto` 计数列紧跟名称；② 三个概要文案是**无通知的自动属性**，且赋值在 `HasKbData = true` 之后 | 行按钮改用键控样式 `SettingsRowButton` + 显式 `HorizontalAlignment="Stretch"`；三个文案改带通知属性并在 `HasKbData = true` **之前**落值；顺带把死属性 `KbSummary` 接成卡片空态提示（失败路径也写入）。见阶段 69 / §9 第 62 条 |
+| 39 | 切到英文**只有一部分生效**，其余要重启 | `SetLanguage` 只换语言字典：`DynamicResource` 跟着变，但**普通 `Binding` 不会重读源**（WPF 只在源发通知/DataContext 变化时重读），而大量文案是"求值时查资源"的模型计算属性；页面又是 `NavigationCacheMode="Required"` 常驻，切走的页面脱离可视树、切回来仍不重新求值。另有少数文案在**生成时就把字符串拼进了对象**（图表系列名、`KbSummary`、`ShipMassOption.Category`） | `LanguageService` 换字典后统一 `UpdateTarget()` 重算可视树上的绑定，并用 `FrameworkElement.Loaded` 类处理器按语言版本补刷"重新上树"的元素；虫洞 VM 订阅 `LanguageChanged` 重建图表系列与 ZKB 文案，`ShipMassOption` 改存语言键。见阶段 70 / §9 第 63 条 |
+| 40 | 深色模式下虫洞页"ISK 损失"数值是**黑色**的（浅色下凑合能看所以一直没暴露） | **WPF-UI 4.3.0 没有 `TextFillColorCautionBrush` 这个键**（只有 `SystemFillColorCautionBrush`，浅 `#9D5D00`/深 `#FCE100`）；`DynamicResource` 缺键不报错、保持默认前景色 = 系统黑 | 改用 `SystemFillColorCautionBrush`。顺带全项目做"引用未定义资源键"静态差集核查：又修掉洞口库下拉 6 个缺失键（改用既有 `WormholePage_Class_1..6`）、补 `GamePreviewPage_ApplyToAll` 与 2 个等待提示缺失键（中英）。见阶段 71 / §9 第 64 条 |
+| 41 | 选了绿色主题色，但虫洞名等 **30+ 处强调色 UI 仍是蓝色**（KB/ZKB 页、翻译选中高亮、通知条、图表取色……） | WPF-UI 的 `ApplicationAccentColorManager.Apply` 只更新 `SystemAccentColor*` 四个 **Color** 与 `Accent*` 系画刷，**不更新** `SystemAccentColorPrimaryBrush`/`SecondaryBrush`/`TertiaryBrush` —— 它们来自 `Resources/Accent.xaml` 的 StaticResource，恒为系统蓝 `#0067C0` | `ThemeService` 在每次应用强调色后 `SyncSystemAccentBrushes()` 用刚更新的 Color 重建这三个画刷并写回应用资源；30+ 处引用零改动即修复。见阶段 72 |
 
 ---
 
@@ -2495,6 +2499,167 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   洞口库备注列取两条质量备注去重拼接（DB 无独立备注行）、ZKB 范围为"最近 N 条"（zKB 接口无时间过滤）。
 
 
+### 阶段 69：虫洞 ZKB 分析卡布局修复（用户实机反馈"虫洞功能 UI 布局错乱"）
+
+- **现象（用户截图）**：右卡"ZKB 分析"里，最活跃军团/联盟每行的**计数 + "N 天前"挤在名称尾部**——计数列不在卡片右边缘、
+  名称不裁剪、"N 天前"直接叠在名称上；同时"概要三格"**只有三个标题（击杀 / ISK 损失 / 时间跨度）没有任何数字**。
+- **根因①（行不铺满）**：行模板用的是裸 `<Button>`，而 **WPF-UI 的隐式 Button 样式带 `HorizontalAlignment="Left"`**
+  （`DefaultButtonStyle`，另有 `VerticalAlignment="Center"` / `HorizontalContentAlignment="Center"`，WPF-UI 4.3.0 源码核实）。
+  `Left` = 内容宽度 → 内部 Grid 被压成"头像+名称+计数"的宽度：`*` 列不再填充、`TextTrimming` 永不触发、
+  `Auto` 计数列紧跟名称之后。同页"热门船型"行是纯 `Grid` 所以正常——**"同一个列表里有的行正常、有的行挤成一团"就是这种"外层容器宽度不同"的信号**。
+- **根因②（概要无数字）**：`KbKillsText` / `KbIskText` / `KbSpanText` 是**普通自动属性**（无 `INotifyPropertyChanged`），
+  且赋值在 `HasKbData = true` **之后**——绑定只在首次求值（那时还是空串）时读过一次，之后再赋值没有任何通知。
+  与阶段 53 的 `KbDetailViewModel.IsLoading`（同类"静默失效"）同型。
+- **修复**：
+  ① `ActiveEntityTemplate` 的行按钮改用键控样式 `SettingsRowButton`（**不带 `BasedOn` → 不继承隐式样式的对齐设置**，
+  模板 `ContentPresenter` 本身是 `Stretch`，自带悬停/按下反馈），并**显式写 `HorizontalAlignment="Stretch"`**
+  ——本地值优先于样式 Setter，以后即使有人给该样式加 `BasedOn` 也不会退回内容宽度。
+  ② 三个概要文案改为带通知属性（`Set(ref …)`），每轮取数开始即清空、在 `HasKbData = true` **之前**落值。
+  ③ 卡片补"空态"出口：`KbSummary` 此前**没有任何绑定**（死属性），zKB 返回空或请求失败时整张卡片一片空白；
+  现在空态 TextBlock 绑 `KbSummary`、以 `HasKbData` 取反控制显隐，失败路径也写入本地化的"ZKB 数据获取失败"。
+- **实机核验（真机 + 真 zKB）**：J000102 / J000528 两个洞系——概要三格出数（400 / 40.78B / 约 2,492 天；400 / 29.8B / 约 3,376 天）、
+  军团/联盟行的计数与"N 天前"右对齐到卡片边缘且名称不再被压；切换洞系重新取数后数值正常刷新（不再残留上一洞系的数字）；
+  点击军团行仍能跳应用内 KB 实体统计标签；当日日志 0 ERROR / 0 WARN。
+  **顺带部分关闭阶段 68 的"虫洞模块未实机核验"**：ZKB 卡（取数/渲染/刷新/行点击）已跑通；**洞口库模式、洞口详情窗仍未实机核验**。
+- **验证边界**："该星系最近没有击杀记录"这一空态**未复现**（没找到零击杀的洞系）；但同页"无漫游洞"用的是同一个
+  `InverseBooleanToVisibilityConverter`，该文案在实机上正常显示，机制已确认。
+
+
+### 阶段 70：语言切换即时生效（用户实机反馈"切换至英文没法全部生效，重启才生效"）
+
+- **现象**：切到英文后，虫洞页仍留中文——列表条目的等级徽章与天象名（`破碎` / `沃尔夫-拉叶星`）、详情卡的
+  `c13 破碎虫洞` 与两段等级/天象说明、ZKB 的 `2,596.8 天前`、活动分布图图例（`周天/周一/…`）。
+  来自数据库的名称（行星类型 `行星（碎裂）`、舰船名）保持中文属**预期**（SDE 库语言，用户也明确排除）。
+- **根因①（绑定不因换字典而重算）**：`SetLanguage` 只替换语言资源字典——`DynamicResource` 会自动更新，
+  但**普通 `Binding` 不会**：WPF 只在"源发通知 / DataContext 变化"时重读源。而界面里大量文案是**求值时查资源**的
+  （模型计算属性 `WormholeListItem.PhenomenaName`、`WormholeDetail.ClassDescription`、`ActiveEntityItem.LastActiveText`，
+  以及带转换器的绑定）→ 这些绑定一直停在旧语言，直到重启。雪上加霜的是页面用 `NavigationCacheMode="Required"` 常驻：
+  切走的页面**脱离可视树**，切回来也不会重新求值（切换语言恰恰发生在"设置页"上，回来时必然命中这条路径）。
+- **根因②（少数文案在生成时就拼进了对象）**：LiveCharts 系列名（星期图例）、`KbSummary`/`KbSpanText`、
+  `ShipMassOption.Category` 都是**组数据/加载时**拼好的字符串——重算绑定也救不回来，必须按缓存的原始数据重建。
+- **修复**：
+  ① `LanguageService` 换字典后统一重算绑定（`RefreshAllBindings`）：走一遍 `Application.Current.Windows` 的可视树，
+  对每个元素**本地值是绑定表达式**的依赖属性调 `UpdateTarget()`——它按源重新走路径、重跑转换器，且**只写目标不回写源**
+  （跳过 `OneWayToSource`；单个转换器抛错只记 Warn，不打断整轮）。
+  同时给 `FrameworkElement.Loaded` 挂**类处理器**：元素**重新上树**时按"本次语言版本"补刷一次
+  （`ConditionalWeakTable` 记已刷元素，弱引用不累积）——这一步专治缓存页、虚拟化容器与重开的 Flyout/Popup。
+  ② 虫洞 VM 订阅 `LanguageService.LanguageChanged`，按缓存数据重建图表系列与 ZKB 文案：新增 `KbSummaryKind`
+  状态 + `UpdateKbSummaryText()`（文案只在当前语言下现拼，取数流程不再写死字符串，`_hourDayCounts` 缓存矩阵复用）；
+  `ShipMassOption` 改为存**语言键** `CategoryKey`、`Category` 求值时解析。
+- **③ 同批把各页"加载时拼好"的文案改成"存键/求值"**（这一批绑定重算救不回来，只能各自处理；改法统一为
+  **存语言键或状态、显示属性在求值时解析**，于是自动被①的绑定重算覆盖，不需要再挂生命周期）：
+  `EntityStatistViewModel` 的 `CategoryLabel`、`EntityInfoRow.Label`、`ModifierOption.Label`（KB 实体页类别与信息行标签、
+  KB 类型下拉）；`KillStatisticGroup.Title` → `TitleKey`（"最高击杀"分组卡标题，构造点在 `ZkbQueryService`）；
+  `OverviewPageViewModel.OnlineStatusText`（在线/离线）；`NavResultItem.NavTypeText`（星图导航"本跳类型"）。
+  另有两处必须"重建对象/重排"的：星图两个「全部星域」哨兵（`MapRegion` 是 Core 普通模型、不发通知 →
+  `MapPageViewModel.OnLanguageChanged` 用**新实例替换** `Regions[0]`/`FilterRegions[0]`（`ObservableCollection` 的
+  Replace 让下拉重建该项），并把原先指向哨兵的选择挪到新实例上，否则下拉会空白）；星图**图例**（标题/两端说明/注释是
+  代码写进 TextBlock、不是绑定 → `MapPage` 订阅 `LanguageChanged` 重排 `UpdateLegend()`）。
+- **构建**：0 错误（本轮按要求不自行运行核验，界面效果待使用者确认）。
+- **确认无需处理/不必处理的残留**（避免下次重复排查）：
+  `MapDisplaySettingsView`（显示设置窗每次打开 `new` 一个，重开即新语言）、`MailPageViewModel:176`（每次进页重建标签，自愈）、
+  `GeneralSettingPage.xaml.cs:134/135`（设置子页无 `NavigationCacheMode`，每次进页新建，自愈）；
+  `GameLogMonitorViewModel:182/192` 的 `ConfigName` 是**用户可编辑并落盘的配置名**（属数据，不应随界面语言变）；
+  各页"操作时才设置"的 `StatusText`/`ErrorMessage` 等文案下次操作即刷新，不受影响。
+
+
+### 阶段 71：深色模式下"ISK 损失"数值不可读 —— 引用了不存在的资源键（用户实机反馈）
+
+- **现象**：深色模式下虫洞页 ZKB 概要的"ISK 损失"数值是黑色的（浅色模式下黑字"碰巧"可读，所以一直没暴露；
+  这格数值在阶段 69 之前是空的，修好显示后才第一次被人看见）。
+- **根因**：**WPF-UI 4.3.0 根本没有 `TextFillColorCautionBrush` 这个键**——两套主题字典里只有
+  `SystemFillColorCautionBrush`（浅 `#9D5D00` / 深 `#FCE100`，已从 4.3.0 源码 `Resources/Theme/*.xaml` 核实）。
+  `DynamicResource` 缺键**不报错**，属性保持默认值：`TextBlock.Foreground` 默认是系统黑。这个键名是移植时
+  按"Text 系画刷"的命名惯性写出来的。
+- **处理**：改用 `SystemFillColorCautionBrush`（本项目其它 Caution 图标同款）。
+- **顺带做了全项目"引用了未定义资源键"的静态核查**（方法见 §9 第 64 条）：
+  - 又抓到两处真问题：洞口库"通往空间"下拉引用的 `WormholePage_ClassFilter_C1..C6` 在语言文件里不存在
+    （下拉会直接显示键名）→ 改用既有的 `WormholePage_Class_1..6`（文案同为 c1-c6，与浏览模式的等级下拉一致）；
+    `GamePreviewPage_ApplyToAll`（预览窗"应用到其余配置"按钮的 ToolTip）缺失 → 中英补键。
+  - C# 侧同样方法查 `FindString("…")`：又补两个缺失键 `ChannelMarketPage_Running`（频道查价统计的等待提示）、
+    `ChannelMonitorPage_RefreshList`（刷新监控列表的等待提示）。中英键集一致（各 1651 键、0 重复）。
+  - 其余差集均为**已知误报**：`AccentFillColor*Brush`/`AccentTextFillColor*Brush`/`SystemAccentBrush` 由 WPF-UI
+    运行时按强调色生成（不在主题字典里）、`UiSlider*` 在 WPF-UI 的 Slider 控件字典里、`{x:Type …}` 是隐式样式引用、
+    `TextFillColor*Brush` 只出现在注释里。**注意 `SystemAccentColor*Brush` 不在此列**——它们确实存在于
+    `Resources/Accent.xaml`，但值是静态的系统蓝（见阶段 72，当时误判为"运行时生成"）。
+- **构建**：0 错误（未运行，界面效果待使用者确认）。
+
+
+### 阶段 72：强调色不跟随用户选择 —— `SystemAccentColorPrimaryBrush` 永远是系统蓝（用户实机反馈）
+
+- **现象**：设置里选的主题色是绿色，虫洞详情卡的洞系名标题却一直是蓝色；用户追问"为什么是蓝色"。
+- **根因**：WPF-UI 的 `ApplicationAccentColorManager.Apply` 更新强调色时只写
+  ① 四个 **Color** 资源（`SystemAccentColor/Primary/Secondary/Tertiary`，随用户色派生）和
+  ② `Accent*` 系画刷（`AccentFillColorDefaultBrush`、`AccentTextFillColorPrimaryBrush`、`SystemAccentBrush` 等）；
+  **从不更新 `SystemAccentColorPrimaryBrush` / `SecondaryBrush` / `TertiaryBrush`**——这三个画刷来自
+  `Resources/Accent.xaml` 的 `StaticResource`（`#0067C0` Windows 默认蓝），解析发生在字典加载时，
+  后续更新 Color 资源不会回填画刷。而本项目有 **30+ 处**引用这三个画刷
+  （KB/ZKB 页的链接与强调、翻译选中高亮、通知条、虫洞/洞口详情标题、图表取色……），
+  在自定义主题色下全部不变色。`GlobalControlStyles` 的注释（"填充色必须用 AccentFillColorDefaultBrush"）
+  就是早前踩过同一坑留下的绕行，但没有治本。
+- **处理（治本，`ThemeService`）**：新增 `SyncSystemAccentBrushes()`——在每次应用强调色之后
+  （`Initialize`/`ApplyTheme` 经 `ApplySavedAccentColor`、设置页选色走 `ApplyAccentColor`）
+  把这三个画刷用刚更新过的 `SystemAccentColor*` **Color** 重建并冻结后写回应用资源。
+  未选过主题色时三者等于默认蓝（与旧行为一致）；选了就全部跟随。
+  30+ 处引用零改动即修复；深浅主题各自派生的 Primary 深浅也由 WPF-UI 的变体计算保证可读。
+- **构建**：0 错误（未运行，界面效果待使用者确认）。
+
+
+### 阶段 73：虫洞页样式微调（用户反馈：c13 徽章全名太长 + 星球/月球列表变回原生外观）
+
+- **列表徽章改短等级名**：`WormholeListItem` 新增 `ClassNameShort`——c12-c18（希拉/破碎/五类流浪者虫洞）全名都长，
+  列表徽章只显示 `cN`；c1-c6 与高安/低安/00 本来就短，原样显示。**详情卡仍用 `ClassName` 全名**（用户要求）。
+  语言键不加新的：短名就是 `c{等级}`，不随语言变。
+- **星球/月球/其他三个列表改用 `ListBox` + 全局 `StretchListItem`**：原实现是 `<ListView>`，而
+  **WPF-UI 4.3.0 只提供 ListBox 的样式、没有 ListView 的**（控件目录里只有 `Controls/ListBox`），所以这三处
+  从一开始就是原生外观（系统蓝选中框）——全项目也只有虫洞页用了 ListView。按项目惯例
+  （"需要 Stretch/Fluent 观感的列表一律引用全局 `StretchListItem`"，§9 第 18 条）换成 `ListBox` +
+  `ItemContainerStyle="{StaticResource StretchListItem}"`，悬停/选中态随主题。
+- **构建**：0 错误（未运行，界面效果待使用者确认）。
+
+
+### 阶段 74：等级徽章按等级着色 —— 照搬星图安全等级色板（用户要求，两轮迭代后定型）
+
+- **需求**：徽章原先统一中性灰；改为不同等级不同颜色，参照星图安全等级的 11 档色板。
+  第一版按"c1 浅蓝 → c13 红"线性渐变，用户随后调整并定型为**危险度类比**：
+  **c1..c3 = 浅蓝→绿（类比高安，1.0→0.8 档）；c4 = 黄（0.5 档）；c5/c6 = 橙红（类比低安，0.3/0.2 档）；c12..c18 = 红（类比 00，0.0 档）**。
+- **实现**：`Models/Wormhole/WormholeModels.cs` 新增 `WormholeClassColor`——**直接引用 `StarMapCanvas.Palette`**
+  （单一来源，不复制 hex，避免画布/色阶图例/徽章三处走样）；显式等级→档位映射表
+  （c1..c3 = 10..8，c4 = 5，c5 = 3，c6 = 2，c12..c18 = 0；高安/低安/00 按同语义取 10/3/0）。表外等级退回中性灰。
+  文字色按底色亮度取黑/白（阈值 140，与设置页 `GetContrastColor` 一致），保证浅蓝/绿底上可读；
+  画刷冻结。`WormholeListItem` 与 `WormholeDetail` 各暴露 `ClassBadgeBrush`/`ClassBadgeTextBrush`，
+  列表徽章与详情卡徽章同一份配色；徽章文字仍用短等级名（c12-c18）/全名（详情卡）。
+  配色与语言、主题均无关（色板本身深浅通用），不参与换语言的重算。
+- **构建**：0 错误（未运行，界面效果待使用者确认）。
+
+
+### 阶段 75：洞口详情窗打开即 NullReferenceException（用户实机反馈）
+
+- **现象**：点击洞口信息打开详情窗即崩：`UpdateResult()` 里 `_model.Portal` 的 `_model` 为 null。
+- **根因**：`ui:NumberBox` 的 `UsedMassBox Value="0"` 在 **XAML 解析（InitializeComponent）期间**就会触发一次
+  `TextChanged → OnMassValueChanged → UpdateResult()`，而 `_model` 在 `InitializeComponent()` **之后**才赋值。
+  该窗属阶段 68 标注"未实机核验"的部分，用户第一次真正点开就命中。
+- **处理**：`UpdateResult()` 开头加就绪守卫（`_model`/`ShipMassBox`/`UsedMassBox` 任一未就绪直接返回）；
+  构造末尾的首次 `UpdateResult()` 负责初始文案，行为不变。
+- **构建**：0 错误（未运行，界面效果待使用者确认）。
+
+
+### 阶段 76：过洞计算器支持选择具体舰船（用户要求）
+
+- **需求**：计算器原先只有 11 档"代表舰船"（护卫→泰坦各一艘），要能选**任意具体舰船**。
+- **实现**：
+  - **Core**：`InvTypeMass` 补映射 `MarketGroupID`；`InvTypeService.QueryShipMassAsync()`——
+    `groups` 表取 `CategoryID=6`（舰船）的全部组，`types` 表按组取 `Mass > 0` 且 `MarketGroupID` 非空
+    （排除 NPC 专属船），名称按需走本地化库（`TranInvTypesAsync` 按 TypeID 回填）。约 1300 条。
+  - **WPF**：洞系页 Loaded 时经 `WormholeViewModel.LoadAllShipsAsync()` 装载一次并缓存（`AllShipItems`）；
+    洞口详情窗"选择舰船"一行 = **代表舰船下拉（左半）+ 具体舰船搜索框（右半），各占一半宽度、直接输入即搜**
+    （用户两轮迭代后的方案：先加搜索按钮，后改为直接输入）。结果在 **Flyout** 里弹出（锚点/用法与 `ZKBPage`
+    同款：Flyout 声明在搜索框所在的半宽 Grid 内、`Placement=Bottom`），有匹配自动弹出（弹出宽度对齐搜索框）、
+    清空自动收起；列表为名称 + 质量（忽略大小写取前 30 条，全局 `StretchListItem` 样式），
+    **选中即把真实质量填进"舰船质量"** 并关闭 Flyout，走既有的重算链路；改选代表舰船会清空搜索状态。
+- **构建**：0 错误（未运行，界面效果待使用者确认）。
+
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -2821,6 +2986,43 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
    内容沿可视树继承、深浅主题自动跟随（一次修复所有工具窗）。
    **排查范式**：远程猜库模板不如写探针——`Application` + ThemesDictionary/ControlsDictionary + Apply + 建窗（不 Show），
    直接打印各作用域 `TextFillColorPrimaryBrush` 的实际色值与合并字典 Source，五分钟出真相。
+62. **WPF-UI 的隐式 `Button` 样式把 `HorizontalAlignment` 设成 `Left`（内容宽度）——裸 `<Button>` 当"整行"用会被压成内容宽度**（阶段 69 用户截图定位）：
+   `DefaultButtonStyle` 里有 `HorizontalAlignment="Left"` / `VerticalAlignment="Center"` / `HorizontalContentAlignment="Center"` /
+   `VerticalContentAlignment="Center"`（WPF-UI 4.3.0 源码核实）。症状很隐蔽：行内 `Grid` 的 `*` 列不填充、`TextTrimming` 永不触发、
+   右侧 `Auto` 列紧跟文字——**看起来像"模板写错了"，其实是外层按钮没铺满**。识别信号：
+   **同一个列表里"纯 `Grid` 的行正常、包了 `Button` 的行挤成一团"**，即为"两层容器可用宽度不同"，先查外层对齐而不是行内模板。
+   处置：行按钮用本项目键控样式 `SettingsRowButton`（**不带 `BasedOn` → 不继承隐式样式的对齐**，模板 `ContentPresenter` 是 `Stretch`，
+   且已补 `Foreground`、带悬停/按下反馈），并**显式再写一遍 `HorizontalAlignment="Stretch"`**——本地值优先于样式 Setter，
+   以后有人给该样式加 `BasedOn` 也不会退回内容宽度。同族记忆点（与 §6 第 26/27/32 条同源）：
+   **带 `x:Key` 的样式若无 `BasedOn`，会整体丢掉库的隐式样式**；反过来"只想改几个属性、其余沿用库样式"就必须显式 `BasedOn`。
+   本条的量化定位法（无需调试器）：截图后按行统计"墨迹列范围"，内容撑开时右侧 `Auto` 列的墨迹会随名称长度逐行变化，
+   铺满时则恒定贴右边缘——比肉眼比对更早定性。
+63. **运行时换语言：换资源字典只对 `DynamicResource` 有效，普通 `Binding` 不会因此重算**（阶段 70 根因）：
+   WPF 的绑定只在"源发通知（`PropertyChanged`）/ DataContext 变化"时重读源。于是凡是**求值时查资源**的文案
+   （模型上的计算属性 `X => FindString("...")`、带转换器的绑定、`TryFindResource` 的 `IMultiValueConverter` 等）
+   在换语言后会**一直停在旧语言直到重启**——`DynamicResource` 的其它文字都变了，唯独它们不变，看起来像"局部没生效"。
+   更隐蔽的是**页面常驻**（本项目 `NavigationCacheMode="Required"`）：切走的页面脱离可视树，切回来也不会重新求值，
+   而"改语言"恰恰是在另一个页面（设置页）做的 → 回来必定命中。
+   **处置（本项目已实现，见 `Services/LanguageService.cs` 的 `RefreshAllBindings`）**：换字典后走一遍可视树，
+   对每个元素"本地值里是绑定表达式"的依赖属性调 `UpdateTarget()`——按源重走路径、重跑转换器，且**只写目标不回写源**
+   （跳过 `OneWayToSource`；逐个 try/catch，避免某个转换器抛错打断整轮）；再给 `FrameworkElement.Loaded` 挂**类处理器**，
+   元素**重新上树**时按"本次语言版本"补刷（`ConditionalWeakTable` 记已刷元素）——这一步是缓存页/虚拟化容器/重开 Flyout 的关键。
+   **仍救不回来的一类**：**生成时就把字符串拼进对象**的文案（LiveCharts 系列名、按当时语言拼好的状态文案、
+   加载时存进模型的类别名）——绑定重算只会重新读到同一个旧字符串，必须"存**语言键**、求值时解析"或"按缓存数据重建"。
+   判定口诀：`X = FindString(key)`（赋值给字段/属性）= 要改；`X => FindString(key)`／`X => 依赖字段拼` = 绑定重算即可。
+64. **"引用了不存在的资源键"零报错**：`{DynamicResource 缺失键}` 不抛异常，属性保持**默认值**
+   （`TextBlock.Foreground` 默认系统黑 → 深色主题下黑字黑底，浅色下"碰巧能看"极易漏检）；语言文件缺键时
+   `FindString` 回退显示**键名字符串**；重复键才会在启动时崩（见 §8 第 33 条）。本轮的静态核查法（无需运行程序）：
+   ① 提取全部 XAML 里 `{DynamicResource …}`/`{StaticResource …}` 的引用键，与「WPF-UI 两套主题字典
+   （`src/Wpf.Ui/Resources/Theme/Dark.xaml`/`Light.xaml`，4.3.0 共 455 键）∪ 项目全部 `x:Key`」求差集；
+   ② C# 侧对 `FindString("…")` 的键与语言文件键求差集；③ 顺手校验 zh/en 键集一致。
+   差集里的**已知误报**（判定过就不用管）：`AccentFillColor*Brush`/`AccentTextFillColor*Brush`/`SystemAccentBrush`
+   由 WPF-UI 运行时按强调色生成、`UiSlider*` 等 ControlTemplate 资源在 WPF-UI 的控件字典里、
+   `{x:Type …}` 是隐式样式引用不是字面键、注释里的"假引用"。
+   **但 `SystemAccentColor*Brush` 不是误报**（阶段 72 的教训）：它们存在于 `Resources/Accent.xaml`，值却是
+   StaticResource 固化的系统蓝，且 `ApplicationAccentColorManager` 只更新 Color 不更新这些画刷——
+   **"运行时生成"要区分 Color 与 Brush**，看到键存在、颜色不对时去翻 `ApplicationAccentColorManager` 的赋值清单。
+   另外这类错误在**浅色主题下几乎不可见**（默认黑字凑合能看），排查配色问题先把主题切到深色、再换一个非蓝主题色。
 
 
 ---

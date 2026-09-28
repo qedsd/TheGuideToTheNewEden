@@ -76,7 +76,6 @@ public sealed class OverviewPageViewModel : INotifyPropertyChanged
     private string _systemSecurityText = string.Empty;
     private bool _hasLocation;
     private bool _online;
-    private string _onlineStatusText = string.Empty;
     private string _lastLoginText = string.Empty;
     private string _lastLoginTooltip = string.Empty;
     private int _loginCount;
@@ -192,14 +191,16 @@ public sealed class OverviewPageViewModel : INotifyPropertyChanged
     public bool Online
     {
         get => _online;
-        private set => Set(ref _online, value);
+        private set
+        {
+            Set(ref _online, value);
+            // 在线状态文案由 Online 推出，设置时一并通知（换语言另有 LanguageService 的绑定重算兜底）
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OnlineStatusText)));
+        }
     }
 
-    public string OnlineStatusText
-    {
-        get => _onlineStatusText;
-        private set => Set(ref _onlineStatusText, value);
-    }
+    /// <summary>在线状态文案：求值时按当前语言解析 → 换语言重算绑定即生效。</summary>
+    public string OnlineStatusText => FindString(Online ? "CharacterPage_Online" : "CharacterPage_Offline");
 
     /// <summary>距最近登录的时长（如 "2d 3.5h"，与 WinUI 同款格式）。</summary>
     public string LastLoginText
@@ -271,7 +272,7 @@ public sealed class OverviewPageViewModel : INotifyPropertyChanged
             ShipTypeName = overview.ShipTypeName ?? string.Empty;
 
             Online = overview.Online;
-            OnlineStatusText = FindString(overview.Online ? "CharacterPage_Online" : "CharacterPage_Offline");
+
             LoginCount = overview.LoginCount;
             var lastLogin = ToUtc(overview.LastLogin);
             LastLoginText = lastLogin is null ? "-" : FormatDuration(DateTime.UtcNow - lastLogin.Value);

@@ -135,6 +135,8 @@
     <sys:String x:Key="WormholePage_Calculator_Title">过洞计算器</sys:String>
     <sys:String x:Key="WormholePage_Calculator_Note">以游戏内船体质量面板值计算（EVE 过洞判定即使用该值）；已消耗质量填 0 表示新洞。</sys:String>
     <sys:String x:Key="WormholePage_Calculator_Ship">选择舰船</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_ShipSearch">具体舰船</sys:String>
+    <sys:String x:Key="WormholePage_Calculator_ShipSearchHint">输入名称搜索全部舰船</sys:String>
     <sys:String x:Key="WormholePage_Calculator_ShipMass">舰船质量 (kg)</sys:String>
     <sys:String x:Key="WormholePage_Calculator_MassHint">输入质量（kg）</sys:String>
     <sys:String x:Key="WormholePage_Calculator_UsedMass">已消耗质量 (kg)</sys:String>
@@ -951,6 +953,7 @@
     <sys:String x:Key="ChannelMonitorPage_ChannelLogs">频道内容</sys:String>
     <sys:String x:Key="ChannelMonitorPage_Start">开始监控</sys:String>
     <sys:String x:Key="ChannelMonitorPage_Stop">停止监控</sys:String>
+    <sys:String x:Key="ChannelMonitorPage_RefreshList">正在刷新列表</sys:String>
     <sys:String x:Key="GameLogMonitorPage_CharacterList">角色列表</sys:String>
     <sys:String x:Key="GameLogMonitorPage_Setting">监控设置</sys:String>
     <sys:String x:Key="GameLogMonitorPage_StartTime">开始时间</sys:String>
@@ -1083,6 +1086,7 @@
     <sys:String x:Key="GamePreviewPage_NeedTwoWindows">至少需要两个可见的预览窗口</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoLayoutApplied">已按设置排列预览窗口</sys:String>
     <sys:String x:Key="GamePreviewPage_UniformSizeApplied">已应用统一窗口尺寸</sys:String>
+    <sys:String x:Key="GamePreviewPage_ApplyToAll">应用到其余配置</sys:String>
     <sys:String x:Key="GamePreviewPage_ApplyToAllDone">已应用到其余配置</sys:String>
     <sys:String x:Key="GamePreviewPage_HotkeyFailed">注册快捷键失败：{0}</sys:String>
     <sys:String x:Key="GamePreviewPage_NoGroupMember">该分组没有正在预览的成员</sys:String>
@@ -1127,6 +1131,7 @@
     <sys:String x:Key="ChannelScanPage_AddIgnored_Alliance">忽略该联盟</sys:String>
     <sys:String x:Key="ChannelScanPage_ReloadResultZKB">重新获取ZKB信息</sys:String>
     <!--  频道-查价  -->
+    <sys:String x:Key="ChannelMarketPage_Running">正在统计</sys:String>
     <sys:String x:Key="ChannelMarket_Items">个物品</sys:String>
     <sys:String x:Key="ChannelMarket_NoChannel">未选择需要监控的频道</sys:String>
     <sys:String x:Key="ChannelMarket_Started">已开始监控频道</sys:String>

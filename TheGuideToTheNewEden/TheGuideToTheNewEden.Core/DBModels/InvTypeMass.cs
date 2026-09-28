@@ -21,5 +21,9 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public double Mass { get; set; }
 
         public int GroupID { get; set; }
+
+        /// <summary>市场分组：非空 = 玩家可在市场上买到的船（用于排除 NPC 专属船）。</summary>
+        [SugarColumn(IsNullable = true, ColumnName = "MarketGroupID")]
+        public int? MarketGroupID { get; set; }
     }
 }

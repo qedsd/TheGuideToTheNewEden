@@ -29,7 +29,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16,12,16,16">
 
-            <!-- 标题 -->
+            <!--  标题  -->
             <StackPanel Orientation="Horizontal">
                 <TextBlock
                     FontSize="22"
@@ -50,7 +50,7 @@
                 </Border>
             </StackPanel>
 
-            <!-- 基本信息 -->
+            <!--  基本信息  -->
             <Grid Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="110" />
@@ -62,17 +62,49 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabel}" Text="{DynamicResource WormholePage_Portal_Destination}" />
-                <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoValue}" Text="{Binding DestinationsText}" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource InfoLabel}" Text="{DynamicResource WormholePage_Portal_AppearsIn}" />
-                <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource InfoValue}" Text="{Binding AppearsInText}" />
-                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource InfoLabel}" Text="{DynamicResource WormholePage_Portal_Lifetime}" />
-                <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource InfoValue}" Text="{Binding LifetimeText}" />
-                <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource InfoLabel}" Text="{DynamicResource WormholePage_Portal_MassRegen}" />
-                <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource InfoValue}" Text="{Binding MassRegenText}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Style="{StaticResource InfoLabel}"
+                    Text="{DynamicResource WormholePage_Portal_Destination}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Style="{StaticResource InfoValue}"
+                    Text="{Binding DestinationsText}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Style="{StaticResource InfoLabel}"
+                    Text="{DynamicResource WormholePage_Portal_AppearsIn}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Style="{StaticResource InfoValue}"
+                    Text="{Binding AppearsInText}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Style="{StaticResource InfoLabel}"
+                    Text="{DynamicResource WormholePage_Portal_Lifetime}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Style="{StaticResource InfoValue}"
+                    Text="{Binding LifetimeText}" />
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Style="{StaticResource InfoLabel}"
+                    Text="{DynamicResource WormholePage_Portal_MassRegen}" />
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Style="{StaticResource InfoValue}"
+                    Text="{Binding MassRegenText}" />
             </Grid>
 
-            <!-- 质量数据 -->
+            <!--  质量数据  -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource WormholePage_Portal_MassSection}" />
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
@@ -83,7 +115,11 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabel}" Text="{DynamicResource WormholePage_Portal_MaxMassPerJump}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Style="{StaticResource InfoLabel}"
+                    Text="{DynamicResource WormholePage_Portal_MaxMassPerJump}" />
                 <StackPanel Grid.Row="0" Grid.Column="1">
                     <TextBlock Style="{StaticResource InfoValue}" Text="{Binding MaxMassPerJumpFullText}" />
                     <TextBlock
@@ -93,7 +129,11 @@
                         TextWrapping="Wrap"
                         Visibility="{Binding MaxMassNoteText, Converter={StaticResource StringToVis}}" />
                 </StackPanel>
-                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource InfoLabel}" Text="{DynamicResource WormholePage_Portal_TotalJumpMass}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Style="{StaticResource InfoLabel}"
+                    Text="{DynamicResource WormholePage_Portal_TotalJumpMass}" />
                 <StackPanel Grid.Row="1" Grid.Column="1">
                     <TextBlock Style="{StaticResource InfoValue}" Text="{Binding TotalJumpMassFullText}" />
                     <TextBlock
@@ -105,7 +145,7 @@
                 </StackPanel>
             </Grid>
 
-            <!-- 过洞计算器 -->
+            <!--  过洞计算器  -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource WormholePage_Calculator_Title}" />
             <TextBlock
                 FontSize="11"
@@ -128,13 +168,69 @@
                     VerticalAlignment="Center"
                     Style="{StaticResource InfoLabel}"
                     Text="{DynamicResource WormholePage_Calculator_Ship}" />
-                <ComboBox
-                    x:Name="ShipCombo"
+                <!--
+                    选择舰船一行 = 代表舰船下拉（左半） + 具体舰船搜索框（右半，直接输入即搜）。
+                    搜索结果在 Flyout 里弹出；WPF-UI 4.x 的 Flyout 锚点 = Flyout 元素自身矩形：
+                    这里锚点 = 搜索框所在的半宽 Grid，Placement=Bottom 向下展开，
+                    弹出宽度在展开时对齐搜索框宽度（见 OnShipSearchTextChanged）。见 ZKBPage 的同款用法。
+                -->
+                <Grid
                     Grid.Row="0"
                     Grid.Column="1"
-                    Margin="0,0,0,6"
-                    DisplayMemberPath="Display"
-                    SelectionChanged="OnShipSelectionChanged" />
+                    Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="6" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        x:Name="ShipCombo"
+                        DisplayMemberPath="Display"
+                        SelectionChanged="OnShipSelectionChanged" />
+                    <Grid x:Name="ShipSearchHost" Grid.Column="2">
+                        <ui:TextBox
+                            x:Name="ShipSearchBox"
+                            PlaceholderText="{DynamicResource WormholePage_Calculator_ShipSearchHint}"
+                            TextChanged="OnShipSearchTextChanged" />
+                        <ui:Flyout x:Name="ShipSearchFlyout" Placement="Bottom">
+                            <!--  宽度自适应：下限 = 搜索框宽度（展开时由代码同步），上限 360 防长船名无限拉宽；横向不出滚动条  -->
+                            <StackPanel x:Name="ShipSearchPanel" MinWidth="200" MaxWidth="360">
+                                <ListBox
+                                    x:Name="ShipSearchList"
+                                    MaxHeight="240"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    ItemContainerStyle="{StaticResource StretchListItem}"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                    SelectionChanged="OnShipSearchSelected">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip="{Binding Name}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11.5"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding MassText}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </ui:Flyout>
+                    </Grid>
+                </Grid>
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
@@ -160,11 +256,11 @@
                     Grid.Row="2"
                     Grid.Column="1"
                     Minimum="0"
-                    Value="0"
-                    TextChanged="OnMassValueChanged" />
+                    TextChanged="OnMassValueChanged"
+                    Value="0" />
             </Grid>
 
-            <!-- 计算结果 -->
+            <!--  计算结果  -->
             <Border
                 Margin="0,10,0,0"
                 Padding="12,10"
@@ -186,16 +282,14 @@
                 </StackPanel>
             </Border>
 
-            <!-- 外链 -->
+            <!--  外链  -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource WormholePage_Links}" />
             <StackPanel Orientation="Horizontal">
                 <ui:Button
                     Margin="0,0,8,0"
                     Click="OnAnoikClick"
                     Content="Anoik" />
-                <ui:Button
-                    Click="OnEllathaClick"
-                    Content="Ellatha" />
+                <ui:Button Click="OnEllathaClick" Content="Ellatha" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

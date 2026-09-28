@@ -63,8 +63,14 @@ public sealed class KillCardItem
 /// <summary>「最高击杀」里的一组（按角色/军团/联盟/势力/舰船/星系分组）。</summary>
 public sealed class KillStatisticGroup
 {
-    /// <summary>分组标题（已本地化）。</summary>
-    public string Title { get; init; } = string.Empty;
+    /// <summary>分组标题的语言键。存键而不是拼好的文案：标题求值时解析，换语言重算绑定即生效。</summary>
+    public string TitleKey { get; init; } = string.Empty;
+
+    /// <summary>分组标题（按当前语言）。</summary>
+    public string Title => FindString(TitleKey);
 
     public IReadOnlyList<KillCardItem> Items { get; init; } = [];
+
+    private static string FindString(string key) =>
+        System.Windows.Application.Current?.TryFindResource(key) as string ?? key;
 }

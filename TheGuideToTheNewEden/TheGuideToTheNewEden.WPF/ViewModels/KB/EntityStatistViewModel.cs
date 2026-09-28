@@ -55,7 +55,6 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
     private int _modifierIndex;
     private string? _avatarUrl;
     private string _title = string.Empty;
-    private string _categoryLabel = string.Empty;
     private EntityBaseInfo? _baseInfo;
     private EntityStatistic? _statistic;
 
@@ -65,13 +64,12 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
         Id = id;
         _title = string.IsNullOrWhiteSpace(title) ? id.ToString() : title;
         EntityCategory = ZkbMapping.ToCategory(entityType);
-        CategoryLabel = FindString(ZkbMapping.ToCategoryLocalizationKey(EntityCategory));
         AvatarUrl = GameImageHelper.BuildEntityImageUrl(EntityCategory, id, 128);
 
         var modifiers = Modifiers;
         for (var i = 0; i < modifiers.Length; i++)
         {
-            ModifierOptions.Add(new ModifierOption(modifiers[i], ModifierLabel(i)));
+            ModifierOptions.Add(new ModifierOption(modifiers[i], ModifierLabelKey(i)));
         }
 
         Killmails.CollectionChanged += (_, _) => OnPropertyChanged(nameof(IsKillListEmpty));
@@ -91,12 +89,8 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
         private set => Set(ref _title, value);
     }
 
-    /// <summary>类别文本（角色 / 军团 / …）。</summary>
-    public string CategoryLabel
-    {
-        get => _categoryLabel;
-        private set => Set(ref _categoryLabel, value);
-    }
+    /// <summary>类别文本（角色 / 军团 / …）。求值时按当前语言解析 → 换语言重算绑定即生效。</summary>
+    public string CategoryLabel => FindString(ZkbMapping.ToCategoryLocalizationKey(EntityCategory));
 
     /// <summary>头像/徽标地址。</summary>
     public string? AvatarUrl
@@ -454,7 +448,7 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
         {
             if (link is not null && !string.IsNullOrWhiteSpace(link.Name))
             {
-                InfoRows.Add(new EntityInfoRow(FindString(labelKey), link.Name, link));
+                InfoRows.Add(new EntityInfoRow(labelKey, link.Name, link));
             }
         }
 
@@ -462,7 +456,7 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
         {
             if (!string.IsNullOrWhiteSpace(value))
             {
-                InfoRows.Add(new EntityInfoRow(FindString(labelKey), value));
+                InfoRows.Add(new EntityInfoRow(labelKey, value));
             }
         }
 
@@ -518,7 +512,7 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
         }
     }
 
-    private static string ModifierLabel(int index) => FindString(index switch
+    private static string ModifierLabelKey(int index) => index switch
     {
         1 => "StatistKBListPage_Kills",
         2 => "StatistKBListPage_Losses",
@@ -528,7 +522,7 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
         6 => "StatistKBListPage_Awox",
         7 => "StatistKBListPage_Npc",
         _ => "StatistKBListPage_All",
-    });
+    };
 
     private static string FindString(string key) =>
         Application.Current?.TryFindResource(key) as string ?? key;
@@ -550,15 +544,27 @@ public sealed class EntityStatistViewModel : INotifyPropertyChanged
     private void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    /// <summary>过滤类型下拉项。</summary>
-    public sealed record ModifierOption(TypeModifier? Modifier, string Label);
+    /// <summary>过滤类型下拉项：<see cref="LabelKey"/> 是语言键，<see cref="Label"/> 求值时解析（换语言即生效）。</summary>
+    public sealed record ModifierOption(TypeModifier? Modifier, string LabelKey)
+    {
+        public string Label => FindString(LabelKey);
+
+        private static string FindString(string key) =>
+            Application.Current?.TryFindResource(key) as string ?? key;
+    }
 
     /// <summary>
     /// 信息卡的一行。<see cref="Link"/> 非空时界面把值渲染成链接样式（点击打开该实体的统计标签），
     /// 否则为纯文本（成员数/安全等级等）。
     /// </summary>
-    public sealed record EntityInfoRow(string Label, string Value, IdName? Link = null)
+    public sealed record EntityInfoRow(string LabelKey, string Value, IdName? Link = null)
     {
+        /// <summary>行标签（如"军团"/"安全等级"）：存语言键、求值时解析 → 换语言重算绑定即生效。</summary>
+        public string Label => FindString(LabelKey);
+
         public bool HasLink => Link is not null;
+
+        private static string FindString(string key) =>
+            Application.Current?.TryFindResource(key) as string ?? key;
     }
 }

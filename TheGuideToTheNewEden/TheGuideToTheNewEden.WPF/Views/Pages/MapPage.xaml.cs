@@ -44,6 +44,8 @@ public partial class MapPage : Page
         _viewModel.BridgesChanged += (_, _) => ApplyBridges();
         _viewModel.NodeStatesChanged += (_, _) => MapCanvas.RefreshNodeStates();
         Services.ThemeService.ThemeChanged += ApplyTheme;
+        // 图例的标题 / 两端说明 / 注释是**代码直接写进 TextBlock** 的（不是绑定），换语言后要重排一次
+        Services.LanguageService.LanguageChanged += (_, _) => UpdateLegend();
         ApplyTheme();
         UpdateLegend();
         _viewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);

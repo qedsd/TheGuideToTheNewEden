@@ -40,6 +40,7 @@ public partial class WormholePage : Page
     {
         await _viewModel.LoadAsync();
         await _viewModel.LoadShipOptionsAsync();
+        await _viewModel.LoadAllShipsAsync();
     }
 
     // ---------- 模式切换 ----------
@@ -78,7 +79,7 @@ public partial class WormholePage : Page
     {
         var title = string.Format(WormholeViewModel.FindString("WormholePage_PortalTitle"), portal.Name);
         var window = new ToolWindow(
-            new WormholePortalView(portal, _viewModel.ShipOptions),
+            new WormholePortalView(portal, _viewModel.ShipOptions, _viewModel.AllShipItems),
             ToolWindowTitleStyle.Default,
             showTopmostButton: false,
             showInTaskbar: false,
