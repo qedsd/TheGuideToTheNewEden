@@ -228,21 +228,17 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  ============ 顶栏：标题 + 模式切换 ============  -->
+        <!--
+            ============ 顶栏：模式切换 ============
+            页面内不再显示标题（用户要求）：左侧导航已经高亮当前页，这里只留右侧的模式切换（洞系浏览 / 洞口库）。
+        -->
         <Grid Grid.Row="0" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="20"
-                FontWeight="SemiBold"
-                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                Text="{DynamicResource Nav.Wormhole}" />
             <StackPanel
-                Grid.Column="2"
+                Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 Orientation="Horizontal">

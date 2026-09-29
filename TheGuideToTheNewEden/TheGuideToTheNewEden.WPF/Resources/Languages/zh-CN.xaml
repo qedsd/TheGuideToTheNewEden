@@ -1,4 +1,4 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
@@ -1730,4 +1730,60 @@
     <sys:String x:Key="MapDisplay_SovBlobAlphaSlope">晕染透明度斜率</sys:String>
     <sys:String x:Key="MapDisplay_SovBlobAlphaMax">晕染透明度上限</sys:String>
     <sys:String x:Key="MapDisplay_SovAlphaDamp">晕染整体阻尼</sys:String>
+
+    <!--  快速链接页（含自 WinUI 版迁移的字段名 / 操作名）  -->
+    <sys:String x:Key="LinksPage_Name">名字</sys:String>
+    <sys:String x:Key="LinksPage_Url">链接</sys:String>
+    <sys:String x:Key="LinksPage_ShortDescription">概述</sys:String>
+    <sys:String x:Key="LinksPage_Description">描述</sys:String>
+    <sys:String x:Key="LinksPage_Categories">分类</sys:String>
+    <sys:String x:Key="LinksPage_Platforms">平台</sys:String>
+    <sys:String x:Key="LinksPage_Platforms_Tip">多个平台用逗号分隔</sys:String>
+    <sys:String x:Key="LinksPage_Lang">语言</sys:String>
+    <sys:String x:Key="LinksPage_Lang_Tip">多个语言用逗号分隔</sys:String>
+    <sys:String x:Key="LinksPage_Categories_Tip">多个分类用逗号分隔</sys:String>
+    <sys:String x:Key="LinksPage_Categories_PickTip">点下面的分类即可加入或移出（推荐，免得手打错字变成一个新分类）</sys:String>
+    <sys:String x:Key="LinksPage_ErrorNameRequired">请填写名称</sys:String>
+    <sys:String x:Key="LinksPage_ErrorUrlRequired">请填写链接地址</sys:String>
+    <sys:String x:Key="LinksPage_ErrorUrlInvalid">链接地址需以 http:// 或 https:// 开头</sys:String>
+    <sys:String x:Key="LinksPage_Search">搜索名称、概述、地址或标签</sys:String>
+    <sys:String x:Key="LinksPage_AllCategories">全部分类</sys:String>
+    <sys:String x:Key="LinksPage_FavoritesOnly">只看收藏</sys:String>
+    <sys:String x:Key="LinksPage_FavoritesOnlyTip">只显示已收藏的链接。卡片右上角的星标用于收藏；收藏项会同时保留在原分类，并额外置顶到「收藏」分组</sys:String>
+    <sys:String x:Key="LinksPage_Favorite">收藏</sys:String>
+    <sys:String x:Key="LinksPage_Unfavorite">取消收藏</sys:String>
+    <sys:String x:Key="LinksPage_FavoriteGroup">收藏</sys:String>
+    <sys:String x:Key="LinksPage_FavoriteGroupTip">这里只是把收藏项"置顶"了一份；它们仍然保留在各自的分类分组里，所以同一张卡片可能出现两次</sys:String>
+    <sys:String x:Key="LinksPage_Uncategorized">未分类</sys:String>
+    <sys:String x:Key="LinksPage_Summary">共 {0} 个链接，当前显示 {1} 个</sys:String>
+    <sys:String x:Key="LinksPage_Open">打开链接</sys:String>
+    <sys:String x:Key="LinksPage_CopyUrl">复制链接</sys:String>
+    <sys:String x:Key="LinksPage_CopyDone">已复制链接</sys:String>
+    <sys:String x:Key="LinksPage_CopyRawDone">已复制链接（动态参数未解析）</sys:String>
+    <sys:String x:Key="LinksPage_CopyFailed">复制失败：剪贴板被其它程序占用</sys:String>
+    <sys:String x:Key="LinksPage_Add">新建链接</sys:String>
+    <sys:String x:Key="LinksPage_Edit">编辑链接</sys:String>
+    <sys:String x:Key="LinksPage_Remove">删除链接</sys:String>
+    <sys:String x:Key="LinksPage_RemoveConfirm">确定删除链接「{0}」？</sys:String>
+    <sys:String x:Key="LinksPage_More">更多操作</sys:String>
+    <sys:String x:Key="LinksPage_Reload">从配置重载</sys:String>
+    <sys:String x:Key="LinksPage_ReloadDone">已重新读取 Links.json</sys:String>
+    <sys:String x:Key="LinksPage_Import">导入链接表</sys:String>
+    <sys:String x:Key="LinksPage_ImportDone">已导入 {0} 条新链接（按地址去重，已有的未改动）</sys:String>
+    <sys:String x:Key="LinksPage_ImportEmpty">该文件里没有可用的链接</sys:String>
+    <sys:String x:Key="LinksPage_ImportFailed">导入失败：{0}</sys:String>
+    <sys:String x:Key="LinksPage_Export">导出链接表</sys:String>
+    <sys:String x:Key="LinksPage_ExportDone">已导出</sys:String>
+    <sys:String x:Key="LinksPage_ExportFailed">导出失败：{0}</sys:String>
+    <sys:String x:Key="LinksPage_RestoreDefaults">恢复默认链接</sys:String>
+    <sys:String x:Key="LinksPage_RestoreDefaultsConfirm">把默认链接表里还没有的条目补充进来？（按链接地址去重，不会覆盖或删除现有条目）</sys:String>
+    <sys:String x:Key="LinksPage_RestoreDefaultsDone">已补充 {0} 条默认链接</sys:String>
+    <sys:String x:Key="LinksPage_OpenConfigFolder">打开配置目录</sys:String>
+    <sys:String x:Key="LinksPage_JsonFilter">JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*</sys:String>
+    <sys:String x:Key="LinksPage_EmptyTitle">还没有任何链接</sys:String>
+    <sys:String x:Key="LinksPage_EmptyTip">点「新建链接」添加常用网站；也可以在「更多操作」里从 Links.json 导入，或让软件把默认链接补回来。</sys:String>
+    <sys:String x:Key="LinksPage_NoMatchTitle">没有匹配的链接</sys:String>
+    <sys:String x:Key="LinksPage_NoMatchTip">换个关键词，或清除搜索、分类与「只看收藏」这几个筛选条件。</sys:String>
+    <sys:String x:Key="LinksPage_JumpTip">点击展开该分类，并把它滚动到列表顶部</sys:String>
+    <sys:String x:Key="LinksPage_ClearFilter">清除筛选</sys:String>
 </ResourceDictionary>

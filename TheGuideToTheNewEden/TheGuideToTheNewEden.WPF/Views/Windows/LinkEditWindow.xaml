@@ -1,0 +1,185 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.LinkEditWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Width="520"
+    Height="820"
+    MinWidth="460"
+    MinHeight="560"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <Style x:Key="LinkFieldLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,12,0,4" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+        <Style x:Key="LinkFieldTip" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,4,0,0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <!--
+            已有分类的可点胶囊。自带模板（不 BasedOn 隐式 Button 样式），所以 Foreground 与悬停反馈要自己写；
+            「已选中」用 DataTrigger 换底色（选中 = Secondary 的实心底色，与主按钮同色系），
+            配合模板里的对勾一眼可辨。样式里**不能**用 Setter 放 SymbolIcon（会共享同一实例、模板化时报"已有父级"），
+            所以对勾是模板里两个独立实例按 Selected 切换显隐。
+        -->
+        <Style x:Key="LinkPickChip" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="Chip"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <ContentPresenter
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chip" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Selected}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <!--  顶部留出 48px 给标题栏（与其它工具窗口一致）  -->
+        <Grid Margin="20,52,20,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_Name}" />
+                    <ui:TextBox x:Name="NameBox" />
+
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_Url}" />
+                    <ui:TextBox x:Name="UrlBox" />
+
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_ShortDescription}" />
+                    <ui:TextBox x:Name="ShortDescriptionBox" Height="56" AcceptsReturn="True" TextWrapping="Wrap" />
+
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_Description}" />
+                    <ui:TextBox x:Name="DescriptionBox" Height="96" AcceptsReturn="True" TextWrapping="Wrap" />
+
+                    <!--
+                        分类：文本框仍是"唯一数据源"（保存的就是这段逗号分隔文本），
+                        下面的已有分类做成可点的小胶囊——点一下加入、再点移出，省得手打还容易打错成新分类。
+                    -->
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_Categories}" />
+                    <ui:TextBox
+                        x:Name="CategoriesBox"
+                        PlaceholderText="{DynamicResource LinksPage_Categories_Tip}"
+                        TextChanged="OnCategoriesTextChanged" />
+                    <TextBlock
+                        x:Name="CategoriesPickTip"
+                        Style="{StaticResource LinkFieldTip}"
+                        Text="{DynamicResource LinksPage_Categories_PickTip}" />
+                    <ItemsControl x:Name="CategoryChips" Margin="0,6,0,0" Visibility="Collapsed">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ui:Button
+                                    Margin="0,0,6,6"
+                                    Padding="8,3"
+                                    HorizontalAlignment="Left"
+                                    Click="OnCategoryChipClick"
+                                    Style="{StaticResource LinkPickChip}"
+                                    Tag="{Binding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            Margin="0,0,5,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Symbol="Checkmark24"
+                                            Visibility="{Binding Selected, Converter={StaticResource BoolToVisibility}}" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Text="{Binding Name}" />
+                                    </StackPanel>
+                                </ui:Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_Platforms}" />
+                    <ui:TextBox x:Name="PlatformsBox" PlaceholderText="{DynamicResource LinksPage_Platforms_Tip}" />
+
+                    <TextBlock Style="{StaticResource LinkFieldLabel}" Text="{DynamicResource LinksPage_Lang}" />
+                    <ui:TextBox x:Name="LangsBox" PlaceholderText="{DynamicResource LinksPage_Lang_Tip}" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <TextBlock
+                x:Name="ErrorText"
+                Grid.Row="1"
+                Margin="0,12,0,0"
+                FontSize="12"
+                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+
+            <StackPanel
+                Grid.Row="2"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <ui:Button
+                    Margin="0,0,8,0"
+                    Appearance="Primary"
+                    Click="OnOkClick"
+                    Content="{DynamicResource General_OK}"
+                    IsDefault="True" />
+                <ui:Button
+                    Click="OnCancelClick"
+                    Content="{DynamicResource General_Cancel}"
+                    IsCancel="True" />
+            </StackPanel>
+        </Grid>
+
+        <ui:TitleBar x:Name="TitleBar">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+    </Grid>
+</ui:FluentWindow>

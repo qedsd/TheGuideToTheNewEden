@@ -1,0 +1,561 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.LinksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--
+        快速链接页：顶部工具栏（搜索 / 分类 / 只看收藏 / 新建 / 更多），下面是按分类分组的卡片网格。
+        与 WinUI 版的差异（见 REFACTORING.md「快速链接」）：
+        · **卡片与跳转胶囊都不放图标**（用户要求）：页面上只有"名称 + 概述 + 分类/平台胶囊"这类文字信息。
+          - 条目自带的 `IconUrl` 图片图标不用：本地图标目录没链接进本项目、网络图标又要额外引入异步图片控件与缓存，
+            收益只有"好看一点"，维护成本却落在每次图标失效上（模型里的 IconUrl 字段照旧保留，用户回 WinUI 版仍能看到原图标）。
+          - "按分类取一枚 Fluent 图标"的方案也**已弃用**（阶段 77 曾实现后按用户要求移除）：它要求"新增分类就得在
+            `LinkCategoryIcons` 里补一行映射"，用户自建分类时全落到兜底图标、反而失去辨识度，还多一层维护。
+        · 新增 搜索 / 分类筛选 / 收藏置顶 / 导入导出 / 恢复默认 / 从磁盘重载。
+        · 链接库存的是**站点地址**：不做任何地址加工（曾经有过一版运行时占位符机制，已按用户要求移除——
+          站点内部的深度链接是站点自己的事，应用不该替它拼参数）。
+    -->
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!--
+            卡片按钮：自带模板（不 BasedOn 隐式 Button 样式），因此 Foreground / 悬停反馈都要自己写，
+            否则会退回系统色与内容宽度（§9 第 18、62 条）。悬停底色画在卡片 Border 上，
+            这样"卡片本身"变色，而不是被卡片底色盖住的内层变色。
+        -->
+        <Style x:Key="LinkCardButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="Card"
+                            Padding="12"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  分类 / 平台小胶囊  -->
+        <Style x:Key="LinkChipBorder" TargetType="Border">
+            <Setter Property="Margin" Value="0,0,4,2" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        </Style>
+
+        <!--
+            「分类快捷跳转」的小胶囊按钮：自带模板（不 BasedOn 隐式 Button 样式），因此
+            Foreground / 悬停反馈 / 圆角都要自己写，否则会退回系统色与原生模板（§9 第 18、62 条）。
+            比卡片上的分类标签略大一点，好点。
+        -->
+        <Style x:Key="LinkJumpChip" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="Chip"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4">
+                            <ContentPresenter
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chip" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chip" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LinkChipText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <!--  分组标题带（收藏组用强调色，一眼能和普通分类区分）  -->
+        <Style x:Key="LinkGroupTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  分类快捷跳转条  -->
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--
+            ============ 工具栏 ============
+            页面内不再显示标题：左侧导航已经高亮当前页（用户要求，虫洞页与后续功能同样处理）。
+            「共 N 个链接，当前显示 M 个」原来是标题右侧的统计，标题去掉后挪到本行右侧空档里：
+            它就在动作按钮左边，筛选/搜索后一眼能看到"命中了几条"，也不额外占一行高度。
+        -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox
+                x:Name="SearchBox"
+                Width="240"
+                PlaceholderText="{DynamicResource LinksPage_Search}"
+                TextChanged="OnSearchTextChanged" />
+
+            <ComboBox
+                x:Name="CategoryCombo"
+                Grid.Column="1"
+                Width="150"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                ItemsSource="{Binding CategoryOptions}"
+                SelectionChanged="OnCategoryChanged" />
+
+            <ui:Button
+                x:Name="FavoriteFilterButton"
+                Grid.Column="2"
+                Margin="8,0,0,0"
+                Appearance="Transparent"
+                Click="OnFavoriteFilterClick"
+                Content="{DynamicResource LinksPage_FavoritesOnly}"
+                ToolTip="{DynamicResource LinksPage_FavoritesOnlyTip}">
+                <ui:Button.Icon>
+                    <ui:SymbolIcon x:Name="FavoriteFilterIcon" Symbol="Star24" />
+                </ui:Button.Icon>
+            </ui:Button>
+
+            <!--  统计：标题去掉后落在这里（本行右侧空档，动作按钮左边）  -->
+            <TextBlock
+                Grid.Column="3"
+                Margin="12,0,14,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding SummaryText}"
+                TextTrimming="CharacterEllipsis" />
+
+            <StackPanel
+                Grid.Column="4"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <ui:Button
+                    Appearance="Primary"
+                    Click="OnAddClick"
+                    Content="{DynamicResource LinksPage_Add}"
+                    Icon="{ui:SymbolIcon Add24}"
+                    ToolTip="{DynamicResource LinksPage_Add}" />
+                <ui:Button
+                    x:Name="MoreButton"
+                    Margin="8,0,0,0"
+                    Appearance="Transparent"
+                    Click="OnMoreClick"
+                    Icon="{ui:SymbolIcon MoreHorizontal24}"
+                    ToolTip="{DynamicResource LinksPage_More}">
+                    <ui:Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem
+                                Click="OnReloadClick"
+                                Header="{DynamicResource LinksPage_Reload}"
+                                Icon="{ui:SymbolIcon ArrowSync24}" />
+                            <Separator />
+                            <MenuItem
+                                Click="OnImportClick"
+                                Header="{DynamicResource LinksPage_Import}"
+                                Icon="{ui:SymbolIcon ArrowUpload24}" />
+                            <MenuItem
+                                Click="OnExportClick"
+                                Header="{DynamicResource LinksPage_Export}"
+                                Icon="{ui:SymbolIcon ArrowDownload24}" />
+                            <MenuItem
+                                Click="OnRestoreDefaultsClick"
+                                Header="{DynamicResource LinksPage_RestoreDefaults}"
+                                Icon="{ui:SymbolIcon BookOpen24}" />
+                            <Separator />
+                            <MenuItem
+                                Click="OnOpenConfigFolderClick"
+                                Header="{DynamicResource LinksPage_OpenConfigFolder}"
+                                Icon="{ui:SymbolIcon Folder24}" />
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+            </StackPanel>
+        </Grid>
+
+        <!--  ============ 分类快捷跳转条（点击展开并滚动到该分组）  ============  -->
+        <ItemsControl
+            x:Name="JumpStrip"
+            Grid.Row="1"
+            Margin="0,12,0,0"
+            ItemsSource="{Binding Groups}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!--  横向对齐必须显式写 Left：样式不带 BasedOn 时拿不到库隐式样式的 Left，会被 Button 默认的 Stretch 拉开（§9 第 62 条）  -->
+                    <ui:Button
+                        Margin="0,0,6,4"
+                        Padding="9,3"
+                        HorizontalAlignment="Left"
+                        Click="OnJumpClick"
+                        Style="{StaticResource LinkJumpChip}"
+                        Tag="{Binding}"
+                        ToolTip="{DynamicResource LinksPage_JumpTip}">
+                        <StackPanel Orientation="Horizontal">
+                            <!--  不放图标：分类名 + 条数已足够，用户自建分类时也不会有"图标没配对"的问题  -->
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Text="{Binding Title}" />
+                            <TextBlock
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding CountText}" />
+                        </StackPanel>
+                    </ui:Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!--  ============ 内容 ============  -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <ScrollViewer
+                x:Name="ContentScroll"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <ItemsControl x:Name="GroupList" ItemsSource="{Binding Groups}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!--  分组可折叠，默认展开；折叠状态存在 VM 里，搜索/筛选重建分组后仍然保持  -->
+                                <Expander
+                                    Margin="0,8,0,4"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                                    <Expander.Header>
+                                        <!--
+                                            条数紧贴分组名右侧（不放到行尾）：标题与数字同属一行，视线不必横跨整屏。
+                                            「收藏」组额外挂一条提示：收藏是"置顶一份"，条目仍在各自分类里，
+                                            所以同一张卡会出现两次——不说明容易被当成重复数据。
+                                        -->
+                                        <StackPanel Orientation="Horizontal">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsFavoriteGroup}" Value="True">
+                                                            <Setter Property="ToolTip" Value="{DynamicResource LinksPage_FavoriteGroupTip}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Title}">
+                                                <TextBlock.Style>
+                                                    <Style BasedOn="{StaticResource LinkGroupTitle}" TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsFavoriteGroup}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding CountText}" />
+                                        </StackPanel>
+                                    </Expander.Header>
+
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Width="248"
+                                                    MinHeight="108"
+                                                    Margin="0,0,12,12"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="OnCardClick"
+                                                    Style="{StaticResource LinkCardButton}"
+                                                    Tag="{Binding}">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem
+                                                                Click="OnOpenClick"
+                                                                Header="{DynamicResource LinksPage_Open}"
+                                                                Icon="{ui:SymbolIcon Open24}" />
+                                                            <MenuItem
+                                                                Click="OnCopyUrlClick"
+                                                                Header="{DynamicResource LinksPage_CopyUrl}"
+                                                                Icon="{ui:SymbolIcon Copy24}" />
+                                                            <Separator />
+                                                            <MenuItem
+                                                                Click="OnFavoriteClick"
+                                                                Header="{DynamicResource LinksPage_Favorite}"
+                                                                Icon="{ui:SymbolIcon Star24}"
+                                                                Visibility="{Binding IsFavorite, Converter={StaticResource InverseBoolToVisibility}}" />
+                                                            <MenuItem
+                                                                Click="OnFavoriteClick"
+                                                                Header="{DynamicResource LinksPage_Unfavorite}"
+                                                                Icon="{ui:SymbolIcon StarEmphasis24}"
+                                                                Visibility="{Binding IsFavorite, Converter={StaticResource BoolToVisibility}}" />
+                                                            <MenuItem
+                                                                Click="OnEditClick"
+                                                                Header="{DynamicResource LinksPage_Edit}"
+                                                                Icon="{ui:SymbolIcon Edit24}" />
+                                                            <Separator />
+                                                            <MenuItem
+                                                                Click="OnRemoveClick"
+                                                                Header="{DynamicResource LinksPage_Remove}"
+                                                                Icon="{ui:SymbolIcon Delete24}" />
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+
+                                                    <Button.ToolTip>
+                                                        <ToolTip MaxWidth="380">
+                                                            <!--  ToolTip 是独立视觉树，根上补主题前景色，否则深色主题下是黑字（§9 第 61 条）  -->
+                                                            <Border TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                                                <StackPanel>
+                                                                    <TextBlock
+                                                                        FontSize="13"
+                                                                        FontWeight="SemiBold"
+                                                                        Text="{Binding Name}" />
+                                                                    <TextBlock
+                                                                        Margin="0,6,0,0"
+                                                                        FontSize="12"
+                                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                        Text="{Binding Description}"
+                                                                        TextWrapping="Wrap" />
+                                                                    <TextBlock
+                                                                        Margin="0,6,0,0"
+                                                                        FontSize="11"
+                                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                        Text="{Binding Url}"
+                                                                        TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </ToolTip>
+                                                    </Button.ToolTip>
+
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <!--  正文占满剩余高度、胶囊行贴底：卡片等高等宽时不会出现"上紧下空"  -->
+                                                            <RowDefinition Height="*" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+
+                                                        <Grid Grid.Row="0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!--
+                                                                不放图标（用户要求）：分类图标表要求"新增分类就得补一行映射"，
+                                                                用户自建分类时全落到兜底图标、反而失去辨识度，还多一层维护；
+                                                                条目自带的 IconUrl 图片图标也不用（理由见页首注释）。
+                                                            -->
+                                                            <StackPanel Margin="0,0,6,0">
+                                                                <TextBlock
+                                                                    FontSize="14"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{Binding Name}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock
+                                                                    MaxHeight="32"
+                                                                    Margin="0,3,0,0"
+                                                                    FontSize="12"
+                                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                    Text="{Binding ShortDescription}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="Wrap" />
+                                                            </StackPanel>
+
+                                                            <!--  收藏：两个图标实例切换显隐（在 Setter 里放 SymbolIcon 会共享同一实例，模板化时报"已有父级"）  -->
+                                                            <ui:Button
+                                                                Grid.Column="1"
+                                                                Width="28"
+                                                                Height="28"
+                                                                Padding="0"
+                                                                VerticalAlignment="Top"
+                                                                Appearance="Transparent"
+                                                                Click="OnFavoriteClick"
+                                                                ToolTip="{DynamicResource LinksPage_Favorite}">
+                                                                <Grid>
+                                                                    <ui:SymbolIcon
+                                                                        FontSize="14"
+                                                                        Symbol="Star24"
+                                                                        Visibility="{Binding IsFavorite, Converter={StaticResource InverseBoolToVisibility}}" />
+                                                                    <ui:SymbolIcon
+                                                                        FontSize="14"
+                                                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                                        Symbol="StarEmphasis24"
+                                                                        Visibility="{Binding IsFavorite, Converter={StaticResource BoolToVisibility}}" />
+                                                                </Grid>
+                                                            </ui:Button>
+                                                        </Grid>
+
+                                                        <ItemsControl
+                                                            Grid.Row="1"
+                                                            Margin="0,8,0,0"
+                                                            ItemsSource="{Binding Chips}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <WrapPanel />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Border Style="{StaticResource LinkChipBorder}">
+                                                                        <TextBlock Style="{StaticResource LinkChipText}" Text="{Binding}" />
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!--
+                        「分类快捷跳转」的补白：靠后的分组下面没有足够内容时，物理上滚不到「标题贴顶」，
+                        跳转时按视口高度动态撑一段出来（高度 0 表示不需要），跳完留在原处、下次刷新归零。
+                    -->
+                    <Border x:Name="BottomSpacer" Height="0" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--  空状态一：链接表本身为空  -->
+            <StackPanel
+                x:Name="EmptySourceState"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="Collapsed">
+                <ui:SymbolIcon
+                    HorizontalAlignment="Center"
+                    FontSize="40"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Symbol="LinkSquare24" />
+                <TextBlock
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{DynamicResource LinksPage_EmptyTitle}" />
+                <TextBlock
+                    MaxWidth="420"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource LinksPage_EmptyTip}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!--  空状态二：有链接但当前筛选没匹配上  -->
+            <StackPanel
+                x:Name="EmptyFilterState"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="Collapsed">
+                <ui:SymbolIcon
+                    HorizontalAlignment="Center"
+                    FontSize="40"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Symbol="FilterDismiss24" />
+                <TextBlock
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{DynamicResource LinksPage_NoMatchTitle}" />
+                <TextBlock
+                    MaxWidth="420"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource LinksPage_NoMatchTip}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <ui:Button
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    Click="OnClearFilterClick"
+                    Content="{DynamicResource LinksPage_ClearFilter}"
+                    Icon="{ui:SymbolIcon FilterDismiss24}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

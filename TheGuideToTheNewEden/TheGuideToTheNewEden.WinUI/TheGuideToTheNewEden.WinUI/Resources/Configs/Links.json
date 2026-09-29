@@ -406,5 +406,972 @@
 		"Langs": [
 			"en"
 		]
+	},
+{
+		"Name": "Eveeye",
+		"Url": "https://eveeye.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "星图与虫洞链地图",
+		"Description": "交互式星图工具，可绘制虫洞链、规划跳桥与 Thera 路线，并叠加 zKillboard 实时击杀数据，洞主与侦察常用",
+		"Categories": [
+			"星图",
+			"虫洞",
+			"情报"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Router",
+		"Url": "https://everouter.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "网页版游戏内星图",
+		"Description": "按游戏内星图 1:1 复刻的路线规划工具，支持创建跳桥路线、查找冰矿星系、追踪每日主权变动",
+		"Categories": [
+			"星图",
+			"导航规划"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Wanderer",
+		"Url": "https://wanderer.ltd/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "现代协作虫洞地图",
+		"Description": "面向虫洞玩家的协作地图，支持签名与连接追踪、角色位置监控、权限列表，并可嵌入 zKill 组件",
+		"Categories": [
+			"虫洞",
+			"探索"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Tripwire",
+		"Url": "https://tripwiremap.app/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "开源虫洞链地图",
+		"Description": "老牌开源虫洞链地图工具，官方提供公共托管站点，注册后即可与队友协作绘制虫洞链",
+		"Categories": [
+			"虫洞"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "wormhole.systems",
+		"Url": "https://wormhole.systems",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "协作虫洞地图与告警",
+		"Description": "实时协作虫洞地图，支持签名追踪、虫洞质量追踪、路径规划，并可把关键事件推送到 Discord",
+		"Categories": [
+			"虫洞"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE-Scout",
+		"Url": "https://www.eve-scout.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "Thera 等枢纽洞连接",
+		"Description": "持续更新的 Thera 等枢纽虫洞连接列表并附带地图，是进出 Thera 的必备参考",
+		"Categories": [
+			"虫洞",
+			"探索"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE-Scout Rescue",
+		"Url": "https://evescoutrescue.com/home/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "虫洞被困救援服务",
+		"Description": "Signal Cartel 提供的虫洞救援服务，被困洞内时可在网站发出求救并获得救援",
+		"Categories": [
+			"虫洞",
+			"探索"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "WHDBX",
+		"Url": "https://whdb.scan-stakan.space/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "虫洞星系资料库",
+		"Description": "按虫洞星系名查询其等级、静洞、签名与异常定义，扫洞前查一眼很方便",
+		"Categories": [
+			"虫洞"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "whtype.info",
+		"Url": "https://whtype.info/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "虫洞类型速查",
+		"Description": "按类型名或属性检索虫洞，显示其连接范围、刷新区、等级、质量与寿命，识别洞口签名的好帮手",
+		"Categories": [
+			"虫洞"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "VenusV5",
+		"Url": "http://venus.wormholes.club/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "中文虫洞星系查询",
+		"Description": "中文界面的虫洞星系查询工具，适合国服玩家快速查阅洞系与信号信息",
+		"Categories": [
+			"虫洞"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "Abyss Tracker",
+		"Url": "https://abysstracker.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "深渊副本数据统计",
+		"Description": "记录深渊副本的配置、通关率与战利品并附带排行榜与教程，刷深渊前可先看别人的成绩",
+		"Categories": [
+			"探索"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Eve-Kill",
+		"Url": "https://eve-kill.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "社区击杀榜",
+		"Description": "社区驱动的现代击杀榜，提供实时击杀邮件、飞行员与军团排行以及战斗报告",
+		"Categories": [
+			"kb"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Socket.Kill",
+		"Url": "https://socketkill.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "流式实时击杀邮件",
+		"Description": "把落入的击杀邮件以流式方式实时推送的轻量击杀榜，适合放在副屏盯自家星域",
+		"Categories": [
+			"kb",
+			"预警"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "aDashboard",
+		"Url": "https://adashboard.info/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "本地名单情报仪表盘",
+		"Description": "解析本地频道名单与 D-Scan 数据的情报仪表盘，一眼看清周边玩家的归属与威胁（需登录）",
+		"Categories": [
+			"情报",
+			"预警"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "localthreat",
+		"Url": "https://localthreat.xyz/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "本地名单威胁分析",
+		"Description": "粘贴本地频道名单即可查看玩家归属、近期常用舰船、危险度与击杀比，00 区与低安常用",
+		"Categories": [
+			"情报",
+			"预警"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "RIFT Intel Fusion Tool",
+		"Url": "https://riftforeve.online",
+		"IconUrl": "",
+		"Platforms": [
+			"Windows",
+			"Linux",
+			"Mac"
+		],
+		"ShortDescription": "桌面情报聚合工具",
+		"Description": "桌面端情报聚合工具，支持情报频道监控、击杀榜监控、自定义地图与多种告警方式",
+		"Categories": [
+			"情报",
+			"预警"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Apex",
+		"Url": "https://eveapex.com",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "虫洞与波赫文情报",
+		"Description": "提供军团与飞行员情报、虫洞与波赫文排行榜以及招募服务的网站",
+		"Categories": [
+			"情报",
+			"虫洞"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Eve Who",
+		"Url": "https://evewho.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "角色所属关系查询",
+		"Description": "在游戏外查询角色所属关系，以及军团/联盟成员列表与统计，背景调查与招人常用",
+		"Categories": [
+			"角色查询"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "SkillQ",
+		"Url": "https://skillq.net/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "跨角色技能监控",
+		"Description": "跨全部角色监控技能等级与训练队列的网页工具，多开玩家用来统一查看技能进度",
+		"Categories": [
+			"角色查询"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE-HR",
+		"Url": "https://eve-hr.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "军团日常事务管理",
+		"Description": "军团管理界面，涵盖 ESI 检查、回购、招募、物流与忠诚系统，适合军团管理团队使用",
+		"Categories": [
+			"军团管理"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "capsuleer.app",
+		"Url": "https://capsuleer.app/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "训练队列速查",
+		"Description": "轻量应用，快速查看角色训练队列、神经图谱与购买技能点",
+		"Categories": [
+			"角色查询"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Tritanium",
+		"Url": "https://apps.apple.com/us/app/tritanium/id6739530875",
+		"IconUrl": "",
+		"Platforms": [
+			"IOS"
+		],
+		"ShortDescription": "iOS 角色与配船助手",
+		"Description": "苹果端应用，可查看角色与技能、浏览物品数据库、分析市场并测试配船",
+		"Categories": [
+			"角色查询",
+			"装配"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "eveship.fit",
+		"Url": "https://eveship.fit/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "在线配船与分享",
+		"Description": "在线查看、创建与分享 EVE 舰船配置的网页工具，打开即用、无需安装",
+		"Categories": [
+			"装配"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Capsuleers.app",
+		"Url": "https://capsuleers.app/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "浏览器端配船与综合工具",
+		"Description": "浏览器端的舰船与建筑配置编辑器（支持 EFT 导入导出），并附带路线规划、本地/D-Scan 分析与实时击杀流",
+		"Categories": [
+			"装配",
+			"综合"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Ref",
+		"Url": "https://everef.net/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "物品与属性数据库",
+		"Description": "提供完整物品数据库、市场组与属性数据的资料站，查物品 ID、属性与图标很方便",
+		"Categories": [
+			"百科",
+			"数据"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Fuzzwork Market Data",
+		"Url": "https://market.fuzzwork.co.uk/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "全宇宙市场数据聚合",
+		"Description": "Fuzzwork 的市场数据站，聚合全宇宙订单与历史价格，可按区域快速查询物品行情",
+		"Categories": [
+			"市场",
+			"数据"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Market Browser",
+		"Url": "https://evemarketbrowser.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "还原游戏内市场图表",
+		"Description": "用网页还原游戏内市场界面，查看实时订单与价格趋势，可对比各星域行情",
+		"Categories": [
+			"市场"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Marquette",
+		"Url": "https://marquette.ch",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "可分享的市场浏览器",
+		"Description": "带多种筛选条件的市场浏览器与估价工具，查询结果可生成链接分享给队友",
+		"Categories": [
+			"市场",
+			"估价"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "isk.gg",
+		"Url": "https://isk.gg",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "订单簿与价格历史",
+		"Description": "支持按区域、星系、空间站查询订单簿与价格历史的市场工具",
+		"Categories": [
+			"市场"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "ISK Scout",
+		"Url": "https://iskscout.com",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "枢纽套利扫描",
+		"Description": "覆盖十大贸易枢纽的实时套利机会扫描，并内置蓝图制造利润计算器",
+		"Categories": [
+			"市场",
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Tycoon",
+		"Url": "https://evetycoon.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "市场数据与利润追踪",
+		"Description": "全宇宙市场数据聚合平台，可跟踪贸易与工业利润，也是常用的市场数据来源",
+		"Categories": [
+			"市场",
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Profits",
+		"Url": "https://www.eveprofits.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "空间站贸易选品",
+		"Description": "面向空间站贸易的选品与利润查询工具，帮助挑选值得倒卖的物品",
+		"Categories": [
+			"市场",
+			"商业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Janice",
+		"Url": "https://janice.e-351.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "粘贴清单批量估价",
+		"Description": "粘贴物品清单即可按指定空间站报价批量估价，支持多种清单格式，交易与合同结算常用",
+		"Categories": [
+			"估价"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Goonpraisal",
+		"Url": "https://appraise.gnf.lt/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "枢纽价批量估价",
+		"Description": "批量估价工具，可按主要贸易枢纽的买卖价与成交量计算资产价值",
+		"Categories": [
+			"估价"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Appraisal",
+		"Url": "https://eveappraisal.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "估价与价格提醒",
+		"Description": "批量估价工具，额外提供关注列表、价格提醒与盈亏追踪",
+		"Categories": [
+			"估价"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "MutaMarket",
+		"Url": "https://mutamarket.com",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "深渊突变模块市场",
+		"Description": "专注深渊突变模块的合同挂单浏览、估价与库存管理平台，淘突变装备必备",
+		"Categories": [
+			"合同",
+			"估价"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Courier",
+		"Url": "https://evecourier.com",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "运输路线与合同",
+		"Description": "规划运输路线、检查星门堵截情况，并管理快递合同与运输套利",
+		"Categories": [
+			"运输",
+			"合同"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Ravworks",
+		"Url": "https://ravworks.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "工业生产全流程规划",
+		"Description": "覆盖工业全流程的生产规划工具，可把成品拆解成制造组件并可视化整条生产链",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Cookbook",
+		"Url": "https://evecookbook.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "菜谱式制造计算",
+		"Description": "以菜谱的方式逐步列出制造所需材料与成本，适合快速核算生产花费",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Industry Scanner",
+		"Url": "https://eveindustryscan.de/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "配方比价找利润",
+		"Description": "把 SDE 里的制造、反应、行星开发配方与 ESI 实时订单比对，找出当前最赚钱的产品",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE-Orchestra",
+		"Url": "https://eve-orchestra.com",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "采矿与工业监控",
+		"Description": "采矿日志分析、工业任务与蓝图监控，并提供军团采矿税务统计",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "cerlestes 矿石价值表",
+		"Url": "https://ore.cerlestes.de/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "矿石价值对比表",
+		"Description": "对比各矿石每立方米的价值，辅助精炼与压缩决策，挖矿党常用参考",
+		"Categories": [
+			"工业",
+			"市场"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Etoiles Industries",
+		"Url": "https://www.etoiles-industries.org/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "含反应与 PI 的生产计划",
+		"Description": "制定包含反应与行星开发的生产计划，支持团队协作共享",
+		"Categories": [
+			"工业",
+			"行星开发"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "PI Nexus",
+		"Url": "https://evepinexus.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "行星殖民地规划器",
+		"Description": "纯浏览器端的行星工业殖民地规划器，无需安装或注册即可摆放建筑、计算产出",
+		"Categories": [
+			"行星开发"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Industrial EVE",
+		"Url": "https://industrialeve.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "行星殖民地模板管理",
+		"Description": "设计行星殖民地模板、管理 PI 角色，并可通过 Discord 推送完成提醒",
+		"Categories": [
+			"行星开发"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Planets in Space",
+		"Url": "https://planetsin.space/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "全角色 PI 状态查看",
+		"Description": "汇总查看所有角色的行星工业状态，并支持 Discord 提醒",
+		"Categories": [
+			"行星开发"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Workbench",
+		"Url": "https://www.eveworkbench.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "市场/运输/装配社区工具",
+		"Description": "社区工具站，可浏览市场、创建运输路线并分享舰船装配",
+		"Categories": [
+			"综合",
+			"市场",
+			"装配"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Buddy",
+		"Url": "https://github.com/ErikKalkoken/evebuddy",
+		"IconUrl": "",
+		"Platforms": [
+			"Windows",
+			"Android",
+			"Linux",
+			"Mac"
+		],
+		"ShortDescription": "跨平台伴侣应用",
+		"Description": "开源伴侣应用，通过 ESI 管理角色指标、邮件、资产、技能与事件通知，覆盖桌面与安卓",
+		"Categories": [
+			"综合"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Eve Empire",
+		"Url": "https://eve-empire-web.pages.dev/",
+		"IconUrl": "",
+		"Platforms": [
+			"Windows",
+			"Mac",
+			"Android",
+			"IOS"
+		],
+		"ShortDescription": "多语言全能伴侣",
+		"Description": "界面支持中文、英文、俄文的全能伴侣应用，含配船模拟、击杀榜、虫洞数据库与本地情报",
+		"Categories": [
+			"综合",
+			"装配"
+		],
+		"Langs": [
+			"zh",
+			"en"
+		]
+	},
+	{
+		"Name": "EVE 官方网站",
+		"Url": "https://www.eveonline.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "国际服官方网站",
+		"Description": "EVE Online 国际服官方网站，账号管理、商城与游戏客户端下载入口",
+		"Categories": [
+			"综合"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE 官方新闻与补丁",
+		"Url": "https://www.eveonline.com/news",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "补丁说明与活动公告",
+		"Description": "官方新闻站，包含版本补丁说明、开发者博客、活动与更新日志",
+		"Categories": [
+			"综合"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE 官方论坛",
+		"Url": "https://forums.eveonline.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "国际服官方论坛",
+		"Description": "国际服官方论坛，版本反馈、玩法讨论与官方公告的重要来源",
+		"Categories": [
+			"综合"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE 服务器状态",
+		"Url": "https://status.eveonline.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "服务器状态与维护公告",
+		"Description": "官方服务器状态页，查看服务器在线状态与计划维护公告",
+		"Categories": [
+			"服务器"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "圣域十二星座 EVE",
+		"Url": "https://evefa.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "国服综合数据站",
+		"Description": "面向国服玩家的综合数据工具站，覆盖市场行情、配船模拟、工业计算、击杀榜与物品数据库",
+		"Categories": [
+			"综合",
+			"装配",
+			"数据"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "EVE 国服官网",
+		"Url": "https://evepc.163.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "网易国服官方网站",
+		"Description": "网易代理的国服《星战前夜：晨曦》官方网站，客户端下载与官方公告入口",
+		"Categories": [
+			"综合",
+			"服务器"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "EVE 国际服官方中文站",
+		"Url": "https://www.eveonline.com/zh",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "国际服官方中文入口",
+		"Description": "EVE Online 国际服的官方中文页面，中文玩家从官网入口开始了解游戏",
+		"Categories": [
+			"综合"
+		],
+		"Langs": [
+			"zh",
+			"en"
+		]
+	},
+	{
+		"Name": "EVE 端游游戏百科",
+		"Url": "http://evepc.baike.163.com/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "国服官方游戏百科",
+		"Description": "网易国服 EVE 端游的官方游戏百科资料站，含舰船、装备、玩法等基础资料",
+		"Categories": [
+			"百科"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "EVE星战前夜攻略",
+		"Url": "http://eve.ufo110.net/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "中文攻略与新人教程",
+		"Description": "提供欧服新人教程、汉化资源与欧服华人联盟相关攻略的中文攻略站",
+		"Categories": [
+			"百科"
+		],
+		"Langs": [
+			"zh"
+		]
 	}
 ]
