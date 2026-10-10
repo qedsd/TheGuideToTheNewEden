@@ -137,22 +137,30 @@
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource Nav.DED}"
-                    NavigationCacheMode="Required"
-                    TargetPageType="{x:Type pages:DEDPage}">
+                <!--  攻略：死亡远征（DED 空间）/ 任务攻略，两个子项  -->
+                <ui:NavigationViewItem Content="{DynamicResource Nav.Guides}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="DataSunburst24" />
+                        <ui:SymbolIcon Symbol="BookOpen24" />
                     </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.DED}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:DEDPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="DataSunburst24" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource Nav.Mission}"
-                    NavigationCacheMode="Required"
-                    TargetPageType="{x:Type pages:MissionPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="DocumentOnePage24" />
-                    </ui:NavigationViewItem.Icon>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Mission}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:MissionPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="DocumentOnePage24" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem

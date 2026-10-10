@@ -1629,6 +1629,11 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ## 7. 验证记录
 
+> **说明（阶段 79 追记）**：本节是 **阶段 0–12（含阶段 28 的倒货 smoke 核验）** 的历史快照，**不再代表整体进度**。
+> 阶段 13 之后的核验结论都记在**对应阶段的正文里**（阶段 47 的探针矩阵、阶段 53 的四轮实机反馈、
+> 阶段 63/65/67 的星图核验、阶段 69–76 的虫洞核验、阶段 77/78 的快速链接探针等都有各自的核验小节）。
+> 判断"某功能是否已实机核验"请以**阶段正文 + §8 的未覆盖条目**为准，不要引用本节的表。
+
 | 模块 | 验证方式 | 结果 |
 |---|---|---|
 | 设置：壳页 / 一般子页 / 按键列表 | **实机截图** | 通过（含滚动条出现、子页可导航） |
@@ -2697,7 +2702,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     （按 `LinkGroupViewModel.GroupKey`，收藏组用 NUL 前缀键避免与分类名撞车），因此**搜索/筛选重建分组后不会被弹回展开**
     ——这点很关键：分组在每次 `Refresh()` 里都是重新构造的，状态若只放在组对象上，敲一个字就会全部展开。
     只用 WPF-UI 的 Expander 默认样式（布局属性逐项内联，**不在页面 Resources 里写隐式 `Expander` 样式**，
-    否则会把库样式顶掉，见 §9 第 29 条）。
+    否则会把库样式顶掉，见 §9 第 18 条）。
   - **分组顺序按条数从多到少**（用户要求"常用的几组放前面"）：常用度用"该分类有多少条链接"近似，
     顺序取自 `_all`（**不是当前筛选结果**，否则每敲一个搜索字分组顺序都在跳）；`OrderByDescending` 是稳定排序，
     条数相同的组仍保持 `Links.json` 里的先后；收藏组固定最前。分类下拉框用**同一套顺序**，免得"列表里排第 3、页面上在第 8"。
@@ -2896,6 +2901,91 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   而不是覆盖用户的运行数据。
 
 
+### 阶段 79：DED / 任务页迁移（自写 Markdown 渲染器）+ 文档滞后订正
+
+本阶段两件事：**先订正文档**（长期滞后项，见 A），**再把两个占位页做成真实实现**（见 B）。
+
+#### A. 文档订正清单（全是"文档与代码不一致"，只改文档、不动代码）
+
+| # | 位置 | 原表述 | 订正为 |
+|---|---|---|---|
+| 1 | §10 快速链接 | 卡片徽标**显示按分类取的 Fluent 图标** | 卡片**不放任何图标**（阶段 77 定稿，代码里已无 `CategoryIcon`，见 §9 第 55 条） |
+| 2 | §8 第 26 条 | 频道翻译仍是导航占位 | **阶段 47 S4/S5 已完成**（保留历史描述，见第 34 条的真实边界） |
+| 3 | §8 计划内未做 | 结构名称解析"待移植" | **阶段 27 已完成**（与「功能降级」第 5 条自相矛盾，已统一） |
+| 4 | §10 设置模块 | 子页列表含 `ZKB` | 该子页阶段 53 已删；补上 `AiTranslation` / `Glossary` |
+| 5 | §10 主窗口标题 | 版本号示例 `3.0.1` | csproj 现为 **`4.0.0`**（`InformationalVersion` 同） |
+| 6 | 阶段 77 交叉引用 | 「见 §9 第 29 条」（隐式样式） | **§9 第 18 条**（第 29 条是 `ReadLineAsync` 超时） |
+| 7 | §9 编号 | 第 `45.` 出现两次且排在 `54.` 之后；39–44 挤在同一段落里 | 把重复项移到 §9 末尾改编号 **68**，并把并在一起的条目各自独立成项——**§9 现为 1..68 连续、无重复、无缺口** |
+| 8 | §8 | 没有"还剩哪些占位页"的记录 | 新增**第 61 条**：26 个导航目标里 8 个仍是 `PlaceholderPage`，且这 8 个在 WinUI 都有真实实现（属真实缺口）；阶段 79 后剩 6 个 |
+| 9 | §7 / §10 Core 清单 | §7 被当成"整体进度"；Core 改动只列到阶段 46 | §7 加"阶段 0–12 历史快照"说明；Core 清单补阶段 44/47/53/63/68/76 的改动 |
+
+#### B. DED / 任务页迁移
+
+- **数据来源（本轮查清的一个事实）**：Core 的 `DEDService` / `MissionService` 都走 **`DBService.StaticDb`**
+  （`Config.InitDb()` 里 `InitDEDDb(...)` 是**注释掉**的、`Config.DEDDBPath` 也没有任何读取方）→
+  **`Resources/Database/ded.db` 其实不在代码路径上**，DED 表实际来自 `static.db`。
+  因此这两页只依赖 `CoreInitializer` 已有的 `Config.StaticDBPath` 初始化，**CoreInitializer 无需改动**（探针已实证）。
+- **Markdown 渲染（本阶段的主要新增）**：WinUI 用 CommunityToolkit 的 `MarkdownTextBlock`，WPF 没有对应控件，
+  既有依赖里也没有 Markdown 库 → **自写、零新增依赖**：
+  - `Helpers/MarkdownRenderer.cs`：Markdown → `FlowDocument`。覆盖面按**实测内容统计**确定
+    （static.db 正文里 `## ` 1779、`### ` 683、无序列表 2334、有序 65、链接 1125、图片 30、水平线 148、`<font>`/`<br>` 残留）：
+    标题（`#`~`######`，含 `###文字` 这种无空格写法）、段落、粗体 / 斜体 / 删除线、行内代码与围栏代码块、链接、
+    **图片降级成链接**（不下载、点击去浏览器）、无序 / 有序列表（支持缩进嵌套）、引用块、水平线、
+    **管道表格**（表头 + `:---:` 对齐）、`<br>` → 换行、其余 HTML 标签剥离、HTML 实体解码。
+  - `Controls/MarkdownPresenter.cs`：只读、可拖选复制、可滚动的 Markdown 展示控件，外观约定与既有
+    `RichTextPresenter` 一致（无边框 / 透明底 / 无内边距 / 无焦点框；选区色走**资源引用**而不是构造期缓存 Brush，§9 第 18 条）。
+    分工：`RichTextPresenter` 吃纯文本，`MarkdownPresenter` 吃 Markdown。
+  - 行内样式**不写死颜色**（靠属性继承跟随主题）；标题字号 h1~h6 = 24/20/18/16/15/14，正文继承 App 级隐式
+    `FlowDocument` 样式（14px / 系统消息字体）。
+- **分层**（照项目既有约定，Core 就是数据层，**未新增服务层**）：
+  - `ViewModels/DEDPageViewModel.cs` / `MissionPageViewModel.cs`：势力（0–5）/ 等级（1–5）筛选 + 名称搜索
+    （**350ms 防抖**，换关键词会作废上一轮结果）+ 状态行（共 N 项 / 搜索到 N 项 / 加载中 / 加载失败）+
+    订阅 `LanguageService.LanguageChanged` 重发状态行通知（§9 第 63 条）。
+  - 页面用 `controls:CardControl`：左卡 Header=搜索框、内容=列表、Footer=筛选下拉 + 状态行；右卡=标题 + Markdown 正文。
+    页内**不再显示大标题**（§10「UI 约定」）；列表 `ItemContainerStyle="{StaticResource StretchListItem}"`（Fluent 悬停/选中）。
+  - 任务正文加载走 `Task.Run(() => MissionService.QueryMissionContent(id))`——Core 那个接口是**同步**的，
+    不在 UI 线程上碰 SQLite（§9 第 37/59 条）；`IsContentLoading` / `ShowNoContent` 驱动右卡的页内局部等待
+    （`SpinnerIcon`），不用全局遮罩（§9 第 39 条）。
+- **与 WinUI 的有意差异**：① `AutoSuggestBox`（WPF-UI 没有该控件，§9 第 65 条）改成"搜索框 + 就地结果列表"，
+  清空即回到筛选列表；② 列表加载完成后**自动选中首项**（WinUI 需要手点一次；与订单页自动选首个角色的取向一致）；
+  ③ 右卡区分"未选中"与"选中但无正文"两种引导文案（库里实测确有正文为空的 DED 条目）。
+- **本地化**：中英各新增 **29 键**（`DEDPage_*` 14 + `Mission_Level_*` 5 + `MissionPage_*` 10），键值沿用 WinUI 原文，
+  顺手修正其两处英文缺陷（`BloodRaider` → `Blood Raider`、`UnkownLevel` → `Unknown level`；**键名**仍与 WinUI 一致）。
+  两文件 **1736 键、0 重复、zh/en 键集完全一致**（脚本核对）。
+- **验证**（一次性探针，核对后已清理）：
+  - **Markdown 渲染器 + 数据链路 41/41 PASS**：
+    A 段合成样例覆盖全部语法（h1/h2/`###无空格`、3 列表格含表头、嵌套列表、粗体/斜体/删除线、链接、`<br>`、
+    行内代码与代码块、引用块左边框、水平线、HTML 剥离、空输入不抛异常）；
+    B 段把 `ded.db`(173 段) 与 `static.db`(1617 段) 的**全部长文本段**过一遍渲染——**0 异常**、
+    链接 **1131**（≈ 原文标记数 1125）、列表 **2358**（≈2334）、表格 857/862，并抽查真实正文片段
+    （`第三层（Ancient Acceleration Gate）`、`Hunter/Silverfish Alvi` 等）渲染后仍在；
+    C 段按 VM 相同的 Core 调用跑数据链路（`Config.InitDb()`、`DEDService.QueryAllAsync` 六种势力、
+    `SearchAsync`、`MissionService.QueryMissionAsync` 五个等级 + 名称搜索、`MissionContent` 取正文并渲染）。
+  - **资源键静态审计**：两个新 XAML 的 37 个 `Static/DynamicResource` 引用逐个对照「本文件 `x:Key` ∪ 三个全局字典
+    ∪ 语言文件 ∪ WPF-UI 程序集字符串表」，**全部解析**（§9 第 31/32/64 条的既定方法）。
+  - `dotnet build` **0 错误**（18 个增量警告，**无一条**指向本次新增/修改的文件）。
+
+#### C. 用户实机反馈后的两处修复
+
+1. **正文在深色主题下是黑字（两页同样症状）**——`MarkdownPresenter` 的正文**没有任何地方设置前景色**，
+   而主窗口（`ui:FluentWindow`）与页面根节点也都不设 `Foreground`，属性继承链顶端就退回 `SystemColors.ControlText`（黑）；
+   本项目其它文本普遍用 `{DynamicResource TextFillColor*Brush}` **显式**着色，所以只有"靠继承取色"的新控件露了馅
+   （与 §9 第 61 条 ToolWindow 黑字同源，本次落在主窗口页面上）。
+   **修法（三层保险）**：① `MarkdownPresenter` 构造时 `SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush")`；
+   ② 渲染出的 `FlowDocument` 也 `SetResourceReference(TextElement.ForegroundProperty, …)`——
+   **不指望"从 `RichTextBox` 继承进 `FlowDocument` 再传给 Run"这一层**；③ 两个页面的 XAML 再显式写一遍
+   `Foreground="{DynamicResource TextFillColorPrimaryBrush}"`（与既有翻译页对 `RichTextPresenter` 的约定一致）。
+   **验收**（一次性探针，真实窗口 + 合并字典换主题）：控件 / 文档 / 正文 `Run` / 标题段落**全部**解析为主题色
+   深 `#FFF3F3F3`；把主题字典换成浅色后四者一起变 `#FF1A1A1A`；调用方显式设置的 `Foreground` 仍能覆盖默认值——6/6 PASS。
+2. **两个功能收进「攻略」分组**（用户要求）：`MainWindow.xaml` 里原先两个顶层导航项（死亡远征 / 任务攻略）
+   改为新分组 **「攻略」**（新键 `Nav.Guides` = 攻略 / Guides，图标 `BookOpen24`）下的两个子项，
+   写法与「频道」「翻译」两个分组一致，子项继续 `NavigationCacheMode="Required"`；
+   导航目标类型不变，因此 `MainWindow` 的其它逻辑与页面本身零改动。
+
+- **未实机核验**：按 §8 约定未做截图核验（上述两处修复各带一次性探针验证），界面效果由使用者查看。
+  首次使用可留意：左侧列表是否自动选中首项、右侧正文的标题层级与表格是否成排版、深/浅主题下正文颜色是否都正确、
+  点正文里的链接是否在浏览器打开（正文链接多为 EVEWiki 外链）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -2924,7 +3014,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 23. **倒货市场树分组的复选框语义**：WPF 三态复选框点击循环 `Off → On → Indeterminate`，与 Core `SelectableMarketItem`（WinUI 共用）的联动逻辑一致——分组停在 `Indeterminate` 时不再回写子项；该行为在 WinUI 侧同样存在，未改 Core。
 24. **翻译只覆盖"本地数据库里有的专有名词"**（阶段 46）：物品 / 星域 / 星系 / 空间站可中英互译；**通用文本**（句子、军团/角色名）与**结构（建筑）名**（不在 SDE 里）都译不了——后者要靠 `StructureService` 的 ESI 解析，前者要等在线/本地模型翻译源接入（`ITranslationProvider` 已预留）。
 25. **翻译没有批量模式**（阶段 46 遗留）：一次只查一个名词；"粘贴一份物品清单逐行出译文"未做。
-26. **频道翻译（ChannelTranslationPage）仍是导航占位**：它对聊天正文做通用文本翻译，需要与第 24 条同一套能力，届时可复用 `ITranslationProvider` 与语言判定，并复用频道日志观察者（`ChannelIntelObserver` 那一套）。
+26. ~~**频道翻译（ChannelTranslationPage）仍是导航占位**~~ → **阶段 47 S4/S5 已完成**（导航为「翻译 → 频道翻译」；真实服务商与真实聊天日志仍未实测，见第 34 条）。以下为历史描述：它对聊天正文做通用文本翻译，需要与第 24 条同一套能力，届时可复用 `ITranslationProvider` 与语言判定，并复用频道日志观察者（`ChannelIntelObserver` 那一套）。
 27. **`Converters/TypeImageConverter` 在受限环境下会抛异常**（阶段 46 核验时暴露）：它走 `BitmapImage.UriSource` 的 WPF URI 下载路径，会经 `MS.Win32.WinInet.get_InternetCacheFolder()`；该调用失败时抛 `COMException 0x80072EE4` 并记一条 ERROR（图标空白，功能不受影响）。翻译页已改走 `HttpClient` + 同线程解码 + `Freeze()`（估价页同一做法）绕开该路径；**共用转换器本身未改**，使用它的 `ChannelMarketWindow` 若在同类环境出现该日志，可照同一方式替换。
 28. **AI 翻译（阶段 47）的边界**：只在**本地 mock 服务**上做过完整核验——真实服务商（OpenAI/DeepSeek/通义/GLM/Kimi/Azure/Claude/Gemini）需要用户自己的 Key，本轮未实测任何一家；协议层的请求形状与响应/流式解析已按各家文档逐字段核对并有断言覆盖，但**首次接入请先用设置页的「测试连接」**。
 29. **术语库只覆盖 SDE 里的名词**（阶段 47）：物品/舰船/装备/星系/星域/空间站可约束（实测 57,010 条）；**结构（建筑）名不在 SDE 里**（要走 `StructureService` 的 ESI 解析），玩家/军团/联盟名也不在——这些只能靠模型自己或后续的"用户术语表"。
@@ -3023,6 +3113,10 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
       跳转时按"视口高 − 目标高"临时撑高，否则最后一个分组下面没有内容、物理上滚不到顶部（实测需要 497px）。
       这段补白是临时的（数据/筛选一变即归零），所以不会在页面末尾留常驻空白。
 
+61. **8 个导航页仍是占位页**（2026-10-10 核对）：`MainWindow` 的 26 个导航目标里，`HomePage` / `DEDPage` / `MissionPage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage` 仍继承 `PlaceholderPage`（构造时只传本地化键 + 图标）。这 8 个在 WinUI 版**都有真实实现**（`Views\HomePage` / `Views\DEDPage` / `Views\MissionPage` / `Views\DatabasePage` / `Tools\IMEPage` / `Tools\ServerPingPage` / `Tools\KeyboardSpanPage` / `Tools\TaskbarPage`），属**真实迁移缺口**而非"WinUI 也没有"。
+    核对方法：`Select-String -Path Views\Pages\*.xaml.cs -Pattern ':\s*PlaceholderPage'`，再逐个到 WinUI 同名目录确认对应实现是否存在。
+    其中 `DEDPage` / `MissionPage` 已于**阶段 79 迁移完成**（两页都不再是占位页，见阶段 79）。
+    **剩余 6 个**：`HomePage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage`。
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
 - 核验方式：实机点击逐页截图目检（`EnumWindows` + `PrintWindow` 抓取窗口，截图需先开启 PerMonitorV2 DPI 感知）；截图与抓图脚本为一次性产物，已清理。
@@ -3036,7 +3130,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 - 结构详情窗口、"按角色搜索建筑"（`esi-search.search_structures.v1`）。
 - 国服授权的**自动化**：国服没有回调地址，只能手动粘贴 code（与 WinUI 一致）；若日后拿到可用的回调/内部协议，可把 `SerenityAuthWindow` 退化为"打开授权页 + 等待回调"。
 - 玩家建筑页的"按角色搜索"（依赖 OAuth 授权链路打通后的 ESI 结构查询）。
-- **结构名称解析**：把 WinUI `StructureService.QueryStructureAsync`（`Universe.GetStructureInfoAsync` + `Structures.json` 缓存）移植到 WPF 版；这是"structure id 请走 StructureService"约定在 WPF 侧落地的前提（详见文末同名小节）。
+- ~~**结构名称解析**~~ → **阶段 27 已完成**（与「功能降级」第 5 条一致）。以下为历史描述：把 WinUI `StructureService.QueryStructureAsync`（`Universe.GetStructureInfoAsync` + `Structures.json` 缓存）移植到 WPF 版；这是"structure id 请走 StructureService"约定在 WPF 侧落地的前提（详见文末同名小节）。
 - ~~ZKB 页本身仍是导航占位（工作区 ZKB 卡的"ZKB"按钮跳到该占位页）~~ → **阶段 53 已完成**：ZKB 主页面、击杀流、实体统计（6 子页签）、KB 详情全部落地，工作区卡片改为直接打开该角色的实体统计标签。
 - 软件更新页"安装"仍交外部 Updater。
 - **预览浮窗不跟随源窗口实时改变宽高比**（阶段 44）：窗口尺寸被锁定为游戏客户区比例，但只在启动/缩放/统一尺寸/恢复位置/布局变化时校正；游戏侧切全屏或改分辨率后，要等下一次这类时机才跟着变（未监听源窗口 `WM_SIZE`）。
@@ -3177,22 +3271,27 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 36. **`DepthClone<T>` 跨模型拷贝会"拷出空壳"——命名策略不同的两个模型之间不能这么抄**（阶段 53 第三轮，ZKB 数据全空的根因）：`DepthClone` 是 `SerializeObject(obj)` → `DeserializeObject<T>(json)` 的 JSON 往返，**两边必须用同一套命名规则**。`EVEStandard` 的模型靠序列化设置里的 **snake_case 命名策略**解析（属性无 `[JsonProperty]`），而 `ZKB.NET` 的模型用显式 `[JsonProperty("killmail_id")]` —— 从前者拷到后者，键名全对不上，得到一个**字段全为默认值**的对象（`KillmailId=0`/`KillmailTime=default`），而且**不报错、不抛异常**，下游只能靠"id 匹配不上/显示全空"这类间接症状发现。两条教训：① 跨命名空间的模型转换不要用 JSON 往返，老老实实手写映射或用统一命名策略；② "接口响应里已经带了完整数据时，就不要再逐个去另一服务换取再拷贝"——`/kills/` 现在直接返回完整 killmail，`ZKB.GetKillmailDetailsAsync` 直取后本地富化即可（每页省 200 次 ESI 往返）。
 37. **Core 的本地库（SQLite）查询不是并发安全的，批量富化必须串行**（阶段 53 第三轮实测）：`KBHelpers` 注释原文"使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突"。实测同一批 50 条的富化，6 并发丢 16 条（单条异常/数据缺失被静默吞掉），串行 50/50。凡要并发调用 `IDNameService` / `MapSolarSystemService` / `InvTypeService` 等 Core DB 服务的，先确认线程安全性，默认**串行**。
 38. **zkillboard 有 IP 限流，"同 URL 直取+重试+兜底三连发"会把自己打死**（阶段 53 第三轮）：排障时连续探测后发现 `/kills/killID/<id>/` 从 200 条变成空——是限流，不是接口变更。日常使用频率不会触发，但写代码时注意：**不要让重试与兜底打同一个 URL**（本项目兜底走的是另一条数据通路），排障时探测间隔拉长、或换 IP 验证。
-39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。40. **`ui:FluentWindow` 也能做真透明（客户区逐像素透出后面的窗口），但四件事缺一不可**（阶段 54）：① **`AllowsTransparency` 用不了**（与 FluentWindow 冲突，实测抛 `InvalidOperationException`），只能走 Win32；② **`DwmExtendFrameIntoClientArea(hwnd, 四个 -1)` 才是开关**——把 DWM 玻璃框铺满客户区，客户区里的 alpha 才会被尊重；**只调 `DwmEnableBlurBehindWindow`（空模糊区域）没有任何视觉效果**，而且它的 HRESULT 还是 0（看起来"成功"），极易误判；③ **窗口背景必须真的透明**：WPF-UI 会把 `FluentWindow.Background` 设成主题底色（浅色主题=白），XAML 里的 `Background="Transparent"` 会被它覆盖，必须在 `OnSourceInitialized`/`Start`/`ShowWindow` 里重新按回来，`CompositionTarget.BackgroundColor` 也要一并置透明；④ **每块要实色的区域都得自己画底色**，而且**透明的子元素会透出父元素的底色**——给"洞"外面套一个填了高亮色的父元素，整幅画面会被染成高亮色（实测画面泛绿），所以边框要用 `BorderBrush`/`BorderThickness` 画，不能用"背景色 + Padding"。
-41. **"透明/半透明"类问题的验收必须用高对比背景做判据，不能只看"画面是不是变淡了"**（阶段 54）：本次"透明度没生效"的第一版修复看起来对（画面变淡、数值能存），实际画面区被一层实色填成了"泛白"——**透出白色窗口与透出任何东西长得都一样**，肉眼分不出"透明"与"实色填充"。可靠判据是**在目标窗口后面放一个红/蓝/黑/绿四色测试窗**，看颜色能不能逐像素透出来（本次正是靠它定位到缺 `DwmExtendFrameIntoClientArea`）。同族教训：涉及"透明度/遮罩/置顶叠加"的需求，先确认它要透出的是"窗口自己的底色"还是"窗口后面的内容"——前者调 opacity 就够，后者必须真的开洞。42. **在 WPF / WPF-UI 窗口上"放开最小尺寸"，光删 `MinWidth/MinHeight` 不够**（阶段 55）：`WM_GETMINMAXINFO` 会被 WPF / WPF-UI 的后续处理按回"窗口当前尺寸"——实测删掉 `MinWidth/MinHeight` 后窗口仍卡在当前尺寸，`SetWindowPos` 返回 True 但矩形不变、拖边框只能变大；在 `HwndSource` 钩子里写入 1×1 也会被覆盖。正确做法是**在这条消息上自己接管**：改写 `ptMinTrackSize` 后设 `handled = true`（其余字段保持系统预填），此后 1×1 才会被真正采纳（实测可把窗口拖到 175×101 甚至更小）。排查这类"设了没生效"的 Win32 消息问题，最有效的手段是**从另一个进程 `SendMessage(hwnd, WM_GETMINMAXINFO, 0, 缓冲区)` 读回窗口的答复**——它能直接指出"谁在把值按回去"；同族的还有 `GetWindowRect`/`IsWindowVisible` 之类的旁证查询。43. **"比例/尺寸校正"里不要做"同尺寸去重"，同一几何量也只用一套口径**（阶段 56）：
+39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
+40. **`ui:FluentWindow` 也能做真透明（客户区逐像素透出后面的窗口），但四件事缺一不可**（阶段 54）：① **`AllowsTransparency` 用不了**（与 FluentWindow 冲突，实测抛 `InvalidOperationException`），只能走 Win32；② **`DwmExtendFrameIntoClientArea(hwnd, 四个 -1)` 才是开关**——把 DWM 玻璃框铺满客户区，客户区里的 alpha 才会被尊重；**只调 `DwmEnableBlurBehindWindow`（空模糊区域）没有任何视觉效果**，而且它的 HRESULT 还是 0（看起来"成功"），极易误判；③ **窗口背景必须真的透明**：WPF-UI 会把 `FluentWindow.Background` 设成主题底色（浅色主题=白），XAML 里的 `Background="Transparent"` 会被它覆盖，必须在 `OnSourceInitialized`/`Start`/`ShowWindow` 里重新按回来，`CompositionTarget.BackgroundColor` 也要一并置透明；④ **每块要实色的区域都得自己画底色**，而且**透明的子元素会透出父元素的底色**——给"洞"外面套一个填了高亮色的父元素，整幅画面会被染成高亮色（实测画面泛绿），所以边框要用 `BorderBrush`/`BorderThickness` 画，不能用"背景色 + Padding"。
+41. **"透明/半透明"类问题的验收必须用高对比背景做判据，不能只看"画面是不是变淡了"**（阶段 54）：本次"透明度没生效"的第一版修复看起来对（画面变淡、数值能存），实际画面区被一层实色填成了"泛白"——**透出白色窗口与透出任何东西长得都一样**，肉眼分不出"透明"与"实色填充"。可靠判据是**在目标窗口后面放一个红/蓝/黑/绿四色测试窗**，看颜色能不能逐像素透出来（本次正是靠它定位到缺 `DwmExtendFrameIntoClientArea`）。同族教训：涉及"透明度/遮罩/置顶叠加"的需求，先确认它要透出的是"窗口自己的底色"还是"窗口后面的内容"——前者调 opacity 就够，后者必须真的开洞。
+42. **在 WPF / WPF-UI 窗口上"放开最小尺寸"，光删 `MinWidth/MinHeight` 不够**（阶段 55）：`WM_GETMINMAXINFO` 会被 WPF / WPF-UI 的后续处理按回"窗口当前尺寸"——实测删掉 `MinWidth/MinHeight` 后窗口仍卡在当前尺寸，`SetWindowPos` 返回 True 但矩形不变、拖边框只能变大；在 `HwndSource` 钩子里写入 1×1 也会被覆盖。正确做法是**在这条消息上自己接管**：改写 `ptMinTrackSize` 后设 `handled = true`（其余字段保持系统预填），此后 1×1 才会被真正采纳（实测可把窗口拖到 175×101 甚至更小）。排查这类"设了没生效"的 Win32 消息问题，最有效的手段是**从另一个进程 `SendMessage(hwnd, WM_GETMINMAXINFO, 0, 缓冲区)` 读回窗口的答复**——它能直接指出"谁在把值按回去"；同族的还有 `GetWindowRect`/`IsWindowVisible` 之类的旁证查询。
+43. **"比例/尺寸校正"里不要做"同尺寸去重"，同一几何量也只用一套口径**（阶段 56）：
   ① 去重（"算出的目标 == 上次下发的就跳过"）看着像防自循环，实际会把**真实需要修的情况一起挡掉**——
   窗口完全可能在两次校正之间被别的路径改偏几像素（拖动收尾、恢复位置、源比例变化），此时目标与上次相同、窗口已经不对，
   一去重就永远不修（表现为"画面区一直留一条透明边"）。防自循环用"目标与当前尺寸的容差判断"就够了：下发后窗口等于目标，下一轮必落在容差内。
   ② 同一个几何量（这里是"画面区"）**只能有一套口径**：缩略图摆放原来取 WPF 布局（`TransformToAncestor`/`ActualWidth`），
   比例校正取 Win32（`GetWindowRect/GetClientRect`）——窗口是用 `SetWindowPos` 改尺寸的，实测 **WPF 布局会滞后于实际窗口**
   （诊断日志抓到过"布局 460×320 DIP、实际 485×110"），两套口径一旦不同步就各算一套、画面留边。
-  现在统一成"客户区用 Win32 + 标题栏高度用元素 + 留白用同源函数导出"，并把**画面区域算在哪、缩略图就摆在哪**钉在同一组函数上。44. **WPF-UI 的 `FluentWindow` 样式自带最小尺寸（实测 460×320 DIP），它会卡住 WPF 的布局**（阶段 57）：
+  现在统一成"客户区用 Win32 + 标题栏高度用元素 + 留白用同源函数导出"，并把**画面区域算在哪、缩略图就摆在哪**钉在同一组函数上。
+44. **WPF-UI 的 `FluentWindow` 样式自带最小尺寸（实测 460×320 DIP），它会卡住 WPF 的布局**（阶段 57）：
   窗口用 Win32 缩小时，WPF 的 `Width`/`Height` 被这个 Min 抬回去，布局（以及 WPF 画的高亮边框）就一直停在 ≥ 该值——
   表现为"高亮边框右侧/下侧画到窗口外（看着只有左跟上两个边框）"与"布局多出来的那圈是透明的洞（浅色背景下就是白边）"。
   要让窗口能自由缩小，必须显式 `MinWidth = 0; MinHeight = 0;`（**本地值才能压过样式**；`ReadLocalValue` 返回 Unset 就是样式给的）。
   另一条同族经验：**布局尺寸与 Win32 尺寸脱节时，只设 `Width`/`Height` 可能无效**——窗口本身已是目标尺寸，
   WPF 会判成"没变化"而跳过重排，必须补发一条 `WM_SIZE`（`SendMessage(hwnd, WM_SIZE, 0, MAKELPARAM(w,h))`）
   才能逼它按真实客户区重新布局。诊断这类问题的有效手段：把 `MinWidth/MinHeight`、`ActualWidth/ActualHeight`、
-  `Root/子元素` 的渲染尺寸、以及 Win32 客户区**一起打进日志**，两边一比就能看出是"谁比谁大"。45. **WPF 的 `Border.CornerRadius` 不裁剪子元素，圆头像必须用 `Image.Clip`**（阶段 53 第五轮）：
+  `Root/子元素` 的渲染尺寸、以及 Win32 客户区**一起打进日志**，两边一比就能看出是"谁比谁大"。
+45. **WPF 的 `Border.CornerRadius` 不裁剪子元素，圆头像必须用 `Image.Clip`**（阶段 53 第五轮）：
   与 UWP/WinUI 不同，WPF `Border` 的 `CornerRadius` 只影响**自身**背景/边框的绘制，里面的 `Image`/`Grid` 仍是矩形——
   `<Border CornerRadius="999"><Image/></Border>` 表面上"该圆了"，实际头像依旧是方块（编译期无任何提示）。
   两条正路：① `Image.Clip` + `EllipseGeometry`（需要定尺寸，中心/半径不能随尺寸自适应，写死即可）；② `Ellipse` + `ImageBrush`。
@@ -3206,12 +3305,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 52. **`TabControl` 只有一个 items host，"钉住某个标签"要绕道做**（阶段 53 钉住"击杀流"标签头）：想让首个标签固定在左端、其余标签在它右侧滚动，不能靠"把标签分到两个 `IsItemsHost` 面板"（`TabControl` 只认一个 items host）。可行做法是三件套：① 把该标签的头部**收敛为零宽**（`Header=null` + `Margin/Padding=0` + `MinWidth=0` + `Width=0`）——它照常承载内容与选中态，只是不在标签行占位，零宽也不影响 `SelectedIndex=0` 选中与 `BringIntoView`；② 用**页面级覆盖层**重绘一个"标签头"（高度与标签行一致、`HorizontalAlignment=Left`），点击时 `SelectedIndex = 0`；③ 代码在 `Loaded` 与该覆盖层 `SizeChanged` 时把模板里的标签容器 `Margin.Left` 设为覆盖层实际宽度，使其让位（**不要写死宽度**，标题会随语言变宽变窄）。
     两个易踩的细节：**选中态绑定 `{Binding SelectedIndex, ElementName=Tabs}` 只能写在 `Style.Triggers` 里**——写在 `ControlTemplate.Triggers` 里会按模板命名空间解析、找不到页面级 `Tabs`（静默失效）；同理 `Template.FindName` 取模板元素时优先取 `FrameworkElement`（如 `DockPanel`），对 `ColumnDefinition` 这类非 `FrameworkElement` 的命名元素不可靠。
 53. **"零宽标签"会把标签行的高度一起塌掉**（阶段 53 钉住标签头的实机回归，用户截图实证）：把某个 `TabItem` 做成 `Header=null` + `Margin/Padding=0` + `MinWidth=0` + `Width=0` 后，**它的高度也会跟着塌**——标签行若是 `Auto` 行，整行高度变 0，内容区便从页面顶端开始；此时任何"固定高度 + `VerticalAlignment=Top`"的页面级覆盖层（钉住头部、搜索框）都会**压到内容上**（现象就是"头部区域变小、控件跑到内容里"）。修法：给该 TabItem **显式 `Height`（= 标签行高度，本项目 36）**，并给模板里承载标签行的 Grid **写死 `Height="36"`** 双保险。排查提示：这类"覆盖层压内容"的问题先量一下承载行的实际高度（`ActualHeight`），别急着调覆盖层的定位。
-54. **横向 `StackPanel` 里的 `TextWrapping="Wrap"` 完全无效**（阶段 53 实机截图实证："过滤说明显示不全、不会自动换行"）：横向 `StackPanel` 以**无限宽度**测量子元素，内部 `TextBlock` 便按单行布局，超出部分被父容器（如 `Border`）裁切——`Wrap` 设置了也没用。要让说明文字换行，承载块用 **`Grid`（图标 `Auto` 列 + 文字 `*` 列）** 或 `DockPanel` 限宽。同族坑：本地化资源串（`sys:String`）里用 `&#10;` 写的换行**不保证生效**，长文案应写成不依赖换行的整段（编号/条目之间用"；"分隔），由宽度决定折行。45. **`{Binding Converter=…}`（绑整个对象）不会随对象属性的变化刷新**（阶段 60）：WPF 对"路径为 `.`"的绑定
-  只在源对象发出**空名/`null` 名**的 `PropertyChanged` 时才重新求值；我们改的是具体属性名（如 `WindowTitle`、`Setting`），
-  于是**转换器再也不会重跑**——表现为"某一列永远停在初始值"（本次是进程列表的角色名列停在 `EVE`，
-  而绑具体路径的标题列正常刷新，很容易误判成"列表不刷新"）。
-  要让它跟着变，就把**会变的输入**分别绑上（`MultiBinding`）或绑到具体路径（`{Binding WindowTitle, Converter=…}`），
-  不要用"整对象 + 转换器"。
+54. **横向 `StackPanel` 里的 `TextWrapping="Wrap"` 完全无效**（阶段 53 实机截图实证："过滤说明显示不全、不会自动换行"）：横向 `StackPanel` 以**无限宽度**测量子元素，内部 `TextBlock` 便按单行布局，超出部分被父容器（如 `Border`）裁切——`Wrap` 设置了也没用。要让说明文字换行，承载块用 **`Grid`（图标 `Auto` 列 + 文字 `*` 列）** 或 `DockPanel` 限宽。同族坑：本地化资源串（`sys:String`）里用 `&#10;` 写的换行**不保证生效**，长文案应写成不依赖换行的整段（编号/条目之间用"；"分隔），由宽度决定折行。
 55. **SkiaSharp 自绘文字必须显式换中文字体：`Segoe UI` 没有 CJK 字形，中文会全变成"口口口"**（阶段 63 实机截图实证）：
    `StarMapCanvas` 原先写死 `SKTypeface.FromFamilyName("Segoe UI", …)`，于是画布上的中文星系名渲染成一排豆腐块——
    而同一页的 HUD 浮层与信息卡文字正常（那是 XAML 文本，走 WPF 字体回退），所以**"只有自绘画布乱"就基本锁定是字体问题**（乱码/问号才是编码问题）。
@@ -3317,6 +3411,36 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
    所以要在内容尾部按"视口高 − 目标高"临时撑一段 `BottomSpacer`，赋值后**先 `UpdateLayout()`** 让滚动范围生效再滚。
    验证也要跟着改严：只断言"目标进了视口"是**测不出这个 bug 的**（贴底也满足），要断言目标顶边落在 `[-3, 12]px`。
 
+68. **`{Binding Converter=…}`（绑整个对象）不会随对象属性的变化刷新**（阶段 60）：WPF 对"路径为 `.`"的绑定
+  只在源对象发出**空名/`null` 名**的 `PropertyChanged` 时才重新求值；我们改的是具体属性名（如 `WindowTitle`、`Setting`），
+  于是**转换器再也不会重跑**——表现为"某一列永远停在初始值"（本次是进程列表的角色名列停在 `EVE`，
+  而绑具体路径的标题列正常刷新，很容易误判成"列表不刷新"）。
+  要让它跟着变，就把**会变的输入**分别绑上（`MultiBinding`）或绑到具体路径（`{Binding WindowTitle, Converter=…}`），
+  不要用"整对象 + 转换器"。  （**编号说明**：该项原被误编为与前面重复的 `45.`，且实际排在 `54.` 之后，故移到 §9 末尾并改编号为 68。）
+69. **SQLite 里的 wiki 正文是 CR / CRLF 混合换行，Markdown 渲染前必须归一化**（阶段 79 实测）：
+    `ded.db` 里 `0x0D`=10049 而 `0x0A`=165（**以 CR 为主**），`static.db` 两者都有。只按 `\n` 切会把整张表格并成一行。
+    更坑的是**排查手段本身会骗人**：把含 `\r` 的文本打到控制台，`\r` 会让后续内容**回到行首覆盖**，
+    屏幕上看起来"这段内容压根没有换行"（本轮据此误判过一次，先当成"数据被压平了"）。
+    渲染前一律 `Replace("\r\n","\n").Replace('\r','\n')`；**判断内容有没有换行要数字节**（0x0A/0x0D 计数），不要看控制台输出。
+70. **"渲染后文本变短"先量原文里的标记 / 标签占比，别急着怀疑渲染器丢内容**（阶段 79）：
+    `static.db` 的任务正文是 MediaWiki 导出，含 `<a name=".E6.B3.A5.E5.9C.9F"></a>`、`<span class="mw-headline">`
+    这类长标签，表格又是"管道 + 分隔行 + 对齐空格"——按 Markdown 语义剥掉它们之后，**保留率实测 29%~73% 全都正常**
+    （逐段对照过：内容一字不少）。**验证方式要选对**：断言"渲染后长度 ≥ 原长 80%"会一直红；
+    断言"抽查正文片段（中文句子 / 英文原名）渲染后仍在"才既稳又有意义。
+    长度比例只能当"整段变空"的粗筛（阈值压到 0.35 仍会误报），别拿它当内容完整性的判据。
+71. **`RichTextBox` / `FlowDocument` 里"靠继承取色"的正文 = 系统黑**（阶段 79 实机反馈"正文是黑色字体、没适配黑暗主题"，
+    与第 61 条同源、落点不同）：本项目页面里的文字普遍**显式**写 `{DynamicResource TextFillColor*Brush}`，
+    而 `ui:FluentWindow`（主窗口）与页面根节点**都不设** `Foreground` → 继承链顶端是 `SystemColors.ControlText`（黑），
+    只有"不写颜色、指望继承"的控件会露馅（两个新页面同时中招正是这个信号）。
+    **处置（自带内容树的控件要自己兜底）**：① 控件构造函数里
+    `SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush")` 给默认值；
+    ② 渲染出的 `FlowDocument` 也设一遍——**不要指望"从 `RichTextBox` 继承进文档、文档再传给 Run"这一层**；
+    ③ 调用点在 XAML 里仍显式写 `Foreground`（两道保险，成本一行）。
+    **验收方法**：真实窗口 + **合并字典换主题**，读 `GetValue(TextElement.ForegroundProperty)` 的实际色值，
+    深 `#FFF3F3F3` / 浅 `#FF1A1A1A`，且 `Run` 与标题段落都跟着变。
+    顺带一条排查纪律：**改完控件先重建再跑探针**——本轮第一次探针 5 项全红，原因是它引用的是改动前的旧 `TheGuideToTheNewEden.dll`
+    （`bin` 未重建），差点把"修好了"误判成"没修好"。
+
 
 ---
 
@@ -3345,7 +3469,7 @@ Converters/InverseBooleanToVisibilityConverter.cs
 Controls/SettingCard.cs + SettingCardStyles.xaml     Win11 设置行控件与样式
 Controls/PagerControl.xaml(.cs)                      通用分页
 Views/Pages/SettingsPage.xaml(.cs)                   设置壳页（分类列表 + 子页 Frame）
-Views/Pages/Settings/{General,GameLog,Market,Structures,ESIScope,ZKB,KeyboardList,Test,Update}*.xaml(.cs)
+Views/Pages/Settings/{General,GameLog,Market,Structures,ESIScope,KeyboardList,Test,Update,AiTranslation,Glossary}*.xaml(.cs)   （ZKB 子页已于阶段 53 删除；AI 翻译 / 术语表为阶段 47 新增）
 Services/Settings/*.cs                               10 个设置子服务
 ```
 
@@ -3375,6 +3499,22 @@ Controls/RatioBar.cs                                   自绘细进度条（替�
 Services/Navigation.cs                                 主窗口 NavigationView 跳转（供子页调用）
 ```
 
+### 静态数据库页（阶段 79：DED / 任务）
+```
+Helpers/MarkdownRenderer.cs          Markdown → FlowDocument：标题/段落/粗斜删/行内与围栏代码/链接/图片降级/列表(可嵌套)/引用/水平线/管道表格/HTML 剥离与实体解码；零新增依赖
+Controls/MarkdownPresenter.cs        只读 + 可拖选复制的 Markdown 展示控件（RichTextBox 派生，外观约定同 RichTextPresenter）
+Converters/DEDTypeConverter.cs       DED 类型（0-5 势力）→ 本地化名称
+Converters/DEDLevelConverter.cs      DED 等级（1-10 → "n/10"；0 → 未定级）
+Converters/MissionLevelConverter.cs  任务等级（1-5）→ Mission_Level_n
+ViewModels/DEDPageViewModel.cs       势力筛选 + 名称搜索（350ms 防抖）+ 状态行；订阅语言切换重算
+ViewModels/MissionPageViewModel.cs   等级筛选 + 名称搜索 + 正文异步加载（Task.Run 避免 UI 线程碰 SQLite）+ 加载/无正文状态
+Views/Pages/DEDPage.xaml(.cs)        左卡（搜索 / 列表 / 势力筛选）+ 右卡（Markdown 攻略正文）；原 PlaceholderPage 占位已删除
+Views/Pages/MissionPage.xaml(.cs)    左卡（搜索 / 列表 / 等级筛选）+ 右卡（Markdown 攻略正文 + 页内加载态）；同上
+```
+- 数据来源：Core `DEDService` / `MissionService` → **`DBService.StaticDb`**（`Resources/Database/static.db`）；
+  `ded.db` 与 `Config.DEDDBPath` 目前**不在代码路径上**（`InitDEDDb` 在 Core 里被注释掉了，阶段 79 探针实测）。
+- 正文渲染统一走 `MarkdownPresenter`：WinUI 的 `MarkdownTextBlock` 在 WPF 没有对应控件，故自写渲染器（阶段 79）。
+
 ### 快速链接模块（阶段 77）
 ```
 Services/Links/LinkStore.cs                      Links.json 读写/播种/合并/导入导出 + 收藏（settings.json 的 Links.Favorites）
@@ -3388,7 +3528,7 @@ Views/Windows/LinkEditWindow.xaml(.cs)           新建/编辑对话框（名称
   **WPF 专有的收藏存在 `settings.json`**，因此 `Links.json` 的格式与字段没有任何变化。
 - 内置链接库已扩充到 **82 条 / 27 个分类**（阶段 78；源文件 `TheGuideToTheNewEden.WinUI/.../Resources/Configs/Links.json`，
   它同时是 WinUI 的运行数据与 WPF 的播种/"恢复默认"数据源）。既有用户点「更多操作 → 恢复默认链接」即可按 URL 合并补齐。
-- 卡片徽标**显示按分类取的 Fluent 图标**（不是链接自带图标，也不是名称首字），但 `IconUrl` 字段原样保留、编辑时不被覆盖，
+- 卡片**不放任何图标**（阶段 77 两次反复后的定稿：条目自带 `IconUrl` 图片图标、以及"按分类取 Fluent 图标"两种方案均已弃用，见 §9 第 55 条），卡片只有名称 / 概述 / 胶囊；保留的图标仅是收藏星标与工具栏、右键菜单的功能图标。`IconUrl` 字段原样保留、编辑时不被覆盖，
   回到 WinUI 版图标仍在；新增条目 `IconUrl` 留空（WinUI 端回落 `default.png`，不会破图）。
 - 新增 54 组 `LinksPage_*` 本地化键（zh/en 各 54 条，键集一致、无重复键）。
 
@@ -3546,10 +3686,10 @@ Services/ChannelIntel/ChannelChatLogReader.cs       聊天日志尾部补翻（�
 
 **主窗口标题带版本号**（阶段 44 附带）：
 - 标题 = `AppDisplayName` + 版本号，同时写 `Window.Title`（任务栏/Alt+Tab）与自绘 `ui:TitleBar.Title`。
-- 版本号取 `AssemblyInformationalVersion`（csproj 的 `<Version>3.0.1</Version>` 会生成 `3.0.1+<commit>`），
+- 版本号取 `AssemblyInformationalVersion`（csproj 的 `<Version>4.0.0</Version>` 会生成 `4.0.0+<commit>`），
   **只保留 `+` 之前的部分**；`AppVersion` 同时被"软件更新"页复用（原来那段反射逻辑重复写在页面里）。
 - 语言切换后会重新套用一次标题：XAML 里标题绑的是 `{DynamicResource AppDisplayName}`，切语言会把它刷回"只有名称"。
-- 实测（探针读程序集）：`InformationalVersion = 3.0.1+2cf7896…` → 标题显示 `新伊甸漫游指南 3.0.1`。
+- 实测（探针读程序集）：`InformationalVersion = 4.0.0+<commit>…` → 标题显示 `新伊甸漫游指南 4.0.0`。
 
 ### 验证产物说明
 ```
@@ -3565,6 +3705,16 @@ Core/Services/DB/TranslationDbService.cs  新增：本地库专有名词翻译�
 Core/Services/DB/DBService.cs    新增公开只读属性 MainDbReady / LocalDbReady（阶段 46）
 Core/Models/TranslationItem.cs   仅类注释更新（阶段 46）
 Core/Services/YDTranslationService.cs  仅类注释标注"WPF 不再使用，为 WinUI 保留"（阶段 46，代码未动）
+（以下为阶段 46 之后新增的 Core 改动，同属共享代码，WinUI 侧一并受益——详见对应阶段正文）
+Core/Services/DB/LocalDbService.cs     10 个 `TranXxx(Xxx item)` 补 null 守卫；`QueryParentId` 等改 `?.`（阶段 53/63）
+Core/Services/DB/MapSolarSystemService.cs 等  行不存在时不把 null 交给翻译器（阶段 53）
+Core/Models/KBItemInfo.cs              新增 `FinalBlowFctionName`（纯新增字段，阶段 53）
+Core/Services/DB/InvMarketGroupService.cs   `QueryRootGroupOfType` 改「全表一次载入 + 内存游走 + 防环」（阶段 63）
+Core/Services/DB/DBService.cs          6 个 `SqlSugarScope` → `ThreadLocal<SqlSugarClient>`（修 SQLite 并发撞库，阶段 63）
+Core/Services/DB/SolarSystemResourcesService.cs  明细关联对象 null 守卫 + `QueryByRegionID` 两处缺陷（阶段 63）
+Core/DBModels/InvTypeMass.cs（新增）+ InvTypeService.cs  `QueryTypeMassAsync` / `QueryShipMassAsync`（阶段 68/76）
+Core/Models/GamePreviews/PreviewItem.cs + Core/Helpers/ArgbColorJsonConverter.cs（新增）  角色名叠加 7 个设置项与 ARGB 落盘（阶段 44）
+Core 的 `MapConfig`（`MapCanvasConfig` / `MapSovGroupConfig` / `MapDisplayConfig`）与 `ChannelTranslationSetting` 两个新字段（阶段 47/64/65/67）
 ```
 
 回归核验：改动后 `dotnet build` 整个 WinUI 项目 **0 错误**（Core 为共享代码，WinUI 编译通过即无接口级回归）；且该递归缺陷在 WinUI 侧同样会被触发（`ViewModels/KB/StatistTopAllTimeViewModel.cs:82`、`ViewModels/KB/StatistSuperViewModel.cs:57` 调用的正是 `GetByIds(List<long>)`），因此上述修复对 WinUI 也是净收益。

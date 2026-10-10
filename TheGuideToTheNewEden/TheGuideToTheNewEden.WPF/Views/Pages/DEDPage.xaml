@@ -1,0 +1,173 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.DEDPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:dbmodels="clr-namespace:TheGuideToTheNewEden.Core.DBModels;assembly=TheGuideToTheNewEden.Core"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--
+        DED 页（对应 WinUI 版 Views/DEDPage.xaml）：左卡 = 搜索 + 列表 + 势力筛选，右卡 = 选中项的攻略正文。
+        · 数据来自 Core 的 DEDService（Resources/Database/ded.db，由 CoreInitializer 初始化 Config.DEDDBPath）。
+        · 正文是 Markdown（wiki 导出），WinUI 用 CommunityToolkit 的 MarkdownTextBlock；
+          WPF 没有对应控件，这里用自写的 Controls/MarkdownPresenter（Helpers/MarkdownRenderer，无新增依赖）。
+        · 与 WinUI 的差异：WinUI 的 AutoSuggestBox 改成"搜索框 + 就地的结果列表"（WPF-UI 没有 AutoSuggestBox），
+          选中第一项由 VM 自动完成（WinUI 需要手点一次）。
+        · 页面内不显示大标题（左侧导航已高亮当前页，见 REFACTORING.md §10「UI 约定」）。
+    -->
+    <Page.Resources>
+        <converters:DEDTypeConverter x:Key="DEDType" />
+        <converters:DEDLevelConverter x:Key="DEDLevel" />
+        <converters:NullToVisibilityConverter x:Key="NullToVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <DataTemplate x:Key="DEDItemTemplate" DataType="{x:Type dbmodels:DED}">
+            <Grid Margin="0,6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                    Text="{Binding TitleEN}"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,2,0,0"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding TitleCN}"
+                    TextWrapping="Wrap" />
+
+                <Grid Grid.Row="2" Margin="0,2,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding Type, Converter={StaticResource DEDType}}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding Level, Converter={StaticResource DEDLevel}}" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  左：搜索 + 列表 + 势力筛选  -->
+        <controls:CardControl>
+            <controls:CardControl.Header>
+                <!--  标题带里的 TextElement 是 SemiBold，搜索框显式用常规字重  -->
+                <ui:TextBox
+                    Margin="0,6"
+                    FontWeight="Normal"
+                    PlaceholderText="{DynamicResource DEDPage_SearchTip}"
+                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            </controls:CardControl.Header>
+
+            <Grid>
+                <ListBox
+                    x:Name="DEDList"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemContainerStyle="{StaticResource StretchListItem}"
+                    ItemTemplate="{StaticResource DEDItemTemplate}"
+                    ItemsSource="{Binding Items}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectedItem="{Binding Selected, Mode=TwoWay}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
+
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource DEDPage_Empty}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+            </Grid>
+
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Stretch">
+                    <ComboBox
+                        HorizontalAlignment="Stretch"
+                        SelectedIndex="{Binding SelectedTypeIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{DynamicResource DEDPage_Drone}" />
+                        <ComboBoxItem Content="{DynamicResource DEDPage_Serpentis}" />
+                        <ComboBoxItem Content="{DynamicResource DEDPage_BloodRaider}" />
+                        <ComboBoxItem Content="{DynamicResource DEDPage_Sansha}" />
+                        <ComboBoxItem Content="{DynamicResource DEDPage_Angel}" />
+                        <ComboBoxItem Content="{DynamicResource DEDPage_Guristas}" />
+                    </ComboBox>
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding StatusText}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  右：正文（未选中时给引导文案）  -->
+        <Grid Grid.Column="1" Margin="12,0,0,0">
+            <controls:CardControl Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
+                <controls:CardControl.Header>
+                    <StackPanel Margin="0,4">
+                        <TextBlock
+                            FontSize="18"
+                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            Text="{Binding Selected.TitleEN, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Selected.TitleCN, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </controls:CardControl.Header>
+
+                <Grid>
+                    <controls:MarkdownPresenter
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Markdown="{Binding Selected.Content, Mode=OneWay}" />
+
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource DEDPage_NoContent}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding ShowNoContent, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </controls:CardControl>
+
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource DEDPage_NoSelection}"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}" />
+        </Grid>
+    </Grid>
+</Page>
