@@ -1,0 +1,123 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.IMEPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <!--
+        输入助手（对应 WinUI 版 Views/Tools/IMEPage）：输入/粘贴内容后，按标点与空格取"当前正在输入的词"
+        给出游戏名称建议（角色/军团/联盟/物品/分组/星系/星域），点建议即替换该词；
+        另有 复制 / 搜索 / 翻译 三个动作，结果进详情区（只读富文本，可拖选复制）。
+        
+        布局要点（默认 500×200，客户区约 480×132）：
+        · 根节点是 **Grid 而不是 ScrollViewer+StackPanel**：StackPanel 只按期望高度自上而下堆叠，
+        窗口拉高后卡片仍停在上面、下方留一大片空白（用户实机反馈的正是这个）；
+        Grid 让卡片填满窗口，`*` 行把剩余高度分给输入框；
+        · 输入态：输入框吃掉剩余高度（`*` 行）+ 建议条单行横排（`Auto` 行，溢出横向滚动）+ 固定在卡片底部的动作栏；
+        · 详情态：同一格里另一张卡片（靠 Visibility 切换），富文本自身可滚动（RichTextPresenter 内部是 RichTextBox，
+        VerticalScrollBarVisibility=Auto）；
+        · 窗口最小尺寸即默认尺寸（ToolWindowHost 把 Preferred 同时设为 Min），所以不会出现"内容被裁掉"；
+        · 仍留一层 `ScrollViewer`，但把内容 `Grid.MinHeight` 绑到它的**视口高度**：有空间时自动填满窗口，
+        系统"文本缩放"调大导致内容变高时才出现滚动条（纯 `ScrollViewer+StackPanel` 是永远不会填满的）。
+    -->
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
+
+    <Grid>
+        <!--  ① 输入 + 建议 + 三个动作（填满窗口）  -->
+        <controls:CardControl
+            Margin="4,0"
+            Padding="0"
+            Visibility="{Binding IsInputVisible, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--
+                    占位文字刻意写得**很短**（"输入或粘贴内容"）：WPF-UI 的 TextBox 占位符在模板里是单行 TextBlock，
+                    **不吃 `TextWrapping`**，长句子会被右边缘直接切掉（用户截图反馈"提示文字显示不全"）。
+                    完整说明（分词规则、点建议即替换）放在 ToolTip 里，信息不丢。
+                -->
+                <ui:TextBox
+                    x:Name="InputBox"
+                    MinHeight="46"
+                    VerticalAlignment="Stretch"
+                    AcceptsReturn="True"
+                    FontWeight="Normal"
+                    PlaceholderText="{DynamicResource IMEPage_InputTip}"
+                    Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap"
+                    ToolTip="{DynamicResource IMEPage_InputTipDetail}" />
+
+                <ScrollViewer
+                    Grid.Row="1"
+                    Margin="0,4,0,0"
+                    Padding="0,0,0,8"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    Visibility="{Binding HasSuggestions, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding Suggestions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ui:Button
+                                    Margin="0,0,6,0"
+                                    Padding="10,3"
+                                    Appearance="Transparent"
+                                    Click="OnSuggestionClick"
+                                    Content="{Binding Name}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <ui:Button
+                        Padding="10,3"
+                        Click="OnCopyClick"
+                        Content="{DynamicResource IMEPage_Copy}"
+                        Icon="{ui:SymbolIcon Copy24}" />
+                    <ui:Button
+                        Margin="8,0"
+                        Padding="10,3"
+                        Click="OnSearchClick"
+                        Content="{DynamicResource IMEPage_Serach}"
+                        Icon="{ui:SymbolIcon Search24}" />
+                    <ui:Button
+                        Padding="10,3"
+                        Appearance="Primary"
+                        Click="OnTranslateClick"
+                        Content="{DynamicResource IMEPage_Translate}"
+                        Icon="{ui:SymbolIcon Translate24}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  ② 详情（搜索 / 翻译结果，同样填满窗口；正文自身可滚动）  -->
+        <controls:CardControl Padding="10,8" Visibility="{Binding IsDetailVisible, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <controls:RichTextPresenter
+                    VerticalAlignment="Stretch"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding DetailText, Mode=OneWay}" />
+                <ui:Button
+                    Margin="0,0,12,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Click="OnBackClick"
+                    Icon="{ui:SymbolIcon ChevronLeft24}" />
+            </Grid>
+        </controls:CardControl>
+    </Grid>
+</Page>

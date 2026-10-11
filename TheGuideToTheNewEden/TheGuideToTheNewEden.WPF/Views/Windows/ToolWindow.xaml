@@ -6,8 +6,8 @@
     Title="{DynamicResource AppDisplayName}"
     Width="800"
     Height="600"
-    MinWidth="260"
-    MinHeight="180"
+    MinWidth="100"
+    MinHeight="100"
     ExtendsContentIntoTitleBar="True"
     Icon="pack://application:,,,/Assets/app.ico"
     ScrollViewer.CanContentScroll="False"
@@ -25,7 +25,7 @@
         </Grid.RowDefinitions>
 
         <!--  统一标题栏：左侧 logo + 窗口名称，右侧置顶按钮与系统标题按钮（可分别控制显隐）  -->
-        <ui:TitleBar
+        <ui:TitleBar Height="34"
             x:Name="TitleBarHost"
             Title="{DynamicResource AppDisplayName}"
             Grid.Row="0">

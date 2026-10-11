@@ -1,6 +1,9 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Interop;
+using TheGuideToTheNewEden.WPF.Helpers.Interop;
 using Wpf.Ui.Controls;
 
 namespace TheGuideToTheNewEden.WPF.Views.Windows;
@@ -49,7 +52,7 @@ public enum ToolWindowButtons
 /// 窗口标题（任务栏/Alt+Tab 文本）用 <see cref="SystemTitle"/>，标题栏文字用 <see cref="DisplayTitle"/>。
 /// 是否显示在任务栏用 WPF 原生的 <see cref="Window.ShowInTaskbar"/>，是否置顶用 <see cref="Window.Topmost"/>。
 /// </summary>
-public partial class ToolWindow : FluentWindow
+public partial class ToolWindow : FluentWindow, IToolWindowShell
 {
     private bool _closeToHide;
 
@@ -214,6 +217,8 @@ public partial class ToolWindow : FluentWindow
 
     /// <summary>置顶显示（对应 WinUI 版 SetAlwaysOnTop）。</summary>
     public void SetAlwaysOnTop(bool top = true) => Topmost = top;
+
+
 
     /// <summary>点关闭时改为隐藏窗口（对应 WinUI 版 SetCloseToHide）。</summary>
     public void SetCloseToHide() => _closeToHide = true;

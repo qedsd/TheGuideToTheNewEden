@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Links;
 using TheGuideToTheNewEden.WPF.ViewModels.Links;
@@ -275,21 +276,14 @@ public partial class LinksPage : Page
 
     private void OnOpenConfigFolderClick(object sender, RoutedEventArgs e)
     {
-        try
+        var folder = Path.GetDirectoryName(LinkStore.FilePath);
+        if (string.IsNullOrEmpty(folder))
         {
-            var folder = Path.GetDirectoryName(LinkStore.FilePath);
-            if (string.IsNullOrEmpty(folder))
-            {
-                return;
-            }
+            return;
+        }
 
-            Directory.CreateDirectory(folder);
-            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{folder}\"") { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-        }
+        // 交给 shell 打开；失败会自动复制路径并提示（见 ShellHelper）
+        ShellHelper.OpenFolder(folder);
     }
 
     // ---------- 卡片：打开 / 复制 / 收藏 / 编辑 / 删除 ----------

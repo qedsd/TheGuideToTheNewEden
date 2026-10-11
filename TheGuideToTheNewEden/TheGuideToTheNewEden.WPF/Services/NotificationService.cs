@@ -40,7 +40,12 @@ public static class NotificationService
         click?.Invoke();
     }
 
-    public static bool IsAvailable => _trayIcon is not null;
+    /// <summary>
+    /// 通知是否真的可用：不仅要注册过托盘图标，还要它**创建成功**——
+    /// 否则 <c>ShowNotification</c> 会因 <c>EnsureCreated</c> 直接抛异常（托盘建不起来时，
+    /// 通知也必然发不出去）。
+    /// </summary>
+    public static bool IsAvailable => _trayIcon is { IsCreated: true };
 
     /// <summary>
     /// 显示气泡通知。<paramref name="onClick"/> 为可选的点击动作（如"打开对应 KB 详情"），

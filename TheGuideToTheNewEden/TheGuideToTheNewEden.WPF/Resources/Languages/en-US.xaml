@@ -1,9 +1,11 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <sys:String x:Key="AppDisplayName">The Guide To The New Eden</sys:String>
+    <sys:String x:Key="Shell_OpenDenied">Could not open (the system denied the request; the current run context is restricted)</sys:String>
+    <sys:String x:Key="Shell_PathCopied">The path has been copied to the clipboard; paste it into File Explorer</sys:String>
 
     <!--  Menu  -->
     <sys:String x:Key="Nav.Home">Home</sys:String>
@@ -1809,4 +1811,69 @@
     <sys:String x:Key="MissionPage_SearchSummary">{0} matches</sys:String>
     <sys:String x:Key="DEDPage_NoContent">No guide content for this DED site</sys:String>
     <sys:String x:Key="Nav.Guides">Guides</sys:String>
+    <sys:String x:Key="TaskbarPage_Separate">Separate</sys:String>
+    <sys:String x:Key="TaskbarPage_Merge">Merge</sys:String>
+    <sys:String x:Key="TaskbarPage_Tip">*Independent taskbar icons for different characters</sys:String>
+    <sys:String x:Key="TaskbarPage_TipRefresh">If the taskbar buttons do not change immediately, minimise and restore the window (or press Alt+Tab once) so Windows re-reads it.</sys:String>
+    <sys:String x:Key="TaskbarPage_Working">Working…</sys:String>
+    <sys:String x:Key="TaskbarPage_Idle">Separate: one taskbar button per client window. Merge: all clients share a single button.</sys:String>
+    <sys:String x:Key="TaskbarPage_NoClient">No EVE client window found (process keywords: {0})</sys:String>
+    <sys:String x:Key="TaskbarPage_Done">Updated {0}/{1} client windows</sys:String>
+    <sys:String x:Key="TaskbarPage_Failed">Failed: {0}</sys:String>
+    <sys:String x:Key="ServerPingPage_SelectServer">Select Server</sys:String>
+    <sys:String x:Key="ServerPingPage_TranquilityHost">Tranquility</sys:String>
+    <sys:String x:Key="ServerPingPage_SerenityHost">Serenity</sys:String>
+    <sys:String x:Key="ServerPingPage_Host">Host/IP</sys:String>
+    <sys:String x:Key="ServerPingPage_Port">Port</sys:String>
+    <sys:String x:Key="ServerPingPage_CureentLatency">Current</sys:String>
+    <sys:String x:Key="ServerPingPage_AverageLatency">Average</sys:String>
+    <sys:String x:Key="ServerPingPage_Loss">Loss</sys:String>
+    <sys:String x:Key="ServerPingPage_Statistics">Statistics</sys:String>
+    <sys:String x:Key="ServerPingPage_Statistics_All">All</sys:String>
+    <sys:String x:Key="ServerPingPage_Statistics_Success">Successful</sys:String>
+    <sys:String x:Key="ServerPingPage_Statistics_Failed">Failed</sys:String>
+    <sys:String x:Key="ServerPingPage_Statistics_Duration">Duration</sys:String>
+    <sys:String x:Key="ServerPingPage_Start">Start</sys:String>
+    <sys:String x:Key="ServerPingPage_Stop">Stop</sys:String>
+    <sys:String x:Key="ServerPingPage_Hint">Opens one TCP connection per second to host:port; the address and port stay locked while running.</sys:String>
+    <sys:String x:Key="ServerPingPage_Opacity">Window opacity</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Opacity">Window opacity</sys:String>
+    <sys:String x:Key="ServerPingPage_MiniMode">Mini</sys:String>
+    <sys:String x:Key="ServerPingPage_MiniModeTip">Shrink into a mini monitor strip (adjustable background opacity, always-on-top)</sys:String>
+    <sys:String x:Key="ServerPingPage_Result_Excellent">Excellent</sys:String>
+    <sys:String x:Key="ServerPingPage_Result_Good">Good</sys:String>
+    <sys:String x:Key="ServerPingPage_Result_Normal">Normal</sys:String>
+    <sys:String x:Key="ServerPingPage_Result_Poor">Poor</sys:String>
+    <sys:String x:Key="ServerPingPage_Result_Bad">Bad</sys:String>
+    <sys:String x:Key="ServerPingPage_NoHost">Enter a server host first</sys:String>
+    <sys:String x:Key="ServerPingPage_InvalidPort">Invalid port (expected 1-65535)</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Keyboard">Keyboard</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Mode">Mode</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Mode1">Time Interval</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Mode2">Key Press Count</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Span">Interval(s)</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Count">Count</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Character">Character</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_TotalKeyboardCount">Total key presses</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_TotalDuration">Elapsed time</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Target">Target</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Pass">Passed</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_LocateGame">Focus game window</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_Hint">Press the key once to start timing and again to stop; one pass is counted every interval.</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_HintCount">Every press counts one pass; it restarts from 1 after reaching the target.</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_NoKeyboard">Enter the key to watch first (e.g. F1)</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_InvalidCount">Target count must be greater than 0</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_InvalidSpan">Interval must be greater than 0</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_NoCharacter">No EVE client window found</sys:String>
+    <sys:String x:Key="KeyboardSpanPage_FocusFailed">Could not bring that window to front</sys:String>
+    <sys:String x:Key="IMEPage_Serach">Search</sys:String>
+    <sys:String x:Key="IMEPage_Translate">Translate</sys:String>
+    <sys:String x:Key="IMEPage_Copy">Copy</sys:String>
+    <sys:String x:Key="IMEPage_NoResult">No Result</sys:String>
+    <sys:String x:Key="IMEPage_InputTip">Type or paste text</sys:String>
+    <sys:String x:Key="IMEPage_InputTipDetail">Split by punctuation/space; the word at the caret gets game-name suggestions (click one to replace it)</sys:String>
+    <sys:String x:Key="IMEPage_Copied">Copied to clipboard</sys:String>
+    <sys:String x:Key="IMEPage_TranslateFailed">Translation failed: {0}</sys:String>
+    <sys:String x:Key="IMEPage_NoTranslation">Nothing to translate (the AI source returned no translation)</sys:String>
+    <sys:String x:Key="IMEPage_Back">Back</sys:String>
 </ResourceDictionary>

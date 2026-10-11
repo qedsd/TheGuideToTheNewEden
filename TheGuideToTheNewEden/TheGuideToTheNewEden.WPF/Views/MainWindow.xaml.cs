@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Interop;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Tools;
 using Wpf.Ui.Controls;
 
 namespace TheGuideToTheNewEden.WPF.Views;
@@ -21,6 +22,21 @@ public partial class MainWindow : FluentWindow
     private const double NavigationTopInset = 36;
 
     private bool _isShuttingDown;
+
+    /// <summary>启动时托盘图标是否已创建成功（未成功则 Loaded 后重试，见 <see cref="TrayIconHelper"/>）。</summary>
+    private bool _trayIconReady;
+
+    /// <summary>
+    /// 「工具」分组的页面 → 窗口标题的本地化键。这些页面**在独立工具窗口里打开**
+    /// （对齐 WinUI 的 <c>ITool</c> 契约），不占用主窗口内容区；每个工具同时只开一个。
+    /// </summary>
+    private static readonly Dictionary<Type, string> ToolPages = new()
+    {
+        [typeof(Pages.IMEPage)] = "Nav.Tools_IME",
+        [typeof(Pages.ServerPingPage)] = "Nav.Tools_ServerPing",
+        [typeof(Pages.KeyboardSpanPage)] = "Nav.Tools_KeyboardSpan",
+        [typeof(Pages.TaskbarPage)] = "Nav.Tools_Taskbar",
+    };
 
     /// <summary>移动/缩放后的延迟落盘定时器，避免拖动过程中频繁写文件。</summary>
     private readonly System.Windows.Threading.DispatcherTimer _placementSaveTimer;
@@ -72,15 +88,29 @@ public partial class MainWindow : FluentWindow
 
             // 启动时打开首页。
             NavigationView.Navigate(typeof(Pages.HomePage));
+
+            // 托盘图标没建起来就重试几次（通知区域在启动早期可能还没就绪）。
+            if (!_trayIconReady)
+            {
+                EnsureTrayIconAsync();
+            }
         };
 
         Closing += MainWindow_Closing;
+
+        // 「工具」分组的页面不进主内容区：拦下导航，改为打开独立工具窗口。
+        NavigationView.Navigating += OnNavigationViewNavigating;
 
         // 托盘左键单击恢复主窗口；并把托盘实例交给通知服务（供系统通知使用）。
         TrayIcon.TrayLeftMouseUp += OnTrayLeftMouseUp;
         TrayMenuShow.Click += OnTrayShowClick;
         TrayMenuExit.Click += OnTrayExitClick;
         NotificationService.Register(TrayIcon);
+
+        // 托盘图标：**在 Loaded 之前先自己创建一次**。H.NotifyIcon 会在自己的 Loaded 里创建一次，
+        // 失败时只在 catch 里 Debugger.Break()（Release 下静默、且真实 Win32 原因被库吞掉，见 TrayIconHelper）。
+        // 先创建成功后，库在 Loaded 里的那次 ForceCreate 直接返回，调试时也不会中断。
+        _trayIconReady = TrayIconHelper.TryCreate(TrayIcon, "启动时");
 
         // 页面级等待遮罩 / 右下角即时通知（ShowWaiting、ShowSuccess 等）
         PageNotifyService.Register(WaitingOverlay, MessageHost);
@@ -89,6 +119,30 @@ public partial class MainWindow : FluentWindow
     private void ApplyFrameMargin()
     {
         NavigationView.FrameMargin = new Thickness(0, NavigationTopInset, 0, 0);
+    }
+
+    /// <summary>
+    /// 拦下「工具」分组页面的导航：取消这次导航，改为打开（或激活）对应的**独立工具窗口**。
+    /// <para>
+    /// <b>两个实测要点</b>（一次性探针驱动真实 WPF-UI <c>NavigationView</c> 得到，见 REFACTORING.md §9 第 75 条）：
+    /// ① <c>args.Page</c> 是**页面实例**，不是 <see cref="Type"/>——按 <c>is Type</c> 判断会永远不命中，
+    /// 于是工具页照样导航进主内容区（这正是"没弹窗、还是主窗口显示页面"的原因）；
+    /// ② <c>args.Cancel = true</c> **确实被尊重**：Frame 不导航，导航选中项也不动（左侧高亮因此始终与内容区一致）。
+    /// </para>
+    /// <para>
+    /// 顺手复用 WPF-UI 已经实例化好的那个页面做窗口内容（不取消的话它会被丢弃），避免多构造一份页面。
+    /// </para>
+    /// </summary>
+    private void OnNavigationViewNavigating(NavigationView sender, NavigatingCancelEventArgs args)
+    {
+        var pageType = args.Page as Type ?? args.Page?.GetType();
+        if (pageType is null || !ToolPages.TryGetValue(pageType, out var titleKey))
+        {
+            return;
+        }
+
+        args.Cancel = true;
+        ToolWindowHost.Show(pageType, titleKey, args.Page as Pages.IToolPage);
     }
 
     /// <summary>
@@ -180,6 +234,19 @@ public partial class MainWindow : FluentWindow
 
     // ---------- 托盘 ----------
 
+    /// <summary>托盘图标没建起来时重试；仍失败则写诊断日志（见 <see cref="TrayIconHelper"/>）。</summary>
+    private async void EnsureTrayIconAsync()
+    {
+        _trayIconReady = await TrayIconHelper.EnsureCreatedAsync(TrayIcon, this);
+
+        if (!_trayIconReady)
+        {
+            Core.Log.Warn(
+                "[托盘] 托盘图标不可用：系统通知不会显示；即使设置里开了「关闭到托盘」，关闭窗口也会正常退出" +
+                "（避免窗口被藏进没有任何出口的状态）。");
+        }
+    }
+
     private void OnTrayLeftMouseUp(object sender, RoutedEventArgs e) => RestoreMainWindow();
 
     private void OnTrayShowClick(object sender, RoutedEventArgs e) => RestoreMainWindow();
@@ -193,9 +260,16 @@ public partial class MainWindow : FluentWindow
         // 关闭按钮：开启托盘后台时只隐藏窗口；托盘退出时 _isShuttingDown 为 true，不再拦截。
         if (!_isShuttingDown && SettingsService.GetBool(SettingsService.MinimizeToTrayKey))
         {
-            e.Cancel = true;
-            Hide();
-            return;
+            // 托盘图标不可用时**不能**隐藏窗口：那样用户就再也找不回界面了（只能靠重启程序唤起）。
+            // 这里退回正常关闭，并在日志里说明原因。
+            if (TrayIcon.IsCreated)
+            {
+                e.Cancel = true;
+                Hide();
+                return;
+            }
+
+            Core.Log.Warn("[托盘] 已开启「关闭到托盘」，但托盘图标不可用，本次按正常关闭处理。");
         }
 
         SettingsService.Save();

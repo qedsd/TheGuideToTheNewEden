@@ -1,0 +1,430 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.ServerPingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--
+        服务器测速（对应 WinUI 版 Views/Tools/ServerPingPage）：对 host:port 每秒一次 TCP 连接测速，
+        给出当前延迟 / 平均延迟 / 丢包率与档位，并统计总次数、成功、失败、时长。
+        
+        布局要点（默认 820×560，客户区约 796×488）：
+        · 根节点是 **Grid 而不是 ScrollViewer+StackPanel**：StackPanel 只按期望高度堆叠，
+        窗口拉高/拉宽后下方会留一大片空白；Grid 让内容填满窗口；
+        · 行分配：服务器输入 Auto → 三个指标 Auto → **统计卡片 `*`（吃掉剩余高度）** → 口径说明 Auto；
+        · 统计小格内的文字垂直居中，卡片被拉高时不是"贴在顶部的一条"；
+        · 数字用等宽字体（每秒刷新时宽度不跳），档位用主题语义色 + 8px 圆点；
+        · 最小尺寸即默认尺寸（ToolWindowHost 把 Preferred 同时设为 Min），所以不会出现内容被裁掉。
+    -->
+    <Page.Resources>
+        <converters:PingQualityToBrushConverter x:Key="QualityToBrush" />
+        <converters:PingCompactModeConverter x:Key="CompactMode" />
+        <converters:PingWindowBackgroundConverter x:Key="PageBackground" />
+        <converters:PingMiniVisibilityConverter x:Key="MiniVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!--  字段标签：12px 次要色  -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <!--  指标大数字：等宽，避免刷新时抖动  -->
+        <Style x:Key="HeroValue" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+
+        <!--  单位：贴在大数字底部  -->
+        <Style x:Key="HeroUnit" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4,0,0,4" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <!--  档位圆点：颜色由档位转换器给  -->
+        <Style x:Key="QualityDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!--  统计小格：被拉高时文字垂直居中  -->
+        <Style x:Key="StatTile" TargetType="Border">
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="StatLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="StatValue" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,5,0,0" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <!--
+        页面底色：完整布局＝主题不透明背景色；迷你形态＝透明。
+        本页所在工具窗是**逐像素透明**的（ServerPingPage.NeedsTransparentWindow），
+        所以完整布局必须自己铺一层不透明底色，否则卡片之间的缝隙会直接透出桌面。
+        阈值与 MiniVis/CompactMode 共用同一组常量。
+    -->
+    <Page.Background>
+        <MultiBinding Converter="{StaticResource PageBackground}">
+            <Binding Path="ActualWidth" RelativeSource="{RelativeSource Self}" />
+            <Binding Path="ActualHeight" RelativeSource="{RelativeSource Self}" />
+        </MultiBinding>
+    </Page.Background>
+
+    <ScrollViewer
+        x:Name="RootScroll"
+        Padding="8,0,8,8"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <Grid MinHeight="{Binding ViewportHeight, ElementName=RootScroll}">
+
+            <!--
+                外层这格同时放两套布局（同一格里叠着，靠 Visibility 二选一）：
+                ① 大布局（默认）：服务器输入 / 三个指标 / 统计 / 说明；
+                ② **迷你布局**：窗口缩到一定尺寸以下时只留"开始·停止 + 当前延迟 + 档位"，
+                供长期置顶挂机监控（判定阈值与理由见 PingCompactModeConverter）。
+            -->
+            <Grid>
+                <Grid.Visibility>
+                    <MultiBinding Converter="{StaticResource CompactMode}" ConverterParameter="full">
+                        <Binding ElementName="RootScroll" Path="ActualWidth" />
+                        <Binding ElementName="RootScroll" Path="ActualHeight" />
+                    </MultiBinding>
+                </Grid.Visibility>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--  ① 服务器 + 开始 / 停止（同一行）  -->
+                <controls:CardControl Padding="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon
+                                Margin="0,0,8,0"
+                                FontSize="16"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Globe24" />
+                            <ComboBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Stretch"
+                                IsEditable="True"
+                                IsEnabled="{Binding IsIdle}"
+                                ItemsSource="{Binding HostPresets}"
+                                Text="{Binding Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                ToolTip="{Binding HostTooltip}" />
+                            <TextBlock
+                                Grid.Column="2"
+                                Margin="4,0"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text=":" />
+                            <ui:NumberBox
+                                Grid.Column="3"
+                                Width="96"
+                                IsEnabled="{Binding IsIdle}"
+                                Maximum="65535"
+                                Minimum="1"
+                                SpinButtonPlacementMode="Hidden"
+                                ToolTip="{DynamicResource ServerPingPage_Port}"
+                                Value="{Binding Port, Mode=TwoWay}" />
+                        </Grid>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="8,0,0,0"
+                            Orientation="Horizontal">
+                            <ui:Button
+                                Click="OnStartClick"
+                                Content="{DynamicResource ServerPingPage_Start}"
+                                Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVis}}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorSuccessBrush}" Symbol="Play24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                Click="OnStopClick"
+                                Content="{DynamicResource ServerPingPage_Stop}"
+                                Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+
+                            <!--
+                                一键进迷你：把**窗口**缩到迷你尺寸即可（迷你模式本来就是尺寸驱动的，
+                                见 PingCompactModeConverter），缩下去之后标题栏也会自动收成只留关闭。
+                                回大布局直接把窗口拉大（尺寸驱动，天然对称）。
+                            -->
+                            <ui:Button
+                                Margin="6,0,0,0"
+                                Click="OnMiniModeClick"
+                                Content="{DynamicResource ServerPingPage_MiniMode}"
+                                Icon="{ui:SymbolIcon ArrowMinimize24}"
+                                ToolTip="{DynamicResource ServerPingPage_MiniModeTip}"
+                                Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVis}}" />
+                        </StackPanel>
+                    </Grid>
+                </controls:CardControl>
+
+                <!--  ② 当前 / 平均 / 丢包  -->
+                <Grid Grid.Row="1" Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <controls:CardControl Padding="12,10">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource ServerPingPage_CureentLatency}" />
+                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource HeroValue}" Text="{Binding CurrentLatencyText}" />
+                                <TextBlock Style="{StaticResource HeroUnit}" Text="ms" />
+                            </StackPanel>
+                            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                                <Ellipse Fill="{Binding CurrentQuality, Converter={StaticResource QualityToBrush}}" Style="{StaticResource QualityDot}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{Binding CurrentQuality, Converter={StaticResource QualityToBrush}}"
+                                    Text="{Binding CurrentVerdict}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </controls:CardControl>
+
+                    <controls:CardControl
+                        Grid.Column="1"
+                        Margin="12,0"
+                        Padding="12,10">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource ServerPingPage_AverageLatency}" />
+                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource HeroValue}" Text="{Binding AverageLatencyText}" />
+                                <TextBlock Style="{StaticResource HeroUnit}" Text="ms" />
+                            </StackPanel>
+                            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                                <Ellipse Fill="{Binding AverageQuality, Converter={StaticResource QualityToBrush}}" Style="{StaticResource QualityDot}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{Binding AverageQuality, Converter={StaticResource QualityToBrush}}"
+                                    Text="{Binding AverageVerdict}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </controls:CardControl>
+
+                    <controls:CardControl Grid.Column="2" Padding="12,10">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource ServerPingPage_Loss}" />
+                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource HeroValue}" Text="{Binding LossText}" />
+                                <TextBlock Style="{StaticResource HeroUnit}" Text="%" />
+                            </StackPanel>
+                            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                                <Ellipse Fill="{Binding LossQuality, Converter={StaticResource QualityToBrush}}" Style="{StaticResource QualityDot}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{Binding LossQuality, Converter={StaticResource QualityToBrush}}"
+                                    Text="{Binding LossVerdict}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </controls:CardControl>
+                </Grid>
+
+                <!--  ③ 测试统计（`*` 行：吃掉窗口的剩余高度）  -->
+                <controls:CardControl Grid.Row="2" Margin="0,12,0,0">
+                    <controls:CardControl.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorSuccessBrush}" Symbol="DataSunburst24" />
+                            <TextBlock
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                Text="{DynamicResource ServerPingPage_Statistics}" />
+                        </StackPanel>
+                    </controls:CardControl.Header>
+
+                    <UniformGrid Rows="1">
+                        <Border Margin="0,0,8,0" Style="{StaticResource StatTile}">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource StatLabel}" Text="{DynamicResource ServerPingPage_Statistics_All}" />
+                                <TextBlock Style="{StaticResource StatValue}" Text="{Binding TotalCountText}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Margin="0,0,8,0" Style="{StaticResource StatTile}">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource StatLabel}" Text="{DynamicResource ServerPingPage_Statistics_Success}" />
+                                <TextBlock Style="{StaticResource StatValue}" Text="{Binding SuccessCountText}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Margin="0,0,8,0" Style="{StaticResource StatTile}">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource StatLabel}" Text="{DynamicResource ServerPingPage_Statistics_Failed}" />
+                                <TextBlock Style="{StaticResource StatValue}" Text="{Binding FailedCountText}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource StatTile}">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource StatLabel}" Text="{DynamicResource ServerPingPage_Statistics_Duration}" />
+                                <TextBlock Style="{StaticResource StatValue}" Text="{Binding DurationText}" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                </controls:CardControl>
+
+                <!--  ④ 口径说明  -->
+                <StackPanel
+                    Grid.Row="3"
+                    Margin="2,10,2,0"
+                    Orientation="Horizontal">
+                    <ui:SymbolIcon
+                        FontSize="14"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Symbol="Info24" />
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Text="{DynamicResource ServerPingPage_Hint}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+
+            <!--  ② 迷你布局：只要 开始/停止 + 当前延迟 + 档位（长期置顶挂机监控用）  -->
+            <Grid x:Name="MiniRoot" Background="Transparent">
+                <Grid.Visibility>
+                    <MultiBinding Converter="{StaticResource CompactMode}" ConverterParameter="compact">
+                        <Binding ElementName="RootScroll" Path="ActualWidth" />
+                        <Binding ElementName="RootScroll" Path="ActualHeight" />
+                    </MultiBinding>
+                </Grid.Visibility>
+
+                <!--
+                    迷你布局：三种状态互斥、一次只显示一样（见 MiniVis 转换器）：
+                    ① 未开始 → 只有 ▶ 开始（不用悬停就看得见）；
+                    ② 运行中、鼠标不在窗口内 → 只有延迟读数（数字，颜色表示档位）；
+                    ③ 运行中、鼠标在窗口内 → 悬停操作组：■ 暂停（第一行）+ **窗口透明度滑条**（第二行，在按钮下方）。
+                    `MiniRoot` 铺满整个内容区且 `Background="Transparent"`（透明也能命中测试），
+                    所以"鼠标放上去"是指放进窗口内容区任意位置，而不是去精确指到某颗按钮。
+                -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!--  第一行：开始 / 暂停 / 延迟读数（三者互斥）  -->
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <ui:Button
+                            VerticalAlignment="Center"
+                            Appearance="Primary"
+                            Click="OnStartClick"
+                            ToolTip="{DynamicResource ServerPingPage_Start}">
+                            <ui:Button.Visibility>
+                                <MultiBinding Converter="{StaticResource MiniVis}" ConverterParameter="start">
+                                    <Binding Path="IsRunning" />
+                                    <Binding ElementName="MiniRoot" Path="IsMouseOver" />
+                                </MultiBinding>
+                            </ui:Button.Visibility>
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorSuccessBrush}" Symbol="Play24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            VerticalAlignment="Center"
+                            Click="OnStopClick"
+                            ToolTip="{DynamicResource ServerPingPage_Stop}">
+                            <ui:Button.Visibility>
+                                <MultiBinding Converter="{StaticResource MiniVis}" ConverterParameter="hover">
+                                    <Binding Path="IsRunning" />
+                                    <Binding ElementName="MiniRoot" Path="IsMouseOver" />
+                                </MultiBinding>
+                            </ui:Button.Visibility>
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+
+                        <!--
+                            延迟读数：运行中且鼠标不在窗口内时才出现。
+                            迷你形态**不写字**（没有「正常/良好/糟糕」，也没有档位圆点）——档位直接用**数字的颜色**表达：
+                            数字的 Foreground 跟着 CurrentQuality 走（同一个 QualityToBrush 转换器），单位 `ms` 保持次要色。
+                        -->
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Visibility>
+                                <MultiBinding Converter="{StaticResource MiniVis}" ConverterParameter="reading">
+                                    <Binding Path="IsRunning" />
+                                    <Binding ElementName="MiniRoot" Path="IsMouseOver" />
+                                </MultiBinding>
+                            </StackPanel.Visibility>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontFamily="Consolas"
+                                FontSize="30"
+                                Foreground="{Binding CurrentQuality, Converter={StaticResource QualityToBrush}}"
+                                Text="{Binding CurrentLatencyText}" />
+                            <TextBlock
+                                Margin="4,0,0,5"
+                                VerticalAlignment="Bottom"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="ms" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!--
+                        第二行：窗口透明度滑条（与暂停按钮同一显示条件：运行中 + 鼠标在窗口内）。
+                        ⚠️ 值不是在这里绑的：要绑宿主窗口的 `Opacity`，XAML 里写
+                        `RelativeSource AncestorType=Window` **解析不到**（Page 由 ToolWindow 承载，实测 Value 会停在
+                        Minimum、两头都不同步），所以改在代码后置的 Loaded 里用 `Window.GetWindow(this)` 作 Source
+                        显式绑定（见 ServerPingPage.xaml.cs 的 BindOpacitySliderToWindow）。下限 0.3，避免拖到几乎点不到。
+                    -->
+                    <Slider
+                        x:Name="MiniOpacitySlider"
+                        Width="130"
+                        Margin="0,6,0,0"
+                        HorizontalAlignment="Center"
+                        LargeChange="0.2"
+                        Maximum="1"
+                        Minimum="0.3"
+                        SmallChange="0.05"
+                        TickFrequency="0.1"
+                        TickPlacement="BottomRight"
+                        ToolTip="{DynamicResource ServerPingPage_Opacity}"
+                        Value="1">
+                        <Slider.Visibility>
+                            <MultiBinding Converter="{StaticResource MiniVis}" ConverterParameter="hover">
+                                <Binding Path="IsRunning" />
+                                <Binding ElementName="MiniRoot" Path="IsMouseOver" />
+                            </MultiBinding>
+                        </Slider.Visibility>
+                    </Slider>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

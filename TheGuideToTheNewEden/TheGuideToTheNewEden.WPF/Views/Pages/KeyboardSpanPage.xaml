@@ -1,0 +1,263 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.KeyboardSpanPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <!--
+        键盘跨度（对应 WinUI 版 Views/Tools/KeyboardSpanPage）：监听某个按键，按"时间间隔"或"按键次数"统计通过数。
+        两种模式（照搬 WinUI）：时间间隔＝按一次开始计时、每「间隔」秒记一次通过、再按一次结束；
+        按键次数＝每按一次记一次通过，达到目标后从 1 重新计。
+        
+        布局要点（默认 400×280，客户区约 376×208）：
+        · 根节点是 **Grid 而不是 ScrollViewer+StackPanel**：卡片填满窗口，窗口拉高后不再是"内容停在上方 + 下方空白"；
+        · 两种状态是同一格里的两张卡片（靠 Visibility 切换）：高度都由 Grid 拉伸；
+        · 设置态的表单内容**自己套一层 ScrollViewer**：窗口只有最小尺寸、而系统字号放大时仍能滚动，
+        不会因为"页面级滚动条被去掉"而裁掉；
+        · 运行态：大号通过数 + 进度条固定在上方，**统计格所在的 `*` 行吃掉剩余高度**，格内文字垂直居中；
+        · 卡片底栏（开始 / 停止）由 CardControl 模板固定在卡片底部，窗口再高也不会漂在中间。
+    -->
+    <Page.Resources>
+        <converters:SpanStateToBrushConverter x:Key="SpanStateToBrush" />
+        <!--  复用测速页那套三态转换器：这里只用它的 hover 角色（运行中 + 鼠标在窗口内才显示滑条）  -->
+        <converters:PingMiniVisibilityConverter x:Key="MiniVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!--  字段标签：12px 次要色  -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+
+    </Page.Resources>
+
+    <ScrollViewer
+        x:Name="RootScroll"
+        Padding="0"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <Grid MinHeight="{Binding ViewportHeight, ElementName=RootScroll}">
+
+            <!--  ① 设置（运行中隐藏；表单自身可滚动）  -->
+            <controls:CardControl Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVis}}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource KeyboardSpanPage_Keyboard}" />
+                        <ui:TextBox
+                            Margin="0,4,0,0"
+                            FontWeight="Normal"
+                            PlaceholderText="F1"
+                            Text="{Binding KeyboardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource KeyboardSpanPage_Mode}" />
+                                <ComboBox
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    SelectedIndex="{Binding ModeIndex, Mode=TwoWay}">
+                                    <ComboBoxItem Content="{DynamicResource KeyboardSpanPage_Mode1}" />
+                                    <ComboBoxItem Content="{DynamicResource KeyboardSpanPage_Mode2}" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!--  次数（按键次数模式）/ 间隔（时间间隔模式）二选一，占同一格  -->
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                <TextBlock
+                                    Style="{StaticResource FieldLabel}"
+                                    Text="{DynamicResource KeyboardSpanPage_Count}"
+                                    Visibility="{Binding IsIntervalMode, Converter={StaticResource InverseBoolToVis}}" />
+                                <TextBlock
+                                    Style="{StaticResource FieldLabel}"
+                                    Text="{DynamicResource KeyboardSpanPage_Span}"
+                                    Visibility="{Binding IsIntervalMode, Converter={StaticResource BoolToVis}}" />
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    Maximum="10000"
+                                    Minimum="1"
+                                    SpinButtonPlacementMode="Hidden"
+                                    Visibility="{Binding IsIntervalMode, Converter={StaticResource InverseBoolToVis}}"
+                                    Value="{Binding TargetCount, Mode=TwoWay}" />
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    Maximum="600"
+                                    Minimum="0.1"
+                                    SpinButtonPlacementMode="Hidden"
+                                    Visibility="{Binding IsIntervalMode, Converter={StaticResource BoolToVis}}"
+                                    Value="{Binding SpanSeconds, Mode=TwoWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock
+                            Margin="0,10,0,0"
+                            Style="{StaticResource FieldLabel}"
+                            Text="{DynamicResource KeyboardSpanPage_Character}" />
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{Binding Characters}"
+                                SelectedItem="{Binding SelectedCharacter, Mode=TwoWay}" />
+                            <!--  图标按钮：默认宽度只有 400，带文字的两个按钮会把下拉挤扁（提示文字放 ToolTip）  -->
+                            <ui:Button
+                                Grid.Column="1"
+                                Width="34"
+                                Margin="8,0,0,0"
+                                Click="OnRefreshCharactersClick"
+                                Icon="{ui:SymbolIcon ArrowSync24}"
+                                ToolTip="{DynamicResource General_Refresh}" />
+                            <ui:Button
+                                Grid.Column="2"
+                                Width="34"
+                                Margin="8,0,0,0"
+                                Click="OnLocateClick"
+                                Icon="{ui:SymbolIcon Open24}"
+                                ToolTip="{DynamicResource KeyboardSpanPage_LocateGame}" />
+                        </Grid>
+
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KeyboardSpanPage_Hint}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding IsIntervalMode, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KeyboardSpanPage_HintCount}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding IsIntervalMode, Converter={StaticResource InverseBoolToVis}}" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <controls:CardControl.Footer>
+                    <ui:Button
+                        HorizontalAlignment="Stretch"
+                        Appearance="Primary"
+                        Click="OnStartClick"
+                        Content="{DynamicResource General_Start}"
+                        Icon="{ui:SymbolIcon Play24}" />
+                </controls:CardControl.Footer>
+            </controls:CardControl>
+
+            <!--
+                ② 运行中：照 **WinUI3 原版**（TheGuideToTheNewEden.WinUI/Views/Tools/KeyboardSpanPage.xaml 的 RunningGrid）——
+                只有"居中的大号 通过数 / 目标数" + 底部一行"时长 │ 总按键数"（都带 ToolTip）+ 右侧停止按钮。
+                WPF 版原先还加了卡片头、进度条和 4 个统计格，用户反馈"开始后信息太多"——那些都去掉了：
+                这个工具是**长期置顶挂机显示**用的，跟测速工具的迷你条一个定位，留白和边框都是浪费。
+                也不套 CardControl：省掉卡片内边距与分隔线，运行态就是一块干净的显示区。
+            -->
+            <Grid
+                x:Name="RunningRoot"
+                Margin="8,0,8,4"
+                Background="Transparent"
+                Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--  通过次数 / 目标：40px 等宽居中，颜色跟随语义档位（极佳/良好/正常/较差/糟糕）  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        FontFamily="Consolas"
+                        FontSize="40"
+                        Foreground="{Binding PassState, Converter={StaticResource SpanStateToBrush}}"
+                        Text="{Binding PassCountText}" />
+                    <TextBlock
+                        Margin="6,0,0,8"
+                        VerticalAlignment="Bottom"
+                        FontFamily="Consolas"
+                        FontSize="18"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding TargetCountText, StringFormat=/ {0}}" />
+                </StackPanel>
+
+                <!--  底部一行：时长 │ 总按键数 + 停止（与原版一致，两个数字都用 ToolTip 说明含义）  -->
+                <Grid Grid.Row="2" Margin="2,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding DurationText}"
+                        ToolTip="{DynamicResource KeyboardSpanPage_TotalDuration}" />
+                    <Rectangle
+                        Grid.Column="1"
+                        Width="1"
+                        Margin="8,4,8,4"
+                        Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding TotalCountText}"
+                        ToolTip="{DynamicResource KeyboardSpanPage_TotalKeyboardCount}" />
+                    <ui:Button
+                        Grid.Column="4"
+                        Appearance="Transparent"
+                        Click="OnStopClick"
+                        ToolTip="{DynamicResource General_Stop}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </Grid>
+                <!--
+                    透明度滑条：与测速工具同一套做法——**只在鼠标移入时出现**（MiniVis 的 hover 角色）。
+                    独占一行（`Grid.Row="2"`）并横向铺开：塞进底部行中间那列时，
+                    左下「时长 │ 总键数」加右侧停止按钮把宽度吃掉，滑条会被挤成一小截（用户反馈"显示不全"）。
+                    拖动即调宿主窗口背板的不透明度；默认 1 = 不透明；只作用于**运行态**（见代码后置）。
+                -->
+                <Slider
+                    x:Name="MiniOpacitySlider"
+                    Grid.Row="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    LargeChange="0.2"
+                    Maximum="1"
+                    Minimum="0.3"
+                    SmallChange="0.05"
+                    ToolTip="{DynamicResource KeyboardSpanPage_Opacity}"
+                    Value="1">
+                    <Slider.Visibility>
+                        <MultiBinding Converter="{StaticResource MiniVis}" ConverterParameter="hover">
+                            <Binding Path="IsRunning" />
+                            <Binding ElementName="RunningRoot" Path="IsMouseOver" />
+                        </MultiBinding>
+                    </Slider.Visibility>
+                </Slider>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

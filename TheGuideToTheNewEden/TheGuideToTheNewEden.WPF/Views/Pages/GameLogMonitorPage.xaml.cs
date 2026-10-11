@@ -6,6 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
@@ -55,14 +56,8 @@ public partial class GameLogMonitorPage : Page
     {
         if (GetSelectedCharacter() is { } info)
         {
-            try
-            {
-                Process.Start(new ProcessStartInfo(info.FilePath) { UseShellExecute = true });
-            }
-            catch (Exception ex)
-            {
-                Core.Log.Error(ex);
-            }
+            // 交给 shell 打开（不要自己 Process.Start("explorer.exe", …)，见 ShellHelper 的说明）
+            ShellHelper.OpenFile(info.FilePath);
         }
     }
 
@@ -70,14 +65,8 @@ public partial class GameLogMonitorPage : Page
     {
         if (GetSelectedCharacter() is { } info)
         {
-            try
-            {
-                Process.Start("explorer.exe", $"/select,\"{info.FilePath}\"");
-            }
-            catch (Exception ex)
-            {
-                Core.Log.Error(ex);
-            }
+            // 等价于原来的 explorer.exe /select，但不另起 explorer 进程
+            ShellHelper.RevealInFolder(info.FilePath);
         }
     }
 

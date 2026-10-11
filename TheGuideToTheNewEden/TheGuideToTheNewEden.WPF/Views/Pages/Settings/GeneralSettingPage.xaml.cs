@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TheGuideToTheNewEden.Core.Enums;
+using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using Wpf.Ui.Appearance;
@@ -233,22 +234,9 @@ public partial class GeneralSettingPage : Page
 
     private void InitializeOpenButtons()
     {
-        OpenLogButton.Click += (_, _) => OpenFolder(Core.Log.GetLogPath());
+        OpenLogButton.Click += (_, _) => ShellHelper.OpenFolder(Core.Log.GetLogPath());
         OpenConfigButton.Click += (_, _) =>
-            OpenFolder(System.IO.Path.Combine(SettingsService.DataPath, "Configs"));
-    }
-
-    private static void OpenFolder(string path)
-    {
-        try
-        {
-            Directory.CreateDirectory(path);
-            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-        }
+            ShellHelper.OpenFolder(System.IO.Path.Combine(SettingsService.DataPath, "Configs"));
     }
 
     private static string FindString(string key)

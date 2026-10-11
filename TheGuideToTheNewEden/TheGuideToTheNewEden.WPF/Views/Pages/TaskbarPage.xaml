@@ -1,0 +1,72 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.TaskbarPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <!--
+        任务栏工具（对应 WinUI 版 Views/Tools/TaskbarPage）：把 EVE 客户端窗口的任务栏按钮拆分 / 合并。
+
+        布局要点（默认 200×140，客户区约 180×76，是最紧的一页）：
+        · 不用卡片（卡片的内边距 + 分隔线 + 底栏会把仅有的空间吃光）：两个等宽主按钮 + 一行可换行的状态文字；
+        · 内容整体**垂直居中**（`VerticalAlignment="Center"`）：这一页内容太少，窗口拉高时"贴顶 + 下方大片空白"
+          最难看，居中后任何高度都像是设计好的；
+        · 两条说明（TaskbarPage_Tip / TaskbarPage_TipRefresh）放在**页面 ToolTip** 里，悬停可见，不占正文高度；
+        · 外面仍留一层 `ScrollViewer`，内容 `Grid.MinHeight` 绑到它的视口高度：有空间就填满、字号放大时才滚动。
+    -->
+    <Page.ToolTip>
+        <StackPanel MaxWidth="280">
+            <TextBlock
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource TaskbarPage_Tip}"
+                TextWrapping="Wrap" />
+            <TextBlock
+                Margin="0,6,0,0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource TaskbarPage_TipRefresh}"
+                TextWrapping="Wrap" />
+        </StackPanel>
+    </Page.ToolTip>
+
+    <ScrollViewer
+        x:Name="RootScroll"
+        Padding="10,8"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <Grid MinHeight="{Binding ViewportHeight, ElementName=RootScroll}">
+        <StackPanel VerticalAlignment="Center">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:Button
+                    Height="30"
+                    HorizontalAlignment="Stretch"
+                    Appearance="Primary"
+                    Click="OnSeparateClick"
+                    Content="{DynamicResource TaskbarPage_Separate}"
+                    IsEnabled="{Binding IsIdle}" />
+                <ui:Button
+                    Grid.Column="1"
+                    Height="30"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    Appearance="Primary"
+                    Click="OnMergeClick"
+                    Content="{DynamicResource TaskbarPage_Merge}"
+                    IsEnabled="{Binding IsIdle}" />
+            </Grid>
+
+            <TextBlock
+                Margin="0,7,0,0"
+                FontSize="11"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding StatusText}"
+                TextWrapping="Wrap" />
+        </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

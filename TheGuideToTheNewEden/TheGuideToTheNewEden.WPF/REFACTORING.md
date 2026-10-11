@@ -2986,6 +2986,942 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   首次使用可留意：左侧列表是否自动选中首项、右侧正文的标题层级与表格是否成排版、深/浅主题下正文颜色是否都正确、
   点正文里的链接是否在浏览器打开（正文链接多为 EVEWiki 外链）。
 
+### 阶段 80：「工具」分组四个页面迁移（任务栏 / 服务器测速 / 键盘跨度 / 输入助手）
+
+导航里「工具」分组下的四个页面原先是 `PlaceholderPage`，本阶段全部做成真实实现，并顺带把它们的 WinUI 版缺陷一并修掉。
+
+#### A. 任务栏工具（`TaskbarPage`）
+
+- **功能**（对齐 WinUI `Views/Tools/TaskbarPage`）：把 EVE 客户端窗口的**任务栏按钮拆分/合并**——给窗口写
+  `System.AppUserModel.ID`，同一个 ID 并成一个按钮、各给唯一 ID 则拆成独立按钮。
+- **新增**：`Helpers/TaskbarHelper.cs`（`SHGetPropertyStoreForWindow` + `IPropertyStore`，带 `PropVariantClear`、
+  失败记日志、并新增**读回**方法 `TryGetAppUserModelId` 让这段 COM 互操作可被验证）；
+  `ViewModels/TaskbarPageViewModel.cs`（状态行 + 执行期禁用按钮）。
+- **相对 WinUI 的改进**：① 客户端枚举复用多开模块的 `GameClientService.FindClients` + 用户配置的进程关键词
+  （WinUI 在页面里硬编码 `exeFile`）；② 补状态行（找到几个、实际更新几个）与失败提示（WinUI 点完没有任何反馈）；
+  ③ 原版手工 `FreeCoTaskMem` 且不清 `vt`，异常路径会漏内存——改用 `PropVariantClear`；
+  ④ 补一句"没立刻变化怎么办"的说明（改 ID 只影响之后重建的任务栏按钮，最小化再还原即可）。
+- **探针（13/13 PASS，一次性产物已清理）**：写入 → 读回 → 覆盖写 → 再读回，全部一致；`IntPtr.Zero`/空 ID 不抛异常；
+  `FindClients("TaskbarProbe")` 能找到探针自己的窗口。**核验中发现并修掉一个真缺陷**：`PROPVARIANT` 在 x64 上是
+  **24 字节**（WinUI 版的结构体只有 16 字节），小缓冲区让 `GetValue` 写坏——只坑读不坑写，所以原版从没暴露（见 §9 第 72 条）。
+
+#### B. 服务器测速（`ServerPingPage`）
+
+- **功能**：对 `host:port` 每秒一次 TCP 连接测速，显示当前/平均延迟、丢包率（各带"极佳…糟糕"档位与颜色）、
+  总次数/成功/失败/时长；预设欧服域名与国服 IP，端口默认 26000。
+- **Core 改动**（`Core/Helpers/TCPingHelper.cs`，WinUI 共享）：新增
+  `PingAsync(host, port, timeoutMs, logErrors, cancellationToken)` 并让原 `Ping` 转发到它——三件事：
+  ① **连接超时可控**（原来只靠 OS 的 SYN 重传，实测本机要 ~21 秒，1 秒一次的循环会被拖死；现在默认 5 秒，
+  实测 800ms 设置下 801ms 返回）；② **失败可不记日志**（连不上就是"丢包"这一正常结果，每失败一次写 ERROR 会把
+  日志与 `Log.GetErrorCount()` 刷坏）；③ 每次调用用自己的 `Stopwatch`（原来是 `static`，并发会互相重置计时）。
+  超时后还**主动观察**掉那个挂起的连接任务，避免它变成 `TaskScheduler.UnobservedTaskException` 被 App 记一条。
+- **新增**：`ViewModels/ServerPingPageViewModel.cs`、`Models/Tools/PingQuality.cs`、
+  `Converters/PingQualityToBrushConverter.cs`（档位 → 主题语义色，深浅主题自动跟随）。
+- **相对 WinUI 修掉的三处**：① **成功次数为 0 时不再算出 NaN**（原版直接 `_passTime / _passCount`）；
+  ② **时长不再凭空多 10 小时**（原版写的是 `Elapsed.Hours + 10`）；③ 循环用 `await Task.Delay` 而不是
+  `Thread.Sleep`（不占线程池线程、取消立刻生效）；另有运行中禁用地址/端口输入、档位颜色改用主题语义色。
+- **探针（25/25 PASS）**：连本地监听端口 → 有效延迟；连"没人在听"的端口 → -1（本机是静默丢包，靠超时结束）；
+  解析不出的域名 → 83ms 内 -1；不可路由网段（RFC 5737）→ 800ms 超时返回；取消令牌 → 311ms 返回；
+  VM 正常路径 3 次全成功、丢包 0.00、平均延迟是数字、档位"极佳"、停止后不再计数；
+  **失败路径**（解析不出的域名）3 次全失败、丢包 100.00、**平均延迟显示 `--` 而不是 NaN**、档位 Unknown。
+
+#### C. 键盘跨度（`KeyboardSpanPage`）
+
+- **功能**（对齐 WinUI）：全局监听某个按键；**时间间隔**模式＝按一次开始计时（每"间隔"秒记一次通过）、再按一次结束，
+  攒够目标次数变红；**按键次数**模式＝每按一次记一次通过，超过目标后从 1 重新计。运行区显示目标/通过/累计/时长。
+- **新增**：`Helpers/KeyboardHook.cs`（`WH_KEYBOARD_LL` 钩子）、`Services/Tools/KeyboardHookService.cs`（引用计数式启停）、
+  `Models/Tools/SpanState.cs` + `Converters/SpanStateToBrushConverter.cs`、`ViewModels/KeyboardSpanPageViewModel.cs`。
+- **相对 WinUI 修掉的几处**：① **扩展键要带扩展位取名字**——同一个扫描码，带扩展位是 `Left`、不带是 `Num 4`
+  （原版没带，方向键/小键盘会认成别的键）；② **Sys 键也算按下**（原版只处理 `WM_KEYDOWN/UP`，Alt 组合键完全不计数）；
+  ③ 按键名比较**忽略大小写与首尾空格**（原版严格相等，手输 `f1` 永远不命中）；④ **卸载后不再派发事件**（挡掉卸载与
+  已排队回调的竞态）；⑤ 时长用秒表 + 1 秒定时器（原版 `DateTime.Now - 开始时间` 会被改系统时间/夏令时带偏）；
+  ⑥ 定位游戏窗口复用多开模块的客户端发现与激活（会先还原最小化窗口，3 种激活策略），不再另写一套；
+  ⑦ 事件从静态改成实例 + 转发，`Clear()` 空安全（原版 `Current._keyboardHook.Clear()` 在钩子未建时直接 NRE）。
+- **探针（30/30 PASS，一次性产物已清理）**：安装/卸载钩子、按住的键集合事件、只对"按下"派发；名称解析
+  `0x3B → F1`、`0x4B+扩展 → Left`、`0x4B → Num 4`；**整条链**（钩子回调 → 服务 → VM）两种模式的计数、目标达成变红、
+  再次按下结束、结束后不再累加、时长格式；参数校验（空按键名/次数 0/间隔 0 都不启动）。
+  **探针的一条环境结论**：本会话里 `SendInput` 会返回"插入 2/2 个事件"但注入不进输入队列
+  （`GetAsyncKeyState` 仍为 0，即没有交互输入桌面），因此改为**在钩子回调边界注入**——
+  走的仍是与系统投递完全相同的那段代码（解析 → 取名字 → 触发事件），只有"Windows 把真实按键送进钩子"这一步无法在沙箱里验证。
+
+#### D. 输入助手（`IMEPage`）
+
+- **功能**（对齐 WinUI）：输入/粘贴内容后，按标点与空格取"光标所在的那个词"，实时给出游戏名称建议
+  （角色/军团/联盟 + 物品 + 分组 + 星系 + 星域，按 Id 去重、按名称长度升序、最多 6 条），点建议即**替换该词**；
+  「复制」把整段送剪贴板；「搜索」与「翻译」把结果放进详情区（只读富文本，可拖选复制）；有选中内容时只处理选中部分。
+- **新增**：`Helpers/InputTextHelper.cs`（取词规则）、`Services/Tools/GameNameSearchService.cs`（合并搜索，收口到服务层）、
+  `ViewModels/IMEPageViewModel.cs`。
+- **相对 WinUI 修掉的几处**：① **光标在第 0 位会崩**——原版直接算 `SelectionStart - 1` 并读 `text[-1]`，
+  按 Home 或空文本后立刻触发就抛 `ArgumentOutOfRangeException`，现在把索引夹进合法范围；
+  ② 搜索改成**逐类 try/catch**（某一类数据库没载入不会让整次搜索失败）；
+  ③ **翻译不再走有道**（本项目阶段 46 已废弃）——改成"AI 源可用就用 AI（支持整句），否则用本地词库源
+  （只认 SDE 专有名词）"，并在结果里带上模型/缓存信息；
+  ④ 顺带修掉上游两个语言键缺陷：`IMEPage_Serach` 的英文值是 `Serach`（拼写）、`IMEPage_Translate` 的英文值是
+  `Translate"`（**多了一个引号**，会直接显示在按钮上）；⑤ 原版代码里用的 `IMEPage_SerachTitle` 在语言文件里**根本不存在**
+  （无结果时标题会显示键名），这里统一用"搜索/翻译 + 冒号 + 关键词"，不再需要那个键。
+- **探针（28/28 PASS）**：取词规则（含光标 0 不崩、纯数字不取词、中文标点分词）；
+  真实数据库搜索（`Rifter` 208 条命中、`吉他` 15 条、`伏尔戈` 1 条、按 Id 去重、按名称长度升序、建议 ≤6 条）；
+  VM（输入 `Rif` 出建议 → 点建议替换 → 建议清空 → 复制到剪贴板 → 整句搜索给"无结果"文案 →
+  按选中词搜索出结果且标题用选中词 → 返回输入态）。
+- **本地化**：中英各新增 **61 键**（任务栏 9 + 服务器测速 22 + 键盘跨度 19 + 输入助手 9 + 复用的 `General_Start` 已存在），
+  键值沿用 WinUI 原文并修掉其中 3 处英文缺陷；四个页面共新增 4 个状态/提示类键也一并补齐。
+
+#### E. 本阶段验证与遗留
+
+- `dotnet build` **0 错误**（全量增量 18 警告，无一条指向本次新增/修改的文件）。
+- 四个页面一律走 `controls:CardControl` 排版、**页面内不显示大标题**、文本显式给主题前景色、
+  等待态用页内指示（不走全局遮罩）、语言切换后重算"求值时查资源"的文案——与阶段 79 的约定一致。
+- **未实机核验**：按 §8 约定未做截图核验，四个页面的界面效果由使用者查看。首次使用可留意：
+  任务栏拆分/合并后按钮是否立刻变化（没变化就最小化再还原一次）、服务器测速点开始的实时数字与档位颜色、
+  键盘跨度选好按键后的计数与达标变红、输入助手的建议点击替换与翻译来源（AI 未配置时会用本地词库，只认专有名词）。
+- **剩余占位页**只剩 `HomePage` / `DatabasePage` 两个（见 §8 第 61 条）。
+
+### 阶段 81：「工具」四个页面改为**独立工具窗口**（对齐 WinUI 的 ITool 契约）
+
+**触发（用户反馈）**："小工具应该是单独弹窗"——阶段 80 把四个工具做成了主窗口内容区的页面，但 WinUI 版里它们是
+**独立工具窗口**：那四个类都实现了 `IPage, ITool`，`ITool.GetWindowSize` 给的正是窗口尺寸
+（任务栏 200×140 / 测速 820×560 / 键盘跨度 400×280 / 输入助手 500×200），`Close()` 里停掉后台工作
+（键盘跨度卸载钩子、测速取消轮询）。本阶段按这个契约改回来。
+
+**实现**：
+
+- 新增 `Views/Pages/IToolPage.cs`：`PreferredWidth` / `PreferredHeight` / `OnToolClosed()`——工具页与
+  "独立窗口"这一形态的契约（尺寸对齐 WinUI 的 `GetWindowSize`，回调对齐它的 `Close`）。
+- 新增 `Services/Tools/ToolWindowHost.cs`：用统一的 `ToolWindow` 外壳承载页面。行为与理由：
+  - **同时只开一个**：再次点同一个工具只是把已开的窗口激活（最小化则先还原）；
+  - **关闭后重开是全新实例**（窗口与页面一起丢弃）——状态干净，也不会留下还在跑的钩子/测速循环；
+  - 因此 `OnToolClosed()` 是必须的：页面实例被丢弃，但**后台工作不会自己停**（测速循环在 VM 里、键盘钩子在系统里）；
+  - 标题用 `SetResourceReference(ToolWindow.DisplayTitleProperty, 语言键)`，**切语言窗口标题会跟着变**；
+  - 归属主窗口（`Owner` + `CenterOwner`）：随主窗口最小化、不会跑到内容区后面；**隐藏到托盘不受影响**（隐藏不是最小化）；
+  - 刻意**不给"置顶"图钉**：被拥有的窗口本来就恒在宿主之上，给了会让"未置顶"看起来也像置顶（§9 第 26 条）。
+    ——**阶段 85 已改**：现在默认 `Topmost = true`（真的跨应用置顶）并显示图钉，理由见那一节。
+- 主窗口在 `NavigationView.Navigating` 里**拦下这四页的导航**（`args.Cancel = true` + `ToolWindowHost.Show(...)`）。
+  导航被取消还有个好处：**左侧高亮不会停在工具上**，始终与主内容区的页面一致。
+  （`MainWindow.xaml` 里这四个条目继续保留 `TargetPageType`——拦截就是靠它识别的。）
+- **默认尺寸沿用 WinUI 版 `ITool.GetWindowSize` 的原值**（用户要求"参考 WINUI3 那样"，本阶段第一版曾自行放大）：
+  任务栏 **200×140**、测速 **820×560**、键盘跨度 **400×280**、输入助手 **500×200**。
+  规则：**每个工具的默认尺寸就是它的最小尺寸**（`ToolWindowHost` 里把 `MinWidth/MinHeight` 设为该值）——
+  `ToolWindow.xaml` 有一条 260×180 的通用下限，不覆盖它就会把 200×140 的任务栏窗口顶大；开窗即设计尺寸、可拉大不可缩小。
+  ——**阶段 86 已放宽**：改成"只在默认尺寸小于通用下限时才下压"，测速/键盘跨度/输入助手因此都能自由缩小
+  （缩到比内容小时由各页自己的滚动条兜住），任务栏保持 200×140 不可再缩。详细理由见那一节。
+  为在这个尺寸下可用，顺带调整了三处排版：任务栏页**不再套卡片**（客户区只有约 80 DIP，卡片的内边距+分隔线+40 高底栏会把空间吃光；
+  WinUI 版本身也就是一个普通 Grid），输入助手的输入框最小高度 110→64，键盘跨度的"刷新/定位"按钮改成图标按钮（400 宽下带文字会把下拉挤扁）。
+- **实测尺寸与容纳情况**（一次性探针，读窗口/客户区/内容的实际尺寸；产物已清理）：
+
+  | 工具 | 窗口实际 | 客户区 | 内容实际 | 是否需滚动 |
+  |---|---|---|---|---|
+  | 输入助手 | **500×200** | 484×136 | 500×152 | 轻微（约 16 DIP，页面内滚动） |
+  | 服务器测速 | **820×560** | 796×488 | 820×512 | 轻微（约 24 DIP） |
+  | 键盘跨度 | **400×280** | 376×208 | 400×232 | 是（表单较长，设计上就滚动） |
+  | 任务栏 | **200×140** | 184×80 | 200×92 | 轻微（约 16 DIP） |
+
+  三个"轻微滚动"都出现在 WinUI 原尺寸下，窗口可拉大即可消除；四个页面的外层本来就有 `ScrollViewer`。
+
+**顺带修掉的一个真缺陷**：`Owner` 不能设成窗口自己——WPF 会把**第一个显示出来的窗口**自动设为
+`Application.MainWindow`，无脑写 `Owner = Application.Current?.MainWindow` 会抛
+`ArgumentException：无法将 Owner 属性设置为它本身`（探针当场抓到）。现在会先排掉"自己就是 MainWindow"，
+排掉后回落到 `CenterScreen`。
+
+**修复（用户实机反馈）**："并没有弹出窗口，还是主窗口显示页面"——本阶段的拦截**第一次写错了判据**：
+`args.Page` 被我当成 `Type`（写成 `args.Page is not Type pageType`），而它实际是**页面实例**，
+于是判断永远不命中 → 导航照旧 → 工具页照样进了主内容区（`ToolWindowHost` 一次都没被调用）。
+- 修法：`var pageType = args.Page as Type ?? args.Page?.GetType();`——两种形态都吃；
+- 并把 WPF-UI **已经实例化好**的那个页面（就是 `args.Page`）直接交给 `ToolWindowHost` 当窗口内容：
+  拦下导航后它没人用，复用既省一次构造，也避免留下"没人释放、却订阅着静态事件（`ThemeChanged`/`LanguageChanged`）"的孤儿页面；
+- 探针实测（真实 `NavigationView` + 真实四个工具页，**15/15 PASS**）：普通页照常进内容区；点工具页 → 弹出工具窗口、
+  **内容区仍停在原页面**、窗口里承载的正是 `args.Page` 那个实例（引用相等）、标题来自语言键；
+  重复点只激活不新开；关掉再点是**新实例**；四个工具页都能弹。
+  探针同时确认了两件此前只是"假设"的事：**`args.Cancel = true` 确实被尊重**（Frame 不导航、选中项也不动），
+  以及 `args.Page` **永远是实例、不是 Type**（`是否为 Type=False`）。
+
+**验证**（一次性探针，32/32 PASS，产物已清理）：
+
+- A 段：四个页面都实现了 `IToolPage`，尺寸都在合理区间；
+- B 段：逐个工具——打开产生 1 个 `ToolWindow`、窗口里承载的**正是该页面**、**标题来自语言键**、
+  再次点击不产生第二个窗口、关闭后窗口被回收、重开得到**新的页面实例**（共 4 组 × 6 项）；
+- 静态核对：`MainWindow.xaml` 四个工具条目仍声明 `TargetPageType`（拦截的识别依据），
+  四个标题键在中英语言文件里都存在；`dotnet build` **0 错误**。
+- 探针顺带记下两条"读窗口状态"的经验（已并入 §9 第 74 条）：`Frame` 接管内容与窗口显示都是**异步**的，
+  `Show()` 之后立刻读 `GetContent()` 会读到 `null`，要先让 Dispatcher 跑几轮；
+  另外 `ToolWindow.xaml` 用的是**绝对 pack URI**（`pack://application:,,,/Assets/app.ico`），
+  它按**入口程序集**找资源，所以探针工程自己也要把 `Assets` 编成 `Resource`（只把文件拷到探针目录**不够**）。
+
+**未实机核验**：按 §8 约定未做截图核验，窗口的实际观感由使用者查看。可留意：点「工具」里的条目是否弹出独立窗口、
+重复点是否只是激活、关掉再开数据是否重置、切语言时窗口标题是否跟着变。
+
+### 阶段 82：托盘图标创建失败的诊断与稳健化（"每次启动都报 TryCreate failed."）
+
+**现象（用户实机反馈）**：每次启动都会在 `H.NotifyIcon\TaskbarIcon.cs` 第 1113 行（`Loaded` 里的
+`ForceCreate`）触发异常：`System.InvalidOperationException: TryCreate failed.`，HResult `-2146233079`。
+库把它 catch 住只调 `Debugger.Break()`，所以**Release 下完全静默**（表现就是"托盘里没有图标、日志里一个字都没有"）。
+
+**定位过程（都是实测，不是猜）**：
+
+1. 取 H.NotifyIcon **v2.3.0 的原始源码**核对（GitHub 上 `H.NotifyIcon.Shared/TaskbarIcon.cs` 与
+   `H.NotifyIcon/Core/TrayIcon.cs`）：失败点是 `TrayIcon.Create()` 里的
+   `if (!TrayIconMethods.TryCreate(...)) throw new InvalidOperationException("TryCreate failed.")`，
+   即 **`Shell_NotifyIcon(NIM_ADD)` 返回了 false**；而且这个异常**没有 inner exception**
+   （调试器里看到的 `InnerException` 是误读）。
+2. 先怀疑"图标还没转换完"：`TaskbarIcon.IconSource.cs` 里 `Icon = await newValue.ToIconAsync()` 确实是
+   **异步**的，而 `Loaded` 里立刻 `new HICON(Icon)`。但**探针实测否掉了这个假设**：
+   构造完成、`Loaded` 时刻、以及 120 ms 后读到的图标句柄都是**同一个非 0 值**（三种写法各测一遍），
+   所以句柄是有效的。
+3. 用**裸 `Shell_NotifyIcon`** 对照（自己 P/Invoke，标准图标句柄，不经过库）：
+   `NIM_ADD` 返回 **False，Win32 错误 = 5（ERROR_ACCESS_DENIED）**；同一进程里库的 `Create()` 也失败。
+   而"库抛异常后立刻读 `Marshal.GetLastWin32Error()`"得到的是 **0**——**库把真实错误码丢掉了**
+   （它内部还夹着别的 P/Invoke，错误码已被覆盖）。这就是为什么从异常上完全看不出原因。
+4. 查环境（**这一步我先得出过错误结论，务必看第 5 条**）：`Get-Process explorer` 一个都没有，
+   一度判定"本会话没有 shell"。**这个推断是错的**——沙箱/受限上下文里**进程枚举会被过滤**，
+   看不到 explorer 不等于没有 shell。
+5. 用**窗口**而不是进程列表判断 shell 是否存在：`GetShellWindow()` = 非 0、`FindWindow("Shell_TrayWnd")`
+   与 `Shell_SecondaryTrayWnd` 都存在 → **任务栏确实在**。真正的差异是**完整性级别**：
+   探针读双方进程令牌（`GetTokenInformation(TokenIntegrityLevel)`）得到
+   **应用 = Low、shell = Medium，同一用户、同一桌面（WinSta0\Default），会话号都是 1**——
+   Windows 的 **UIPI 禁止低完整性进程向高完整性进程发送窗口消息**，而 `Shell_NotifyIcon` 正是要消息
+   shell 的托盘窗口，于是必然 `ERROR_ACCESS_DENIED (5)`。（同一条限制也解释了本机探针里
+   "`SendInput` 报成功、`GetAsyncKeyState` 却始终为 0"。）
+   **结论：报错来自"进程以低完整性运行"这一上下文**（受限终端/沙箱/低完整性父进程启动），
+   从桌面正常启动（Medium）即消失；同样的上下文下 WinUI 版也会失败。
+
+**应用侧改动（真正能做的部分）**：
+
+- 新增 `Helpers/TrayIconHelper.cs`：① 在主窗口 `Loaded` **之前**先自己创建一次——成功的话库在 `Loaded`
+  里的那次 `ForceCreate` 直接返回，**调试时不再中断在 `Debugger.Break()`**；② 失败则按间隔重试若干次
+  （通知区域尚未就绪是启动期最常见原因）；③ 最终仍失败时用**裸 `Shell_NotifyIcon(NIM_ADD)`** 探一次真实
+  Win32 错误码写进日志（临时图标立刻删除），并给出人话解释（错误码 5 = 进程被 shell 拒绝，
+  0 = 裸调用其实成功、问题在库内部）；④ **再补一行"应用 vs shell"的上下文对比**：双方进程令牌的
+  **完整性级别**、会话号、桌面名、用户 SID，并直接把结论写进日志。本机实测输出：
+  `应用[PID=… 会话=1 完整性=Low 用户=S-1-5-21-…-1001 桌面=Default] vs shell[PID=… 完整性=Medium 用户=S-1-5-21-…-1001 桌面=Default]`
+  → 命中"低完整性 vs Medium"分支，日志会直接建议"从桌面直接启动，不要从沙箱/受限终端启动"，
+  并提示用 `whoami /groups | findstr Mandatory` 自查。
+- `MainWindow`：`_trayIconReady` 记录启动时结果，`Loaded` 里对未成功的情况跑重试；**关闭保护**——
+  即使设置里开了「关闭到托盘」，只要 `TrayIcon.IsCreated` 为 false 就**按正常关闭处理**并写日志，
+  绝不把窗口藏进"没有任何出口"的状态（否则用户只能靠重新启动程序把窗口唤回来）。
+- `NotificationService.IsAvailable` 由"注册过托盘"改成 **"托盘图标确实创建成功"**（`{ IsCreated: true }`）：
+  否则 `ShowNotification` 会因库的 `EnsureCreated` 直接抛异常，而通知本来也发不出去。
+
+**验证**：`dotnet build` **0 错误**（因用户正在运行程序、exe 被占用，本轮用独立输出目录
+`-p:OutputPath=...` 完成验证构建，验证后已删除该目录）。诊断链路用一次性探针实测过（读自己与 shell 的
+令牌 → Low vs Medium；裸 `NIM_ADD` → False/错误码 5）。托盘图标**成功创建**的路径在本机验证不了
+（本进程恒为 Low），需要在用户自己的桌面会话里确认。
+
+**"能不能靠换个启动方式绕过"的实测（结论：绕不过）**：同一个探针（自报完整性级别 + 裸调一次
+`Shell_NotifyIcon(NIM_ADD)`）用三种方式启动，结果完全一样——**子进程一律继承父进程的 Low 令牌**：
+
+| 启动方式 | 完整性级别 | 裸 `NIM_ADD` |
+| --- | --- | --- |
+| 直接运行（`& exe`） | Low | False，错误 5 |
+| `Start-Process` | Low | False，错误 5 |
+| `cmd /c start`（ShellExecute 路径） | Low | False，错误 5 |
+
+所以**必须从用户自己的桌面会话（Medium）启动**：用任务栏/开始菜单里的文件资源管理器双击 exe，
+或从开始菜单打开终端/Visual Studio 再运行；判断标准是同一上下文里
+`whoami /groups | findstr Mandatory` 显示 **Medium**（而不是 `Low Mandatory Level`）。
+成功时日志里会出现 `DEBUG : [托盘] 启动时已创建托盘图标`，且不再有 `[托盘]` 的 WARN/ERROR。
+
+**给使用者的结论**：用户实机日志（2026-10-11 01:06）已经确认了机制——`应用[完整性=Low …] vs
+shell[完整性=Medium …]`，与上面实验完全一致；报错来自**启动上下文**（受限/沙箱/低完整性父进程），
+不是应用缺陷。日志目录是**程序目录下的 `Log\`**（`…\bin\Debug\net8.0-windows10.0.19041\Log\<yyyyMMdd>.txt`），
+不是 `%LOCALAPPDATA%\TheGuideToTheNewEden\Logs`——排查时别找错地方。
+
+#### 为什么这个环境是 Low：溯源到 DSH 的沙箱（实测，非推测）
+
+用户追问"为什么突然不行、为什么整个软件都像在沙箱里"，于是沿**父进程链**逐层读令牌（`NtQueryInformationProcess`
+取父 PID + `QueryFullProcessImageName` + `GetTokenInformation(TokenIntegrityLevel)`）：
+
+| 层 | 进程 | 完整性 |
+| --- | --- | --- |
+| 0 | 探针 / 应用 | **Low** |
+| 1 | `powershell.exe`（命令行 shell） | **Low** ← Low 从这一层进入 |
+| 2..4 | `DeepSeek Harness.exe`（Electron 主/渲染进程） | Medium |
+| 6 | `explorer.exe`（桌面 shell） | Medium |
+
+即：**桌面与 DSH 自身都是 Medium，唯独 DSH 拉起的命令行 shell 被降到 Low**。
+再查文件侧的沙箱标记（`icacls`），工作区里的文件同时带着两样东西（父目录 `F:\Code` 没有）：
+
+```
+S-1-4-556518874-43462791:(I)(W,D,DC)          ← 沙箱的能力 SID：只有它能在工作区写/删
+Mandatory Label\Low Mandatory Level:(I)(NW)    ← 低完整性标签（No-Write-Up）
+```
+
+**机制闭环**：DSH 用**低完整性令牌**启动 shell，并把**会话工作区标成 Low**（再给一个能力 SID 授权），
+于是沙箱内的进程只能写工作区（写其它 Medium 位置是 write-up，被拒），这就是它的文件沙箱；
+副作用是**低完整性进程不能向 Medium 进程发窗口消息（UIPI）**——`Shell_NotifyIcon`（托盘图标）、
+ShellExecute 打开目录、DDE/COM 交接全部被拒，于是出现"托盘图标建不起来 + `explorer.exe 0xc0000142`"。
+**这与本项目的代码无关**；但注意"从桌面启动就正常"这个结论**是错的**——见下一节的更正：
+真正卡住的是**可执行文件的完整性标签**，工作区里的 exe 无论谁启动都只能是 Low。
+
+**从沙箱内部无法"提权"回 Medium**（实测四种方式全部仍是 Low，子进程只能继承/降低、不能升高）：
+直接运行、`Start-Process`、`cmd /c start`（ShellExecute 路径）、`runas /trustlevel:0x20000`。
+
+#### 更正：为什么"手动双击 exe / VS 调试"也还是 Low（真正的根因）
+
+用户反馈"我手动打开 exe、VS 调试也会这样"，推翻了上面"从桌面启动就正常"的结论。原因是**可执行文件本身的
+完整性标签**——微软文档 [Mandatory Integrity Control](https://learn.microsoft.com/en-us/windows/win32/secauthz/mandatory-integrity-control)
+"Process Creation" 一节写明：
+
+> the new process is created with the **minimum of the user integrity level and the file integrity level**.
+> This means that the new process will never execute with higher integrity than the executable file.
+> If the administrator user executes a low integrity program, the token for the new process functions with the low integrity level.
+
+[Designing Applications to Run at a Low Integrity Level](https://learn.microsoft.com/en-us/previous-versions/dotnet/articles/bb625960(v=msdn.10))
+也是同一个说法："把 exe 文件设成 Low 标签，启动时进程就是 Low"。
+
+而这台机器上：**DSH 把会话工作区标成了 Low**（`icacls F:\Code\TheGuideToTheNewEden` 显示
+`Mandatory Label\Low Mandatory Level:(OI)(CI)(NW)`，`(OI)(CI)` 表示容器与对象**继承**），
+于是工作区里所有文件的标签都是继承来的 Low（`icacls …\TheGuideToTheNewEden.exe` →
+`Mandatory Label\Low Mandatory Level:(I)(NW)`，`(I)` 即"继承"）。
+**结论：这个目录里的 exe，无论由谁启动（桌面双击、VS 调试、终端、DSH），进程都只能是 Low**——
+`min(用户Medium, 文件Low) = Low`。这就是"手动打开、VS 调试也一样"的完整解释；
+而"以前是正常的"，是因为那时工作区还没被打上 Low 标签（沙箱在某次会话里给整棵树加了标签）。
+
+**处置（按推荐顺序）**：
+
+1. **把程序拿到工作区外面去跑**（最干净，且不受重新构建影响）：在桌面或任意普通目录建一个目录，
+   把 `bin\Debug\net8.0-windows10.0.19041\` 的输出**复制**过去，运行/调试那边的副本。
+   新位置的文件不继承 Low 标签 → 进程是 Medium → 托盘图标、"查看目录"全部恢复正常。
+   （注意：`dotnet publish` 的输出目录**不能**放在 `F:\Code\TheGuideToTheNewEden` 里面，在里面就会继承 Low。）
+2. **改标签（临时，重建后会被继承覆盖回来）**：在**自己的桌面终端**（不是 DSH 的）执行
+   `icacls "…\bin\Debug\net8.0-windows10.0.19041\TheGuideToTheNewEden.exe" /setintegritylevel Medium`。
+   每次重新构建后都要重做一次。**低完整性进程做不了这件事**（实测在副本上执行该命令报
+   `Failed processing 1 files`）——文档亦云"进程只能把对象标签设到 ≤ 自己的级别"。
+3. **从 Medium 上下文用 `dotnet` 直接跑 dll**：`dotnet "…\TheGuideToTheNewEden.dll"`。
+   进程是 `dotnet.exe`（在 `C:\Program Files\dotnet\`，无 Low 标签），**dll 的标签不影响进程级别**，
+   所以这样跑出来是 Medium（输出目录里 dll/deps.json/runtimeconfig.json 齐全，可直接运行）。
+
+⚠️ **不要**把整棵工作区的 Low 标签去掉：沙箱内的 Low 进程正是靠"工作区是 Low"才能写进去
+（低完整性只能写 ≤ 自己级别的对象），把整棵树改成 Medium 会连带弄坏沙箱内的写入能力（本项目的文件改动就会失败）。
+
+#### 这个 Low 标签是谁打的、为什么打（实测定位到具体模块）
+
+用户追问"为什么目录 `F:\Code\TheGuideToTheNewEden` 带 Low 标签"，于是把范围收敛到"谁在什么时候标的"：
+
+- **只标了这一个目录**：`F:\`、`F:\Code` 都没有标签，`F:\Code` 下其它项目（DUJU / ESI.NET / eve-o-preview …）也都没有；
+  `%USERPROFILE%\.dsh` 与 DSH 安装目录同样没有。而工作区是 `Mandatory Label\Low Mandatory Level:(OI)(CI)(NW)`——
+  **没有 `(I)` 标志 = 在这一层显式设置**，并用 `(OI)(CI)` 向下继承。
+- **是 DSH 自己的沙箱模块干的**：解包 `resources\app.asar` 的头部文件表后按偏移定位到
+  `dsh/node_modules/@deepseek-ai/dsh-sandbox-windows-acl/lib/types-*.js`，其中
+  `buildLowLabelAcl(api, lowLabelSidPtr)` 的注释写着 *"the Low integrity SID (S-1-16-4096) the label names …
+  the ACL carrying the single inheritable label ACE"*；同一文件里还有
+  `SetTokenInformation(token, 25, info, …)` 注释 *"TokenIntegrityLevel (Low)"* 与 `buildRestrictingSids(...)`。
+  配套还有 `…/assets/diagnose-windows-sandbox-acl/scripts/diagnose-windows-sandbox-acl.ps1`
+  （`$LOW_LABEL_SID = 'S-1-16-4096'`、`Get-IntegritySid` 把 4096 映射为 `Low`，还带"repair/restore"逻辑）。
+- **为什么**：这就是它的**文件沙箱**实现——先把 shell 令牌降到 Low（`SetTokenInformation(TokenIntegrityLevel, Low)`
+  + 受限 SID），再把**会话工作区**标成 Low，于是降权后的进程"能写工作区、写不了别处（Medium 位置是 write-up 被拒）"。
+  这正好对应给本会话的 `workspace-write` 策略。
+- **时间线**：`%USERPROFILE%\.dsh\storages\workspace.json` 记录该工作区**首次登记于 2026-09-13T02:49:11Z**（4 个会话），
+  与"以前是正常的"吻合——在把项目加进 DSH 之前，目录没有标签，所以 exe 一直是 Medium。
+- ⚠️ 手工把工作区标签改回 Medium 也没用：那个模块自带"诊断/修复"路径会把标签修回来；
+  正确做法是**让程序产物离开工作区**（见上面三条处置），沙箱与开发互不影响。
+
+#### 如果要彻底退出这个沙箱（以后不再用 DSH 打开本工作区）
+
+DSH 在**工作区根目录**上只加了三项显式条目（子目录里都是继承副本，因此只需在根上处理）：
+
+```
+Everyone:(CI)(DENY)(DC)                            禁止删除子项
+S-1-4-556518874-43462791:(OI)(CI)(W,D,DC)          沙箱"能力 SID"的写入授权
+Mandatory Label\Low Mandatory Level:(OI)(CI)(NW)   低完整性标签（让目录内 exe 一律以 Low 启动的元凶）
+```
+
+清理步骤（**必须"以 Medium 及以上完整性"运行**——低完整性进程改不了标签，实测会报 `Failed processing`；
+若提示拒绝访问，用**管理员**终端）：
+
+```powershell
+$ws = 'F:\Code\TheGuideToTheNewEden'
+
+# ① 去掉低完整性标签（设回 Medium 即等价于系统默认；/T 递归，防止个别文件被单独打过标签）
+icacls $ws /setintegritylevel Medium /T /C /Q
+
+# ② 去掉沙箱加的能力 SID 授权与 Everyone 的 DENY 项（只需在根上做，继承副本会自动消失）
+icacls $ws /remove:g "*S-1-4-556518874-43462791"
+icacls $ws /remove:d "Everyone"
+
+# ③ 验证：不应再出现 Low
+icacls $ws | findstr /i "Mandatory"
+```
+
+- ② 的替代方案（更省事，但会连同你在这个树里手工设过的其它显式权限一起清掉）：
+  `icacls $ws /reset /T /C /Q`（把 DACL 恢复为继承默认；**不会**动标签，所以 ① 仍要做）。
+- 只要这个工作区还注册在 DSH 里（`%USERPROFILE%\.dsh\storages\workspace.json`，会话目录
+  `%USERPROFILE%\.dsh\sessions\--F-Code-TheGuideToTheNewEden--\`），**下次用 DSH 打开它时沙箱会重新打标签**；
+  要永久生效就**在 DSH 里移除/忘记该工作区，或卸载 DSH**（不运行 DSH 就不会再被标）。
+- 退出沙箱后，工作区里的程序（含托盘图标、"查看目录"）立即恢复成 Medium 下的正常行为；
+  另外 `%USERPROFILE%\.dsh`、DSH 安装目录、`F:\Code` 下的其它项目本来就**没有**标签，无需处理。
+
+### 阶段 83：打开目录 / 定位文件不再自拉 `explorer.exe`（"以前是正常的"的那个报错）
+
+**现象（用户实机反馈）**：在设置里点「App 日志 / App 配置文件」的"查看"，弹出系统错误框
+**`explorer.exe - Application Error：应用程序无法正常启动(0xc0000142)`**；用户补充"以前是正常的"。
+
+**定位**：应用里三处都是**自己另起一个 explorer 进程**（`Process.Start("explorer.exe", path)`）：
+`Settings\GeneralSettingPage`（查看日志/配置文件）、`GameLogMonitorPage`（`/select` 定位日志）、`LinksPage`（打开配置目录）。
+在**受限上下文**（低完整性，见阶段 82）里，这个新 explorer 进程会以 `0xc0000142`（`STATUS_DLL_INIT_FAILED`）
+启动失败——Windows 于是弹出上面那个系统错误框。而"以前正常"正是因为**以前是从桌面（Medium）启动的**。
+
+**实测（一次性探针，Low 上下文；判据是桌面上 `CabinetWClass` 文件夹窗口数在调用前后是否增加）**：
+
+| 做法 | 结果 |
+| --- | --- |
+| ShellExecute（`ProcessStartInfo(目录){UseShellExecute=true}`） | **抛可捕获的 `Win32Exception：拒绝访问`**，无系统弹框，窗口数不变 |
+| 应用原写法（自己起 `explorer.exe`） | 返回了 PID，但**窗口数不变**，且 Windows 弹出 `0xc0000142` 系统错误框 |
+
+即：受限上下文里两者都打不开目录，但 **ShellExecute 是可捕获、可降级的**——这才是应该用的方式。
+
+**改动**：
+
+- 新增 `Helpers/ShellHelper.cs`，统一三种需求并**在失败时优雅降级**（不再往上抛）：
+  - `OpenFolder` / `OpenFile`：走 ShellExecute，交给**已在运行的 shell**，不产生新进程；
+  - `RevealInFolder`：用 **`SHOpenFolderAndSelectItems`**（shell 自己完成"打开并选中"，等价于原来的
+    `explorer.exe /select`，但不拉 explorer 进程），失败时退一步 `OpenFolder(所在目录)`；
+  - 失败兜底：**把路径复制到剪贴板 + 应用内提示**（新增语言键 `Shell_OpenDenied` / `Shell_PathCopied`），
+    并把原因写进日志——用户至少能自己粘贴到资源管理器打开，而不是面对一个系统错误框。
+- 三处调用点改为调用它；`GeneralSettingPage` 里那个私有 `OpenFolder` 助手删除。
+
+**验证**：一次性探针（引用真实 `ShellHelper`）**3/3 PASS**——① `OpenFolder` 在受限上下文不抛异常且
+**路径确实进了剪贴板**；② `RevealInFolder` 不抛异常并退化为所在目录；③ `TryOpen` 对不存在的目标
+返回 `false` + 可读原因而不是抛异常。`dotnet build` **0 错误**；语言文件 1798 键 / 中英一致 / 无重复。
+
+### 阶段 84：四个工具页 UI 重设计（默认尺寸下一屏放得下）
+
+**目标**：在**不改默认尺寸**（沿用 WinUI 的 `ITool.GetWindowSize`：500×200 / 820×560 / 400×280 / 200×140）、
+**不改 VM、不新增依赖**的前提下，把四个工具页的排版重做一遍。只动 XAML（绑定名、事件名、`x:Name` 全部保持不变）。
+
+**统一视觉语言**（四页共用）：
+
+- 字段/说明标签：12px + `TextFillColorSecondaryBrush`；主文字一律显式设主题画刷（不走继承，§9 第 4 条）；
+- **数字用等宽字体**（`Consolas`）：延迟、计数、时长都是每秒/每次刷新的，比例字体下 `118→88` 会让整行左右跳；
+- 统计小格：`Border` + `ControlFillColorSecondaryBrush` + 圆角 4 + 内边距 10~12；
+- 语义色**只用于状态**：`PingQuality` → Success/Caution/Critical（沿用阶段 80 的转换器），
+  键盘跨度 `SpanState` → 正文色/成功色/危险色（沿用 `SpanStateToBrushConverter`），并各配一个 8px 圆点做"档位指示"。
+
+**逐页改动**：
+
+| 页面 | 改动要点 |
+| --- | --- |
+| 服务器测速 820×560 | 服务器输入与"开始/停止"**合并到一行**、去掉卡片底栏（省约 50 DIP）；三个指标改成"30px 等宽大数字 + 单位 + 语义色圆点 + 档位文字"；统计 4 格统一规格；底部新增一行口径说明 |
+| 键盘跨度 400×280 | 设置表单改**两列**（模式 ｜ 次数/间隔 同格切换），纵向 500→约 300 DIP；运行态改为"通过次数 34px 等宽（语义色）+ `/ 目标` + **目标进度条**（`Value=PassCount`、`Maximum=TargetCount`、颜色同语义色）+ 4 个统计格"；运行态标题显示"按键 · 模式" |
+| 输入助手 500×200 | 建议由"换行平铺"改成**单行横向排列**（溢出横向滚动）→ 高度恒定、不再把输入框挤掉；输入框最小高 46、卡片内边距收到 10,8；三个动作按钮 `UniformGrid` 等宽；详情态＝标题 + 只读富文本 + 返回 |
+| 任务栏 200×140 | 两个 30 高等宽主按钮 + 11px 状态行；两条说明（`TaskbarPage_Tip` / `_TipRefresh`）移入**页面 `ToolTip`**，正文不再需要滚动 |
+
+**顺带两处修正**：
+
+- 新增语言键 `ServerPingPage_Hint`（中英各一条）——补上服务器测速页底部那行说明（此前引用了一个不存在的键，
+  `DynamicResource` 解析不到会**静默显示空白**）。加完语言文件 **1799 键 / 中英键集一致 / 无重复键**；
+- 键盘跨度两条提示的 `Margin` 由 `0,10,0,0` 收到 `0,8,0,0`：默认尺寸下设置态原本比客户区高 **1 DIP**（209 vs 208），
+  会因此冒出一条滚动条。
+
+**验证**（用一次性尺寸探针，把四个页面真的开成默认尺寸，读**外层 `ScrollViewer`** 的视口/可滚动量；
+探针与构建产物已清理）：
+
+| 状态 | 窗口（＝默认） | 视口（客户区） | 内容高度 | 可滚动 |
+| --- | --- | --- | --- | --- |
+| 服务器测速 · 初始态 | 820×560 | 796×488 | 242 | **0** |
+| 键盘跨度 · 设置态 | 400×280 | 376×208 | 207 | **0** |
+| 键盘跨度 · 运行态 | 400×280 | 376×208 | 117 | **0** |
+| 输入助手 · 初始态 | 500×200 | 480×132 | 46 | **0** |
+| 任务栏 · 初始态 | 200×140 | 180×76 | 51 | **0** |
+
+另外做了一轮**静态核验**（脚本，跑完已删）：四个页面 XML 合法、`Click` 事件在代码后置里都有对应方法、
+所有 `{Binding X}` 的 X 都在对应 VM 中存在、所有 `{StaticResource}` 都有定义（本文件或 App 级）、
+所有 `{DynamicResource}` 都能解析为**主题画刷键或中英都存在的语言键**、`Symbol`/`{ui:SymbolIcon}` 图标名都在已验证清单内。
+`dotnet build` **0 错误**。
+
+**未实机核验**：按 §8 约定未做截图核验，视觉观感由使用者查看；深浅主题与中英两套文案都只是"键齐全 + 颜色走主题资源"这一级的保证。
+
+#### 追加：内容自适应填满窗口（用户实机反馈"输入工具 UI 不对"）
+
+**现象**：把工具窗口拉高后，卡片仍按"内容高度"停在上方，**下方留一大片空白**（用户截图即输入助手）。
+
+**根因**：页面根节点原来是 `ScrollViewer + StackPanel`——`StackPanel` 只按子项**期望高度**自上而下堆叠，
+剩余高度不会分给任何子项；`ScrollViewer` 又会用无限高度测量内容，所以"填满"根本无从发生
+（这也是"内容停在上方"这类问题的通用成因）。
+
+**改法**：四个页面的根节点改成能分配剩余高度的容器：
+
+- **服务器测速 / 键盘跨度**：根改成 `Grid`，把"最后一块内容"放进 `*` 行——
+  测速页是**统计卡片**（默认 488 客户区里它被拉到 302，拉高窗口后到 502），键盘跨度运行态是**统计格那一行**；
+  统计格内的文字改成垂直居中，被拉高时不再"贴在顶部一条"。
+- **输入助手**：根改成 `Grid`，输入框所在行 `*`（吃掉剩余高度）、建议条 `Auto`、
+  三个动作按钮由 `CardControl.Footer` 固定在卡片底部；整个 Grid 外面**仍保留一层 `ScrollViewer`**，
+  但把 `Grid.MinHeight` 绑到 `ScrollViewer.ViewportHeight` ——有空间就填满，系统"文本缩放"放大导致内容变高时才滚动
+  （纯 `ScrollViewer+StackPanel` 是永远不会填满的）。任务栏页用同一写法。
+- **键盘跨度设置态**：表单自己套一层 `ScrollViewer`（窗口最小尺寸即默认尺寸，字号放大时表单滚动而不是被裁）；
+  运行态走 `*` 行拉伸。
+- **任务栏**：内容整体 `VerticalAlignment="Center"`——这一页只有两个按钮 + 一行状态，内容太少，
+  "贴顶 + 下方大片空白"最难看，居中后任何高度都像是设计好的（默认尺寸下上下各空约 6 DIP）。
+
+**验证**（一次性探针；判据是"页面根容器里最后一个可见子项的底边与容器底边的间距"，
+并在**默认尺寸**与**放大 200×200** 后各量一次；探针已清理）：
+
+| 页面 · 状态 | 窗口（宽/最小宽） | 客户区高 | 底部间距 | 需要滚动 |
+| --- | --- | --- | --- | --- |
+| 输入助手 · 默认 / 放大 | 400/400 · 600/400 | 132 / 332 | **0.0 / 0.0** | 否 / 否 |
+| 服务器测速 · 默认 / 放大 | 820/820 · 1020/820 | 488 / 688 | **0.0 / 0.0** | — |
+| 键盘跨度 · 默认 / 放大 | 400/400 · 600/400 | 208 / 408 | **0.0 / 0.0** | — |
+| 任务栏 · 默认 / 放大 | 200/200 · 400/200 | 76 / 276 | 12.5 / 112.5（**内容居中**，有意） | 否 / 否 |
+
+（测速页在默认尺寸下的子项高度为 `61 + 76 + 302 + 15`：最后那个 302 就是被 `*` 行拉伸的统计卡片，
+放大后变 502 —— 说明"多余高度确实给了它"。）
+
+**顺带**：`IMEPage.PreferredWidth` 已被使用者自行从 500 调到 **400**（窗口默认宽与最小宽都变 400），
+本轮只把类里那句过期的注释（"与 WinUI 一致：500×200"）改成实际值，**没有改回 500**。
+
+### 阶段 85：工具窗默认置顶 + 标题栏显示置顶按钮
+
+**需求（用户）**：四个小工具窗口应该**默认置顶**，并且标题栏显示**置顶按钮**。
+
+**改动**（集中在 `ToolWindowHost.Show`，窗口壳 `ToolWindow` 早就具备这两项能力）：
+
+- `showTopmostButton: false` → **`true`**：`ToolWindow` 会在标题栏右侧放一颗图钉
+  （`TopmostButton` + `TopmostIcon`，点击走 `OnTopmostClick`，图标/提示由 `UpdateTopmostVisual` 维护）；
+- 新增 **`window.Topmost = true;`**（在 `Show()` 之前设）：这是真的 `HWND_TOPMOST`，
+  浮在**所有**应用窗口之上，不只是浮在主窗口之上；
+- 之所以以前刻意不给图钉（阶段 81 的理由："被拥有的窗口本来就恒在宿主之上，给了会显得没用"，§9 第 26 条），
+  是因为那时并没有真的置顶；现在默认就是真置顶，"未置顶"和"置顶"有了**肉眼可辨的区别**，
+  图钉于是变成有意义的开关。这条旧理由已在阶段 81 那节就地标注"阶段 85 已改"。
+- 未做持久化：每次打开都是"默认置顶"；取消置顶只对当前这次窗口有效（关掉再开又回到置顶）。
+  想记住用户的选择，加一个 `SettingsService` 布尔键即可，需要的话再说。
+
+**验证**（一次性探针，四个工具各 7 项，**28/28 PASS**；探针已清理）：
+
+| 检查项 | 结果 |
+| --- | --- |
+| 打开即 `Topmost == true` | 4/4 ✓ |
+| 标题栏置顶按钮 `Visibility == Visible` | 4/4 ✓ |
+| 置顶中图标为 `PinOff24`（提示"取消置顶"） | 4/4 ✓ |
+| 点击 → `Topmost == false` 且图标变 `Pin24` | 4/4 ✓ |
+| 再点一次 → 恢复 `Topmost == true` 且图标回 `PinOff24` | 4/4 ✓ |
+
+`dotnet build` **0 错误**。
+
+### 阶段 86：工具窗可以缩小（最小尺寸不再等于默认尺寸；缩小时改为滚动而不是裁切）
+
+**现象（用户提问）**："为什么游戏延迟窗口不能缩小高度"——因为阶段 81 定的规则是
+**"默认尺寸就是最小尺寸"**（[`ToolWindowHost`] 里 `window.MinWidth = width; window.MinHeight = height;`），
+本意只是防止 `ToolWindow.xaml` 的通用下限（260×180）把 200×140 的任务栏窗口顶大，
+副作用却是把测速（820×560）、键盘跨度（400×280）这些**大窗口也钉死在默认高度**。
+
+**改法**：
+
+1. `ToolWindowHost` 改成"**只在默认尺寸小于通用下限时才下压**"：
+   ```csharp
+   window.MinWidth  = Math.Min(width,  window.MinWidth);    // ToolWindow.xaml 的 260
+   window.MinHeight = Math.Min(height, window.MinHeight);   // ToolWindow.xaml 的 180
+   ```
+   于是任务栏仍是 200×140（本来就是最小的那个），其余三个的最小尺寸变成 260×180，可以自由缩小。
+   这样写的好处是**下限的"唯一事实来源"仍在 `ToolWindow.xaml`**，host 不重复写死常量。
+2. 允许缩小之后，"内容比窗口高"就会发生，所以把**四个页面**统一成
+   "外层 `ScrollViewer` + `Grid.MinHeight` 绑到 `ScrollViewer.ViewportHeight`"的写法
+   （阶段 84 追加里只给了输入助手和任务栏，现在测速页与键盘跨度页也补上）：
+   **有空间就填满窗口，不够高就滚动**，永远不会裁掉内容。
+
+**验证**（一次性探针，四种状态 × 4 个工具 = **24/24 PASS**；探针已清理）：
+
+| 工具 | 默认尺寸 | 最小尺寸 | 默认/放大 | 缩到最小时 |
+| --- | --- | --- | --- | --- |
+| 服务器测速 | 820×560 | **260×180**（原 820×560） | 填满、无滚动 | 缩到 180 ✓，内容 216 / 视口 138 → **滚动 78** |
+| 键盘跨度 | 400×280 | **260×180**（原 400×280） | 填满、无滚动 | 缩到 180 ✓，内容 207 / 视口 122 → **滚动 85** |
+| 输入助手 | 400×200 | **260×180**（原 400×200） | 填满、无滚动 | 缩到 180 ✓，内容 146 = 视口 146 → 放得下、不裁切 |
+| 任务栏 | 200×140 | 200×140（不变，本就最小） | **居中**（上/下留白相等） | 缩不动（已是最小）✓ 不裁切 |
+
+判定标准写进了探针：默认/放大要求"填满或上下留白相等"，缩到最小时要求
+"**要么出现滚动条、要么内容本来就完全放得下**"（即不裁切）。
+`dotnet build` **0 错误**。
+
+### 阶段 87：服务器测速的**迷你模式**（长期置顶挂机监控）
+
+**需求（用户）**：延迟测试小工具要有"迷你窗口"形态——窗口缩到一定程度时，**只显示开始 / 停止 / 当前延迟**等尽可能少的信息，配合默认置顶当长期挂机监控用。
+
+**实现**：
+
+- 新增 `Converters/PingCompactModeConverter.cs`（`IMultiValueConverter`）：吃 `[页面 ActualWidth, 页面 ActualHeight]`，
+  **任一边太小就判迷你**——高度 < **300** 或宽度 < **560**（都按**页面**尺寸算，不含标题栏）；
+  `ConverterParameter` 决定命中时返回什么：`"compact"` → 迷你布局可见，其它 → 大布局可见（直接产出 `Visibility`，
+  省掉再串一个 Bool→Visibility 转换）。阈值是具名常量，想改只改那一处。
+- `ServerPingPage.xaml` 外层那一格**同时放两套布局**（叠着，靠 `Visibility` 二选一）：
+  - **大布局**＝原来的"服务器输入 / 三个指标 / 统计 / 说明"（原封不动，只是整体加了一层可见性）；
+  - **迷你布局**＝一行图标按钮（开始 **或** 停止，同一次只显示一个）+ 一行"`当前延迟`（30px 等宽）+ `ms` + 档位圆点 + 档位文字"，
+    居中排布；按钮只留图标（文字进 `ToolTip`），服务器地址/端口、平均延迟、丢包、统计、说明全部不显示。
+- 迷你布局沿用阶段 86 的"`ScrollViewer` + `Grid.MinHeight` 绑视口"写法，缩到窗口最小值也不裁切；
+  窗口本身**默认置顶**（阶段 85），所以缩小后就是一个常驻的时延监控条。
+- 用法：把测速窗口拖到约 320 高以下（或宽于 560 以下）就自动变迷你；拉大自动还原。不需要额外开关。
+
+**验证**（一次性探针，**10/10 PASS**；探针已清理）：
+
+| 窗口尺寸 | 页面尺寸 | 可见布局 | 可见按钮 | 可见文本 |
+| --- | --- | --- | --- | --- |
+| 820×560（默认） | 820×526 | **大布局** | — | — |
+| 820×400 | 820×366 | 大布局（页面高 ≥300） | — | — |
+| 820×320 | 820×286 | **迷你布局** | 1（空闲时是「开始」） | 4 |
+| 500×560 | 500×526 | **迷你布局**（宽 <560） | 1 | 4 |
+| 260×180（最小） | 260×146 | **迷你布局** | 1 | 4 |
+
+最小尺寸下迷你内容刚好放下（迷你块 138 / 视口 138，`ScrollableHeight = 0`，无裁切）；
+并断言了"迷你布局里确实出现 VM 的 `CurrentLatencyText`"（空闲时是 `--`，运行时是实时数字）。
+`dotnet build` **0 错误**。
+
+**踩坑（已记进 §9 第 78 条）**：第一版把 `MultiBinding` 写成内联
+`{MultiBinding Converter=…, ConverterParameter=…}`，**漏了子 `<Binding>`**——转换器收到空数组，
+静默走"没拿到尺寸"的兜底分支，于是**永远只显示大布局**，看起来像转换器/绑定写错。展开成
+`<Grid.Visibility><MultiBinding>…</MultiBinding></Grid.Visibility>` 并逐个写 `<Binding ElementName=… Path=… />` 才生效。
+
+#### 阶段 87 追加：迷你模式的三处实机反馈修正
+
+用户实机看了迷你窗口后提了三条，逐条改掉（同一批改动）：
+
+1. **"留白太多"** —— 原来迷你布局是"按钮一行、延迟另起一行并垂直居中"，窗口稍高时两行之间会被拉开一大截。
+   改成**一整行、整体居中**：`[▶/■] 176 ms ● 正常`（每个子项显式 `VerticalAlignment="Center"`，
+   只有 `ms` 单位贴底对齐大数字）。实测迷你内容行高 **35 DIP**（= 按钮高度），行内再无纵向空洞。
+2. **"进入迷你模式的窗口尺寸太大了"（切得太早）** —— 阈值从"高度 < **300** / 宽度 < **560**"下调到
+   "高度 < **200** / 宽度 < **420**"（都按**页面**尺寸算）。现在约 230 高的窗口才切迷你，之前约 334 高就切了。
+   窗口默认尺寸同时被使用者自己从 820×560 改成 **600×400**（`ServerPingPage.PreferredWidth/Height`），
+   本轮只把过期的注释（写着"与 WinUI 一致：820×560"）改成实际值，**没有改回 820×560**。
+3. **"迷你模式时只保留关闭按钮"** —— 迷你布局切换时**同时收窄窗口外壳**：
+   `ServerPingPage` 监听自身 `SizeChanged`，命中迷你阈值就调
+   `ToolWindow.SetVisibleTitleBarButtons(ToolWindowButtons.Close)`（最小化、最大化、**置顶图钉**全部收起，
+   标题栏只剩一个关闭按钮，宽度最省；拉回大布局自动还原 `Minimize | Maximize | Close | Topmost`）。
+   判定阈值**与页面 XAML 里的转换器共用同一组常量**
+   （`PingCompactModeConverter.CompactHeightThreshold` / `CompactWidthThreshold`），
+   所以"换布局"和"收标题栏"永远同步；用一个 `bool? _compact` 记住上次状态，避免 `SizeChanged` 反复设置。
+   ⚠️ **收起图钉 ≠ 取消置顶**：窗口的 `Topmost` 全程保持 `true`，只是不再显示那颗开关——
+   迷你模式本来就是拿来挂机监控的，"取消置顶"在迷你形态下没有意义（要取消就拉大窗口）。
+
+**验证**（针对上面这批改动的一次性探针，**11/11 PASS**；探针已清理。因用户程序正在运行、exe 被占用，
+本轮的构建验证走独立输出目录，验证后已删除）：
+
+| 窗口尺寸 | 页面尺寸 | 布局 | 迷你行高 | 标题栏（最小化/最大化/关闭/置顶） |
+| --- | --- | --- | --- | --- |
+| 600×400（默认） | 600×366 | 大布局 | 35 | T / T / T / T |
+| 600×272 | 600×238 | 大布局（页面高 ≥200） | 35 | T / T / T / T |
+| 600×230 | 600×197 | **迷你** | **35** | **F / F / T / F** |
+| 400×400 | 400×366 | **迷你**（宽 <420） | 35 | F / F / T / F |
+| 600×400（拉回） | 600×366 | 大布局 | 35 | T / T / T / T |
+
+随后按用户要求把迷你模式下的**置顶图钉也收起**（"只保留关闭按钮"），又跑了一次针对性探针（**8/8 PASS**）：
+大布局 `T/T/T/T`；600×230 → `F/F/T/F`，**`Topmost` 仍为 `True`**（收起图钉不是取消置顶），
+并且按名字取到的 `TopmostButton` **实际 `Visibility = Collapsed`**（不只是标志位）；拉回后四个按钮与图钉可见性全部恢复。
+
+#### 阶段 87 追加二：迷你模式的三态显示（第一版理解错了，已按用户口径重做）
+
+**用户最终口径**（三态**互斥**、一次只显示一样）：
+
+| 状态 | 迷你窗口里显示什么 |
+| --- | --- |
+| 未开始 | **只有 ▶ 开始**（不需要悬停就看得见） |
+| 运行中 · 鼠标不在窗口内 | **只有延迟读数**（数字 + `ms` + 档位圆点 + 档位文字） |
+| 运行中 · 鼠标在窗口内 | **只有 ■ 暂停** |
+
+**第一版错在哪**：把"鼠标放上去才显示按钮"理解成"按钮平时一律隐藏、悬停才浮现"，于是
+**未开始时整条是空白的**（用户要看得到 ▶ 才知道点哪儿），与"未开始时只显示开始按钮"正好相反。
+
+**现在的实现**：`Converters/PingMiniVisibilityConverter.cs`（**取代**先前的
+`PingMiniHoverVisibilityConverter.cs`，那个名字只覆盖了"悬停"一个维度，已删除）。
+多值绑定 `[VM.IsRunning, 迷你区域.IsMouseOver]` + `ConverterParameter` 取
+`"start"` / `"reading"` / `"stop"` 三选一：
+
+- `start` → `!IsRunning`（未开始就显示，与悬停无关）
+- `reading` → `IsRunning && !IsMouseOver`（运行中且鼠标不在窗口内）
+- `stop` → `IsRunning && IsMouseOver`（运行中且鼠标在窗口内）
+
+三条规则放进**同一个**转换器是有意的：它们是同一件事的三个分支，拆到多个 Bool→Visibility
+转换器里迟早互相矛盾（比如"运行中"同时让读数和按钮可见）。三者都用 `Visibility.Collapsed`，
+不显示时**不占位**，于是"当前显示的那一样"永远在窗口正中（代价：切换瞬间位置会变，
+这是"一次只显示一样"的必然结果，不是缺陷）。
+
+**悬停范围＝整个迷你窗口**：迷你区域的 `Grid` 命名 `MiniRoot`、`Background="Transparent"`
+（透明同样参与命中测试）且铺满内容区，所以"鼠标放上去"指放进窗口内容区任意位置，
+而不是去精确指到某颗 34×30 的按钮。
+
+**验证**（一次性探针，**14/14 PASS**；探针已清理）：
+
+- **A. 三态转换器单测**（真鼠标进不来，悬停组合只能这样验，4 行覆盖 8 种组合）：
+  `(未开始, 悬停/不悬停)` → 开始**显示**、读数隐藏、暂停隐藏；
+  `(运行中, 不悬停)` → 开始隐藏、读数**显示**、暂停隐藏；
+  `(运行中, 悬停)` → 开始隐藏、读数隐藏、暂停**显示**。
+- **B. 实窗（迷你 600×230，鼠标不在窗口内）**：
+  未开始 → 可见按钮 **1**（是「开始」不是「暂停」）、可见文本 **0**；
+  点开始后（`IsRunning=True`）→ 可见按钮 **0**、可见文本 `[339, ms, <档位>]`，
+  且显示的就是 VM 的 `CurrentLatencyText`（真连上服务器，读数 339 ms）。
+
+**两次探针踩坑（都不是程序缺陷）**：① 在 UI 线程上 `StartAsync().GetAwaiter().GetResult()`
+会**死锁**——测速循环要靠 dispatcher 继续跑；程序里的点击处理器本来就是 `async void` + `await`，
+探针也应"点火后继续泵消息"。② 统计"可见文字"时要把 `ui:SymbolIcon` 内部的字形 `TextBlock` 排除，
+否则按钮里的图标会被算成"显示了一条文字"（第一版断言就是这么误报的）。
+
+`dotnet build` **0 错误**。构建小插曲：第一次构建时用户程序正在运行，`TheGuideToTheNewEden.exe` 被占用
+（`MSB3027/MSB3021`，锁定进程 PID 27432），于是先用独立输出目录验证编译与新行为，
+等程序退出后再对正式 `bin` 重新构建（本次已构建成功）。
+
+#### 阶段 87 追加三：迷你读数不写字，直接用**数字颜色**表示档位
+
+**用户要求**："迷你模式下不要显示正常、糟糕等字眼，直接修改延迟文字颜色表示。"
+
+- 迷你读数由"数字 + `ms` + **档位圆点** + **档位文字**"减成"**数字 + `ms`**"两样；
+- 数字的 `Foreground` 改成跟 `CurrentQuality` 走（复用同一个 `QualityToBrush` 转换器）——
+  也就是把原来给圆点/文字用的语义色**移到数字本身**：极佳/良好＝成功色、正常＝警示色、较差/糟糕＝危险色、未知＝次要色；
+- 完整布局**不动**（那里信息多，档位文字 + 圆点仍然更好读），只改迷你形态。
+
+**验证**（一次性探针，**10/10 PASS**；探针已清理）：
+
+| 检查 | 结果 |
+| --- | --- |
+| 迷你可见文字只有 2 条（数字 + `ms`） | ✓ `[175 \| ms]` |
+| 迷你里没有档位文字 | ✓（`ServerPingPage_Result_Normal` 不在可见文字里） |
+| 迷你里没有档位圆点 | ✓ 0 个 |
+| 数字颜色 == 档位转换器输出 | ✓ `#FFFCE100` vs `#FFFCE100`（正常 → 警示黄） |
+| 完整布局仍有档位文字 + 3 个圆点 | ✓（确认只改了迷你形态） |
+
+**探针踩坑（已记进 §9 第 79 条）**：探针只挂 WPF-UI 的 `ControlsDictionary` 时，
+`SystemFillColor*Brush` 这批**颜色**资源根本不存在（它们在 `ThemesDictionary` 里），
+`PingQualityToBrushConverter` 于是落到 `?? Brushes.Transparent` 兜底——
+而"数字颜色 == 转换器输出"这条断言**竟然照样通过**（两边都是透明），看起来一切正常。
+补挂 `ThemesDictionary` 后颜色才变成真的 `#FFFCE100`（与用户截图里那行黄色「正常」一致）。
+**教训**：断言"两个值相等"之前，先确认那个值不是兜底值（本次补了 `Color.A != 0` 与资源存在性诊断）。
+
+#### 阶段 87 追加四：迷你模式的**窗口透明度滑条**
+
+**用户要求**："迷你模式下提供窗口透明度调节，跟暂停按钮一样显示逻辑，显示在按钮下方，使用滑动条表示。"
+
+- 迷你形态由"一行"改成**两行纵向** `StackPanel`：**第一行**＝按钮 / 读数（三态互斥，同追加二），
+  **第二行**＝透明度 `Slider`（`Margin="0,6,0,0"`，所以确实在按钮**下方**）。
+- 显示条件与暂停按钮**完全相同**：转换器角色名从 `"stop"` 改成语义更准的 **`"hover"`**
+  （`PingMiniVisibilityConverter.HoverControlsRole`，含义＝"悬停操作组"：暂停按钮 + 透明度滑条），
+  暂停按钮与滑条都传 `ConverterParameter="hover"`，一处改条件两处同时生效。
+- 滑条：宽 130、`Minimum=0.3`（避免拖到几乎点不到，透明到 0.3 时仍能看见并命中）、`Maximum=1`、
+  `SmallChange=0.05`、`LargeChange=0.2`、`TickFrequency=0.1`、`TickPlacement=BottomRight`；
+  提示文案走**新语言键** `ServerPingPage_Opacity`（中"窗口透明度" / 英 "Window opacity"）。
+  加完语言文件 **1800 键 / 中英键集一致 / 无重复**。
+- **值的绑定不在 XAML 里**：原地写 `Value="{Binding Opacity, RelativeSource={RelativeSource AncestorType=Window}}"` 实测**解析不到宿主窗口**
+  （`ToolWindow` 是用 `Frame` 承载页面的：`ContentFrame.Content = content`），
+  失败是**静默的**——绑定没生效，`Slider.Value` 退回默认值（＝`Minimum` 0.3），窗口与滑条两头都不同步。
+  改成在 `Loaded` 里用 `Window.GetWindow(this)` 拿宿主窗口、在 `ValueChanged` 里赋值。详见 §9 第 80 条。
+  （**注**：赋值目标后来从 `Window.Opacity` 改成了系统亚克力材质，原因见下面的追加五。）
+
+**验证**（一次性探针，**14/14 PASS**；探针已清理）：
+
+| 检查 | 结果 |
+| --- | --- |
+| 转换器：运行中+悬停 → 滑条显示；运行中+不悬停 / 未开始 → 不显示 | ✓ 3/3（与暂停按钮同条件） |
+| 迷你布局里能找到滑条、范围 0.3~1 | ✓ |
+| 鼠标不在窗口内时滑条 `Collapsed` | ✓（与暂停按钮同步） |
+| 滑条可见性由 `PingMiniVisibilityConverter` 驱动、参数为 `hover` | ✓（读 `BindingOperations.GetMultiBindingExpression` 现场核对） |
+| 设窗口 `Opacity=0.55` → 滑条 `Value=0.55` | ✓（Window → Slider） |
+| **设滑条 `Value=0.70` → 窗口 `Opacity=0.70`** | ✓（Slider → Window，拖动真的改透明度） |
+| 滑条是纵向容器的第 2 个子项、`Margin.Top=6` | ✓（确实在按钮那一行下方） |
+| 完整布局里没有滑条 | ✓（只加在迷你形态） |
+
+`dotnet build` **0 错误**。
+
+#### 阶段 87 追加五：透明度改成**系统亚克力材质**（"并没有变透明，只是变暗了"的根因与重做）
+
+**用户反馈**："并没有变透明，只是变暗了。"（拖滑条时窗口只是变暗/变淡，桌面并没有透出来）
+
+**先查根因**（探针实测，不是猜）：
+
+| 试过的做法 | 实测结果 |
+| --- | --- |
+| `Window.Opacity = 0.5`（追加四的做法） | 窗口 ExStyle 里**没有** `WS_EX_LAYERED`、分层 alpha 读不到 → 窗口仍不透明，WPF 只把**自绘内容**淡到不透明背景上 = **"变暗"**；对照组换成纯 WPF `Window` 同样如此 |
+| 外部给 HWND 硬打 `WS_EX_LAYERED` + `SetLayeredWindowAttributes` | **被 WPF 覆盖**：`SetWindowLong` 后读回 ExStyle 仍无该位、分层 alpha 为 0 |
+| `AllowsTransparency = true`（WPF 的正路） | 与 WPF-UI 的 `FluentWindow` **不兼容**：它在 `OnSourceInitialized` 里要改 `WindowStyle`，而 WPF 规定"`AllowsTransparency=true` 时 WindowStyle 只能是 None" → 抛 `InvalidOperationException`，**窗口根本开不出来** |
+
+**最终做法（改对了：照项目里已验证的 `IntelWindow` 配方做一个专用透明外壳）**
+
+用户一句"透明方法可以参考 IntelWindow"点中要害——项目里 6 月份就实现过透明窗口，
+`IntelWindow.xaml` 的注释里**已经写着**我这一轮才踩出来的结论：
+*"FluentWindow 会把 WindowStyle 重置为单边框，导致 AllowsTransparency 在 Show() 时抛异常（已实测）"*。
+
+1. 新增外壳 **`Views/Windows/ToolTransparentWindow.xaml(.cs)`**（配方照 `IntelWindow`）：
+   普通 `Window` + `AllowsTransparency=True` + `WindowStyle=None` + 背景透明；
+   `WindowChrome`（`CaptionHeight=34` 供标题区拖动、`ResizeBorderThickness=6` 供边缘缩放、`UseAeroCaptionButtons=False`）；
+   标题区内的按钮全部 `WindowChrome.IsHitTestVisibleInChrome=True`（否则点击被标题区吞掉）；
+   `Frame` 承载页面（Page 只能由 Window/Frame 承载）。
+   **透明度作用在背板 `Border`（`BackdropPlate`）上，不动窗口、不动内容** ——
+   于是"背景半透明、文字与按钮保持实色"，正是挂机监控条要的观感；
+   背板颜色＝主题 `ApplicationBackgroundBrush` 的 RGB + 滑条给的 alpha（**这就修掉了"窗口发白"**：
+   之前 `WindowBackdropType=None` + `Background=Transparent` 让 WPF 什么都不画，亚克力又没渲染出来，
+   露出的就是白底）。主题切换时重画背板（`ThemeService.ThemeChanged`）。
+2. 新增最小公共面 **`IToolWindowShell`**（只有 `SetVisibleTitleBarButtons`），
+   `ToolWindow` 与 `ToolTransparentWindow` 都实现它 → 页面不再关心自己装在哪种外壳里
+   （迷你形态切标题栏按钮的代码从"必须是 `ToolWindow`"改成"是 `IToolWindowShell` 即可"）。
+3. `IToolPage` 增加 **`NeedsTransparentWindow`**（默认 `false`）；`ServerPingPage` 为 `true`；
+   `ToolWindowHost` 据此二选一创建外壳（`Opened` 字典类型由 `ToolWindow` 放宽为 `Window`，
+   标题绑定按外壳类型分支：普通外壳用 `DisplayTitle/SystemTitle`，透明外壳用 `Window.Title`，
+   其 XAML 里标题 `TextBlock` 绑 `Window.Title`，所以切语言一样即时生效）。
+4. 滑条改调 **`ToolTransparentWindow.SetPlateOpacity`**（下限 0.05），不再碰窗口自身不透明度。
+5. 上一版的亚克力尝试（`SetAcrylicTransparency` + `SetWindowCompositionAttribute` 那套 interop）**已全部删除**，
+   避免留死代码；它的失败原因留在上表与 §9 第 81 条里备查。
+
+**验证**（一次性探针，**14/14 PASS**；探针已清理）：
+
+| 检查 | 结果 |
+| --- | --- |
+| 外壳类型＝`ToolTransparentWindow`；`AllowsTransparency=True`、`WindowStyle=None`、背景透明 | ✓ 4/4 |
+| `WindowChrome`：`CaptionHeight=34`、`ResizeBorderThickness=6`（拖动 + 缩放） | ✓ |
+| 背板色：`1.0 → #FF202020`、`0.5 → #80202020`、`0.3 → #4C202020` | ✓ 3/3 |
+| 背板是**深色**（RGB=32,32,32）而不是白色 | ✓ |
+| 仍默认置顶、标题已绑语言键（`服务器测速`） | ✓ 2/2 |
+| 完整布局：最小化 + 关闭都在；迷你布局：最小化收起、关闭仍在 | ✓ 3/3 |
+| 迷你空闲态只显示「开始」按钮 | ✓ |
+
+⚠️ 仍需使用者看一眼实际观感（透明是否如预期、拖动/缩放是否顺手）；我这边能验的是"外壳配置正确 +
+背板 α 随滑条变化 + 深色不白"。
+
+`dotnet build` **0 错误**。
+
+#### 阶段 87 追加五补：透明度只作用于迷你形态 + 滑条默认值
+
+用户报"标题栏也变成了透明的了"（截图是完整布局）。两个叠加的小毛病，都已修掉：
+
+1. **滑条没写初始值**：WPF `Slider.Value` 默认 `0`，被 `Minimum=0.3` 一夹就成 **0.3**，
+   于是 `Loaded` 里 `SetPlateOpacity(0.3)`——**窗口一打开背板就是半透明**（alpha 76）。修法：XAML 显式 `Value="1"`。
+2. **透明度没限定在迷你形态**：拉大回完整布局后背板仍是半透明，连标题栏一起透。
+   修法：`ServerPingPage.ApplyWindowChrome()` 切布局时按形态设背板（迷你＝滑条值、完整＝强制 `1.0`），
+   滑条 `ValueChanged` 里再加一道 `_compact == true` 保险。语义上也更对：
+   **透明度本来就是"迷你挂机条"专属功能**，完整布局应当是正常的实心窗口。
+
+**验证**（一次性探针，**6/6 PASS**；探针已清理）：刚打开（完整 600×400）背板 alpha＝**255**（修复前 76）；
+缩到迷你＝255（跟随滑条）；迷你里拖到 0.5＝128；拉回完整＝**255**（标题栏不再透明）；再缩回迷你＝128（记住用户选择）。
+
+### 阶段 88：键盘跨度**运行态**照 WinUI 原版收紧（长期置顶挂机显示）
+
+**用户反馈**："按键小工具开始后的界面信息太多了，这个小工具类似于网络测试迷你模式那样长期置顶显示的，
+参考 WINUI3 原版的 UI，开始后尽可能紧凑显示。"
+
+**对照原版**（`TheGuideToTheNewEden.WinUI/Views/Tools/KeyboardSpanPage.xaml` 的 `RunningGrid`）：
+原版运行态只有两样东西——**居中的 40px「通过数 / 目标数」**（整块还是个按钮，点开看数据），
+以及**底部一行「时长 │ 总按键数」**（两个数字都挂 ToolTip 说明含义）+ 右侧一个红色停止按钮。
+**没有卡片头、没有进度条、没有统计格**。
+
+**WPF 版改动**（原先是"卡片头（按键 · 模式）+ 大号通过数 + 进度条 + 4 个统计格 + 底栏停止"，确实过多）：
+
+- 运行态**不再套 `CardControl`**，直接一块干净的显示区（省掉卡片内边距、分隔线与 40 高的底栏）；
+- 只留 **40px 等宽「通过数 / 目标数」**（居中，颜色继续跟随语义档位 `SpanStateToBrush`）；
+- 底部一行：**时长 │ 总按键数**（12px 次要色 + `DividerStrokeColorDefaultBrush` 竖线 + 各自 ToolTip），右侧 34×30 的红色停止图标按钮；
+- 去掉卡片头（按键名/模式）、进度条、4 个统计格；随之删掉已无人引用的 4 个页面样式
+  （`HeroValue`/`StatTile`/`StatLabel`/`StatValue`，实测引用数都是 0）；
+- 该工具也改用**透明外壳**（`NeedsTransparentWindow => true`，同测速工具）：背板是主题深色、
+  窗口最小尺寸降到 100×100，长期置顶挂机时能缩得很小。
+
+**验证**（一次性探针，**5/5 PASS**；探针已清理）：
+
+| 检查 | 结果 |
+| --- | --- |
+| 键盘跨度工具使用 `ToolTransparentWindow` 透明外壳 | ✓ |
+| 启动后在 **400×160** 窗口里运行态 **`ScrollableHeight = 0`**（一屏放下，不滚动） | ✓ |
+| 运行态可见文本**恰好 4 条**：`0 \| / 10 \| 00:00:00 \| 0`（通过数、目标、时长、总按键数） | ✓ |
+| 40px 大号通过/目标数字存在 | ✓ |
+
+（同尺寸下**设置态**仍需滚动 105 DIP——这是有意的：设置表单本来就要占地方，配置时才需要大窗口，
+运行态才是常年挂着的那一面。）
+
+`dotnet build` **0 错误**。
+
+#### 阶段 88 补：键盘跨度也加**透明度调节滑条**
+
+与测速工具完全同一套口径：
+
+- 滑条放在运行态底部行那个**空的 `*` 列**里（不新增行 → 悬停出现时不会跳版），宽 130、`Minimum=0.3`、`Value="1"`（默认不透明）；
+- **只在鼠标移入时出现**（复用测速那套三态转换器 `PingMiniVisibilityConverter` 的 `hover` 角色；
+  运行态根 Grid 因此命名为 `RunningRoot` 且 `Background="Transparent"`，让空白处也能命中测试）；
+- 拖动即调宿主窗口背板不透明度（`ToolTransparentWindow.SetPlateOpacity`），**只在运行态生效**：
+  开始（`OnStartClick`）按滑条值设背板、停止（`OnStopClick`）恢复 `1.0`，非运行态拖滑条**不产生任何效果**；
+- 语言键新增 `KeyboardSpanPage_Opacity`（中英各一条 → 语言文件 **1803 键 / 键集一致 / 无重复**）。
+
+**验证**（一次性探针，**8/8 PASS**；探针已清理）：滑条存在且默认 1.0 ✓；可见性确实由 `MiniVis` + `hover` 驱动 ✓；
+设置态拖滑条背板仍 255（无效，符合预期）✓；开始后背板＝滑条值（0.4 → 102）✓；运行中改滑条生效（0.6 → 153）✓；
+停止后背板恢复 255 ✓。
+
+`dotnet build` **0 错误**。
+
+#### 阶段 88 补二：迷你条里透明度滑条被切掉（刻度撑高）
+
+用户反馈"滑动条显示不全"（截图：迷你条底部那条滑条只剩一半，刻度被窗口下沿切掉）。
+**根因**：滑条带着 `TickPlacement="BottomRight"` + `TickFrequency`，刻度会把控件撑高；
+而它所在的底部行在迷你尺寸下只剩约 80 DIP 可用，于是超出部分被窗口下沿裁掉
+（探针实测：隐藏滑条时 `scrollable=0` 看不出问题，一悬停显示才暴露）。
+
+**修法**：① 去掉 `TickFrequency` 与 `TickPlacement`（挂机条里刻度本来就是噪音，去掉后滑条只要 21 DIP 高）；
+② 自动迷你高度 `MiniModeHeight` 140 → **160**，给"悬停多出一行控件"留余量。
+
+**验证**（一次性探针，**4/4 PASS**；探针已清理）：开始后自动迷你 ✓；隐藏滑条时不滚动 ✓；
+用 `SetCurrentValue` 临时把滑条设为可见（不破坏绑定，等价于鼠标移入）后：
+滑条**渲染高度 = 期望高度（21 = 21，没被裁）** ✓、且仍然 `scrollable = 0` ✓。
+
+（另注：`MiniModeWidth` 现在是 **200**、滑条用 `Margin="16,0"` 自适应中间列——这些是使用者自己的调整，本轮没有改动。）
+
+`dotnet build` **0 错误**。
+
+#### 阶段 88 补三：滑条"显示不全"其实是**横向被挤扁**（外加刻度撑高）
+
+用户第二次反馈"还是显示不全"。实测把两件事分开了：
+
+1. **横向挤压（主因）**：滑条原先塞在底部行中间那个 `*` 列里，左边「时长 │ 总键数」约 110 DIP、
+   右边停止按钮 34 DIP，200 宽的迷你窗口留给它只剩二十几像素（实测甚至只有 104）→ 看起来就是"只有一小截"。
+   修法：滑条**独占一行**（`Grid.Row="2"`，根 Grid 补第三个 `Auto` 行）并给确定宽度 `Width="168"`
+   （`HorizontalAlignment="Stretch"` 实测无效——WPF-UI 的 Slider 样式自身限制了宽度，只会拿到约 104）。
+   实测：**w=168**（窗口内宽 176），底边 145 ≤ 视口 146，`scrollable=0` ✓。
+2. **纵向被刻度撑高**（第一轮已修）：去掉 `TickFrequency` / `TickPlacement`（挂机条里刻度是噪音），
+   并把自动迷你高度留足（`MiniModeHeight` 160 → **180**，页面高 146）。
+
+**顺带一个结论**：WPF-UI 的 `Slider` **不理会显式 `Height`**——写 `Height="28"` 实测仍渲染成 21
+（那是它样式的设计高度），所以那行已删掉，避免留无效配置；21 高配上"无刻度"的模板正好放得下。
+
+`dotnet build` **0 错误**；XML 合法性自检通过。
+
+#### 阶段 88 补四：「分屏」工具窗只留关闭按钮
+
+用户要求："分屏小工具不需要显示置顶按钮、最大最小按钮。"
+（菜单名「分屏」＝ `Nav.Tools_Taskbar`，也就是任务栏拆分/合并那个工具。）
+
+**做法**：`TaskbarPage` 在 `Loaded` 里调 `IToolWindowShell.SetVisibleTitleBarButtons(ToolWindowButtons.Close)`
+——只用关闭。理由也顺：这个工具只有"拆分/合并"两个动作、窗口本来就小，置顶图钉与最小化/最大化都是多余；
+**置顶本身仍然开启**（只是不显示那颗开关），与测速迷你模式的口径一致。
+
+**验证**（一次性探针，**5/5 PASS**；探针已清理）：分屏工具窗 `min=False / max=False / close=True / pin=False`、
+`Topmost=True`、按名字取到的 `TopmostButton` 确实不可见 ✓；对照项：测速工具仍显示自己的标题栏按钮（未被波及）✓。
+
+`dotnet build` **0 错误**。
+
+#### 阶段 88 补五：工具窗默认**居中屏幕**
+
+用户要求："小工具窗口需要默认居中屏幕。"
+
+**原状**：`ToolWindowHost` 里是"有 Owner 就 `CenterOwner`，否则 `CenterScreen`"，
+而 `Owner` 的赋值**早就被注释掉了**（历史上为了"工具窗随主窗口最小化"设过，后来注释掉）——
+没有 Owner 时 `CenterOwner` 的落点并不明确，于是位置看着像"随机"。
+
+**做法**：显式 `window.WindowStartupLocation = WindowStartupLocation.CenterScreen;`（并删掉那段 owner 分支）。
+`CenterScreen` 落在**鼠标所在那块屏幕**的工作区正中，多显示器下不会跑到别的屏去；
+同时保持**不设 Owner**（避免连带隐藏/最小化联动等副作用）。
+
+**验证**（一次性探针，**4/4 PASS**；探针已清理）：`StartupLocation=CenterScreen` ✓；
+工作区 0,0 2048×1104（中心 1024,552），窗口 rect 924,482 200×140 → **中心 1024,552**，横竖都精确居中 ✓；
+`Owner is null` ✓（确认定位靠的是 CenterScreen 而不是残留的 owner 逻辑）。
+
+`dotnet build` **0 错误**。
+
+#### 阶段 88 补六：输入助手的占位提示被右边缘切掉（占位符不换行）
+
+用户反馈（截图）：快捷输入的提示文字"输入或粘贴内容：按标点/空格分词…"显示不全，问"不应该是自动换行吗"。
+
+**根因**：WPF-UI 的 `TextBox` 占位符在控件模板里是**单行 `TextBlock`**，**不继承 `TextWrapping`**——
+输入框自己写了 `TextWrapping="Wrap"`（对**正文**有效），占位符照样一行排到底、超出就被右边缘裁掉。
+这是控件模板的既有行为，不是本项目能靠属性开关修掉的。
+
+**做法**（信息不丢）：
+
+- `IMEPage_InputTip` 改成极短的一行 —— 中"输入或粘贴内容"（6 字）/ 英 "Type or paste text"；
+- 原来的完整说明挪到新键 `IMEPage_InputTipDetail`，挂到输入框的 `ToolTip` 上（悬停即见分词规则与"点建议即替换"）；
+- 语言文件 **1804 键 / 中英键集一致 / 无重复**。
+
+**尺寸核算**：占位符 6 个字在 14px 字号下约 84 DIP，输入框可用宽度约 360 DIP（默认 400 宽窗口）——必然一行放得下。
+
+**备选方案**（若将来想要"多行可换行的提示"）：不要用 `PlaceholderText`，改成在输入框上叠一个
+`TextWrapping="Wrap"` 的 `TextBlock`，用"文本为空"控制其可见性；代价是要多一个空串→可见性的转换器与状态联动。
+
+`dotnet build` **0 错误**；XML 合法性自检通过。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -3113,10 +4049,29 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
       跳转时按"视口高 − 目标高"临时撑高，否则最后一个分组下面没有内容、物理上滚不到顶部（实测需要 497px）。
       这段补白是临时的（数据/筛选一变即归零），所以不会在页面末尾留常驻空白。
 
-61. **8 个导航页仍是占位页**（2026-10-10 核对）：`MainWindow` 的 26 个导航目标里，`HomePage` / `DEDPage` / `MissionPage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage` 仍继承 `PlaceholderPage`（构造时只传本地化键 + 图标）。这 8 个在 WinUI 版**都有真实实现**（`Views\HomePage` / `Views\DEDPage` / `Views\MissionPage` / `Views\DatabasePage` / `Tools\IMEPage` / `Tools\ServerPingPage` / `Tools\KeyboardSpanPage` / `Tools\TaskbarPage`），属**真实迁移缺口**而非"WinUI 也没有"。
+61. **导航页里的占位页清点**（2026-10-10 首次核对；阶段 79/80 逐步销账）：曾有 8 个占位页——`MainWindow` 的 26 个导航目标里，`HomePage` / `DEDPage` / `MissionPage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage` 仍继承 `PlaceholderPage`（构造时只传本地化键 + 图标）。这 8 个在 WinUI 版**都有真实实现**（`Views\HomePage` / `Views\DEDPage` / `Views\MissionPage` / `Views\DatabasePage` / `Tools\IMEPage` / `Tools\ServerPingPage` / `Tools\KeyboardSpanPage` / `Tools\TaskbarPage`），属**真实迁移缺口**而非"WinUI 也没有"。
     核对方法：`Select-String -Path Views\Pages\*.xaml.cs -Pattern ':\s*PlaceholderPage'`，再逐个到 WinUI 同名目录确认对应实现是否存在。
     其中 `DEDPage` / `MissionPage` 已于**阶段 79 迁移完成**（两页都不再是占位页，见阶段 79）。
-    **剩余 6 个**：`HomePage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage`。
+    **阶段 80 又销掉整个「工具」分组**（`IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage`）。
+    **剩余 2 个**：`HomePage` / `DatabasePage`（WinUI 侧分别是 `Views\HomePage`（261 行 XAML + 197 行 `HomeViewModel`）
+    与 `Views\DatabasePage`（77 + 199 行））。
+62. **托盘图标会被"低完整性进程"这一上下文拒绝**（阶段 82）：`H.NotifyIcon` 的 `TrayIcon.Create()` 内部就是
+    `Shell_NotifyIcon(NIM_ADD)`，它要和 shell 的托盘窗口通信；当应用进程的**完整性级别低于 shell**
+    （实测应用 Low、shell Medium，同用户同桌面）时，Windows 的 **UIPI 会拒绝这次跨进程窗口消息**，
+    于是返回 `ERROR_ACCESS_DENIED (5)` → 库抛 `InvalidOperationException("TryCreate failed.")`，
+    只在 catch 里 `Debugger.Break()`，**Release 下完全静默**。
+    ⚠️ 判断 shell 是否存在**不能看进程列表**（受限上下文里 `Get-Process explorer` 会被过滤掉，本轮误判过一次），
+    要用 `GetShellWindow()` / `FindWindow("Shell_TrayWnd")`。
+    **为什么"怎么启动都是 Low"（根因，实测）**：按微软文档，新进程完整性 = **min(用户完整性, 可执行文件完整性)**；
+    而 DSH 的沙箱把会话工作区标成了 Low（`Mandatory Label\Low Mandatory Level:(OI)(CI)(NW)`），
+    工作区里所有文件继承该标签（`icacls <exe>` 可见 `…:(I)(NW)`），**因此这个目录里的 exe 无论由桌面双击、
+    VS 调试还是终端启动，进程都只能是 Low**。这不是应用缺陷（WinUI 版同样如此）。
+    **处置**：① 把输出复制到工作区**外面**再运行/调试（推荐，重建也不受影响）；
+    ② 在自己的桌面终端 `icacls <exe> /setintegritylevel Medium`（每次重建后要重做；低完整性进程无法设回 Medium）；
+    ③ 从 Medium 上下文 `dotnet <dll>` 直接跑（dll 标签不影响进程级别）。
+    ⚠️ 不要给整棵工作区去掉 Low 标签——沙箱内的 Low 进程正是靠它才能写入，改了会连带弄坏沙箱写入。
+    应用侧另做了：启动前先建、失败重试、失败时把**真实 Win32 错误码**与**应用 vs shell 上下文 + 整条启动链**
+    写进日志（库会把错误码丢掉），并且托盘不可用时**不再**"关闭到托盘"（避免窗口被藏得找不回来）。
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
 - 核验方式：实机点击逐页截图目检（`EnumWindows` + `PrintWindow` 抓取窗口，截图需先开启 PerMonitorV2 DPI 感知）；截图与抓图脚本为一次性产物，已清理。
@@ -3440,6 +4395,132 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     深 `#FFF3F3F3` / 浅 `#FF1A1A1A`，且 `Run` 与标题段落都跟着变。
     顺带一条排查纪律：**改完控件先重建再跑探针**——本轮第一次探针 5 项全红，原因是它引用的是改动前的旧 `TheGuideToTheNewEden.dll`
     （`bin` 未重建），差点把"修好了"误判成"没修好"。
+72. **x64 上 `PROPVARIANT` 是 24 字节，按 16 字节声明会"只坑读、不坑写"**（阶段 80 任务栏工具实测）：
+    设置窗口的 `System.AppUserModel.ID` 需要 `IPropertyStore.GetValue/SetValue` 与 `PROPVARIANT` 打交道。
+    WinUI 版的结构体是"4 个 `ushort` + 一个 `IntPtr`"＝ x64 下 16 字节，而真实 `PROPVARIANT` 是 **24 字节**
+    （VT 头 8 字节 + 联合体 16 字节）。`SetValue` 只读前 16 字节，所以**写入完全正常**；
+    而 `GetValue` 会往这个偏小的缓冲区里写 24 字节 → 读回值恒为空（还可能踩坏相邻栈内存）。
+    处置：结构体声明为 `[StructLayout(LayoutKind.Sequential, Size = 24)]`（x86 上多分配是安全的，少分配才危险）。
+    **识别信号**：同一套 COM 互操作"写成功、读不回"时，先怀疑结构体尺寸/对齐，而不是权限或参数。
+73. **低级键盘钩子（`WH_KEYBOARD_LL`）的三条硬要求**（阶段 80 键盘跨度实测）：
+    ① **必须在有消息泵的线程上安装**（本项目即 UI 线程）——回调由安装线程的消息循环派发，装在没有消息泵的线程上会"安装成功但永远收不到事件"；
+    ② **取按键名要带上扩展位**：`GetKeyNameText` 的 lParam 是 `扫描码 << 16 | (扩展 ? 1 << 24 : 0)`，
+    同一个扫描码 `0x4B` 带扩展位是 `Left`、不带是 **`Num 4`**（WinUI 版漏了扩展位，方向键/小键盘会认成别的键）；
+    ③ **`WM_SYSKEYDOWN/UP`（0x104/0x105）也算按下/抬起**——只处理 `WM_KEYDOWN/UP` 会让 Alt 组合键完全不计数。
+    另外：卸载后要挡一下"已排队但尚未派发"的回调（`_hookHandle != IntPtr.Zero` 才派发），否则 `Stop()` 之后仍可能多计一次。
+    **沙箱里的验证办法**：本会话 `SendInput` 返回"插入 2/2 个事件"却不进输入队列
+    （注入后 `GetAsyncKeyState` 仍为 0，说明没有交互输入桌面）→ 改为**用反射直接调用钩子的真实回调**并传一个自造的
+    `KBDLLHOOKSTRUCT`，这样除"Windows 把真实按键送进钩子"之外整条链都测到了。
+74. **读窗口状态的两条坑（写探针必踩）**（阶段 81 实测）：
+    ① **`Window.Owner` 不能设成窗口自己**——WPF 会把**第一个显示出来的窗口**自动设为 `Application.MainWindow`，
+    所以"无脑 `Owner = Application.Current.MainWindow`"在"该窗口自己就是首个窗口"时会抛
+    `ArgumentException：无法将 Owner 属性设置为它本身`。稳妥写法：先判 `!ReferenceEquals(owner, window) && owner.IsLoaded`，
+    不满足就回落到 `WindowStartupLocation.CenterScreen`。
+    ② **`Frame` 接管内容与窗口显示都是异步的**：`Show()` 之后立刻读 `Frame.Content`（本项目 `ToolWindow.GetContent()`）
+    会读到 `null`，必须先让 Dispatcher 跑几轮（`Dispatcher.Invoke(..., DispatcherPriority.SystemIdle)`）再断言。
+    ③ 附一条资源坑：`ToolWindow.xaml` 用的是**绝对 pack URI**（`pack://application:,,,/Assets/app.ico`），
+    它按**入口程序集**查资源——探针工程要把 `Assets` 用 `<Resource Include="Assets\app.ico" />` 编进去，
+    **只把图标拷到探针输出目录是不够的**（这和"相对包 URI 拷文件即可"是两种不同的解析路径）。
+    ④ **探针用 `<Reference>` 引主程序集时，它测的是"探针 bin 里那份拷贝"**：改完主程序集只重建主程序集、
+    不重建探针，就会拿着**旧拷贝**跑出旧结果（本轮改工具窗尺寸时正是如此——源码与主程序集都是新值，
+    探针却报旧尺寸，白排查一轮）。纪律：**改完主程序集，探针工程也要一起重建**。
+75. **WPF-UI `NavigationView` 导航拦截的四个实测事实**（阶段 81 实机反馈"没弹窗、还是主窗口显示页面"后逐条验出来的）：
+    ① **`NavigatingCancelEventArgs.Page` 是页面实例，不是 `Type`**——写成 `args.Page is Type t` 会**永远不命中**，
+    功能静默失效（没有异常、没有日志，只是"没反应"）。正确写法：`args.Page as Type ?? args.Page?.GetType()`。
+    ② **`args.Cancel = true` 确实被尊重**：内容 Frame 不导航，导航选中项也不动（所以左侧高亮能保持在当前页）。
+    ③ **`RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent))` 测不到 WPF-UI 的点击逻辑**——
+    `ButtonBase.OnClick` 是**虚拟方法**而不是类处理器，RaiseEvent 会跳过它。要模拟真实点击得反射调用
+    `ButtonBase.OnClick`（或让真实鼠标事件进来）。
+    ④ **未展开的分组子项 `OnClick` 完全不触发**（连 `Click` 事件都没有）——用分组结构写探针时必须先把分组展开，
+    否则会得出"这条路径什么都不触发"的错误结论。
+    ⑤ **排查纪律：日志里 `GetType().Name` 会把"实例"伪装成"类型名"**。`e.Page` 是 `ProbePage` 的实例时，
+    `e.Page.GetType().Name` 恰好就是 `ProbePage`，看起来与"`e.Page` 是 `Type`"一模一样
+    ——本轮就是据此误判了两次。要区分必须打印 `is Type`，或打印 `FullName`（是 `Type` 时会得到 `System.RuntimeType`）。
+76. **第三方库"吞掉异常"的排障套路**（阶段 82 排 H.NotifyIcon 的 `TryCreate failed.` 时总结）：
+    ① **库把 `Shell_NotifyIcon` 这类 Win32 返回值变成一句布尔/异常时，真实错误码就丢了**——实测
+    "库抛异常后立刻 `Marshal.GetLastWin32Error()`"得到的是 **0**（库内部在失败点之后还夹着别的 P/Invoke，
+    错误码已被覆盖）。要拿到真码只能**自己 P/Invoke 同一个 API**：本轮就是这么得到 `ERROR_ACCESS_DENIED (5)` 的。
+    ② **别追 inner exception**：`InvalidOperationException("TryCreate failed.")` 本身**没有 inner**，
+    调试器里看到的 `InnerException` 可能是误读（或别的帧），先去看库的源码确认抛出点。
+    ③ **`catch { Debugger.Break(); }` 意味着 Release 下完全静默**：看到这种写法就要自己加日志，
+    否则线上只有"功能没了、日志里啥也没有"。
+    ④ **读源码要认 tag**：GitHub 的 tag 带 `v` 前缀（`v2.3.0` 而不是 `2.3.0`，后者 404），
+    先用 `api.github.com/repos/<owner>/<repo>/tags` 列一下；路径可用 SourceLink 里出现的 `/_/src/...` 反推。
+    ⑤ **不要把"我猜的原因"当成结论**：本轮先猜"图标异步转换还没完成 → 句柄为 0"，探针一测
+    ⑥ **判断"shell 在不在"要看窗口，不要看进程列表**：受限/沙箱上下文里 `Get-Process explorer` 会被静默过滤，
+    据此判定"没有 shell"是错的；`GetShellWindow()` / `FindWindow("Shell_TrayWnd")` 才可靠。
+    ⑦ **跨进程窗口消息受 UIPI 管辖**：进程完整性级别低于目标（如 Low → Medium）时，`Shell_NotifyIcon` 这类
+    "给 shell 发消息"的调用会被拒（`ERROR_ACCESS_DENIED`）；同一个原因也会让 `SendInput` 报成功却送不进按键。
+    自证方法：读自己与对方的进程令牌 `GetTokenInformation(TokenIntegrityLevel)` 比一比。
+    ⑧ **"怎么启动都是 Low"要去查可执行文件的完整性标签**：按微软文档（Mandatory Integrity Control → Process Creation），
+    新进程完整性 = **min(用户完整性, 文件完整性)**；[Designing Applications to Run at a Low Integrity Level] 亦云
+    "把 exe 文件设成 Low 标签，启动时进程就是 Low"。排查命令：`icacls <exe>`，看有没有
+    `Mandatory Label\Low Mandatory Level:(I)(NW)`（`(I)` = 从目录继承）。
+    本轮实测：DSH 把会话工作区标成 Low（`(OI)(CI)`），于是工作区里**所有** exe 无论谁启动（桌面双击 / VS 调试 / 终端）
+    都只能是 Low——这才是"手动打开也一样"的真正原因；"以前正常"是因为当时还没打标签。
+    处置：把输出**复制到工作区外**再跑（推荐）；或在正常上下文执行 `icacls <exe> /setintegritylevel Medium`
+    （**低完整性进程做不了**，实测报 `Failed processing 1 files`；且重建后会被目录继承再次覆盖）；
+    或从 Medium 上下文 `dotnet <dll>` 运行（dll 标签不影响进程级别）。
+    ⚠️ 别给整棵工作区去标签：沙箱里的 Low 进程正是靠"工作区是 Low"才能写入。
+77. **不要自己 `Process.Start("explorer.exe", …)` 去打开目录/定位文件**（阶段 83，用户实机遇到 0xc0000142）：
+    那是**另起一个 explorer 进程**，在受限上下文（低完整性）里会以 `0xc0000142`（`STATUS_DLL_INIT_FAILED`）
+    启动失败，Windows 还会弹一个 "explorer.exe - Application Error" 系统错误框（用户截图即为此）。
+    正确做法：打开目录/文件用 `ProcessStartInfo(path){ UseShellExecute = true }`（ShellExecute，交给已在运行的 shell）；
+    "打开并选中某文件"用 **`SHOpenFolderAndSelectItems`**（`SHParseDisplayName` 拿 PIDL → 调用 → `ILFree`）；
+    URL 同样走 ShellExecute。两者在受限上下文里都可能被拒（实测 ShellExecute 抛 `Win32Exception：拒绝访问`），
+    但**都是可捕获的**——所以要 try/catch 并降级（把路径复制到剪贴板 + 应用内提示），而不是让系统弹框。
+    判据小技巧：用 `EnumWindows` 数 `CabinetWClass` 窗口数量在调用前后是否增加，就能客观判断"目录到底开没开"
+    （构造时/Loaded 时/120ms 后三个时刻都是同一个非 0 句柄）**直接否掉**，才转向裸 API 对照。
+78. **`MultiBinding` 必须显式写子 `<Binding>`**（阶段 87 踩到）：`{MultiBinding Converter=…, ConverterParameter=…}` 这种
+    **内联**写法不带任何子绑定，转换器会收到**空数组**——它不会报错，只是每次都按"没拿到值"的兜底分支返回，
+    于是"条件永远不成立、界面永远不切换"，看起来像转换器或绑定写错了（迷你模式第一版就是这样，靠探针才抓到）。
+    正确写法是把它展开成属性元素，里面逐个写 `<Binding ElementName=… Path=… />`：
+    ```xml
+    <Grid.Visibility>
+        <MultiBinding Converter="{StaticResource CompactMode}" ConverterParameter="compact">
+            <Binding ElementName="RootScroll" Path="ActualWidth" />
+            <Binding ElementName="RootScroll" Path="ActualHeight" />
+        </MultiBinding>
+    </Grid.Visibility>
+    ```
+79. **只挂 `ControlsDictionary` 的宿主拿不到"颜色资源"，而且失败是静默的**（阶段 87 追加三踩到）：
+    WPF-UI 的 `ControlsDictionary` 只提供**控件样式**，`SystemFillColorSuccess/Caution/CriticalBrush`
+    这批**颜色**在 `ThemesDictionary` 里（正常程序靠运行时 `ApplicationThemeManager.Apply` 合并，不会缺）。
+    探针这类"自己起一个 `Application`"的宿主若只合并 `ControlsDictionary`，所有按主题色键取画刷的转换器
+    都会落到**兜底值**——本项目的 `PingQualityToBrushConverter` 兜底是 `Brushes.Transparent`，
+    于是迷你读数被验成 `#00FFFFFF`（全透明）**却"验证通过"**：断言写的是"数字颜色 == 转换器输出"，
+    两边同时是兜底值，等式成立、界面其实是错的。**教训**：① 探针先合并
+    `new ThemesDictionary { Theme = ApplicationTheme.Dark }`、再合并 `ControlsDictionary`；
+    ② 凡是"两个值应当相等"的断言，都补一条**非兜底**检查（本次补 `Color.A != 0`，
+    并打印 `TryFindResource` 结果确认资源真的存在）。
+80. **`RelativeSource AncestorType=Window` 在 `ToolWindow` 承载的页面里解析不到宿主窗口**（阶段 87 追加四实测）：
+    迷你透明度滑条原写成
+    `Value="{Binding Opacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"`，
+    运行时**静默失效**：绑定没解析出源，`Slider.Value` 退回默认值（＝`Minimum`，探针看到的是 0.30 而不是 1.0），
+    并且两头都不同步（设窗口 `Opacity=0.55` → 滑条仍 0.30；设滑条 0.7 → 窗口不变）。
+    现场：`ToolWindow` 用 **`Frame`** 承载页面（`ContentFrame.Content = content`，为绕开"Page 只能由 Window/Frame 承载"），
+    祖先链是 `Slider → … → Page → Frame → ToolWindow(Window)`。
+    **根因未进一步深究**（怀疑是 Frame 这一层打断了祖先匹配），但**可靠写法已经确定**：
+    在 `Loaded` 里 `Window.GetWindow(this)` 拿宿主窗口作 `Binding.Source` 显式绑定，实测双向都通。
+    教训：这类"绑定没生效"不会抛异常，只会**退回默认值**——看到控件停在下限/默认值，先怀疑 RelativeSource。
+81. **WPF 工具窗"真透明"的三条死路与一条活路**（阶段 87 追加五，用户实机反馈"并没有变透明，只是变暗了"之后逐条实测）：
+    ① **`Window.Opacity < 1` 在普通窗上不会透视**：实测窗口 ExStyle 里没有 `WS_EX_LAYERED`、分层 alpha 读不到，
+    它只是把 WPF **自绘内容**淡到窗口不透明背景上（`AllowsTransparency=False` + `WindowBackdropType=Mica`）——
+    用户看到的就是"变暗"。纯 WPF `Window` 作对照组结果一样。
+    ② **外部硬打 `WS_EX_LAYERED` 无效**：`SetWindowLong(GWL_EXSTYLE, … | WS_EX_LAYERED)` 之后读回仍无该位、
+    `GetLayeredWindowAttributes` 为 0——WPF 自己管窗口样式，外部改动会被覆盖。
+    ③ **`AllowsTransparency = true` 与 WPF-UI `FluentWindow` 不兼容**：它在 `OnSourceInitialized` 里要改 `WindowStyle`，
+    而 WPF 规定"`AllowsTransparency=true` 时 WindowStyle 只能是 None" → `InvalidOperationException`，**窗口开不出来**。
+    ④ **活路＝照项目里已有的 `IntelWindow` 配方另做一个外壳**：普通 `Window` + `AllowsTransparency=True`
+    + `WindowStyle=None` + `Background=Transparent` + `WindowChrome`（`CaptionHeight` 拖动 / `ResizeBorderThickness` 缩放），
+    透明度作用在**背板 Border** 上（内容保持实色）→ 新增 `Views/Windows/ToolTransparentWindow`，
+    由 `IToolPage.NeedsTransparentWindow` 决定用哪种外壳（见阶段 87 追加五）。
+    `IntelWindow.xaml` 的注释在 6 月就写下了同一结论——**下次要透明，先搜仓库里有没有现成外壳**。
+    ⑤ 若还想走系统材质（亚克力）：`SetWindowCompositionAttribute(WCA_ACCENT_POLICY,
+    ACCENT_ENABLE_ACRYLICBLURBEHIND)` 的 `GradientColor`（**ABGR** 顺序）alpha 可当透明度，
+    但它渲染出来的是**系统**主题的材质（本机 `AppsUseLightTheme=1` → 发白 ✗，与本项目深色主题打架），
+    且 `${Get}` 版本 `GetWindowCompositionAttribute` 在部分 build 上**返回 0**（读不回来，判定只能用 Set 的返回值）；
+    亚克力还要系统"透明效果"开启（`...\Themes\Personalize\EnableTransparency = 1`）。
 
 
 ---
@@ -3497,6 +4578,28 @@ Views/Windows/SerenityAuthWindow.xaml(.cs)             国服授权向导（登�
 Controls/PagerControl.xaml(.cs)                        分页
 Controls/RatioBar.cs                                   自绘细进度条（替代会栈溢出的 ProgressBar）
 Services/Navigation.cs                                 主窗口 NavigationView 跳转（供子页调用）
+```
+
+### 工具模块（阶段 80：任务栏 / 服务器测速 / 键盘跨度 / 输入助手）
+```
+Helpers/TaskbarHelper.cs            任务栏分组：设置/读取窗口的 System.AppUserModel.ID（SHGetPropertyStoreForWindow + IPropertyStore，PROPVARIANT 按 24 字节）
+Helpers/KeyboardHook.cs             全局低级键盘钩子 WH_KEYBOARD_LL（扩展键带扩展位取名字、Sys 键也计数、卸载后不再派发）
+Helpers/InputTextHelper.cs          输入框取词规则（英文/中文分隔符、纯数字排除；修掉 WinUI 光标在第 0 位时的越界崩溃）
+Services/Tools/KeyboardHookService.cs  钩子的引用计数式启停 + 实例事件（原版静态事件会互相干扰、Clear 会 NRE）
+Services/Tools/GameNameSearchService.cs 合并搜索：IdName(角色/军团/联盟) + 物品 + 分组 + 星系 + 星域，按 Id 去重、名称长度升序，逐类容错
+ViewModels/TaskbarPageViewModel.cs   拆分/合并任务栏按钮 + 状态行（找到几个/更新几个）
+ViewModels/ServerPingPageViewModel.cs 每秒一次 TCP 测速：当前/平均延迟、丢包率、档位、总次数/成功/失败/时长（修掉 NaN 与 +10 小时）
+ViewModels/KeyboardSpanPageViewModel.cs 键盘跨度：时间间隔 / 按键次数两种模式 + 目标达成变红
+ViewModels/IMEPageViewModel.cs       输入助手：建议、替换当前词、复制、搜索、翻译（AI 源优先，退回本地词库源）+ 详情态
+Models/Tools/PingQuality.cs / SpanState.cs   档位与运行状态枚举（颜色交给转换器，跟随主题）
+Converters/PingQualityToBrushConverter.cs / SpanStateToBrushConverter.cs   档位 → 主题语义色（Success/Caution/Critical）
+Views/Pages/TaskbarPage.xaml(.cs) / ServerPingPage.xaml(.cs) / KeyboardSpanPage.xaml(.cs) / IMEPage.xaml(.cs)
+                                    工具分组四个页面（原 PlaceholderPage 占位已删除）；**阶段 81 起在独立工具窗口里打开**（不再占据主内容区）；**阶段 84 重做 UI**（等宽大数字 / 语义色圆点 / 目标进度条 / 建议单行横排；默认尺寸一屏放得下）
+Views/Pages/IToolPage.cs            工具页与"独立窗口"的契约：默认尺寸 + 关窗回调（对齐 WinUI 的 ITool.GetWindowSize / Close）
+Services/Tools/ToolWindowHost.cs    用统一 ToolWindow 外壳打开工具页：同时只开一个、关窗调 OnToolClosed、重开是新实例、标题跟随语言
+Helpers/TrayIconHelper.cs           托盘图标的创建/重试/失败诊断（加载前先建、失败重试、最终失败时打印库丢掉的真实 Win32 错误码与"应用 vs shell"上下文对比）
+Helpers/ShellHelper.cs              用系统 shell 打开目录/文件、在资源管理器里定位文件（**绝不自拉 explorer.exe**：受限上下文会 0xc0000142 系统弹框）；失败降级为"路径入剪贴板 + 应用内提示"
+Core/Helpers/TCPingHelper.cs        新增 PingAsync(超时可控 / 失败可不记日志 / 每次调用自己的 Stopwatch)，原 Ping 转发到它（阶段 80，WinUI 共享）
 ```
 
 ### 静态数据库页（阶段 79：DED / 任务）

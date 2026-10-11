@@ -1,0 +1,105 @@
+<Window
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.ToolTransparentWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource AppDisplayName}"
+    Width="600"
+    Height="400"
+    MinWidth="100"
+    MinHeight="100"
+    AllowsTransparency="True"
+    Background="Transparent"
+    ResizeMode="CanResize"
+    ShowInTaskbar="True"
+    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    WindowStartupLocation="CenterOwner"
+    WindowStyle="None">
+
+    <!--
+        需要"真透明"的工具窗外壳（照 Views/Windows/IntelWindow 那套已验证的配方）：
+        必须是**普通 Window**——ui:FluentWindow 会把 WindowStyle 重置为单边框，
+        导致 AllowsTransparency 在 Show() 时抛异常（IntelWindow 的注释里已记着这条实测结论，本轮又踩了一次）。
+        逐像素透明三件套：WindowStyle=None + AllowsTransparency=True + 背景 Transparent；
+        拖动/缩放由 WindowChrome 提供（CaptionHeight 给标题区拖动，ResizeBorderThickness 给边缘缩放），
+        标题区里的按钮必须 IsHitTestVisibleInChrome=True，否则点击会被标题区吞掉。
+
+        透明度作用在**背板 Border**（BackdropPlate）而不是整窗：这样"背景半透明、文字与按钮保持实色"，
+        正是挂机监控条需要的观感；颜色与 alpha 在代码后置里按主题色 + 滑条值生成。
+    -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="34"
+            CornerRadius="0"
+            GlassFrameThickness="0"
+            ResizeBorderThickness="6"
+            UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Border x:Name="BackdropPlate" CornerRadius="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="34" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  标题区（落在 caption 内，可以拖动窗口）  -->
+            <Grid Grid.Row="0" Margin="10,0,6,0">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Image
+                        Width="16"
+                        Height="16"
+                        Source="pack://application:,,,/Assets/logo_32.png" />
+                    <TextBlock
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <ui:Button
+                        x:Name="TopmostButton"
+                        Width="34"
+                        Height="28"
+                        Appearance="Transparent"
+                        Click="OnTopmostClick"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon x:Name="TopmostIcon" Symbol="Pin24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        x:Name="MinimizeButton"
+                        Width="34"
+                        Height="28"
+                        Appearance="Transparent"
+                        Click="OnMinimizeClick"
+                        Icon="{ui:SymbolIcon Subtract24}"
+                        ToolTip="{DynamicResource ToolWindow.Minimize}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" />
+                    <ui:Button
+                        x:Name="CloseButton"
+                        Width="34"
+                        Height="28"
+                        Appearance="Transparent"
+                        Click="OnCloseClick"
+                        Icon="{ui:SymbolIcon Dismiss24}"
+                        ToolTip="{DynamicResource General_Close}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" />
+                </StackPanel>
+            </Grid>
+
+            <!--  Page 必须由 Frame 承载（见 §2 的架构决策）  -->
+            <Frame
+                x:Name="ContentFrame"
+                Grid.Row="1"
+                Background="Transparent"
+                NavigationUIVisibility="Hidden" />
+        </Grid>
+    </Border>
+</Window>
