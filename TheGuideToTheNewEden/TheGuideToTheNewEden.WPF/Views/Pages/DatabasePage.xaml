@@ -1,0 +1,173 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.DatabasePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--
+        数据库页（对应 WinUI 版 Views/DatabasePage.xaml）：SDE 静态库浏览/搜索工具。
+        · 数据来自 Core 各 DB 服务（invTypes / invGroups / mapSolarSystems / mapRegions / staStations / IdName），
+          由 CoreInitializer 初始化的 Config.StaticDBPath / LocalDb 承载，不新增服务层。
+        · 与 WinUI 的差异：AutoSuggestBox 改成"类型下拉 + 搜索框"（WPF-UI 没有 AutoSuggestBox，见 DEDPage 的同类处理）；
+          结果表格用 ui:DataGrid 自动生成列（六种实体字段各不相同），列头做 PascalCase → 可读标题；
+          搜索无上限，VM 统一截断 500 条并提示（WinUI 靠 SfDataGrid 虚拟化硬撑）。
+        · 页面内不显示大标题（左侧导航已高亮当前页，见 REFACTORING.md §10「UI 约定」）。
+    -->
+    <Page.Resources>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!--  自动生成列的单元格样式：文字用主题前景色 + 省略，数字右对齐  -->
+        <Style x:Key="DbCellStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="8,0" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style
+            x:Key="DbNumberCellStyle"
+            BasedOn="{StaticResource DbCellStyle}"
+            TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="12">
+        <controls:CardControl>
+            <controls:CardControl.Header>
+                <Grid Margin="0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox
+                        Width="150"
+                        ItemsSource="{Binding TypeOptions}"
+                        SelectedIndex="{Binding SelectedTypeIndex, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        VerticalAlignment="Center"
+                                        Symbol="{Binding Icon}" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Text}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <ui:TextBox
+                        x:Name="SearchBox"
+                        Grid.Column="1"
+                        Width="320"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        KeyDown="OnSearchKeyDown"
+                        PlaceholderText="{DynamicResource DatabasePage_SearchTip}"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="12,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding SearchResultText}"
+                        Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </controls:CardControl.Header>
+
+            <!--  结果表格（阶段 22 方案：外层 ScrollViewer 提供横滚，表格 MinWidth 绑视口宽）  -->
+            <Grid>
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+                    <ui:DataGrid
+                        x:Name="Grid"
+                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        AutoGenerateColumns="True"
+                        AutoGeneratingColumn="OnAutoGeneratingColumn"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        GridLinesVisibility="Horizontal"
+                        HeadersVisibility="Column"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding Results}"
+                        RowHeight="34"
+                        ScrollViewer.CanContentScroll="True"
+                        SelectionMode="Extended"
+                        SelectionUnit="FullRow"
+                        Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}" />
+                </ScrollViewer>
+
+                <!--  空态引导（未搜索）  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    Visibility="{Binding ShowEmptyGuide, Converter={StaticResource BoolToVis}}">
+                    <ui:SymbolIcon
+                        HorizontalAlignment="Center"
+                        FontSize="48"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Symbol="Database24" />
+                    <TextBlock
+                        Margin="0,12,0,0"
+                        MaxWidth="360"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource DatabasePage_Empty}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!--  无匹配结果（已搜索但没有命中）  -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource DatabasePage_NoResult}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding ShowNoResult, Converter={StaticResource BoolToVis}}" />
+
+                <!--  搜索中（轻量指示，不拦截鼠标，防抖期间可继续输入）  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                    <controls:SpinnerIcon
+                        FontSize="28"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        IsActive="{Binding IsBusy}" />
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource DatabasePage_Loading}"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Grid>
+
+            <controls:CardControl.Footer>
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    FontSize="12"
+                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                    Text="{Binding StatusText}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasStatus, Converter={StaticResource BoolToVis}}" />
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+    </Grid>
+</Page>

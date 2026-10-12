@@ -1883,4 +1883,17 @@
     <sys:String x:Key="IMEPage_TranslateFailed">翻译失败：{0}</sys:String>
     <sys:String x:Key="IMEPage_NoTranslation">没有可翻译的内容（AI 源没有返回译文）</sys:String>
     <sys:String x:Key="IMEPage_Back">返回</sys:String>
+    <sys:String x:Key="DatabasePage_InvType">物品</sys:String>
+    <sys:String x:Key="DatabasePage_InvGroup">分类</sys:String>
+    <sys:String x:Key="DatabasePage_MapSystem">星系</sys:String>
+    <sys:String x:Key="DatabasePage_MapRegion">星域</sys:String>
+    <sys:String x:Key="DatabasePage_Station">空间站</sys:String>
+    <sys:String x:Key="DatabasePage_IdName">缓存ID名称</sys:String>
+    <sys:String x:Key="DatabasePage_SearchResult">搜索结果</sys:String>
+    <sys:String x:Key="DatabasePage_SearchTip">输入名称或 ID 搜索</sys:String>
+    <sys:String x:Key="DatabasePage_Empty">输入名称或 ID 开始搜索：支持模糊匹配名称，或直接输入 ID 精确查询</sys:String>
+    <sys:String x:Key="DatabasePage_NoResult">无匹配结果</sys:String>
+    <sys:String x:Key="DatabasePage_Loading">搜索中…</sys:String>
+    <sys:String x:Key="DatabasePage_Truncated">结果过多，仅显示前 {0} 条，请细化关键词</sys:String>
+    <sys:String x:Key="DatabasePage_LoadFailed">搜索失败：{0}</sys:String>
 </ResourceDictionary>

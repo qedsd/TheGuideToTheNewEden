@@ -3922,6 +3922,36 @@ icacls $ws | findstr /i "Mandatory"
 
 `dotnet build` **0 错误**；XML 合法性自检通过。
 
+### 阶段 89：数据库页迁移（SDE 静态库浏览/搜索工具）
+
+- 目标：迁移最后一个占位页之一 `DatabasePage.cs`（占位基类），对应 WinUI `Views/DatabasePage`：按类型搜索 SDE 静态库
+  （物品 / 分组 / 星系 / 星域 / 空间站 / 缓存 ID-名称），支持名称模糊与数字 ID 精确查询。
+- **数据层**：复用 Core 各 DB 服务（`InvTypeService` / `InvGroupService` / `MapSolarSystemService` /
+  `MapRegionService` / `StaStationService` / `IDNameDBService`），**不新增服务层**（与 DED/任务页一致）。
+- **新增**：
+  - `ViewModels/DatabasePageViewModel.cs`：类型下拉（6 项，`SymbolRegular` 图标 + 本地化名）、350ms 防抖 + 回车立即查
+    （`SearchNow`）；搜索流程 = 各服务 `SearchAsync`（命中 `DataBaseSearchItem`）→ ID 去重 → 批量 `QueryXxx` 取完整对象 →
+    **输入为数字时按 ID 精确查询并置顶**（沿用 WinUI 语义，另做去重：已命中则移到最前，不插入重复行）；
+    ID 一律夹在 `int.MaxValue` 内（§9 第 14 条，防 long→int 静默截断）；失败走页内状态行（危险色），
+    语言切换重算"求值时查资源"的文案（§9 第 63 条）。
+  - `Views/Pages/DatabasePage.xaml(.cs)`（替换占位页，类名/命名空间不变，`MainWindow` 注册零改动）：单张 `CardControl`——
+    Header = 类型下拉（图标项模板）+ 搜索框（占位提示）+ 右侧"搜索结果 N"；Content = **`ui:DataGrid` 自动生成列**
+    （六种实体字段各异）+ 阶段 22 的外层 `ScrollViewer` + `MinWidth` 绑视口方案；三种覆盖层（未搜索引导 / 无匹配 /
+    搜索中转圈 `SpinnerIcon`，均 `IsHitTestVisible=False` 不拦截防抖期间的输入）；Footer = 截断/失败状态行。
+  - **动态列美化**（`AutoGeneratingColumn` 事件）：跳过非标量列（防御；六种实体全是标量）、列头 PascalCase → 可读标题
+    （`SolarSystemName` → `Solar System Name`）、文本列套主题前景样式 + 省略、数值列右对齐。
+- **与 WinUI 的有意差异**：① Core `SearchAsync` 没有条数上限（物品表全表 LIKE 可命中几万条），WinUI 靠 SfDataGrid
+  虚拟化硬撑——WPF 在 VM 统一截断 **500 条**（`MaxResults`）并提示"结果过多，仅显示前 N 条"（避免一次性实例化数万行表格）；
+  ② ID 置顶改为"去重置顶"；③ 数字 ID 夹 int 域校验（超出直接跳过 ID 查询，不截断误查）；④ 列头可读化（WinUI 直接显示属性名）。
+- **本地化**：中英各新增 **13 键**（`DatabasePage_*`；`InvType / InvGroup / MapSystem / MapRegion / Station / IdName /
+  SearchResult` 沿用 WinUI 原文，另加 搜索占位 / 空态引导 / 无匹配 / 搜索中 / 截断 / 失败 6 个新键）；
+  两文件 **1817 键、0 重复、键集完全一致**（脚本核对）。
+- **构建**：`dotnet build` **0 错误**（16 个增量警告全为既有告警，无一条指向本次文件）；产物核对
+  （`views/pages/databasepage.baml` 与 `DatabasePageViewModel` 均嵌入 `TheGuideToTheNewEden.dll`）；
+  `StaticResource` 引用审计通过（本文件 `x:Key` 全部齐备，`DynamicResource` 均为主题键或已加语言键）。
+- **未实机核验**：按 §8 约定未做截图核验，界面效果由使用者查看。首次使用可留意：切类型后自动用当前关键词重查、
+  输入数字 ID 是否置顶、结果过多时 Footer 是否出现截断提示、深浅主题下表格文字是否可读。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -4053,8 +4083,8 @@ icacls $ws | findstr /i "Mandatory"
     核对方法：`Select-String -Path Views\Pages\*.xaml.cs -Pattern ':\s*PlaceholderPage'`，再逐个到 WinUI 同名目录确认对应实现是否存在。
     其中 `DEDPage` / `MissionPage` 已于**阶段 79 迁移完成**（两页都不再是占位页，见阶段 79）。
     **阶段 80 又销掉整个「工具」分组**（`IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage`）。
-    **剩余 2 个**：`HomePage` / `DatabasePage`（WinUI 侧分别是 `Views\HomePage`（261 行 XAML + 197 行 `HomeViewModel`）
-    与 `Views\DatabasePage`（77 + 199 行））。
+    **阶段 89 又销掉 `DatabasePage`**（数据库页，见阶段 89）。
+    **剩余 1 个**：`HomePage`（WinUI 侧是 `Views\HomePage`，261 行 XAML + 197 行 `HomeViewModel`）。
 62. **托盘图标会被"低完整性进程"这一上下文拒绝**（阶段 82）：`H.NotifyIcon` 的 `TrayIcon.Create()` 内部就是
     `Shell_NotifyIcon(NIM_ADD)`，它要和 shell 的托盘窗口通信；当应用进程的**完整性级别低于 shell**
     （实测应用 Low、shell Medium，同用户同桌面）时，Windows 的 **UIPI 会拒绝这次跨进程窗口消息**，
@@ -4617,6 +4647,21 @@ Views/Pages/MissionPage.xaml(.cs)    左卡（搜索 / 列表 / 等级筛选）+
 - 数据来源：Core `DEDService` / `MissionService` → **`DBService.StaticDb`**（`Resources/Database/static.db`）；
   `ded.db` 与 `Config.DEDDBPath` 目前**不在代码路径上**（`InitDEDDb` 在 Core 里被注释掉了，阶段 79 探针实测）。
 - 正文渲染统一走 `MarkdownPresenter`：WinUI 的 `MarkdownTextBlock` 在 WPF 没有对应控件，故自写渲染器（阶段 79）。
+
+### 数据库页（阶段 89：SDE 静态库浏览/搜索）
+```
+ViewModels/DatabasePageViewModel.cs   类型下拉（6 项：物品/分组/星系/星域/空间站/缓存 ID-名称，图标 + 本地化名）、
+                                      350ms 防抖 + 回车立即查；搜索 = 各服务 SearchAsync → ID 去重 → 批量 Query 完整对象
+                                      → 数字 ID 精确置顶（去重）；结果统一截断 500 条并提示；失败页内状态行
+Views/Pages/DatabasePage.xaml(.cs)    单张 CardControl：Header = 类型下拉 + 搜索框 + "搜索结果 N"；
+                                      内容 = ui:DataGrid **自动生成列**（AutoGeneratingColumn 美化：列头 PascalCase 可读化、
+                                      文本列主题前景 + 省略、数值右对齐）+ 阶段 22 外层 ScrollViewer 方案；
+                                      三种覆盖层（未搜索引导 / 无匹配 / 搜索中转圈）；原 PlaceholderPage 占位已删除
+```
+- 数据来源：Core 六个 DB 服务（`InvTypeService` / `InvGroupService` / `MapSolarSystemService` / `MapRegionService` /
+  `StaStationService` / `IDNameDBService`）→ `DBService.MainDb` / `LocalDb`（SDE 静态库）。
+- 与 WinUI 的差异：`AutoSuggestBox` 改成"类型下拉 + 搜索框"；表格自动生成列而非 `SfDataGrid`；
+  搜索无上限 → VM 截断 500 条并提示（WinUI 靠 SfDataGrid 虚拟化硬撑，见阶段 89）。
 
 ### 快速链接模块（阶段 77）
 ```

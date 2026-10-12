@@ -1876,4 +1876,17 @@
     <sys:String x:Key="IMEPage_TranslateFailed">Translation failed: {0}</sys:String>
     <sys:String x:Key="IMEPage_NoTranslation">Nothing to translate (the AI source returned no translation)</sys:String>
     <sys:String x:Key="IMEPage_Back">Back</sys:String>
+    <sys:String x:Key="DatabasePage_InvType">Type</sys:String>
+    <sys:String x:Key="DatabasePage_InvGroup">Group</sys:String>
+    <sys:String x:Key="DatabasePage_MapSystem">Map System</sys:String>
+    <sys:String x:Key="DatabasePage_MapRegion">Map Region</sys:String>
+    <sys:String x:Key="DatabasePage_Station">Station</sys:String>
+    <sys:String x:Key="DatabasePage_IdName">Cached Id And Name</sys:String>
+    <sys:String x:Key="DatabasePage_SearchResult">Results</sys:String>
+    <sys:String x:Key="DatabasePage_SearchTip">Search by name or ID</sys:String>
+    <sys:String x:Key="DatabasePage_Empty">Type a name to search, or enter a numeric ID for an exact lookup</sys:String>
+    <sys:String x:Key="DatabasePage_NoResult">No matching results</sys:String>
+    <sys:String x:Key="DatabasePage_Loading">Searching…</sys:String>
+    <sys:String x:Key="DatabasePage_Truncated">Too many results — showing first {0}. Please refine your search.</sys:String>
+    <sys:String x:Key="DatabasePage_LoadFailed">Search failed: {0}</sys:String>
 </ResourceDictionary>
