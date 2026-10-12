@@ -1,0 +1,237 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.AddShortcutWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource Home.Add.Title}"
+    Width="760"
+    Height="690"
+    MinWidth="560"
+    MinHeight="440"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    ShowInTaskbar="False"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <!--  功能行按钮：自带模板 + 显式 Foreground（§9 第 18 条）  -->
+        <Style x:Key="AddRowButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="RowBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                            <ContentPresenter
+                                Margin="14,8"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="RowBorder" Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  右侧动作按钮（添加 / 已添加）  -->
+        <Style x:Key="AddActionButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="MinWidth" Value="64" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ActionBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ActionBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!--  根部给主题前景色，避免内容里未显式着色的文字在深色下变黑  -->
+    <Grid TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            x:Name="TitleBarHost"
+            Grid.Row="0"
+            Height="34"
+            Title="{DynamicResource Home.Add.Title}">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <Grid Grid.Row="1" Margin="0,6,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  分组  -->
+            <ListBox
+                x:Name="GroupList"
+                Margin="10,0,6,0"
+                Background="Transparent"
+                BorderThickness="0"
+                ItemContainerStyle="{StaticResource StretchListItem}"
+                ItemsSource="{Binding Groups}"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                SelectedItem="{Binding SelectedGroup, Mode=TwoWay}"
+                SelectionChanged="OnGroupSelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock
+                            Margin="8,7"
+                            FontSize="13"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Title}"
+                            TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!--  搜索 + 功能列表  -->
+            <Grid Grid.Column="1" Margin="10,0,14,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <ui:TextBox
+                    x:Name="SearchBox"
+                    Grid.Row="0"
+                    PlaceholderText="{DynamicResource Home.Add.Search}"
+                    TextChanged="OnSearchTextChanged" />
+
+                <ScrollViewer
+                    Grid.Row="1"
+                    Margin="0,10,0,0"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Rows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Margin="0,0,0,6"
+                                    Click="OnRowClick"
+                                    Style="{StaticResource AddRowButton}"
+                                    Tag="{Binding}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:SymbolIcon
+                                            Grid.Column="0"
+                                            Margin="0,0,12,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="20"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Symbol="{Binding Icon}" />
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock
+                                                FontSize="13.5"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Title}" />
+                                            <TextBlock
+                                                Margin="0,2,8,0"
+                                                FontSize="11.5"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding Description}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <Button
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Click="OnRowActionClick"
+                                            Content="{Binding ActionText}"
+                                            Style="{StaticResource AddActionButton}"
+                                            Tag="{Binding}" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!--  底栏  -->
+        <Grid Grid.Row="2" Margin="16,10,16,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock
+                    FontSize="12.5"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding SummaryText}" />
+                <TextBlock
+                    Margin="0,2,0,0"
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource Home.Add.Hint}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <ui:Button
+                Grid.Column="1"
+                MinWidth="88"
+                VerticalAlignment="Center"
+                Appearance="Primary"
+                Click="OnCloseClick"
+                Content="{DynamicResource Home.Quick.Done}" />
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

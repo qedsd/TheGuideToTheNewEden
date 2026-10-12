@@ -1,6 +1,9 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Characters;
+using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
@@ -14,6 +17,11 @@ public partial class CharacterCardsPage : Page
 
     /// <summary>点击角色卡片时触发（由壳页打开对应标签）。</summary>
     public event EventHandler<CharacterCardViewModel>? CharacterActivated;
+
+    /// <summary>
+    /// 卡片列表重载完成（含首次装入）。壳页用它兜住"要打开的角色卡片还没加载出来"这种情况。
+    /// </summary>
+    public event EventHandler? CardsReloaded;
 
     public CharacterCardsPage()
     {
@@ -32,8 +40,18 @@ public partial class CharacterCardsPage : Page
 
     public Task ReloadAsync(bool forceRefresh = false)
     {
-        return _viewModel.LoadAsync(forceRefresh).ContinueWith(_ => UpdateEmptyState(), TaskScheduler.FromCurrentSynchronizationContext());
+        return _viewModel.LoadAsync(forceRefresh).ContinueWith(
+            _ =>
+            {
+                UpdateEmptyState();
+                CardsReloaded?.Invoke(this, EventArgs.Empty);
+            },
+            TaskScheduler.FromCurrentSynchronizationContext());
     }
+
+    /// <summary>按角色 ID 找卡片（主页"角色 + 指定角色"快捷方式用）。</summary>
+    public CharacterCardViewModel? FindCard(long characterId)
+        => _viewModel.Cards.FirstOrDefault(p => !p.IsAdd && p.CharacterId == characterId);
 
     private void UpdateEmptyState()
     {
@@ -69,6 +87,33 @@ public partial class CharacterCardsPage : Page
         {
             menu.PlacementTarget = element;
             menu.IsOpen = true;
+        }
+    }
+
+    /// <summary>
+    /// 把该角色固定到主页（P3 参数化磁贴：<c>characters + 角色 ID</c>）——
+    /// 点主页磁贴会直接打开这个角色的工作区标签。
+    /// </summary>
+    private void PinCharacter_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not CharacterCardViewModel card || card.IsAdd)
+        {
+            return;
+        }
+
+        // 阻止事件冒泡到卡片本身（避免同时触发"打开"）
+        e.Handled = true;
+
+        if (HomeShortcutService.Add(
+                "characters", card.CharacterId.ToString(CultureInfo.InvariantCulture), card.Name))
+        {
+            PageNotifyService.Success(string.Format(FindString("Home.Quick.Pinned"), card.Name));
+        }
+        else
+        {
+            PageNotifyService.Info(HomeShortcutService.IsFull
+                ? string.Format(FindString("Home.Quick.LimitReached"), HomeShortcutService.MaxItems)
+                : string.Format(FindString("Home.Quick.AlreadyPinned"), card.Name));
         }
     }
 

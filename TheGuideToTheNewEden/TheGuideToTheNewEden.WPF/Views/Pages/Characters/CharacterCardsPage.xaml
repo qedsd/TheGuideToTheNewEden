@@ -219,6 +219,8 @@
                                                 Click="MoreCharacter_Click">
                                                 <ui:Button.ContextMenu>
                                                     <ContextMenu>
+                                                        <MenuItem Click="PinCharacter_Click" Header="{DynamicResource Home.Quick.PinCurrent}" />
+                                                        <Separator />
                                                         <MenuItem Click="RemoveCharacter_Click" Header="{DynamicResource CharacterPage_Remove}" />
                                                     </ContextMenu>
                                                 </ui:Button.ContextMenu>

@@ -20,13 +20,64 @@ public partial class CharactersShellPage : Page
         InitializeComponent();
 
         _cardsPage.CharacterActivated += (_, card) => OpenCharacter(card);
+        _cardsPage.CardsReloaded += (_, _) => ApplyPendingCharacter();
 
         // 运行时切换游戏服务器：另一个服务器的角色标签已失效，全部关掉并重载卡片。
         CoreInitializer.GameServerChanged += OnGameServerChanged;
 
+        // 外部（主页"角色 + 指定角色"快捷方式）请求打开某个角色的工作区
+        Navigation.CharacterWorkspaceRequested += OnCharacterWorkspaceRequested;
+
         Tabs.Items.Add(CreateTabItem(BuildTextHeader(FindString("Characters.Title")), HostInFrame(_cardsPage)));
 
-        Loaded += async (_, _) => await _cardsPage.ReloadAsync();
+        Loaded += async (_, _) =>
+        {
+            await _cardsPage.ReloadAsync();
+            ApplyPendingCharacter();
+        };
+    }
+
+    private void OnCharacterWorkspaceRequested(long characterId)
+    {
+        // 请求已经交到手里，清掉待办（真正打开失败时会在卡片重载后由 ApplyPendingCharacter 回存）
+        Navigation.TakePendingCharacter();
+        OpenCharacterById(characterId);
+    }
+
+    /// <summary>按角色 ID 打开工作区标签；卡片还没加载出来时记为待办，等卡片重载后再开。</summary>
+    public void OpenCharacterById(long characterId)
+    {
+        if (characterId <= 0)
+        {
+            return;
+        }
+
+        var card = _cardsPage.FindCard(characterId);
+        if (card is null)
+        {
+            Navigation.SetPendingCharacter(characterId);
+            return;
+        }
+
+        OpenCharacter(card);
+    }
+
+    private void ApplyPendingCharacter()
+    {
+        if (Navigation.TakePendingCharacter() is not { } characterId)
+        {
+            return;
+        }
+
+        var card = _cardsPage.FindCard(characterId);
+        if (card is null)
+        {
+            // 卡片真的不存在（角色被移除 / 换了服务器）：不再重试，写一条日志即可。
+            Core.Log.Warn($"[主页] 找不到角色 {characterId} 的卡片，无法打开其工作区。");
+            return;
+        }
+
+        OpenCharacter(card);
     }
 
     /// <summary>标签外观走全局隐式 TabItem 样式；标签内容统一用 Frame 承载。</summary>

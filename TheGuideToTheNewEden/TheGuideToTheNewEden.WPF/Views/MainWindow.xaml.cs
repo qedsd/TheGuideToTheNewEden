@@ -1,10 +1,14 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.Services.Tools;
 using Wpf.Ui.Controls;
+// WPF-UI 也有自己的 MenuItem，菜单项这里一律用 WPF 原生的那个。
+using MenuItem = System.Windows.Controls.MenuItem;
 
 namespace TheGuideToTheNewEden.WPF.Views;
 
@@ -114,12 +118,174 @@ public partial class MainWindow : FluentWindow
 
         // 页面级等待遮罩 / 右下角即时通知（ShowWaiting、ShowSuccess 等）
         PageNotifyService.Register(WaitingOverlay, MessageHost);
+
+        // 左侧导航项右键：固定 / 取消固定到主页（主页快捷方式的最短入口）
+        AttachHomeShortcutMenus();
     }
 
     private void ApplyFrameMargin()
     {
         NavigationView.FrameMargin = new Thickness(0, NavigationTopInset, 0, 0);
     }
+
+    // ---------- 导航右键：固定到主页 ----------
+
+    /// <summary>
+    /// 给每个<b>叶子</b>导航项挂右键菜单（打开 / 固定到主页 / 从主页取消固定 / 管理快捷方式…）。
+    /// 菜单文案在 <see cref="OnHomeShortcutMenuOpened"/> 里现取，因此语言切换后无需额外处理。
+    /// <para>
+    /// 同时做一次<b>目录 ↔ 导航的双向比对</b>：将来新增导航页却忘了在功能目录里登记
+    /// （或反过来目录里写了一个不存在的页面）时，日志里会直接看到，而不是"右键没有菜单"这种哑故障。
+    /// </para>
+    /// </summary>
+    private void AttachHomeShortcutMenus()
+    {
+        var navItems = EnumerateNavigationItems().ToList();
+        var navPageTypes = new HashSet<Type>();
+
+        foreach (var item in navItems)
+        {
+            if (item.TargetPageType is not { } pageType)
+            {
+                continue; // 分组父项（商业 / 频道 / …）
+            }
+
+            navPageTypes.Add(pageType);
+
+            if (HomeFeatureCatalog.NavigationExclusions.Contains(pageType))
+            {
+                continue; // 主页自己不需要快捷方式
+            }
+
+            var feature = HomeFeatureCatalog.FindByPageType(pageType);
+            if (feature is null)
+            {
+                Core.Log.Warn($"[主页] 导航项「{item.Content}」没有对应的功能目录条目（{pageType.Name}），它无法被固定到主页。");
+                continue;
+            }
+
+            item.ContextMenu = BuildHomeShortcutMenu(feature);
+        }
+
+        foreach (var feature in HomeFeatureCatalog.Features.Where(p => p.PageType is not null))
+        {
+            if (!navPageTypes.Contains(feature.PageType!))
+            {
+                Core.Log.Warn($"[主页] 功能目录里的 {feature.Id}（{feature.PageType!.Name}）不在左侧导航中，主页磁贴点了会跳不过去。");
+            }
+        }
+    }
+
+    private IEnumerable<NavigationViewItem> EnumerateNavigationItems()
+        => EnumerateNavigationItems(
+            NavigationView.MenuItems.Cast<object>().Concat(NavigationView.FooterMenuItems.Cast<object>()));
+
+    private static IEnumerable<NavigationViewItem> EnumerateNavigationItems(IEnumerable<object> items)
+    {
+        foreach (var entry in items)
+        {
+            if (entry is not NavigationViewItem item)
+            {
+                continue;
+            }
+
+            yield return item;
+
+            // WPF-UI 的 NavigationViewItem.MenuItems 是非泛型 IList。
+            foreach (var child in EnumerateNavigationItems(item.MenuItems.Cast<object>()))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private static ContextMenu BuildHomeShortcutMenu(HomeFeature feature)
+    {
+        var menu = new ContextMenu { Tag = feature };
+
+        menu.Items.Add(CreateMenuItem("open", OnHomeShortcutMenuOpenClick));
+        menu.Items.Add(CreateMenuItem("pin", OnHomeShortcutMenuPinClick));
+        menu.Items.Add(CreateMenuItem("unpin", OnHomeShortcutMenuUnpinClick));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(CreateMenuItem("manage", OnHomeShortcutMenuManageClick));
+        menu.Opened += OnHomeShortcutMenuOpened;
+
+        return menu;
+
+        static MenuItem CreateMenuItem(string role, RoutedEventHandler handler)
+        {
+            var item = new MenuItem { Tag = role };
+            item.Click += handler;
+            return item;
+        }
+    }
+
+    private static void OnHomeShortcutMenuOpened(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ContextMenu { Tag: HomeFeature feature } menu)
+        {
+            return;
+        }
+
+        var pinned = HomeShortcutService.Contains(feature.Id);
+        foreach (var item in menu.Items.OfType<MenuItem>())
+        {
+            switch (item.Tag)
+            {
+                case "open":
+                    item.Header = Resolve("Home.Quick.Open");
+                    break;
+
+                case "pin":
+                    item.Header = Resolve("Home.Quick.Pin");
+                    item.Visibility = pinned ? Visibility.Collapsed : Visibility.Visible;
+                    break;
+
+                case "unpin":
+                    item.Header = Resolve("Home.Quick.Unpin");
+                    item.Visibility = pinned ? Visibility.Visible : Visibility.Collapsed;
+                    break;
+
+                case "manage":
+                    item.Header = Resolve("Home.Quick.Manage");
+                    break;
+            }
+        }
+    }
+
+    private static HomeFeature? FeatureFromMenu(object sender)
+        => sender is MenuItem { Parent: ContextMenu { Tag: HomeFeature feature } } ? feature : null;
+
+    private static void OnHomeShortcutMenuOpenClick(object sender, RoutedEventArgs e)
+        => HomeFeatureLauncher.Open(FeatureFromMenu(sender));
+
+    private static void OnHomeShortcutMenuPinClick(object sender, RoutedEventArgs e)
+    {
+        if (FeatureFromMenu(sender) is not { } feature)
+        {
+            return;
+        }
+
+        if (!HomeShortcutService.Add(feature.Id) && HomeShortcutService.IsFull)
+        {
+            PageNotifyService.Warning(string.Format(
+                Resolve("Home.Quick.LimitReached"), HomeShortcutService.MaxItems));
+        }
+    }
+
+    private static void OnHomeShortcutMenuUnpinClick(object sender, RoutedEventArgs e)
+    {
+        if (FeatureFromMenu(sender) is { } feature)
+        {
+            HomeShortcutService.Remove(feature.Id);
+        }
+    }
+
+    private static void OnHomeShortcutMenuManageClick(object sender, RoutedEventArgs e)
+        => Views.Windows.AddShortcutWindow.ShowWindow();
+
+    private static string Resolve(string key)
+        => Application.Current?.TryFindResource(key) as string ?? key;
 
     /// <summary>
     /// 拦下「工具」分组页面的导航：取消这次导航，改为打开（或激活）对应的**独立工具窗口**。

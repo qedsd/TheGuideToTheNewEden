@@ -1,8 +1,11 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.Services.Map;
 using TheGuideToTheNewEden.WPF.ViewModels.Map;
 using TheGuideToTheNewEden.WPF.Views.UserControls.Map;
@@ -68,8 +71,70 @@ public partial class MapPage : Page
         _viewModel.StatisticsLoaded += (_, _) => _ = ApplyColorModeAsync(_viewModel.ColorMode);
 
         CharacterLocationService.Current.LocationsUpdated += CharacterLocationsUpdated;
+        Services.Navigation.SystemLocationRequested += OnSystemLocationRequested;
         Loaded += MapPage_Loaded;
         Unloaded += MapPage_Unloaded;
+    }
+
+    /// <summary>
+    /// 把当前选中的星系固定到主页（P3 参数化磁贴：<c>map + 星系 ID</c>）——
+    /// 点主页磁贴会跳回星图并定位到该星系。
+    /// </summary>
+    private void PinSystemButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.SelectedSystem is not { } node)
+        {
+            PageNotifyService.Info(FindString("Home.Quick.PinNeedSelection"));
+            return;
+        }
+
+        if (HomeShortcutService.Add("map", node.Id.ToString(CultureInfo.InvariantCulture), node.Name))
+        {
+            PageNotifyService.Success(string.Format(FindString("Home.Quick.Pinned"), node.Name));
+        }
+        else
+        {
+            PageNotifyService.Info(HomeShortcutService.IsFull
+                ? string.Format(FindString("Home.Quick.LimitReached"), HomeShortcutService.MaxItems)
+                : string.Format(FindString("Home.Quick.AlreadyPinned"), node.Name));
+        }
+    }
+
+    /// <summary>外部请求"定位到某个星系"（主页参数化磁贴 / 其它页面）。</summary>
+    private void OnSystemLocationRequested(int systemId)
+    {
+        // 事件路径已经把请求交到手里，清掉待办，避免下次进入星图时又定位一次。
+        Services.Navigation.TakePendingSystem();
+        LocateSystem(systemId);
+    }
+
+    /// <summary>
+    /// 程序化定位到某个星系。页面还没装载好时把请求**回存为待办**，
+    /// 由 <see cref="ApplyPendingSystem"/> 在数据就绪后消费（否则画布上还没有节点，定位会静默失败）。
+    /// </summary>
+    public void LocateSystem(int systemId)
+    {
+        if (systemId <= 0)
+        {
+            return;
+        }
+
+        if (!_initialized)
+        {
+            Services.Navigation.SetPendingSystem(systemId);
+            return;
+        }
+
+        Locate(systemId);
+    }
+
+    /// <summary>消费"待定位星系"（主页参数化磁贴跳过来时用）。</summary>
+    private void ApplyPendingSystem()
+    {
+        if (Services.Navigation.TakePendingSystem() is { } systemId)
+        {
+            Locate(systemId);
+        }
     }
 
     private async void MapPage_Loaded(object sender, RoutedEventArgs e)
@@ -77,6 +142,8 @@ public partial class MapPage : Page
         // 页面常驻缓存：只装载一次；失败时不置 IsLoaded，下次进入会重试
         if (_viewModel.IsLoaded || _viewModel.IsLoading)
         {
+            // 已经装载过：直接消费"待定位星系"（参数化磁贴可能是重复进入本页）。
+            ApplyPendingSystem();
             return;
         }
 
@@ -118,6 +185,9 @@ public partial class MapPage : Page
 
         ApplyBridges();
         await ApplyColorModeAsync(_viewModel.ColorMode);
+
+        // 数据就绪后再消费"待定位星系"（此时画布上已经有节点）
+        ApplyPendingSystem();
     }
 
     /// <summary>

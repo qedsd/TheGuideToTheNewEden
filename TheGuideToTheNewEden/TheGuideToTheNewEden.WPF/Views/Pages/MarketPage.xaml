@@ -221,6 +221,19 @@
                                 </ui:Button.Icon>
                             </ui:Button>
 
+                            <!--  固定到主页（P3 参数化磁贴：市场 + 当前物品）  -->
+                            <ui:Button
+                                MinWidth="34"
+                                MinHeight="30"
+                                Margin="0,0,6,0"
+                                AutomationProperties.Name="{DynamicResource Home.Quick.PinCurrent}"
+                                Click="OnPinToHomeClick"
+                                ToolTip="{DynamicResource Home.Quick.PinCurrent}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon FontSize="20" Symbol="Pin24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+
                             <!--  物品说明：独立窗口（后续在那里扩展 SDE 更详细属性）  -->
                             <ui:Button
                                 MinWidth="34"

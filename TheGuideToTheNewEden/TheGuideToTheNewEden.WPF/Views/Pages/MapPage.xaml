@@ -100,6 +100,17 @@
                         <ComboBoxItem Content="{DynamicResource MapPage_ResourceMagmaticGas}" />
                         <ComboBoxItem Content="{DynamicResource MapPage_ResourceSuperionicIce}" />
                     </ComboBox>
+                    <ui:Button
+                        x:Name="PinSystemButton"
+                        Margin="8,0,0,0"
+                        Appearance="Secondary"
+                        Click="PinSystemButton_Click"
+                        Content="{DynamicResource Home.Quick.PinCurrent}"
+                        ToolTip="{DynamicResource Home.Quick.PinSystemTip}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Pin24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <!--  星域 / 安等筛选  -->
                     <ui:Button
                         x:Name="FilterButton"

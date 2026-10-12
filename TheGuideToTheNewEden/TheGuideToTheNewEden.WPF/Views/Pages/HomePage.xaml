@@ -1,0 +1,1222 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--
+        主页（见 HOME_DESIGN.md）：
+        · 品牌 / 状态条（104）——原来是 WinUI 版占掉 1/3 首屏的大图 Hero，这里压成一条；
+        · 快捷方式（磁贴网格，可增删 / 拖动排序 / 小宽两档 / 分组分段 / 状态角标）；
+        · 数据卡：我的钱包 + 我的行情（左右两栏，窄窗口下自动上下堆叠）。
+        顶层导航页不写页面标题（§10「UI 约定」），第一行直接是品牌条。
+    -->
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!--
+            品牌条的配色：它是一块**固定深色的图片区**（与 WinUI 版一样铺 home.jpg + 暗化遮罩），
+            所以这里的浅色 / 半透明色是刻意写死的——只要求"在深底上可读"，
+            不参与深浅主题切换（若写成主题资源，浅色主题下白底白字反而不可读）。
+        -->
+        <SolidColorBrush x:Key="HeroTextBrush" Color="#FFFFFFFF" />
+        <SolidColorBrush x:Key="HeroSecondaryTextBrush" Color="#E6FFFFFF" />
+        <SolidColorBrush x:Key="HeroPillBrush" Color="#59000000" />
+        <SolidColorBrush x:Key="HeroPillStrokeBrush" Color="#33FFFFFF" />
+        <SolidColorBrush x:Key="HeroButtonBrush" Color="#33FFFFFF" />
+        <SolidColorBrush x:Key="HeroButtonHoverBrush" Color="#59FFFFFF" />
+        <SolidColorBrush x:Key="HeroUpdateBrush" Color="#59FFB900" />
+
+        <!--  磁贴：自带模板 + 显式 Foreground（显式样式会顶掉隐式样式，见 §9 第 18 条）  -->
+        <Style x:Key="HomeTileButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border
+                                x:Name="TileBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                                <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                            </Border>
+                            <!--  拖动落位指示（强调色描边）  -->
+                            <Border
+                                x:Name="DropFrame"
+                                BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Visibility="Collapsed" />
+                            <!--  键盘焦点环  -->
+                            <Border
+                                x:Name="FocusFrame"
+                                Margin="3"
+                                BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Visibility="Collapsed" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TileBorder" Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="TileBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="FocusFrame" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsDragging}" Value="True">
+                                <Setter TargetName="TileBorder" Property="Opacity" Value="0.4" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
+                                <Setter TargetName="DropFrame" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  磁贴右上角的 ✕（编辑态）  -->
+        <Style x:Key="HomeTileRemoveButton" TargetType="Button">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="RemoveBorder"
+                            Background="#E6000000"
+                            BorderBrush="#40FFFFFF"
+                            BorderThickness="1"
+                            CornerRadius="10">
+                            <ui:SymbolIcon
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="#FFFFFFFF"
+                                Symbol="Dismiss24" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RemoveBorder" Property="Background" Value="#FF1F1F1F" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  品牌条右侧的图标按钮  -->
+        <Style x:Key="HeroIconButton" TargetType="Button">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="HeroButtonBorder"
+                            Background="{StaticResource HeroButtonBrush}"
+                            BorderBrush="{StaticResource HeroPillStrokeBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeroButtonBorder" Property="Background" Value="{StaticResource HeroButtonHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  品牌条上的状态胶囊  -->
+        <Style x:Key="HeroPill" TargetType="Border">
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="CornerRadius" Value="13" />
+            <Setter Property="Background" Value="{StaticResource HeroPillBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource HeroPillStrokeBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <!--  行情卡里的小卡（可点击 → 跳市场页选中该物品）  -->
+        <Style x:Key="MarketMiniCard" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Width" Value="168" />
+            <Setter Property="Height" Value="86" />
+            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="MiniBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="MiniBorder" Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+                                <Setter TargetName="MiniBorder" Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  最近使用的小胶囊  -->
+        <Style x:Key="RecentChipButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="0,0,6,4" />
+            <Setter Property="Padding" Value="9,4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ChipBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4">
+                            <ContentPresenter
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ChipBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--
+            磁贴模板（平铺与分组两处共用，避免同一份 150 行 XAML 写两遍）。
+            末尾的「＋ 添加功能」用同一个模板、按 IsAddSlot 切换外观。
+        -->
+        <DataTemplate x:Key="HomeTileTemplate">
+            <Button
+                Width="{Binding TileWidth}"
+                Height="112"
+                Margin="0,0,12,12"
+                AllowDrop="True"
+                Click="OnTileClick"
+                ContextMenuOpening="OnTileContextMenuOpening"
+                DragLeave="OnTileDragLeave"
+                DragOver="OnTileDragOver"
+                Drop="OnTileDrop"
+                PreviewKeyDown="OnTileKeyDown"
+                PreviewMouseLeftButtonDown="OnTileMouseLeftButtonDown"
+                PreviewMouseMove="OnTileMouseMove"
+                Style="{StaticResource HomeTileButton}"
+                Tag="{Binding}"
+                ToolTip="{Binding DetailToolTip}">
+                <Button.ContextMenu>
+                    <!--  菜单项的可访问性：模板里的 x:Name 不是类字段，改用 Tag 标角色  -->
+                    <ContextMenu Opened="OnTileMenuOpened">
+                        <MenuItem Click="OnMenuOpenClick" Tag="open" />
+                        <MenuItem Click="OnMenuMoveFirstClick" Tag="first" />
+                        <MenuItem Click="OnMenuSizeClick" Tag="size" />
+                        <Separator />
+                        <MenuItem Click="OnMenuRemoveClick" Tag="remove" />
+                    </ContextMenu>
+                </Button.ContextMenu>
+
+                <Grid>
+                    <!--  ＋ 添加功能（添加槽位）  -->
+                    <Grid Visibility="{Binding IsAddSlot, Converter={StaticResource BoolToVisibility}}">
+                        <Rectangle
+                            Fill="Transparent"
+                            RadiusX="8"
+                            RadiusY="8"
+                            Stroke="{DynamicResource CardStrokeColorDefaultBrush}"
+                            StrokeDashArray="3 3"
+                            StrokeThickness="1" />
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ui:SymbolIcon
+                                HorizontalAlignment="Center"
+                                FontSize="24"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Add24" />
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="12.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Home.Quick.AddTile}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  小磁贴：图标居中 + 名称（最多两行）  -->
+                    <StackPanel
+                        Margin="8,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsSmall, Converter={StaticResource BoolToVisibility}}">
+                        <ui:SymbolIcon
+                            HorizontalAlignment="Center"
+                            FontSize="28"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Symbol="{Binding Icon}" />
+                        <TextBlock
+                            MaxHeight="38"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            LineHeight="18"
+                            Text="{Binding Title}"
+                            TextAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <!--  宽磁贴：左图标 + 名称 / 副标题  -->
+                    <Grid
+                        Margin="18,0"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsWide, Converter={StaticResource BoolToVisibility}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ui:SymbolIcon
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            FontSize="26"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Symbol="{Binding Icon}" />
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Title}"
+                                TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Subtitle}"
+                                TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  状态角标（运行态：预警中 / 监控中 / 多开中 / 击杀流已连 / 有收藏）  -->
+                    <Border
+                        Width="12"
+                        Height="12"
+                        Margin="0,8,8,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource SystemFillColorCautionBrush}"
+                        CornerRadius="6"
+                        ToolTip="{Binding BadgeToolTip}"
+                        Visibility="{Binding HasBadge, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!--  编辑态：右上角 ✕  -->
+                    <Button
+                        Margin="0,6,6,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Click="OnRemoveClick"
+                        Style="{StaticResource HomeTileRemoveButton}"
+                        Tag="{Binding}"
+                        ToolTip="{DynamicResource Home.Quick.Remove}"
+                        Visibility="{Binding ShowRemoveButton, Converter={StaticResource BoolToVisibility}}" />
+                </Grid>
+            </Button>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer
+        x:Name="RootScroll"
+        HorizontalScrollBarVisibility="Disabled"
+        PreviewKeyDown="OnRootPreviewKeyDown"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16,4,16,16">
+
+            <!--  ============ 品牌 / 状态条 ============  -->
+            <Border
+                Height="104"
+                CornerRadius="8"
+                ClipToBounds="True">
+                <Grid>
+                    <!--  没有品牌图时（资源缺失）退化为深色渐变，界面不会因此崩  -->
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="#FF16203A" />
+                            <GradientStop Offset="1" Color="#FF0A0C12" />
+                        </LinearGradientBrush>
+                    </Grid.Background>
+
+                    <Image x:Name="HeroImage" Stretch="UniformToFill" />
+
+                    <!--  左侧暗化，保证文字在任意图片区域上都可读  -->
+                    <Border>
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Offset="0" Color="#E6000000" />
+                                <GradientStop Offset="0.55" Color="#66000000" />
+                                <GradientStop Offset="1" Color="#26000000" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <Grid Margin="22,16,22,14">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--  第一行：应用名 + 版本号  -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="22"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource HeroTextBrush}"
+                                Text="{Binding AppName}" />
+                            <Border
+                                Margin="10,0,0,0"
+                                Padding="9,2"
+                                VerticalAlignment="Center"
+                                Background="{StaticResource HeroButtonBrush}"
+                                BorderBrush="{StaticResource HeroPillStrokeBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10">
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{StaticResource HeroTextBrush}"
+                                    Text="{Binding VersionText}" />
+                            </Border>
+                        </StackPanel>
+
+                        <!--  第二行：状态胶囊（左）+ 社区 / 工具按钮（右）  -->
+                        <Grid Grid.Row="1" VerticalAlignment="Bottom">
+                            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                                <Border Style="{StaticResource HeroPill}" ToolTip="{DynamicResource Home.Status.PlayersTip}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Symbol="Pulse24" />
+                                        <TextBlock
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Text="{Binding PlayersText}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource HeroPill}" ToolTip="{DynamicResource Home.Status.GameTimeTip}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Symbol="Clock24" />
+                                        <TextBlock
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Text="{Binding GameTimeText}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border
+                                    Background="{StaticResource HeroUpdateBrush}"
+                                    Cursor="Hand"
+                                    MouseLeftButtonUp="OnUpdatePillClick"
+                                    Style="{StaticResource HeroPill}"
+                                    ToolTip="{DynamicResource Home.Status.NewVersionTip}"
+                                    Visibility="{Binding HasNewVersion, Converter={StaticResource BoolToVisibility}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Symbol="CloudArrowDown24" />
+                                        <TextBlock
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Text="{Binding NewVersionText}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                <Button
+                                    Click="OnOpenManualClick"
+                                    Style="{StaticResource HeroIconButton}"
+                                    ToolTip="{DynamicResource Home.Action.Manual}">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Symbol="BookQuestionMark24" />
+                                </Button>
+                                <Button
+                                    Click="OnOpenAboutClick"
+                                    Style="{StaticResource HeroIconButton}"
+                                    ToolTip="{DynamicResource Home.Action.About}">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Symbol="Info24" />
+                                </Button>
+                                <Button
+                                    Click="OnOpenLogClick"
+                                    Style="{StaticResource HeroIconButton}"
+                                    ToolTip="{DynamicResource Home.Action.OpenLog}">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Symbol="DocumentBulletList24" />
+                                </Button>
+                                <Button
+                                    Click="OnOpenConfigClick"
+                                    Style="{StaticResource HeroIconButton}"
+                                    ToolTip="{DynamicResource Home.Action.OpenConfigFolder}">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Symbol="Folder24" />
+                                </Button>
+                                <Button
+                                    Click="OnOpenGithubClick"
+                                    Style="{StaticResource HeroIconButton}"
+                                    ToolTip="GitHub">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Symbol="Code24" />
+                                </Button>
+                                <Button
+                                    Click="OnOpenQqGroupClick"
+                                    Style="{StaticResource HeroIconButton}"
+                                    ToolTip="{DynamicResource Home.Status.QqGroup}">
+                                    <ui:SymbolIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Symbol="Chat24" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!--  ============ 快捷方式 ============  -->
+            <controls:CardControl
+                x:Name="QuickCard"
+                Margin="0,12,0,0"
+                Padding="16,8"
+                CornerRadius="8">
+                <controls:CardControl.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource Home.Quick.Title}" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding CountText}" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <ui:Button
+                                x:Name="MoreButton"
+                                Appearance="Transparent"
+                                Click="OnMoreClick"
+                                Icon="{ui:SymbolIcon MoreHorizontal24}"
+                                ToolTip="{DynamicResource Home.Quick.More}">
+                                <ui:Button.ContextMenu>
+                                    <ContextMenu Opened="OnMoreMenuOpened">
+                                        <MenuItem Click="OnToggleGroupedClick" IsCheckable="True" Tag="grouped" />
+                                        <MenuItem Click="OnToggleWalletClick" IsCheckable="True" Tag="wallet" />
+                                        <MenuItem Click="OnToggleMarketClick" IsCheckable="True" Tag="market" />
+                                        <MenuItem Click="OnToggleRecentClick" IsCheckable="True" Tag="recent" />
+                                        <Separator />
+                                        <MenuItem Click="OnMenuManageClick" Tag="manage" />
+                                        <MenuItem Click="OnMenuHomeSettingClick" Tag="setting" />
+                                    </ContextMenu>
+                                </ui:Button.ContextMenu>
+                            </ui:Button>
+
+                            <ui:Button
+                                x:Name="EditButton"
+                                Margin="4,0,0,0"
+                                Appearance="Transparent"
+                                Click="OnEditClick"
+                                Content="{Binding EditButtonText}" />
+
+                            <ui:Button
+                                x:Name="AddButton"
+                                Margin="8,0,0,0"
+                                Appearance="Primary"
+                                Click="OnAddClick"
+                                IsEnabled="{Binding CanAdd}"
+                                ToolTip="{DynamicResource Home.Quick.AddTip}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,6,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Symbol="Add24" />
+                                    <TextBlock VerticalAlignment="Center" Text="{DynamicResource Home.Quick.Add}" />
+                                </StackPanel>
+                            </ui:Button>
+                        </StackPanel>
+                    </Grid>
+                </controls:CardControl.Header>
+
+                <StackPanel>
+                    <!--  「最近使用」（P2；开关打开时才有内容）  -->
+                    <Grid
+                        Margin="0,0,0,10"
+                        Visibility="{Binding ShowRecent, Converter={StaticResource BoolToVisibility}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            Grid.Column="0"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            FontSize="11.5"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource Home.Recent.Title}" />
+
+                        <ItemsControl
+                            Grid.Column="1"
+                            ItemsSource="{Binding RecentTiles}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Click="OnRecentClick"
+                                        Style="{StaticResource RecentChipButton}"
+                                        Tag="{Binding}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Symbol="{Binding Icon}" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Title}" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ui:Button
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Appearance="Transparent"
+                            Click="OnClearRecentClick"
+                            Icon="{ui:SymbolIcon Eraser24}"
+                            ToolTip="{DynamicResource Home.Setting.ClearRecent}" />
+                    </Grid>
+
+                    <!--  平铺显示  -->
+                    <ItemsControl
+                        x:Name="TileList"
+                        ItemTemplate="{StaticResource HomeTileTemplate}"
+                        ItemsSource="{Binding Tiles}"
+                        Visibility="{Binding ShowFlat, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <!--  分组显示（分段；P3）：每段一个小标题 + 一段磁贴  -->
+                    <ItemsControl ItemsSource="{Binding Groups}" Visibility="{Binding ShowGrouped, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,4">
+                                    <StackPanel Margin="0,2,0,6" Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="12.5"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Title}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                            Text="{Binding CountText}" />
+                                    </StackPanel>
+                                    <ItemsControl ItemTemplate="{StaticResource HomeTileTemplate}" ItemsSource="{Binding Tiles}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!--  空态引导  -->
+                    <TextBlock
+                        Margin="2,10,2,4"
+                        FontSize="12.5"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Home.Quick.Empty}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!--  编辑态提示条  -->
+                    <Border
+                        Margin="0,10,0,2"
+                        Padding="12,7"
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                        CornerRadius="5"
+                        Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Info24" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="8,0,8,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Home.Quick.EditHint}"
+                                TextWrapping="Wrap" />
+                            <ui:Button
+                                Grid.Column="2"
+                                Appearance="Transparent"
+                                Click="OnRestoreDefaultsClick"
+                                Content="{DynamicResource Home.Quick.RestoreDefaults}" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </controls:CardControl>
+
+            <!--  ============ 数据卡：我的钱包 + 我的行情 ============  -->
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!--  我的钱包（P1）  -->
+                <controls:CardControl
+                    Grid.Column="0"
+                    Padding="16,8"
+                    CornerRadius="8"
+                    Visibility="{Binding ShowWalletCard, Converter={StaticResource BoolToVisibility}}">
+                    <controls:CardControl.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{DynamicResource Home.Wallet.Title}" />
+                                <controls:SpinnerIcon
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    IsActive="{Binding Wallet.IsLoading}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <ComboBox
+                                    Width="112"
+                                    VerticalAlignment="Center"
+                                    ItemsSource="{Binding Wallet.RangeLabels}"
+                                    SelectedIndex="{Binding Wallet.RangeIndex, Mode=TwoWay}" />
+                                <ui:Button
+                                    Margin="6,0,0,0"
+                                    Appearance="Transparent"
+                                    Click="OnRefreshWalletClick"
+                                    Icon="{ui:SymbolIcon ArrowSync24}"
+                                    ToolTip="{DynamicResource General_Refresh}" />
+                            </StackPanel>
+                        </Grid>
+                    </controls:CardControl.Header>
+
+                    <StackPanel>
+                        <!--  没有登录角色  -->
+                        <StackPanel
+                            Margin="0,6,0,6"
+                            Orientation="Horizontal"
+                            Visibility="{Binding Wallet.HasNoCharacter, Converter={StaticResource BoolToVisibility}}">
+                            <ui:SymbolIcon
+                                VerticalAlignment="Center"
+                                FontSize="20"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Person24" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                MaxWidth="420"
+                                VerticalAlignment="Center"
+                                FontSize="12.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Home.Wallet.NoCharacter}"
+                                TextWrapping="Wrap" />
+                            <ui:Button
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                Appearance="Primary"
+                                Click="OnGoCharactersClick"
+                                Content="{DynamicResource Home.Wallet.GoCharacters}" />
+                        </StackPanel>
+
+                        <!--  有角色但全部失败  -->
+                        <TextBlock
+                            Margin="0,6,0,6"
+                            FontSize="12.5"
+                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                            Text="{DynamicResource Home.Wallet.AllFailed}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding Wallet.HasAllFailed, Converter={StaticResource BoolToVisibility}}" />
+
+                        <!--  有数据  -->
+                        <StackPanel Visibility="{Binding Wallet.ShowContent, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Wallet.TotalLabel}" />
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                FontSize="23"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Wallet.BalanceText}" />
+
+                            <WrapPanel Margin="0,8,0,0">
+                                <StackPanel Margin="0,0,24,4" Orientation="Horizontal">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{DynamicResource Home.Wallet.IncomeLabel}" />
+                                    <TextBlock
+                                        Margin="6,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                        Text="{Binding Wallet.IncomeText}" />
+                                </StackPanel>
+                                <StackPanel Margin="0,0,24,4" Orientation="Horizontal">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{DynamicResource Home.Wallet.OutcomeLabel}" />
+                                    <TextBlock
+                                        Margin="6,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                        Text="{Binding Wallet.OutcomeText}" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    VerticalAlignment="Center"
+                                    FontSize="11.5"
+                                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                    Text="{Binding Wallet.FailedText}"
+                                    Visibility="{Binding Wallet.HasPartialFailure, Converter={StaticResource BoolToVisibility}}" />
+                            </WrapPanel>
+
+                            <Border Height="1" Margin="0,8,0,10" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+                            <!--  收支构成：窄窗口下两列自动上下堆叠  -->
+                            <WrapPanel>
+                                <StackPanel
+                                    Width="250"
+                                    Margin="0,0,20,0"
+                                    Visibility="{Binding Wallet.HasIncomeSlices, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock
+                                        Margin="0,0,0,6"
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{DynamicResource Home.Wallet.IncomeBreakdown}" />
+                                    <ItemsControl ItemsSource="{Binding Wallet.IncomeSlices}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Height="24">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="56" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{Binding Name}" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        Width="56"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{Binding PercentText}"
+                                                        TextAlignment="Right" />
+                                                    <controls:RatioBar
+                                                        Grid.Column="2"
+                                                        Height="3"
+                                                        Margin="10,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        BarBrush="{DynamicResource SystemFillColorSuccessBrush}"
+                                                        Ratio="{Binding Percent}"
+                                                        TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Width="250"
+                                    Margin="0,0,0,10"
+                                    Visibility="{Binding Wallet.HasOutcomeSlices, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock
+                                        Margin="0,0,0,6"
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{DynamicResource Home.Wallet.OutcomeBreakdown}" />
+                                    <ItemsControl ItemsSource="{Binding Wallet.OutcomeSlices}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Height="24">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="56" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{Binding Name}" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        Width="56"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{Binding PercentText}"
+                                                        TextAlignment="Right" />
+                                                    <controls:RatioBar
+                                                        Grid.Column="2"
+                                                        Height="3"
+                                                        Margin="10,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        BarBrush="{DynamicResource SystemFillColorCriticalBrush}"
+                                                        Ratio="{Binding Percent}"
+                                                        TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </WrapPanel>
+
+                            <TextBlock
+                                Margin="0,6,0,0"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding Wallet.NoteText}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+                </controls:CardControl>
+
+                <!--  我的行情（P1）  -->
+                <controls:CardControl
+                    Grid.Column="1"
+                    Width="392"
+                    Margin="12,0,0,0"
+                    Padding="16,8"
+                    CornerRadius="8"
+                    Visibility="{Binding ShowMarketCard, Converter={StaticResource BoolToVisibility}}">
+                    <controls:CardControl.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{DynamicResource Home.Market.Title}" />
+                                <controls:SpinnerIcon
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    IsActive="{Binding Market.IsLoading}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="11.5"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding Market.FavoriteCountText}"
+                                    Visibility="{Binding Market.HasMore, Converter={StaticResource BoolToVisibility}}" />
+                                <ui:Button
+                                    Appearance="Transparent"
+                                    Click="OnGoMarketClick"
+                                    Content="{DynamicResource Home.Market.AllFavorites}" />
+                            </StackPanel>
+                        </Grid>
+                    </controls:CardControl.Header>
+
+                    <StackPanel>
+                        <!--  收藏为空  -->
+                        <StackPanel
+                            Margin="0,4,0,6"
+                            Visibility="{Binding Market.HasNoFavorite, Converter={StaticResource BoolToVisibility}}">
+                            <ui:SymbolIcon
+                                FontSize="20"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Star24" />
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                FontSize="12.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Home.Market.NoFavorite}"
+                                TextWrapping="Wrap" />
+                            <ui:Button
+                                Margin="0,10,0,0"
+                                HorizontalAlignment="Left"
+                                Appearance="Primary"
+                                Click="OnGoMarketClick"
+                                Content="{DynamicResource Home.Market.GoMarket}" />
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding Market.Items}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Click="OnMarketItemClick"
+                                        Style="{StaticResource MarketMiniCard}"
+                                        Tag="{Binding}">
+                                        <Grid Margin="10,8">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip="{Binding Name}" />
+                                                <Image
+                                                    Grid.Column="1"
+                                                    Width="16"
+                                                    Height="16"
+                                                    controls:AsyncImage.TypeId="{Binding IconTypeId}" />
+                                            </Grid>
+
+                                            <Grid Grid.Row="1" Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    FontSize="15"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding AverageText}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    x:Name="ChangeText"
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Text="{Binding ChangeText}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsRising}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+
+                                            <Grid Grid.Row="2" Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{DynamicResource Home.Market.Volume}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="6,0,0,0"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding VolumeText}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    FontSize="11"
+                                                    Text="{Binding VolumeChangeText}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsVolumeRising}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            Text="{Binding Market.NoteText}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </controls:CardControl>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

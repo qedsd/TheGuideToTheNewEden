@@ -52,6 +52,11 @@
 		<Resource Include="Assets\app.ico" />
 		<Resource Include="Assets\logo_32.png" />
 		<Resource Include="Assets\logo_128.png" />
+		<!--  主页品牌条的背景图：与 WinUI 版共用同一张（链接进来，仓库不重复存一份）。
+		      Link 决定它在程序集里的资源名，因此代码里按 pack://application:,,,/Assets/home.jpg 取。  -->
+		<Resource Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Images\home.jpg">
+			<Link>Assets\home.jpg</Link>
+		</Resource>
 	</ItemGroup>
 
 	<!--
@@ -75,6 +80,11 @@
 		</Content>
 		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\default.mp3">
 			<Link>Resources\default.mp3</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<!--  使用手册（主页品牌条/动作磁贴的「使用手册」入口按语言打开对应 PDF）。  -->
+		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Manuals\**\*.*">
+			<Link>Resources\Manuals\%(RecursiveDir)%(Filename)%(Extension)</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

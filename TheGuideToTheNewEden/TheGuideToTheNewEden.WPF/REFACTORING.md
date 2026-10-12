@@ -4041,6 +4041,171 @@ icacls $ws | findstr /i "Mandatory"
   与改动前的默认显示一致。
 - **验证**：`dotnet build` → **0 错误**；中英键集一致（1827 键）。
 
+### 阶段 92：主页迁移 P0（品牌条 + 可自定义快捷方式 + 导航右键固定）
+
+> 设计稿：`HOME_DESIGN.md`（含 5 张设计图 `Docs/HomeDesign/`）。本轮实现其中的 **P0**
+> ——"每个功能都能固定到主页"这一核心需求已完整交付；P1 的钱包 / 行情卡见 §8「计划内未做」。
+
+- **背景**：主页是 26 个导航目标里**最后一个占位页**（§8 第 61 条）。WinUI 版主页是一张大图 Hero +
+  6 张固定状态卡 + 钱包统计 + 行情卡，**没有任何个性化**，而且 Hero 吃掉 1/3 首屏、钱包统计是
+  "所有角色 × 全部分页"的静默全量拉取。WPF 版按设计稿改为"品牌条 104 + 快捷方式（首屏 16 个磁贴可点）+
+  数据卡（P1）"。
+- **新增代码**（`Services/Home/` + `ViewModels/Home/`，全部为新文件）：
+  - `HomeShortcutItem.cs`：磁贴数据模型 + 文件根对象（`version` / `maxItems` / `items`，`id` 为稳定的
+    kebab-case 字符串、`size` 缺省=小磁贴、`badge` 与 `param` 为 P2/P3 预留）。
+  - `HomeFeatureCatalog.cs`：**功能目录**——29 项功能（26 个导航叶子 + 3 个系统动作）的
+    id / 图标 / 标题键 / 分组键 / 描述键 / 动作类型；标题与分组**全部复用现有 `Nav.*` 键**（零新增翻译），
+    只有描述用新增的 `Home.Feature.*Desc`。另含 `DefaultSeed`（推荐 12 项）与 `NavigationExclusions`
+    （主页自己不可被固定）。
+  - `HomeShortcutService.cs`：`Configs/HomeShortcuts.json` 读写（增删 / 移动 / 改尺寸 / 整体替换 /
+    恢复默认 / `Changed` 事件）；加载时**丢弃目录里不存在的 id 并去重**、上限夹取到 1..48、
+    坏文件备份 `.bak` 后用推荐组合重建；落盘走"临时文件 + `File.Move(overwrite)`"。
+  - `HomeFeatureLauncher.cs`：统一的功能打开入口（功能页走 `Navigation`、小工具走 `ToolWindowHost`、
+    动作项直接执行），主页磁贴与导航右键菜单共用。
+  - `ViewModels/Home/HomeShortcutTileViewModel.cs`：磁贴 VM（尺寸 / 编辑态 / 拖动与落位状态 /
+    语言刷新）；末尾的「＋ 添加功能」用**同一个 VM 类型**（`IsAddSlot`）——见下文"踩坑"。
+  - `ViewModels/Home/HomePageViewModel.cs`：磁贴集合、编辑模式、增删排序、品牌条数据
+    （版本 / 在线人数 / 世界时 / 新版本徽标）、语言刷新。
+  - `Views/Pages/HomePage.xaml(.cs)`：替换占位页（类名 / 命名空间 / 导航注册不变）。品牌条 + 快捷方式卡
+    （`CardControl` + `WrapPanel` 磁贴网格）+ 编辑态提示条 + 空态引导。
+  - `Views/Windows/AddShortcutWindow.xaml(.cs)` + `ViewModels/Home/AddShortcutViewModel.cs`：
+    「添加功能」窗口（左侧分组 + 右侧搜索与功能列表 + 逐个添加 / 移除，单实例，**无"确定"按钮**
+    ——改动即时落盘并驱动主页刷新）。
+  - `Helpers/VisualTreeSearch.cs`：`IsInsideChildButton` —— 判断"按下的位置是不是卡片里的子按钮"。
+- **改动**：
+  - `Views/MainWindow.xaml.cs`：给每个叶子导航项挂右键菜单（打开 / 固定到主页 / 从主页取消固定 /
+    管理快捷方式…），菜单文案在 `Opened` 里现取（语言切换无需额外处理）；同时做
+    **目录 ↔ 导航的双向比对**（缺项写 WARN，不弹窗）。
+  - `Resources/Languages/*.xaml`：中英各补 **61 个键**（`Home.Quick.*` / `Home.Add.*` / `Home.Status.*` /
+    `Home.Group.System` / `Home.Action.*` / 29 条 `Home.Feature.*Desc`），两文件均 **1893 键、0 重复键**。
+  - `TheGuideToTheNewEden.WPF.csproj`：把 WinUI 的 `Resources/Images/home.jpg` 以 `Resource` + `Link`
+    方式链接进程序集（仓库不重复存图），主页品牌条用它作背景。
+- **交互**：磁贴单击=打开（编辑态不跳转）；右键=打开 / 移到最前 / 切换宽窄 / 从主页移除；
+  编辑态=每块右上角 ✕ + 拖动排序（落位处强调色描边）+ `Esc`/完成退出 + 恢复默认（带确认框）+
+  底部提示条；键盘=`Tab` 聚焦、`Enter` 打开、`Alt + ←/→` 移动位置；上限 24 项，超出时「＋」禁用并提示。
+- **踩坑（均已在代码里注释）**：
+  1. **不要用 `WrapPanel` 套 `ItemsControl`**：`WrapPanel` 给子元素的是"剩余宽度"约束，
+     内层 `ItemsControl` 自己再换行会与外层打架（与横向 `StackPanel` 给无限宽度是同一类问题）。
+     改为**一个 `ItemsControl`**，把「＋ 添加功能」做成集合末位的哨兵项（`IsAddSlot`），
+     两种外观在同一个 `DataTemplate` 里按 `Visibility` 切换。
+  2. **卡片是 `Button`、里面还有 ✕/添加子按钮**：拖拽走 `PreviewMouseLeftButtonDown`（隧道事件，
+     先于子按钮拿到），必须用 `VisualTreeSearch.IsInsideChildButton` 判断"按在子按钮上"，
+     否则点 ✕ 会顺带开始拖动。子按钮的 `Click` 与父按钮的 `Click` 不会互相触发（`ButtonBase` 会把
+     鼠标事件标记为已处理），但**隧道事件没这层保护**。
+  3. **`MenuItem` / `Button` 在 `using Wpf.Ui.Controls` 下是有歧义的**：WPF-UI 有自己的同名类型，
+     `MainWindow.xaml.cs` 与 `AddShortcutWindow.xaml.cs` 需要 `using MenuItem = System.Windows.Controls.MenuItem;`
+     之类的别名。
+  4. **`NavigationViewItem.MenuItems` 是非泛型 `IList`**：递归遍历要 `.Cast<object>()`；
+     `NavigationView.MenuItems.Concat(FooterMenuItems)` 也会因类型不同而推断失败。
+  5. **`DataTemplate` 里的 `x:Name` 不是类字段**（模板作用域），菜单项改用 `Tag` 标记角色从代码里取。
+  6. **探针环境里的 pack URI 会解析到入口程序集**：主页/窗口 XAML 里的 `pack://application:,,,/Assets/…`
+     与 `App.xaml` 里合并字典用的无程序集 URI 都指向**入口程序集**——真实应用里入口就是
+     `TheGuideToTheNewEden`，所以正常；但在独立探针里会"找不到资源"。探针的等价做法见 §9 第 83 条。
+- **验证**：
+  - `dotnet build` → **0 错误**、16 个既有警告（**无一条指向本阶段文件**）。
+  - **独立探针（一次性，已清理）**：手工合并主题 / 控件 / 全局样式 / 语言四个字典后构造主页并强制布局
+    （`Measure` + `Arrange` + `UpdateLayout`，不 `Show` 以免触发联网取数），**18 项断言全 PASS**：
+    磁贴 12 + 添加槽位 1、标题取到本地化文本（`characters → 角色 / 角色`）、种子文件按设计落盘、
+    编辑态 ✕ 数量 = 12、宽磁贴切换往返、移到最前 / 拖动落位后的下标正确、移除 + 重新添加、
+    目录 29 项 / 14 分组、品牌图 1715×1044、添加功能窗口构造出 29 行，
+    并且**绑定诊断 0 条路径错误**（`PresentationTraceSources.DataBindingSource` + `TextWriterTraceListener` 捕获）。
+  - **实机启动两次**：进程存活、主窗口标题正常、`HomeShortcuts.json` 由应用自身写入推荐种子、
+    日志无异常；并据此修掉两条噪音（见下）。
+- **本阶段顺带修掉的两条日志噪音**（都是实机日志看出来的）：
+  1. 「主页」导航项被当成"缺目录条目"记 WARN —— 主页本来就不该被固定，改为在目录里显式声明
+     `NavigationExclusions` 跳过；
+  2. 检查更新失败（GitHub 匿名接口限流，本机 IP 已耗尽配额）按 WARN 记录 —— 属常见外部状况，
+     降为 INFO，避免每次启动都在日志里刷一条像故障的记录。
+- **未做（P1 / P2 / P3）**：见下方三轮追加——**现已全部完成**。
+
+#### 阶段 92 追加一：P1 数据卡（我的钱包 / 我的行情）
+
+- **钱包卡**：
+  - `Services/Home/HomeWalletSummaryService.cs`：**有界**取数——按区间（近 7 天 / 近 30 天 / 全部）翻页，
+    **每角色最多 8 页（400 条）**、结果缓存 **5 分钟**、**逐角色容错**（一个角色失败只记数不中断）。
+    与 WinUI 版"所有角色 × 全部分页的静默全量拉取"是本次最大的有意差异。
+  - 分类口径逐条对齐 WinUI 的 `WalletStatistic`（税/费/中介费→税、市场→贸易、agent/mission→任务、
+    bounty→赏金、contract→合同、player_donation→转账、其余→其他），占比用 `RatioBar` 画（**不用 `ProgressBar`**，§9-17）。
+  - `ViewModels/Home/HomeWalletCardViewModel.cs`：四种状态（加载中 / 无角色引导 / 全部失败提示 / 有数据），
+    区间下拉改动即落盘（`HomeShortcuts.json` 的 `walletRangeDays`）并重新取数；收入 / 支出两行与两个构成列都用
+    `WrapPanel` 包住，窄窗口下自动上下堆叠。
+- **行情卡**：
+  - `ViewModels/Home/HomeMarketCardViewModel.cs`：数据源 = 收藏物品（`MarketStarService`，与市场页共用
+    `StaredMarketInvType.json`），最多 **6 张**（其余显示"还有 N 个"）；名称走本地 SDE（`LocalDbService.TranInvTypes`，
+    取不到只退化成显示类型 ID）、图标走 `ctl:AsyncImage`、行情走**历史统计**（`MarketOrderService.GetHistoryBatchAsync`，
+    磁盘缓存）取最后两日算涨跌；**卡片级降级**（某物品没历史只显示 `—`）。
+  - 与设计稿的差异：设计写的是"最低卖价（实时订单）"，实现改为**最近一日历史均价**——实时订单是每物品一次
+    无缓存的 ESI 请求（主页每次进入十几次），与"主页只是速览、详情交给市场页"的分工不符；卡底已写明口径。
+  - 收藏为空时**不回落硬编码物品**（PLEX / 技能注入器 / 三钛），改为引导卡 + 「去市场页」按钮。
+- **本地化**：中英各补 46 键（`Home.Wallet.*` 22、`Home.Market.*` 7、`Home.Setting.*` 13、`Home.Recent.Title`、
+  `Home.Status.PlayersTip`、`AppDescription` 等）。
+
+#### 阶段 92 追加二：P2 角标 / 最近使用 / 设置→主页 / 关于 / 手册 / 设置子页磁贴
+
+- **磁贴状态角标**（`Services/Home/HomeFeatureStatusService.cs`）：只读各处**已经存在**的运行态，不新增后台任务——
+  `channel-intel` = 正在预警的角色数、`channel-monitor` = 正在监控的角色数、`game-preview` = 预览窗口总数、
+  `zkb` = 击杀流是否已连接（无数量）、`market` = 收藏物品数。角标是右上角一个 12px 圆点，ToolTip 说明
+  "「预警」有 2 个在运行"。
+  - 为此给三处补了**只读计数**（都很小且自洽）：`IntelWarningService.ListenerCount`、
+    `ChannelMonitorNotifyService.ItemCount`（各自在 Add/Remove 里维护一个 `HashSet`），
+    `PreviewWindowManager.TotalRunningCount`（**弱引用登记实例再求和**，而不是维护静态计数器——启停路径有
+    Start 失败回滚 / Stop / StopAll / Dispose 四条，计数器容易漂移）。
+  - 刷新时机：进入主页 + 一个**只在主页可见期间运行**的 3 秒 `DispatcherTimer`（离开页面即停）。
+    设计稿写的是"不轮询、只订阅事件"，但其中三处（预警 / 监控 / 多开）**没有可订阅的状态事件**，
+    因此退一步用"可见期内轻量轮询"，并在代码注释里写明原因。
+- **「最近使用」**：`HomeShortcuts.json` 的 `recent` 数组（容量 8，最新在前，去重），开关默认**关**（关闭时不记录、
+  不占位置）；主页磁贴上方一行胶囊（图标 + 名称），右侧一个"清空"按钮。
+- **设置 → 主页**（`Views/Pages/Settings/HomeSettingPage`，注册进 `SettingsPage.BuildCategories`）：
+  4 个显示策略开关（钱包卡 / 行情卡 / 最近使用 / 分组分段）+ 快捷方式列表（上移 / 下移 / 移除 / 添加 / 恢复默认 /
+  清空最近使用）。与主页是同一份数据，靠 `HomeShortcutService.Changed` 双向同步。
+- **关于窗口**（`Views/Windows/AboutWindow`）：版本 / 运行时（.NET + OS 版本）/ GitHub / QQ 群 / 第三方组件清单；
+  单实例、设 `Owner`（主窗口关闭时一起走）。
+- **使用手册**：csproj 把 WinUI 的 `Resources/Manuals/*.pdf` 以 `Content` + `Link` 复制到输出（与其它运行时资源同样处理），
+  品牌条的"手册"按钮按语言打开 `Manual_zh.pdf` / `Manual_en.pdf`；文件缺失时用右下角警告给出完整路径，
+  而不是静默无反应。
+- **设置子页磁贴**（L3）：把 11 个设置分类做成功能目录里的条目（`setting-*`，动作类型），点击走
+  `SettingsPage.RequestCategory(pageType)` + 导航到设置页——复用翻译页"去配置"已有的机制，零新增跳转代码。
+- **品牌条按钮**从 4 个增到 6 个：手册 / 关于 / 日志 / 配置目录 / GitHub / QQ 群（对齐 WinUI 版"关于 + 日志 + 手册"三项）。
+
+#### 阶段 92 追加三：P3 参数化磁贴 + 分段显示
+
+- **数据模型**：`HomeShortcutItem` 增加 `label`（**创建时写死的显示名**，如"裂谷级"）与计算属性
+  `Key`（`id#param`，同一功能的多块参数磁贴靠它区分）；服务层相应增加 `ContainsExact` / `RemoveExact` /
+  `Add(id, param, label)`，并把 `MoveTo` / `SetSize` 改成按 `(id, param)` 定位——
+  导航右键的"取消固定"仍是 `Remove(id)`（**移除该功能的全部磁贴**），语义在 XML 注释里写清。
+- **跳转通道**（`Services/Navigation.cs`，照 `NavigateToMarket` 既有的"待处理请求"模式）：
+  `NavigateToSystem` / `TakePendingSystem` / `SetPendingSystem` 与
+  `NavigateToCharacter` / `TakePendingCharacter` / `SetPendingCharacter`。
+- **星图能收参数**：`MapPage.LocateSystem(int)`（公开）；页面**还没装载好时把请求回存为待办**，
+  由 `ApplyPendingSystem()` 在数据就绪后消费（否则画布上还没有节点，定位会静默失败）——
+  `Loaded` 的两条路径（已装载 / 首次装载）都调它。
+- **角色页能收参数**：`CharacterCardsPage.FindCard(id)` + 新增 `CardsReloaded` 事件；
+  `CharactersShellPage.OpenCharacterById(id)` 在卡片还没加载出来时记为待办，卡片重载后由
+  `ApplyPendingCharacter()` 补开；角色确实不存在时只写一条 WARN，不重试。
+- **三个创建入口**（都在原页面上加一个按钮 / 菜单项，不动原有布局）：
+  市场页物品头的图钉按钮（`market + 物品 ID`）、星图顶栏的图钉按钮（`map + 星系 ID`，未选中星系时明确提示）、
+  角色卡片的「⋯」菜单（`characters + 角色 ID`）。三处都通过 `HomeShortcutService.Add(id, param, label)` 落盘，
+  并给出"已固定 / 已经在主页上了 / 达到上限"三种提示。
+- **分段显示**：`ViewModels/Home/HomeShortcutGroupViewModel`（分组标题取目录里的分组键，组内顺序 = 主页顺序）；
+  主页把磁贴模板抽成 `HomeTileTemplate` 资源，平铺与分段两处 `ItemsControl` 共用同一份 DataTemplate
+  （分段 = 外层纵向 `ItemsControl`，每段内层再一个 `WrapPanel`，见 §9 第 82 条的说明）。
+
+#### 阶段 92 验证（三轮累计）
+
+- `dotnet build -t:Rebuild` → **0 错误**、37 个既有警告（**无一条指向本模块文件**）。
+- **独立探针 28 项断言全 PASS**（一次性产物，核对后已清理；做法见 §9 第 83 条）：
+  资源字典加载、主页构造 + 布局（磁贴 = 项数 + 1、末位是添加槽位、标题已本地化）、
+  分段（段内磁贴总数 = 项数、分组标题非空）、钱包卡四态（无角色 → 引导态、不显示内容、区间文案与切换落盘）、
+  角标刷新不抛异常且有 1 个（收藏非空 → 市场磁贴有角标）、最近使用（记录 + 重建 + 清空）、
+  编辑态 ✕ 数量、**参数磁贴**（标题取 label、副标题取功能名、点击后市场/星系/角色三个参数都被正确消费）、
+  `RemoveExact` 只删参数磁贴而不动同功能的无参磁贴、目录 42 项 / 14 分组、主页被排除、
+  品牌图、添加功能窗口（42 行）、关于窗口、设置→主页页，
+  并且 **`DataBindingSource` 捕获到 0 条绑定路径错误**。
+- **实机启动**：进程正常、主窗口标题正常；`HomeShortcuts.json` 首次生成即带全部新字段
+  （`walletRangeDays: 7` / `showWalletCard` / `showMarketCard` / `showRecent` / `showGrouped` / `recent`）；
+  日志**无 ERROR / WARN**（只有一条 INFO：GitHub 匿名接口限流导致本次没查到新版本，属外部状况）。
+- 探针与测试脚本都是一次性产物，**核对后已清理**；探针改动过的 `HomeShortcuts.json` 已还原 / 重置为推荐组合。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -4173,7 +4338,9 @@ icacls $ws | findstr /i "Mandatory"
     其中 `DEDPage` / `MissionPage` 已于**阶段 79 迁移完成**（两页都不再是占位页，见阶段 79）。
     **阶段 80 又销掉整个「工具」分组**（`IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage`）。
     **阶段 89 又销掉 `DatabasePage`**（数据库页，见阶段 89）。
-    **剩余 1 个**：`HomePage`（WinUI 侧是 `Views\HomePage`，261 行 XAML + 197 行 `HomeViewModel`）。
+    **阶段 92 销掉最后一个 `HomePage`**（主页，见阶段 92 与 `HOME_DESIGN.md`）——
+    **至此 26 个导航目标全部是真实页面，`PlaceholderPage` 已无子类**（`Views/Pages/PlaceholderPage.cs`
+    目前只是"后续新页可直接继承"的备用基类，若确认不再需要可一并删除）。
 62. **托盘图标会被"低完整性进程"这一上下文拒绝**（阶段 82）：`H.NotifyIcon` 的 `TrayIcon.Create()` 内部就是
     `Shell_NotifyIcon(NIM_ADD)`，它要和 shell 的托盘窗口通信；当应用进程的**完整性级别低于 shell**
     （实测应用 Low、shell Medium，同用户同桌面）时，Windows 的 **UIPI 会拒绝这次跨进程窗口消息**，
@@ -4197,7 +4364,13 @@ icacls $ws | findstr /i "Mandatory"
 - 合同 / 工业两页在该账号下**列表为空属正常空态**（账号无对应数据），空态下不触发名称解析，因此这两页的"名称解析"路径未被覆盖。
 
 ### 计划内未做
+- **主页 P1 / P2 / P3 已全部完成**（阶段 92 三轮：P0 骨架 → P1 数据卡 → P2 角标/最近使用/设置页/关于/手册/设置子页磁贴 → P3 参数化磁贴与分段显示）。
+  设计与设计图见 `HOME_DESIGN.md` 与 `Docs/HomeDesign/`；**剩余可选项**（有意未做）：
+  - 参数化磁贴只支持三类目标（物品 / 角色 / 星系），**没有**做"从任意页面创建任意参数"的通用编辑器；
+  - 分段显示是"按功能分组分段"，**没有**做"文件夹"（把磁贴拖进一个可折叠的容器）；
+  - 「最近使用」只按打开次数去重排序（不统计频次），也没有做"一键把最近使用固定为磁贴"。
 - 角色卡片**拖拽排序**（WinUI 用 `GridView` 的 `CanReorderItems`；WPF 的 `ItemsControl`+`WrapPanel` 需自行实现拖放）——排序数据层 `CharacterStore.Move` 已具备。
+  （**注**：主页磁贴的拖拽排序已在阶段 92 落地，做法可直接参考 `Views/Pages/HomePage.xaml.cs` 与 `Helpers/VisualTreeSearch`。）
 - 合同**详情窗口**；钱包 `SfDataGrid` 的分组/筛选/分组合计（见上「功能降级」3）。
 - **商业其余子项**：~~倒货~~（阶段 28 已完成）、~~估价~~（阶段 34 已完成：本地解析 + ESI 取价 + 可配置估价口径与百分比）。
 - **星域市场里合并结构卖单**（WinUI 的 `MarketSkipStructure=false` 路径：遍历该星域的建筑逐个拉订单再按 `OrderId` 去重合并）：WPF 目前恒按"跳过结构"处理——每个建筑要全量拉一次（7 MB 级），开启后首次会非常慢，需要时再做。
@@ -4641,6 +4814,24 @@ icacls $ws | findstr /i "Mandatory"
     且 `${Get}` 版本 `GetWindowCompositionAttribute` 在部分 build 上**返回 0**（读不回来，判定只能用 Set 的返回值）；
     亚克力还要系统"透明效果"开启（`...\Themes\Personalize\EnableTransparency = 1`）。
 
+82. **`WrapPanel` 里不要再套 `ItemsControl`**（阶段 92 做主页磁贴网格时刻意避开）：`WrapPanel` 给子元素的
+    可用宽度是"当前行剩余宽度"，内层 `ItemsControl`（或任何自带换行的面板）会在这个约束下自己再换行，
+    两层换行互相打架，表现为"一行只显示两三个、右边大量空白"或列数随窗口宽度乱跳。
+    正确做法是**一个 `ItemsControl` + `WrapPanel`**：把"末尾那个特殊项"（主页的「＋ 添加功能」）
+    做成集合里的**哨兵项**，两种外观在同一个 `DataTemplate` 里按 `Visibility`/`DataTrigger` 切换
+    （主页的 `HomeShortcutTileViewModel.IsAddSlot` 即此用法）。
+    这与 §9 第 18 条末尾"横向 `StackPanel` 给子元素无限宽度"是同一类问题，只是方向不同。
+
+83. **XAML 里的 pack URI 指向"入口程序集"，探针环境必须补一份资源**（阶段 92 验证主页时踩到）：
+    `pack://application:,,,/Assets/app.ico`（**无程序集名**）与 `App.xaml` 里合并字典用的
+    `/Controls/GlobalControlStyles.xaml` 都解析到**入口程序集**的资源。真实应用里入口就是
+    `TheGuideToTheNewEden`（`AssemblyName` 决定），所以一切正常；但在"独立探针 exe + 引用主程序集"
+    的做法下，入口变成探针自己 → 报"找不到资源 assets/app.ico" / "controls/globalcontrolstyles.xaml"，
+    看起来像主程序集坏了，其实是**探针环境的差异**。
+    探针里的等价处理：① 手工合并主题 / 控件 / 全局样式 / 语言四个字典（`new ResourceDictionary
+    { Source = new Uri("pack://application:,,,/TheGuideToTheNewEden;component/…") }`），不加载 `App.xaml`；
+    ② 在探针工程里把 `app.ico` / `logo_32.png` / `home.jpg` 也以 `Resource` + `Link` 放进探针程序集，
+    让那些无程序集的 URI 在探针里同样能解析。**"界面没加载出来"先确认是探针还是应用本身的问题。**
 
 ---
 
@@ -4862,10 +5053,42 @@ Converters/NullToVisibilityConverter.cs   null → Collapsed（信息卡显隐�
 Views/UserControls/Map/JumpBridgeSettingView.xaml(.cs) 跳桥设置窗（星系名或 ID 增删 + 显示开关）
 ```
 
+### 主页模块（阶段 92；设计与设计图见 `HOME_DESIGN.md` 与 `Docs/HomeDesign/`）
+```
+Services/Home/HomeShortcutItem.cs       磁贴模型 + Configs/HomeShortcuts.json 根对象（items / maxItems / walletRangeDays / show* 开关 / recent；Key = id#param）
+Services/Home/HomeFeatureCatalog.cs     功能目录：42 项（26 导航叶子 + 5 系统动作 + 11 设置子页）的 id/图标/标题键(复用 Nav.* 与 SettingPage_*)/分组/描述键/动作类型 + DefaultSeed(12) + NavigationExclusions(主页自身)
+Services/Home/HomeShortcutService.cs    快捷方式读写（增删改排序/尺寸/显示策略/最近使用/Changed；丢弃未知 id、去重、上限 1..48、坏文件 .bak + 重建、临时文件落盘）
+Services/Home/HomeFeatureLauncher.cs    统一打开入口（功能页→Navigation；小工具→ToolWindowHost；动作项→日志/配置目录/检查更新/手册/关于/设置子页；**带参数→市场选物品 / 角色开工作区 / 星图定位星系**）
+Services/Home/HomeFeatureStatusService.cs  磁贴角标的运行态来源（预警角色数 / 监控角色数 / 预览窗口数 / 击杀流已连 / 收藏数）
+Services/Home/HomeWalletSummaryService.cs  钱包卡取数（按区间有界翻页、每角色上限 8 页、5 分钟缓存、逐角色容错、ref_type 归类）
+ViewModels/Home/HomeShortcutTileViewModel.cs  磁贴 VM（尺寸/编辑态/拖动与落位/角标/参数 label/语言刷新；IsAddSlot=末尾「＋ 添加功能」哨兵项）
+ViewModels/Home/HomeShortcutGroupViewModel.cs 分段显示的一段（分组标题 + 段内磁贴）
+ViewModels/Home/HomePageViewModel.cs    主页 VM（磁贴/分段/最近使用/编辑模式、品牌条数据、两张数据卡、角标刷新）
+ViewModels/Home/HomeWalletCardViewModel.cs 钱包卡 VM（四态 + 区间切换落盘）
+ViewModels/Home/HomeMarketCardViewModel.cs 行情卡 VM（收藏物品 + 历史统计 + 卡片级降级）
+ViewModels/Home/AddShortcutViewModel.cs 「添加功能」窗口 VM（分组 + 搜索 + 逐项添加/移除，改完即时落盘）
+Views/Pages/HomePage.xaml(.cs)          主页（品牌条 104 + 快捷方式磁贴网格（平铺/分段）+ 最近使用 + 钱包卡 + 行情卡 + 编辑态提示条 + 空态引导）
+Views/Pages/Settings/HomeSettingPage.xaml(.cs) 设置→主页（显示策略开关 + 快捷方式列表管理）
+Views/Windows/AddShortcutWindow.xaml(.cs) 「添加功能」窗口（单实例；左分组 + 右搜索列表 + 底栏统计）
+Views/Windows/AboutWindow.xaml(.cs)     关于窗口（版本 / 运行时 / 社区链接 / 第三方组件）
+Helpers/VisualTreeSearch.cs             IsInsideChildButton：判断"按下的是不是卡片里的子按钮"（拖拽与嵌套按钮共存用）
+```
+外部接入（阶段 92 追加三）：
+```
+Services/Navigation.cs                  + NavigateToSystem/TakePendingSystem/SetPendingSystem、NavigateToCharacter/TakePendingCharacter/SetPendingCharacter
+Views/Pages/MapPage.xaml(.cs)           + 顶栏「固定当前星系到主页」按钮、公开 LocateSystem、ApplyPendingSystem（装载后消费待办）
+Views/Pages/MarketPage.xaml(.cs)        + 物品头「固定当前物品到主页」按钮
+Views/Pages/Characters/CharacterCardsPage.xaml(.cs)  + 卡片「⋯」菜单的「固定到主页」、公开 FindCard、CardsReloaded 事件
+Views/Pages/Characters/CharactersShellPage.xaml.cs   + 公开 OpenCharacterById、ApplyPendingCharacter（卡片重载后补开）
+Services/ChannelIntel/IntelWarningService.cs         + ListenerCount（只读，角标用）
+Services/ChannelIntel/ChannelMonitorNotifyService.cs + ItemCount（只读，角标用）
+Services/GamePreview/PreviewWindowManager.cs         + 静态 TotalRunningCount（弱引用登记实例求和，角标用）
+```
+
 ### 主窗口
 ```
-Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位置持久化、托盘
-Helpers/AppVersion.cs        版本号单一来源（主窗口标题 + 软件更新页共用）
+Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位置持久化、托盘、**导航项右键固定到主页 + 目录↔导航双向比对（阶段 92）**
+Helpers/AppVersion.cs        版本号单一来源（主窗口标题 + 软件更新页 + 主页品牌条共用）
 ```
 
 ### 翻译模块（阶段 46：本地 SDE 数据库专有名词互译，**不用有道 API**）

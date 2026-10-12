@@ -1,8 +1,11 @@
-﻿using System.Windows;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.Core.Models.Universe;
+using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.ViewModels.Business;
 using TheGuideToTheNewEden.WPF.Views.UserControls;
 using TheGuideToTheNewEden.WPF.Views.Windows;
@@ -53,6 +56,30 @@ public partial class MarketPage : Page
     }
 
     private void OnStarClick(object sender, RoutedEventArgs e) => _viewModel.ToggleStar();
+
+    /// <summary>
+    /// 把"当前物品"固定到主页（P3 参数化磁贴：<c>market + 物品 ID</c>）。
+    /// 名字在创建时就写进文件（<c>label</c>），主页渲染磁贴时不需要再做名称解析。
+    /// </summary>
+    private void OnPinToHomeClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.SelectedInvType is not { } type)
+        {
+            return;
+        }
+
+        var label = _viewModel.SelectedInvTypeName;
+        if (HomeShortcutService.Add("market", type.TypeID.ToString(CultureInfo.InvariantCulture), label))
+        {
+            PageNotifyService.Success(string.Format(FindString("Home.Quick.Pinned"), label));
+        }
+        else
+        {
+            PageNotifyService.Info(HomeShortcutService.IsFull
+                ? string.Format(FindString("Home.Quick.LimitReached"), HomeShortcutService.MaxItems)
+                : string.Format(FindString("Home.Quick.AlreadyPinned"), label));
+        }
+    }
 
     /// <summary>物品简介：工具窗口 + 简介 UserControl（单实例，重复点击仅激活）。</summary>
     private void OnDescriptionClick(object sender, RoutedEventArgs e)

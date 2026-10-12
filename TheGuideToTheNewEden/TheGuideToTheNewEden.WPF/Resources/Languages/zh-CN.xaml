@@ -40,6 +40,149 @@
     <sys:String x:Key="Nav.Tools_Taskbar">分屏</sys:String>
     <sys:String x:Key="Nav.Settings">设置</sys:String>
 
+    <!--  主页：快捷方式 / 品牌状态条 / 功能目录（见 HOME_DESIGN.md）  -->
+    <sys:String x:Key="Home.Quick.Title">快捷方式</sys:String>
+    <sys:String x:Key="Home.Quick.Count">共 {0} 个 · 上限 {1}</sys:String>
+    <sys:String x:Key="Home.Quick.Add">添加</sys:String>
+    <sys:String x:Key="Home.Quick.AddTip">从全部功能里挑选要固定到主页的功能</sys:String>
+    <sys:String x:Key="Home.Quick.AddTile">添加功能</sys:String>
+    <sys:String x:Key="Home.Quick.Edit">编辑</sys:String>
+    <sys:String x:Key="Home.Quick.Done">完成</sys:String>
+    <sys:String x:Key="Home.Quick.Open">打开</sys:String>
+    <sys:String x:Key="Home.Quick.Remove">从主页移除</sys:String>
+    <sys:String x:Key="Home.Quick.MoveFirst">移到最前</sys:String>
+    <sys:String x:Key="Home.Quick.ToWide">切换为宽磁贴</sys:String>
+    <sys:String x:Key="Home.Quick.ToSmall">切换为小磁贴</sys:String>
+    <sys:String x:Key="Home.Quick.Manage">管理快捷方式…</sys:String>
+    <sys:String x:Key="Home.Quick.Pin">固定到主页</sys:String>
+    <sys:String x:Key="Home.Quick.Unpin">从主页取消固定</sys:String>
+    <sys:String x:Key="Home.Quick.LimitReached">最多固定 {0} 个功能，请先移除一些再添加</sys:String>
+    <sys:String x:Key="Home.Quick.RestoreDefaults">恢复默认</sys:String>
+    <sys:String x:Key="Home.Quick.RestoreConfirm">恢复为推荐组合？当前固定的功能与顺序会被覆盖。</sys:String>
+    <sys:String x:Key="Home.Quick.Empty">还没有快捷方式。点「添加」，或在左侧菜单上右键选「固定到主页」。</sys:String>
+    <sys:String x:Key="Home.Quick.EditHint">拖动磁贴排序 · 点 × 移除 · Esc 退出编辑</sys:String>
+
+    <sys:String x:Key="Home.Add.Title">添加功能</sys:String>
+    <sys:String x:Key="Home.Add.Search">搜索功能（名称 / 分组）</sys:String>
+    <sys:String x:Key="Home.Add.Add">添加</sys:String>
+    <sys:String x:Key="Home.Add.Added">已添加</sys:String>
+    <sys:String x:Key="Home.Add.Summary">已添加 {0} / {1} 个功能</sys:String>
+    <sys:String x:Key="Home.Add.Hint">点右侧按钮添加 / 移除；添加后可在主页里拖动排序。</sys:String>
+    <sys:String x:Key="Home.Add.GroupAll">全部功能</sys:String>
+
+    <sys:String x:Key="Home.Status.Players">欧服在线 {0} 人</sys:String>
+    <sys:String x:Key="Home.Status.PlayersUnknown">在线人数未知</sys:String>
+    <sys:String x:Key="Home.Status.GameTimeTip">世界时（UTC）</sys:String>
+    <sys:String x:Key="Home.Status.NewVersion">有新版本 {0}</sys:String>
+    <sys:String x:Key="Home.Status.NewVersionTip">点击前往「设置 → 软件更新」</sys:String>
+    <sys:String x:Key="Home.Status.QqGroup">QQ 群</sys:String>
+
+    <sys:String x:Key="Home.Group.System">系统</sys:String>
+    <sys:String x:Key="Home.Action.OpenLog">打开日志</sys:String>
+    <sys:String x:Key="Home.Action.OpenConfigFolder">打开配置目录</sys:String>
+    <sys:String x:Key="Home.Action.CheckUpdate">检查更新</sys:String>
+
+    <!--  功能描述：添加功能窗口里的副标题  -->
+    <sys:String x:Key="Home.Feature.CharactersDesc">角色卡片、技能 / 钱包 / 邮件 / 合同 / 工业等工作区</sys:String>
+    <sys:String x:Key="Home.Feature.MarketDesc">星域 / 星系 / 建筑行情、订单与历史价格图</sys:String>
+    <sys:String x:Key="Home.Feature.OrderDesc">个人与军团未结订单、与市场参考价差</sys:String>
+    <sys:String x:Key="Home.Feature.ScalperDesc">源 / 目的市场差价分析、购物车与购物记录</sys:String>
+    <sys:String x:Key="Home.Feature.AppraisalDesc">粘贴物品清单批量估价（估价口径可配置）</sys:String>
+    <sys:String x:Key="Home.Feature.GamePreviewDesc">多客户端预览窗口、快捷键与自动排列</sys:String>
+    <sys:String x:Key="Home.Feature.ChannelIntelDesc">监控情报频道，弹预警小窗并播放报警音</sys:String>
+    <sys:String x:Key="Home.Feature.ChannelMonitorDesc">监控频道关键词，命中即弹消息窗与提示音</sys:String>
+    <sys:String x:Key="Home.Feature.ChannelScanDesc">粘贴频道成员名单，统计战绩与威胁值</sys:String>
+    <sys:String x:Key="Home.Feature.ChannelMarketDesc">监控频道里的物品报价，常驻结果窗查价</sys:String>
+    <sys:String x:Key="Home.Feature.GameLogMonitorDesc">监控游戏日志 / 异常日志并按关键词提醒</sys:String>
+    <sys:String x:Key="Home.Feature.TranslationAiDesc">大模型翻译聊天与通用文本，可注入术语表</sys:String>
+    <sys:String x:Key="Home.Feature.TranslationChannelDesc">实时翻译聊天频道里的内容</sys:String>
+    <sys:String x:Key="Home.Feature.TranslationLocalDesc">本地 SDE 数据库的专有名词中英互译</sys:String>
+    <sys:String x:Key="Home.Feature.DedDesc">死亡远征（DED 空间）攻略与产出</sys:String>
+    <sys:String x:Key="Home.Feature.MissionDesc">代理人任务攻略与奖励资料</sys:String>
+    <sys:String x:Key="Home.Feature.WormholeDesc">虫洞洞口库与洞系浏览、过洞计算</sys:String>
+    <sys:String x:Key="Home.Feature.LinksDesc">常用 EVE 站点快捷入口（可自由增删）</sys:String>
+    <sys:String x:Key="Home.Feature.MapDesc">星图浏览、导航与情报叠加</sys:String>
+    <sys:String x:Key="Home.Feature.ZkbDesc">Zkillboard 击杀榜、击杀流与实体统计</sys:String>
+    <sys:String x:Key="Home.Feature.DatabaseDesc">SDE 静态数据库浏览与搜索</sys:String>
+    <sys:String x:Key="Home.Feature.ToolImeDesc">常驻小窗的快捷输入工具</sys:String>
+    <sys:String x:Key="Home.Feature.ToolServerPingDesc">服务器延迟测速（可迷你化挂机）</sys:String>
+    <sys:String x:Key="Home.Feature.ToolKeyboardSpanDesc">键盘跨度工具，长期置顶挂机显示</sys:String>
+    <sys:String x:Key="Home.Feature.ToolTaskbarDesc">分屏 / 任务栏工具</sys:String>
+    <sys:String x:Key="Home.Feature.SettingsDesc">一般 / 市场 / 授权 / 翻译 / 更新等全部设置项</sys:String>
+    <sys:String x:Key="Home.Feature.OpenLogDesc">在资源管理器中定位今天的应用日志</sys:String>
+    <sys:String x:Key="Home.Feature.OpenConfigDesc">打开配置目录（设置 / 缓存 / 链接表）</sys:String>
+    <sys:String x:Key="Home.Feature.CheckUpdateDesc">检查 GitHub 上是否有新版本</sys:String>
+
+    <!--  主页：数据卡 / 最近使用 / 关于（P1 / P2 / P3）  -->
+    <sys:String x:Key="Home.Recent.Title">最近使用</sys:String>
+    <sys:String x:Key="Home.Quick.More">更多</sys:String>
+    <sys:String x:Key="Home.Quick.PinCurrent">固定到主页</sys:String>
+    <sys:String x:Key="Home.Quick.PinSystemTip">把当前选中的星系固定到主页</sys:String>
+    <sys:String x:Key="Home.Quick.PinNeedSelection">请先在星图上选中一个星系</sys:String>
+    <sys:String x:Key="Home.Quick.Pinned">已固定到主页：{0}</sys:String>
+    <sys:String x:Key="Home.Quick.AlreadyPinned">「{0}」已经在主页上了</sys:String>
+    <sys:String x:Key="Home.Quick.BadgeCount">「{0}」有 {1} 个在运行</sys:String>
+    <sys:String x:Key="Home.Quick.BadgeRunning">「{0}」正在运行</sys:String>
+    <sys:String x:Key="Home.Quick.GroupCount">{0} 个</sys:String>
+
+    <sys:String x:Key="Home.Wallet.Title">我的钱包</sys:String>
+    <sys:String x:Key="Home.Wallet.Total">总余额（{0} 个角色，缓存 5 分钟）</sys:String>
+    <sys:String x:Key="Home.Wallet.Range7">近 7 天</sys:String>
+    <sys:String x:Key="Home.Wallet.Range30">近 30 天</sys:String>
+    <sys:String x:Key="Home.Wallet.RangeAll">全部</sys:String>
+    <sys:String x:Key="Home.Wallet.IncomeLabel">收入</sys:String>
+    <sys:String x:Key="Home.Wallet.OutcomeLabel">支出</sys:String>
+    <sys:String x:Key="Home.Wallet.IncomeBreakdown">收入构成</sys:String>
+    <sys:String x:Key="Home.Wallet.OutcomeBreakdown">支出构成</sys:String>
+    <sys:String x:Key="Home.Wallet.PartialFailed">{0} 个角色取数失败（已跳过）</sys:String>
+    <sys:String x:Key="Home.Wallet.NoCharacter">还没有登录角色。添加角色后，这里会显示总余额与收支构成。</sys:String>
+    <sys:String x:Key="Home.Wallet.GoCharacters">去添加角色</sys:String>
+    <sys:String x:Key="Home.Wallet.AllFailed">所有角色都取数失败（可能是令牌失效或网络问题），稍后点右上角刷新重试。</sys:String>
+    <sys:String x:Key="Home.Wallet.Note">口径：ESI 钱包流水（{0}），每角色最多 400 条</sys:String>
+    <sys:String x:Key="Home.Wallet.NoteTruncated">口径：ESI 钱包流水（{0}，流水过多，每角色仅统计最近 400 条）</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Market">贸易</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Mission">任务</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Bounty">赏金</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Contract">合同</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Donation">转账</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Tax">税</sys:String>
+    <sys:String x:Key="Home.Wallet.Type.Other">其他</sys:String>
+
+    <sys:String x:Key="Home.Market.Title">我的行情</sys:String>
+    <sys:String x:Key="Home.Market.AllFavorites">全部收藏 ›</sys:String>
+    <sys:String x:Key="Home.Market.More">还有 {0} 个</sys:String>
+    <sys:String x:Key="Home.Market.Volume">销量</sys:String>
+    <sys:String x:Key="Home.Market.NoFavorite">还没有收藏物品。在「市场」页点物品右上角的星标，它就会出现在这里。</sys:String>
+    <sys:String x:Key="Home.Market.GoMarket">去市场页</sys:String>
+    <sys:String x:Key="Home.Market.Note">最近一日历史均价与销量（伏尔戈）；点卡片看实时订单</sys:String>
+
+    <sys:String x:Key="Home.Setting.ShowWallet">显示钱包卡</sys:String>
+    <sys:String x:Key="Home.Setting.ShowWallet_Desc">显示总余额与收支构成（数据来自 ESI 钱包流水，逐角色容错、结果缓存 5 分钟）。</sys:String>
+    <sys:String x:Key="Home.Setting.ShowMarket">显示行情卡</sys:String>
+    <sys:String x:Key="Home.Setting.ShowMarket_Desc">显示收藏物品的历史均价与销量（走本地缓存，点卡片跳市场页）。</sys:String>
+    <sys:String x:Key="Home.Setting.ShowRecent">显示「最近使用」</sys:String>
+    <sys:String x:Key="Home.Setting.ShowRecent_Desc">在快捷方式上方显示最近打开过的功能（关闭时不记录，也不占位置）。</sys:String>
+    <sys:String x:Key="Home.Setting.Grouped">磁贴按分组分段显示</sys:String>
+    <sys:String x:Key="Home.Setting.Grouped_Desc">按「角色 / 商业 / 频道…」分段显示磁贴；关闭时全部平铺（默认）。</sys:String>
+    <sys:String x:Key="Home.Setting.Shortcuts">快捷方式</sys:String>
+    <sys:String x:Key="Home.Setting.Shortcuts_Desc">与主页上的磁贴是同一份数据：这里的改动会立刻反映到主页，反之亦然。</sys:String>
+    <sys:String x:Key="Home.Setting.MoveUp">上移</sys:String>
+    <sys:String x:Key="Home.Setting.MoveDown">下移</sys:String>
+    <sys:String x:Key="Home.Setting.ClearRecent">清空最近使用</sys:String>
+    <sys:String x:Key="SettingPage_Home">主页</sys:String>
+    <sys:String x:Key="SettingPage_Home_Desc">快捷方式管理、数据卡与「最近使用」的显示策略</sys:String>
+
+    <sys:String x:Key="Home.Status.PlayersTip">EVE 服务器当前在线人数（ESI 公开接口）</sys:String>
+    <sys:String x:Key="Home.Action.Manual">使用手册</sys:String>
+    <sys:String x:Key="Home.Action.About">关于</sys:String>
+    <sys:String x:Key="Home.Action.ManualMissing">找不到使用手册文件：{0}</sys:String>
+    <sys:String x:Key="Home.Feature.ManualDesc">打开随程序分发的使用手册（PDF）</sys:String>
+    <sys:String x:Key="Home.Feature.AboutDesc">版本号、运行时与社区链接</sys:String>
+    <sys:String x:Key="Home.About.Runtime">运行环境</sys:String>
+    <sys:String x:Key="Home.About.Github">GitHub 仓库</sys:String>
+    <sys:String x:Key="Home.About.ThirdParty">第三方组件</sys:String>
+    <sys:String x:Key="AppDescription">EVE Online 的一站式辅助工具集</sys:String>
+
     <!--  虫洞页  -->
     <sys:String x:Key="WormholePage_ModeBrowser">洞系浏览</sys:String>
     <sys:String x:Key="WormholePage_ModePortalLibrary">洞口库</sys:String>

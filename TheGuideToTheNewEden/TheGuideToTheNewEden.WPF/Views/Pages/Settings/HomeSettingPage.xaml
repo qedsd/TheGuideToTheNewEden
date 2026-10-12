@@ -1,0 +1,167 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.HomeSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--
+        设置 → 主页：主页的显示策略与快捷方式的集中管理。
+        与主页自身的编辑模式是同一份数据（HomeShortcutService），两边改动即时同步；
+        这里的价值是"批量 / 精确"管理（上移下移、一次看全、恢复默认）。
+    -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1000" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Home}" />
+
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <controls:SettingCard
+                            Description="{DynamicResource Home.Setting.ShowWallet_Desc}"
+                            Icon="Wallet24"
+                            Title="{DynamicResource Home.Setting.ShowWallet}">
+                            <ui:ToggleSwitch x:Name="WalletToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Home.Setting.ShowMarket_Desc}"
+                            Icon="DataTrending24"
+                            Title="{DynamicResource Home.Setting.ShowMarket}">
+                            <ui:ToggleSwitch x:Name="MarketToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Home.Setting.ShowRecent_Desc}"
+                            Icon="History24"
+                            Title="{DynamicResource Home.Setting.ShowRecent}">
+                            <ui:ToggleSwitch x:Name="RecentToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Home.Setting.Grouped_Desc}"
+                            Icon="Grid24"
+                            Title="{DynamicResource Home.Setting.Grouped}">
+                            <ui:ToggleSwitch x:Name="GroupedToggle" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock
+                    Margin="0,24,0,0"
+                    Style="{StaticResource SettingsSectionHeader}"
+                    Text="{DynamicResource Home.Setting.Shortcuts}" />
+                <TextBlock
+                    Margin="0,6,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource Home.Setting.Shortcuts_Desc}"
+                    TextWrapping="Wrap" />
+
+                <Border
+                    Margin="0,10,0,0"
+                    Style="{StaticResource SettingsGroupBorder}">
+                    <ItemsControl x:Name="ShortcutList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid MinHeight="52">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon
+                                        Grid.Column="0"
+                                        Margin="16,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="18"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Symbol="{Binding Icon}" />
+
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Margin="16,8"
+                                        VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontSize="14"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Title}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Margin="0,2,0,0"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding Subtitle}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <ui:Button
+                                            Appearance="Transparent"
+                                            Click="OnMoveUpClick"
+                                            Icon="{ui:SymbolIcon ArrowUp24}"
+                                            Tag="{Binding}"
+                                            ToolTip="{DynamicResource Home.Setting.MoveUp}" />
+                                        <ui:Button
+                                            Margin="4,0,0,0"
+                                            Appearance="Transparent"
+                                            Click="OnMoveDownClick"
+                                            Icon="{ui:SymbolIcon ArrowDown24}"
+                                            Tag="{Binding}"
+                                            ToolTip="{DynamicResource Home.Setting.MoveDown}" />
+                                        <ui:Button
+                                            Margin="4,0,0,0"
+                                            Appearance="Transparent"
+                                            Click="OnRemoveClick"
+                                            Icon="{ui:SymbolIcon Delete24}"
+                                            Tag="{Binding}"
+                                            ToolTip="{DynamicResource Home.Quick.Remove}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+                <StackPanel
+                    Margin="0,12,0,0"
+                    Orientation="Horizontal">
+                    <ui:Button
+                        Appearance="Primary"
+                        Click="OnAddClick"
+                        Content="{DynamicResource Home.Quick.Add}"
+                        Icon="{ui:SymbolIcon Add24}" />
+                    <ui:Button
+                        Margin="8,0,0,0"
+                        Click="OnRestoreClick"
+                        Content="{DynamicResource Home.Quick.RestoreDefaults}"
+                        Icon="{ui:SymbolIcon ArrowReset24}" />
+                    <ui:Button
+                        x:Name="ClearRecentButton"
+                        Margin="8,0,0,0"
+                        Click="OnClearRecentClick"
+                        Content="{DynamicResource Home.Setting.ClearRecent}"
+                        Icon="{ui:SymbolIcon Eraser24}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>
