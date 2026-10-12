@@ -527,17 +527,132 @@
 
                 <TabItem Header="{DynamicResource MarketPage_History}">
                     <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid Margin="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox
+                                Width="160"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                SelectedIndex="{Binding HistoryRangeIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="{DynamicResource MarketPage_History1}" />
+                                <ComboBoxItem Content="{DynamicResource MarketPage_History3}" />
+                                <ComboBoxItem Content="{DynamicResource MarketPage_History6}" />
+                                <ComboBoxItem Content="{DynamicResource MarketPage_History12}" />
+                                <ComboBoxItem Content="{DynamicResource MarketPage_HistoryAll}" />
+                            </ComboBox>
+                            <!--  区间统计信息行（参考行情软件：涨跌幅 / 最高 / 最低 / 均价 / 累计成交）  -->
+                            <WrapPanel
+                                Grid.Column="1"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                                <Border
+                                    Margin="0,0,8,0"
+                                    Padding="10,6"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource MarketStatLabel}" Text="{DynamicResource MarketPage_PriceChange}" />
+                                        <TextBlock Margin="8,0,0,0" Text="{Binding HistoryChangePercentText}">
+                                            <TextBlock.Style>
+                                                <Style BasedOn="{StaticResource MarketStatValue}" TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HistoryRising}" Value="False">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                                <Border
+                                    Margin="0,0,8,0"
+                                    Padding="10,6"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource MarketStatLabel}" Text="{DynamicResource MarketPage_HistoryHigh}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            Style="{StaticResource MarketStatValue}"
+                                            Text="{Binding HistoryHigh, StringFormat={}{0:N0}}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border
+                                    Margin="0,0,8,0"
+                                    Padding="10,6"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource MarketStatLabel}" Text="{DynamicResource MarketPage_HistoryLow}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            Style="{StaticResource MarketStatValue}"
+                                            Text="{Binding HistoryLow, StringFormat={}{0:N0}}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border
+                                    Margin="0,0,8,0"
+                                    Padding="10,6"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource MarketStatLabel}" Text="{DynamicResource MarketPage_HistoryMean}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            Style="{StaticResource MarketStatValue}"
+                                            Text="{Binding HistoryMean, StringFormat={}{0:N0}}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border
+                                    Margin="0,0,8,0"
+                                    Padding="10,6"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource MarketStatLabel}" Text="{DynamicResource MarketPage_HistoryVolume}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            Style="{StaticResource MarketStatValue}"
+                                            Text="{Binding HistoryVolumeTotal, StringFormat={}{0:N0}}" />
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
+                        </Grid>
+
+                        <!--  价格 / 销量 两页签；时间范围下拉覆盖在页签条右侧同一行  -->
                         <TabControl Grid.Row="1">
                             <TabItem Header="{DynamicResource MarketPage_Price}">
-                                <lvc:CartesianChart
-                                    MinHeight="240"
-                                    Background="Transparent"
-                                    LegendPosition="Top"
-                                    Series="{Binding PriceSeries}"
-                                    TooltipPosition="Auto"
-                                    XAxes="{Binding XAxes}"
-                                    YAxes="{Binding YAxes}"
-                                    ZoomMode="X" />
+                                <Grid>
+                                    <lvc:CartesianChart
+                                        MinHeight="240"
+                                        Background="Transparent"
+                                        LegendPosition="Top"
+                                        Series="{Binding ActivePriceSeries}"
+                                        TooltipPosition="Auto"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        ZoomMode="X" />
+                                    <!--  显示模式：高低平均曲线 / 箱体（K线）  -->
+                                    <ComboBox
+                                        Grid.Row="0"
+                                        Width="160"
+                                        Margin="0,4,4,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        SelectedIndex="{Binding PriceChartModeIndex, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{DynamicResource MarketPage_PriceModeLines}" />
+                                        <ComboBoxItem Content="{DynamicResource MarketPage_Candle}" />
+                                    </ComboBox>
+                                </Grid>
                             </TabItem>
                             <TabItem Header="{DynamicResource MarketPage_StatisticVolume}">
                                 <lvc:CartesianChart
@@ -551,17 +666,6 @@
                                     ZoomMode="X" />
                             </TabItem>
                         </TabControl>
-                        <ComboBox
-                            Width="160"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            SelectedIndex="{Binding HistoryRangeIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History1}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History3}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History6}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History12}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_HistoryAll}" />
-                        </ComboBox>
                     </Grid>
                 </TabItem>
             </TabControl>

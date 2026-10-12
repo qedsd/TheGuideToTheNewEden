@@ -4001,6 +4001,46 @@ icacls $ws | findstr /i "Mandatory"
   图标 `FontSize` 提到 **20**——与项目里其它图标按钮（IntelWindow 36×30 + 24 图标等）同一取向：图标按钮不要给过紧的固定宽。
 - **验证**：`dotnet build -p:OutDir=<临时目录>` → **0 错误**、37 个既有警告；临时目录已清理。
 
+### 阶段 91：市场历史价格增强（箱体图 + 区间统计，参考行情软件的信息组织）
+
+- **背景（用户需求）**："价格曲线优化，增加更多有用的信息，比如箱体图，参考实际生活中对市场价格分析，
+  不单单是曲线图标，其他使用信息也可增加，比如最近涨幅百分比等。"
+- **现状**：历史页签原只有"价格（三条线：最高/均价/最低）+ 销量（一条线）"两个图表页签，
+  信息密度低；时间范围下拉已按用户此前要求与页签 Header 同行（覆盖在页签条右侧）。
+- **区间统计信息行**（历史页签顶部新增，五个小圆角卡片，样式与物品头统计卡一致）：
+  - **区间涨跌**（`MarketPage_PriceChange`）：区间首日均价 → 末日均价的百分比，`+0.0;-0.0;0.0` 格式化；
+    涨用 `SystemFillColorSuccessBrush`、跌用 `SystemFillColorCriticalBrush`（`DataTrigger` 绑 `HistoryRising`）。
+  - 区间最高 / 区间最低 / 区间均价 / 累计成交（`HistoryHigh` / `HistoryLow` / `HistoryMean` / `HistoryVolumeTotal`），
+    数值 `N0` 千分位；统计口径跟随时间范围下拉（与图表同一份过滤后的行集）。
+- **箱体（K线）显示模式**（`MarketPage_Candle`；按用户追加要求从独立页签改为**价格页签内的显示模式**，
+  价格页签右上角下拉框切换"高低平均曲线 / 箱体"，`PriceChartModeIndex` → `ActivePriceSeries`，默认曲线）：
+  - `CandlesticksSeries<FinancialPoint>`：**收盘 = 当日均价**、**开盘 = 前一日均价**（首日取其自身均价）、
+    高/低 = 当日最高/最低——EVE 历史数据没有真实开/收盘价，均价是最具代表性的当日价格；
+  - 叠加 **MA5 / MA20 简单移动平均线**（`LineSeries<DateTimePoint>`，窗口不满取 null → 折线断开，不画半截均线）；
+  - 配色进 `ApplyThemeColors()`（主题切换时与其它系列一起重绘）：涨=`SystemFillColorSuccessBrush`、
+    跌=`SystemFillColorCriticalBrush`、MA5=强调色、MA20=次要色；蜡烛系列 `IsVisibleAtLegend=false`（图例只留 MA5/MA20）。
+- **本地化**：中英各新增 7 键（`MarketPage_PriceChange` / `HistoryHigh` / `HistoryLow` / `HistoryMean` /
+  `HistoryVolume` / `Candle` / `PriceModeLines`）。系列名（MA5/MA20）沿用既有"Highest/Average/Lowest"的英文直写惯例。
+- **验证**：`dotnet build` → **0 错误**、37 个既有警告（无新增、无一条指向本次文件）。
+- **未实机核验**：按 §8 约定未做截图核验，视觉效果由使用者查看（重点：统计行五个卡片换行时机、
+  箱体在"全部"范围下蜡烛宽度、深浅主题下涨跌红绿与均线可读性）。
+
+#### 阶段 91 追加一：箱体悬浮提示去掉 ￥（用户反馈"提示不应显示符号￥，只需价格"）
+
+- **根因**：LiveCharts 财务系列（箱体）默认 `YToolTipLabelFormatter` 用 `:C2` **货币格式**，
+  中文区域设置下渲染成 `￥1,234.00`（H/O/C/L 四行都带）。普通折线系列默认无此格式，所以只有箱体图出现 ￥。
+- **修法**：VM 构造函数给 `_candleSeries` 覆写 `YToolTipLabelFormatter`，`:C2` → `:N2`
+  （千分位 + 两位小数、无货币符号），H/O/C/L 结构保留。
+- **验证**：`dotnet build` → **0 错误**。
+
+#### 阶段 91 追加二：箱体从独立页签改为价格页签的显示模式（用户反馈"箱体不应单独 Tab 显示"）
+
+- **改法**：删除历史页签里的第三个 TabItem；价格页签内新增右上角下拉框（`PriceChartModeIndex`，
+  `MarketPage_PriceModeLines`=高低平均曲线 / `MarketPage_Candle`=箱体），图表 `Series` 改绑
+  `ActivePriceSeries`（按模式返回 `PriceSeries` 或 `CandleSeries`，切换即重绘）。默认仍为曲线，
+  与改动前的默认显示一致。
+- **验证**：`dotnet build` → **0 错误**；中英键集一致（1827 键）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

@@ -1892,4 +1892,11 @@
     <sys:String x:Key="MarketPage_Lowest">Lowest</sys:String>
     <sys:String x:Key="MarketPage_Highest">Highest</sys:String>
     <sys:String x:Key="MarketPage_Spread">Spread</sys:String>
+    <sys:String x:Key="MarketPage_PriceChange">Change</sys:String>
+    <sys:String x:Key="MarketPage_HistoryHigh">Period High</sys:String>
+    <sys:String x:Key="MarketPage_HistoryLow">Period Low</sys:String>
+    <sys:String x:Key="MarketPage_HistoryMean">Period Avg</sys:String>
+    <sys:String x:Key="MarketPage_HistoryVolume">Total Volume</sys:String>
+    <sys:String x:Key="MarketPage_PriceModeLines">High/Avg/Low</sys:String>
+    <sys:String x:Key="MarketPage_Candle">Candlestick</sys:String>
 </ResourceDictionary>

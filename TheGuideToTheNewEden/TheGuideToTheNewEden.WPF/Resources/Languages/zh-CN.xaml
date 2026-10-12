@@ -1899,4 +1899,11 @@
     <sys:String x:Key="MarketPage_Lowest">最低价</sys:String>
     <sys:String x:Key="MarketPage_Highest">最高价</sys:String>
     <sys:String x:Key="MarketPage_Spread">价差</sys:String>
+    <sys:String x:Key="MarketPage_PriceChange">区间涨跌</sys:String>
+    <sys:String x:Key="MarketPage_HistoryHigh">区间最高</sys:String>
+    <sys:String x:Key="MarketPage_HistoryLow">区间最低</sys:String>
+    <sys:String x:Key="MarketPage_HistoryMean">区间均价</sys:String>
+    <sys:String x:Key="MarketPage_HistoryVolume">累计成交</sys:String>
+    <sys:String x:Key="MarketPage_PriceModeLines">高/低/平均</sys:String>
+    <sys:String x:Key="MarketPage_Candle">箱体</sys:String>
 </ResourceDictionary>

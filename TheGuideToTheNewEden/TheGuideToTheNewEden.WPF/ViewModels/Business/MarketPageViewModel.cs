@@ -202,6 +202,9 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
     private readonly LineSeries<DateTimePoint> _averageSeries = new() { Name = "Average", GeometrySize = 0 };
     private readonly LineSeries<DateTimePoint> _lowestSeries = new() { Name = "Lowest", GeometrySize = 0 };
     private readonly LineSeries<DateTimePoint> _volumeSeries = new() { Name = "Volume", GeometrySize = 0 };
+    private readonly CandlesticksSeries<FinancialPoint> _candleSeries = new() { IsVisibleAtLegend = false };
+    private readonly LineSeries<DateTimePoint> _ma5Series = new() { Name = "MA5", GeometrySize = 0 };
+    private readonly LineSeries<DateTimePoint> _ma20Series = new() { Name = "MA20", GeometrySize = 0 };
     private readonly Axis _xAxis;
     private readonly Axis _yAxis;
 
@@ -211,9 +214,56 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
     public ISeries[] VolumeSeries { get; }
 
+    /// <summary>箱体（K线）视图：蜡烛 + MA5/MA20 均线。</summary>
+    public ISeries[] CandleSeries { get; }
+
     public Axis[] XAxes { get; }
 
     public Axis[] YAxes { get; }
+
+    // ---------- 价格页签图表显示模式（曲线 / 箱体） ----------
+
+    private int _priceChartModeIndex;
+
+    /// <summary>价格页签图表模式：0 = 高低平均曲线，1 = 箱体（K线）。</summary>
+    public int PriceChartModeIndex
+    {
+        get => _priceChartModeIndex;
+        set
+        {
+            if (Set(ref _priceChartModeIndex, value))
+            {
+                OnPropertyChanged(nameof(ActivePriceSeries));
+            }
+        }
+    }
+
+    /// <summary>价格页签当前显示的系列集合（随 <see cref="PriceChartModeIndex"/> 切换）。</summary>
+    public ISeries[] ActivePriceSeries => PriceChartModeIndex == 1 ? CandleSeries : PriceSeries;
+
+    // ---------- 历史区间统计（参考行情软件：涨跌幅 / 最高 / 最低 / 均价 / 累计成交） ----------
+
+    private double _historyChangePercent;
+    private double _historyHigh;
+    private double _historyLow;
+    private double _historyMean;
+    private long _historyVolumeTotal;
+
+    /// <summary>区间涨跌幅百分比（区间首日均价 → 末日均价，范围跟随时间下拉）。</summary>
+    public double HistoryChangePercent { get => _historyChangePercent; private set => Set(ref _historyChangePercent, value); }
+
+    /// <summary>涨跌方向：涨（≥0）显示成功色，跌显示危险色。</summary>
+    public bool HistoryRising => HistoryChangePercent >= 0;
+
+    public string HistoryChangePercentText => $"{HistoryChangePercent:+0.0;-0.0;0.0}%";
+
+    public double HistoryHigh { get => _historyHigh; private set => Set(ref _historyHigh, value); }
+
+    public double HistoryLow { get => _historyLow; private set => Set(ref _historyLow, value); }
+
+    public double HistoryMean { get => _historyMean; private set => Set(ref _historyMean, value); }
+
+    public long HistoryVolumeTotal { get => _historyVolumeTotal; private set => Set(ref _historyVolumeTotal, value); }
 
     private int _historyRangeIndex = DefaultHistoryRangeIndex;
 
@@ -280,9 +330,23 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         _averageSeries.Fill = null;
         _lowestSeries.Fill = null;
         _volumeSeries.Fill = null;
+        _ma5Series.Fill = null;
+        _ma20Series.Fill = null;
+
+        // 箱体悬浮提示默认用 :C2（货币格式），中文区域会带 ￥ 前缀；改纯数字格式
+        _candleSeries.YToolTipLabelFormatter = p =>
+        {
+            var c = p.Coordinate;
+            return
+                $"H {c.PrimaryValue:N2}{Environment.NewLine}" +
+                $"O {c.TertiaryValue:N2}{Environment.NewLine}" +
+                $"C {c.QuaternaryValue:N2}{Environment.NewLine}" +
+                $"L {c.QuinaryValue:N2}";
+        };
 
         PriceSeries = [_highestSeries, _averageSeries, _lowestSeries];
         VolumeSeries = [_volumeSeries];
+        CandleSeries = [_candleSeries, _ma5Series, _ma20Series];
         XAxes = [_xAxis];
         YAxes = [_yAxis];
 
@@ -342,6 +406,27 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         if (MakePaint("TextFillColorSecondaryBrush", 2) is { } volume)
         {
             _volumeSeries.Stroke = volume;
+        }
+
+        // 箱体（K线）：涨=成功色、跌=危险色；均线 MA5=强调色、MA20=次要色
+        if (MakePaint("SystemFillColorSuccessBrush", 1) is { } up)
+        {
+            _candleSeries.UpStroke = up;
+        }
+
+        if (MakePaint("SystemFillColorCriticalBrush", 1) is { } down)
+        {
+            _candleSeries.DownStroke = down;
+        }
+
+        if (MakePaint("SystemAccentColorPrimaryBrush", 2) is { } ma5)
+        {
+            _ma5Series.Stroke = ma5;
+        }
+
+        if (MakePaint("TextFillColorSecondaryBrush", 2) is { } ma20)
+        {
+            _ma20Series.Stroke = ma20;
         }
 
         if (MakePaint("TextFillColorSecondaryBrush", 1) is { } labelPaint)
@@ -726,6 +811,10 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
             _averageSeries.Values = [];
             _lowestSeries.Values = [];
             _volumeSeries.Values = [];
+            _candleSeries.Values = [];
+            _ma5Series.Values = [];
+            _ma20Series.Values = [];
+            ResetHistoryStats();
             return;
         }
 
@@ -744,6 +833,69 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         _averageSeries.Values = rows.Select(p => new DateTimePoint(p.Date, p.Average)).ToArray();
         _lowestSeries.Values = rows.Select(p => new DateTimePoint(p.Date, p.Lowest)).ToArray();
         _volumeSeries.Values = rows.Select(p => new DateTimePoint(p.Date, p.Volume)).ToArray();
+
+        // 箱体（K线）：收盘=当日均价，开盘=前一日均价（首日取其自身均价），高/低=当日最高/最低
+        _candleSeries.Values = rows.Select((p, i) => new FinancialPoint
+        {
+            Date = p.Date,
+            High = p.Highest,
+            Low = p.Lowest,
+            Close = p.Average,
+            Open = i == 0 ? p.Average : rows[i - 1].Average,
+        }).ToArray();
+
+        _ma5Series.Values = MovingAverageSeries(rows, 5);
+        _ma20Series.Values = MovingAverageSeries(rows, 20);
+
+        if (rows.Count == 0)
+        {
+            ResetHistoryStats();
+            return;
+        }
+
+        var first = rows[0];
+        var last = rows[^1];
+        HistoryChangePercent = first.Average != 0
+            ? (last.Average - first.Average) / first.Average * 100
+            : 0;
+        HistoryHigh = rows.Max(p => p.Highest);
+        HistoryLow = rows.Min(p => p.Lowest);
+        HistoryMean = rows.Average(p => p.Average);
+        HistoryVolumeTotal = rows.Sum(p => p.Volume);
+        OnPropertyChanged(nameof(HistoryRising));
+        OnPropertyChanged(nameof(HistoryChangePercentText));
+    }
+
+    /// <summary>简单移动平均：窗口不满时取 null（折线断开，不显示半截均线）。</summary>
+    private static DateTimePoint[] MovingAverageSeries(IReadOnlyList<EVEStandard.Models.MarketRegionHistory> rows, int window)
+    {
+        var result = new DateTimePoint[rows.Count];
+        var sum = 0d;
+        for (var i = 0; i < rows.Count; i++)
+        {
+            sum += rows[i].Average;
+            if (i >= window)
+            {
+                sum -= rows[i - window].Average;
+            }
+
+            result[i] = i + 1 >= window
+                ? new DateTimePoint(rows[i].Date, sum / window)
+                : new DateTimePoint(rows[i].Date, null);
+        }
+
+        return result;
+    }
+
+    private void ResetHistoryStats()
+    {
+        HistoryChangePercent = 0;
+        HistoryHigh = 0;
+        HistoryLow = 0;
+        HistoryMean = 0;
+        HistoryVolumeTotal = 0;
+        OnPropertyChanged(nameof(HistoryRising));
+        OnPropertyChanged(nameof(HistoryChangePercentText));
     }
 
     // ---------- 计算器 ----------
