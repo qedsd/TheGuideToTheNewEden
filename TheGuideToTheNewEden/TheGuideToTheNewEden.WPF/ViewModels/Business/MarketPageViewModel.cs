@@ -17,6 +17,7 @@ using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Business;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Services.Translation;
 using MarketOrder = TheGuideToTheNewEden.Core.Models.Market.Order;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Business;
@@ -44,9 +45,13 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         get => _selectedMarketLocation;
         set
         {
-            if (Set(ref _selectedMarketLocation, value) && value is not null && SelectedInvType is not null)
+            if (Set(ref _selectedMarketLocation, value))
             {
-                _ = SelectInvTypeAsync(SelectedInvType);
+                OnPropertyChanged(nameof(SelectedInvTypeMetaText));
+                if (value is not null && SelectedInvType is not null)
+                {
+                    _ = SelectInvTypeAsync(SelectedInvType);
+                }
             }
         }
     }
@@ -105,6 +110,7 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(SelectedInvTypeName));
                 OnPropertyChanged(nameof(SelectedInvTypeDescription));
                 OnPropertyChanged(nameof(SelectedInvTypeVolumeText));
+                OnPropertyChanged(nameof(SelectedInvTypeMetaText));
             }
         }
     }
@@ -113,9 +119,35 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
     public string SelectedInvTypeName => SelectedInvType?.TypeName ?? string.Empty;
 
-    public string SelectedInvTypeDescription => SelectedInvType?.Description ?? string.Empty;
+    /// <summary>
+    /// 物品描述（SDE 原文带 EVE 富文本标签，如 <c>&lt;color=…&gt;</c>/<c>&lt;br&gt;</c>），
+    /// 用 <see cref="ChatMarkupProtector.ToPlainText"/> 剥离标签、解码实体后展示纯文本
+    /// （与频道翻译/邮件正文同一套预清洗思路，REFACTORING 阶段 47 S5）。
+    /// </summary>
+    public string SelectedInvTypeDescription => ChatMarkupProtector.ToPlainText(SelectedInvType?.Description);
 
     public string SelectedInvTypeVolumeText => SelectedInvType is null ? string.Empty : $"{SelectedInvType.Volume:N2} m³";
+
+    /// <summary>
+    /// 物品头左侧的元信息行：体积 · 当前市场 · 买卖价差（"一眼可读"的附加信息，语言切换后重算）。
+    /// </summary>
+    public string SelectedInvTypeMetaText
+    {
+        get
+        {
+            if (SelectedInvType is null)
+            {
+                return string.Empty;
+            }
+
+            var market = SelectedMarketLocation is { Name: { Length: > 0 } name } ? name : string.Empty;
+            var spread = _sellTop > 0 && _buyTop > 0
+                ? $"{FindString("MarketPage_Spread")} {_sellTop - _buyTop:N0}"
+                : string.Empty;
+
+            return string.Join(" · ", new[] { SelectedInvTypeVolumeText, market, spread }.Where(p => p.Length > 0));
+        }
+    }
 
     private ImageSource? _selectedInvTypeIcon;
 
@@ -143,6 +175,7 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
     private double _sell5P, _buy5P, _sellMean, _buyMean;
     private long _sellAmount, _buyAmount;
+    private double _sellTop, _buyTop;
 
     public double Sell5P { get => _sell5P; private set => Set(ref _sell5P, value); }
     public double Buy5P { get => _buy5P; private set => Set(ref _buy5P, value); }
@@ -150,6 +183,18 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
     public double BuyMean { get => _buyMean; private set => Set(ref _buyMean, value); }
     public long SellAmount { get => _sellAmount; private set => Set(ref _sellAmount, value); }
     public long BuyAmount { get => _buyAmount; private set => Set(ref _buyAmount, value); }
+
+    /// <summary>最低卖价（列表按价升序，首行即最优卖价）。</summary>
+    public double SellTop { get => _sellTop; private set => Set(ref _sellTop, value); }
+
+    /// <summary>最高买价（列表按价降序，首行即最优买价）。</summary>
+    public double BuyTop { get => _buyTop; private set => Set(ref _buyTop, value); }
+
+    /// <summary>卖单笔数（订单池大小，与"数量"（总量）区分）。</summary>
+    public int SellOrderCount => SellOrders.Count;
+
+    /// <summary>买单笔数。</summary>
+    public int BuyOrderCount => BuyOrders.Count;
 
     // ---------- 历史图表 ----------
 
@@ -644,6 +689,13 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         Buy5P = buy5P;
         BuyMean = buyMean;
         BuyAmount = buyAmount;
+
+        // 集合是 ObservableCollection，属性是计算/字段投影，必须显式通知（§9 第 20 条）
+        SellTop = SellOrders.Count > 0 ? SellOrders[0].Price : 0;
+        BuyTop = BuyOrders.Count > 0 ? BuyOrders[0].Price : 0;
+        OnPropertyChanged(nameof(SellOrderCount));
+        OnPropertyChanged(nameof(BuyOrderCount));
+        OnPropertyChanged(nameof(SelectedInvTypeMetaText));
     }
 
     /// <summary>5% 均价 / 全体均价 / 总量。卖单已按价升序、买单按价降序，故 5% 分别是最低与最高的 5%。</summary>

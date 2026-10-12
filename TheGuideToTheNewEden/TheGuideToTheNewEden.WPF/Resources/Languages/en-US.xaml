@@ -1889,4 +1889,7 @@
     <sys:String x:Key="DatabasePage_Loading">Searching…</sys:String>
     <sys:String x:Key="DatabasePage_Truncated">Too many results — showing first {0}. Please refine your search.</sys:String>
     <sys:String x:Key="DatabasePage_LoadFailed">Search failed: {0}</sys:String>
+    <sys:String x:Key="MarketPage_Lowest">Lowest</sys:String>
+    <sys:String x:Key="MarketPage_Highest">Highest</sys:String>
+    <sys:String x:Key="MarketPage_Spread">Spread</sys:String>
 </ResourceDictionary>

@@ -1896,4 +1896,7 @@
     <sys:String x:Key="DatabasePage_Loading">搜索中…</sys:String>
     <sys:String x:Key="DatabasePage_Truncated">结果过多，仅显示前 {0} 条，请细化关键词</sys:String>
     <sys:String x:Key="DatabasePage_LoadFailed">搜索失败：{0}</sys:String>
+    <sys:String x:Key="MarketPage_Lowest">最低价</sys:String>
+    <sys:String x:Key="MarketPage_Highest">最高价</sys:String>
+    <sys:String x:Key="MarketPage_Spread">价差</sys:String>
 </ResourceDictionary>

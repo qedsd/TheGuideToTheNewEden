@@ -3952,6 +3952,55 @@ icacls $ws | findstr /i "Mandatory"
 - **未实机核验**：按 §8 约定未做截图核验，界面效果由使用者查看。首次使用可留意：切类型后自动用当前关键词重查、
   输入数字 ID 是否置顶、结果过多时 Footer 是否出现截断提示、深浅主题下表格文字是否可读。
 
+### 阶段 90：市场物品头 UI 重设计（用户反馈"右上角统计挤成一团、左侧只有名称和图标很空"）
+
+- **现象**：市场页物品头原来是"图标 + 名称"占左、右上角一个 3 列 × 2 行的小统计表（5%/均价/数量，卖买两行挤在一起）——
+  左侧大片空白、右侧统计拥挤，一眼读不到多少信息。
+- **重设计（三栏 + 底栏）**：`MarketPage.xaml` 物品头 `CardControl` 整体重排——
+  - **左栏（填充空白）**：64px 圆角图标底块 + 名称（20 SemiBold）+ **描述（12px 次要色，最多两行省略，不再要点"简介"才看得到）** +
+    元信息行"体积 · 市场名 · 价差"（`SelectedInvTypeMetaText`，新增，买卖 Top 都有时显示价差）；
+  - **右栏（统计分开）**：卖单 / 买单 **两张独立统计卡**（`ControlFillColorSecondaryBrush` 圆角底 + 14,10 内边距），
+    每卡 4 行：**最低价 / 最高价（新增 `SellTop` / `BuyTop` = 列表首行价）**、5%、均价、数量，
+    标签左对齐（次要色 12px）、数值右对齐（主色 13 Medium）；卡标题"卖单/买单"分别用
+    `SystemFillColorSuccessBrush`（收入）/ `SystemFillColorCriticalBrush`（支出）语义色；
+  - **底栏**：操作按钮行（收藏 / 简介 / 买入 / 刷新）从右上移到整卡底部，横向铺开。
+- **VM**（`MarketPageViewModel`）：新增 `SellTop` / `BuyTop`（double）、`SellOrderCount` / `BuyOrderCount`（订单笔数）、
+  `SelectedInvTypeMetaText`（计算属性，语言切换重算）；`SetOrderStatisticalInfo` 里统一更新 Top 并对
+  Count / MetaText **显式通知**（`ObservableCollection` 变化不会通知投影属性，§9 第 20 条）；
+  `SelectedInvType` / `SelectedMarketLocation` 变更也补发 MetaText 通知。
+- **本地化**：中英各新增 3 键（`MarketPage_Lowest` / `MarketPage_Highest` / `MarketPage_Spread`）；两文件 **1820 键、
+  0 重复、键集一致**（脚本核对）。数值一律 `N0` 千分位，一眼可读。
+- **构建**：`dotnet build` **0 错误**（37 个既有警告基线，无一条指向本次文件）；产物核对
+  （`views/pages/marketpage.baml`、`MarketStatCardTitle`、`SelectedInvTypeMetaText` 均嵌入 `TheGuideToTheNewEden.dll`）。
+- **未实机核验**：按 §8 约定未做截图核验，视觉效果由使用者查看（重点：两张统计卡间距/对齐、描述两行截断、
+  深/浅主题下卡片底色与文字可读性）。
+
+#### 阶段 90 追加一：操作按钮图标化（用户要求"收藏/简介/买入/刷新可以用图标表示，更简洁"）
+
+- 底栏四个文字按钮改为**纯图标按钮**（36×32，`ToolTip` 与 `AutomationProperties.Name` 均沿用既有语言键，
+  与阶段 41 的图标按钮约定一致）：收藏=`Star24`、取消收藏=`StarOff24`（按 `Stared` 切换显隐）、
+  简介=`Info24`、买入（计算器）=`Calculator24`、刷新=`ArrowSync24`。图标名已用 dll 字符串表核对存在。
+
+#### 阶段 90 追加二：物品描述剥离 HTML 标签（用户反馈"简介内容存在大量 html 标签，参考邮件详情的处理"）
+
+- **现象**：SDE 的 `InvType.Description` 是带 EVE 富文本标签的原文（`<color=…>` / `<font size= color=…>` / `<br>` 等），
+  物品头与简介窗口直接显示时满屏标签。
+- **修法**：`MarketPageViewModel.SelectedInvTypeDescription` 由"原文直出"改为
+  **`ChatMarkupProtector.ToPlainText(Description)`**——复用阶段 47 S5 那套预清洗（`<br>`→换行、其余 `<...>` 标签整体删除、
+  常见 HTML 实体解码、压缩空行与多空格），与频道翻译/邮件正文同一思路。两处绑定（市场页物品头、简介窗口
+  `MarketTypeInfoView`）零改动即同时生效。物品头描述另加 `ToolTip` 显示完整纯文本（两行省略后可悬停看全文）。
+- **验证**：`dotnet build -p:OutDir=<临时目录>`（应用正在运行，exe 被占用，按 §环境注意重定向输出）
+  → **0 错误**、37 个既有警告（无新增）；临时目录已清理。**注意：bin 产物需等应用重启后才生效。**
+
+#### 阶段 90 追加三：按钮并入中栏，不再单独占一行（用户反馈"按钮单独一行留白太多、图标没显示完整"）
+
+- **按钮行**从物品头 `CardControl` 的第二行（`Grid.Row=1`）**移入中栏**（名称/描述/元信息下方，`Margin="0,12,0,0"` 左对齐），
+  `Grid.RowDefinitions` 收敛为单行——物品头由"两行 + 独立按钮行"变成**单行**（图标/信息/统计卡同一行），卡片高度明显变矮、无留白。
+- **图标裁剪根因与修法**：按钮原先写死 `Width="36" Height="32"`，WPF-UI `Button` 模板自带内边距，36px 宽减去左右内边距后
+  放 18px 图标反而被裁。改为**不写死宽高**（只留 `MinWidth="34" MinHeight="30"`），按钮按"图标 + 模板内边距"自适应伸展，
+  图标 `FontSize` 提到 **20**——与项目里其它图标按钮（IntelWindow 36×30 + 24 图标等）同一取向：图标按钮不要给过紧的固定宽。
+- **验证**：`dotnet build -p:OutDir=<临时目录>` → **0 错误**、37 个既有警告；临时目录已清理。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
