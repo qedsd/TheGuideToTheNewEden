@@ -10,20 +10,17 @@ using TheGuideToTheNewEden.WPF.Services.Settings;
 namespace TheGuideToTheNewEden.WPF.ViewModels.Home;
 
 /// <summary>
-/// 主页视图模型：快捷方式磁贴（含编辑态）+ 品牌/状态条。
+/// 主页视图模型：快捷方式磁贴 + 品牌/状态条。
 /// <para>
-/// 数据全部来自 <see cref="HomeShortcutService"/>（单一数据源），因此「导航右键固定」「添加功能窗口」
-/// 「主页编辑」三处入口天然同步——服务发出 <c>Changed</c> 后这里重建磁贴。
-/// </para>
-/// <para>
-/// 磁贴的点击 / 拖动 / 右键在页面代码后置里处理（与本项目其余页面一致，不使用 Command）。
+/// 数据全部来自 <see cref="HomeShortcutService"/>（单一数据源），任何入口（导航右键固定 /
+/// 设置 → 主页编辑）改动后这里通过 <c>Changed</c> 事件重建磁贴。阶段 101 起主页磁贴只有
+/// "点开"一种交互——编辑（增删 / 排序 / 宽窄 / 恢复默认）全部在 设置 → 主页。
 /// </para>
 /// </summary>
 public sealed class HomePageViewModel : INotifyPropertyChanged
 {
     private readonly DispatcherTimer _clockTimer;
     private readonly DispatcherTimer _statusTimer;
-    private bool _isEditing;
     private bool _initialized;
     private string _playersText = string.Empty;
     private string _gameTimeText = string.Empty;
@@ -54,11 +51,8 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
     /// <summary>行情卡（P1）。</summary>
     public HomeMarketCardViewModel Market { get; } = new();
 
-    /// <summary>磁贴（末尾固定是「＋ 添加功能」槽位）。</summary>
+    /// <summary>磁贴（平铺一份；编辑在 设置 → 主页，不再有添加槽位）。</summary>
     public ObservableCollection<HomeShortcutTileViewModel> Tiles { get; } = [];
-
-    /// <summary>分组显示（P3 分段）时的一段段磁贴。</summary>
-    public ObservableCollection<HomeShortcutGroupViewModel> Groups { get; } = [];
 
     /// <summary>「最近使用」条（P2；开关打开时才显示）。</summary>
     public ObservableCollection<HomeShortcutTileViewModel> RecentTiles { get; } = [];
@@ -90,51 +84,19 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
     // ---------- 快捷方式卡 ----------
 
-    public bool IsEditing
-    {
-        get => _isEditing;
-        private set
-        {
-            if (!SetProperty(ref _isEditing, value))
-            {
-                return;
-            }
-
-            foreach (var tile in Tiles)
-            {
-                tile.IsEditing = value;
-                tile.IsDropTarget = false;
-                tile.IsDragging = false;
-            }
-
-            OnPropertyChanged(nameof(EditButtonText));
-        }
-    }
-
-    /// <summary>「编辑 / 完成」按钮文案。</summary>
-    public string EditButtonText => Resolve(IsEditing ? "Home.Quick.Done" : "Home.Quick.Edit");
-
     /// <summary>「共 N 个 · 上限 M」。</summary>
     public string CountText => string.Format(
         Resolve("Home.Quick.Count"), HomeShortcutService.Items.Count, HomeShortcutService.MaxItems);
 
-    /// <summary>是否还能继续固定（达到上限后「＋ 添加」禁用）。</summary>
-    public bool CanAdd => !HomeShortcutService.IsFull;
-
     public bool IsEmpty => HomeShortcutService.Items.Count == 0;
 
-    // ---------- 显示策略（P1 / P2 / P3） ----------
+    // ---------- 显示策略（P1 / P2） ----------
 
     public bool ShowWalletCard => HomeShortcutService.ShowWalletCard;
 
     public bool ShowMarketCard => HomeShortcutService.ShowMarketCard;
 
     public bool ShowRecent => HomeShortcutService.ShowRecent && RecentTiles.Count > 0;
-
-    public bool ShowGrouped => HomeShortcutService.ShowGrouped;
-
-    /// <summary>平铺显示（非分组模式）。</summary>
-    public bool ShowFlat => !HomeShortcutService.ShowGrouped;
 
     // ---------- 生命周期 ----------
 
@@ -190,11 +152,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
             tile.RefreshTexts();
         }
 
-        foreach (var group in Groups)
-        {
-            group.Refresh();
-        }
-
         foreach (var tile in RecentTiles)
         {
             tile.RefreshTexts();
@@ -205,7 +162,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(AppName));
         OnPropertyChanged(nameof(NewVersionText));
-        OnPropertyChanged(nameof(EditButtonText));
         OnPropertyChanged(nameof(CountText));
     }
 
@@ -225,20 +181,9 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
     // ---------- 磁贴操作 ----------
 
-    /// <summary>点击磁贴：编辑态不跳转；「＋」打开添加功能窗口。</summary>
+    /// <summary>点击磁贴：打开对应功能并记录"最近使用"。</summary>
     public void OpenTile(HomeShortcutTileViewModel tile)
     {
-        if (tile.IsAddSlot)
-        {
-            Views.Windows.AddShortcutWindow.ShowWindow();
-            return;
-        }
-
-        if (IsEditing)
-        {
-            return;
-        }
-
         HomeFeatureLauncher.Open(tile.Feature, tile.Param);
 
         // 「最近使用」只在开关打开时记录（关闭时 PushRecent 内部直接 return）。
@@ -248,115 +193,25 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         }
     }
 
-    public void RemoveTile(HomeShortcutTileViewModel tile)
-    {
-        if (!tile.IsAddSlot)
-        {
-            // 只删这一块：带参数的磁贴（如"市场 + 某物品"）不会连带删掉同功能的其它磁贴。
-            HomeShortcutService.RemoveExact(tile.Id, tile.Param);
-        }
-    }
-
-    public void MoveTileToFront(HomeShortcutTileViewModel tile)
-    {
-        if (!tile.IsAddSlot)
-        {
-            HomeShortcutService.MoveTo(tile.Id, tile.Param, 0);
-        }
-    }
-
-    public void ToggleTileSize(HomeShortcutTileViewModel tile)
-    {
-        if (!tile.IsAddSlot)
-        {
-            HomeShortcutService.SetSize(tile.Id, tile.Param, !tile.IsWide);
-        }
-    }
-
-    /// <summary>键盘移动（Alt + ←/→）。</summary>
-    public void MoveTileByOffset(HomeShortcutTileViewModel tile, int offset)
-    {
-        if (tile.IsAddSlot || tile.Item is null)
-        {
-            return;
-        }
-
-        var index = IndexOf(tile.Item.Key);
-        if (index < 0)
-        {
-            return;
-        }
-
-        HomeShortcutService.MoveTo(tile.Id, tile.Param, index + offset);
-    }
-
-    /// <summary>
-    /// 拖动落位。<paramref name="targetIndex"/> 是"落在哪个磁贴的位置上"，
-    /// <paramref name="insertBefore"/> 决定落在它的前半还是后半；这里换算成移动完成后的最终下标
-    /// （同一次移动里，源在目标之前时移除会让目标下标前移，必须补偿）。
-    /// </summary>
-    public void DropTile(string draggedKey, int targetIndex, bool insertBefore)
-    {
-        var items = HomeShortcutService.Items.ToList();
-        var current = items.FindIndex(p => p.Key == draggedKey);
-        if (current < 0 || items.Count == 0)
-        {
-            return;
-        }
-
-        var target = insertBefore ? targetIndex : targetIndex + 1;
-        if (current < target)
-        {
-            target--;
-        }
-
-        var item = items[current];
-        HomeShortcutService.MoveTo(item.Id, item.Param, Math.Clamp(target, 0, items.Count - 1));
-    }
-
-    public void DropTileAtEnd(string draggedKey)
-    {
-        var items = HomeShortcutService.Items.ToList();
-        if (items.FirstOrDefault(p => p.Key == draggedKey) is { } item)
-        {
-            HomeShortcutService.MoveTo(item.Id, item.Param, items.Count - 1);
-        }
-    }
-
-    public void RestoreDefaults()
-    {
-        HomeShortcutService.ResetToDefault();
-        IsEditing = false;
-    }
-
-    public void ToggleEdit() => IsEditing = !IsEditing;
-
-    /// <summary>退出编辑（离开页面 / Esc）。</summary>
-    public void EndEdit()
-    {
-        if (IsEditing)
-        {
-            IsEditing = false;
-        }
-    }
-
-    /// <summary>磁贴在列表里的下标（按"功能 + 参数"的唯一键）。</summary>
-    public int IndexOf(string key)
-    {
-        for (var i = 0; i < Tiles.Count; i++)
-        {
-            if (Tiles[i].Item?.Key == key)
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
     // ---------- 内部 ----------
 
-    private void OnShortcutsChanged() => RefreshTiles();
+    private void OnShortcutsChanged()
+    {
+        RefreshTiles();
+
+        // 「⋯」开关把卡片打开后立刻补一次加载——两个 VM 自带"已加载"守卫（_loaded），
+        // 重复调用是空操作；没有这一步，卡片虽出现了，却显示"还没有登录角色 / 还没有收藏物品"
+        // 的空引导态，要等下次进主页才取数。
+        if (HomeShortcutService.ShowWalletCard)
+        {
+            _ = Wallet.LoadAsync();
+        }
+
+        if (HomeShortcutService.ShowMarketCard)
+        {
+            _ = Market.LoadAsync();
+        }
+    }
 
     /// <summary>按服务的当前数据重建磁贴（结构变化才重建，避免打断拖动中的视觉）。</summary>
     private void RefreshTiles()
@@ -364,7 +219,7 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         var items = HomeShortcutService.Items;
 
         // 顺序 / 组成完全一致时只刷新尺寸，不重建容器。
-        var sameShape = Tiles.Count == items.Count + 1;
+        var sameShape = Tiles.Count == items.Count;
         if (sameShape)
         {
             for (var i = 0; i < items.Count; i++)
@@ -391,46 +246,22 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
             {
                 if (HomeFeatureCatalog.Find(item.Id) is { } feature)
                 {
-                    Tiles.Add(new HomeShortcutTileViewModel(item, feature) { IsEditing = IsEditing });
+                    Tiles.Add(new HomeShortcutTileViewModel(item, feature));
                 }
             }
-
-            Tiles.Add(new HomeShortcutTileViewModel { IsEditing = IsEditing });
         }
 
-        RebuildGroups();
         RebuildRecent();
         RefreshBadges();
 
         OnPropertyChanged(nameof(CountText));
-        OnPropertyChanged(nameof(CanAdd));
         OnPropertyChanged(nameof(IsEmpty));
+        // 两张数据卡的可见性也在这份"服务变化 → 通知"清单里：
+        // 它们是 `=> HomeShortcutService.Show*` 的计算属性，缺了这两行就只在绑定时读一次初值，
+        // 设置页里的显示开关拨了也不动（阶段 92 追加一引入的漏通知，阶段 95 修复）。
+        OnPropertyChanged(nameof(ShowWalletCard));
+        OnPropertyChanged(nameof(ShowMarketCard));
         OnPropertyChanged(nameof(ShowRecent));
-        OnPropertyChanged(nameof(ShowGrouped));
-        OnPropertyChanged(nameof(ShowFlat));
-    }
-
-    /// <summary>分组显示用：按功能目录里的分组键把磁贴切成一段段（保持用户在主页里排的顺序）。</summary>
-    private void RebuildGroups()
-    {
-        Groups.Clear();
-
-        var tiles = Tiles.Where(p => !p.IsAddSlot && p.Feature is not null).ToList();
-        if (tiles.Count == 0)
-        {
-            return;
-        }
-
-        // 分组顺序 = 功能目录里分组首次出现的顺序（与"添加功能"窗口左侧一致），
-        // 组内顺序 = 主页上的磁贴顺序。
-        foreach (var groupKey in HomeFeatureCatalog.GroupKeys)
-        {
-            var groupTiles = tiles.Where(p => p.Feature!.GroupKey == groupKey).ToList();
-            if (groupTiles.Count > 0)
-            {
-                Groups.Add(new HomeShortcutGroupViewModel(groupKey, groupTiles) { });
-            }
-        }
     }
 
     /// <summary>「最近使用」条：按记录顺序（最新在前）取功能磁贴。</summary>

@@ -4206,6 +4206,306 @@ icacls $ws | findstr /i "Mandatory"
   日志**无 ERROR / WARN**（只有一条 INFO：GitHub 匿名接口限流导致本次没查到新版本，属外部状况）。
 - 探针与测试脚本都是一次性产物，**核对后已清理**；探针改动过的 `HomeShortcuts.json` 已还原 / 重置为推荐组合。
 
+### 阶段 93：主页快捷方式的"添加"入口收进编辑模式
+
+> 用户需求：主页快捷方式卡**去掉常驻的「＋ 添加」按钮**，只有进入编辑模式后才能添加；
+> 「⋯」更多菜单的 flyout 里**去掉「管理快捷方式…」**。
+
+- **改动明细**：
+  - `Views/Pages/HomePage.xaml`：
+    - 表头「＋ 添加」按钮（`AddButton`）加 `Visibility` 绑定 `IsEditing`——**只在编辑模式出现**，
+      点击行为不变（打开「添加功能」窗口；达上限时仍以禁用态提示，`CanAdd` 语义未动）。
+    - `HomeTileTemplate` 的磁贴根按钮加 `Visibility` 绑定新属性 `IsTileVisible`——网格末尾的
+      虚线「＋ 添加功能」磁贴**同样只在编辑模式占位**（否则正常视图点它仍能添加，与需求冲突）；
+      平铺与分组两个 `ItemsControl` 共用同一模板，一处生效。
+    - `MoreButton` 的 flyout（`ContextMenu`）删掉 `manage` 菜单项（「管理快捷方式…」），
+      只剩 4 个显示策略开关 + 分隔线 + 「主页设置」。
+  - `Views/Pages/HomePage.xaml.cs`：删掉 `OnMenuManageClick` 处理器与 `OnMoreMenuOpened` 里的
+    `"manage"` 文案分支。
+  - `ViewModels/Home/HomeShortcutTileViewModel.cs`：新增计算属性
+    `IsTileVisible => !IsAddSlot || IsEditing`（功能磁贴恒可见、添加槽位仅编辑态可见），
+    `IsEditing` setter 里连带通知——进入/退出编辑时槽位即时出现/隐藏（与 `ShowRemoveButton` 同一模式）。
+  - `ViewModels/Home/HomePageViewModel.cs`：`OpenTile` 的「＋」分支加 `IsEditing` 兜底
+    （槽位在正常视图已隐藏，这里防键盘/其它路径误触）。
+  - `Resources/Languages/zh-CN.xaml` / `en-US.xaml`（只改值、不增删键，无重复键风险）：
+    - `Home.Quick.Empty`：空态引导由「点『添加』」改为「点『编辑』进入编辑模式后添加」
+      （正常视图已没有「添加」可点，原文案会误导）。
+    - `Home.Quick.EditHint`：编辑提示条补上「点『添加』固定功能」，让新入口在编辑态可被发现。
+  - `HOME_DESIGN.md`：§3 布局图、§4.1 三个入口表、§4.3 编辑模式、§4.4 右键菜单同步更新
+    （导航右键的「管理快捷方式…」**保留**——需求只针对主页「⋯」flyout）。
+- **有意保留**：左侧导航项右键菜单里的「管理快捷方式…」（`MainWindow.xaml.cs`，`Home.Quick.Manage`
+  键因此继续使用）；设置 → 主页里的快捷方式列表管理与「添加」按钮（集中管理入口，不属于主页表头）。
+- **验证状态（如实记录）**：本轮**未能执行 `dotnet build`**——会话内 PowerShell 宿主对每个新进程都
+  以 `0xC0000142`（`STATUS_DLL_INIT_FAILED`）启动失败（前台 / 后台任务 / 子代理三种路径一致，
+  连 `Write-Output` 探针都无法运行，构建从未开始），非代码问题。已做静态自查：XAML 绑定路径与属性名
+  一致（`IsTileVisible` / `IsEditing` 均有 PropertyChanged 通知）、`BoolToVisibility` 资源在模板作用域内、
+  `OnMenuManageClick` 全仓库无残留引用、语言文件只改值无新增键（§8 第 33 条的重复键风险不适用）、
+  `AddShortcutWindow` 的 `using` 仍被 `OnAddClick` 使用。**下次构建时需补验 0 错误**，
+  并实机确认：正常视图无「＋ 添加」按钮与末尾虚线磁贴、进入编辑后两者出现且可点、「⋯」flyout 无
+  「管理快捷方式…」。
+
+### 阶段 94：删除"设置 → 主页"（与主页编辑二选一）
+
+> 用户质疑：主页已经可以直接编辑（编辑模式 + 「⋯」菜单），为什么设置里还要一份主页设置？
+> 对比确认后按用户选择**整页删除**，主页自身成为唯一编辑入口。
+
+- **重复对比（删除依据）**：设置页的 4 个显示策略开关 = 「⋯」菜单里同样的 4 个开关；上移/下移排序 ⊂
+  编辑态拖动 + `Alt+←/→` + 右键"移到最前"；列表移除 = 编辑态 ✕ / 右键移除；设置页「添加」 =
+  编辑态「＋ 添加」/「＋」磁贴 + 导航右键固定；恢复默认 = 编辑态提示条按钮；清空最近使用 =
+  最近使用条橡皮擦。两边读写同一份 `HomeShortcuts.json`，设置页只是同一数据的另一种渲染。
+  尤其阶段 93 把"添加"收敛进编辑模式后，设置页那个不经编辑的「添加」反而与规则相悖。
+- **改动明细**：
+  - `Views/Pages/SettingsPage.xaml.cs`：`BuildCategories` 删掉「主页」分类（在 ZKB 分类注释旁补了
+    一条"为什么没有主页分类"的说明，同一先例）。
+  - `Services/Home/HomeFeatureCatalog.cs`：删掉 `setting-home` 目录条目（该条目此前可从"添加功能"
+    窗口固定成磁贴）；**兼容性**：已被固定的 `setting-home` 磁贴会在下次加载时按"未知 id"自动丢弃
+    并记一条 WARN（`HomeShortcutService` 既有机制，无需迁移）。
+  - `Services/Home/HomeFeatureLauncher.cs`：`ResolveSettingPage` 删掉 `"setting-home"` 映射。
+  - `Views/Pages/HomePage.xaml`：「⋯」flyout 删掉分隔线与「主页设置」项——现在只剩 4 个显示策略开关。
+  - `Views/Pages/HomePage.xaml.cs`：删掉 `OnMenuHomeSettingClick` 与 `"setting"` 文案分支，连带移除
+    因此不再使用的 `Views.Pages.Settings` using。
+  - `Resources/Languages/zh-CN.xaml` / `en-US.xaml`：删 10 个死键（`SettingPage_Home(_Desc)`、
+    `Home.Setting.Shortcuts(_Desc)`、`MoveUp`、`MoveDown`、4 个开关的 `_Desc`——描述文本只被已删
+    页面使用）；保留仍在用的 5 个（4 个开关标题给「⋯」菜单、`ClearRecent` 给最近使用条）。
+    中英同删，键集保持一致，无重复键（§8 第 33 条风险不适用）。
+  - `HOME_DESIGN.md`：§4.1"三个入口"改"两个入口"、文件清单与改动清单销账、键清单同步。
+- **有意保留**：「添加功能」窗口（`AddShortcutWindow`）不动——它仍是编辑模式内的批量挑选工具；
+  导航右键「固定到主页」与「管理快捷方式…」不动（用户未要求，且是独立入口）。
+- **验证状态（如实记录）**：会话内 PowerShell 宿主持续 `0xC0000142`（阶段 93 同一环境故障），
+  本轮**构建仍未执行**；引用清理后已 grep 复核：`HomeSettingPage` 在代码里只剩其自身两个文件、
+  `SettingPage_Home` / `Home.Setting.Shortcuts|MoveUp|MoveDown|*_Desc` 全仓库零引用。
+  **待办两项**：① shell 恢复后物理删除 `Views/Pages/Settings/HomeSettingPage.xaml(.cs)`
+  （当前无任何调用方、可独立编译，属遗留死文件）；② 补跑 `dotnet build` 验 0 错误 + 实机确认
+  设置页分类列表无「主页」、「⋯」flyout 只剩 4 个开关、编辑模式各功能正常。
+
+### 阶段 95：修复「⋯」显示开关不生效（钱包 / 行情卡一直保持可见）
+
+- **现象（用户实测）**：拨动「⋯」菜单里的"显示钱包卡 / 显示行情卡"开关，卡片毫无反应、保持初始可见性。
+- **根因（阶段 92 追加一的遗留缺陷）**：服务层链路是通的（`Show*` setter → `SetFlag` → `Commit()` →
+  `Changed` → `OnShortcutsChanged()` → `RefreshTiles()`），但 `RefreshTiles()` 末尾的
+  `OnPropertyChanged` 清单（P0 为磁贴所写）**漏了 `ShowWalletCard` / `ShowMarketCard`**。这两个 VM
+  属性是 `=> HomeShortcutService.Show*` 的计算属性，XAML 的 `Visibility` 绑定只在初始化时读一次
+  初值，此后没有任何通知——开关翻转了设置并落盘，卡片却永远不更新。设置页时期的同名开关走的是
+  同一条链路，同样不生效（`ShowRecent` / `ShowGrouped` / `ShowFlat` 当时就在清单里，所以正常）。
+- **修复**（`ViewModels/Home/HomePageViewModel.cs`）：
+  1. `RefreshTiles()` 的通知清单补上 `ShowWalletCard` / `ShowMarketCard`（附注释说明为什么必须在这）；
+  2. `OnShortcutsChanged()` 在 `RefreshTiles()` 之后**补一次卡片加载**——两个卡 VM 自带 `_loaded`
+     守卫（重复调用是空操作），没有这一步，开关打开后卡片虽出现，却显示"还没有登录角色 /
+     还没有收藏物品"的空引导态（`_summary` / `Items` 还是初始空），要等下次进主页才取数。
+- **「最近使用」的说明（非缺陷）**：`ShowRecent` 本来就在通知清单里，开关即时生效并落盘；但开关
+  打开时若还没有任何使用记录（**关闭期间不记录**，`PushRecent` 直接 return），条目区要等打开过
+  功能后才出现内容——这是设计口径（开关只控制"是否显示与记录"），不是失效。
+- **验证状态（如实记录）**：会话内 PowerShell 宿主仍 `0xC0000142`（阶段 93/94 同一环境故障），
+  本轮构建依旧未能执行。修复为两处小改动，已静态复核通知路径完整（`Changed` 订阅在
+  `HomePageViewModel` 构造函数、`RefreshTiles` 每次都会走到新增的两行）。**待 shell 恢复后补跑
+  `dotnet build` 验 0 错误**，并实机确认：拨动钱包 / 行情开关卡片即时隐藏 / 显示、重新打开后
+  立即出数据而非空引导态、最近使用开关按上述口径表现。
+
+### 阶段 96：修复钱包卡「刷新」拿不到新数据 + 实锤"沙箱内运行导致全部设置不持久"
+
+- **现象（用户实测）**：钱包卡刷新不出新数据；手动打开角色工作区能取到（更新的）数据。
+- **日志实锤（`bin\Debug\net8.0-windows10.0.19041\Log\20261013.txt`，两层原因）**：
+  1. **真实代码缺陷（已修）**：卡片「刷新」按钮 → `LoadAsync(forceRefresh: true)` →
+     `HomeWalletSummaryService.GetAsync(forceRefresh: true)` 只跳过了**汇总层的 5 分钟内存缓存**，
+     `forceRefresh` **没有下传**——`LoadJournalAsync` → `GetCharacterJournalAsync(context, page)`
+     仍带首页 2 分钟缓存、`GetBalanceAsync(context)` 仍走总览 5 分钟缓存，所以点「刷新」拿回来的
+     还是同一批逐角色缓存值。角色工作区的刷新按钮把 forceRefresh 一路传到底，这正是"卡片刷不动、
+     角色页能取到"的直接差异。
+  2. **环境实锤（用户须知）**：日志大量 `Access to the path '...\Configs\...' is denied`——
+     **应用正以 Low 完整性级别运行**（启动链 `TheGuideToTheNewEden.exe(Low) ← devenv.exe ← explorer`，
+     从 DSH 沙箱环境里启动 VS 再跑应用所致）。后果：`Auth.json` 写不回（**刷新后的令牌重启即丢**）、
+     `CharacterCache\*\wallet.journal.json / overview.json / skills.json` 写不进（取数本身成功，
+     只是缓存不落盘）、`HomeShortcuts.json` 落盘失败（09:36–10:02 连续 9 次 = 拨「⋯」开关那会儿，
+     **显示开关的改动重启即回退**）。读没问题、ESI 调用全部成功，所以卡片其实有数据；
+     但**在这个会话里一切设置与令牌都不持久化**。解法（日志托盘诊断原文）：**从沙箱外启动应用**
+     ——桌面资源管理器双击，或从开始菜单打开终端 / Visual Studio 再运行；
+     `whoami /groups | findstr Mandatory` 出现 `Low Mandatory Level` 即为此因。
+     （另：`EVEStandardScopeNotAcquired "Character does not have required role(s)"` 是无军团财务
+     权限角色取军团钱包的正常 403，属既有噪音，与此问题无关。）
+- **修复**（`Services/Home/HomeWalletSummaryService.cs`，行为：自动装载仍走缓存省流量，**只有
+  卡片上的「刷新」绕过全部缓存**）：
+  - `GetAsync(range, forceRefresh)` 把 `forceRefresh` 下传 `LoadJournalAsync(…, forceRefresh)`
+    → `GetCharacterJournalAsync(context, page, forceRefresh)`（首页跳过 2 分钟缓存，直接请求）；
+  - 同样下传 `GetBalanceAsync(context, forceRefresh)`（跳过总览 5 分钟缓存，直接取余额端点，
+    比整包总览更省）；
+  - `GetAsync` / `LoadJournalAsync` 的注释同步说明"forceRefresh 一路下传"的语义。
+- **验证状态（如实记录）**：会话内 PowerShell 宿主仍 `0xC0000142`（阶段 93/94/95 同一环境故障），
+  构建依旧未能执行。改动为一条参数的下传（3 处调用点），已静态复核签名匹配
+  （`GetCharacterJournalAsync(context, page, forceRefresh)` / `GetBalanceAsync(context, forceRefresh)`
+  本就带 `forceRefresh` 形参）。**待沙箱外补跑 `dotnet build` 验 0 错误**，并实机确认：卡片「刷新」
+  立即反映游戏内最新余额/流水、自动装载仍走缓存、从沙箱外启动后设置与令牌恢复正常持久化。
+
+### 阶段 97：环境修复实锤——workspace 的 Low 完整性标签是"设置不持久"的根源（已清除）
+
+> 承接阶段 96 的环境问题。用户反馈：切到 danger-full-access、关掉 DSH、资源管理器双击 / VS 调试
+> 都仍然受限。最终用 ACL 诊断 + 完整性标签检查定位到**磁盘上的持久标签**并清除；本轮同时补跑了
+> 阶段 93–96 欠下的构建验证（0 错误）并物理删除了阶段 94 的遗留死文件。
+
+- **根因（实锤，非推测）**：DSH 旧沙箱策略（workspace-write）在 **workspace 根目录
+  `D:\QEDSD\Code\TheGuideToTheNewEden` 上写了显式的 `Mandatory Label\Low Mandatory Level (OI)(CI)`
+  继承标签**（`D:\QEDSD\Code` 与 `D:\` 均无）。机制：exe 文件带低完整性标签 → **无论双击 / VS
+  怎么启动，进程都以 Low 完整性运行** → 按 Windows MIC 的"No Write Up"规则，Low 进程写不了
+  Medium（默认）标签的 `%LocalAppData%\TheGuideToTheNewEden\Configs\*` → 令牌刷新存不回、
+  CharacterCache 写不进、HomeShortcuts.json 落盘失败（阶段 96 日志的全部 Access denied）。
+  **标签持久在磁盘对象上，DSH 关闭 / 策略切换都不会自动清除**，所以"关掉也无用"。
+  （同目录的 `Everyone:(CI)(DENY)(DC)` 与 `S-1-4-*:(OI)(CI)(W,D,DC)` 是 DSH workspace provisioning
+  的常规项，与本病无关，保留未动。）
+- **诊断与修复**：
+  1. ACL 诊断技能对 `%LocalAppData%\TheGuideToTheNewEden` 全树检查 → 判定 `NOT_THIS_CLASS`
+     （DACL 为标准的 SYSTEM/Administrators/用户 FullControl，无拒绝项、无包权限项、无低标签）——
+     **证明数据文件夹的文件权限没问题**，问题在 workspace 侧的进程完整性；
+  2. `icacls` 逐层溯源：标签的显式源头是 workspace 根目录；
+  3. 修复：`icacls "D:\QEDSD\Code\TheGuideToTheNewEden" /setintegritylevel "(OI)(CI)M"`
+     （Low → Medium，整棵树继承传播；DACL / 内容 / 所有者零改动）。
+     **恢复原状的命令**：`icacls "D:\QEDSD\Code\TheGuideToTheNewEden" /setintegritylevel "(OI)(CI)L"`；
+  4. 验证：Debug / Release 两个 exe 均 `Medium Mandatory Level (I)`（构建重新生成后复验仍是 Medium），
+     数据文件夹无标签（默认 Medium）——Medium 进程写 Medium 数据，MIC 不再拦截。
+- **顺带销账两项挂起**：
+  - 阶段 94 遗留：`Views/Pages/Settings/HomeSettingPage.xaml(.cs)` 已物理删除（此前零引用、独立可编译，
+    删除前已确认）；构建通过证明删得干净；
+  - 阶段 93/94/95/96 欠下的构建验证：`dotnet build` → **0 错误**（37 个警告全部为
+    ChannelIntel / IntelWindow / GamePreview / GlossarySettingPage 等无关文件的历史遗留，
+    本次改动的文件零新增警告）。
+- **备注**：旧沙箱策略下 shell 宿主持续 `0xC0000142` 无法启动，正是同一进程限制的另一表现——策略切到
+  danger-full-access 后 shell 恢复。若日后切回沙箱策略，DSH 会自行重新 provisioning workspace
+  （包括重打标签）；届时应用在沙箱链里启动会再次受限，属预期行为，从沙箱外启动即可。
+
+### 阶段 98：修复钱包卡"刷新失败"真因——空流水被误判为角色失败（角色长期未登录，journal 窗口已过）
+
+- **先销账阶段 97 的验证**：用户复测时进程已为 **Medium**（日志 10:48 三次启动：双击×2 + VS F5，
+  启动链 `TheGuideToTheNewEden.exe(Medium) ← explorer(High)`，不再 Low）；**写入全部恢复**——
+  `Auth.json` 10:48:03 落盘（令牌刷新成功并持久化）、`overview.json`/`skills.json` 10:49:18-19、
+  `wallet.journal.json` 10:49:34-35 均成功写入；`HomeShortcuts.json` 现值正常（开关/区间均已持久化）。
+  ——阶段 96/97 的"设置不持久"问题**确认已解决**。
+- **新现象**：钱包卡仍显示"刷新失败"（"全部取数失败"态），而角色工作区看起来"有数据"。
+- **真因（实锤）**：
+  1. `overview.json` 缓存（10:49:18）显示：`WalletBalance=18,216,253,500.02`（余额正常取到！）、
+     `LastLogin/LastLogout=2026-03-15`（**角色上次登录游戏是 7 个月前**；生日 2017-11-26、角色 ID
+     21.1 亿段 → 国服 Serenity 角色，ESI 走 NetEase 的 evepc 域名）。
+  2. **ESI 的钱包流水 journal 只保留约 90 天窗口**——7 个月未登录，窗口已过，ESI 对 journal 正常
+     返回**空列表**（`wallet.journal.json` 缓存实证：`{"Page":1,"Items":[],"HasNextPage":false}`，
+     119 字节）。余额/技能/总览不受影响，照常返回。
+  3. **代码缺陷**：`HomeWalletSummaryService.LoadJournalAsync` 的
+     `result?.Items is not { Count: > 0 } items → return page == 1 ? null : rows;`
+     把"ESI 正常返回但无流水"与"取数失败（null）"混为一谈 → 空首页被判失败 → **静默** failed++
+     （这条路径没有任何日志）→ 两个角色都如此 → `CharacterCount == 0` → 卡片
+     `HasAllFailed` = true → "全部取数失败"。工作区显示的是余额/总览（正常），所以"工作区有数据、
+     卡片失败"的对比实为"余额正常 vs 流水为空被判死"。
+- **修复**（`Services/Home/HomeWalletSummaryService.cs` + 卡片 UI）：
+  - `LoadJournalAsync` 区分两种结果：`result is null`（真错误，已在 `GetCharacterJournalAsync`
+    内记录）→ 维持"第一页失败=角色失败"；`result.Items.Count == 0`（ESI 正常、无流水）→
+    **返回空列表 = 成功**，`GetAsync` 照常计余额与 `ok++`，收支构成为空；
+  - 卡片新增 `HasNoSlices`（`HomeWalletCardViewModel`，`NotifyAll` 同步通知）+ 数据态下的提示条
+    （`HomePage.xaml`，`TextFillColorTertiaryBrush`）：余额正常但无流水时显示解释，不再静默空白、
+    更不再进入失败态；
+  - 新增语言键 `Home.Wallet.NoJournal`（zh：区间内没有钱包流水：角色长期未登录时 ESI 流水保留窗口
+    （约 90 天）已过期，余额仍为实时值 / en 对应）。
+- **验证状态**：`dotnet build` → **0 错误**；语言键 zh/en 各 1948、**无重复**（铁律 §8-33），
+  `NoJournal` 各 1 处。**待实机确认**：卡片显示总余额（≈18.2B + 另一角色）+ "区间内没有钱包流水"
+  提示，不再进入"全部取数失败"。
+- **备注（诊断过程与延伸知识）**：
+  - 诊断中直接实测 ESI（用 Auth.json 的令牌）：Serenity 的 `ali-esi.evepc.163.com` 镜像对角色信息
+    404/403（host 头与主镜像不同，应用实际走 `esi.evepc.163.com`）；tranquility 主站对已过期令牌
+    401 "Invalid token"——**EVE 访问令牌寿命约 20 分钟**，诊断脚本用旧令牌必 401，属预期；
+  - **EVE SSO 的 refresh token 是单次轮换**：一次刷新作废旧 refresh token。日志显示今天曾
+    10:48:00 / 10:48:08 / 10:48:56 **连开三个应用实例**——多实例各自刷新会互相作废 refresh token
+    （本次因 ExpiresOn 未到而未触发，但跨过期边界多开时会互相顶掉，**建议单实例使用**）；
+  - 托盘图标创建失败是**另一独立问题**：应用现为 Medium 而用户的 explorer 为 **High** 完整性，
+    `Shell_NotifyIcon` 被 UIPI 拦截（Medium→High 跨级被拒）——与钱包卡无关，未处理；
+  - `EVEStandardScopeNotAcquired "Character does not have required role(s)"`（军团钱包，无财务角色
+    权限）仍为既有噪音，每角色每次取数记 1 条 ERROR，已容错跳过。
+
+### 阶段 99：卡片显示开关移出「⋯」菜单——重建「设置 → 主页」（只含卡片显示，不含快捷方式管理）
+
+- **需求（用户提出）**：钱包/行情卡的显示开关不应放在快捷方式的「⋯」菜单里（职责混杂——那是快捷方式
+  菜单，卡片显示是另一件事），应有单独设置。征求确认后选定：**设置页新增「主页」分类**。
+- **与阶段 94 决策的关系**：阶段 94 删除的旧"设置 → 主页"子页是**快捷方式管理**（与主页编辑模式重复），
+  维持删除不变；阶段 99 重建的同名子页只承担**卡片显示开关**，职责不重叠、不构成回退。
+- **变更**：
+  1. **新建** `Views/Pages/Settings/HomeSettingPage.xaml(.cs)`（阶段 97 物理删除的旧文件同名不同职）：
+     「卡片显示」分组 + 三张 `SettingCard`（`ui:ToggleSwitch`）——显示钱包卡 / 显示行情卡 /
+     显示「最近使用」。开关直接写 `HomeShortcutService`（`SetFlag` 同值短路、异值 `Commit` →
+     `Changed`），主页 `HomePageViewModel` 订阅 `Changed` 即时显隐卡片并按需装载（阶段 95 已接），
+     无需额外刷新逻辑；设置子页实例常驻缓存，而本页现在是这三个开关的**唯一写入点**，缓存初值恒新鲜。
+  2. `SettingsPage.xaml.cs` `BuildCategories`：在「通用」之后注册「主页」分类
+     （`SymbolRegular.Home24`），原"没有主页分类"注释改为说明新旧两版的职责区别。
+  3. `HomePage.xaml`：「⋯」菜单只剩「磁贴按分组分段显示」（快捷方式布局，归 ⋯ 合理）；注释同步。
+     `HomePage.xaml.cs`：删除 `OnToggleWalletClick` / `OnToggleMarketClick` / `OnToggleRecentClick`
+     与 `OnMoreMenuOpened` 对应分支（`grouped` 保留）。
+  4. 语言键（zh/en 同步，各 +8）：重建 `SettingPage_Home` / `SettingPage_Home_Desc`（阶段 94 曾删除，
+     文案改为说明"快捷方式在主页编辑模式"）+ 新增 `Home.Setting.CardsSection`、
+     `Home.Setting.ShowWallet_Desc` / `ShowMarket_Desc` / `ShowRecent_Desc`（行描述）；
+     复用既有 `Home.Setting.ShowWallet` / `ShowMarket` / `ShowRecent` 作行标题（无孤儿键、无重复键）。
+  5. `HOME_DESIGN.md`：§4.1 尾注更新 + 新增 §4.1.1「显示策略的分工」表（⋯ 菜单=快捷方式布局；
+     设置 → 主页=卡片显示）。
+- **验证状态**：`dotnet build` → **0 错误**；语言键 zh/en 各 1954、无重复且**完全对齐**（无单侧键）。
+  **待实机确认**：设置 → 主页 三开关即改即存、主页卡片即时显隐、重启后保持；「⋯」菜单只剩
+  「磁贴按分组分段显示」。
+
+### 阶段 100：快捷方式编辑进入「设置 → 主页」——保留拖动排序（用户要求）
+
+- **需求（用户提出）**：把快捷方式的编辑也放进设置页，且**必须保留拖动排序的方式**（不是阶段 97
+  删除的旧页那种上下移按钮）。主页编辑模式**保持不变**——两个入口共用一份数据、互为主次
+  （`HOME_DESIGN.md` §4.1 由"两个入口"改为"三个入口"）。
+- **实现**（`Views/Pages/Settings/HomeSettingPage.xaml(.cs)` 扩充 + 新语言键）：
+  1. **行列表**：复用 `HomeShortcutTileViewModel(item, feature)`（标题/分组副标题/`SymbolRegular`
+     图标/`IsDragging`/`IsDropTarget` 拖动视觉全部现成），`ItemsControl` + 行 `Border`
+     （拖动中半透明、落位目标强调色描边——与主页磁贴同视觉、同 `SystemAccentColorPrimaryBrush`）；
+     行副标题显示所属分组，参数化磁贴显示"参数名 + 功能名"。
+  2. **拖动排序**：与主页编辑模式同一套交互（`VisualTreeSearch` 同款"按在 ✕ 上不启动拖动"规则改为
+     页内 `IsInsideButton` 防御、阈值后 `DoDragDrop`、载荷 `Item.Key` 即"Id#Param"）。落点按"上半段 =
+     插到该行之前、下半段 = 之后"换算缝隙 `gap`，再按 `MoveTo` 的**移除前原列表下标**语义换算：
+     `gap <= current ? gap : gap - 1`；列表空白处 / 末行下半段落到列表层 → 移到末尾。
+     **列表超出视口时在上下边缘自动滚动**（`DispatcherTimer` 16ms/5px，`Drop`/拖动结束即停）。
+  3. **移除**：行内 ✕ → `RemoveExact(Id, Param)`（与主页 ✕ 同规则，不误删同功能其它参数磁贴）；
+     **添加**：右上「添加功能」（`Appearance=Primary`）→ 复用 `AddShortcutWindow.ShowWindow()`；
+     满员（24）时按钮禁用；行计数复用 `Home.Quick.Count`（"共 n 个 · 上限 24"）。
+  4. **同步**：`Loaded/Unloaded` 成对订阅 `HomeShortcutService.Changed`（变更 → 重建行列表，主页磁贴
+     同帧更新）与 `LanguageService.LanguageChanged`（行文本 `RefreshTexts`）。
+  5. 语言键（zh/en 同步，各 +2）：`Home.Setting.ShortcutsSection`（快捷方式）、
+     `Home.Setting.ShortcutsHint`（拖动排序说明）；复用 `Home.Quick.AddTile / Remove / Empty / Count`。
+- **验证状态**：`dotnet build` → **0 错误**；语言键 zh/en 各 **1956**、无重复且完全对齐。
+  **待实机确认**：设置页内拖动行排序（含跨视口拖动时边缘自动滚动）、✕ 移除、添加功能、与主页编辑
+  模式的双向即时同步（设置页拖动 → 主页磁贴立即重排，反之亦然）。
+
+### 阶段 101：快捷方式编辑唯一入口 = 设置 → 主页；删主页编辑模式 / ⋯ 菜单 / 分段显示（用户要求）
+
+- **需求（用户提出）**：删掉主页快捷方式的编辑入口，全局只保留设置页可编辑；「⋯」按钮也删掉；
+  「磁贴按分组分段显示」不再需要。
+- **删除**（`Views/Pages/HomePage.xaml(.cs)` + `ViewModels/Home/HomePageViewModel.cs`）：
+  1. **编辑模式整套**：卡右上「编辑 / 完成」按钮、编辑提示条（含「恢复默认」）、Esc 退出
+     （`OnRootPreviewKeyDown`）、磁贴 ✕（`HomeTileRemoveButton` 样式一并删）、末尾「＋ 添加功能」
+     哨兵磁贴（`IsAddSlot`）、磁贴右键菜单（打开 / 移到最前 / 切宽窄 / 移除）、`Alt + ←/→` 键盘移动、
+     主页拖动排序（按下候选 / 阈值 / `DoDragDrop` / 落位描边全套处理器 + 磁贴模板里的 `DropFrame`）。
+  2. **「⋯」按钮**：唯一菜单项「磁贴按分组分段显示」随之无意义，按钮整个移除
+     （`OnMoreClick` / `OnMoreMenuOpened` / `OnToggleGroupedClick`）。
+  3. **分段显示**：分组 `ItemsControl`（组标题 + 段内磁贴）从 XAML 删除；`HomePageViewModel.Groups`
+     / `ShowGrouped` / `ShowFlat` / `RebuildGroups` 删除；`HomeShortcutGroupViewModel.cs` **文件删除**；
+     `HomeShortcutService.ShowGrouped` 与 `HomeShortcutFile.ShowGrouped` 属性删除——旧
+     `HomeShortcuts.json` 里的 `showGrouped` 字段反序列化时被忽略（序列化器默认忽略未知成员），
+     下次保存自然消失，**无需迁移**。
+  4. VM 编辑方法（`RemoveTile` / `MoveTileToFront` / `ToggleTileSize` / `MoveTileByOffset` /
+     `DropTile` / `DropTileAtEnd` / `RestoreDefaults` / `ToggleEdit` / `EndEdit` / `IndexOf` /
+     `EditButtonText` / `CanAdd`）与 `HomeShortcutTileViewModel` 的 `IsEditing` / `IsAddSlot` /
+     `ShowRemoveButton` / `IsTileVisible` 全部删除；`OpenTile` 只剩"打开 + 记录最近使用"。
+- **保留 / 迁移**（编辑能力不减）：
+  - 主页磁贴只剩**点击打开**一种交互（模板只剩小/宽内容 + 运行态角标；仍响应语言切换与角标刷新）。
+  - `设置 → 主页` 行列表补齐原编辑能力：行内新增 **⤢ 宽窄切换**（`SizeToggleIcon` 图标随尺寸反转，
+    复用 `Home.Quick.ToWide / ToSmall` 提示）与**恢复默认**（确认弹窗逻辑从旧主页提示条原样搬来，
+    直接调 `HomeShortcutService.ResetToDefault()`）。
+  - 导航右键「管理快捷方式…」改为 `SettingsPage.RequestCategory(HomeSettingPage)` +
+    `Navigation.Navigate(SettingsPage)`（跳设置页并定位主页分类；复用翻译页"去配置"机制），不再打开
+    添加功能窗口。
+- **语言键**（zh/en 同步）：删 `Home.Quick.Add / AddTip / Edit / Done / EditHint / MoveFirst` 与
+  `Home.Setting.Grouped`（各 1956 → 1949）；更新 `Home.Quick.Empty`（引导去 设置 → 主页 / 导航右键）
+  与 `Home.Setting.ShortcutsHint`（补 ⤢ 切换宽窄）；`Home.Add.Hint` 同步改说法。
+- **验证状态**：`dotnet build` → **0 错误**（首次构建因临时工程竞态报过一次退出码 1，复跑干净通过）；
+  语言键 zh/en 各 **1949**、无重复且完全对齐。**待实机确认**：主页磁贴点击打开、最近使用、角标正常；
+  设置页宽窄切换 / 恢复默认 / 拖动 / 移除 / 添加全链路；导航右键「管理快捷方式…」正确落到 设置 → 主页；
+  旧配置文件（含 `showGrouped: true`）加载不报错。
+- **实机修正 ①**：设置页行模板换成 StackPanel 承载双按钮时**丢了 `Grid.Column="2"`**——宽窄/移除
+  按钮全挤到图标旁边（截图确认）。补回后按钮靠行尾正常；顺手删掉 ✕ 按钮上遗留的无效 `Grid.Column`。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

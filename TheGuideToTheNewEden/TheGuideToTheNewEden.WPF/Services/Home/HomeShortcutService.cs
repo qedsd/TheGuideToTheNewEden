@@ -77,11 +77,8 @@ public static class HomeShortcutService
         set => SetFlag(value, v => Current.ShowRecent = v, Current.ShowRecent);
     }
 
-    public static bool ShowGrouped
-    {
-        get => Current.ShowGrouped;
-        set => SetFlag(value, v => Current.ShowGrouped = v, Current.ShowGrouped);
-    }
+    // 「磁贴按分组分段显示」（ShowGrouped）已随阶段 101 移除——用户不再需要该功能。
+    // 旧 HomeShortcuts.json 里的 showGrouped 字段在反序列化时被忽略、下次保存时自然消失。
 
     /// <summary>最近使用过的功能 id（最新在前）。</summary>
     public static IReadOnlyList<string> Recent => Current.Recent;

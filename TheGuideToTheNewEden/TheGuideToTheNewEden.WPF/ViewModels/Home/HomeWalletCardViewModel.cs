@@ -118,6 +118,9 @@ public sealed class HomeWalletCardViewModel : INotifyPropertyChanged
 
     public bool HasOutcomeSlices => OutcomeSlices.Count > 0;
 
+    /// <summary>有余额但区间/窗口内没有流水（例如角色长期未登录，journal 保留窗口已过）→ 显示提示而非"全部失败"。</summary>
+    public bool HasNoSlices => IncomeSlices.Count == 0 && OutcomeSlices.Count == 0;
+
     public bool ShowContent => HasData;
 
     /// <summary>「总余额（4 个角色，缓存 5 分钟）」。</summary>
@@ -238,6 +241,7 @@ public sealed class HomeWalletCardViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsTruncated));
         OnPropertyChanged(nameof(HasIncomeSlices));
         OnPropertyChanged(nameof(HasOutcomeSlices));
+        OnPropertyChanged(nameof(HasNoSlices));
         OnPropertyChanged(nameof(TotalLabel));
         OnPropertyChanged(nameof(BalanceText));
         OnPropertyChanged(nameof(IncomeText));

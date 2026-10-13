@@ -77,7 +77,7 @@ public sealed class HomeShortcutFile
     [JsonProperty("items")]
     public List<HomeShortcutItem> Items { get; set; } = [];
 
-    // ---------- 显示策略（P1 / P2 / P3） ----------
+    // ---------- 显示策略（P1 / P2） ----------
 
     /// <summary>钱包卡区间：7 = 近 7 天、30 = 近 30 天、0 = 全部。</summary>
     [JsonProperty("walletRangeDays")]
@@ -93,9 +93,9 @@ public sealed class HomeShortcutFile
     [JsonProperty("showRecent")]
     public bool ShowRecent { get; set; }
 
-    /// <summary>磁贴是否按分组分段显示（关闭 = 平铺，默认）。</summary>
-    [JsonProperty("showGrouped")]
-    public bool ShowGrouped { get; set; }
+    // showGrouped 字段已随阶段 101 移除（「磁贴按分组分段显示」功能取消）：
+    // System.Text.Json 反序列化默认忽略未知成员，旧配置文件里的该字段不会报错，
+    // 下次保存时自然消失。
 
     /// <summary>最近打开过的功能 id（最新在前，容量 <see cref="DefaultRecentCapacity"/>）。</summary>
     [JsonProperty("recent")]

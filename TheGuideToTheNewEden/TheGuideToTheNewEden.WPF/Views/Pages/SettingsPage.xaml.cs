@@ -56,6 +56,7 @@ public partial class SettingsPage : Page
         _categories.Clear();
 
         Add(SymbolRegular.Settings24, "SettingPage_General", "SettingPage_General_Desc", typeof(GeneralSettingPage), () => new GeneralSettingPage());
+        Add(SymbolRegular.Home24, "SettingPage_Home", "SettingPage_Home_Desc", typeof(HomeSettingPage), () => new HomeSettingPage());
         Add(SymbolRegular.Document24, "SettingPage_GameLog", "SettingPage_GameLog_Desc", typeof(GameLogSettingPage), () => new GameLogSettingPage());
         Add(SymbolRegular.DataTrending24, "SettingPage_Market", "SettingPage_Market_Desc", typeof(MarketSettingPage), () => new MarketSettingPage());
         Add(SymbolRegular.Building24, "SettingPage_Structures", "SettingPage_Structures_Desc", typeof(StructuresSettingPage), () => new StructuresSettingPage());
@@ -65,7 +66,10 @@ public partial class SettingsPage : Page
         // 一组没有任何代码读取的旧过滤字段，已整体删除（REFACTORING §8 第 48 条）。
         Add(SymbolRegular.Translate24, "SettingPage_AiTranslation", "SettingPage_AiTranslation_Desc", typeof(AiTranslationSettingPage), () => new AiTranslationSettingPage());
         Add(SymbolRegular.LocalLanguage24, "SettingPage_Glossary", "SettingPage_Glossary_Desc", typeof(GlossarySettingPage), () => new GlossarySettingPage());
-        Add(SymbolRegular.Home24, "SettingPage_Home", "SettingPage_Home_Desc", typeof(HomeSettingPage), () => new HomeSettingPage());
+        // 「主页」分类（阶段 99 重建，阶段 100/101 扩充）：① 钱包/行情/最近使用三张卡片的显示开关
+        // （阶段 99 从主页「⋯」菜单移入）；② 快捷方式编辑——拖动排序 / 移除 / 添加 / 宽窄 / 恢复默认。
+        // 阶段 101 起主页的编辑模式与「⋯」菜单已删除，这里是快捷方式**全局唯一**的编辑入口
+        // （阶段 94 删除的旧主页子页是上下移按钮的管理页，与现实现的拖动方式不同，不构成恢复）。
         Add(SymbolRegular.Keyboard24, "SettingPage_KeyboardList", "SettingPage_KeyboardList_Desc", typeof(KeyboardListPage), () => new KeyboardListPage());
         Add(SymbolRegular.Bug24, "SettingPage_Test", "SettingPage_Test_Desc", typeof(TestSettingPage), () => new TestSettingPage());
         Add(SymbolRegular.ArrowSync24, "SettingPage_Update", "SettingPage_Update_Desc", typeof(UpdateSettingPage), () => new UpdateSettingPage());

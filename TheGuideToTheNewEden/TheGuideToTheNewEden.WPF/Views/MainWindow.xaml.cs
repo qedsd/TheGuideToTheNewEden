@@ -282,7 +282,12 @@ public partial class MainWindow : FluentWindow
     }
 
     private static void OnHomeShortcutMenuManageClick(object sender, RoutedEventArgs e)
-        => Views.Windows.AddShortcutWindow.ShowWindow();
+    {
+        // 阶段 101：编辑统一收进 设置 → 主页（拖动排序 / 移除 / 添加 / 宽窄 / 恢复默认），
+        // 不再打开「添加功能」窗口——跳到设置页并直接定位「主页」分类。
+        Pages.SettingsPage.RequestCategory(typeof(Pages.Settings.HomeSettingPage));
+        Services.Navigation.Navigate(typeof(Pages.SettingsPage));
+    }
 
     private static string Resolve(string key)
         => Application.Current?.TryFindResource(key) as string ?? key;

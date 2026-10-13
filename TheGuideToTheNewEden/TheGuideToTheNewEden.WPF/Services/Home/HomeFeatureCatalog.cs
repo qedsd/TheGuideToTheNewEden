@@ -183,8 +183,8 @@ public static class HomeFeatureCatalog
             "SettingPage_Test_Desc", HomeFeatureKind.Action),
         new("setting-update", SymbolRegular.ArrowSync24, "SettingPage_Update", "Nav.Settings",
             "SettingPage_Update_Desc", HomeFeatureKind.Action),
-        new("setting-home", SymbolRegular.Home24, "SettingPage_Home", "Nav.Settings",
-            "SettingPage_Home_Desc", HomeFeatureKind.Action),
+        // 没有 setting-home：主页本身不是设置子页，且"设置 → 主页"已删（阶段 94），
+        // 快捷方式的编辑统一在主页的编辑模式与「⋯」菜单里完成。
     ];
 
     /// <summary>首次运行写入主页的推荐组合（见 HOME_DESIGN.md §4.6）。</summary>

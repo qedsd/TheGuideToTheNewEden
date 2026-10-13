@@ -53,13 +53,6 @@
                                 CornerRadius="8">
                                 <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                             </Border>
-                            <!--  拖动落位指示（强调色描边）  -->
-                            <Border
-                                x:Name="DropFrame"
-                                BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                Visibility="Collapsed" />
                             <!--  键盘焦点环  -->
                             <Border
                                 x:Name="FocusFrame"
@@ -78,44 +71,6 @@
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="FocusFrame" Property="Visibility" Value="Visible" />
-                            </Trigger>
-                            <DataTrigger Binding="{Binding IsDragging}" Value="True">
-                                <Setter TargetName="TileBorder" Property="Opacity" Value="0.4" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
-                                <Setter TargetName="DropFrame" Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!--  磁贴右上角的 ✕（编辑态）  -->
-        <Style x:Key="HomeTileRemoveButton" TargetType="Button">
-            <Setter Property="Width" Value="20" />
-            <Setter Property="Height" Value="20" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border
-                            x:Name="RemoveBorder"
-                            Background="#E6000000"
-                            BorderBrush="#40FFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="10">
-                            <ui:SymbolIcon
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="#FFFFFFFF"
-                                Symbol="Dismiss24" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="RemoveBorder" Property="Background" Value="#FF1F1F1F" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -229,63 +184,21 @@
             </Setter>
         </Style>
 
-        <!--
-            磁贴模板（平铺与分组两处共用，避免同一份 150 行 XAML 写两遍）。
-            末尾的「＋ 添加功能」用同一个模板、按 IsAddSlot 切换外观。
-        -->
+        <!--  磁贴模板（阶段 101 起只有主页磁贴一处使用；编辑在 设置 → 主页，不再有添加槽位）  -->
         <DataTemplate x:Key="HomeTileTemplate">
+            <!--
+                阶段 101：磁贴只剩"点开"一种交互——编辑（增删/排序/宽窄）全部收进 设置 → 主页，
+                右键菜单 / 拖动 / ✕ / 添加槽位随之移除。
+            -->
             <Button
                 Width="{Binding TileWidth}"
                 Height="112"
                 Margin="0,0,12,12"
-                AllowDrop="True"
                 Click="OnTileClick"
-                ContextMenuOpening="OnTileContextMenuOpening"
-                DragLeave="OnTileDragLeave"
-                DragOver="OnTileDragOver"
-                Drop="OnTileDrop"
-                PreviewKeyDown="OnTileKeyDown"
-                PreviewMouseLeftButtonDown="OnTileMouseLeftButtonDown"
-                PreviewMouseMove="OnTileMouseMove"
                 Style="{StaticResource HomeTileButton}"
                 Tag="{Binding}"
                 ToolTip="{Binding DetailToolTip}">
-                <Button.ContextMenu>
-                    <!--  菜单项的可访问性：模板里的 x:Name 不是类字段，改用 Tag 标角色  -->
-                    <ContextMenu Opened="OnTileMenuOpened">
-                        <MenuItem Click="OnMenuOpenClick" Tag="open" />
-                        <MenuItem Click="OnMenuMoveFirstClick" Tag="first" />
-                        <MenuItem Click="OnMenuSizeClick" Tag="size" />
-                        <Separator />
-                        <MenuItem Click="OnMenuRemoveClick" Tag="remove" />
-                    </ContextMenu>
-                </Button.ContextMenu>
-
                 <Grid>
-                    <!--  ＋ 添加功能（添加槽位）  -->
-                    <Grid Visibility="{Binding IsAddSlot, Converter={StaticResource BoolToVisibility}}">
-                        <Rectangle
-                            Fill="Transparent"
-                            RadiusX="8"
-                            RadiusY="8"
-                            Stroke="{DynamicResource CardStrokeColorDefaultBrush}"
-                            StrokeDashArray="3 3"
-                            StrokeThickness="1" />
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <ui:SymbolIcon
-                                HorizontalAlignment="Center"
-                                FontSize="24"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Symbol="Add24" />
-                            <TextBlock
-                                Margin="0,8,0,0"
-                                HorizontalAlignment="Center"
-                                FontSize="12.5"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{DynamicResource Home.Quick.AddTile}" />
-                        </StackPanel>
-                    </Grid>
-
                     <!--  小磁贴：图标居中 + 名称（最多两行）  -->
                     <StackPanel
                         Margin="8,0"
@@ -355,17 +268,6 @@
                         CornerRadius="6"
                         ToolTip="{Binding BadgeToolTip}"
                         Visibility="{Binding HasBadge, Converter={StaticResource BoolToVisibility}}" />
-
-                    <!--  编辑态：右上角 ✕  -->
-                    <Button
-                        Margin="0,6,6,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Click="OnRemoveClick"
-                        Style="{StaticResource HomeTileRemoveButton}"
-                        Tag="{Binding}"
-                        ToolTip="{DynamicResource Home.Quick.Remove}"
-                        Visibility="{Binding ShowRemoveButton, Converter={StaticResource BoolToVisibility}}" />
                 </Grid>
             </Button>
         </DataTemplate>
@@ -374,15 +276,14 @@
     <ScrollViewer
         x:Name="RootScroll"
         HorizontalScrollBarVisibility="Disabled"
-        PreviewKeyDown="OnRootPreviewKeyDown"
         VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="16,4,16,16">
+        <StackPanel Margin="0">
 
             <!--  ============ 品牌 / 状态条 ============  -->
             <Border
                 Height="104"
-                CornerRadius="8"
-                ClipToBounds="True">
+                ClipToBounds="True"
+                CornerRadius="8">
                 <Grid>
                     <!--  没有品牌图时（资源缺失）退化为深色渐变，界面不会因此崩  -->
                     <Grid.Background>
@@ -560,83 +461,27 @@
                 Padding="16,8"
                 CornerRadius="8">
                 <controls:CardControl.Header>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel
-                            Grid.Column="0"
+                    <!--
+                        阶段 101：标题行不再有「⋯」「编辑」「＋ 添加」——快捷方式编辑全部在
+                        设置 → 主页（拖动排序 / 移除 / 添加 / 宽窄 / 恢复默认）。
+                    -->
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{DynamicResource Home.Quick.Title}" />
+                        <TextBlock
+                            Margin="10,0,0,0"
                             VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{DynamicResource Home.Quick.Title}" />
-                            <TextBlock
-                                Margin="10,0,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="11.5"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{Binding CountText}" />
-                        </StackPanel>
-
-                        <StackPanel
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <ui:Button
-                                x:Name="MoreButton"
-                                Appearance="Transparent"
-                                Click="OnMoreClick"
-                                Icon="{ui:SymbolIcon MoreHorizontal24}"
-                                ToolTip="{DynamicResource Home.Quick.More}">
-                                <ui:Button.ContextMenu>
-                                    <ContextMenu Opened="OnMoreMenuOpened">
-                                        <MenuItem Click="OnToggleGroupedClick" IsCheckable="True" Tag="grouped" />
-                                        <MenuItem Click="OnToggleWalletClick" IsCheckable="True" Tag="wallet" />
-                                        <MenuItem Click="OnToggleMarketClick" IsCheckable="True" Tag="market" />
-                                        <MenuItem Click="OnToggleRecentClick" IsCheckable="True" Tag="recent" />
-                                        <Separator />
-                                        <MenuItem Click="OnMenuManageClick" Tag="manage" />
-                                        <MenuItem Click="OnMenuHomeSettingClick" Tag="setting" />
-                                    </ContextMenu>
-                                </ui:Button.ContextMenu>
-                            </ui:Button>
-
-                            <ui:Button
-                                x:Name="EditButton"
-                                Margin="4,0,0,0"
-                                Appearance="Transparent"
-                                Click="OnEditClick"
-                                Content="{Binding EditButtonText}" />
-
-                            <ui:Button
-                                x:Name="AddButton"
-                                Margin="8,0,0,0"
-                                Appearance="Primary"
-                                Click="OnAddClick"
-                                IsEnabled="{Binding CanAdd}"
-                                ToolTip="{DynamicResource Home.Quick.AddTip}">
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon
-                                        Margin="0,0,6,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Symbol="Add24" />
-                                    <TextBlock VerticalAlignment="Center" Text="{DynamicResource Home.Quick.Add}" />
-                                </StackPanel>
-                            </ui:Button>
-                        </StackPanel>
-                    </Grid>
+                            FontSize="11.5"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding CountText}" />
+                    </StackPanel>
                 </controls:CardControl.Header>
 
                 <StackPanel>
                     <!--  「最近使用」（P2；开关打开时才有内容）  -->
-                    <Grid
-                        Margin="0,0,0,10"
-                        Visibility="{Binding ShowRecent, Converter={StaticResource BoolToVisibility}}">
+                    <Grid Margin="0,0,0,10" Visibility="{Binding ShowRecent, Converter={StaticResource BoolToVisibility}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -651,9 +496,7 @@
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Text="{DynamicResource Home.Recent.Title}" />
 
-                        <ItemsControl
-                            Grid.Column="1"
-                            ItemsSource="{Binding RecentTiles}">
+                        <ItemsControl Grid.Column="1" ItemsSource="{Binding RecentTiles}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel />
@@ -692,47 +535,19 @@
                             ToolTip="{DynamicResource Home.Setting.ClearRecent}" />
                     </Grid>
 
-                    <!--  平铺显示  -->
+                    <!--
+                        阶段 101：磁贴只有一份平铺列表——「磁贴按分组分段显示」功能随用户要求移除
+                        （连同 HomeShortcutService.ShowGrouped 与分组视图模型）。
+                    -->
                     <ItemsControl
                         x:Name="TileList"
                         ItemTemplate="{StaticResource HomeTileTemplate}"
-                        ItemsSource="{Binding Tiles}"
-                        Visibility="{Binding ShowFlat, Converter={StaticResource BoolToVisibility}}">
+                        ItemsSource="{Binding Tiles}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-
-                    <!--  分组显示（分段；P3）：每段一个小标题 + 一段磁贴  -->
-                    <ItemsControl ItemsSource="{Binding Groups}" Visibility="{Binding ShowGrouped, Converter={StaticResource BoolToVisibility}}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="0,0,0,4">
-                                    <StackPanel Margin="0,2,0,6" Orientation="Horizontal">
-                                        <TextBlock
-                                            FontSize="12.5"
-                                            FontWeight="SemiBold"
-                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                            Text="{Binding Title}" />
-                                        <TextBlock
-                                            Margin="8,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="11"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Text="{Binding CountText}" />
-                                    </StackPanel>
-                                    <ItemsControl ItemTemplate="{StaticResource HomeTileTemplate}" ItemsSource="{Binding Tiles}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
                     <!--  空态引导  -->
@@ -743,41 +558,6 @@
                         Text="{DynamicResource Home.Quick.Empty}"
                         TextWrapping="Wrap"
                         Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
-
-                    <!--  编辑态提示条  -->
-                    <Border
-                        Margin="0,10,0,2"
-                        Padding="12,7"
-                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                        CornerRadius="5"
-                        Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ui:SymbolIcon
-                                Grid.Column="0"
-                                VerticalAlignment="Center"
-                                FontSize="14"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Symbol="Info24" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Margin="8,0,8,0"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{DynamicResource Home.Quick.EditHint}"
-                                TextWrapping="Wrap" />
-                            <ui:Button
-                                Grid.Column="2"
-                                Appearance="Transparent"
-                                Click="OnRestoreDefaultsClick"
-                                Content="{DynamicResource Home.Quick.RestoreDefaults}" />
-                        </Grid>
-                    </Border>
                 </StackPanel>
             </controls:CardControl>
 
@@ -848,8 +628,8 @@
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Symbol="Person24" />
                             <TextBlock
-                                Margin="10,0,0,0"
                                 MaxWidth="420"
+                                Margin="10,0,0,0"
                                 VerticalAlignment="Center"
                                 FontSize="12.5"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -921,7 +701,19 @@
                                     Visibility="{Binding Wallet.HasPartialFailure, Converter={StaticResource BoolToVisibility}}" />
                             </WrapPanel>
 
-                            <Border Height="1" Margin="0,8,0,10" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                            <Border
+                                Height="1"
+                                Margin="0,8,0,10"
+                                Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+                            <!--  有余额但区间/窗口内无流水（角色长期未登录，journal 保留窗口已过）→ 提示而非报错  -->
+                            <TextBlock
+                                Margin="0,0,0,2"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{DynamicResource Home.Wallet.NoJournal}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding Wallet.HasNoSlices, Converter={StaticResource BoolToVisibility}}" />
 
                             <!--  收支构成：窄窗口下两列自动上下堆叠  -->
                             <WrapPanel>
@@ -1078,9 +870,7 @@
 
                     <StackPanel>
                         <!--  收藏为空  -->
-                        <StackPanel
-                            Margin="0,4,0,6"
-                            Visibility="{Binding Market.HasNoFavorite, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Margin="0,4,0,6" Visibility="{Binding Market.HasNoFavorite, Converter={StaticResource BoolToVisibility}}">
                             <ui:SymbolIcon
                                 FontSize="20"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"

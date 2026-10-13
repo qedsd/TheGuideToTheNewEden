@@ -43,14 +43,9 @@
     <!--  Home: shortcuts / brand strip / feature catalog (see HOME_DESIGN.md)  -->
     <sys:String x:Key="Home.Quick.Title">Shortcuts</sys:String>
     <sys:String x:Key="Home.Quick.Count">{0} pinned · limit {1}</sys:String>
-    <sys:String x:Key="Home.Quick.Add">Add</sys:String>
-    <sys:String x:Key="Home.Quick.AddTip">Pick features to pin on the home page</sys:String>
     <sys:String x:Key="Home.Quick.AddTile">Add feature</sys:String>
-    <sys:String x:Key="Home.Quick.Edit">Edit</sys:String>
-    <sys:String x:Key="Home.Quick.Done">Done</sys:String>
     <sys:String x:Key="Home.Quick.Open">Open</sys:String>
     <sys:String x:Key="Home.Quick.Remove">Remove from home</sys:String>
-    <sys:String x:Key="Home.Quick.MoveFirst">Move to front</sys:String>
     <sys:String x:Key="Home.Quick.ToWide">Switch to wide tile</sys:String>
     <sys:String x:Key="Home.Quick.ToSmall">Switch to small tile</sys:String>
     <sys:String x:Key="Home.Quick.Manage">Manage shortcuts…</sys:String>
@@ -59,15 +54,15 @@
     <sys:String x:Key="Home.Quick.LimitReached">Up to {0} features can be pinned; remove some first</sys:String>
     <sys:String x:Key="Home.Quick.RestoreDefaults">Restore defaults</sys:String>
     <sys:String x:Key="Home.Quick.RestoreConfirm">Restore the recommended set? Your current pins and their order will be overwritten.</sys:String>
-    <sys:String x:Key="Home.Quick.Empty">No shortcuts yet. Click “Add”, or right-click an item in the left menu and choose “Pin to home”.</sys:String>
-    <sys:String x:Key="Home.Quick.EditHint">Drag tiles to reorder · click × to remove · Esc to exit editing</sys:String>
+    <sys:String x:Key="Home.Quick.Empty">No shortcuts yet. Add them in Settings → Home, or right-click an item in the left menu and choose “Pin to home”.</sys:String>
+    <!--  Stage 101: editing lives only in Settings → Home; the home "Edit/Done/Add/EditHint/MoveFirst" keys are gone  -->
 
     <sys:String x:Key="Home.Add.Title">Add feature</sys:String>
     <sys:String x:Key="Home.Add.Search">Search features (name / group)</sys:String>
     <sys:String x:Key="Home.Add.Add">Add</sys:String>
     <sys:String x:Key="Home.Add.Added">Added</sys:String>
     <sys:String x:Key="Home.Add.Summary">{0} / {1} features pinned</sys:String>
-    <sys:String x:Key="Home.Add.Hint">Use the button on the right to add or remove; you can reorder them on the home page afterwards.</sys:String>
+    <sys:String x:Key="Home.Add.Hint">Use the button on the right to add or remove; reorder them in Settings → Home.</sys:String>
     <sys:String x:Key="Home.Add.GroupAll">All features</sys:String>
 
     <sys:String x:Key="Home.Status.Players">{0} players online (Tranquility)</sys:String>
@@ -135,6 +130,7 @@
     <sys:String x:Key="Home.Wallet.IncomeBreakdown">Income breakdown</sys:String>
     <sys:String x:Key="Home.Wallet.OutcomeBreakdown">Expense breakdown</sys:String>
     <sys:String x:Key="Home.Wallet.PartialFailed">{0} character(s) failed to load (skipped)</sys:String>
+    <sys:String x:Key="Home.Wallet.NoJournal">No wallet journal in range: ESI keeps only ~90 days of journal and the character hasn't logged in recently; the balance is still live.</sys:String>
     <sys:String x:Key="Home.Wallet.NoCharacter">No character logged in yet. Once you add one, the total balance and breakdown show up here.</sys:String>
     <sys:String x:Key="Home.Wallet.GoCharacters">Add a character</sys:String>
     <sys:String x:Key="Home.Wallet.AllFailed">Every character failed to load (expired token or network issue). Use the refresh button later.</sys:String>
@@ -156,21 +152,17 @@
     <sys:String x:Key="Home.Market.GoMarket">Open market</sys:String>
     <sys:String x:Key="Home.Market.Note">Latest daily history average and volume (The Forge); click a card for live orders</sys:String>
 
+    <!--  Home display policy (used by the "⋯" menu; the old Settings→Home page was removed, keeping only the 5 keys still in use, stage 94)  -->
     <sys:String x:Key="Home.Setting.ShowWallet">Show wallet card</sys:String>
-    <sys:String x:Key="Home.Setting.ShowWallet_Desc">Shows the total balance and income/expense breakdown (ESI wallet journal, per-character fault tolerance, cached 5 minutes).</sys:String>
+    <sys:String x:Key="Home.Setting.ShowWallet_Desc">Show the “Wallet” card below the home shortcuts (total balance and income/outcome)</sys:String>
     <sys:String x:Key="Home.Setting.ShowMarket">Show market card</sys:String>
-    <sys:String x:Key="Home.Setting.ShowMarket_Desc">Shows history average and volume of favorites (disk cached; click a card to open the market page).</sys:String>
+    <sys:String x:Key="Home.Setting.ShowMarket_Desc">Show the “Market” card below the home shortcuts</sys:String>
     <sys:String x:Key="Home.Setting.ShowRecent">Show “Recent”</sys:String>
-    <sys:String x:Key="Home.Setting.ShowRecent_Desc">Shows recently opened features above the shortcuts (nothing is recorded while disabled).</sys:String>
-    <sys:String x:Key="Home.Setting.Grouped">Group tiles into sections</sys:String>
-    <sys:String x:Key="Home.Setting.Grouped_Desc">Show tiles in sections (Characters / Business / Channel…); disabled = one flat grid (default).</sys:String>
-    <sys:String x:Key="Home.Setting.Shortcuts">Shortcuts</sys:String>
-    <sys:String x:Key="Home.Setting.Shortcuts_Desc">This is the same data as the home page tiles: changes here show up there immediately and vice versa.</sys:String>
-    <sys:String x:Key="Home.Setting.MoveUp">Move up</sys:String>
-    <sys:String x:Key="Home.Setting.MoveDown">Move down</sys:String>
+    <sys:String x:Key="Home.Setting.ShowRecent_Desc">Show the “Recent” tile section; turning it off also stops recording recently opened features</sys:String>
+    <sys:String x:Key="Home.Setting.CardsSection">Card visibility</sys:String>
+    <sys:String x:Key="Home.Setting.ShortcutsSection">Shortcuts</sys:String>
+    <sys:String x:Key="Home.Setting.ShortcutsHint">Drag rows to reorder, ✕ to remove a tile, ⤢ to switch wide/small; changes apply instantly and sync to the home page, up to 24 tiles.</sys:String>
     <sys:String x:Key="Home.Setting.ClearRecent">Clear recent</sys:String>
-    <sys:String x:Key="SettingPage_Home">Home</sys:String>
-    <sys:String x:Key="SettingPage_Home_Desc">Shortcut management, data cards and the “Recent” display policy</sys:String>
 
     <sys:String x:Key="Home.Status.PlayersTip">Players online on the EVE server (public ESI endpoint)</sys:String>
     <sys:String x:Key="Home.Action.Manual">Manual</sys:String>
@@ -478,6 +470,8 @@
     <sys:String x:Key="SettingPage_General">General</sys:String>
     <sys:String x:Key="GeneralSettingPage_NeedLocalization">Using a localized database</sys:String>
     <sys:String x:Key="SettingPage_General_Desc">Language、App Theme、Game Server、Localized Database</sys:String>
+    <sys:String x:Key="SettingPage_Home">Home</sys:String>
+    <sys:String x:Key="SettingPage_Home_Desc">Card visibility on the home page; shortcuts are managed in the home page's “Edit” mode</sys:String>
     <sys:String x:Key="SettingPage_GameLog">Game Log</sys:String>
     <sys:String x:Key="SettingPage_GameLog_Desc">Game Logs Path、Valid days、Number of kogs to display</sys:String>
     <sys:String x:Key="SettingPage_Structures">Structures</sys:String>

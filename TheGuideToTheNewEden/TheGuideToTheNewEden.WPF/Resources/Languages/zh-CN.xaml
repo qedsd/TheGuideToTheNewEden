@@ -43,14 +43,9 @@
     <!--  主页：快捷方式 / 品牌状态条 / 功能目录（见 HOME_DESIGN.md）  -->
     <sys:String x:Key="Home.Quick.Title">快捷方式</sys:String>
     <sys:String x:Key="Home.Quick.Count">共 {0} 个 · 上限 {1}</sys:String>
-    <sys:String x:Key="Home.Quick.Add">添加</sys:String>
-    <sys:String x:Key="Home.Quick.AddTip">从全部功能里挑选要固定到主页的功能</sys:String>
     <sys:String x:Key="Home.Quick.AddTile">添加功能</sys:String>
-    <sys:String x:Key="Home.Quick.Edit">编辑</sys:String>
-    <sys:String x:Key="Home.Quick.Done">完成</sys:String>
     <sys:String x:Key="Home.Quick.Open">打开</sys:String>
     <sys:String x:Key="Home.Quick.Remove">从主页移除</sys:String>
-    <sys:String x:Key="Home.Quick.MoveFirst">移到最前</sys:String>
     <sys:String x:Key="Home.Quick.ToWide">切换为宽磁贴</sys:String>
     <sys:String x:Key="Home.Quick.ToSmall">切换为小磁贴</sys:String>
     <sys:String x:Key="Home.Quick.Manage">管理快捷方式…</sys:String>
@@ -59,15 +54,15 @@
     <sys:String x:Key="Home.Quick.LimitReached">最多固定 {0} 个功能，请先移除一些再添加</sys:String>
     <sys:String x:Key="Home.Quick.RestoreDefaults">恢复默认</sys:String>
     <sys:String x:Key="Home.Quick.RestoreConfirm">恢复为推荐组合？当前固定的功能与顺序会被覆盖。</sys:String>
-    <sys:String x:Key="Home.Quick.Empty">还没有快捷方式。点「添加」，或在左侧菜单上右键选「固定到主页」。</sys:String>
-    <sys:String x:Key="Home.Quick.EditHint">拖动磁贴排序 · 点 × 移除 · Esc 退出编辑</sys:String>
+    <sys:String x:Key="Home.Quick.Empty">还没有快捷方式。在 设置 → 主页 里添加，或在左侧菜单上右键选「固定到主页」。</sys:String>
+    <!--  阶段 101：编辑统一收进 设置 → 主页，主页的「编辑/完成/＋添加/EditHint/移到最前」等键随之删除  -->
 
     <sys:String x:Key="Home.Add.Title">添加功能</sys:String>
     <sys:String x:Key="Home.Add.Search">搜索功能（名称 / 分组）</sys:String>
     <sys:String x:Key="Home.Add.Add">添加</sys:String>
     <sys:String x:Key="Home.Add.Added">已添加</sys:String>
     <sys:String x:Key="Home.Add.Summary">已添加 {0} / {1} 个功能</sys:String>
-    <sys:String x:Key="Home.Add.Hint">点右侧按钮添加 / 移除；添加后可在主页里拖动排序。</sys:String>
+    <sys:String x:Key="Home.Add.Hint">点右侧按钮添加 / 移除；在 设置 → 主页 里拖动排序。</sys:String>
     <sys:String x:Key="Home.Add.GroupAll">全部功能</sys:String>
 
     <sys:String x:Key="Home.Status.Players">欧服在线 {0} 人</sys:String>
@@ -135,6 +130,7 @@
     <sys:String x:Key="Home.Wallet.IncomeBreakdown">收入构成</sys:String>
     <sys:String x:Key="Home.Wallet.OutcomeBreakdown">支出构成</sys:String>
     <sys:String x:Key="Home.Wallet.PartialFailed">{0} 个角色取数失败（已跳过）</sys:String>
+    <sys:String x:Key="Home.Wallet.NoJournal">区间内没有钱包流水：角色长期未登录时 ESI 流水保留窗口（约 90 天）已过期，余额仍为实时值。</sys:String>
     <sys:String x:Key="Home.Wallet.NoCharacter">还没有登录角色。添加角色后，这里会显示总余额与收支构成。</sys:String>
     <sys:String x:Key="Home.Wallet.GoCharacters">去添加角色</sys:String>
     <sys:String x:Key="Home.Wallet.AllFailed">所有角色都取数失败（可能是令牌失效或网络问题），稍后点右上角刷新重试。</sys:String>
@@ -156,21 +152,17 @@
     <sys:String x:Key="Home.Market.GoMarket">去市场页</sys:String>
     <sys:String x:Key="Home.Market.Note">最近一日历史均价与销量（伏尔戈）；点卡片看实时订单</sys:String>
 
+    <!--  主页显示策略（「⋯」菜单用；原"设置 → 主页"子页已删，只保留仍在用的 5 个键，阶段 94）  -->
     <sys:String x:Key="Home.Setting.ShowWallet">显示钱包卡</sys:String>
-    <sys:String x:Key="Home.Setting.ShowWallet_Desc">显示总余额与收支构成（数据来自 ESI 钱包流水，逐角色容错、结果缓存 5 分钟）。</sys:String>
+    <sys:String x:Key="Home.Setting.ShowWallet_Desc">在主页快捷方式下方显示「我的钱包」卡片（总余额与收支构成）</sys:String>
     <sys:String x:Key="Home.Setting.ShowMarket">显示行情卡</sys:String>
-    <sys:String x:Key="Home.Setting.ShowMarket_Desc">显示收藏物品的历史均价与销量（走本地缓存，点卡片跳市场页）。</sys:String>
+    <sys:String x:Key="Home.Setting.ShowMarket_Desc">在主页快捷方式下方显示「行情」卡片</sys:String>
     <sys:String x:Key="Home.Setting.ShowRecent">显示「最近使用」</sys:String>
-    <sys:String x:Key="Home.Setting.ShowRecent_Desc">在快捷方式上方显示最近打开过的功能（关闭时不记录，也不占位置）。</sys:String>
-    <sys:String x:Key="Home.Setting.Grouped">磁贴按分组分段显示</sys:String>
-    <sys:String x:Key="Home.Setting.Grouped_Desc">按「角色 / 商业 / 频道…」分段显示磁贴；关闭时全部平铺（默认）。</sys:String>
-    <sys:String x:Key="Home.Setting.Shortcuts">快捷方式</sys:String>
-    <sys:String x:Key="Home.Setting.Shortcuts_Desc">与主页上的磁贴是同一份数据：这里的改动会立刻反映到主页，反之亦然。</sys:String>
-    <sys:String x:Key="Home.Setting.MoveUp">上移</sys:String>
-    <sys:String x:Key="Home.Setting.MoveDown">下移</sys:String>
+    <sys:String x:Key="Home.Setting.ShowRecent_Desc">在主页显示「最近使用」磁贴区；关闭后同时不再记录最近打开的功能</sys:String>
+    <sys:String x:Key="Home.Setting.CardsSection">卡片显示</sys:String>
+    <sys:String x:Key="Home.Setting.ShortcutsSection">快捷方式</sys:String>
+    <sys:String x:Key="Home.Setting.ShortcutsHint">拖动行调整顺序，✕ 移除磁贴，⤢ 切换宽窄磁贴；改动立即生效并同步到主页，上限 24 个。</sys:String>
     <sys:String x:Key="Home.Setting.ClearRecent">清空最近使用</sys:String>
-    <sys:String x:Key="SettingPage_Home">主页</sys:String>
-    <sys:String x:Key="SettingPage_Home_Desc">快捷方式管理、数据卡与「最近使用」的显示策略</sys:String>
 
     <sys:String x:Key="Home.Status.PlayersTip">EVE 服务器当前在线人数（ESI 公开接口）</sys:String>
     <sys:String x:Key="Home.Action.Manual">使用手册</sys:String>
@@ -479,6 +471,8 @@
     <sys:String x:Key="SettingPage_General">一般</sys:String>
     <sys:String x:Key="GeneralSettingPage_NeedLocalization">使用本地化数据库</sys:String>
     <sys:String x:Key="SettingPage_General_Desc">软件语言、主题颜色、服务器、数据库语言</sys:String>
+    <sys:String x:Key="SettingPage_Home">主页</sys:String>
+    <sys:String x:Key="SettingPage_Home_Desc">主页卡片的显示开关；快捷方式的增删与分组在主页「编辑」模式进行</sys:String>
     <sys:String x:Key="SettingPage_GameLog">游戏日志</sys:String>
     <sys:String x:Key="SettingPage_GameLog_Desc">日志路径、有效天数、显示数量</sys:String>
     <sys:String x:Key="SettingPage_Structures">玩家建筑</sys:String>

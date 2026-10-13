@@ -6,9 +6,9 @@ using Wpf.Ui.Controls;
 namespace TheGuideToTheNewEden.WPF.ViewModels.Home;
 
 /// <summary>
-/// 主页上的一个磁贴。除了正常功能磁贴，末尾那个「＋ 添加功能」也用同一套模板渲染
-/// （<see cref="IsAddSlot"/> = true）——这样它们处在同一个 <c>WrapPanel</c> 里自然换行，
-/// 不必把两个 ItemsControl 嵌套进 WrapPanel（嵌套会带来"无限宽度测量"的排版问题）。
+/// 主页上的一个磁贴（阶段 101 起只有功能磁贴——「＋ 添加功能」槽位随编辑模式移除，
+/// 编辑统一在 设置 → 主页 的行列表里）。主页磁贴与设置页的快捷方式行共用本视图模型：
+/// 标题 / 副标题 / 图标 / 尺寸 / 拖动视觉（IsDragging / IsDropTarget）都是同一套。
 /// </summary>
 public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
 {
@@ -16,16 +16,8 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
     public const double WideWidth = 232;
     public const double TileHeight = 112;
 
-    private bool _isEditing;
     private bool _isDragging;
     private bool _isDropTarget;
-
-    /// <summary>「＋ 添加功能」槽位。</summary>
-    public HomeShortcutTileViewModel()
-    {
-        IsAddSlot = true;
-        Id = string.Empty;
-    }
 
     public HomeShortcutTileViewModel(HomeShortcutItem item, HomeFeature feature)
     {
@@ -38,8 +30,6 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
     /// <summary>对应的数据项（参数化磁贴的 <c>Param</c> / <c>Label</c> 在这里）。</summary>
     public HomeShortcutItem? Item { get; }
 
-    public bool IsAddSlot { get; }
-
     public string Id { get; }
 
     /// <summary>参数（无参数为 null）。服务层的增删排序都按 (Id, Param) 定位。</summary>
@@ -51,17 +41,15 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
 
     public bool IsWide { get; private set; }
 
-    /// <summary>小磁贴内容（非宽、非添加槽位）。</summary>
-    public bool IsSmall => !IsAddSlot && !IsWide;
+    /// <summary>小磁贴内容（非宽）。</summary>
+    public bool IsSmall => !IsWide;
 
-    public double TileWidth => IsAddSlot ? SmallWidth : IsWide ? WideWidth : SmallWidth;
+    public double TileWidth => IsWide ? WideWidth : SmallWidth;
 
     /// <summary>
     /// 标题：带参数的磁贴显示参数名（如"因卡萨斯级"），否则显示功能名。
     /// </summary>
-    public string Title => IsAddSlot
-        ? Resolve("Home.Quick.AddTile")
-        : string.IsNullOrWhiteSpace(Item?.Label) ? Feature?.Title ?? Id : Item!.Label!;
+    public string Title => string.IsNullOrWhiteSpace(Item?.Label) ? Feature?.Title ?? Id : Item!.Label!;
 
     /// <summary>宽磁贴的第二行：无参数时是所属分组名，带参数时是功能名。</summary>
     public string Subtitle => string.IsNullOrWhiteSpace(Item?.Label)
@@ -75,30 +63,17 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
     public string BadgeToolTip { get; private set; } = string.Empty;
 
     /// <summary>参数化磁贴的提示（显示完整的"功能 + 参数"）。</summary>
-    public string DetailToolTip => IsAddSlot
-        ? Resolve("Home.Quick.AddTip")
-        : string.IsNullOrWhiteSpace(Item?.Label)
-            ? $"{Feature?.Title} · {Feature?.Description}"
-            : $"{Feature?.Title} · {Item!.Label}";
+    public string DetailToolTip => string.IsNullOrWhiteSpace(Item?.Label)
+        ? $"{Feature?.Title} · {Feature?.Description}"
+        : $"{Feature?.Title} · {Item!.Label}";
 
-    /// <summary>编辑态且不是添加槽位时才显示右上角 ✕。</summary>
-    public bool ShowRemoveButton => IsEditing && !IsAddSlot;
+    /// <summary>
+    /// 设置页行内"切宽/切小"按钮的提示：按当前尺寸显示目标尺寸（与主页旧右键菜单同规则）。
+    /// </summary>
+    public string SizeToggleToolTip => Resolve(IsWide ? "Home.Quick.ToSmall" : "Home.Quick.ToWide");
 
-    public bool IsEditing
-    {
-        get => _isEditing;
-        set
-        {
-            if (_isEditing == value)
-            {
-                return;
-            }
-
-            _isEditing = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(ShowRemoveButton));
-        }
-    }
+    /// <summary>设置页行内宽窄切换按钮的图标：小磁贴显示"放大"意图，宽磁贴显示"缩小"意图。</summary>
+    public SymbolRegular SizeToggleIcon => IsWide ? SymbolRegular.ArrowMinimize24 : SymbolRegular.ArrowMaximize24;
 
     /// <summary>正在被拖动（模板里降低不透明度）。</summary>
     public bool IsDragging
@@ -132,7 +107,7 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>切小 / 宽磁贴后刷新与尺寸有关的通知。</summary>
+    /// <summary>切小 / 宽磁贴后刷新与尺寸有关的通知（含设置页按钮的提示文案）。</summary>
     public void SetWide(bool wide)
     {
         if (IsWide == wide)
@@ -144,6 +119,8 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsWide));
         OnPropertyChanged(nameof(IsSmall));
         OnPropertyChanged(nameof(TileWidth));
+        OnPropertyChanged(nameof(SizeToggleToolTip));
+        OnPropertyChanged(nameof(SizeToggleIcon));
     }
 
     /// <summary>语言切换后标题 / 副标题重新取本地化文本。</summary>
@@ -152,6 +129,7 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Subtitle));
         OnPropertyChanged(nameof(DetailToolTip));
+        OnPropertyChanged(nameof(SizeToggleToolTip));
     }
 
     /// <summary>
@@ -160,7 +138,7 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
     /// </summary>
     public void RefreshBadge()
     {
-        var status = IsAddSlot ? null : Services.Home.HomeFeatureStatusService.Get(Id);
+        var status = Services.Home.HomeFeatureStatusService.Get(Id);
 
         var hasBadge = status is not null;
         var tooltip = status is null

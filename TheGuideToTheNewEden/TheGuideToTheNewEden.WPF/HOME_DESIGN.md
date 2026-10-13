@@ -105,13 +105,13 @@ public sealed class HomePage : PlaceholderPage
 │ 多开         │ │  ●欧服在线 28,806 人  🕒世界时 13:39:53  ⬇有新版本 4.1.0  │ │
 │ 频道 ⌄       │ └───────────────────────────────────────────────────────────┘ │
 │ 翻译 ⌄       │ ┌───────────────────────────────────────────────────────────┐ │
-│ 攻略 ⌄       │ │ 快捷方式   共 12 个 · 上限 24          [编辑] [＋ 添加]    │ │
+│ 攻略 ⌄       │ │ 快捷方式   共 12 个 · 上限 24   （阶段 101 起无按钮）     │ │
 │ 虫洞         │ │  ┌────┐┌────┐┌────┐┌────┐┌────┐┌────┐┌────┐┌────┐        │ │
 │ 快速链接     │ │  │角色││市场││订单││倒货││估价││多开││预警││监控│        │ │
 │ 星图         │ │  └────┘└────┘└────┘└────┘└────┘└────┘└────┘└────┘        │ │
-│ Zkillboard   │ │  ┌────┐┌────┐┌────┐┌────┐┌╌╌╌╌┐                          │ │
-│ 数据库       │ │  │查价││统计││日志││星图││ ＋ │                          │ │
-│ 小工具 ⌄     │ │  └────┘└────┘└────┘└────┘└╌╌╌╌┘                          │ │
+│ Zkillboard   │ │  ┌────┐┌────┐┌────┐┌────┐                                │ │
+│ 数据库       │ │  │查价││统计││日志││星图│                                │ │
+│ 小工具 ⌄     │ │  └────┘└────┘└────┘└────┘                                │ │
 │              │ └───────────────────────────────────────────────────────────┘ │
 │              │ ┌──────────────────────────────┐┌──────────────────────────┐ │
 │              │ │ 我的钱包            [刷新]   ││ 我的行情      全部收藏 › │ │
@@ -136,17 +136,30 @@ public sealed class HomePage : PlaceholderPage
 
 ## 4. 快捷方式（核心功能）
 
-### 4.1 三个入口，一份数据
+### 4.1 两个入口，一份数据（阶段 101 起）
 
 见 [`05-layout-options.png`](Docs/HomeDesign/05-layout-options.png) 底部。
 
 | 入口 | 位置 | 适合场景 |
 |---|---|---|
-| ① 「＋ 添加功能」 | 主页快捷方式卡右上角 / 网格末尾的虚线磁贴 | 首次配置、连续添加 |
-| ② 「固定到主页」 | **左侧导航项右键菜单** | 最短路径：看到哪个功能固定哪个，不必离开当前页 |
-| ③ 设置 → 主页 | 设置分类（P2） | 集中管理：排序 / 批量移除 / 恢复默认 |
+| ① 「固定到主页」 | **左侧导航项右键菜单** | 最短路径：看到哪个功能固定哪个，不必离开当前页 |
+| ② **设置 → 主页** | 设置页（阶段 100 加入）：拖动排序列表 + ✕ 移除 + ⤢ 宽窄切换 + 「添加功能」 + 恢复默认 | **全局唯一的编辑入口**（阶段 101）：集中管理、拖动排序 |
 
-三者读写同一份 `Configs/HomeShortcuts.json`，通过 `HomeShortcutService.Changed` 事件实时同步（主页、设置页、导航右键勾选态）。
+（演变过程：最初的「③ 设置 → 主页」子页是上下移按钮的列表，与主页编辑的拖动重复——阶段 94 删除；
+阶段 99 重建为卡片显示开关；阶段 100 把快捷方式编辑放回设置页、保留拖动，与主页编辑模式互为主次；
+**阶段 101 应用户要求删除主页编辑模式与「⋯」菜单，编辑只保留设置页一处**，导航右键的「管理快捷方式…」
+也改为直接跳 设置 → 主页。主页磁贴自此只有"点开"一种交互。）
+
+两者读写同一份 `Configs/HomeShortcuts.json`，通过 `HomeShortcutService.Changed` 事件实时同步
+（主页磁贴、导航右键勾选态、设置页列表与开关初值）。
+
+### 4.1.1 显示策略的分工（阶段 101 起）
+
+| 控制 | 归属 | 理由 |
+|---|---|---|
+| 钱包卡 / 行情卡 / 「最近使用」显示 | **设置 → 主页** | 属于主页卡片显示，与快捷方式无关，不该混在快捷方式菜单里 |
+| 快捷方式的增删 / 排序 / 宽窄 / 恢复默认 | **设置 → 主页**（阶段 101 起唯一入口） | 用户要求全局只保留设置页可编辑 |
+| ~~显示分组（磁贴按分组分段）~~ | —— | 功能随阶段 101 移除（连同「⋯」按钮与 `ShowGrouped` 配置字段） |
 
 ### 4.2 磁贴规格与状态
 
@@ -164,19 +177,16 @@ public sealed class HomePage : PlaceholderPage
 
 **磁贴标签一律取导航键（`Nav.*`）原文**——零新增翻译；副标题取所属分组名（`Nav.Business` 等）。所有图标名已用反射核验存在于 `SymbolRegular`（见 §7 清单）。
 
-### 4.3 编辑模式
+### 4.3 ~~编辑模式~~（阶段 101 移除）
 
-进入：卡片右上角「编辑」；退出：`完成` / `Esc` / 离开页面。
+原设计：卡片右上角「编辑」进入编辑态（磁贴 ✕、末尾「＋ 添加功能」槽位、拖动排序、`Alt + ←/→`、
+底部提示条 + 恢复默认）。**阶段 101 应用户要求整体移除**——编辑统一收进 设置 → 主页（§4.1），
+拖动排序的交互在那里原样保留；"恢复默认"与宽窄切换也移到设置页行内。
 
-- 每个磁贴右上角出现 ✕（移除即落盘）；末尾虚线「＋ 添加功能」磁贴保持可见。
-- 拖动磁贴排序：拖动中**不重建集合**，只显示强调色落位虚框；`Drop` 时才移动 `ObservableCollection` 并落盘（避免容器重建导致拖动视觉中断）。
-- 底部提示条：`拖动排序 · 点 ✕ 移除 · Esc 退出编辑` + `恢复默认`（回到推荐 12 项）。
-- 键盘：`Tab` 聚焦、`Enter` 打开、`Alt + ←/→` 移动位置（无障碍）。
+### 4.4 右键菜单（阶段 101 移除）
 
-### 4.4 右键菜单
-
-`打开` / `移到最前` / `切换为宽磁贴（小磁贴）` / `从主页移除` / `管理快捷方式…`。
-（不在编辑模式下也生效——这是"轻量编辑"路径。）
+磁贴右键菜单（`打开` / `移到最前` / `切换宽窄` / `从主页移除`）随编辑入口的收拢一并删除；
+宽窄切换移到 设置 → 主页 行内（⤢ 按钮），其余编辑动作同理。
 
 ### 4.5 「添加功能」窗口
 
@@ -284,7 +294,7 @@ L2 动作项：
 
 - `打开`（等价点击）
 - `固定到主页` / `从主页取消固定`（按当前状态只显示一个，带 `IsCheckable` 视觉）
-- 分隔线 + `管理快捷方式…`（打开添加功能窗口）
+- 分隔线 + `管理快捷方式…`（阶段 101 起跳转 设置 → 主页，不再打开添加功能窗口）
 
 要点：
 
@@ -342,10 +352,10 @@ L2 动作项：
 | `Services/Home/HomeShortcutService.cs` | 180 行 | 文件读写、增删改排序、种子、恢复默认、`Changed` 事件、坏文件备份 | ✅ 已实现 |
 | `Services/Home/HomeFeatureCatalog.cs` | 220 行 | 功能目录（L1 26 项 + L2 3 项）+ 按 id/分组/页面类型查询 + `NavigationExclusions` | ✅ 已实现 |
 | `Services/Home/HomeFeatureLauncher.cs` | 70 行 | 统一的功能打开入口（设计稿原计划写在 VM 里，实现时抽成独立类供主窗口复用） | ✅ 已实现 |
-| `ViewModels/Home/HomeShortcutTileViewModel.cs` | 80 行 | 磁贴视图模型（含 `IsAddSlot` 哨兵项） | ✅ 已实现 |
-| `ViewModels/Home/HomePageViewModel.cs` | 260 行 | 磁贴集合、编辑模式、添加/移除/排序/改尺寸、品牌条、语言刷新 | ✅ 已实现 |
+| `ViewModels/Home/HomeShortcutTileViewModel.cs` | 80 行 | 磁贴视图模型（阶段 101 去掉 `IsAddSlot` 哨兵项与编辑态，主页磁贴与设置页行共用） | ✅ 已实现 |
+| `ViewModels/Home/HomePageViewModel.cs` | 260 行 | 磁贴集合（阶段 101 起只读 + 点开）、品牌条、语言刷新（编辑相关方法已移除） | ✅ 已实现 |
 | `Views/Pages/HomePage.xaml` + `.cs` | 360 + 120 行 | **替换占位页**（类名 / 命名空间 / 导航注册保持不变） | ✅ 已实现 |
-| `Helpers/VisualTreeSearch.cs` | 40 行 | `IsInsideChildButton`（嵌套按钮 + 拖动共存） | ✅ 已实现 |
+| `Helpers/VisualTreeSearch.cs` | 40 行 | `IsInsideChildButton`（嵌套按钮 + 拖动共存；阶段 101 起主页不再使用，设置页行拖动用页内防御） | ✅ 已实现 |
 | `Views/Windows/AddShortcutWindow.xaml(.cs)` | 180 + 140 行 | 添加功能窗口（原计划 P1，实为 P0 必需入口） | ✅ 已实现 |
 | `ViewModels/Home/AddShortcutViewModel.cs` | 190 行 | 搜索 / 分组 / 已添加状态 | ✅ 已实现 |
 
@@ -357,16 +367,16 @@ L2 动作项：
 | `ViewModels/Home/HomeWalletCardViewModel.cs` | P1 | 钱包卡（四态 + 区间切换） | ✅ 已实现 |
 | `ViewModels/Home/HomeMarketCardViewModel.cs` | P1 | 行情卡（异步图标 + 均价/销量 + 失败降级） | ✅ 已实现 |
 | `Services/Home/HomeFeatureStatusService.cs` | P2 | 角标的运行态来源 | ✅ 已实现 |
-| `ViewModels/Home/HomeShortcutGroupViewModel.cs` | P3 | 分段显示的一段 | ✅ 已实现 |
+| ~~`ViewModels/Home/HomeShortcutGroupViewModel.cs`~~ | P3→101 | 分段显示的一段——「磁贴按分组分段显示」随阶段 101 移除 | ❌ 已删除 |
 | `Views/Windows/AboutWindow.xaml(.cs)` | P2 | 关于（版本 / 运行时 / 链接 / 开源致谢） | ✅ 已实现 |
-| `Views/Pages/Settings/HomeSettingPage.xaml(.cs)` | P2 | 设置 → 主页（显示策略 / 列表管理） | ✅ 已实现 |
+| ~~`Views/Pages/Settings/HomeSettingPage.xaml(.cs)`~~ | P2→94 | 设置 → 主页（显示策略 / 列表管理）——阶段 94 删除 | ♻️ 阶段 99 重建（卡片显示开关）、阶段 100 加入快捷方式编辑、**阶段 101 起为唯一编辑入口** |
 
 ### 改动
 
 | 文件 | 改动 |
 |---|---|
 | `Views/MainWindow.xaml.cs` | 导航项右键菜单（固定/取消固定/管理）、语言切换刷新菜单；+40 行左右 |
-| `Views/Pages/SettingsPage.xaml.cs` | `BuildCategories` 增加「主页」分类（P2） |
+| `Views/Pages/SettingsPage.xaml.cs` | ~~`BuildCategories` 增加「主页」分类（P2）~~ → 阶段 94 已随"设置 → 主页"删除一并移除 |
 | `Resources/Languages/zh-CN.xaml` / `en-US.xaml` | 新增约 45 个键（见 §8） |
 | `TheGuideToTheNewEden.WPF.csproj` | 不需要新增引用（全部复用现有包） |
 | `REFACTORING.md` | 实现后在 §8-61 销账，并新增阶段记录 |
@@ -391,7 +401,7 @@ L2 动作项：
 | 角标"不轮询、只订阅事件" | 进入主页 + **可见期内 3 秒定时器** | 预警 / 监控 / 多开三处没有可订阅的状态事件 |
 | 数据卡"窗口 &lt; 1100 时上下堆叠" | 钱包卡内部用 `WrapPanel`（收入支出两行、两个构成列各自换行）；两张卡本身右栏固定 392 | 不加断点代码也能自适应，窄窗口下钱包卡仍可读 |
 | 添加功能窗口"不设 Owner" | **设了 Owner** | 该规则针对 ToolWindow 的置顶按钮语义；本窗口没有图钉，设 Owner 才不会被主窗口盖住 |
-| 磁贴分组"分段 / 文件夹" | 实现**分段**（按功能分组显示小标题） | "文件夹"需要拖入/展开的容器语义，收益低、复杂度高，见 §8「计划内未做」 |
+| 磁贴分组"分段 / 文件夹" | 曾实现**分段**（按功能分组显示小标题） | "文件夹"语义复杂；**分段本身也随阶段 101 移除**（用户不再需要该功能，连同「⋯」按钮与 `ShowGrouped` 字段） |
 
 ---
 
@@ -401,12 +411,13 @@ L2 动作项：
 
 **新增（按用途分组，中英同步，注意 §8-33：改语言文件后必须查重键）**：
 
-- 快捷方式：`Home.Quick.Title` `Home.Quick.Count` `Home.Quick.Add` `Home.Quick.Edit` `Home.Quick.Done` `Home.Quick.RestoreDefaults` `Home.Quick.EditHint` `Home.Quick.Empty` `Home.Quick.LimitReached` `Home.Quick.Pin` `Home.Quick.Unpin` `Home.Quick.Remove` `Home.Quick.MoveFirst` `Home.Quick.ToWide` `Home.Quick.ToSmall` `Home.Quick.Manage` `Home.Quick.BadgeTip`
+- 快捷方式：`Home.Quick.Title` `Home.Quick.Count` `Home.Quick.RestoreDefaults` `Home.Quick.RestoreConfirm` `Home.Quick.Empty` `Home.Quick.LimitReached` `Home.Quick.Pin` `Home.Quick.Unpin` `Home.Quick.Remove` `Home.Quick.ToWide` `Home.Quick.ToSmall` `Home.Quick.Manage` `Home.Quick.BadgeTip`
+  （阶段 101 删除：`Home.Quick.Add` `AddTip` `Edit` `Done` `EditHint` `MoveFirst`、`Home.Setting.Grouped`——编辑统一在设置页）
 - 添加功能：`Home.Add.Title` `Home.Add.Search` `Home.Add.Add` `Home.Add.Added` `Home.Add.Summary` `Home.Add.Hint` `Home.Add.GroupAll`
 - 品牌与状态：`Home.Status.Online` `Home.Status.Players` `Home.Status.GameTime` `Home.Status.NewVersion` `Home.Status.Community`
 - 钱包：`Home.Wallet.Title` `Home.Wallet.Total` `Home.Wallet.Income` `Home.Wallet.Outcome` `Home.Wallet.IncomeBreakdown` `Home.Wallet.OutcomeBreakdown` `Home.Wallet.NoCharacter` `Home.Wallet.PartialFailed` `Home.Wallet.Range` `Home.Wallet.Range30` `Home.Wallet.RangeAll` `Home.Wallet.Note`
 - 行情：`Home.Market.Title` `Home.Market.AllFavorites` `Home.Market.Price` `Home.Market.Volume` `Home.Market.NoFavorite` `Home.Market.Note`
-- 动作 & 设置页：`Home.Action.OpenLog` `Home.Action.OpenConfigFolder` `Home.Action.CheckUpdate` `Home.Action.About` `Home.Action.Manual`、`SettingPage_Home` `SettingPage_Home_Desc`（P2）
+- 动作 & 设置页：`Home.Action.OpenLog` `Home.Action.OpenConfigFolder` `Home.Action.CheckUpdate` `Home.Action.About` `Home.Action.Manual`（`SettingPage_Home` / `SettingPage_Home_Desc` 随"设置 → 主页"删除已移除，阶段 94）
 
 功能描述文案（添加功能窗口里的副标题）建议**多数组件复用** `SettingPage_*_Desc`，确实没有的再补 `Home.Feature.<id>Desc`（避免为同一功能写两套描述）。
 

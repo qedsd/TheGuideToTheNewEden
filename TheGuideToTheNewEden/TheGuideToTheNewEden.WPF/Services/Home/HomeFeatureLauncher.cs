@@ -159,7 +159,6 @@ public static class HomeFeatureLauncher
         "setting-keyboard" => typeof(KeyboardListPage),
         "setting-test" => typeof(TestSettingPage),
         "setting-update" => typeof(UpdateSettingPage),
-        "setting-home" => typeof(HomeSettingPage),
         _ => null,
     };
 
