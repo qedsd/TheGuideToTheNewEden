@@ -137,6 +137,8 @@ public static class HomeFeatureCatalog
             "Home.Feature.ZkbDesc", HomeFeatureKind.Page, typeof(Views.Pages.ZKBPage)),
         new("database", SymbolRegular.Database24, "Nav.Database", "Nav.Database",
             "Home.Feature.DatabaseDesc", HomeFeatureKind.Page, typeof(Views.Pages.DatabasePage)),
+        new("eve-settings-sync", SymbolRegular.ArrowSync24, "Nav.EveSettingsSync", "Nav.EveSettingsSync",
+            "Home.Feature.EveSettingsSyncDesc", HomeFeatureKind.Page, typeof(Views.Pages.EveSettingsSyncPage)),
 
         // ---------- 小工具（独立工具窗口，不走主窗口导航） ----------
         new("tool-ime", SymbolRegular.Keyboard24, "Nav.Tools_IME", "Nav.Tools",

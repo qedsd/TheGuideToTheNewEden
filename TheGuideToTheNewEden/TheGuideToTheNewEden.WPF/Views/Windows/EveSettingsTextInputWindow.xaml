@@ -1,0 +1,67 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.EveSettingsTextInputWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Width="420"
+    Height="270"
+    MinWidth="360"
+    MinHeight="250"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    ResizeMode="NoResize"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <Grid Margin="16,48,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                x:Name="LabelText"
+                Grid.Row="0"
+                Margin="0,0,0,6"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+            <ui:TextBox
+                x:Name="InputBox"
+                Grid.Row="1"
+                MaxLength="64" />
+
+            <TextBlock
+                x:Name="ErrorText"
+                Grid.Row="2"
+                Margin="0,8,0,0"
+                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                TextWrapping="Wrap" />
+
+            <StackPanel
+                Grid.Row="4"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <ui:Button
+                    Margin="0,0,8,0"
+                    Click="OnOkClick"
+                    Content="{DynamicResource General_OK}"
+                    IsDefault="True" />
+                <ui:Button
+                    Click="OnCancelClick"
+                    Content="{DynamicResource General_Cancel}"
+                    IsCancel="True" />
+            </StackPanel>
+        </Grid>
+
+        <ui:TitleBar x:Name="TitleBar">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+    </Grid>
+</ui:FluentWindow>

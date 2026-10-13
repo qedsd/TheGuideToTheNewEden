@@ -1,0 +1,756 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.EveSettingsSyncPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Page.Resources>
+        <!--
+            表格外观：TargetType 必须是 ui:DataGrid 且 BasedOn 隐式样式，否则会把 WPF-UI 的
+            Fluent 模板整体顶掉、退回 WPF 原生外观（REFACTORING 阶段 16）。
+        -->
+        <Style
+            x:Key="EveSettingsGridStyle"
+            BasedOn="{StaticResource {x:Type ui:DataGrid}}"
+            TargetType="{x:Type ui:DataGrid}">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="SelectionMode" Value="Extended" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource FluentColumnHeaderStyle}" />
+            <Setter Property="CellStyle" Value="{StaticResource FluentDataGridCellStyle}" />
+            <Setter Property="RowStyle" Value="{StaticResource FluentDataGridRowStyle}" />
+            <!--  页面根节点的 CanContentScroll=False 会被继承进来，显式改回按行滚动（阶段 22）  -->
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        </Style>
+
+        <!--  文本单元格  -->
+        <Style x:Key="EveCellStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Margin" Value="8,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <!--  数值 / ID 单元格：右对齐  -->
+        <Style
+            x:Key="EveNumberCellStyle"
+            BasedOn="{StaticResource EveCellStyle}"
+            TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+
+        <!--  空态文案的公共部分（默认隐藏，由各自的 DataTrigger 打开）  -->
+        <Style x:Key="EveEmptyBase" TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="Margin" Value="16,14" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+        </Style>
+
+        <Style
+            x:Key="EveEmptyNoServers"
+            BasedOn="{StaticResource EveEmptyBase}"
+            TargetType="TextBlock">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasRoot}" Value="True" />
+                        <Condition Binding="{Binding HasServers}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="EveEmptyNoProfiles"
+            BasedOn="{StaticResource EveEmptyBase}"
+            TargetType="TextBlock">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasServers}" Value="True" />
+                        <Condition Binding="{Binding HasProfiles}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="EveEmptyNoCharacterFiles"
+            BasedOn="{StaticResource EveEmptyBase}"
+            TargetType="TextBlock">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasProfiles}" Value="True" />
+                        <Condition Binding="{Binding HasCharacterFiles}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="EveEmptyNoAccountFiles"
+            BasedOn="{StaticResource EveEmptyBase}"
+            TargetType="TextBlock">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasProfiles}" Value="True" />
+                        <Condition Binding="{Binding HasAccountFiles}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="EveEmptyNoUnrecognizedFiles"
+            BasedOn="{StaticResource EveEmptyBase}"
+            TargetType="TextBlock">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasProfiles}" Value="True" />
+                        <Condition Binding="{Binding HasUnrecognizedFiles}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="EveEmptyNoBackups"
+            BasedOn="{StaticResource EveEmptyBase}"
+            TargetType="TextBlock">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasBackups}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24,16,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  设置根目录  -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource EveSettingsSyncPage_RootFolderLabel}" />
+
+            <ui:TextBox
+                x:Name="RootBox"
+                Grid.Column="1"
+                Margin="8,0"
+                IsReadOnly="True"
+                Text="{Binding RootPath, Mode=OneWay}" />
+
+            <ui:Button
+                x:Name="ChangeFolderButton"
+                Grid.Column="2"
+                Margin="0,0,8,0"
+                Click="OnChangeFolderClick"
+                Content="{DynamicResource EveSettingsSyncPage_ChangeFolder}"
+                IsEnabled="{Binding CanOperate}" />
+            <ui:Button
+                x:Name="OpenFolderButton"
+                Grid.Column="3"
+                Margin="0,0,8,0"
+                Click="OnOpenRootFolderClick"
+                Content="{DynamicResource EveSettingsSyncPage_OpenFolder}"
+                IsEnabled="{Binding CanOperate}" />
+            <ui:Button
+                x:Name="RefreshButton"
+                Grid.Column="4"
+                Click="OnRefreshClick"
+                Content="{DynamicResource General_Refresh}"
+                IsEnabled="{Binding CanOperate}" />
+        </Grid>
+
+        <!--  游戏正在运行时的警告（同步/还原前必须让用户知道"游戏退出时会覆盖回去"）  -->
+        <Border
+            Grid.Row="1"
+            Margin="0,10,0,0"
+            Padding="12,8"
+            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+            BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+            BorderThickness="1"
+            CornerRadius="4">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <DockPanel>
+                <ui:SymbolIcon
+                    DockPanel.Dock="Left"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                    Symbol="Warning24" />
+                <TextBlock
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding RunningGameText}"
+                    TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
+
+        <!--  主体：无根目录 → 空态；否则 左（服务器 + 配置文件） / 右（页签）  -->
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <StackPanel
+                MaxWidth="560"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasRoot}" Value="False">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <ui:SymbolIcon
+                    HorizontalAlignment="Center"
+                    FontSize="40"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                    Symbol="Folder24" />
+                <TextBlock
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{DynamicResource EveSettingsSyncPage_NoRoot}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource EveSettingsSyncPage_NoRootTip}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Grid>
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasRoot}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  左栏：服务器 + 配置文件  -->
+                <Border Grid.Column="0" Style="{StaticResource SettingsGroupBorder}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="120" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="16,14,16,10"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{DynamicResource EveSettingsSyncPage_Servers}" />
+                        <Border Grid.Row="1" Style="{StaticResource SettingsDivider}" />
+
+                        <Grid Grid.Row="2">
+                            <ListBox
+                                x:Name="ServerList"
+                                Padding="4"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                DisplayMemberPath="DisplayName"
+                                IsSynchronizedWithCurrentItem="False"
+                                ItemsSource="{Binding Servers}"
+                                SelectionChanged="OnServerSelectionChanged" />
+                            <TextBlock Style="{StaticResource EveEmptyNoServers}" Text="{DynamicResource EveSettingsSyncPage_NoServers}" />
+                        </Grid>
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Margin="16,14,16,10"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{DynamicResource EveSettingsSyncPage_Profiles}" />
+                        <Border Grid.Row="4" Style="{StaticResource SettingsDivider}" />
+
+                        <Grid Grid.Row="5" Margin="16,10,16,0">
+                            <ComboBox
+                                x:Name="ProfileBox"
+                                HorizontalAlignment="Stretch"
+                                DisplayMemberPath="Name"
+                                ItemsSource="{Binding Profiles}"
+                                SelectionChanged="OnProfileSelectionChanged" />
+                            <TextBlock
+                                Margin="2,4,0,0"
+                                Style="{StaticResource EveEmptyNoProfiles}"
+                                Text="{DynamicResource EveSettingsSyncPage_NoProfiles}" />
+                        </Grid>
+
+                        <UniformGrid
+                            Grid.Row="6"
+                            Margin="16,10,16,14"
+                            Columns="2">
+                            <ui:Button
+                                x:Name="NewProfileButton"
+                                Margin="0,0,4,4"
+                                Click="OnNewProfileClick"
+                                Content="{DynamicResource EveSettingsSyncPage_NewProfile}"
+                                IsEnabled="{Binding CanManageProfiles}" />
+                            <ui:Button
+                                x:Name="DuplicateProfileButton"
+                                Margin="4,0,0,4"
+                                Click="OnDuplicateProfileClick"
+                                Content="{DynamicResource EveSettingsSyncPage_DuplicateProfile}"
+                                IsEnabled="{Binding CanManageProfiles}" />
+                            <ui:Button
+                                x:Name="RenameProfileButton"
+                                Margin="0,0,4,0"
+                                Click="OnRenameProfileClick"
+                                Content="{DynamicResource EveSettingsSyncPage_RenameProfile}"
+                                IsEnabled="{Binding CanManageProfiles}" />
+                            <ui:Button
+                                x:Name="DeleteProfileButton"
+                                Margin="4,0,0,0"
+                                Click="OnDeleteProfileClick"
+                                Content="{DynamicResource EveSettingsSyncPage_DeleteProfile}"
+                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                IsEnabled="{Binding CanManageProfiles}" />
+                        </UniformGrid>
+
+                        <TextBlock
+                            Grid.Row="7"
+                            Margin="16,0,16,14"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            Text="{DynamicResource EveSettingsSyncPage_ProfilesTip}"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+
+                <!--  右栏：文件 / 备份页签  -->
+                <TabControl
+                    x:Name="Tabs"
+                    Grid.Column="2"
+                    Padding="0"
+                    Background="Transparent">
+
+                    <!--  角色文件  -->
+                    <TabItem Header="{DynamicResource EveSettingsSyncPage_TabCharacters}">
+                        <Grid Margin="0,10,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <ui:Button
+                                        x:Name="BackupCharacterButton"
+                                        Margin="0,0,8,0"
+                                        Click="OnBackupSelectedFilesClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_BackupSelected}"
+                                        IsEnabled="{Binding CanManageFiles}" />
+                                    <ui:Button
+                                        x:Name="OpenCharacterFolderButton"
+                                        Click="OnOpenProfileFolderClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}"
+                                        IsEnabled="{Binding CanManageFiles}" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource EveSettingsSyncPage_CharactersTip}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
+
+                            <Grid Grid.Row="1">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <ui:DataGrid
+                                        x:Name="CharacterGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                                        ItemsSource="{Binding CharacterFiles}"
+                                        Style="{StaticResource EveSettingsGridStyle}">
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                MinWidth="180"
+                                                Binding="{Binding DisplayName}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource General_Character}" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding Id}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColId}" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding SizeText}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColSize}" />
+                                            <DataGridTextColumn
+                                                Width="160"
+                                                Binding="{Binding ModifiedText}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColModified}" />
+                                            <DataGridTemplateColumn Width="96" Header="{DynamicResource EveSettingsSyncPage_ColAction}">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button
+                                                            Margin="4,2"
+                                                            Padding="10,2"
+                                                            Click="OnSyncFileClick"
+                                                            Content="{DynamicResource EveSettingsSyncPage_Sync}"
+                                                            Tag="{Binding}"
+                                                            ToolTip="{DynamicResource EveSettingsSyncPage_SyncTip}" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
+                                </ScrollViewer>
+                                <TextBlock Style="{StaticResource EveEmptyNoCharacterFiles}" Text="{DynamicResource EveSettingsSyncPage_NoFiles}" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  账户文件  -->
+                    <TabItem Header="{DynamicResource EveSettingsSyncPage_TabAccounts}">
+                        <Grid Margin="0,10,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <ui:Button
+                                        x:Name="BackupAccountButton"
+                                        Margin="0,0,8,0"
+                                        Click="OnBackupSelectedFilesClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_BackupSelected}"
+                                        IsEnabled="{Binding CanManageFiles}" />
+                                    <ui:Button
+                                        x:Name="OpenAccountFolderButton"
+                                        Click="OnOpenProfileFolderClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}"
+                                        IsEnabled="{Binding CanManageFiles}" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource EveSettingsSyncPage_AccountsTip}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
+
+                            <Grid Grid.Row="1">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <ui:DataGrid
+                                        x:Name="AccountGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                                        ItemsSource="{Binding AccountFiles}"
+                                        Style="{StaticResource EveSettingsGridStyle}">
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                MinWidth="180"
+                                                Binding="{Binding DisplayName}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColAccount}" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding Id}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColId}" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding SizeText}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColSize}" />
+                                            <DataGridTextColumn
+                                                Width="160"
+                                                Binding="{Binding ModifiedText}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColModified}" />
+                                            <DataGridTemplateColumn Width="96" Header="{DynamicResource EveSettingsSyncPage_ColAction}">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button
+                                                            Margin="4,2"
+                                                            Padding="10,2"
+                                                            Click="OnSyncFileClick"
+                                                            Content="{DynamicResource EveSettingsSyncPage_Sync}"
+                                                            Tag="{Binding}"
+                                                            ToolTip="{DynamicResource EveSettingsSyncPage_SyncTipAccount}" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
+                                </ScrollViewer>
+                                <TextBlock Style="{StaticResource EveEmptyNoAccountFiles}" Text="{DynamicResource EveSettingsSyncPage_NoFiles}" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  未识别文件  -->
+                    <TabItem Header="{DynamicResource EveSettingsSyncPage_TabUnrecognized}">
+                        <Grid Margin="0,10,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <ui:Button
+                                        x:Name="BackupUnrecognizedButton"
+                                        Click="OnBackupSelectedFilesClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_BackupSelected}"
+                                        IsEnabled="{Binding CanManageFiles}" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource EveSettingsSyncPage_UnrecognizedTip}"
+                                    TextWrapping="Wrap" />
+                            </DockPanel>
+
+                            <Grid Grid.Row="1">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <ui:DataGrid
+                                        x:Name="UnrecognizedGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                                        ItemsSource="{Binding UnrecognizedFiles}"
+                                        Style="{StaticResource EveSettingsGridStyle}">
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                MinWidth="220"
+                                                Binding="{Binding FileName}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColFileName}" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding SizeText}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColSize}" />
+                                            <DataGridTextColumn
+                                                Width="160"
+                                                Binding="{Binding ModifiedText}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColModified}" />
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
+                                </ScrollViewer>
+                                <TextBlock Style="{StaticResource EveEmptyNoUnrecognizedFiles}" Text="{DynamicResource EveSettingsSyncPage_NoUnrecognizedFiles}" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  备份  -->
+                    <TabItem Header="{DynamicResource EveSettingsSyncPage_TabBackups}">
+                        <Grid Margin="0,10,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <ui:Button
+                                        x:Name="BackupProfileButton"
+                                        Margin="0,0,8,0"
+                                        Click="OnBackupProfileClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_BackupProfile}"
+                                        IsEnabled="{Binding CanManageFiles}" />
+                                    <ui:Button
+                                        x:Name="RevealBackupButton"
+                                        Margin="0,0,8,0"
+                                        Click="OnRevealBackupClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_ShowInFolder}"
+                                        IsEnabled="False" />
+                                    <ui:Button
+                                        x:Name="RestoreBackupButton"
+                                        Margin="0,0,8,0"
+                                        Click="OnRestoreBackupClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_Restore}"
+                                        IsEnabled="False" />
+                                    <ui:Button
+                                        x:Name="DeleteBackupButton"
+                                        Click="OnDeleteBackupClick"
+                                        Content="{DynamicResource EveSettingsSyncPage_Delete}"
+                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                        IsEnabled="False" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Text="{Binding BackupRoot}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTip="{Binding BackupRoot}" />
+                            </DockPanel>
+
+                            <Grid Grid.Row="1">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <ui:DataGrid
+                                        x:Name="BackupGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                                        IsReadOnly="True"
+                                        ItemsSource="{Binding Backups}"
+                                        SelectionChanged="OnBackupSelectionChanged"
+                                        SelectionMode="Single"
+                                        Style="{StaticResource EveSettingsGridStyle}">
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                MinWidth="200"
+                                                Binding="{Binding Name}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColBackupName}" />
+                                            <DataGridTextColumn
+                                                Width="220"
+                                                Binding="{Binding SourceText}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColBackupSource}" />
+                                            <DataGridTemplateColumn Width="120" Header="{DynamicResource EveSettingsSyncPage_ColBackupType}">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Margin="8,0" VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                                    <Setter Property="Text" Value="{DynamicResource EveSettingsSyncPage_BackupTypeFile}" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                                                                            <Setter Property="Text" Value="{DynamicResource EveSettingsSyncPage_BackupTypeFolder}" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding FileCount}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColFileCount}" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding SizeText}"
+                                                ElementStyle="{StaticResource EveNumberCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColSize}" />
+                                            <DataGridTextColumn
+                                                Width="160"
+                                                Binding="{Binding CreatedText}"
+                                                ElementStyle="{StaticResource EveCellStyle}"
+                                                Header="{DynamicResource EveSettingsSyncPage_ColCreated}" />
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
+                                </ScrollViewer>
+                                <TextBlock Style="{StaticResource EveEmptyNoBackups}" Text="{DynamicResource EveSettingsSyncPage_NoBackups}" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Grid>
+
+        <!--  选项 + 状态  -->
+        <DockPanel Grid.Row="3" Margin="0,12,0,0">
+            <TextBlock
+                DockPanel.Dock="Right"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding StatusText}" />
+            <StackPanel Orientation="Horizontal">
+                <CheckBox
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource EveSettingsSyncPage_AutoBackup}"
+                    IsChecked="{Binding AutoBackupBeforeSync, Mode=TwoWay}"
+                    ToolTip="{DynamicResource EveSettingsSyncPage_AutoBackupTip}" />
+                <CheckBox
+                    Margin="16,0,0,0"
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource EveSettingsSyncPage_BlockWhenRunning}"
+                    IsChecked="{Binding BlockWhenGameRunning, Mode=TwoWay}"
+                    ToolTip="{DynamicResource EveSettingsSyncPage_BlockWhenRunningTip}" />
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Page>

@@ -212,6 +212,15 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.EveSettingsSync}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:EveSettingsSyncPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="ArrowSync24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Tools}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Toolbox24" />

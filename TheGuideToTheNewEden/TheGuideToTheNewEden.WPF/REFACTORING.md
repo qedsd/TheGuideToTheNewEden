@@ -4643,6 +4643,94 @@ icacls $ws | findstr /i "Mandatory"
   `*Available` 口径下改数量只重算金额，界面提示"需重新比价"；
   每个 `MarketLocationSelectorView` 实例各自加载一份星域/星系列表（市场多时首次准备稍慢，异步不阻塞 UI）。
 
+### 阶段 103：配置同步（EVE 客户端设置文件同步 / 备份 / 配置文件管理）
+
+- **目标与参照**：把 `mintnick/eve-settings-manager` 的"配置同步"能力落到 WPF 版——管理
+  `%LOCALAPPDATA%\CCP\EVE\<服务器目录>\settings_<配置文件>\` 下的 `core_char_<角色ID>.dat` / `core_user_<账户ID>.dat`，
+  核心动作是**把某个角色（或账户）的设置整体覆盖到同类型的其他文件**，外加按配置文件备份/还原与配置文件的增删改复制。
+  参考仓库现已重写为 Electron + Vue 3 + TypeScript（旧版曾是 C#），所以"参考"的是**行为、目录规则与数据结构**，
+  逐条对应 `electron/main/ipc/` 的 `folder.ts` / `server.ts` / `profile.ts` / `settings.ts` / `backup.ts` / `store.ts`
+  与 `src/i18n/zh-CN.ts` 的文案。用户要求：入口放**导航顶级页**、P0（同步）+ P1（备份 + 配置文件管理）一次做完、**不做跨机同步**。
+- **新增（全部在 WPF 项目内，Core 与 WinUI 侧零改动）**：
+  - `Models/EveSettings/EveSettingsModels.cs`：`EveSettingsServerKind` / `EveSettingsFileKind` / `EveSettingsServer` /
+    `EveSettingsProfile` / `EveSettingsFileItem`（角色名异步回填，实现 INPC）/ `EveSettingsBackupItem` /
+    `EveSettingsSyncResult` / `EveSettingsRestoreResult` / `EveSettingsProfileNameError` / 体积格式化。
+  - `Services/EveSettings/EveSettingsServerCatalog.cs`：目录关键词表（tranquil / serenity / infinity / singulari /
+    duality / thunderdome / buckshot / tornado）→ 显示名 + 服务器类别；语言后缀 `[_-]([a-z]{2})$`；
+    按类别给出**匿名** `POST /universe/names/` 端点（TQ / ali-esi serenity / infinity，其余不解析名字）。
+  - `Services/EveSettings/EveSettingsFolderService.cs`：根目录探测（默认 `%LOCALAPPDATA%\CCP\EVE`）、
+    手选路径**上溯**（允许选到服务器目录或 `settings_*` 目录）、服务器/配置文件/文件枚举、
+    配置文件新建/重命名/复制/删除与名称校验。文件枚举**刻意不用** `*.dat` 通配符
+    （.NET 的三字符扩展名通配会把 `x.datx` 也匹配回来），改为枚举全部再按后缀过滤。
+  - `Services/EveSettings/EveSettingsNameResolver.cs`：角色 ID → 名字三级降级（本应用已授权角色 `CharacterStore` →
+    本地缓存 `<DataPath>\EveSettings\NameCache.json` → 按服务器端点的匿名 ESI，500/批）。
+    **刻意不用** Core 的 `IDNameService` / `ESIService`：它们受 `Config.DefaultGameServer` 影响（阶段 14 的单例固化），
+    而本模块必须"看国服目录就用国服端点"，且绝不能因为整理设置文件而触发 `CoreInitializer.SwitchGameServer`。
+  - `Services/EveSettings/EveSettingsBackupService.cs`：备份仓库（整配置文件=目录 / 单文件=`.dat`，
+    显示名与原文件名记在 `Backups\meta.json`）、列表、还原、删除、时间戳命名与自动避重名。
+  - `Services/EveSettings/EveSettingsFileCopy.cs`：覆盖式复制的统一实现（重试 3 次，保留修改时间），同步与备份共用。
+  - `Services/EveSettings/EveSettingsSyncService.cs`：同步引擎（源 → 多个目标，整体覆盖；逐目标独立容错 + 进度回调；
+    兜底拒绝跨配置文件目标）。
+  - `Services/EveSettings/EveSettingsSettingService.cs`：`Configs/EveSettingsSyncSetting.json`
+    （根目录覆盖 / 上次服务器 / 每服务器上次配置文件 / 同步前自动备份 / 游戏运行时警告 / 进程关键词 / 备份根目录）。
+  - `ViewModels/EveSettings/EveSettingsSyncViewModel.cs`：集合与状态、服务器与配置文件切换、名字解析回填、
+    同步 / 备份 / 还原 / 删除 / 配置文件管理、等待遮罩与右下角通知（`PageNotifyService`）、游戏运行检测
+    （`GameClientService.FindClients` + `GamePreviewSettingService.ProcessKeywords`，取到窗口标题里的角色名一起提示）。
+  - `Views/Pages/EveSettingsSyncPage.xaml(.cs)`：顶级导航页（左栏服务器 + 配置文件；右栏四个页签
+    角色文件 / 账户文件 / 未识别文件 / 备份；顶部根目录工具条 + 游戏运行警告条；底部两个选项 + 状态行）。
+  - `Views/Windows/EveSettingsSyncTargetWindow.xaml(.cs)`：「同步到…」目标多选对话框（默认全不选 + 全选 + 已选计数）。
+  - `Views/Windows/EveSettingsTextInputWindow.xaml(.cs)`：单行输入对话框（配置文件新建/重命名/复制共用，
+    校验回调就地报错、不关窗）。
+  - 接线：`Views/MainWindow.xaml` 新增导航项（`Nav.EveSettingsSync`，图标 `ArrowSync24`）、
+    `Services/Home/HomeFeatureCatalog.cs` 新增 `eve-settings-sync` 条目（主页可固定，避免"目录 ↔ 导航"比对告警）、
+    `Resources/Languages/zh-CN.xaml` / `en-US.xaml` 各新增 106 键。
+- **有意差异（相对参照实现，逐条都有理由）**：
+  1. **游戏运行中检测**：EVE 退出时会把内存里的设置写回 `.dat`，此时同步等于白做甚至互相覆盖。默认拦截 + 二次确认；
+     关闭该选项后只提示一次。参考实现完全不检测。
+  2. **非标准命名容错**：实机目录里真实存在 `core_char__.dat`、`core_char_('char', None, 'dat').dat`（本机各 1 个），
+     参考实现的 `^core_char_(\d+)\.dat$` 会把它们**静默丢掉**。这里归入"未识别文件"页签：可见、可备份，
+     但**不做同步的源或目标**（避免把设置写进来路不明的文件）。
+  3. **服务器一律按目录名判定**，名字解析走匿名端点；不切全局 ESI 单例（见上）。
+  4. **同步/还原前自动整配置文件备份**（默认开）：写游戏设置属于用户数据写操作，备份失败即中止；
+     参考实现只是"建议先备份"。还原同样先备份当前状态。
+  5. **逐目标独立容错**：单文件失败重试 3 次后计入失败清单，最后给"成功 N / 失败 M"与失败明细（前 12 条弹窗），
+     不像参考实现那样一个 `Promise.all` 整批抛掉。
+  6. **备份命名**：时间戳 + 服务器 + 配置文件（+ 文件名），重名自动加 `_2`/`_3`；不用弹窗让用户取名
+     （同步前的自动备份尤其需要零打扰）；备份根目录放 `<DataPath>\EveSettings\Backups`，不放 `Configs`（避免被当成设置文件误清）。
+  7. **单文件备份记录原文件名**（`meta.json` 的 `sourceFileName`），还原按**原名**写回档案。
+     参考实现的 `restoreFileBackup` 按**备份文件名**写回，会在档案里留下一个游戏根本不认的 `.dat`——
+     这是参照实现的一个缺陷，本模块不复刻（本阶段探针先按参考语义断言，发现后修正）。
+- **实测/核验**：
+  - `dotnet build` → **0 错误**、37 条警告（= 既有基线，**无新增**；`-t:Rebuild` 全量也无一条来自本次新增文件）。
+  - 语言键：zh / en 各 **2122** 键（新增 106：`Nav.EveSettingsSync` + `Home.Feature.EveSettingsSyncDesc` + 页面与对话框 104），
+    **0 重复、两文件键集完全一致**，页面/代码引用的键 **0 缺失**（脚本核对，防"重键启动即崩"，§8 第 33 条）。
+  - **离线探针 44/44 PASS**（一次性产物，核验后已清理；仅对真实目录**只读**扫描，写操作全在 fixture 里做）：
+    - 真实目录：识别 `c_ccp_eve_tq_tranquility` → `Tranquility`；`settings_Default` 共 11 个文件 =
+      6 角色 + 2 账户 + **3 个未识别**（`core_char__.dat`、`core_user__.dat`、`core_char_('char', None, 'dat').dat`）；
+    - 分类与边界：`x.datx` 不被当成 `.dat`、子目录被忽略、跨配置文件的目标被拒；
+    - 同步：源 → 2 个目标内容整体覆盖、未识别文件未被写入；
+    - 备份/还原：整配置文件备份含 6 个 `.dat` → 改坏现场 → 还原 6 个全部恢复，且**档案里多出来的文件不被删除**（只在结果里报数量）；
+      单文件备份 → 还原按原文件名写回且不会留下以备份名命名的 `.dat`；重名自动加序号；删除后列表同步刷新；
+    - 配置文件：名称校验（空/非法字符/重名/正常）、新建、复制（连带文件）、重命名、删除、**最后一个不许删**。
+  - **未做实机界面核验**（按 §8 协作约定，构建与运行由使用者执行）：首次使用建议先在**非唯一的配置文件**上试同步，
+    并保持「同步前自动备份」开启；若在受限上下文里运行（§8 第 62 条的低完整性场景），写 `%LOCALAPPDATA%\CCP\EVE`
+    可能被系统拒绝，此时页面会给出"操作失败 + 具体 Win32 原因"，而不是静默失败。
+- **交付后实机反馈修复（用户首次打开该页即报错）**：点击「配置同步」弹出
+  `InvalidOperationException: 无法对 …EveSettingsSyncViewModel 类型的只读属性"RootPath"进行 TwoWay 或 OneWayToSource 绑定`。
+  根因：`ui:TextBox` 的 `Text` **默认是 TwoWay**，而 `RootPath` 只有 `private set`（路径只能由「选择文件夹」改），
+  绑定在 `DataContext` 附加时被 `PropertyPathWorker.CheckReadOnly` 拒绝。**`dotnet build` 与 XAML 标记编译都是 0 错误**，
+  只有真正构造页面才暴露。处置：`Text="{Binding RootPath, Mode=OneWay}"`（唯一一处；
+  其余只读属性都绑在 `TextBlock.Text` / `ItemsSource` / `IsEnabled` 这些 OneWay 默认的目标上）。
+  顺带把"限制写入时才禁用按钮"补全：`IsBusy` 变化时同时通知 `CanManageProfiles` / `CanManageFiles`。
+  **新增核验手段**：写了一个**视图探针**（一次性产物，核验后已清理）——用与 `App.xaml` 同序的应用级资源字典
+  真正构造页面与两个对话框、用 `Frame` 承载并 `Measure/Arrange/UpdateLayout`、逐个切页签，
+  同时挂 `PresentationTraceSources.DataBindingSource` 监听抓绑定错误，并**自检一条故意写错的绑定路径**
+  证明兜底有效；结果 **7/7 PASS**（构造页面 / 灌数据后布局 / 两个对话框 / 诊断自检 / 无绑定错误）。
+  该手段与结论已记入 §9 第 88 条，后续新增或改动视图建议照此跑一遍。
+- **未做 / 后续**：跨机同步（用户明确不要）；`.dat` 内容解析与字段级合并（二进制格式，收益低风险高）；
+  文件变化监听（`FileSystemWatcher`，现在是手动刷新）；备注（参考实现按文件名记备注）；
+  备份压缩/导出导入；"按角色搜索建筑"那类与本模块无关的能力不受影响。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -4770,7 +4858,7 @@ icacls $ws | findstr /i "Mandatory"
       跳转时按"视口高 − 目标高"临时撑高，否则最后一个分组下面没有内容、物理上滚不到顶部（实测需要 497px）。
       这段补白是临时的（数据/筛选一变即归零），所以不会在页面末尾留常驻空白。
 
-61. **导航页里的占位页清点**（2026-10-10 首次核对；阶段 79/80 逐步销账）：曾有 8 个占位页——`MainWindow` 的 26 个导航目标里，`HomePage` / `DEDPage` / `MissionPage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage` 仍继承 `PlaceholderPage`（构造时只传本地化键 + 图标）。这 8 个在 WinUI 版**都有真实实现**（`Views\HomePage` / `Views\DEDPage` / `Views\MissionPage` / `Views\DatabasePage` / `Tools\IMEPage` / `Tools\ServerPingPage` / `Tools\KeyboardSpanPage` / `Tools\TaskbarPage`），属**真实迁移缺口**而非"WinUI 也没有"。
+61. **导航页里的占位页清点**（2026-10-10 首次核对；阶段 79/80 逐步销账；阶段 103 后导航目标为 27 个）：曾有 8 个占位页——`MainWindow` 的 26 个导航目标里，`HomePage` / `DEDPage` / `MissionPage` / `DatabasePage` / `IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage` 仍继承 `PlaceholderPage`（构造时只传本地化键 + 图标）。这 8 个在 WinUI 版**都有真实实现**（`Views\HomePage` / `Views\DEDPage` / `Views\MissionPage` / `Views\DatabasePage` / `Tools\IMEPage` / `Tools\ServerPingPage` / `Tools\KeyboardSpanPage` / `Tools\TaskbarPage`），属**真实迁移缺口**而非"WinUI 也没有"。
     核对方法：`Select-String -Path Views\Pages\*.xaml.cs -Pattern ':\s*PlaceholderPage'`，再逐个到 WinUI 同名目录确认对应实现是否存在。
     其中 `DEDPage` / `MissionPage` 已于**阶段 79 迁移完成**（两页都不再是占位页，见阶段 79）。
     **阶段 80 又销掉整个「工具」分组**（`IMEPage` / `ServerPingPage` / `KeyboardSpanPage` / `TaskbarPage`）。
@@ -4795,6 +4883,12 @@ icacls $ws | findstr /i "Mandatory"
     ⚠️ 不要给整棵工作区去掉 Low 标签——沙箱内的 Low 进程正是靠它才能写入，改了会连带弄坏沙箱写入。
     应用侧另做了：启动前先建、失败重试、失败时把**真实 Win32 错误码**与**应用 vs shell 上下文 + 整条启动链**
     写进日志（库会把错误码丢掉），并且托盘不可用时**不再**"关闭到托盘"（避免窗口被藏得找不回来）。
+63. **「配置同步」（阶段 103）的边界**：只做"同一配置文件内、同类型文件之间"的整体覆盖（没有合并、不跨配置文件/服务器/类型）；
+    不监听文件变化（要手动「刷新」）；不解析 `.dat` 内容；备份不压缩；未识别命名的文件只能看与备份、不能参与同步；
+    奇点 / Duality / 雷霆穹顶没有公开 ESI，角色名解析不到时显示 `ID xxxxx`。
+    另：写 `%LOCALAPPDATA%\CCP\EVE` 需要相应权限，在**低完整性进程**里（§8 第 62 条）会被系统拒绝，
+    表现是"操作失败 + 具体 Win32 原因"提示；要正常使用请从普通安装位置运行本应用（不要放在受限工作区里跑）。
+
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
 - 核验方式：实机点击逐页截图目检（`EnumWindows` + `PrintWindow` 抓取窗口，截图需先开启 PerMonitorV2 DPI 感知）；截图与抓图脚本为一次性产物，已清理。
@@ -5309,6 +5403,23 @@ icacls $ws | findstr /i "Mandatory"
     控件仍握着旧列表、VM 拿着新列表，此后"勾了物品却读不到"，表现为**只有第一次能用**（本项目正是先在"卖出物品"加过货，
     再切到"买入物品"就必坏）。处置：这类列表做成**带 `Set` 通知的属性**，清空时赋新实例，控件才会重新同步勾选状态。
 
+88. **`TextBox.Text` 一类"默认 TwoWay"的属性绑定到只读属性时，会在**运行期**抛 `InvalidOperationException`**
+    （阶段 103 实测：打开「配置同步」直接弹"未处理的错误"——
+    `System.InvalidOperationException: 无法对 …EveSettingsSyncViewModel 类型的只读属性"RootPath"进行 TwoWay 或 OneWayToSource 绑定`，
+    堆栈落在 `PropertyPathWorker.CheckReadOnly`）。`TextBox` / `NumberBox` / `CheckBox.IsChecked` / `ComboBox.SelectedItem`
+    这类控件的绑定**默认就是 TwoWay**，`{Binding RootPath}` 等价于显式 `Mode=TwoWay`；而"只读属性"（`private set` / 计算属性）
+    在**编译期完全看不出来**，`dotnet build` 0 错误、XAML 标记编译也 0 错误——**只有真正构造出这个页面才炸**。
+    处置：只读文本一律写 `{Binding Xxx, Mode=OneWay}`（本次就是 `RootPath` 一处）。
+    **兜底做法（本次新增的核验手段，值得复用）**：写一个"视图探针"——用与 `App.xaml` 同序的
+    `ThemesDictionary` / `ControlsDictionary` / `Controls/*.xaml` / 语言字典建好 `Application.Current.Resources`
+    （注意在探针里要用 `pack://application:,,,/TheGuideToTheNewEden;component/...` 的绝对形式，
+    相对 pack URI 解析的是**入口程序集**；窗口的 `Icon="…/Assets/app.ico"` 同理，探针需把 `Assets/*` 以同样的相对路径
+    链接进自己的资源清单），然后 `new 页面()` + 用 `Frame` 承载并 `Measure/Arrange/UpdateLayout`、
+    逐个切 `TabControl` 页签，再挂一个 `PresentationTraceSources.DataBindingSource` 的 `TraceListener`
+    （`SourceLevels.Warning`）+ **自检一条故意写错的绑定路径**，就能把"TwoWay 只读、`StaticResource` 缺失、
+    图标名非法、`DataTemplate` 里的资源键错误、绑定路径写错"这一整类**只在运行期暴露**的问题在交付前抓出来。
+    阶段 103 的探针结果：7/7 PASS（含诊断自检）。
+
 ---
 
 ## 10. 主要文件清单
@@ -5559,6 +5670,25 @@ Views/Pages/Characters/CharactersShellPage.xaml.cs   + 公开 OpenCharacterById�
 Services/ChannelIntel/IntelWarningService.cs         + ListenerCount（只读，角标用）
 Services/ChannelIntel/ChannelMonitorNotifyService.cs + ItemCount（只读，角标用）
 Services/GamePreview/PreviewWindowManager.cs         + 静态 TotalRunningCount（弱引用登记实例求和，角标用）
+```
+
+### 配置同步模块（阶段 103：EVE 客户端设置文件的同步 / 备份 / 配置文件管理）
+```
+Models/EveSettings/EveSettingsModels.cs              服务器/配置文件/文件项/备份项/同步结果等模型 + 体积格式化
+Services/EveSettings/EveSettingsServerCatalog.cs     目录关键词表 → 显示名/服务器类别/匿名 names 端点
+Services/EveSettings/EveSettingsFolderService.cs     根目录探测与上溯、服务器与配置文件枚举、文件枚举（脏命名归"未识别"）、配置文件增删改复制
+Services/EveSettings/EveSettingsNameResolver.cs      角色 ID → 名字（已授权角色 → 本地缓存 → 按服务器端点的匿名 ESI）
+Services/EveSettings/EveSettingsBackupService.cs     备份仓库（整配置文件/单文件 + meta.json 显示名与原文件名）、还原、删除
+Services/EveSettings/EveSettingsFileCopy.cs          覆盖式复制（重试 3 次 + 保留修改时间），同步与备份共用
+Services/EveSettings/EveSettingsSyncService.cs       同步引擎（整体覆盖 + 逐目标容错 + 进度回调 + 跨配置文件拒绝）
+Services/EveSettings/EveSettingsSettingService.cs    Configs/EveSettingsSyncSetting.json
+ViewModels/EveSettings/EveSettingsSyncViewModel.cs   页面 VM：切换/解析/同步/备份/还原/配置文件管理 + 游戏运行检测
+Views/Pages/EveSettingsSyncPage.xaml(.cs)            顶级导航页：左栏服务器+配置文件，右栏 角色/账户/未识别/备份 四页签
+Views/Windows/EveSettingsSyncTargetWindow.xaml(.cs)  「同步到…」目标多选对话框
+Views/Windows/EveSettingsTextInputWindow.xaml(.cs)   单行输入对话框（配置文件命名，带就地校验）
+Views/MainWindow.xaml                                + 导航项 Nav.EveSettingsSync（顶级，图标 ArrowSync24）
+Services/Home/HomeFeatureCatalog.cs                  + eve-settings-sync 功能目录条目（主页可固定）
+Resources/Languages/zh-CN.xaml, en-US.xaml           + 106 键（Nav/Home 2 + 页面与对话框 104）
 ```
 
 ### 主窗口

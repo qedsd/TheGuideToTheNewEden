@@ -2105,4 +2105,119 @@
     <sys:String x:Key="CompareMarketPage_RemoveFromList">Remove from list</sys:String>
     <sys:String x:Key="CompareMarketPage_CopyName">Copy item name</sys:String>
 
+    <!--  Settings sync (EVE client settings files: character/account sync + backups, stage 103)  -->
+    <sys:String x:Key="Nav.EveSettingsSync">Settings Sync</sys:String>
+    <sys:String x:Key="Home.Feature.EveSettingsSyncDesc">Sync EVE client settings between characters / accounts and back up profiles</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_RootFolderLabel">Game settings folder</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ChangeFolder">Select folder…</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_OpenFolder">Open folder</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_OpenProfileFolder">Open profile folder</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SelectRootTitle">Select EVE settings folder</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoRoot">EVE settings folder not found</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoRootTip">Make sure EVE Online is installed, or use "Select folder…" to point at it. Default location: %LOCALAPPDATA%\CCP\EVE. You can also pick a server subfolder directly — the root is resolved automatically.</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_Servers">Servers</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoServers">No server subfolder recognised here (e.g. c_tranquility / c_serenity).</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_Profiles">Profiles</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoProfiles">No profile (settings_*) folder under this server</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfilesTip">A profile maps to a settings_ folder in the game. Syncing and backups always stay inside the current profile — never across profiles, servers or file types.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NewProfile">New</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_DuplicateProfile">Duplicate</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RenameProfile">Rename</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_DeleteProfile">Delete</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileAddTitle">New profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileRenameTitle">Rename profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileDuplicateTitle">Duplicate profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileNameLabel">Profile name</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileNamePlaceholder">Enter a name…</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileCopySuffix"> - copy</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileNameEmpty">Name cannot be empty</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileNameInvalid">Name cannot contain \ / : * ? " &lt; &gt; | or similar characters</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileNameDuplicate">A profile with this name already exists</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileDeleteConfirmTitle">Delete profile?</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileDeleteConfirmDetail">This permanently deletes "{0}" and all of its settings files. This cannot be undone.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileOnlyOne">Cannot delete the only profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileCreated">Profile created: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileRenamed">Profile renamed: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileDuplicated">Profile duplicated: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileDeleted">Profile deleted: {0}</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_TabCharacters">Characters</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_TabAccounts">Accounts</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_TabUnrecognized">Unrecognized</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_TabBackups">Backups</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_CharactersTip">Character files (core_char_*.dat) hold character settings (overview, shortcuts, UI layout) and can be synced to other characters.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_AccountsTip">Account files (core_user_*.dat) hold account-wide settings and can be synced to other accounts.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_UnrecognizedTip">These files do not match core_char_ID.dat / core_user_ID.dat, so they are never used as a sync source or target (they can still be backed up).</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoFiles">No syncable files in the current profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoUnrecognizedFiles">No unrecognized files</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColAccount">Account</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColId">ID</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColSize">Size</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColModified">Modified</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColAction">Action</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColFileName">File name</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ResolvingNames">Resolving character names…</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_Sync">Sync</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncTip">Sync to other characters</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncTipAccount">Sync to other accounts</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncDialogTitle">Sync to…</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncDialogTip">Pick the files to overwrite. The source settings replace the targets entirely (no merge) and this cannot be undone.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncSource">Source: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncNoTargets">No other files to sync to.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SelectAll">Select all</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SelectedCount">{0} / {1} selected</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncConfirmTitle">Overwrite settings?</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncConfirmDetail">This will overwrite {0} file(s) with the selected settings.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncConfirmDetailBackup">The current profile will be backed up first, then {0} file(s) will be overwritten with the selected settings.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncConfirmBackupSuggest">Consider keeping a backup to preserve your current settings.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncingNow">Syncing…</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_Syncing">Syncing {0}/{1}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncDone">Sync finished: {0} succeeded, {1} failed</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncFailed">Sync failed: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SyncFailuresTitle">Some targets were not synced</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_Cancelled">Cancelled</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupSuffix">(backup: {0})</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_BackupProfile">Back up current profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupSelected">Back up selected</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupSelectNothing">Select the files to back up first.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackingUp">Backing up…</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupDone">Backup created: {0} ({1} file(s))</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupFilesDone">Backed up {0} file(s)</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupPartial">Backed up {0} file(s), {1} failed</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupFailed">Backup failed: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupDeleted">Backup deleted: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupTypeFolder">Whole profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BackupTypeFile">Single file</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColBackupName">Backup</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColBackupSource">Source</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColBackupType">Type</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColFileCount">Files</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ColCreated">Created</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_NoBackups">No backups yet</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ShowInFolder">Show in folder</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_Restore">Put back to profile</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_Delete">Delete</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RestoreConfirmTitle">Put back to profile?</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RestoreFolderDetail">All files from "{0}" will overwrite the current profile.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RestoreFileDetail">This will overwrite "{0}" with the backup.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RestoreDone">Restore finished: {0} file(s) overwritten, {1} failed ({2} file(s) in the profile are not in the backup and were kept)</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RestoreFailed">Restore failed: {0}</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_Restoring">Restoring…</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_DeleteBackupConfirmTitle">Delete backup?</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_DeleteBackupConfirmDetail">This permanently deletes the backup "{0}". Your current settings are not affected.</sys:String>
+
+    <sys:String x:Key="EveSettingsSyncPage_GameRunning">{0} EVE client(s) running: {1}. The game writes its in-memory settings back on exit, so what is written now may be overwritten.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_GameRunningTitle">EVE client is running</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_GameRunningAsk">Closing the game first is recommended. Continue anyway?</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_AutoBackup">Back up the current profile before sync / restore</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_AutoBackupTip">When enabled, the whole current profile is backed up before every sync or restore (restorable from the Backups tab).</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BlockWhenRunning">Warn when the game is running</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_BlockWhenRunningTip">When disabled, a notice is shown once before writing instead of asking for confirmation.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_OperationFailed">Operation failed: {0}</sys:String>
+
 </ResourceDictionary>
