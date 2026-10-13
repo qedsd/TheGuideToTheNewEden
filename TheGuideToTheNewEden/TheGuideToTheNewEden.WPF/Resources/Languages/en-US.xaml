@@ -66,9 +66,9 @@
     <sys:String x:Key="Home.Add.Hint">Use the button on the right to add or remove; reorder them in Settings → Home.</sys:String>
     <sys:String x:Key="Home.Add.GroupAll">All features</sys:String>
 
-    <sys:String x:Key="Home.Status.Players">{0} players online (Tranquility)</sys:String>
+    <sys:String x:Key="Home.Status.Players">Players {0}</sys:String>
     <sys:String x:Key="Home.Status.PlayersUnknown">Players online: unknown</sys:String>
-    <sys:String x:Key="Home.Status.GameTimeTip">EVE time (UTC)</sys:String>
+    <sys:String x:Key="Home.Status.GameTimeTip">EVE Time (UTC)</sys:String>
     <sys:String x:Key="Home.Status.NewVersion">New version {0}</sys:String>
     <sys:String x:Key="Home.Status.NewVersionTip">Open “Settings → Software update”</sys:String>
     <sys:String x:Key="Home.Status.QqGroup">QQ group</sys:String>

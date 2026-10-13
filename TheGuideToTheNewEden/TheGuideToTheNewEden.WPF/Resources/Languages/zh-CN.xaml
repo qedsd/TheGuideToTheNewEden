@@ -66,9 +66,9 @@
     <sys:String x:Key="Home.Add.Hint">点右侧按钮添加 / 移除；在 设置 → 主页 里拖动排序。</sys:String>
     <sys:String x:Key="Home.Add.GroupAll">全部功能</sys:String>
 
-    <sys:String x:Key="Home.Status.Players">欧服在线 {0} 人</sys:String>
+    <sys:String x:Key="Home.Status.Players">在线 {0}</sys:String>
     <sys:String x:Key="Home.Status.PlayersUnknown">在线人数未知</sys:String>
-    <sys:String x:Key="Home.Status.GameTimeTip">世界时（UTC）</sys:String>
+    <sys:String x:Key="Home.Status.GameTimeTip">游戏时间（UTC）</sys:String>
     <sys:String x:Key="Home.Status.NewVersion">有新版本 {0}</sys:String>
     <sys:String x:Key="Home.Status.NewVersionTip">点击前往「设置 → 软件更新」</sys:String>
     <sys:String x:Key="Home.Status.QqGroup">QQ 群</sys:String>

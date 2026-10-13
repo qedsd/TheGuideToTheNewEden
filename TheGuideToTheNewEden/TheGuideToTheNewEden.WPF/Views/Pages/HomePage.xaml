@@ -281,7 +281,7 @@
 
             <!--  ============ 品牌 / 状态条 ============  -->
             <Border
-                Height="104"
+                Height="140"
                 ClipToBounds="True"
                 CornerRadius="8">
                 <Grid>
@@ -293,7 +293,11 @@
                         </LinearGradientBrush>
                     </Grid.Background>
 
-                    <Image x:Name="HeroImage" Stretch="UniformToFill" />
+                    <Border CornerRadius="8">
+                        <Border.Background>
+                            <ImageBrush x:Name="HeroImage" Stretch="UniformToFill" />
+                        </Border.Background>
+                    </Border>
 
                     <!--  左侧暗化，保证文字在任意图片区域上都可读  -->
                     <Border>
@@ -344,7 +348,7 @@
                                             VerticalAlignment="Center"
                                             FontSize="13"
                                             Foreground="{StaticResource HeroTextBrush}"
-                                            Symbol="Pulse24" />
+                                            Symbol="People16" />
                                         <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
@@ -419,7 +423,7 @@
                                     <ui:SymbolIcon
                                         FontSize="16"
                                         Foreground="{StaticResource HeroTextBrush}"
-                                        Symbol="DocumentBulletList24" />
+                                        Symbol="Bug16" />
                                 </Button>
                                 <Button
                                     Click="OnOpenConfigClick"
@@ -428,7 +432,7 @@
                                     <ui:SymbolIcon
                                         FontSize="16"
                                         Foreground="{StaticResource HeroTextBrush}"
-                                        Symbol="Folder24" />
+                                        Symbol="DocumentSettings16" />
                                 </Button>
                                 <Button
                                     Click="OnOpenGithubClick"
@@ -446,7 +450,7 @@
                                     <ui:SymbolIcon
                                         FontSize="16"
                                         Foreground="{StaticResource HeroTextBrush}"
-                                        Symbol="Chat24" />
+                                        Symbol="ContactCard16" />
                                 </Button>
                             </StackPanel>
                         </Grid>

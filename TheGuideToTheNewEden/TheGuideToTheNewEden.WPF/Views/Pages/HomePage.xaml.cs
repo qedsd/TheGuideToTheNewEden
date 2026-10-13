@@ -70,14 +70,14 @@ public partial class HomePage : Page
     /// </summary>
     private void EnsureHeroImage()
     {
-        if (HeroImage.Source is not null)
+        if (HeroImage.ImageSource is not null)
         {
             return;
         }
 
         try
         {
-            HeroImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/home.jpg", UriKind.Absolute));
+            HeroImage.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/home.jpg", UriKind.Absolute));
         }
         catch (Exception ex)
         {

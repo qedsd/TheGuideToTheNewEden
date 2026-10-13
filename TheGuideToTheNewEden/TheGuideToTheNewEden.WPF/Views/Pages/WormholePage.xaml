@@ -471,25 +471,25 @@
                                 <TabControl Margin="0,14,0,0">
                                     <TabItem Header="{DynamicResource WormholePage_Planet}">
                                         <ListBox
-                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             Background="Transparent"
                                             BorderThickness="0"
+                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             ItemTemplate="{StaticResource StellarItemTemplate}"
                                             ItemsSource="{Binding Detail.Planets}" />
                                     </TabItem>
                                     <TabItem Header="{DynamicResource WormholePage_Moon}">
                                         <ListBox
-                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             Background="Transparent"
                                             BorderThickness="0"
+                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             ItemTemplate="{StaticResource StellarItemTemplate}"
                                             ItemsSource="{Binding Detail.Moons}" />
                                     </TabItem>
                                     <TabItem Header="{DynamicResource WormholePage_Other}">
                                         <ListBox
-                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             Background="Transparent"
                                             BorderThickness="0"
+                                            ItemContainerStyle="{StaticResource StretchListItem}"
                                             ItemTemplate="{StaticResource StellarItemTemplate}"
                                             ItemsSource="{Binding Detail.Others}" />
                                     </TabItem>
