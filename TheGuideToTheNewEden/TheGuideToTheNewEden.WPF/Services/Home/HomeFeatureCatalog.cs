@@ -91,6 +91,8 @@ public static class HomeFeatureCatalog
             "Home.Feature.OrderDesc", HomeFeatureKind.Page, typeof(Views.Pages.OrderPage)),
         new("scalper", SymbolRegular.ShoppingBag24, "Nav.Scalper", "Nav.Business",
             "Home.Feature.ScalperDesc", HomeFeatureKind.Page, typeof(Views.Pages.ScalperPage)),
+        new("compare-market", SymbolRegular.ArrowSwap24, "Nav.CompareMarket", "Nav.Business",
+            "Home.Feature.CompareMarketDesc", HomeFeatureKind.Page, typeof(Views.Pages.CompareMarketPage)),
         new("appraisal", SymbolRegular.Calculator24, "Nav.Appraisal", "Nav.Business",
             "Home.Feature.AppraisalDesc", HomeFeatureKind.Page, typeof(Views.Pages.AppraisalPage)),
 

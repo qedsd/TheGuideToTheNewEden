@@ -166,7 +166,7 @@ public static class AppraisalService
 
         // 名称 → 类型（本地 SDE；中文名走本地化库）
         var names = parsedLines.Select(p => p.Name).Where(p => !string.IsNullOrWhiteSpace(p)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var types = await Task.Run(() => ResolveTypes(names), cancellationToken);
+        var types = await Task.Run(() => MarketTypeNameResolver.Resolve(names), cancellationToken);
         if (cancellationToken.IsCancellationRequested)
         {
             return null;
@@ -474,79 +474,9 @@ public static class AppraisalService
     // ==================================================================
 
     /// <summary>
-    /// 把物品名解析成本地 SDE 类型。粘贴文本可能是英文名（国际服）或中文名（国服/本地化客户端）：
-    /// ① 主库精确（英文 SDE 原名）→ ② 本地化库精确（中文名）→ ③ 主库模糊（唯一命中才采用）
-    /// → ④ 本地化库模糊（中文模糊，同样只接受唯一命中或忽略大小写恰好相等），避免张冠李戴。
+    /// 名称 → 类型：实现已搬到公共的 <see cref="MarketTypeNameResolver"/>（比价与估价共用同一套 4 级解析），
+    /// 此处保留薄转发，避免估价页的调用点散落多处。
     /// </summary>
     private static Dictionary<string, Core.DBModels.InvType?> ResolveTypes(List<string> names)
-    {
-        var result = new Dictionary<string, Core.DBModels.InvType?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var name in names)
-        {
-            if (result.ContainsKey(name))
-            {
-                continue;
-            }
-
-            Core.DBModels.InvType? type = null;
-            try
-            {
-                // 1) 主库精确（SDE 原名，一般是英文）
-                var types = Core.Services.DB.InvTypeService.QueryByName(name, isLike: false);
-                if (types is { Count: > 0 })
-                {
-                    type = types.FirstOrDefault(p => string.Equals(p.TypeName, name, StringComparison.OrdinalIgnoreCase)) ?? types[0];
-                }
-                // 2) 本地化库精确（中文客户端复制的中文名）
-                else if (Core.Config.NeedLocalization)
-                {
-                    var local = Core.Services.DB.LocalDbService.QueryInvTypes(name).FirstOrDefault();
-                    if (local is not null)
-                    {
-                        type = Core.Services.DB.InvTypeService.QueryType(local.TypeID);
-                    }
-                }
-
-                // 3) 模糊兜底：主库唯一命中或忽略大小写恰好相等才采用
-                if (type is null)
-                {
-                    types = Core.Services.DB.InvTypeService.QueryByName(name, isLike: true);
-                    if (types is { Count: 1 })
-                    {
-                        type = types[0];
-                    }
-                    else if (types is { Count: > 1 })
-                    {
-                        type = types.FirstOrDefault(p => string.Equals(p.TypeName, name, StringComparison.OrdinalIgnoreCase));
-                    }
-                }
-
-                // 4) 本地化库模糊兜底：主库按英文名 Contains 查中文输入恒为空，中文模糊走本地化库
-                if (type is null && Core.Config.NeedLocalization)
-                {
-                    var locals = Core.Services.DB.LocalDbService.SearchInvType(name);
-                    if (locals is { Count: 1 })
-                    {
-                        type = Core.Services.DB.InvTypeService.QueryType(locals[0].TypeID);
-                    }
-                    else if (locals is { Count: > 1 })
-                    {
-                        var exactLocal = locals.FirstOrDefault(p => string.Equals(p.TypeName, name, StringComparison.OrdinalIgnoreCase));
-                        if (exactLocal is not null)
-                        {
-                            type = Core.Services.DB.InvTypeService.QueryType(exactLocal.TypeID);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Core.Log.Error(ex);
-            }
-
-            result[name] = type;
-        }
-
-        return result;
-    }
+        => MarketTypeNameResolver.Resolve(names);
 }

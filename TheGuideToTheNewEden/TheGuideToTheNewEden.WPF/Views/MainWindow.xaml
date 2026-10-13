@@ -73,6 +73,10 @@
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:ScalperPage}" />
                         <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.CompareMarket}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:CompareMarketPage}" />
+                        <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Appraisal}"
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:AppraisalPage}" />

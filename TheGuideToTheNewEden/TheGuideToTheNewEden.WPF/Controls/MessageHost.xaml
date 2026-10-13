@@ -74,12 +74,12 @@
                         <!--  可选动作按钮（如"重试"）：ActionText 为空时隐藏，不需要额外转换器  -->
                         <Button
                             Grid.Column="2"
+                            MinHeight="26"
                             Margin="8,0,0,0"
                             Padding="10,2"
                             VerticalAlignment="Top"
-                            MinHeight="26"
-                            Content="{Binding ActionText}"
-                            Click="OnActionClick">
+                            Click="OnActionClick"
+                            Content="{Binding ActionText}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                                     <Setter Property="Visibility" Value="Visible" />
