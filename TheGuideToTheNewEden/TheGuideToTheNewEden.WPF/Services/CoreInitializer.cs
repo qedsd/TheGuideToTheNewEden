@@ -2,6 +2,7 @@ using System.IO;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.WPF.Helpers;
+using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Services.Translation;
@@ -31,6 +32,7 @@ public static class CoreInitializer
         LocalDbSelectorService.Initialize();
         DBLocalizationSettingService.Initialize();
         TranslationSettingService.Initialize();
+        AiAssistantSettingService.Initialize();
         ChannelTranslationSettingService.Initialize();
         UserGlossaryService.Initialize();
         GlossaryCandidateService.Initialize();

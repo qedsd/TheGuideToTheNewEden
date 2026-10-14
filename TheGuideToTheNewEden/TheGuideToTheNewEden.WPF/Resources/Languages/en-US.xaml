@@ -2221,4 +2221,106 @@
     <sys:String x:Key="EveSettingsSyncPage_BlockWhenRunningTip">When disabled, a notice is shown once before writing instead of asking for confirmation.</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_OperationFailed">Operation failed: {0}</sys:String>
 
+    <!--  AI assistant (stage D): chat UI + tool steps + confirmation card  -->
+    <sys:String x:Key="Nav.Assistant">AI Assistant</sys:String>
+    <sys:String x:Key="Assistant_Chat_Sessions">Chats</sys:String>
+    <sys:String x:Key="Assistant_Chat_New">New chat</sys:String>
+    <sys:String x:Key="Assistant_Chat_NoSessions">No chats yet&#10;Click "New chat" below to start</sys:String>
+    <sys:String x:Key="Assistant_Chat_Rename">Rename chat</sys:String>
+    <sys:String x:Key="Assistant_Chat_Rename_Tip">Double-click the title to rename</sys:String>
+    <sys:String x:Key="Assistant_Chat_Delete">Delete chat</sys:String>
+    <sys:String x:Key="Assistant_Chat_Clear">Clear current chat</sys:String>
+    <sys:String x:Key="Assistant_Chat_Request">Me</sys:String>
+    <sys:String x:Key="Assistant_Chat_Answer">Assistant</sys:String>
+    <sys:String x:Key="Assistant_Chat_Generating">Working…</sys:String>
+    <sys:String x:Key="Assistant_Chat_Stopped">Stopped</sys:String>
+    <sys:String x:Key="Assistant_Chat_Expand">Expand</sys:String>
+    <sys:String x:Key="Assistant_Chat_Collapse">Collapse</sys:String>
+    <sys:String x:Key="Assistant_Chat_Confirm_Title">Actions needing confirmation</sys:String>
+    <sys:String x:Key="Assistant_Chat_Confirm_Hint">These actions modify app configuration and run only after you confirm:</sys:String>
+    <sys:String x:Key="Assistant_Chat_Confirm_Apply">Apply</sys:String>
+    <sys:String x:Key="Assistant_Chat_Confirm_Reject">Reject</sys:String>
+    <sys:String x:Key="Assistant_Chat_CopyAnswer">Copy answer</sys:String>
+    <sys:String x:Key="Assistant_Chat_CopySuccess">Copied</sys:String>
+    <sys:String x:Key="Assistant_Chat_EmptyTip">Ask in natural language; the assistant calls app features to fetch real data.&#10;e.g. "price of Megathron in Jita", "route from Jita to Domain", "analyse scalping for me"</sys:String>
+    <sys:String x:Key="Assistant_Chat_UseContext">Carry context</sys:String>
+    <sys:String x:Key="Assistant_Chat_UseContext_Tip">When on, every question in this chat carries all previous successful Q&amp;A (no limit)</sys:String>
+    <sys:String x:Key="Assistant_Chat_Input">Input</sys:String>
+    <sys:String x:Key="Assistant_Chat_Input_Tip">Describe what you need… (Enter to send, Shift+Enter for newline)</sys:String>
+    <sys:String x:Key="Assistant_Chat_Input_Hint">Enter to send · Shift+Enter for newline</sys:String>
+    <sys:String x:Key="Assistant_Chat_Send">Send</sys:String>
+    <sys:String x:Key="Assistant_Chat_Stop">Stop</sys:String>
+    <sys:String x:Key="Assistant_Chat_PopWindow">Pop out</sys:String>
+    <sys:String x:Key="Assistant_Chat_Untitled">New chat</sys:String>
+    <sys:String x:Key="Assistant_Chat_EmptySession">(empty chat)</sys:String>
+    <sys:String x:Key="Assistant_Chat_NewSession">New chat</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOn">On: carries the previous {0} Q&amp;A each time</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOff">Off: answers only the current question</sys:String>
+    <sys:String x:Key="Assistant_Chat_PendingCount">{0} request(s) in progress…</sys:String>
+    <sys:String x:Key="Assistant_Chat_NoInput">Please enter something</sys:String>
+    <sys:String x:Key="Assistant_Chat_AnswerEmpty">No content returned</sys:String>
+    <sys:String x:Key="Assistant_Chat_Timeout">Request timed out or was interrupted</sys:String>
+    <sys:String x:Key="Assistant_AiUnavailable">Assistant is not configured: fill in the service URL, API key and model under Settings → AI Translation (the assistant reuses that endpoint)</sys:String>
+    <sys:String x:Key="Assistant_NotConfigured_Title">Configure the AI endpoint first</sys:String>
+    <sys:String x:Key="Assistant_NotConfigured_Support">Supports OpenAI-compatible / Azure OpenAI / Anthropic / Gemini; one configuration serves both translation and the assistant.</sys:String>
+    <sys:String x:Key="Assistant_GoConfigure">Configure</sys:String>
+    <sys:String x:Key="Assistant_Recheck">Recheck</sys:String>
+    <sys:String x:Key="AssistantStep_Done">done</sys:String>
+    <sys:String x:Key="AssistantStep_Failed">failed</sys:String>
+    <sys:String x:Key="AssistantTool_market_orders">Market orders</sys:String>
+    <sys:String x:Key="AssistantTool_market_history">Market history</sys:String>
+    <sys:String x:Key="AssistantTool_market_navigate">Open market</sys:String>
+    <sys:String x:Key="AssistantTool_appraisal">Appraisal</sys:String>
+    <sys:String x:Key="AssistantTool_translate">Translate</sys:String>
+    <sys:String x:Key="AssistantTool_search_sde">Name search</sys:String>
+    <sys:String x:Key="AssistantTool_system_navigate">Locate system</sys:String>
+    <sys:String x:Key="AssistantTool_character_list">Character list</sys:String>
+    <sys:String x:Key="AssistantTool_character_overview">Character overview</sys:String>
+    <sys:String x:Key="AssistantTool_character_wallet">Character wallet</sys:String>
+    <sys:String x:Key="AssistantTool_character_skills">Character skills</sys:String>
+    <sys:String x:Key="AssistantTool_character_navigate">Open character</sys:String>
+    <sys:String x:Key="AssistantTool_map_route">Map route</sys:String>
+    <sys:String x:Key="AssistantTool_map_system_info">System info</sys:String>
+    <sys:String x:Key="AssistantTool_map_jumpbridge_list">Jump bridges</sys:String>
+    <sys:String x:Key="AssistantTool_map_jumpbridge_add">Add jump bridge</sys:String>
+    <sys:String x:Key="AssistantTool_map_jumpbridge_remove">Remove jump bridge</sys:String>
+    <sys:String x:Key="AssistantTool_map_jumpbridge_import">Import jump bridges</sys:String>
+    <sys:String x:Key="AssistantTool_map_layer">Map layers</sys:String>
+    <sys:String x:Key="AssistantTool_scalper_settings">Scalper settings</sys:String>
+    <sys:String x:Key="AssistantTool_scalper_analyse">Scalper analysis</sys:String>
+    <sys:String x:Key="AssistantTool_compare_analyse">Price comparison</sys:String>
+    <sys:String x:Key="AssistantTool_market_trend">Price trend</sys:String>
+
+    <!--  Home quick input (fast lane: simple queries jump directly, complex ones go to the AI assistant)  -->
+    <sys:String x:Key="Home.Quick.Placeholder">Item price / KB / system… Enter to go; complex questions go to the AI assistant</sys:String>
+    <sys:String x:Key="Home.Quick.Go">Go</sys:String>
+    <sys:String x:Key="Home.Quick.JumpedMarket">Opened the market and selected {0}</sys:String>
+    <sys:String x:Key="Home.Quick.JumpedKb">Opened the entity stats for {0}</sys:String>
+    <sys:String x:Key="Home.Quick.JumpedSystem">Located system {0}</sys:String>
+    <sys:String x:Key="Home.Quick.JumpedCharacter">Opened {0}'s character workspace</sys:String>
+    <sys:String x:Key="Home.Quick.ToAssistant">Handed over to the AI assistant, working on it…</sys:String>
+
+    <!--  Settings: AI assistant  -->
+    <sys:String x:Key="SettingPage_AiAssistant">AI Assistant</sys:String>
+    <sys:String x:Key="SettingPage_AiAssistant_Desc">Tool rounds, default character, write confirmation, global hotkey and custom system prompt</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Endpoint_Desc">The model endpoint is shared with AI Translation (protocol / URL / API key / model) — change it under Settings → AI Translation.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Behavior">Behaviour</sys:String>
+    <sys:String x:Key="AssistantSettingPage_MaxToolRounds">Max tool rounds per request</sys:String>
+    <sys:String x:Key="AssistantSettingPage_MaxToolRounds_Desc">How many tool rounds the assistant may chain in one question (prevents runaway tool loops). Default 8, range 1–30.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_DefaultCharacter">Default character</sys:String>
+    <sys:String x:Key="AssistantSettingPage_DefaultCharacter_Tip">Empty = first character</sys:String>
+    <sys:String x:Key="AssistantSettingPage_DefaultCharacter_Desc">Which character is used for questions like "my wallet" or "my skills" (full character name; empty = first character).</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Confirm">Write actions need confirmation</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Confirm_Desc">Turning this off is **not** auto-confirm: the assistant simply refuses such actions and says why — actions that modify app configuration always need explicit confirmation.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Hotkey">Global hotkey</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">Press anywhere to pop out the assistant window (press again to hide); empty = not registered. Format: Alt+Q / Ctrl+Alt+A.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Prompt">Custom system prompt</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Prompt_Desc">Empty uses the built-in prompt (which already covers "numbers come from tools", "say so when not found", injection guards). Filling this replaces those rules entirely.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Prompt_Tip">Empty = use the built-in prompt</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Save">Save</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore">Restore defaults</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Saved">AI assistant settings saved</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restored">Defaults restored</sys:String>
+    <sys:String x:Key="Assistant_Chat_ConfirmDisabled">Refused this write action per settings (write confirmation is disabled under Settings → AI Assistant)</sys:String>
+
 </ResourceDictionary>

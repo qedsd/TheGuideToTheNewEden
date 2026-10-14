@@ -43,6 +43,23 @@ public sealed class AnthropicChatProtocol : IChatProtocol
             body["system"] = request.SystemPrompt;
         }
 
+        // 工具声明：Anthropic 的 tools 用 input_schema 而不是 parameters
+        if (request.Tools is { Count: > 0 })
+        {
+            var tools = new JsonArray();
+            foreach (var tool in request.Tools)
+            {
+                tools.Add(new JsonObject
+                {
+                    ["name"] = tool.Name,
+                    ["description"] = tool.Description,
+                    ["input_schema"] = tool.Parameters ?? new JsonObject { ["type"] = "object", ["properties"] = new JsonObject() },
+                });
+            }
+
+            body["tools"] = tools;
+        }
+
         if (endpoint.Temperature > 0)
         {
             body["temperature"] = endpoint.Temperature;
@@ -79,19 +96,77 @@ public sealed class AnthropicChatProtocol : IChatProtocol
     private static JsonArray BuildMessages(ChatRequest request)
     {
         var messages = new JsonArray();
+        JsonObject? pendingToolResultUser = null;   // 连续 Tool 消息合并为一条 user（Anthropic 不允许 user 紧邻）
+
         foreach (var message in request.Messages)
         {
+            // 工具结果：并入挂起的 user 消息（tool_result 块），等遇到非 Tool 消息或收尾时落盘
+            if (message.Role == ChatRole.Tool)
+            {
+                pendingToolResultUser ??= new JsonObject { ["role"] = "user", ["content"] = new JsonArray() };
+                ((JsonArray)pendingToolResultUser["content"]!).Add(new JsonObject
+                {
+                    ["type"] = "tool_result",
+                    ["tool_use_id"] = message.ToolCallId ?? string.Empty,
+                    ["content"] = message.Content ?? string.Empty,
+                });
+                continue;
+            }
+
+            if (pendingToolResultUser is not null)
+            {
+                messages.Add(pendingToolResultUser);
+                pendingToolResultUser = null;
+            }
+
+            // 模型要求调用工具的 assistant 消息：content 为 tool_use 块（必须原样回传，含 input）
+            if (message.Role == ChatRole.Assistant && message.ToolCalls is { Count: > 0 })
+            {
+                var blocks = new JsonArray();
+                foreach (var call in message.ToolCalls)
+                {
+                    blocks.Add(new JsonObject
+                    {
+                        ["type"] = "tool_use",
+                        ["id"] = call.Id,
+                        ["name"] = call.Name,
+                        ["input"] = TryParseJson(call.ArgumentsJson),
+                    });
+                }
+
+                messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = blocks });
+                continue;
+            }
+
             messages.Add(new JsonObject
             {
                 ["role"] = message.Role == ChatRole.Assistant ? "assistant" : "user",
                 ["content"] = new JsonArray
                 {
-                    new JsonObject { ["type"] = "text", ["text"] = message.Content },
+                    new JsonObject { ["type"] = "text", ["text"] = message.Content ?? string.Empty },
                 },
             });
         }
 
+        if (pendingToolResultUser is not null)
+        {
+            messages.Add(pendingToolResultUser);
+        }
+
         return messages;
+    }
+
+    /// <summary>把工具参数/结果 JSON 串解析成 JsonNode（失败时兜底成对象，避免整条消息作废）。</summary>
+    private static JsonNode TryParseJson(string json)
+    {
+        try
+        {
+            return JsonNode.Parse(json) ?? new JsonObject();
+        }
+        catch (JsonException)
+        {
+            return new JsonObject { ["value"] = json };
+        }
     }
 
     public ChatCompletion ParseResponse(string json)
@@ -103,7 +178,54 @@ public sealed class AnthropicChatProtocol : IChatProtocol
         var usage = ReadUsage(root);
         var finishReason = root.TryGetProperty("stop_reason", out var stop) && stop.ValueKind == JsonValueKind.String ? stop.GetString() : null;
 
-        return new ChatCompletion { Text = text, Usage = usage, FinishReason = finishReason, Raw = json };
+        return new ChatCompletion
+        {
+            Text = text,
+            Usage = usage,
+            FinishReason = finishReason,
+            ToolCalls = ParseToolCalls(json),
+            Raw = json,
+        };
+    }
+
+    public IReadOnlyList<ChatToolCall>? ParseToolCalls(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            var result = new List<ChatToolCall>();
+            foreach (var block in content.EnumerateArray())
+            {
+                if (block.ValueKind != JsonValueKind.Object
+                    || !block.TryGetProperty("type", out var type)
+                    || type.ValueKind != JsonValueKind.String
+                    || type.GetString() != "tool_use"
+                    || !block.TryGetProperty("id", out var id)
+                    || id.ValueKind != JsonValueKind.String
+                    || !block.TryGetProperty("name", out var name)
+                    || name.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                var args = block.TryGetProperty("input", out var input) && input.ValueKind != JsonValueKind.Null
+                    ? input.GetRawText()
+                    : "{}";
+                result.Add(new ChatToolCall(id.GetString() ?? string.Empty, name.GetString() ?? string.Empty, args));
+            }
+
+            return result.Count == 0 ? null : result;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     /// <summary>拼接 content 数组里的所有 text 块。</summary>
@@ -144,6 +266,10 @@ public sealed class AnthropicChatProtocol : IChatProtocol
     private static int GetInt(JsonElement element, string name)
         => element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetInt32() : 0;
 
+    /// <summary>取事件里的 content block <c>index</c>（累积器按键）。</summary>
+    private static int ReadIndex(JsonElement root)
+        => root.TryGetProperty("index", out var node) && node.ValueKind == JsonValueKind.Number ? node.GetInt32() : 0;
+
     public string? ParseStreamLine(string line, ChatStreamState state)
     {
         var trimmed = line.Trim();
@@ -166,15 +292,56 @@ public sealed class AnthropicChatProtocol : IChatProtocol
 
             switch (type)
             {
+                case "content_block_start":
+                    if (root.TryGetProperty("content_block", out var block)
+                        && block.ValueKind == JsonValueKind.Object
+                        && block.TryGetProperty("type", out var blockType)
+                        && blockType.ValueKind == JsonValueKind.String
+                        && blockType.GetString() == "tool_use")
+                    {
+                        var startIndex = ReadIndex(root);
+                        var acc = state.EnsureToolCall(startIndex);
+                        if (block.TryGetProperty("id", out var idNode) && idNode.ValueKind == JsonValueKind.String)
+                        {
+                            acc.Id = idNode.GetString() ?? string.Empty;
+                        }
+
+                        if (block.TryGetProperty("name", out var nameNode) && nameNode.ValueKind == JsonValueKind.String)
+                        {
+                            acc.Name = nameNode.GetString() ?? string.Empty;
+                        }
+
+                        if (block.TryGetProperty("input", out var inputNode) && inputNode.ValueKind == JsonValueKind.Object)
+                        {
+                            acc.Arguments.Append(inputNode.GetRawText());
+                        }
+                    }
+
+                    return null;
+
                 case "content_block_delta":
                     if (root.TryGetProperty("delta", out var delta)
-                        && delta.ValueKind == JsonValueKind.Object
-                        && delta.TryGetProperty("text", out var text)
-                        && text.ValueKind == JsonValueKind.String)
+                        && delta.ValueKind == JsonValueKind.Object)
                     {
-                        var piece = text.GetString() ?? string.Empty;
-                        state.Text.Append(piece);
-                        return piece;
+                        // 工具参数的流式增量：partial_json 分片累积
+                        if (delta.TryGetProperty("type", out var deltaType)
+                            && deltaType.ValueKind == JsonValueKind.String
+                            && deltaType.GetString() == "input_json_delta"
+                            && delta.TryGetProperty("partial_json", out var partial)
+                            && partial.ValueKind == JsonValueKind.String)
+                        {
+                            var deltaIndex = ReadIndex(root);
+                            state.EnsureToolCall(deltaIndex).Arguments.Append(partial.GetString());
+                            return null;
+                        }
+
+                        if (delta.TryGetProperty("text", out var text)
+                            && text.ValueKind == JsonValueKind.String)
+                        {
+                            var piece = text.GetString() ?? string.Empty;
+                            state.Text.Append(piece);
+                            return piece;
+                        }
                     }
 
                     return null;
@@ -209,6 +376,7 @@ public sealed class AnthropicChatProtocol : IChatProtocol
 
                 case "message_stop":
                     state.Done = true;
+                    state.FinalizeToolCalls();
                     return null;
 
                 case "error":

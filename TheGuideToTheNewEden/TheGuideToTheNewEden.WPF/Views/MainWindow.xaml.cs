@@ -4,8 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Assistant;
+using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.Services.Tools;
+using TheGuideToTheNewEden.WPF.Views.UserControls;
 using Wpf.Ui.Controls;
 // WPF-UI 也有自己的 MenuItem，菜单项这里一律用 WPF 原生的那个。
 using MenuItem = System.Windows.Controls.MenuItem;
@@ -48,6 +51,11 @@ public partial class MainWindow : FluentWindow
     /// <summary>位置恢复完成前不写入，避免把默认/居中位置当成用户位置保存。</summary>
     private bool _placementReady;
 
+    /// <summary>AI 助手的全局快捷键（默认 Alt+Q：直接弹出助手窗口；再按一次收起）。</summary>
+    private GlobalHotkeyService? _assistantHotkey;
+
+    private int _assistantHotkeyId = -1;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -70,7 +78,12 @@ public partial class MainWindow : FluentWindow
         {
             RestoreWindowPlacement();
             _placementReady = true;
+
+            // 全局快捷键要有窗口句柄才能注册（助手弹窗在助手页从未打开过时也要能呼出）。
+            RegisterAssistantHotkey();
         };
+
+        Closed += (_, _) => _assistantHotkey?.Dispose();
 
         // 窗口移动/缩放/最大化都即时登记，进程被异常终止也不会丢位置。
         LocationChanged += (_, _) => SchedulePlacementSave();
@@ -468,5 +481,58 @@ public partial class MainWindow : FluentWindow
         SaveWindowPlacement();
         SettingsService.Save();
         System.Windows.Application.Current.Shutdown();
+    }
+
+    // ---------- AI 助手全局快捷键 ----------
+
+    /// <summary>
+    /// 注册/重注册助手的全局快捷键（默认 <c>Alt+Q</c>）：按下**直接弹出助手窗口**，再按一次收起。
+    /// 设置页改完快捷键后调用本方法即可即时生效（不需要重启）。
+    /// </summary>
+    internal void RegisterAssistantHotkey()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        _assistantHotkey ??= new GlobalHotkeyService(hwnd);
+        _assistantHotkey.Pressed -= OnAssistantHotkeyPressed;
+        _assistantHotkey.Pressed += OnAssistantHotkeyPressed;
+
+        if (_assistantHotkeyId > 0)
+        {
+            _assistantHotkey.Unregister(_assistantHotkeyId);
+            _assistantHotkeyId = -1;
+        }
+
+        var combination = AiAssistantSettingService.Hotkey;
+        if (string.IsNullOrWhiteSpace(combination))
+        {
+            // 空 = 用户主动关闭快捷键
+            return;
+        }
+
+        if (_assistantHotkey.TryRegister(combination, out var id))
+        {
+            _assistantHotkeyId = id;
+            Core.Log.Info($"AI 助手：全局快捷键已注册（{combination}）");
+        }
+        else
+        {
+            // 组合键非法或已被别的程序占用：记日志但不影响启动，也不是致命错误
+            Core.Log.Warn($"AI 助手：全局快捷键注册失败（{combination}），可能被其它程序占用");
+        }
+    }
+
+    private void OnAssistantHotkeyPressed(int registerId)
+    {
+        if (registerId != _assistantHotkeyId)
+        {
+            return;
+        }
+
+        AssistantPopup.Toggle(this);
     }
 }

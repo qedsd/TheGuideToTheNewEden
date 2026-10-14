@@ -87,6 +87,57 @@ public partial class HomePage : Page
 
     // ---------- 品牌条 ----------
 
+    /// <summary>快捷输入：回车触发路由（简单查询直接跳转，复杂问题转 AI 助手）。</summary>
+    private async void OnQuickQueryKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        await RunQuickQueryAsync();
+    }
+
+    private async void OnQuickQueryGoClick(object sender, RoutedEventArgs e) => await RunQuickQueryAsync();
+
+    /// <summary>占位提示：有输入就藏起来（纯 WPF TextBox 没有 PlaceholderText）。</summary>
+    private void OnQuickQueryTextChanged(object sender, TextChangedEventArgs e)
+        => QuickQueryPlaceholder.Visibility = string.IsNullOrEmpty(QuickQueryBox.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+    private async Task RunQuickQueryAsync()
+    {
+        var query = QuickQueryBox.Text?.Trim() ?? string.Empty;
+        if (query.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await HomeQuickQueryRouter.RouteAsync(query);
+            switch (result.Kind)
+            {
+                case HomeQuickQueryRouter.RouteKind.Jumped:
+                    QuickQueryBox.Clear();
+                    PageNotifyService.Success(result.Message ?? string.Empty);
+                    break;
+
+                case HomeQuickQueryRouter.RouteKind.ToAssistant:
+                    QuickQueryBox.Clear();
+                    PageNotifyService.Info(result.Message ?? string.Empty);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            PageNotifyService.Error(ex.Message);
+        }
+    }
+
     private void OnOpenLogClick(object sender, RoutedEventArgs e)
         => HomeFeatureLauncher.Open(HomeFeatureCatalog.Find("action-open-log"));
 

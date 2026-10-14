@@ -92,6 +92,16 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
+                <!--  AI 助手：自然语言调用软件功能（查询数据 + 跳转页面），工具调用带确认门控  -->
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Assistant}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:AiAssistantPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Sparkle24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Channel}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Comment24" />

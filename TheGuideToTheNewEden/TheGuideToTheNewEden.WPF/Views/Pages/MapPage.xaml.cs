@@ -72,6 +72,7 @@ public partial class MapPage : Page
 
         CharacterLocationService.Current.LocationsUpdated += CharacterLocationsUpdated;
         Services.Navigation.SystemLocationRequested += OnSystemLocationRequested;
+        Services.Navigation.MapCommandRequested += OnMapCommandRequested;
         Loaded += MapPage_Loaded;
         Unloaded += MapPage_Unloaded;
     }
@@ -106,6 +107,38 @@ public partial class MapPage : Page
         // 事件路径已经把请求交到手里，清掉待办，避免下次进入星图时又定位一次。
         Services.Navigation.TakePendingSystem();
         LocateSystem(systemId);
+    }
+
+    /// <summary>
+    /// 外部请求"把结果显示到星图"（AI 助手星图工具：路径 / 定位 / 图层）。
+    /// 命令只是叠加应用，不与用户手动操作互斥；未指定项保持星图当前值。
+    /// </summary>
+    private void OnMapCommandRequested(Services.Navigation.MapViewCommand command)
+    {
+        Services.Navigation.TakePendingMapCommand();
+
+        if (command.Route is { Count: > 0 } route)
+        {
+            MapCanvas.SetRoute(route, command.Waypoints ?? []);
+            if (command.CenterSystemId is int centerId)
+            {
+                MapCanvas.ToSystem(centerId);
+            }
+        }
+        else if (command.CenterSystemId is int centerId)
+        {
+            MapCanvas.ToSystem(centerId);
+        }
+
+        if (command.ColorMode is { } mode)
+        {
+            _viewModel.ColorMode = mode;
+        }
+
+        if (command.ShowBridges is { } show)
+        {
+            _viewModel.ShowBridges = show;
+        }
     }
 
     /// <summary>

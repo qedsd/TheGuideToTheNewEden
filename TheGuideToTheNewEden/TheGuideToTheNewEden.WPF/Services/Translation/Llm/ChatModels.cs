@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json.Nodes;
 
 namespace TheGuideToTheNewEden.WPF.Services.Translation.Llm;
 
@@ -8,16 +9,55 @@ public enum ChatRole
     System,
     User,
     Assistant,
+
+    /// <summary>工具执行结果（OpenAI <c>tool</c> 消息 / Anthropic <c>tool_result</c> / Gemini <c>functionResponse</c> 的归一化）。</summary>
+    Tool,
 }
+
+/// <summary>
+/// 模型请求携带的一次工具声明（发给模型）。
+/// <para>
+/// 各协议在 <see cref="IChatProtocol.BuildRequest"/> 里把 <see cref="ChatRequest.Tools"/> 转成自己的形状
+/// （OpenAI <c>tools.function</c> / Anthropic <c>tools.input_schema</c> / Gemini <c>tools.functionDeclarations</c>）。
+/// </para>
+/// </summary>
+public sealed class ChatTool
+{
+    /// <summary>英文工具名（面向 LLM，如 <c>market_orders</c>）。</summary>
+    public required string Name { get; init; }
+
+    /// <summary>何时用、参数、返回、已知限制（面向 LLM 的英文描述）。</summary>
+    public required string Description { get; init; }
+
+    /// <summary>参数 JSON Schema（object 型）；为空时各协议按自己的最小形状兜底。</summary>
+    public JsonObject? Parameters { get; init; }
+}
+
+/// <summary>模型返回的一次工具调用（归一化；各协议形状在适配器里转换）。</summary>
+public sealed record ChatToolCall(string Id, string Name, string ArgumentsJson);
 
 /// <summary>一条对话消息（与具体协议无关）。</summary>
 /// <param name="Role">角色。</param>
-/// <param name="Content">文本内容。</param>
-public sealed record ChatMessage(ChatRole Role, string Content)
+/// <param name="Content">文本内容（assistant 带工具调用时可为 null）。</param>
+public sealed record ChatMessage(ChatRole Role, string? Content)
 {
+    /// <summary>Role=<see cref="ChatRole.Tool"/> 时必填：对应的工具调用 ID（OpenAI id / Anthropic tool_use id / Gemini 生成的 fc-N）。</summary>
+    public string? ToolCallId { get; init; }
+
+    /// <summary>Role=<see cref="ChatRole.Tool"/> 时携带的工具名（Gemini 的 functionResponse 按名字配对，不能依赖顺序）。</summary>
+    public string? ToolName { get; init; }
+
+    /// <summary>Role=<see cref="ChatRole.Assistant"/> 且模型要求调用工具时携带（各协议回传时用）。</summary>
+    public IReadOnlyList<ChatToolCall>? ToolCalls { get; init; }
+
     public static ChatMessage User(string content) => new(ChatRole.User, content);
 
     public static ChatMessage Assistant(string content) => new(ChatRole.Assistant, content);
+
+    public static ChatMessage Tool(string toolCallId, string content, string? toolName = null)
+        => new(ChatRole.Tool, content) { ToolCallId = toolCallId, ToolName = toolName };
+
+    public static ChatMessage AssistantToolCalls(IReadOnlyList<ChatToolCall> calls) => new(ChatRole.Assistant, null) { ToolCalls = calls };
 }
 
 /// <summary>
@@ -90,6 +130,9 @@ public sealed class ChatRequest
 
     /// <summary>要求返回 JSON 对象（不支持该能力的协议会忽略）。</summary>
     public bool JsonMode { get; init; }
+
+    /// <summary>工具声明（发给模型；各协议在 BuildRequest 里写进自己的形状）。</summary>
+    public IReadOnlyList<ChatTool>? Tools { get; init; }
 }
 
 /// <summary>token 用量（各协议字段名不同，由适配器归一化）。</summary>
@@ -112,6 +155,9 @@ public sealed class ChatCompletion
     /// <summary>结束原因（各协议原样或归一化，仅供诊断）。</summary>
     public string? FinishReason { get; init; }
 
+    /// <summary>模型要求调用的工具（非流式解析；没有为 null）。</summary>
+    public IReadOnlyList<ChatToolCall>? ToolCalls { get; init; }
+
     /// <summary>原始响应（诊断用，可能很大，勿写日志）。</summary>
     public string? Raw { get; init; }
 }
@@ -119,6 +165,17 @@ public sealed class ChatCompletion
 /// <summary>流式解析过程中的可变状态（每次请求一个实例，协议实现是单例但无状态）。</summary>
 public sealed class ChatStreamState
 {
+    /// <summary>流式工具调用的增量累积器（OpenAI 按 index / Anthropic 按 content block index / Gemini 按出现序）。</summary>
+    internal sealed class ToolCallAccumulator
+    {
+        public string Id = string.Empty;
+        public string Name = string.Empty;
+        public System.Text.StringBuilder Arguments = new();
+    }
+
+    private readonly Dictionary<int, ToolCallAccumulator> _toolCalls = [];
+    private IReadOnlyList<ChatToolCall>? _finalizedToolCalls;
+
     /// <summary>是否收到结束标记。</summary>
     public bool Done { get; set; }
 
@@ -128,6 +185,55 @@ public sealed class ChatStreamState
     public ChatUsage Usage { get; set; } = ChatUsage.Empty;
 
     public string? FinishReason { get; set; }
+
+    /// <summary>流式过程中累积到的工具调用（调用方在流结束后读取；没有为 null）。</summary>
+    public IReadOnlyList<ChatToolCall>? ToolCalls => _finalizedToolCalls;
+
+    /// <summary>取（或创建）指定 index 的工具调用累积器（供适配器的 ParseStreamLine 用）。</summary>
+    internal ToolCallAccumulator EnsureToolCall(int index)
+    {
+        if (!_toolCalls.TryGetValue(index, out var acc))
+        {
+            acc = new ToolCallAccumulator();
+            _toolCalls[index] = acc;
+        }
+
+        return acc;
+    }
+
+    /// <summary>把累积器定稿成 <see cref="ToolCalls"/>（在 [DONE] / message_stop / finishReason 分支调用；幂等）。</summary>
+    internal void FinalizeToolCalls()
+    {
+        if (_finalizedToolCalls is not null)
+        {
+            return;
+        }
+
+        if (_toolCalls.Count == 0)
+        {
+            _finalizedToolCalls = [];
+            return;
+        }
+
+        var list = new List<ChatToolCall>();
+        foreach (var pair in _toolCalls.OrderBy(p => p.Key))
+        {
+            var acc = pair.Value;
+            list.Add(new ChatToolCall(acc.Id, acc.Name, acc.Arguments.Length == 0 ? "{}" : acc.Arguments.ToString()));
+        }
+
+        _finalizedToolCalls = list;
+    }
+
+    // ---------- Gemini 流式专用（每 chunk 重复全量 parts，按名字去重，避免重复累积） ----------
+
+    private readonly HashSet<string> _seenFunctionCalls = new(StringComparer.Ordinal);
+
+    /// <summary>已见过的 functionCall 名（Gemini 流式重复全量 parts 时去重）。</summary>
+    internal HashSet<string> SeenFunctionCalls => _seenFunctionCalls;
+
+    /// <summary>functionCall 出现的顺序计数（生成 fc-N id）。</summary>
+    internal int FunctionCallCount { get; set; }
 }
 
 /// <summary>调用大模型失败（已归一化为可直接展示的信息）。</summary>

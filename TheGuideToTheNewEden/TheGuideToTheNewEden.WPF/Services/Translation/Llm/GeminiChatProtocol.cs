@@ -54,6 +54,23 @@ public sealed class GeminiChatProtocol : IChatProtocol
             };
         }
 
+        // 工具声明：Gemini 用 tools[].functionDeclarations[]
+        if (request.Tools is { Count: > 0 })
+        {
+            var declarations = new JsonArray();
+            foreach (var tool in request.Tools)
+            {
+                declarations.Add(new JsonObject
+                {
+                    ["name"] = tool.Name,
+                    ["description"] = tool.Description,
+                    ["parameters"] = tool.Parameters ?? new JsonObject { ["type"] = "object", ["properties"] = new JsonObject() },
+                });
+            }
+
+            body["tools"] = new JsonArray { new JsonObject { ["functionDeclarations"] = declarations } };
+        }
+
         if (generationConfig.Count > 0)
         {
             body["generationConfig"] = generationConfig;
@@ -97,16 +114,78 @@ public sealed class GeminiChatProtocol : IChatProtocol
     private static JsonArray BuildContents(ChatRequest request)
     {
         var contents = new JsonArray();
+        JsonObject? pendingFunctionUser = null;   // 连续 Tool 消息合并为一条 user
+
         foreach (var message in request.Messages)
         {
+            // 工具结果：functionResponse 并入挂起的 user 消息（name 取自 Tool 消息自带的 ToolName，
+            // 与 assistant(functionCall) 里的名字一致——不依赖顺序配对，确认挂起导致的乱序回填也安全）
+            if (message.Role == ChatRole.Tool)
+            {
+                pendingFunctionUser ??= new JsonObject { ["role"] = "user", ["parts"] = new JsonArray() };
+                ((JsonArray)pendingFunctionUser["parts"]!).Add(new JsonObject
+                {
+                    ["functionResponse"] = new JsonObject
+                    {
+                        ["name"] = message.ToolName ?? string.Empty,
+                        ["response"] = new JsonObject { ["result"] = message.Content ?? string.Empty },
+                    },
+                });
+                continue;
+            }
+
+            if (pendingFunctionUser is not null)
+            {
+                contents.Add(pendingFunctionUser);
+                pendingFunctionUser = null;
+            }
+
+            // 模型要求调用工具的 assistant 消息：role=model + functionCall parts
+            if (message.Role == ChatRole.Assistant && message.ToolCalls is { Count: > 0 })
+            {
+                var parts = new JsonArray();
+                foreach (var call in message.ToolCalls)
+                {
+                    parts.Add(new JsonObject
+                    {
+                        ["functionCall"] = new JsonObject
+                        {
+                            ["name"] = call.Name,
+                            ["args"] = TryParseJson(call.ArgumentsJson),
+                        },
+                    });
+                }
+
+                contents.Add(new JsonObject { ["role"] = "model", ["parts"] = parts });
+                continue;
+            }
+
             contents.Add(new JsonObject
             {
                 ["role"] = message.Role == ChatRole.Assistant ? "model" : "user",
-                ["parts"] = new JsonArray { new JsonObject { ["text"] = message.Content } },
+                ["parts"] = new JsonArray { new JsonObject { ["text"] = message.Content ?? string.Empty } },
             });
         }
 
+        if (pendingFunctionUser is not null)
+        {
+            contents.Add(pendingFunctionUser);
+        }
+
         return contents;
+    }
+
+    /// <summary>把工具参数/结果 JSON 串解析成 JsonNode（失败时兜底成对象，避免整条消息作废）。</summary>
+    private static JsonNode TryParseJson(string json)
+    {
+        try
+        {
+            return JsonNode.Parse(json) ?? new JsonObject();
+        }
+        catch (JsonException)
+        {
+            return new JsonObject { ["value"] = json };
+        }
     }
 
     public ChatCompletion ParseResponse(string json)
@@ -119,8 +198,54 @@ public sealed class GeminiChatProtocol : IChatProtocol
             Text = ReadText(root),
             Usage = ReadUsage(root),
             FinishReason = ReadFinishReason(root),
+            ToolCalls = ParseToolCalls(json),
             Raw = json,
         };
+    }
+
+    public IReadOnlyList<ChatToolCall>? ParseToolCalls(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("candidates", out var candidates)
+                || candidates.ValueKind != JsonValueKind.Array
+                || candidates.GetArrayLength() == 0
+                || !candidates[0].TryGetProperty("content", out var content)
+                || !content.TryGetProperty("parts", out var parts)
+                || parts.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            var result = new List<ChatToolCall>();
+            var index = 0;
+            foreach (var part in parts.EnumerateArray())
+            {
+                if (part.ValueKind != JsonValueKind.Object
+                    || !part.TryGetProperty("functionCall", out var call)
+                    || call.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var name = call.TryGetProperty("name", out var nameNode) && nameNode.ValueKind == JsonValueKind.String
+                    ? nameNode.GetString()
+                    : string.Empty;
+                var args = call.TryGetProperty("args", out var argsNode) && argsNode.ValueKind != JsonValueKind.Null
+                    ? argsNode.GetRawText()
+                    : "{}";
+                // Gemini 没有 tool call id：生成 fc-N，供引擎记账；回传按 name/顺序匹配
+                result.Add(new ChatToolCall($"fc-{index++}", name ?? string.Empty, args));
+            }
+
+            return result.Count == 0 ? null : result;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private static string ReadText(JsonElement root)
@@ -203,7 +328,11 @@ public sealed class GeminiChatProtocol : IChatProtocol
             if (!string.IsNullOrEmpty(finishReason))
             {
                 state.FinishReason = finishReason;
+                state.FinalizeToolCalls();
             }
+
+            // 工具调用：parts 里的 functionCall（每 chunk 重复全量 parts，按名字去重累积）
+            TryReadFunctionCall(root, state);
 
             var text = ReadText(root);
             if (text.Length == 0)
@@ -217,6 +346,46 @@ public sealed class GeminiChatProtocol : IChatProtocol
         catch (JsonException)
         {
             return null;
+        }
+    }
+
+    /// <summary>读取 parts 里的 functionCall 并累积进 <paramref name="state"/>（按名字去重，幂等）。</summary>
+    private static void TryReadFunctionCall(JsonElement root, ChatStreamState state)
+    {
+        if (!root.TryGetProperty("candidates", out var candidates)
+            || candidates.ValueKind != JsonValueKind.Array
+            || candidates.GetArrayLength() == 0
+            || !candidates[0].TryGetProperty("content", out var content)
+            || !content.TryGetProperty("parts", out var parts)
+            || parts.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        foreach (var part in parts.EnumerateArray())
+        {
+            if (part.ValueKind != JsonValueKind.Object
+                || !part.TryGetProperty("functionCall", out var call)
+                || call.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var name = call.TryGetProperty("name", out var nameNode) && nameNode.ValueKind == JsonValueKind.String
+                ? nameNode.GetString()
+                : null;
+            if (string.IsNullOrEmpty(name) || state.SeenFunctionCalls.Contains(name))
+            {
+                continue;
+            }
+
+            state.SeenFunctionCalls.Add(name);
+            var acc = state.EnsureToolCall(state.FunctionCallCount++);
+            acc.Name = name;
+            if (call.TryGetProperty("args", out var argsNode) && argsNode.ValueKind != JsonValueKind.Null)
+            {
+                acc.Arguments.Append(argsNode.GetRawText());
+            }
         }
     }
 

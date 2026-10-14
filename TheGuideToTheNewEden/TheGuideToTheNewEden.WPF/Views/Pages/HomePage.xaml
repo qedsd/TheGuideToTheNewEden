@@ -398,6 +398,73 @@
                             </StackPanel>
 
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+
+                                <!--
+                                    快捷输入（快速命令）：简单查询本地解析后直接跳转（物品价格 / KB / 星系 / 角色），
+                                    其余复杂问题转 AI 助手页并自动发送。样式走品牌条的深底白字（Hero* 画笔）。
+                                -->
+                                <Border
+                                    Width="330"
+                                    Height="30"
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource HeroButtonBrush}"
+                                    BorderBrush="{StaticResource HeroPillStrokeBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:SymbolIcon
+                                            Grid.Column="0"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Symbol="Search24" />
+
+                                        <Grid Grid.Column="1" Margin="6,0,4,0">
+                                            <TextBlock
+                                                x:Name="QuickQueryPlaceholder"
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="{StaticResource HeroSecondaryTextBrush}"
+                                                IsHitTestVisible="False"
+                                                Text="{DynamicResource Home.Quick.Placeholder}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBox
+                                                x:Name="QuickQueryBox"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                CaretBrush="{StaticResource HeroTextBrush}"
+                                                FontSize="12"
+                                                Foreground="{StaticResource HeroTextBrush}"
+                                                KeyDown="OnQuickQueryKeyDown"
+                                                TextChanged="OnQuickQueryTextChanged" />
+                                        </Grid>
+
+                                        <Button
+                                            Grid.Column="2"
+                                            Width="24"
+                                            Height="24"
+                                            Margin="0,0,3,0"
+                                            VerticalAlignment="Center"
+                                            Click="OnQuickQueryGoClick"
+                                            Style="{StaticResource HeroIconButton}"
+                                            ToolTip="{DynamicResource Home.Quick.Go}">
+                                            <ui:SymbolIcon
+                                                FontSize="13"
+                                                Foreground="{StaticResource HeroTextBrush}"
+                                                Symbol="Send24" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
                                 <Button
                                     Click="OnOpenManualClick"
                                     Style="{StaticResource HeroIconButton}"

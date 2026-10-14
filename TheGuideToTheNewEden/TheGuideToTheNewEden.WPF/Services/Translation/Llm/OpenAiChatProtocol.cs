@@ -52,6 +52,28 @@ public class OpenAiChatProtocol : IChatProtocol
             body["response_format"] = new JsonObject { ["type"] = "json_object" };
         }
 
+        // 工具声明（OpenAI 兼容：DeepSeek / 通义 / GLM / Kimi / OpenRouter 与各网关同款）
+        if (request.Tools is { Count: > 0 })
+        {
+            var tools = new JsonArray();
+            foreach (var tool in request.Tools)
+            {
+                tools.Add(new JsonObject
+                {
+                    ["type"] = "function",
+                    ["function"] = new JsonObject
+                    {
+                        ["name"] = tool.Name,
+                        ["description"] = tool.Description,
+                        ["parameters"] = tool.Parameters ?? new JsonObject { ["type"] = "object", ["properties"] = new JsonObject() },
+                    },
+                });
+            }
+
+            body["tools"] = tools;
+            body["tool_choice"] = "auto";
+        }
+
         ApplyThinking(body, endpoint);
 
         if (request.Stream)
@@ -122,15 +144,51 @@ public class OpenAiChatProtocol : IChatProtocol
 
         foreach (var message in request.Messages)
         {
-            messages.Add(new JsonObject
+            switch (message.Role)
             {
-                ["role"] = message.Role switch
-                {
-                    ChatRole.Assistant => "assistant",
-                    _ => "user",
-                },
-                ["content"] = message.Content,
-            });
+                // 工具结果：role=tool + tool_call_id（OpenAI 逐条即可，不需要合并）
+                case ChatRole.Tool:
+                    messages.Add(new JsonObject
+                    {
+                        ["role"] = "tool",
+                        ["tool_call_id"] = message.ToolCallId ?? string.Empty,
+                        ["content"] = message.Content ?? string.Empty,
+                    });
+                    break;
+
+                // 模型要求调用工具的 assistant 消息：必须原样回传 tool_calls
+                case ChatRole.Assistant when message.ToolCalls is { Count: > 0 }:
+                    var callArray = new JsonArray();
+                    foreach (var call in message.ToolCalls)
+                    {
+                        callArray.Add(new JsonObject
+                        {
+                            ["id"] = call.Id,
+                            ["type"] = "function",
+                            ["function"] = new JsonObject
+                            {
+                                ["name"] = call.Name,
+                                ["arguments"] = call.ArgumentsJson,
+                            },
+                        });
+                    }
+
+                    messages.Add(new JsonObject
+                    {
+                        ["role"] = "assistant",
+                        ["content"] = null,
+                        ["tool_calls"] = callArray,
+                    });
+                    break;
+
+                default:
+                    messages.Add(new JsonObject
+                    {
+                        ["role"] = message.Role == ChatRole.Assistant ? "assistant" : "user",
+                        ["content"] = message.Content,
+                    });
+                    break;
+            }
         }
 
         return messages;
@@ -150,8 +208,64 @@ public class OpenAiChatProtocol : IChatProtocol
             Text = text,
             Usage = usage,
             FinishReason = finishReason,
+            ToolCalls = ParseToolCalls(json),
             Raw = json,
         };
+    }
+
+    public virtual IReadOnlyList<ChatToolCall>? ParseToolCalls(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("choices", out var choices)
+                || choices.ValueKind != JsonValueKind.Array
+                || choices.GetArrayLength() == 0
+                || !choices[0].TryGetProperty("message", out var message)
+                || message.ValueKind != JsonValueKind.Object
+                || !message.TryGetProperty("tool_calls", out var calls)
+                || calls.ValueKind != JsonValueKind.Array
+                || calls.GetArrayLength() == 0)
+            {
+                return null;
+            }
+
+            var result = new List<ChatToolCall>();
+            foreach (var call in calls.EnumerateArray())
+            {
+                if (call.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var id = call.TryGetProperty("id", out var idNode) && idNode.ValueKind == JsonValueKind.String
+                    ? idNode.GetString()
+                    : string.Empty;
+                var name = string.Empty;
+                var args = "{}";
+                if (call.TryGetProperty("function", out var function) && function.ValueKind == JsonValueKind.Object)
+                {
+                    if (function.TryGetProperty("name", out var nameNode) && nameNode.ValueKind == JsonValueKind.String)
+                    {
+                        name = nameNode.GetString() ?? string.Empty;
+                    }
+
+                    if (function.TryGetProperty("arguments", out var argsNode) && argsNode.ValueKind == JsonValueKind.String)
+                    {
+                        args = argsNode.GetString() ?? "{}";
+                    }
+                }
+
+                result.Add(new ChatToolCall(id ?? string.Empty, name, args));
+            }
+
+            return result.Count == 0 ? null : result;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     /// <summary>取 choices[0].delta/message.content（推理模型的 reasoning_content 一律忽略）。</summary>
@@ -219,6 +333,7 @@ public class OpenAiChatProtocol : IChatProtocol
         if (string.Equals(payload, "[DONE]", StringComparison.OrdinalIgnoreCase))
         {
             state.Done = true;
+            state.FinalizeToolCalls();
             return null;
         }
 
@@ -239,6 +354,12 @@ public class OpenAiChatProtocol : IChatProtocol
                 state.FinishReason = finishReason;
             }
 
+            // 工具调用 delta：choices[0].delta.tool_calls[]（按 index 累积 id/name/arguments 分片）
+            if (TryReadToolCallDeltas(root, state))
+            {
+                return null;   // 工具 delta 不是文本增量
+            }
+
             var text = ReadText(root);
             if (text.Length == 0)
             {
@@ -253,6 +374,54 @@ public class OpenAiChatProtocol : IChatProtocol
             // 流里偶尔混入心跳/非 JSON 行：忽略即可，不要让整次翻译失败
             return null;
         }
+    }
+
+    /// <summary>读取 <c>choices[0].delta.tool_calls[]</c> 并累积进 <paramref name="state"/>（有则返回 true）。</summary>
+    protected static bool TryReadToolCallDeltas(JsonElement root, ChatStreamState state)
+    {
+        if (!root.TryGetProperty("choices", out var choices)
+            || choices.ValueKind != JsonValueKind.Array
+            || choices.GetArrayLength() == 0
+            || !choices[0].TryGetProperty("delta", out var delta)
+            || delta.ValueKind != JsonValueKind.Object
+            || !delta.TryGetProperty("tool_calls", out var toolCalls)
+            || toolCalls.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var call in toolCalls.EnumerateArray())
+        {
+            if (call.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var index = call.TryGetProperty("index", out var indexNode) && indexNode.ValueKind == JsonValueKind.Number
+                ? indexNode.GetInt32()
+                : 0;
+            var acc = state.EnsureToolCall(index);
+
+            if (call.TryGetProperty("id", out var idNode) && idNode.ValueKind == JsonValueKind.String)
+            {
+                acc.Id += idNode.GetString() ?? string.Empty;
+            }
+
+            if (call.TryGetProperty("function", out var function) && function.ValueKind == JsonValueKind.Object)
+            {
+                if (function.TryGetProperty("name", out var nameNode) && nameNode.ValueKind == JsonValueKind.String)
+                {
+                    acc.Name += nameNode.GetString() ?? string.Empty;
+                }
+
+                if (function.TryGetProperty("arguments", out var argsNode) && argsNode.ValueKind == JsonValueKind.String)
+                {
+                    acc.Arguments.Append(argsNode.GetString());
+                }
+            }
+        }
+
+        return true;
     }
 
     /// <summary>从一行里取出数据载荷：兼容 <c>data: {json}</c>（SSE）与裸 NDJSON，过滤空行/注释/event 行。</summary>

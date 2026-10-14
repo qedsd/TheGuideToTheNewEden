@@ -35,9 +35,21 @@ public interface IChatProtocol
     /// 解析流式响应里的一"行"，把增量文本返回（没有增量返回 null），
     /// 并把结束标记/token 用量写进 <paramref name="state"/>。
     /// 非数据行（空行、SSE 注释、<c>event:</c> 行）返回 null。
+    /// 流式工具调用（<c>tool_calls</c> delta）由实现累积进 <paramref name="state"/>（<see cref="ChatStreamState.EnsureToolCall"/>），
+    /// 不返回文本。
     /// </summary>
     string? ParseStreamLine(string line, ChatStreamState state);
 
     /// <summary>把 HTTP 错误响应归一化成一句可直接展示给用户的话。</summary>
     string DescribeError(HttpStatusCode statusCode, string? responseBody);
+
+    /// <summary>
+    /// 从非流式响应体解析工具调用（没有则返回 null）。
+    /// <para>
+    /// 流式工具调用不经过本方法（由 <see cref="ParseStreamLine"/> 累积进
+    /// <see cref="ChatStreamState"/>，流结束后读 <see cref="ChatStreamState.ToolCalls"/>）。
+    /// 默认实现返回 null（不支持工具调用的协议/旧适配器保持原行为）。
+    /// </para>
+    /// </summary>
+    IReadOnlyList<ChatToolCall>? ParseToolCalls(string json) => null;
 }

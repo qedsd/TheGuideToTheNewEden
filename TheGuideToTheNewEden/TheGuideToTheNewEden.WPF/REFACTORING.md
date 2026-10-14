@@ -4816,6 +4816,240 @@ icacls $ws | findstr /i "Mandatory"
   现象是**探针里所有绑定 `IsEnabled` 的按钮全灰**、看起来像应用缺陷。装上同步上下文后 `faulted=False`、
   `CanOperate` 通知序列变成 `vm=False,btn=False | vm=True,btn=True`，按钮全部正常。
 
+---
+
+### 阶段 105：AI 助手 · 协议层工具调用
+
+> 目标与完整设计见 `AI_ASSISTANT_DESIGN.md`（其"阶段 A"，§13）。设计文档原计划把 AI 助手的工作记作阶段 104 起，
+> 但 104 已被"配置同步页 UI 精简"占用，故实际从 **105** 起编号。
+
+- **背景**：AI 助手要让模型"调用软件功能"（市场 / 角色 / 星图 / 商业…），而阶段 47 建好的协议层
+  （`Services/Translation/Llm/`）**只支持纯文本对话**——`ChatRequest` 没有 tools、`ChatCompletion` 没有 tool_calls。
+  本阶段把"工具调用"下沉到协议层。**回归红线：不带 tools 的请求体与阶段 47 逐字节一致**（翻译功能零影响）。
+- **`ChatModels.cs`（扩展）**：
+  - `ChatRole.Tool`；`ChatMessage.Content` 改可空，新增 `ToolCallId`（Tool 角色）、`ToolName`、`ToolCalls`（Assistant 角色），
+    工厂新增 `ChatMessage.Tool(id, content, toolName)` / `AssistantToolCalls(calls)`（原 `User`/`Assistant` 保留，翻译侧零改动）；
+  - 新增 `ChatTool`（Name / Description / Parameters = JSON Schema）与 `ChatToolCall(Id, Name, ArgumentsJson)`；
+  - `ChatRequest.Tools`、`ChatCompletion.ToolCalls`；
+  - `ChatStreamState` 增加**流式工具调用累积器**（`internal ToolCallAccumulator`，按 index 累积 id / name / arguments 分片；
+    `FinalizeToolCalls()` 幂等定稿；另有 Gemini 专用的 `SeenFunctionCalls` 去重集合与 `FunctionCallCount`）。
+- **`IChatProtocol.cs`**：只新增一个成员 `ParseToolCalls(string json)`（默认返回 null）。
+  tools 的**声明不进接口**——各适配器在自己的 `BuildRequest` 里读 `request.Tools` 写各自形状，
+  与阶段 47"四处差异收敛在适配器"的取向一致（设计文档 §13.3 原写的"两个默认虚方法"据此收敛为一个）。
+- **四个适配器**（Azure 继承 OpenAI，零改动）：
+
+  | 协议 | tools 形状 | 工具调用返回 | tool 结果回填 |
+  |---|---|---|---|
+  | OpenAI 兼容 | `tools[{type:function,function:{name,description,parameters}}]` + `tool_choice:"auto"` | `choices[0].message.tool_calls[]` | assistant 消息带 `tool_calls` 原样回传 + `{role:"tool",tool_call_id,content}` |
+  | Anthropic | `tools[{name,description,input_schema}]` | `content[]` 里 `type=="tool_use"` | assistant 的 `tool_use` 块原样回传（含 input）+ **连续 Tool 消息合并为一条 user 的多个 `tool_result`**（Anthropic 不允许 user 消息紧邻） |
+  | Gemini | `tools[].functionDeclarations[]` | `candidates[0].content.parts[]` 里 `functionCall` | `{role:"model",parts:[functionCall]}` + `{role:"user",parts:[functionResponse]}`（**按 `ToolName` 配对**） |
+
+  - 流式：OpenAI 累积 `delta.tool_calls`（name / arguments 都是分片、按 index）；Anthropic 累积 `content_block_start/delta/stop`
+    （工具参数走 `input_json_delta.partial_json`）；Gemini 按 functionCall 名去重累积（其流式每 chunk 重复全量 parts）；各自在终止标记处 `FinalizeToolCalls()`。
+- **两处实现期修正（重要）**：
+  1. **Tool 消息必须携带工具名**：Gemini 的 `functionResponse.name` 是**按名配对**的，而"确认挂起"会让工具结果**乱序回填**
+     （同一轮里未确认的工具要等用户点确认后才执行）——原先"按出现顺序出队配对"的设计在乱序下会**配错函数名**。
+     因此 `ChatMessage.Tool` 增加 `ToolName`，Gemini 适配器改用消息自带的工具名配对、不再依赖顺序。
+  2. `JsonElement` **没有** `ToJsonString()`（那是 `JsonNode` 的方法）——解析工具参数 / 结果一律用 `GetRawText()`。
+- **验证**：`dotnet build -p:OutDir=<临时目录>` 三轮（应用常驻、输出目录被锁，按 §8 协作约定重定向输出）：
+  首轮 1 个语法错误（`value.ValueKind == X or Y` 非法，`or` 模式必须写 `is X or Y`）；
+  次轮 3 类（`Turn` 的**私有构造函数对外层类不可见**、`yield return` 不能出现在含 `catch` 的 `try` 里、`JsonElement.ToJsonString` 不存在）；
+  **终轮 0 错误 0 新警告**。
+- **未做**：`ToolCallProbe`（设计文档 §13.6 的离线断言矩阵）尚未建立；图像输入（多模态）属 v1.5。
+
+---
+
+### 阶段 106：AI 助手 · 引擎与工具层（工具循环 + 确认挂起 + 3 个代表工具）
+
+> 设计见 `AI_ASSISTANT_DESIGN.md` §3.2 / §3.3 与"阶段 B"（§14）。
+
+- **新增 `Services/Assistant/`**：
+  - `ITool`（Name / DisplayNameKey / Description / Parameters / RequiresConfirmation / IsAction / ExecuteAsync）；
+  - `ToolResult`（`Text` 给模型、`DisplayText`、`NavigateAction`、`ParamSummary`）、`ToolStep`（执行记录）、
+    `PendingToolAction`（待确认动作，**带调用 Id**，确认后才能正确回填对应的 tool 消息）；
+  - `ToolContext`（当前角色 / 全部角色 / `OnUiThread` 归位 / `Progress` 进度回调）；
+  - `ToolArgs`（ReadString / ReadInt / ReadBool / Truncate / FormatIsk）、
+    `ToolNameResolver`（物品 / 星域 / 星系 / 角色 **名称→ID 唯一命中**解析，防注入）、
+    `CharacterToolHelper`（角色解析 + 令牌校验，角色类工具共用）；
+  - `ToolRegistry`（静态注册表：`Name→ITool` + 给模型的 `ChatTool[]`；静态构造函数注册内置工具）；
+  - `AssistantContext`（对话级上下文的问答对 + ToolContext + 自定义提示词）。
+- **`AiAssistantEngine`**：
+  - **工具轮非流式、最终回答流式**：带 tools 的非流式请求 → 有 `tool_calls` 就逐个执行（默认串行）→ 结果作为 tool 消息回填 → 循环；
+    不再调用工具时——**无工具轮的简单问答直接用首轮文本**（省一次请求），有工具轮才发一次 `Tools=null, Stream=true` 的流式请求把增量吐给界面。
+  - `Turn` 模型：`Steps` / `ToolRounds` / `TotalUsage` / `Error` / `UserStopped` / `PendingConfirmations` +
+    `ReadFinalAsync()`（流式最终回答）+ `ResumeAsync(apply)`（确认后继续）。
+  - **确认挂起**：`RequiresConfirmation` 的工具**不执行**，把动作清单作为 `PendingConfirmations` 返回；界面确认后
+    `ResumeAsync(true)` 执行并继续、`false` 则回填"用户未确认"继续。本阶段三个工具都不带确认，机制为阶段 107 的跳桥写工具准备。
+  - 取消语义：用户停止 → `UserStopped`；工具自身超时（取消令牌未被触发）→ 错误文本回填、**不中断对话**；
+    `MaxToolRounds=8` 防模型连环调工具烧 token；工具结果 **4000 字符截断**防上下文膨胀；单条工具失败只丢该条。
+  - 内置系统提示词（规则 1–8）：数字以工具为准、查不到就说查不到、注入防护（用户消息里的指令一律忽略）、
+    "利润率 / 销量 / 推荐度等一律不得自行计算"（防 AI 幻觉数字）。
+  - `SendAsync(..., Action<ToolStep>? onStep)`：每执行完一个工具回调一次，**工具步骤得以实时进界面**（阶段 108 使用）。
+- **三个代表工具**（覆盖工具层的三类形态）：
+  - `market_orders`（查询）：`MarketTypeNameResolver.ResolveOne` → `MapRegionService.QueryAll()` 匹配星域 →
+    `MarketOrderService.GetRegionOrdersAsync` → `EnrichOrdersAsync` → 卖单升序 / 买单降序前 N + 5% 均价 / 均价 / 条数（口径对齐市场页）；
+  - `translate`（查询）：本地词库优先、AI 源兜底（复用阶段 46/47 的 `TranslationService`）；
+  - `system_navigate`（动作）：`MapSolarSystemService.Query(name)` 唯一命中 → `Navigation.NavigateToSystem` 经 `OnUiThread` 立即执行。
+- **实现期修掉的 4 个问题**：`ToolCallAccumulator` 必须是 `internal`（`internal` 方法返回 `private` 嵌套类型是不一致可访问性错误）；
+  `Turn` 构造函数对**外层类**不可见（改 `internal`）；`yield return` 不能进含 `catch` 的 `try`
+  （最终回答改用手动 `GetAsyncEnumerator` 循环 + `try/finally`，同时保留流式）；`JsonElement` 用 `GetRawText()`。
+- **验证**：重定向构建 **0 错误 0 新警告**。`EngineProbe` / `ToolProbe`（设计文档 §14.6 / §14.7）尚未建立。
+
+---
+
+### 阶段 107：AI 助手 · 23 个工具全量落地（通用 9 + 星图 7 + 商业 4）
+
+> 设计见 `AI_ASSISTANT_DESIGN.md` §10（星图开放）、§11（商业开放）、§15（阶段 C 落地细化）。
+
+- **通用 9 个**：`appraisal`（清单 ≤200 件预检 → `AppraisalService.GetEstimateAsync`，总买 / 中间 / 总卖价 + 明细）、
+  `market_navigate`、`character_list`、`character_overview`、`character_wallet`、`character_skills`（按组 / 关键字过滤）、
+  `character_navigate`、`search_sde`（`GameNameSearchService.Search` + 类别过滤）、
+  `market_history`（区间高 / 低 / 均价 + 现价分位 + 销量方向）。
+- **星图 7 个 + 命令通道**：
+  - `Navigation` 新增 **`MapViewCommand`**（Route / Waypoints / CenterSystemId / ColorMode / ShowBridges）+ `MapCommandRequested` 事件 +
+    `NavigateToMap` + pending（照 `NavigateToSystem` 的双路径：页面已就绪走事件、未就绪由 `TakePendingMapCommand` 兜底）；
+    `MapPage.xaml.cs` 订阅并应用——`SetRoute` / `ToSystem` 画路径与定位，`ColorMode` / `ShowBridges` 切图层
+    （后者经 `JumpBridgeSettingService` 持久化）。
+  - `map_route`（**逐段拼接**：`ShortestPathHelper.CalStargatePath` 没有途经点参数，按相邻星系对逐段计算再拼、记录途经点索引；
+    跳桥走 `JumpBridgeSettingService.GetBridgesDict()`）、`map_system_info`、`map_jumpbridge_list`、
+    `map_jumpbridge_add` / `map_jumpbridge_remove` / `map_jumpbridge_import`（**写工具，`RequiresConfirmation=true`**）、`map_layer`。
+  - 新增 `Services/Map/JumpBridgeTextParser.cs`：支持 `A ↔ B` / `A - B` / `A,B` 每行一组、JSON 数组（值可为名称或 ID）、CSV 两列；
+    导入时逐组分类为**新增 / 冲突（端已占用）/ 跳过（未识别）**，只写"新增"并把其余在结果里逐条说明。
+- **商业 4 个**：`scalper_settings`、`scalper_analyse`（**重型 + 确认 + 进度**：完整复用倒货管线
+  `GetAllRegionOrdersAsync` 并发分页 → `GetHistoryBatchAsync` → `ScalperCalculator.BuildItems/SetHistory/Calculate` →
+  推荐度降序 top-N，支持 `minProfitIsk` / `minRoi` 过滤）、`compare_analyse`（**重型 + 确认**：`CompareMarketService.RunAsync` →
+  各物品最优市场 / 与次优差 % / 集中度建议）、`market_trend`（实时最低卖 / 最高买 + 历史分位 / 销量方向）。
+- **实现期修掉的 5 个问题（都是"编译期才暴露"的类型 / 签名错配）**：
+  1. `CategoryEnum` 是**嵌套在 `IdName` 里**的枚举（全名 `IdName.CategoryEnum`，不是 `Core.DBModels.CategoryEnum`）——`search_sde` 的类别过滤；
+  2. 角色服务的 `GetAsync` / `GetBalanceAsync` 第二个参数是 **`bool forceRefresh`** 而不是取消令牌（三个角色工具）；
+  3. `appraisal` 缺 `using ...Core.Models.Market`（`MarketLocation`）；
+  4. 返回 `Task<ToolResult>` 的非 async 方法末尾漏写 `Task.FromResult`（`search_sde`）；
+  5. ⚠️ **用 PowerShell `Set-Content` 改写含中文的 `.cs` 会破坏 UTF-8 编码**——本次把 `SearchSdeTool.cs` 的中文写成了乱码
+     （`参数` → `鍙傛暟`），只能整体重写恢复。改代码一律用编辑工具，不要用 shell 重写文本（已并入 §9 第 92 条）。
+- **验证**：重定向构建 **0 错误 0 新警告**（仅 Core / WPF 既有警告基线）。`ToolProbe`（设计文档 §15.5 的断言矩阵）尚未建立。
+- **未做（v1.5 候选，设计文档 §9 / §12 有完整盘点）**：角色订单 / 邮件 / 合同 / 工业、ZKB 实体统计、DED / 任务、虫洞、快速链接、
+  服务器测速等 14 个工具；订阅型能力（频道预警 / 监控 / 查价、日志监控、击杀流、多开预览启停）与"写设置"类**不开放**。
+
+---
+
+### 阶段 108：AI 助手 · 界面 + 历史 + 弹窗
+
+> 设计见 `AI_ASSISTANT_DESIGN.md` §2（交互设计）、§16（阶段 D 落地细化）。
+
+- **新增文件**：`Services/Assistant/AiAssistantHistoryService.cs`（`Configs/AiAssistantHistory.json`，按对话 upsert、
+  40 会话 ×200 条、损坏回退空表；**确认挂起状态不落盘**）；`ViewModels/Assistant/` 三个 VM；
+  `Views/UserControls/AiAssistantChatView.xaml(.cs)`；`Views/UserControls/AssistantPopup.cs`；
+  `Views/Pages/AiAssistantPage.xaml(.cs)`；`MainWindow.xaml` 导航项（图标 `Sparkle24`）。
+- **界面**（形态对齐 AI 翻译页）：左侧会话列表（新建 / 删除 / 清空 / 改名 / 右键菜单）+ 右侧记录（请求气泡靠右、回答气泡靠左）+
+  底部输入卡；回答气泡结构 = **工具步骤区**（图标 + 工具名 + 参数摘要 + 状态 + 耗时）→ 回答正文 → **确认卡片** → meta
+  （模型 · 耗时 · token · 工具 N 次）+ 复制回答。未配置时整页引导（去配置 → 设置 → AI 翻译；重新检测）。
+- **四处落地判断（与设计稿的偏差，代码注释里都写了理由）**：
+  1. **共享 VM 的生命周期归页面**：弹窗与页面**共用同一个 `AiAssistantViewModel`**（设计取向：两边会话与输入实时一致），
+     因此 `Init` / `Dispose` 由页面在 `Loaded` / `Unloaded` 调用，**视图只负责自己的滚动订阅**——
+     否则弹窗关闭会把共享 VM 的语言事件退订掉；
+  2. **「弹窗」按钮做成开 / 关切换**（共享 VM 下无法区分实例，切换语义比"点了没反应"更自然）；
+  3. **不做气泡里的"跳转胶囊"**：导航类工具的 `NavigateAction` 已由引擎**立即执行**（用户要的就是"直接跳"），
+     步骤区会显示"星图定位 / 跳转市场 ✓"，再加胶囊是冗余；
+  4. **步骤区形态**：引擎在工具**完成后**回报 `ToolStep`，重型工具另经 `ctx.Progress` 报实时进度行
+     （如"获取源市场订单中 217/411"）——比设计稿的"每步转圈"少一层状态机、覆盖面相同。
+- **本地化**：中英各 +68 键（`Nav.Assistant`、`Assistant_Chat_*`、`AssistantTool_*`×23、`AssistantStep_*`）。
+- **静态自查（本次全部通过——按 §8 协作约定"改动不经编译验证，收尾必须静态自查"）**：
+  语言键 **2191 / 2191 一致、0 重复**（阶段 47 的"重复键 = 启动即崩且无日志"教训）；
+  `StaticResource` 引用全部命中（本地定义 / `GlobalControlStyles` 的 `StretchListItem` / App 级 `InverseBoolToVisibility`）；
+  `{Binding}` 根属性逐一命中三个 VM；图标名（`Sparkle24` / `Checkmark24` / `Dismiss24` / `Send24` / `Stop24` / `Eraser24` /
+  `WindowNew24` 等）逐个扫 `Wpf.Ui.dll` 字符串表确认存在（**图标名非法是运行期 `XamlParseException`**，见 §9 第 16 条同类）；
+  `Appearance` 只用合法成员（`Primary` / `Transparent`，避开阶段 41 那个 `Appearance="Link"` 的运行期崩溃）；
+  重定向构建 **0 错误 0 新警告**。
+- **未做**：`AssistantUiProbe`（设计文档 §16.6）尚未建立；全局快捷键与 `Assistant.*` 设置属下一阶段。
+
+---
+
+### 阶段 109：助手回答按 Markdown 渲染（用户实机反馈）
+
+- **现象**（用户截图）：助手回答是 Markdown（`| 表头 |` 表格、`**加粗**`、`- 列表`），但界面**原样显示标记**、没有渲染。
+- **根因**：回答气泡用的是 `Controls/RichTextPresenter`（吃**纯文本**，阶段 46 为翻译结果 / 邮件正文做的），
+  而阶段 79 已经为 DED / 任务页写过 Markdown 渲染器（`Helpers/MarkdownRenderer` + `Controls/MarkdownPresenter`）——本次没有接上。
+- **修复**：
+  1. 回答正文改用 **`controls:MarkdownPresenter`**（`Markdown="{Binding AnswerDisplay, Mode=OneWay}"`，新增 `ChatMarkdown` 键控样式）；
+     该渲染器**支持管道表格**（含表头与 `:---:` 对齐）、加粗 / 斜体 / 删除线 / 链接 / 代码块 / 列表 / 引用，无新增依赖；
+  2. **折叠改为"视觉裁剪"**：原先回答按字符截断出"前五行 + …"，而 Markdown 那样截会**切断表格**、渲染出错乱结构——
+     现在 `AnswerDisplay` 直接返回全文，折叠靠控件 `MaxHeight=96`（约五行）裁剪，点「展开」去掉限高；
+     `CanExpandAnswer` 仍按行数估算（表格每个数据行各算一行，所以表格类回答会正常出现展开按钮）；
+  3. **流式渲染节流**：Markdown 每来一个 token 都重建 `FlowDocument` 太吃力，改为**按 ~120ms 批量刷新**（约 8 次/秒）并跟随滚动；
+  4. 系统提示词加第 9 条：界面会渲染 Markdown，多项数据用表格、结论加粗、并列项用列表。
+- **验证**：重定向构建 **0 错误 0 新警告**；**用户实机确认"一切正常"**。
+- **备注**：「复制回答」复制的仍是 **Markdown 原文**（便于粘贴到笔记 / 编辑器）。
+
+---
+
+### 阶段 110：主页快捷输入（快速命令路由：简单查询直跳，复杂问题转助手）
+
+> 用户需求原文："在主页预留快捷输入，确认输入简单的查询某个物品价格、kb 等可以一键跳转某个页面的就直接跳转，
+> 复杂的回复再跳转到 AI 助手页面"。设计见 `AI_ASSISTANT_DESIGN.md` §2.6。
+
+- **新增 `Services/Home/HomeQuickQueryRouter.cs`**（**本地确定性判定，不调 LLM**：零成本、即时）：
+  - 先剥意图关键词（价格 / 多少钱 / 值多少 / 市场 / 卖单 / 买单 / 行情 / price / market…、kb / 击杀 / 战绩 / zkb…、
+    定位 / 在哪 / 星系 / system…），再剥语气词（查 / 查询 / 看看 / 帮我 / 给我 / 一下 / 的 / 怎么样 / 标点…），
+    **剩余文本才当实体名**去解析；
+  - ① 物品价格 → `MarketTypeNameResolver.ResolveOne` 唯一命中 → `Navigation.NavigateToMarket`（市场页选中物品）；
+    ② KB → `IDNameService.GetByNames`（本地库优先、ESI 兜底）→ `KbNavigation.OpenEntity`（实体统计标签）；
+    ③ 星系 → `MapSolarSystemService.Query` → `NavigateToSystem`；④ 角色全名精确匹配 → `NavigateToCharacter`；
+    ⑤ **其余（复杂问题、名称歧义、查不到）一律转 AI 助手页并自动发送**。
+  - 判定原则：**实体多命中 / 未命中一律不跳转**（绝不"张冠李戴"跳错页），交给助手处理模糊输入；
+    估价 / 翻译类**不映射跳转**（那两页自带输入，跳过去反而绕）。
+- **handoff 通道**（`Navigation.cs` 新增，照 `NavigateToSystem` 模式）：`AssistantQueryRequested` 事件 +
+  `NavigateToAssistant(query)` + `SetPending` / `TakePendingAssistantQuery`；助手 VM 在 `Init` 里订阅并消费待办、`Dispose` 退订——
+  **两条路径互斥**（谁先取到待办谁处理），避免"`Navigate` 触发页面 `Loaded → Init` 已消费"时事件路径**再发一次**（同一条请求发两次）。
+- **主页 UI**：`HomePage.xaml` 品牌条（Hero）第二行右侧加入快捷输入框——深底白字走既有的 `Hero*` 画笔、
+  搜索图标 + 发送按钮 + **自绘占位提示**（纯 WPF `TextBox` 没有 `PlaceholderText`，用叠加 `TextBlock` + `TextChanged` 显隐）；
+  回车 / 按钮触发路由，成功跳转给右下角 toast（"已打开市场页并选中 巨神兵级"），转助手给 info 提示。
+- **本地化**：中英各 +7 键（`Home.Quick.Placeholder` / `Go` / `Jumped*` / `ToAssistant`）。
+- **验证**：重定向构建 **0 错误 0 新警告**；语言键 **2198 / 2198 一致、0 重复**；新增 `DynamicResource` 引用全部命中
+  （`HomePage` 自身另有 16 个 WPF-UI 主题画笔键，属库内定义、项目既有用法）。
+- **建议实机验证**：`巨神兵级价格` / `巨神兵级多少钱` / `查一下巨神兵级的市场`（语气词剥离）→ 市场页选中；
+  `某某的KB` → 实体统计（名字未缓存时有 1–2 秒 ESI 解析）；`定位吉他` → 星图；`帮我估价这份清单` → 转助手自动回答。
+
+---
+
+### 阶段 111：AI 助手 · 全局快捷键 + 助手设置（收尾）
+
+> 设计见 `AI_ASSISTANT_DESIGN.md` §2.5（全局快捷键）、§3.4（设置）。
+
+- **全局快捷键**（用户要求"全局快捷键直接弹窗"）：复用**多开模块既有的** `Services/GamePreview/GlobalHotkeyService.cs`
+  （`RegisterHotKey` + WPF 原生 `HwndSource.AddHook`，非 Vanara 子类化），在 `MainWindow.SourceInitialized` 里注册
+  （此时才有窗口句柄）、`Closed` 时 `Dispose`；按下 → `AssistantPopup.Toggle(this)`——**直接弹出助手窗口，再按一次收起**。
+  - 组合键来自设置 `Assistant.Hotkey`（默认 `Alt+Q`）；**留空 = 不注册**；注册失败（非法/被别的程序占用）
+    只记 `Warn` 并继续启动，不影响应用（把热键冲突当致命错误是反模式）。
+  - 设置页保存后调用 `MainWindow.RegisterAssistantHotkey()` **即时重注册**（不需要重启）——照阶段 43 的既有教训。
+- **助手设置**（`Assistant.*` 键，新增 `Services/Assistant/AiAssistantSettingService.cs`；在 `CoreInitializer` 里 `Initialize()`）：
+  | 键 | 默认 | 说明 |
+  |---|---|---|
+  | `Assistant.MaxToolRounds` | 8（1–30） | 单次请求最大工具轮数 |
+  | `Assistant.SystemPrompt` | 空 | 自定义系统提示词（空 = 内置） |
+  | `Assistant.ConfirmExpensive` | true | 写操作确认开关（**关闭 ≠ 免确认**，改为直接拒绝并说明） |
+  | `Assistant.Hotkey` | `Alt+Q` | 全局呼出快捷键（空 = 不注册） |
+  | `Assistant.DefaultCharacter` | 空 | 默认角色名（空 = 第一个角色） |
+- **设置子页** `Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)`（注册进「设置」分类，图标 `Sparkle24`）：
+  最大工具轮数 / 默认角色 / 写操作确认 / 全局快捷键 / 自定义系统提示词 + 保存、恢复默认；
+  页首明确写"**模型端点复用「AI 翻译」设置**——换模型请去「设置 → AI 翻译」"。
+- **接线（VM / 引擎）**：引擎改为**每次发送按当前设置新建**（`new AiAssistantEngine(MaxToolRounds)`，改轮数不必重启）；
+  `AssistantContext.SystemPrompt` 取自定义提示词（空则传 null → 内置）；默认角色按设置解析（填错/找不到则回落第一个角色）；
+  `ConfirmExpensive=false` 时挂起的写操作**自动走拒绝分支**并 toast 说明。
+- **共享 VM 宿主**（`Services/Assistant/AssistantHost.cs`）：阶段 108 里 VM 由助手页持有，而**快捷键要在助手页从未打开过时也能弹窗**，
+  因此把实例提到一个惰性宿主；页面、弹窗、快捷键都取**同一个 VM**；弹窗打开时补一次 `Init()`（幂等，顺带消费主页转来的待处理请求）。
+- **本地化**：中英各 +19 键（`SettingPage_AiAssistant*` 分类 2 个 + `AssistantSettingPage_*` 16 个 + `Assistant_Chat_ConfirmDisabled`）。
+- **验证**：重定向构建 **0 错误 0 新警告**；语言键 **2219 / 2219 一致、0 重复**；
+  `SymbolRegular.Sparkle24` 与设置页样式键（`SettingsSectionHeader` / `SettingsGroupBorder` / `TranslationFieldLabel`，与术语表页同款）
+  全部经编译/既有用法确认；设置页 `DynamicResource` 引用除 WPF-UI 主题画笔外全部命中语言文件；
+  图标名（`Save24` / `ArrowReset24`）扫 `Wpf.Ui.dll` 确认。
+- **注意**：默认 `Alt+Q` 若已被多开模块的某项快捷键或其它程序占用，注册会失败——日志里有一条 `Warn`，
+  此时在「设置 → AI 助手」改成别的组合键即可。
+
+> **AI 助手模块的当前状态**：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
+> Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）**均已落地**，通过构建与静态自查，
+> **界面已由用户实机确认正常**。剩余一项收尾：四组离线探针
+> （`ToolCallProbe` / `EngineProbe` / `ToolProbe` / `AssistantUiProbe`，断言矩阵见设计文档 §13.6 / §14.6 / §15.5 / §16.6）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -5541,6 +5775,21 @@ icacls $ws | findstr /i "Mandatory"
         new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
     ```
     结论：**探针里出现"界面全灰 / 绑定不生效"时，先确认同步上下文，再怀疑应用代码。**
+
+91. **Markdown 内容不能用"按字符截断"做折叠**（阶段 109 用户实机反馈"回复内容是 md 格式，但没有以 md 格式展示"的连带结论）：
+    表格 / 列表这类**结构**一旦从中间截断，渲染出来就是错乱的结构（半张表格、悬空的表头）。
+    正确做法是**渲染全文 + 用控件 `MaxHeight` 做视觉裁剪**，展开时去掉限高；"要不要显示展开按钮"仍可按原文行数估算
+    （表格的每个数据行各算一行，估算天然合理）。
+    另外 Markdown 渲染（本项目 `MarkdownRenderer` 每次重建 `FlowDocument`）**有成本**：流式输出必须**节流批量刷新**
+    （本项目取 ~120ms 一次），否则每个 token 都重建一次文档会明显吃掉 UI 线程。
+    相关：拿不准"该用 `RichTextPresenter`（纯文本）还是 `MarkdownPresenter`（Markdown）"时看**数据来源**——
+    模型的回答、wiki 导出的攻略用后者；翻译结果、邮件正文用前者。
+
+92. **不要用 PowerShell 的 `Set-Content` / `Out-File` 改写含中文的源码或 XAML**（阶段 107 实际踩到）：
+    它会把文件按另一种编码重新写出，中文注释与字符串变成乱码（`参数` → `鍙傛暟`），
+    而**编译可能照样通过**（乱码仍是合法字符串），问题只在界面文案上暴露，排查时很容易误以为是语言文件的问题。
+    改代码一律用编辑工具（`edit` / `write`）；确有需要跑脚本时，也要显式指定 UTF-8 并在写完后**回读校验**。
+    更稳的做法：脚本只用来**读取/审计**（查重键、扫图标名、比对绑定），不要用来**改写**代码。
 
 ---
 

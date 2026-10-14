@@ -65,6 +65,7 @@ public partial class SettingsPage : Page
         // "击杀流"页右上角的设置弹窗（KillStreamSettingView）。原先的"设置 → Zkillboard"子页只维护
         // 一组没有任何代码读取的旧过滤字段，已整体删除（REFACTORING §8 第 48 条）。
         Add(SymbolRegular.Translate24, "SettingPage_AiTranslation", "SettingPage_AiTranslation_Desc", typeof(AiTranslationSettingPage), () => new AiTranslationSettingPage());
+        Add(SymbolRegular.Sparkle24, "SettingPage_AiAssistant", "SettingPage_AiAssistant_Desc", typeof(AiAssistantSettingPage), () => new AiAssistantSettingPage());
         Add(SymbolRegular.LocalLanguage24, "SettingPage_Glossary", "SettingPage_Glossary_Desc", typeof(GlossarySettingPage), () => new GlossarySettingPage());
         // 「主页」分类（阶段 99 重建，阶段 100/101 扩充）：① 钱包/行情/最近使用三张卡片的显示开关
         // （阶段 99 从主页「⋯」菜单移入）；② 快捷方式编辑——拖动排序 / 移除 / 添加 / 宽窄 / 恢复默认。
