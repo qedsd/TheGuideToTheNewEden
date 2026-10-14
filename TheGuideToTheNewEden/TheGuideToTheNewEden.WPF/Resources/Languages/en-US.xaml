@@ -2110,6 +2110,8 @@
     <sys:String x:Key="Home.Feature.EveSettingsSyncDesc">Sync EVE client settings between characters / accounts and back up profiles</sys:String>
 
     <sys:String x:Key="EveSettingsSyncPage_RootFolderLabel">Game settings folder</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RootFolderTip">Root folder where the EVE client keeps core_char_*.dat / core_user_*.dat. You can also pick a server folder or a settings_* subfolder — the root is resolved automatically.</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SettingsTitle">Settings Sync Options</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ChangeFolder">Select folder…</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_OpenFolder">Open folder</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_OpenProfileFolder">Open profile folder</sys:String>
@@ -2158,7 +2160,6 @@
     <sys:String x:Key="EveSettingsSyncPage_ColModified">Modified</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ColAction">Action</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ColFileName">File name</sys:String>
-    <sys:String x:Key="EveSettingsSyncPage_ResolvingNames">Resolving character names…</sys:String>
 
     <sys:String x:Key="EveSettingsSyncPage_Sync">Sync</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_SyncTip">Sync to other characters</sys:String>

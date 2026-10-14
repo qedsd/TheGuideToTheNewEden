@@ -4727,9 +4727,94 @@ icacls $ws | findstr /i "Mandatory"
   同时挂 `PresentationTraceSources.DataBindingSource` 监听抓绑定错误，并**自检一条故意写错的绑定路径**
   证明兜底有效；结果 **7/7 PASS**（构造页面 / 灌数据后布局 / 两个对话框 / 诊断自检 / 无绑定错误）。
   该手段与结论已记入 §9 第 88 条，后续新增或改动视图建议照此跑一遍。
+- **交付后实机反馈修复 ②（"账户文件表格里只剩一个 `.`，按钮没有内容"）**：
+  - **现象**：打开「配置同步 → 账户文件」，表格除首列（`ID 15878248`）外几乎什么都不显示——
+    ID 列只剩一个点状碎片、大小 / 修改时间列全空、操作列的"同步"按钮变成一个**空胶囊**。
+  - **根因**：四个页签的表格都沿用**阶段 22 的方案**（外层 `ScrollViewer` 横向 `Auto` +
+    表格 `MinWidth` 绑 `ViewportWidth`），**但首列仍写成 `Width="*" MinWidth="180/220/200"`**。
+    横向 `Auto` 的外层 `ScrollViewer` 会以**无限宽度**测量子元素，此时星号列无法按比例分配宽度，
+    整轮列宽计算退化成"星号列 = 自己的 `MinWidth`，其余 Pixel 列 = 各自的 `MinWidth`
+    （`DataGridColumn.MinWidth` 默认 **20**）"——视图探针实测列宽 `180 / 20 / 20 / 20 / 20`。
+    症状链条：`FluentColumnHeaderStyle` 的 `Padding="12,0"`（左右共 24px）**大于 20px 列宽** → 列头文字一个都画不出来；
+    右对齐单元格在 20px 里只剩一个字符碎片（用户看到的 `.`）；96px 的模板列把按钮压成 12px 宽 →
+    按钮内容被裁光，表现为空胶囊。**角色文件页签同样中招**（每列被压掉约 16px，只是还能看清，所以没被注意到）。
+  - **修复**：按阶段 22 的既有约定，把四个表格的首列都改为**固定像素宽**（去掉 `MinWidth`）：
+    角色名 / 账户名 `240`、未识别文件名 `260`、备份名称 `240`。
+  - **核验**（视图探针，真实目录 + 真实数据：1 服务器 / 1 配置文件 / 2 角色 / 1 账户 / 2 未识别）：
+    四个页签列宽恢复为 **240 / 120 / 90 / 160 / 96**、**260 / 90 / 160**、**240 / 220 / 120 / 80 / 90 / 160**，
+    "同步"按钮 49.6px 宽且 `IsVisible=True`，绑定错误 **0** 条；
+    就地对同一表格做的变体实验（外层 ScrollViewer 改 `Disabled` / 给表格有限 `Width` / 首列改固定宽）都能得到正确列宽，
+    而**去掉表格自身的 `MinWidth` 绑定无效**——证明触发条件是"无限宽度测量 + 星号列"。
+    探针同时确认：本页是全项目**唯一**同时具备"外层横向滚动 ScrollViewer"与"星号列"的表格
+    （`WormholePage.PortalGrid` 的 `ScrollViewer.HorizontalScrollBarVisibility` 是加在**表格自己**身上的，
+    由内部 ScrollViewer 滚动，不触发该问题）。
+  - 一句话规则（已并入 §9 第 84 / 89 条）：**用阶段 22 那套外层 ScrollViewer 的表格，所有列一律 Pixel，不要星号列。**
 - **未做 / 后续**：跨机同步（用户明确不要）；`.dat` 内容解析与字段级合并（二进制格式，收益低风险高）；
   文件变化监听（`FileSystemWatcher`，现在是手动刷新）；备注（参考实现按文件名记备注）；
   备份压缩/导出导入；"按角色搜索建筑"那类与本模块无关的能力不受影响。
+
+### 阶段 104：配置同步页的 UI 精简（设置弹窗 + 图标化按钮）
+
+> 用户要求："把游戏目录设置、同步/还原前自动备份、运行游戏时警告等设置放到一个设置按钮里面弹窗显示，不需要常驻 UI；
+> 另外 UI 按钮尽可能使用图标表示，鼠标悬浮提示文字。"
+
+- **页面腾空**：
+  - 顶部原来的"游戏设置目录"整行（标签 + 只读路径框 + 选择文件夹… + 打开目录 + 刷新）与底部整行的两个 `CheckBox`
+    （自动备份 / 游戏运行时先警告）**全部移除**；根 `Grid` 由 4 行收成 **1 行**（只剩主体）。
+  - **`刷新` / `设置` 不再占一整行**（用户第二轮反馈："单独占用一行，左侧空白太多"）：
+    收进**每个页签的工具栏**最右侧（与页签自己的动作按钮同排、右对齐）。为避免四个页签各复制一份按钮标记，
+    在 `Page.Resources` 里定义共享 `DataTemplate`（`EvePageActionsTemplate`：细分隔线 + `ArrowSync24` + `Settings24`），
+    每个页签工具栏末尾放一个 `<ContentControl Content="{Binding}" ContentTemplate=…/>` 实例化；
+    `Click` 事件在 `DataTemplate` 里直接解析到页面代码后置。页面第一行就是标签条 + 工具栏，不再有专门的空工具栏行。
+  - **`StatusText` 一并删除**（用户要求："删掉它"）：它整页只可能显示一句 `EveSettingsSyncPage_ResolvingNames`
+    （"正在解析角色名…"），只在"角色 ID → 角色名"需要打匿名 ESI 时闪现一瞬、其余时间恒为空串。
+    删除范围：VM 的 `_statusText` 字段 + `StatusText` 属性 + 三处赋值（`SelectProfileAsync` 的 `try/finally`、`ClearFiles`）、
+    页面里绑定它的那行 `TextBlock`，以及随之失去引用的语言键 `EveSettingsSyncPage_ResolvingNames`（中英一起删）。
+    **角色名解析本身不受影响**：`ResolveNamesAsync` 仍按 `_loadVersion` 丢弃过期结果并就地回填，
+    表格在解析期间显示 `ID xxxx`、完成后变成角色名；失败照旧只记日志。
+  - **游戏运行中的提示改走全局通知**（用户第三轮反馈："RunningGameText 是否不需要单独显示，直接使用软件全局的通知就行"）：
+    删掉页面里那条 `Border` 警告条（连 `IsGameRunning` / `RunningGameText` 的 XAML 绑定一起），
+    改在 `OnLoaded` 里 `RefreshGameState()` 之后调 `PageNotifyService.Warning(RunningGameText)`（右下角全局通知，与其它页同一套）。
+    为避免刷屏加了状态判断：页面是常驻实例（`NavigationCacheMode=Required`），每次切回本页都会触发 `Loaded`，
+    所以只在**运行状态发生变化**时提示一次（`_lastGameRunning`，`bool?`）。
+    写操作前的二次确认仍在 `ConfirmWrite()` 里（那里会重新检测一次游戏状态），`BlockWhenGameRunning` 的开关语义不变。
+    VM 的 `IsGameRunning` / `RunningGameText` **保留**——`ConfirmWrite` 与通知文案都要用它，只是不再有 XAML 绑定。
+- **新增设置弹窗 `Views/Windows/EveSettingsOptionWindow.xaml(.cs)`**（`ui:FluentWindow`，620 宽、`SizeToContent="Height"`、
+  标题栏只留关闭按钮、logo 与主窗一致）：三行沿用 Win11 设置观感（`SettingsGroupBorder` + `SettingsDivider` + `controls:SettingCard`）——
+  1. **游戏设置目录**：图标 + 标题 + 说明 + **整行宽度的路径框** + 选择文件夹（`FolderAdd24`）/ 打开目录（`FolderOpen24`）两个图标按钮。
+     这一行**没有**用 `SettingCard`：它的 Content 在右侧列，长路径会被挤扁，所以按同样的观感自己排了一遍。
+  2. **同步 / 还原前自动备份当前配置文件**：`ToggleSwitch` 双向绑 `AutoBackupBeforeSync`（改完即落盘）。
+  3. **游戏运行时先警告**：`ToggleSwitch` 双向绑 `BlockWhenGameRunning`。
+  - 弹窗直接改页面 VM；关窗后页面调 `SyncSelection()`——换根目录会重建服务器/配置文件列表，而这两个列表的选中项是**命令式**设置的。
+  - 文件夹选择与"打开目录"的代码从页面代码后置**搬进弹窗**（页面不再需要 `System.IO` / `Services.EveSettings`），
+    页面新增 `OnOpenOptionsClick`。
+- **按钮全部图标化 + 悬停提示**（一律 `Icon="{ui:SymbolIcon Xxx24}"` + `ToolTip` + `AutomationProperties.Name`，写法对齐 `GameLogMonitorPage`）：
+
+  | 按钮 | 图标 |
+  |---|---|
+  | 刷新 / 设置 | `ArrowSync24` / `Settings24` |
+  | 配置文件：新建 / 复制 / 重命名 / 删除 | `Add24` / `Copy24` / `Rename24` / `Delete24` |
+  | 备份选中文件 / 打开配置文件目录 | `Save24` / `FolderOpen24` |
+  | 备份当前配置文件 / 在文件夹中显示 / 还原 / 删除备份 | `SaveCopy24` / `FolderArrowRight24` / `ArrowUndo24` / `Delete24` |
+  | 每行"同步到其他角色 / 账户" | `ArrowSync24`（操作列 96 → 80） |
+
+  - 两个"删除"的图标要**显式**给 `Foreground="{DynamicResource SystemFillColorCautionBrush}"`：按钮的 `Foreground` 不会自动染到
+    `SymbolIcon`（与 §9 第 20 条同一类坑），写成 `<ui:Button.Icon><ui:SymbolIcon Foreground=… Symbol="Delete24"/></ui:Button.Icon>`。
+  - 左侧"配置文件"的 4 个按钮由 2×2 网格收敛成**一行 4 个方形图标按钮**（260px 宽的面板刚好放得下）。
+- **新增语言键 2 个**（中英同步）：`EveSettingsSyncPage_RootFolderTip`（弹窗里目录行的说明）、`EveSettingsSyncPage_SettingsTitle`
+  （弹窗标题）；其余复用既有键（`General_Setting` 作齿轮提示、`General_Close` 作关闭、各按钮原文作 ToolTip 与无障碍名）。
+  键数 2122 → **2124**（阶段 104 新增 2 个）→ **2123**（同阶段删掉失去引用的 `EveSettingsSyncPage_ResolvingNames`），
+  两文件键集始终一致、**0 重复**。
+- **核验（视图探针，真实目录 + 真实数据：1 服务器 / 2 配置文件 / 2 角色 / 1 账户 / 2 未识别）**：
+  `dotnet build` 0 错误（37 条既有警告基线不变）；四个页签列宽保持 `240/120/90/160/96`、`260/90/160`、`240/220/120/80/90/160`；
+  **按钮审计通过**——每个纯图标按钮都有图标 + 非空 `ToolTip` + 非空 `AutomationProperties.Name`，`IsEnabled` 与 VM 一致
+  （"在文件夹中显示""还原"按设计在未选中备份行时禁用）；弹窗构造成功（620×372.8）、标题 `配置同步设置`、
+  两个 `ToggleSwitch` 与 VM 一致且 **UI→VM 写回生效**、渲染截图确认三行观感正确；绑定错误 **0** 条。
+- **探针加固（本次踩到的坑，已并入 §9 第 90 条）**：探针原来只手工 `PushFrame` 泵消息、没有装 `DispatcherSynchronizationContext`，
+  于是 `await` 的续体落在**线程池线程**上，VM 的 `PropertyChanged` 从后台线程发出 → 绑定更新抛
+  `InvalidOperationException: 调用线程无法访问此对象`（异常被 `ReloadAsync` 的 finally 带出，`UpdateStates()` 不再执行），
+  现象是**探针里所有绑定 `IsEnabled` 的按钮全灰**、看起来像应用缺陷。装上同步上下文后 `faulted=False`、
+  `CanOperate` 通知序列变成 `vm=False,btn=False | vm=True,btn=True`，按钮全部正常。
 
 ## 8. 已知限制与待办
 
@@ -5420,6 +5505,43 @@ icacls $ws | findstr /i "Mandatory"
     图标名非法、`DataTemplate` 里的资源键错误、绑定路径写错"这一整类**只在运行期暴露**的问题在交付前抓出来。
     阶段 103 的探针结果：7/7 PASS（含诊断自检）。
 
+89. **横向 `Auto` 的外层 `ScrollViewer` 会"无限宽度测量"，其中的 `DataGrid` **不能**用星号列**
+    （阶段 103 实机反馈 ②："账户文件表格只剩一个 `.`、按钮空白"；与第 84 条同源、方向相反）：
+    结构是阶段 22 的标准做法 ——
+    `<ScrollViewer HorizontalScrollBarVisibility="Auto"><ui:DataGrid MinWidth="{Binding ViewportWidth, …}">`，
+    首列写 `Width="*" MinWidth="180"`。**横向 `Auto` 的 ScrollViewer 以 `PositiveInfinity` 测量子元素**，
+    星号列在无限宽度下拿不到可分配的空间，整轮列宽计算退化为
+    "星号列 = 自己的 `MinWidth`，其余 Pixel 列 = 各自的 `MinWidth`（默认 **20**）" —— 实测列宽 `180 / 20 / 20 / 20 / 20`。
+    症状：列头样式 `Padding="12,0"`（左右 24px）**大于 20px 列宽**，列头文字全不可见；
+    单元格文本被裁成一个字符碎片（就是用户看到的 `.`）；`Width="96"` 的模板列把按钮压到 12px 宽，
+    按钮内容被裁光 → 看起来是个**空胶囊**。同一表格只要有星号列就中招，与"表格 `MinWidth` 绑定"无关
+    （探针里去掉 `MinWidth` 症状照旧）。
+    定位/验证做法（可就地对同一个 `DataGrid` 做变体，读 `DataGridColumn.ActualWidth`）：
+    ① 外层 `HorizontalScrollBarVisibility="Disabled"`（子元素得到有限宽度）→ `719.6 / 120 / 90 / 160 / 96` ✔；
+    ② 给表格一个有限的 `Width` → 同上 ✔；③ 把首列改成固定像素 → `240 / 120 / 90 / 160 / 96` ✔。
+    做法：**这类表格所有列一律 Pixel**（本页首列取 240/260/240；阶段 102 的比价页同结论）。
+    例外：`ScrollViewer.HorizontalScrollBarVisibility="Auto"` 加在 **`DataGrid` 自己**身上（由表格的内部
+    ScrollViewer 滚动，如 `WormholePage.PortalGrid`）**不会**无限宽度测量，星号列在那里是安全的。
+
+90. **视图探针必须自己装 `DispatcherSynchronizationContext`，否则"所有绑定按钮都是灰的"是**假象**（阶段 104 核验时踩到）：
+    真实应用由 `Application.Run()` 装好同步上下文，`await` 的续体回到 UI 线程；探针若只 `new Application()` + 手工
+    `Dispatcher.PushFrame(...)` 泵消息，`SynchronizationContext.Current` 可能是 null → **`await Task.Run` / `HttpClient` 的续体落在
+    线程池线程**上 → VM 的 `PropertyChanged` 从后台线程发出 → WPF 的目标更新抛
+    `InvalidOperationException: 调用线程无法访问此对象，因为另一个线程拥有该对象`。
+    症状极具误导性：`{Binding CanOperate}` 这类 `IsEnabled` 绑定**停在第一次写入的值（false）永不刷新**，于是页面上每个
+    绑定过 `IsEnabled` 的按钮都画成禁用灰，而未绑定的按钮正常；与此同时 `BindingExpression.Status` 仍是 `Active`、
+    `ResolvedSource` 就是那个 VM、`ReadLocalValue(UIElement.IsEnabledProperty)` 是 `BindingExpression` 而不是 `false`
+    ——看起来完全像应用的绑定缺陷（本次为此花了很久）。
+    判别四步：① 订阅 VM 的 `PropertyChanged` 打印通知序列——`IsBusy` 有 `True/False` 两条，但 `CanOperate` 只收到第一条
+    （第二条在投递时抛异常）；② 任务 `IsFaulted=true`，异常正是跨线程访问；③ 挂 `AppDomain.CurrentDomain.FirstChanceException`
+    抓被吞掉的异常；④ `ReadLocalValue` 是 `BindingExpression` 而非 `false`（排除样式/触发器/父级禁用）。
+    处置（探针侧一行）：
+    ```csharp
+    SynchronizationContext.SetSynchronizationContext(
+        new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
+    ```
+    结论：**探针里出现"界面全灰 / 绑定不生效"时，先确认同步上下文，再怀疑应用代码。**
+
 ---
 
 ## 10. 主要文件清单
@@ -5683,12 +5805,13 @@ Services/EveSettings/EveSettingsFileCopy.cs          覆盖式复制（重试 3 
 Services/EveSettings/EveSettingsSyncService.cs       同步引擎（整体覆盖 + 逐目标容错 + 进度回调 + 跨配置文件拒绝）
 Services/EveSettings/EveSettingsSettingService.cs    Configs/EveSettingsSyncSetting.json
 ViewModels/EveSettings/EveSettingsSyncViewModel.cs   页面 VM：切换/解析/同步/备份/还原/配置文件管理 + 游戏运行检测
-Views/Pages/EveSettingsSyncPage.xaml(.cs)            顶级导航页：左栏服务器+配置文件，右栏 角色/账户/未识别/备份 四页签
+Views/Pages/EveSettingsSyncPage.xaml(.cs)            顶级导航页：左栏服务器+配置文件，右栏 角色/账户/未识别/备份 四页签（阶段 104：设置收进弹窗、按钮图标化）
+Views/Windows/EveSettingsOptionWindow.xaml(.cs)      阶段 104 设置弹窗：游戏设置目录 + 自动备份 + 游戏运行时警告（原页面顶部/底部的常驻项）
 Views/Windows/EveSettingsSyncTargetWindow.xaml(.cs)  「同步到…」目标多选对话框
 Views/Windows/EveSettingsTextInputWindow.xaml(.cs)   单行输入对话框（配置文件命名，带就地校验）
 Views/MainWindow.xaml                                + 导航项 Nav.EveSettingsSync（顶级，图标 ArrowSync24）
 Services/Home/HomeFeatureCatalog.cs                  + eve-settings-sync 功能目录条目（主页可固定）
-Resources/Languages/zh-CN.xaml, en-US.xaml           + 106 键（Nav/Home 2 + 页面与对话框 104）
+Resources/Languages/zh-CN.xaml, en-US.xaml           + 106 键（Nav/Home 2 + 页面与对话框 104）；阶段 104 净 +1（新增 2、删 1 个已无引用的 ResolvingNames）
 ```
 
 ### 主窗口

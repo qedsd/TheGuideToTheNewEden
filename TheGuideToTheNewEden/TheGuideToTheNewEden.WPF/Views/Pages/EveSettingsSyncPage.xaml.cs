@@ -1,10 +1,8 @@
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Models.EveSettings;
 using TheGuideToTheNewEden.WPF.Services;
-using TheGuideToTheNewEden.WPF.Services.EveSettings;
 using TheGuideToTheNewEden.WPF.ViewModels.EveSettings;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -27,6 +25,9 @@ public partial class EveSettingsSyncPage : Page
 
     private bool _initialized;
 
+    /// <summary>上次"检测到游戏在运行"的结果；只用于判断要不要发全局通知（null = 还没检测过）。</summary>
+    private bool? _lastGameRunning;
+
     /// <summary>程序化设置列表选中项时抑制 SelectionChanged（否则会触发一次多余的重新加载）。</summary>
     private bool _suppressSelection;
 
@@ -42,6 +43,7 @@ public partial class EveSettingsSyncPage : Page
         try
         {
             _viewModel.RefreshGameState();
+            NotifyGameRunning();
 
             if (!_initialized)
             {
@@ -54,6 +56,29 @@ public partial class EveSettingsSyncPage : Page
         catch (Exception ex)
         {
             Core.Log.Error(ex);
+        }
+    }
+
+    /// <summary>
+    /// 「游戏正在运行」不再单独占一条警告条，改走软件全局通知（右下角）。
+    /// <para>
+    /// 只在<b>状态变化</b>时提示一次：页面是常驻实例（<c>NavigationCacheMode=Required</c>），
+    /// 每次切回本页都会触发 <c>Loaded</c>，不做这个判断就会反复弹同一条通知。
+    /// 写操作前的拦截与确认在 <see cref="ConfirmWrite"/> 里（那里会重新检测一次）。
+    /// </para>
+    /// </summary>
+    private void NotifyGameRunning()
+    {
+        if (_lastGameRunning == _viewModel.IsGameRunning)
+        {
+            return;
+        }
+
+        _lastGameRunning = _viewModel.IsGameRunning;
+
+        if (_viewModel.IsGameRunning)
+        {
+            PageNotifyService.Warning(_viewModel.RunningGameText);
         }
     }
 
@@ -73,34 +98,24 @@ public partial class EveSettingsSyncPage : Page
         }
     }
 
-    private async void OnChangeFolderClick(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 打开设置弹窗（游戏设置目录 / 同步前自动备份 / 游戏运行时警告）。
+    /// <para>
+    /// 弹窗直接改页面 VM；换根目录会重建服务器与配置文件列表，而这两个列表的选中项是
+    /// <b>命令式</b>设置的（没有走绑定），所以关窗后必须 <see cref="SyncSelection"/> 同步回来。
+    /// </para>
+    /// </summary>
+    private void OnOpenOptionsClick(object sender, RoutedEventArgs e)
     {
         try
         {
-            var dialog = new Microsoft.Win32.OpenFolderDialog
+            var window = new EveSettingsOptionWindow(_viewModel)
             {
-                Title = FindString("EveSettingsSyncPage_SelectRootTitle"),
-                Multiselect = false,
+                Owner = Window.GetWindow(this),
             };
 
-            if (Directory.Exists(_viewModel.RootPath))
-            {
-                dialog.InitialDirectory = _viewModel.RootPath;
-            }
-
-            if (dialog.ShowDialog(Window.GetWindow(this)) != true || string.IsNullOrWhiteSpace(dialog.FolderName))
-            {
-                return;
-            }
-
-            // 允许选到服务器目录或配置文件目录，这里统一上溯到根目录。
-            await _viewModel.SetRootAsync(EveSettingsFolderService.ResolveRootFromSelection(dialog.FolderName));
+            window.ShowDialog();
             SyncSelection();
-
-            if (!_viewModel.HasRoot)
-            {
-                PageNotifyService.Warning(FindString("EveSettingsSyncPage_NoRoot"));
-            }
         }
         catch (Exception ex)
         {
@@ -108,9 +123,6 @@ public partial class EveSettingsSyncPage : Page
             PageNotifyService.Error(ex.Message);
         }
     }
-
-    private void OnOpenRootFolderClick(object sender, RoutedEventArgs e)
-        => ShellHelper.OpenFolder(_viewModel.RootPath);
 
     private void OnOpenProfileFolderClick(object sender, RoutedEventArgs e)
     {

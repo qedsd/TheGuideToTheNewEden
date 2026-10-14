@@ -31,7 +31,6 @@ public sealed class EveSettingsSyncViewModel : INotifyPropertyChanged
     private string _rootPath = string.Empty;
     private bool _hasRoot;
     private bool _isBusy;
-    private string _statusText = string.Empty;
     private bool _isGameRunning;
     private string _runningGameText = string.Empty;
     private EveSettingsServer? _selectedServer;
@@ -84,12 +83,6 @@ public sealed class EveSettingsSyncViewModel : INotifyPropertyChanged
 
     /// <summary>界面按钮的可用性（忙的时候整体禁用，避免并发写同一批文件）。</summary>
     public bool CanOperate => !_isBusy;
-
-    public string StatusText
-    {
-        get => _statusText;
-        private set => Set(ref _statusText, value);
-    }
 
     public bool IsGameRunning
     {
@@ -326,18 +319,9 @@ public sealed class EveSettingsSyncViewModel : INotifyPropertyChanged
             return;
         }
 
-        StatusText = FindString("EveSettingsSyncPage_ResolvingNames");
-        try
-        {
-            await ResolveNamesAsync(version);
-        }
-        finally
-        {
-            if (version == _loadVersion)
-            {
-                StatusText = string.Empty;
-            }
-        }
+        // 角色名解析是"就地回填"：ResolveNamesAsync 内部按 _loadVersion 丢弃过期结果，
+        // 解析完成后表格里的 ID 会直接变成角色名——没有需要展示的进度或状态文案。
+        await ResolveNamesAsync(version);
     }
 
     /// <summary>解析角色名并就地回填（失败只记日志，列表退回显示 ID）。</summary>
@@ -903,7 +887,6 @@ public sealed class EveSettingsSyncViewModel : INotifyPropertyChanged
         CharacterFiles.Clear();
         AccountFiles.Clear();
         UnrecognizedFiles.Clear();
-        StatusText = string.Empty;
         UpdateStates();
     }
 

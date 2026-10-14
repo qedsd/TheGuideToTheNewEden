@@ -1,0 +1,122 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.EveSettingsOptionWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource EveSettingsSyncPage_SettingsTitle}"
+    Width="620"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    ResizeMode="NoResize"
+    SizeToContent="Height"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <Grid Margin="16,48,16,16">
+            <StackPanel>
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <!--
+                            游戏设置目录：路径需要整行宽度（默认路径很长），所以这一行不用 SettingCard，
+                            而是自己排一遍 SettingCard 的观感（图标 + 标题 + 描述 + 下方操作行）。
+                        -->
+                        <Grid Margin="16,14,16,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <ui:SymbolIcon
+                                Grid.Column="0"
+                                Margin="0,2,16,0"
+                                VerticalAlignment="Top"
+                                FontSize="20"
+                                Symbol="Folder24" />
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{DynamicResource EveSettingsSyncPage_RootFolderLabel}" />
+                                <TextBlock
+                                    Margin="0,2,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource EveSettingsSyncPage_RootFolderTip}"
+                                    TextWrapping="Wrap" />
+
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:TextBox
+                                        x:Name="RootBox"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        IsReadOnly="True"
+                                        Text="{Binding RootPath, Mode=OneWay}" />
+
+                                    <ui:Button
+                                        x:Name="ChangeFolderButton"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_ChangeFolder}"
+                                        Click="OnChangeFolderClick"
+                                        Icon="{ui:SymbolIcon FolderAdd24}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_ChangeFolder}" />
+                                    <ui:Button
+                                        x:Name="OpenFolderButton"
+                                        Grid.Column="2"
+                                        Margin="8,0,0,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_OpenFolder}"
+                                        Click="OnOpenRootFolderClick"
+                                        Icon="{ui:SymbolIcon FolderOpen24}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_OpenFolder}" />
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Title="{DynamicResource EveSettingsSyncPage_AutoBackup}"
+                            Description="{DynamicResource EveSettingsSyncPage_AutoBackupTip}"
+                            Icon="Save24">
+                            <ui:ToggleSwitch
+                                x:Name="AutoBackupToggle"
+                                AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_AutoBackup}"
+                                IsChecked="{Binding AutoBackupBeforeSync, Mode=TwoWay}" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Title="{DynamicResource EveSettingsSyncPage_BlockWhenRunning}"
+                            Description="{DynamicResource EveSettingsSyncPage_BlockWhenRunningTip}"
+                            Icon="Warning24">
+                            <ui:ToggleSwitch
+                                x:Name="BlockWhenRunningToggle"
+                                AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_BlockWhenRunning}"
+                                IsChecked="{Binding BlockWhenGameRunning, Mode=TwoWay}" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="{DynamicResource EveSettingsSyncPage_SettingsTitle}"
+            ShowMaximize="False"
+            ShowMinimize="False">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+    </Grid>
+</ui:FluentWindow>

@@ -150,95 +150,13 @@
         </Style>
     </Page.Resources>
 
-    <Grid Margin="24,16,24,20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <!--  设置根目录  -->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{DynamicResource EveSettingsSyncPage_RootFolderLabel}" />
-
-            <ui:TextBox
-                x:Name="RootBox"
-                Grid.Column="1"
-                Margin="8,0"
-                IsReadOnly="True"
-                Text="{Binding RootPath, Mode=OneWay}" />
-
-            <ui:Button
-                x:Name="ChangeFolderButton"
-                Grid.Column="2"
-                Margin="0,0,8,0"
-                Click="OnChangeFolderClick"
-                Content="{DynamicResource EveSettingsSyncPage_ChangeFolder}"
-                IsEnabled="{Binding CanOperate}" />
-            <ui:Button
-                x:Name="OpenFolderButton"
-                Grid.Column="3"
-                Margin="0,0,8,0"
-                Click="OnOpenRootFolderClick"
-                Content="{DynamicResource EveSettingsSyncPage_OpenFolder}"
-                IsEnabled="{Binding CanOperate}" />
-            <ui:Button
-                x:Name="RefreshButton"
-                Grid.Column="4"
-                Click="OnRefreshClick"
-                Content="{DynamicResource General_Refresh}"
-                IsEnabled="{Binding CanOperate}" />
-        </Grid>
-
-        <!--  游戏正在运行时的警告（同步/还原前必须让用户知道"游戏退出时会覆盖回去"）  -->
-        <Border
-            Grid.Row="1"
-            Margin="0,10,0,0"
-            Padding="12,8"
-            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
-            BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
-            BorderThickness="1"
-            CornerRadius="4">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-            <DockPanel>
-                <ui:SymbolIcon
-                    DockPanel.Dock="Left"
-                    Margin="0,0,8,0"
-                    VerticalAlignment="Center"
-                    FontSize="16"
-                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                    Symbol="Warning24" />
-                <TextBlock
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="{Binding RunningGameText}"
-                    TextWrapping="Wrap" />
-            </DockPanel>
-        </Border>
-
-        <!--  主体：无根目录 → 空态；否则 左（服务器 + 配置文件） / 右（页签）  -->
-        <Grid Grid.Row="2" Margin="0,12,0,0">
+    <Grid Margin="8">
+        <!--
+            主体：无根目录 → 空态；否则 左（服务器 + 配置文件） / 右（页签）。
+            游戏运行中的提示不再单独占一条警告条，改走软件全局通知（见代码后置 NotifyGameRunning）；
+            写操作前的拦截与确认仍在 ConfirmWrite 里。
+        -->
+        <Grid>
             <StackPanel
                 MaxWidth="560"
                 HorizontalAlignment="Center"
@@ -351,36 +269,49 @@
                                 Text="{DynamicResource EveSettingsSyncPage_NoProfiles}" />
                         </Grid>
 
-                        <UniformGrid
-                            Grid.Row="6"
-                            Margin="16,10,16,14"
-                            Columns="2">
+                        <!--  配置文件操作：纯图标按钮（悬停出提示），一行放得下  -->
+                        <Grid Grid.Row="6" Margin="16,10,16,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
                             <ui:Button
                                 x:Name="NewProfileButton"
-                                Margin="0,0,4,4"
+                                AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_NewProfile}"
                                 Click="OnNewProfileClick"
-                                Content="{DynamicResource EveSettingsSyncPage_NewProfile}"
-                                IsEnabled="{Binding CanManageProfiles}" />
+                                Icon="{ui:SymbolIcon Add24}"
+                                IsEnabled="{Binding CanManageProfiles}"
+                                ToolTip="{DynamicResource EveSettingsSyncPage_NewProfile}" />
                             <ui:Button
                                 x:Name="DuplicateProfileButton"
-                                Margin="4,0,0,4"
+                                Grid.Column="1"
+                                AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_DuplicateProfile}"
                                 Click="OnDuplicateProfileClick"
-                                Content="{DynamicResource EveSettingsSyncPage_DuplicateProfile}"
-                                IsEnabled="{Binding CanManageProfiles}" />
+                                Icon="{ui:SymbolIcon Copy24}"
+                                IsEnabled="{Binding CanManageProfiles}"
+                                ToolTip="{DynamicResource EveSettingsSyncPage_DuplicateProfile}" />
                             <ui:Button
                                 x:Name="RenameProfileButton"
-                                Margin="0,0,4,0"
+                                Grid.Column="2"
+                                AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_RenameProfile}"
                                 Click="OnRenameProfileClick"
-                                Content="{DynamicResource EveSettingsSyncPage_RenameProfile}"
-                                IsEnabled="{Binding CanManageProfiles}" />
+                                Icon="{ui:SymbolIcon Rename24}"
+                                IsEnabled="{Binding CanManageProfiles}"
+                                ToolTip="{DynamicResource EveSettingsSyncPage_RenameProfile}" />
                             <ui:Button
                                 x:Name="DeleteProfileButton"
-                                Margin="4,0,0,0"
+                                Grid.Column="3"
+                                AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_DeleteProfile}"
                                 Click="OnDeleteProfileClick"
-                                Content="{DynamicResource EveSettingsSyncPage_DeleteProfile}"
-                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                IsEnabled="{Binding CanManageProfiles}" />
-                        </UniformGrid>
+                                IsEnabled="{Binding CanManageProfiles}"
+                                ToolTip="{DynamicResource EveSettingsSyncPage_DeleteProfile}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCautionBrush}" Symbol="Delete24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                        </Grid>
 
                         <TextBlock
                             Grid.Row="7"
@@ -412,14 +343,18 @@
                                     <ui:Button
                                         x:Name="BackupCharacterButton"
                                         Margin="0,0,8,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_BackupSelected}"
                                         Click="OnBackupSelectedFilesClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_BackupSelected}"
-                                        IsEnabled="{Binding CanManageFiles}" />
+                                        Icon="{ui:SymbolIcon Save24}"
+                                        IsEnabled="{Binding CanManageFiles}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_BackupSelected}" />
                                     <ui:Button
                                         x:Name="OpenCharacterFolderButton"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}"
                                         Click="OnOpenProfileFolderClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}"
-                                        IsEnabled="{Binding CanManageFiles}" />
+                                        Icon="{ui:SymbolIcon FolderOpen24}"
+                                        IsEnabled="{Binding CanManageFiles}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}" />
                                 </StackPanel>
                                 <TextBlock
                                     Margin="0,0,12,0"
@@ -439,8 +374,7 @@
                                         Style="{StaticResource EveSettingsGridStyle}">
                                         <ui:DataGrid.Columns>
                                             <DataGridTextColumn
-                                                Width="*"
-                                                MinWidth="180"
+                                                Width="240"
                                                 Binding="{Binding DisplayName}"
                                                 ElementStyle="{StaticResource EveCellStyle}"
                                                 Header="{DynamicResource General_Character}" />
@@ -459,14 +393,14 @@
                                                 Binding="{Binding ModifiedText}"
                                                 ElementStyle="{StaticResource EveCellStyle}"
                                                 Header="{DynamicResource EveSettingsSyncPage_ColModified}" />
-                                            <DataGridTemplateColumn Width="96" Header="{DynamicResource EveSettingsSyncPage_ColAction}">
+                                            <DataGridTemplateColumn Width="80" Header="{DynamicResource EveSettingsSyncPage_ColAction}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <ui:Button
                                                             Margin="4,2"
-                                                            Padding="10,2"
+                                                            AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_Sync}"
                                                             Click="OnSyncFileClick"
-                                                            Content="{DynamicResource EveSettingsSyncPage_Sync}"
+                                                            Icon="{ui:SymbolIcon ArrowSync24}"
                                                             Tag="{Binding}"
                                                             ToolTip="{DynamicResource EveSettingsSyncPage_SyncTip}" />
                                                     </DataTemplate>
@@ -475,7 +409,11 @@
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
-                                <TextBlock Style="{StaticResource EveEmptyNoCharacterFiles}" Text="{DynamicResource EveSettingsSyncPage_NoFiles}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource EveEmptyNoCharacterFiles}"
+                                    Text="{DynamicResource EveSettingsSyncPage_NoFiles}" />
                             </Grid>
                         </Grid>
                     </TabItem>
@@ -493,14 +431,18 @@
                                     <ui:Button
                                         x:Name="BackupAccountButton"
                                         Margin="0,0,8,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_BackupSelected}"
                                         Click="OnBackupSelectedFilesClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_BackupSelected}"
-                                        IsEnabled="{Binding CanManageFiles}" />
+                                        Icon="{ui:SymbolIcon Save24}"
+                                        IsEnabled="{Binding CanManageFiles}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_BackupSelected}" />
                                     <ui:Button
                                         x:Name="OpenAccountFolderButton"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}"
                                         Click="OnOpenProfileFolderClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}"
-                                        IsEnabled="{Binding CanManageFiles}" />
+                                        Icon="{ui:SymbolIcon FolderOpen24}"
+                                        IsEnabled="{Binding CanManageFiles}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_OpenProfileFolder}" />
                                 </StackPanel>
                                 <TextBlock
                                     Margin="0,0,12,0"
@@ -520,8 +462,7 @@
                                         Style="{StaticResource EveSettingsGridStyle}">
                                         <ui:DataGrid.Columns>
                                             <DataGridTextColumn
-                                                Width="*"
-                                                MinWidth="180"
+                                                Width="240"
                                                 Binding="{Binding DisplayName}"
                                                 ElementStyle="{StaticResource EveCellStyle}"
                                                 Header="{DynamicResource EveSettingsSyncPage_ColAccount}" />
@@ -540,14 +481,14 @@
                                                 Binding="{Binding ModifiedText}"
                                                 ElementStyle="{StaticResource EveCellStyle}"
                                                 Header="{DynamicResource EveSettingsSyncPage_ColModified}" />
-                                            <DataGridTemplateColumn Width="96" Header="{DynamicResource EveSettingsSyncPage_ColAction}">
+                                            <DataGridTemplateColumn Width="80" Header="{DynamicResource EveSettingsSyncPage_ColAction}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <ui:Button
                                                             Margin="4,2"
-                                                            Padding="10,2"
+                                                            AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_Sync}"
                                                             Click="OnSyncFileClick"
-                                                            Content="{DynamicResource EveSettingsSyncPage_Sync}"
+                                                            Icon="{ui:SymbolIcon ArrowSync24}"
                                                             Tag="{Binding}"
                                                             ToolTip="{DynamicResource EveSettingsSyncPage_SyncTipAccount}" />
                                                     </DataTemplate>
@@ -556,7 +497,11 @@
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
-                                <TextBlock Style="{StaticResource EveEmptyNoAccountFiles}" Text="{DynamicResource EveSettingsSyncPage_NoFiles}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource EveEmptyNoAccountFiles}"
+                                    Text="{DynamicResource EveSettingsSyncPage_NoFiles}" />
                             </Grid>
                         </Grid>
                     </TabItem>
@@ -573,9 +518,11 @@
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                     <ui:Button
                                         x:Name="BackupUnrecognizedButton"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_BackupSelected}"
                                         Click="OnBackupSelectedFilesClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_BackupSelected}"
-                                        IsEnabled="{Binding CanManageFiles}" />
+                                        Icon="{ui:SymbolIcon Save24}"
+                                        IsEnabled="{Binding CanManageFiles}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_BackupSelected}" />
                                 </StackPanel>
                                 <TextBlock
                                     Margin="0,0,12,0"
@@ -595,8 +542,7 @@
                                         Style="{StaticResource EveSettingsGridStyle}">
                                         <ui:DataGrid.Columns>
                                             <DataGridTextColumn
-                                                Width="*"
-                                                MinWidth="220"
+                                                Width="260"
                                                 Binding="{Binding FileName}"
                                                 ElementStyle="{StaticResource EveCellStyle}"
                                                 Header="{DynamicResource EveSettingsSyncPage_ColFileName}" />
@@ -613,7 +559,11 @@
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
-                                <TextBlock Style="{StaticResource EveEmptyNoUnrecognizedFiles}" Text="{DynamicResource EveSettingsSyncPage_NoUnrecognizedFiles}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource EveEmptyNoUnrecognizedFiles}"
+                                    Text="{DynamicResource EveSettingsSyncPage_NoUnrecognizedFiles}" />
                             </Grid>
                         </Grid>
                     </TabItem>
@@ -631,27 +581,37 @@
                                     <ui:Button
                                         x:Name="BackupProfileButton"
                                         Margin="0,0,8,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_BackupProfile}"
                                         Click="OnBackupProfileClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_BackupProfile}"
-                                        IsEnabled="{Binding CanManageFiles}" />
+                                        Icon="{ui:SymbolIcon SaveCopy24}"
+                                        IsEnabled="{Binding CanManageFiles}"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_BackupProfile}" />
                                     <ui:Button
                                         x:Name="RevealBackupButton"
                                         Margin="0,0,8,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_ShowInFolder}"
                                         Click="OnRevealBackupClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_ShowInFolder}"
-                                        IsEnabled="False" />
+                                        Icon="{ui:SymbolIcon FolderArrowRight24}"
+                                        IsEnabled="False"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_ShowInFolder}" />
                                     <ui:Button
                                         x:Name="RestoreBackupButton"
                                         Margin="0,0,8,0"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_Restore}"
                                         Click="OnRestoreBackupClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_Restore}"
-                                        IsEnabled="False" />
+                                        Icon="{ui:SymbolIcon ArrowUndo24}"
+                                        IsEnabled="False"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_Restore}" />
                                     <ui:Button
                                         x:Name="DeleteBackupButton"
+                                        AutomationProperties.Name="{DynamicResource EveSettingsSyncPage_Delete}"
                                         Click="OnDeleteBackupClick"
-                                        Content="{DynamicResource EveSettingsSyncPage_Delete}"
-                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                        IsEnabled="False" />
+                                        IsEnabled="False"
+                                        ToolTip="{DynamicResource EveSettingsSyncPage_Delete}">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCautionBrush}" Symbol="Delete24" />
+                                        </ui:Button.Icon>
+                                    </ui:Button>
                                 </StackPanel>
                                 <TextBlock
                                     Margin="0,0,12,0"
@@ -675,8 +635,7 @@
                                         Style="{StaticResource EveSettingsGridStyle}">
                                         <ui:DataGrid.Columns>
                                             <DataGridTextColumn
-                                                Width="*"
-                                                MinWidth="200"
+                                                Width="240"
                                                 Binding="{Binding Name}"
                                                 ElementStyle="{StaticResource EveCellStyle}"
                                                 Header="{DynamicResource EveSettingsSyncPage_ColBackupName}" />
@@ -722,35 +681,33 @@
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
-                                <TextBlock Style="{StaticResource EveEmptyNoBackups}" Text="{DynamicResource EveSettingsSyncPage_NoBackups}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource EveEmptyNoBackups}"
+                                    Text="{DynamicResource EveSettingsSyncPage_NoBackups}" />
                             </Grid>
                         </Grid>
                     </TabItem>
                 </TabControl>
             </Grid>
         </Grid>
-
-        <!--  选项 + 状态  -->
-        <DockPanel Grid.Row="3" Margin="0,12,0,0">
-            <TextBlock
-                DockPanel.Dock="Right"
-                VerticalAlignment="Center"
-                FontSize="12"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{Binding StatusText}" />
-            <StackPanel Orientation="Horizontal">
-                <CheckBox
-                    VerticalAlignment="Center"
-                    Content="{DynamicResource EveSettingsSyncPage_AutoBackup}"
-                    IsChecked="{Binding AutoBackupBeforeSync, Mode=TwoWay}"
-                    ToolTip="{DynamicResource EveSettingsSyncPage_AutoBackupTip}" />
-                <CheckBox
-                    Margin="16,0,0,0"
-                    VerticalAlignment="Center"
-                    Content="{DynamicResource EveSettingsSyncPage_BlockWhenRunning}"
-                    IsChecked="{Binding BlockWhenGameRunning, Mode=TwoWay}"
-                    ToolTip="{DynamicResource EveSettingsSyncPage_BlockWhenRunningTip}" />
-            </StackPanel>
-        </DockPanel>
+        <StackPanel
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Orientation="Horizontal">
+            <ui:Button
+                AutomationProperties.Name="{DynamicResource General_Refresh}"
+                Click="OnRefreshClick"
+                Icon="{ui:SymbolIcon ArrowSync24}"
+                IsEnabled="{Binding CanOperate}"
+                ToolTip="{DynamicResource General_Refresh}" />
+            <ui:Button
+                Margin="8,0,0,0"
+                AutomationProperties.Name="{DynamicResource General_Setting}"
+                Click="OnOpenOptionsClick"
+                Icon="{ui:SymbolIcon Settings24}"
+                ToolTip="{DynamicResource General_Setting}" />
+        </StackPanel>
     </Grid>
 </Page>

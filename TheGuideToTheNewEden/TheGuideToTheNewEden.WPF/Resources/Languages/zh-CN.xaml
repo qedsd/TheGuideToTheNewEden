@@ -2117,6 +2117,8 @@
     <sys:String x:Key="Home.Feature.EveSettingsSyncDesc">在角色 / 账户之间同步 EVE 客户端设置，并备份配置文件</sys:String>
 
     <sys:String x:Key="EveSettingsSyncPage_RootFolderLabel">游戏设置目录</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_RootFolderTip">EVE 客户端保存 core_char_*.dat / core_user_*.dat 的根目录。也可以直接选中某个服务器目录或 settings_* 子目录，本页会自动上溯。</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_SettingsTitle">配置同步设置</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ChangeFolder">选择文件夹…</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_OpenFolder">打开目录</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_OpenProfileFolder">打开配置文件目录</sys:String>
@@ -2165,7 +2167,6 @@
     <sys:String x:Key="EveSettingsSyncPage_ColModified">修改时间</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ColAction">操作</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ColFileName">文件名</sys:String>
-    <sys:String x:Key="EveSettingsSyncPage_ResolvingNames">正在解析角色名…</sys:String>
 
     <sys:String x:Key="EveSettingsSyncPage_Sync">同步</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_SyncTip">同步到其他角色</sys:String>
