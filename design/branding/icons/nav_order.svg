@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 订单 · Nav.Order -->
+  <rect x="24" y="18" width="64" height="86" rx="10" fill="none" stroke="#3B82F6" stroke-width="9"/>
+<path d="M40 44 H72" stroke="#3B82F6" stroke-width="8" stroke-linecap="round"/>
+<path d="M40 62 H60" stroke="#3B82F6" stroke-width="8" stroke-linecap="round"/>
+<path d="M74 74 L82 82 L98 64" fill="none" stroke="#22C55E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

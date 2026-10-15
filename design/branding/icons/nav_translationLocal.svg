@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 本地词库 · Nav.TranslationLocal -->
+  <path d="M64 36 C50 24 30 24 18 30 V92 C30 86 50 86 64 98 Z" fill="none" stroke="#0EA5E9" stroke-width="9" stroke-linejoin="round"/>
+<path d="M64 36 C78 24 98 24 110 30 V92 C98 86 78 86 64 98 Z" fill="none" stroke="#2DD4BF" stroke-width="9" stroke-linejoin="round"/>
+<path d="M64 36 V98" stroke="#6366F1" stroke-width="7"/>
+</svg>

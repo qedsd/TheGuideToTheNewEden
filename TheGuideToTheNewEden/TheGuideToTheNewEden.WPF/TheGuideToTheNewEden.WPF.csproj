@@ -52,11 +52,6 @@
 		<Resource Include="Assets\app.ico" />
 		<Resource Include="Assets\logo_32.png" />
 		<Resource Include="Assets\logo_128.png" />
-		<!--  主页品牌条的背景图：与 WinUI 版共用同一张（链接进来，仓库不重复存一份）。
-		      Link 决定它在程序集里的资源名，因此代码里按 pack://application:,,,/Assets/home.jpg 取。  -->
-		<Resource Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Images\home.jpg">
-			<Link>Assets\home.jpg</Link>
-		</Resource>
 	</ItemGroup>
 
 	<!--

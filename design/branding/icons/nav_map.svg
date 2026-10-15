@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 星图 · Nav.Map -->
+  <path d="M26 96 L52 46 L90 72 L104 30" fill="none" stroke="#94A3B8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M52 46 L104 30" fill="none" stroke="#94A3B8" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+<circle cx="26" cy="96" r="11" fill="#38BDF8"/>
+<circle cx="52" cy="46" r="13" fill="#6366F1"/>
+<circle cx="90" cy="72" r="11" fill="#A78BFA"/>
+<circle cx="104" cy="30" r="9" fill="#5EEAD4"/>
+</svg>

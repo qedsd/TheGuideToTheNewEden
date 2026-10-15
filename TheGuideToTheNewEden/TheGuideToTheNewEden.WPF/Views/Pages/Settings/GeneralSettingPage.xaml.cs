@@ -70,7 +70,7 @@ public partial class GeneralSettingPage : Page
                 Height = 46,
                 CornerRadius = new CornerRadius(23),
                 Tag = color,
-                ToolTip = color.ToString(),
+                ToolTip = ThemeService.GetAccentName(color),
                 Content = cell,
             };
             swatch.Click += AccentColor_Click;

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 死亡远征 · Nav.DED -->
+  <path d="M32 56 C32 34 46 22 66 22 C86 22 100 34 100 56 V70 C100 80 92 86 82 86 H50 C40 86 32 80 32 70 Z" fill="none" stroke="#F43F5E" stroke-width="9" stroke-linejoin="round"/>
+<circle cx="54" cy="58" r="8" fill="#F43F5E"/>
+<circle cx="78" cy="58" r="8" fill="#F43F5E"/>
+<path d="M52 86 V102 M64 86 V102 M76 86 V102" stroke="#F43F5E" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -5050,6 +5050,66 @@ icacls $ws | findstr /i "Mandatory"
 > **界面已由用户实机确认正常**。剩余一项收尾：四组离线探针
 > （`ToolCallProbe` / `EngineProbe` / `ToolProbe` / `AssistantUiProbe`，断言矩阵见设计文档 §13.6 / §14.6 / §15.5 / §16.6）。
 
+### 阶段 112：品牌重设计 · 新 Logo + 主页品牌条纯矢量主题感知化
+
+- **新 Logo「星门罗盘」**（设计稿与源文件在仓库根 `design/branding/`）：星门之环 + 罗盘星（四角闪星），
+  青 `#5EEAD4` → 蓝 `#38BDF8` → 靛 `#6366F1` 深空渐变；几何极简（2 元素），16px 下清晰。
+  设计过程废弃方案：伴星圆点（被误读为未读消息徽标）、星门八字门柱 + 跳跃轨迹（被评"复杂化"）、
+  环内三星跳跃链路（改回单颗罗盘星）。
+- **位图资产由几何直接生成**（`design/branding/_gen_logo_bitmap.py`，numpy 逐像素渐变 + 超采样 1024 → LANCZOS）：
+  `Assets/logo_32.png` / `Assets/logo_128.png` / `Assets/app.ico`（16/24/32/48/64/128/256 多尺寸）全部换新；
+  旧文件备份在 `Assets/_backup/`。**引用零改动**——TitleBar 的 `ImageIcon`、各工具窗口 `Icon`、csproj `ApplicationIcon`
+  全部沿用原路径，换文件即全局生效。
+- **主页品牌条纯矢量主题感知化**（`Views/Pages/HomePage.xaml`）：
+  - 替代原「`home.jpg` 固定深色图 + 写死白字」方案；删除 7 个 `Hero*Brush` 画刷与 `HeroIconButton` / `HeroPill` 样式。
+  - 主题适配三层策略（无需代码、无需新增主题字典、**不订阅 ThemeChanged**）：
+    1) 底色/文字/胶囊/按钮全部走 `DynamicResource`（`CardBackgroundFillColorSecondaryBrush`、`TextFillColor*Brush`、
+       `ControlFillColor*Brush`、`CardStrokeColorDefaultBrush`），随 `ApplicationThemeManager.Apply` 自动刷新；
+    2) 星云与深空洗用固定半透明色（如 `#3838BDF8`）——叠浅底是淡蓝晕染、叠深底是星云辉光，同一份矢量两主题成立；
+    3) 星点用 `TextFillColorTertiaryBrush`（浅主题暗点 / 深主题亮点）+ 少量固定青点缀，品牌环固定青→靛渐变。
+  - 背景层：卡片底色 → 深空洗 → 青/靛双色星云 → 星野 → 右侧出血大星门环 + 罗盘星（出血 Canvas，窄窗口自然裁切）。
+  - 内容层布局与事件**完全沿用**：应用名 + 版本胶囊（新增 34px 迷你星门 logo）、状态胶囊、
+    快捷输入框（主题化配色：文字/占位/光标全部 `TextFillColor*`）、6 个工具按钮；7 个 Click 处理器无一改动。
+  - **删除 home.jpg 相关**：`HomePage.xaml.cs` 的 `EnsureHeroImage()` 整段移除；csproj 的
+    `Assets\home.jpg` 链接资源移除（WinUI 项目自身资源不受影响）。
+  - 设计块留档：`design/branding/BrandBanner.xaml`（与工程内 XAML 同源）。
+- **验证**：全解决方案 `dotnet build` **0 错误**；WPF 单独增量构建 **0 错误**（警告均为既有项，无新增）。
+- **任务管理器图标发糊的修复（用户实机反馈）**：两个根因都出在生成脚本，不在 WPF 侧。
+  1) **不要用 Pillow 的 `save(..., sizes=[...])`** —— 它对列表中非基准尺寸走的是低质量缩放，
+     16/20/24px 几档因此糊成一团；改为**手写 ICO 容器**（`_gen_logo_bitmap.py::write_ico`），
+     每帧塞进该尺寸独立渲染的 PNG（Vista+ 支持 PNG 帧）。
+  2) **小尺寸不能靠大图等比缩放** —— 环（10）与星腰在 16–32px 下会贴死。改为**每尺寸独立超采样渲染**
+     （≥256 锚点，8×）+ 小尺寸「图标适配几何」：环加粗（16px 用 13）、星腰凹度降低（0.15→0.72）、
+     星整体收缩（tip 1.0→0.72），给环与星留出可见间隙。`GEOM` 表按尺寸分档，≥40px 与原稿一致。
+     > **二次回调**：`tip` 初版 0.85 仍偏大——原稿星尖半径 40 与环内缘 41 只差 1 单位（128 空间），
+     > 等比缩到小尺寸必然顶环。故 16/20/24/32px 的 `tip` 收到 **0.72 / 0.77 / 0.82 / 0.91**，
+     > 环宽同步微收；16px 下星半径 4.25→3.6px、环星间隙 0.6→1.3px。
+  - 自检方式：沿星尖方向做**径向 alpha 剖面**（`####+.#+.` = 星 → 1px 透明间隙 → 环），
+    确认小尺寸下环星确实分离；ICO 帧数用 `Image.ico.sizes()` 核对为 11 档
+    （16/20/24/28/32/40/48/64/96/128/256），exe 内 PNG 签名计数亦为 11。
+  - 注意：改 `app.ico` 后**必须重新构建** —— 图标是链接进 exe 的 Win32 资源，换文件不等于生效。
+- **不在本次范围**：左侧导航 35 个菜单图标仍为 WPF-UI 单色 `SymbolIcon`（彩色矢量版已设计完毕，在
+  `design/branding/icons/`：`nav-icons.svg` sprite + 35 个单文件 + 预览页，接入时机待定）。
+- **圆角裁剪（用户实机反馈"Banner 右上角没有圆角，其余三个角都有"）**：
+  根因是 WPF 的 `ClipToBounds="True"` **只按矩形裁切、不认 `CornerRadius`**，
+  而装饰层的出血星门环（`Canvas.Top="-28"`）正好从右上角圆角处溢出。
+  修法：XAML 加 `SizeChanged="OnHeroBannerSizeChanged"`，code-behind 里按实际尺寸重建
+  `RectangleGeometry(new Rect(0,0,w,h), r, r)` 作为 `Clip`（r 取 `CornerRadius.TopLeft`）。
+  这也是 WPF 里"圆角容器内做出血装饰"的通用解法——`CornerRadius` 只画背景圆角，不裁子元素。
+  `design/branding/BrandBanner.xaml` 留档同步加了该事件。
+- **主题色新增 Logo 品牌色 + 改为默认**（`Services/ThemeService.cs`）：
+  - 新增三个品牌色常量 `BrandTeal #5EEAD4` / `BrandBlue #38BDF8` / `BrandIndigo #6366F1`（对应 Logo 渐变
+    起点/中点/终点），并作为 `AccentColors` 候选列表的**前三项**；其后仍是原有 8 个 Windows 风格色。
+  - **默认强调色改为品牌蓝**：原逻辑是「未存过用户选择 → 回落系统强调色」，现改为 `DefaultAccent = BrandBlue`。
+    `AccentColor => CurrentAccent ?? DefaultAccent`，`ApplySavedAccentColor()` 也改为
+    `GetColor(...) ?? DefaultAccent` 并**始终** `Apply` —— 这样首次运行（或旧配置无 `AppAccentColor` 键）
+    直接进入品牌配色，不必先点一次色块。已存的用户选择照旧优先。
+  - 设置页色块 tooltip 走新增的 `ThemeService.GetAccentName(color)`：品牌色给中文名（星门蓝 / 星云青 /
+    深空靛），其余回落十六进制字符串。
+  - 色块容器是 `UniformGrid Columns="4"`，11 个色块自动排 3 行（4/4/3），无需改布局。
+  - 注意：`syncSystemAccentBrushes()` 会把 `SystemAccentColor*Brush` 与品牌色对齐，
+    因此 KB/ZKB 链接、翻译高亮、通知条等 30+ 处引用会一并变品牌色——这是预期行为。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

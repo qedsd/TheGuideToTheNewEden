@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 频道查价 · Nav.ChannelMarket -->
+  <rect x="16" y="22" width="96" height="56" rx="16" fill="none" stroke="#22C55E" stroke-width="9"/>
+<path d="M46 76 L40 100 L68 76 Z" fill="#22C55E"/>
+<path d="M36 44 L54 60 L72 36 L94 54" fill="none" stroke="#22C55E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="72" cy="36" r="7" fill="#5EEAD4"/>
+</svg>

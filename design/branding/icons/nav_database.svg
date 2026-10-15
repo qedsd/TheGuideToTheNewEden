@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 数据库 · Nav.Database -->
+  <ellipse cx="64" cy="30" rx="38" ry="13" fill="#BFDBFE"/>
+<path d="M26 30 V56 C26 63 43 69 64 69 C85 69 102 63 102 56 V30" fill="none" stroke="#3B82F6" stroke-width="9"/>
+<path d="M26 56 V84 C26 91 43 97 64 97 C85 97 102 91 102 84 V56" fill="none" stroke="#3B82F6" stroke-width="9"/>
+<ellipse cx="64" cy="30" rx="38" ry="13" fill="none" stroke="#3B82F6" stroke-width="9"/>
+</svg>

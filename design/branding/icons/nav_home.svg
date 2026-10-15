@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 主页 · Nav.Home -->
+  <path d="M20 60 L64 22 L108 60" fill="none" stroke="#38BDF8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M32 55 V100 H96 V55" fill="none" stroke="#38BDF8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="56" y="74" width="16" height="26" rx="5" fill="#5EEAD4"/>
+</svg>

@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using System.Windows.Media;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Home;
@@ -45,7 +45,6 @@ public partial class HomePage : Page
             _languageHooked = true;
         }
 
-        EnsureHeroImage();
         _ = _viewModel.InitAsync();
         _viewModel.StartClock();
     }
@@ -64,25 +63,26 @@ public partial class HomePage : Page
     private void OnLanguageChanged(object? sender, string language) => _viewModel.RefreshTexts();
 
     /// <summary>
-    /// 品牌图（<c>Assets/home.jpg</c>）在代码里加载而不是写在 XAML 里：
-    /// 资源万一没打进程序集，XAML 里的 pack URI 会在页面构造时抛异常（导航直接失败）；
-    /// 放在这里失败只是退化成深色渐变底色。
+    /// 品牌条的圆角裁剪：<c>ClipToBounds="True"</c> 只按**矩形**裁切，不认 <c>CornerRadius</c>，
+    /// 装饰层的出血星门环会从圆角处溢出（视觉上表现为"只有右上角是方的"）。
+    /// 这里按实际尺寸重建圆角矩形 Clip 几何；夹具/角半径与 XAML 的 <c>CornerRadius="8"</c> 保持一致。
     /// </summary>
-    private void EnsureHeroImage()
+    private void OnHeroBannerSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (HeroImage.ImageSource is not null)
+        if (sender is not Border banner)
         {
             return;
         }
 
-        try
+        double w = banner.ActualWidth;
+        double h = banner.ActualHeight;
+        if (w <= 0 || h <= 0)
         {
-            HeroImage.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/home.jpg", UriKind.Absolute));
+            return;
         }
-        catch (Exception ex)
-        {
-            Core.Log.Warn($"[主页] 品牌图加载失败，改用渐变底色：{ex.Message}");
-        }
+
+        double r = banner.CornerRadius.TopLeft;
+        banner.Clip = new RectangleGeometry(new Rect(0, 0, w, h), r, r);
     }
 
     // ---------- 品牌条 ----------

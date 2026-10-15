@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 比价 · Nav.CompareMarket -->
+  <rect x="16" y="60" width="28" height="44" rx="6" fill="#38BDF8"/>
+<rect x="84" y="28" width="28" height="76" rx="6" fill="#EC4899"/>
+<path d="M54 74 H74" stroke="#8B5CF6" stroke-width="7" stroke-linecap="round"/>
+<path d="M66 66 L74 74 L66 82" fill="none" stroke="#8B5CF6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="30" cy="30" r="6" fill="#5EEAD4"/>
+</svg>

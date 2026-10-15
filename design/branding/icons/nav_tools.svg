@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 小工具 · Nav.Tools -->
+  <rect x="16" y="46" width="96" height="60" rx="12" fill="none" stroke="#64748B" stroke-width="9"/>
+<path d="M48 46 V30 A8 8 0 0 1 56 22 H72 A8 8 0 0 1 80 30 V46" fill="none" stroke="#64748B" stroke-width="9" stroke-linecap="round"/>
+<circle cx="64" cy="76" r="10" fill="#F59E0B"/>
+</svg>

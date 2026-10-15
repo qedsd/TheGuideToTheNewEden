@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 角色 · Nav.Characters -->
+  <circle cx="64" cy="46" r="20" fill="none" stroke="#8B5CF6" stroke-width="9"/>
+<path d="M26 106 C26 82 40 72 64 72 C88 72 102 82 102 106" fill="none" stroke="#8B5CF6" stroke-width="9" stroke-linecap="round"/>
+<circle cx="64" cy="106" r="5" fill="#5EEAD4"/>
+</svg>

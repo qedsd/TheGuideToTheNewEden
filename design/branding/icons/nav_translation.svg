@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 翻译 · Nav.Translation -->
+  <rect x="12" y="38" width="40" height="52" rx="10" fill="none" stroke="#6366F1" stroke-width="9"/>
+<rect x="76" y="38" width="40" height="52" rx="10" fill="none" stroke="#2DD4BF" stroke-width="9"/>
+<path d="M58 64 H70" stroke="#38BDF8" stroke-width="8" stroke-linecap="round"/>
+<path d="M62 54 L72 64 L62 74" fill="none" stroke="#38BDF8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

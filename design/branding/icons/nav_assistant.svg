@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- AI 助手 · Nav.Assistant -->
+  <rect x="30" y="30" width="68" height="68" rx="18" fill="none" stroke="#8B5CF6" stroke-width="9"/>
+<path d="M64 44 Q64 64 84 64 Q64 64 64 84 Q64 64 44 64 Q64 64 64 44 Z" fill="#A78BFA"/>
+<path d="M64 10 V26 M64 102 V118 M10 64 H26 M102 64 H118" stroke="#8B5CF6" stroke-width="8" stroke-linecap="round"/>
+</svg>

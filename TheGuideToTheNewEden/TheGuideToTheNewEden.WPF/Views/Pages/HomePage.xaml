@@ -9,26 +9,13 @@
 
     <!--
         主页（见 HOME_DESIGN.md）：
-        · 品牌 / 状态条（104）——原来是 WinUI 版占掉 1/3 首屏的大图 Hero，这里压成一条；
+        · 品牌 / 状态条（104 → 品牌重设计）：纯矢量主题感知版（DynamicResource 随深浅主题切换），替代 home.jpg 固定深色图；
         · 快捷方式（磁贴网格，可增删 / 拖动排序 / 小宽两档 / 分组分段 / 状态角标）；
         · 数据卡：我的钱包 + 我的行情（左右两栏，窄窗口下自动上下堆叠）。
         顶层导航页不写页面标题（§10「UI 约定」），第一行直接是品牌条。
     -->
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-
-        <!--
-            品牌条的配色：它是一块**固定深色的图片区**（与 WinUI 版一样铺 home.jpg + 暗化遮罩），
-            所以这里的浅色 / 半透明色是刻意写死的——只要求"在深底上可读"，
-            不参与深浅主题切换（若写成主题资源，浅色主题下白底白字反而不可读）。
-        -->
-        <SolidColorBrush x:Key="HeroTextBrush" Color="#FFFFFFFF" />
-        <SolidColorBrush x:Key="HeroSecondaryTextBrush" Color="#E6FFFFFF" />
-        <SolidColorBrush x:Key="HeroPillBrush" Color="#59000000" />
-        <SolidColorBrush x:Key="HeroPillStrokeBrush" Color="#33FFFFFF" />
-        <SolidColorBrush x:Key="HeroButtonBrush" Color="#33FFFFFF" />
-        <SolidColorBrush x:Key="HeroButtonHoverBrush" Color="#59FFFFFF" />
-        <SolidColorBrush x:Key="HeroUpdateBrush" Color="#59FFB900" />
 
         <!--  磁贴：自带模板 + 显式 Foreground（显式样式会顶掉隐式样式，见 §9 第 18 条）  -->
         <Style x:Key="HomeTileButton" TargetType="Button">
@@ -78,43 +65,7 @@
             </Setter>
         </Style>
 
-        <!--  品牌条右侧的图标按钮  -->
-        <Style x:Key="HeroIconButton" TargetType="Button">
-            <Setter Property="Width" Value="30" />
-            <Setter Property="Height" Value="30" />
-            <Setter Property="Margin" Value="6,0,0,0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border
-                            x:Name="HeroButtonBorder"
-                            Background="{StaticResource HeroButtonBrush}"
-                            BorderBrush="{StaticResource HeroPillStrokeBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HeroButtonBorder" Property="Background" Value="{StaticResource HeroButtonHoverBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
 
-        <!--  品牌条上的状态胶囊  -->
-        <Style x:Key="HeroPill" TargetType="Border">
-            <Setter Property="Margin" Value="0,0,8,0" />
-            <Setter Property="Padding" Value="10,4" />
-            <Setter Property="CornerRadius" Value="13" />
-            <Setter Property="Background" Value="{StaticResource HeroPillBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource HeroPillStrokeBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
 
         <!--  行情卡里的小卡（可点击 → 跳市场页选中该物品）  -->
         <Style x:Key="MarketMiniCard" TargetType="Button">
@@ -277,139 +228,364 @@
         x:Name="RootScroll"
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="0">
+        <StackPanel Margin="8">
 
-            <!--  ============ 品牌 / 状态条 ============  -->
+            <!--
+                品牌 / 状态条（纯矢量，主题感知）。
+                SizeChanged → 圆角裁剪：ClipToBounds 只按**矩形**裁，装饰层的出血星门环会从圆角处溢出
+                （表现为"只有右上角是方的"），故在 code-behind 里按实际尺寸重建圆角 Clip 几何。
+            -->
             <Border
-                Height="140"
+                x:Name="HeroBanner"
+                Height="160"
                 ClipToBounds="True"
-                CornerRadius="8">
-                <Grid>
-                    <!--  没有品牌图时（资源缺失）退化为深色渐变，界面不会因此崩  -->
-                    <Grid.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Offset="0" Color="#FF16203A" />
-                            <GradientStop Offset="1" Color="#FF0A0C12" />
+                CornerRadius="8"
+                SizeChanged="OnHeroBannerSizeChanged">
+                <Grid ClipToBounds="True">
+                    <Grid.Resources>
+                        <!--  品牌环渐变（固定品牌色，两主题通用）  -->
+                        <LinearGradientBrush x:Key="BannerRingBrush" StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="#FF5EEAD4" />
+                            <GradientStop Offset="0.5" Color="#FF38BDF8" />
+                            <GradientStop Offset="1" Color="#FF6366F1" />
                         </LinearGradientBrush>
-                    </Grid.Background>
 
+                        <!--  状态胶囊（主题感知）  -->
+                        <Style x:Key="BannerPill" TargetType="Border">
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                            <Setter Property="Padding" Value="10,4" />
+                            <Setter Property="CornerRadius" Value="13" />
+                            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+                            <Setter Property="BorderThickness" Value="1" />
+                        </Style>
+
+                        <!--  图标按钮（主题感知）  -->
+                        <Style x:Key="BannerIconButton" TargetType="Button">
+                            <Setter Property="Width" Value="30" />
+                            <Setter Property="Height" Value="30" />
+                            <Setter Property="Margin" Value="6,0,0,0" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border
+                                            x:Name="BtnBorder"
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                        <!--  胶囊/按钮内图标统一前景  -->
+                        <Style x:Key="BannerIcon" TargetType="ui:SymbolIcon">
+                            <Setter Property="FontSize" Value="13" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Style>
+                    </Grid.Resources>
+
+                    <!--  ===== 背景层：主题底色 =====  -->
+                    <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" />
+
+                    <!--  ===== 背景层：深空洗（固定半透明，两主题通用） =====  -->
                     <Border CornerRadius="8">
                         <Border.Background>
-                            <ImageBrush x:Name="HeroImage" Stretch="UniformToFill" />
-                        </Border.Background>
-                    </Border>
-
-                    <!--  左侧暗化，保证文字在任意图片区域上都可读  -->
-                    <Border>
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Offset="0" Color="#E6000000" />
-                                <GradientStop Offset="0.55" Color="#66000000" />
-                                <GradientStop Offset="1" Color="#26000000" />
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0" Color="#2E0D1B3E" />
+                                <GradientStop Offset="1" Color="#170C1230" />
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
 
+                    <!--  ===== 背景层：青色星云（左下） =====  -->
+                    <Border CornerRadius="8">
+                        <Border.Background>
+                            <RadialGradientBrush Center="0.1,1.05" GradientOrigin="0.1,1.05" RadiusX="0.42" RadiusY="0.62">
+                                <GradientStop Offset="0" Color="#3838BDF8" />
+                                <GradientStop Offset="0.6" Color="#1438BDF8" />
+                                <GradientStop Offset="1" Color="#0038BDF8" />
+                            </RadialGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!--  ===== 背景层：靛色星云（右上） =====  -->
+                    <Border CornerRadius="8">
+                        <Border.Background>
+                            <RadialGradientBrush Center="0.9,-0.08" GradientOrigin="0.9,-0.08" RadiusX="0.5" RadiusY="0.66">
+                                <GradientStop Offset="0" Color="#3A6366F1" />
+                                <GradientStop Offset="0.6" Color="#166366F1" />
+                                <GradientStop Offset="1" Color="#006366F1" />
+                            </RadialGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!--  ===== 背景层：星野（主题感知暗/亮点 + 固定青点缀） =====  -->
+                    <Canvas IsHitTestVisible="False">
+                        <!--  主题感知星点：浅主题=暗点纹理，深主题=亮星  -->
+                        <Ellipse
+                            Canvas.Left="60"
+                            Canvas.Top="30"
+                            Width="2.8"
+                            Height="2.8"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.7" />
+                        <Ellipse
+                            Canvas.Left="140"
+                            Canvas.Top="150"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.5" />
+                        <Ellipse
+                            Canvas.Left="240"
+                            Canvas.Top="120"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.4" />
+                        <Ellipse
+                            Canvas.Left="310"
+                            Canvas.Top="40"
+                            Width="2.4"
+                            Height="2.4"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.6" />
+                        <Ellipse
+                            Canvas.Left="420"
+                            Canvas.Top="90"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.45" />
+                        <Ellipse
+                            Canvas.Left="520"
+                            Canvas.Top="140"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.5" />
+                        <Ellipse
+                            Canvas.Left="610"
+                            Canvas.Top="25"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.4" />
+                        <Ellipse
+                            Canvas.Left="700"
+                            Canvas.Top="110"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.5" />
+                        <Ellipse
+                            Canvas.Left="790"
+                            Canvas.Top="160"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.4" />
+                        <Ellipse
+                            Canvas.Left="825"
+                            Canvas.Top="35"
+                            Width="2.4"
+                            Height="2.4"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.65" />
+                        <Ellipse
+                            Canvas.Left="905"
+                            Canvas.Top="175"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.45" />
+                        <Ellipse
+                            Canvas.Left="95"
+                            Canvas.Top="100"
+                            Width="2"
+                            Height="2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.35" />
+                        <Ellipse
+                            Canvas.Left="30"
+                            Canvas.Top="170"
+                            Width="2.6"
+                            Height="2.6"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.6" />
+                        <Ellipse
+                            Canvas.Left="880"
+                            Canvas.Top="25"
+                            Width="2.2"
+                            Height="2.2"
+                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
+                            Opacity="0.5" />
+                        <!--  固定青色点缀（两主题下均为星色）  -->
+                        <Ellipse
+                            Canvas.Left="205"
+                            Canvas.Top="18"
+                            Width="3.6"
+                            Height="3.6"
+                            Fill="#FF38BDF8"
+                            Opacity="0.85" />
+                        <Ellipse
+                            Canvas.Left="565"
+                            Canvas.Top="70"
+                            Width="3.4"
+                            Height="3.4"
+                            Fill="#FF38BDF8"
+                            Opacity="0.8" />
+                        <Ellipse
+                            Canvas.Left="865"
+                            Canvas.Top="120"
+                            Width="3.6"
+                            Height="3.6"
+                            Fill="#FF38BDF8"
+                            Opacity="0.8" />
+                        <Ellipse
+                            Canvas.Left="1180"
+                            Canvas.Top="70"
+                            Width="2"
+                            Height="2"
+                            Fill="#FF38BDF8"
+                            Opacity="0.45" />
+                        <Ellipse
+                            Canvas.Left="1020"
+                            Canvas.Top="20"
+                            Width="2"
+                            Height="2"
+                            Fill="#FF5EEAD4"
+                            Opacity="0.4" />
+                    </Canvas>
+
+                    <!--  ===== 装饰层：右侧出血星门环 + 罗盘星 =====  -->
+                    <Canvas
+                        Width="300"
+                        Height="140"
+                        HorizontalAlignment="Right"
+                        IsHitTestVisible="False">
+                        <!--  大环：中心在画布右缘外，随窗口宽度自然裁切  -->
+                        <Ellipse
+                            Canvas.Left="168"
+                            Canvas.Top="-28"
+                            Width="264"
+                            Height="264"
+                            Stroke="{StaticResource BannerRingBrush}"
+                            StrokeThickness="26" />
+                        <Path Data="M 286,58 Q 286,100 328,100 Q 286,100 286,142 Q 286,100 244,100 Q 286,100 286,58 Z" Fill="{StaticResource BannerRingBrush}" />
+                    </Canvas>
+
+                    <!--  ===== 内容层 =====  -->
                     <Grid Margin="22,16,22,14">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!--  第一行：应用名 + 版本号  -->
+                        <!--  第一行：Logo 标识 + 应用名 + 版本号  -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <!--  迷你「星门罗盘」（纯矢量，32px）  -->
+                            <Canvas
+                                Width="34"
+                                Height="34"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center">
+                                <Ellipse
+                                    Canvas.Left="4"
+                                    Canvas.Top="4"
+                                    Width="26"
+                                    Height="26"
+                                    Stroke="{StaticResource BannerRingBrush}"
+                                    StrokeThickness="3.2" />
+                                <Path Data="M 17,7 Q 17,17 27,17 Q 17,17 17,27 Q 17,17 7,17 Q 17,17 17,7 Z" Fill="{StaticResource BannerRingBrush}" />
+                            </Canvas>
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="22"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource HeroTextBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{Binding AppName}" />
                             <Border
                                 Margin="10,0,0,0"
                                 Padding="9,2"
                                 VerticalAlignment="Center"
-                                Background="{StaticResource HeroButtonBrush}"
-                                BorderBrush="{StaticResource HeroPillStrokeBrush}"
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="10">
                                 <TextBlock
                                     FontSize="12"
-                                    Foreground="{StaticResource HeroTextBrush}"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                     Text="{Binding VersionText}" />
                             </Border>
                         </StackPanel>
 
-                        <!--  第二行：状态胶囊（左）+ 社区 / 工具按钮（右）  -->
+                        <!--  第二行：状态胶囊（左）+ 工具按钮（右）  -->
                         <Grid Grid.Row="1" VerticalAlignment="Bottom">
                             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                                <Border Style="{StaticResource HeroPill}" ToolTip="{DynamicResource Home.Status.PlayersTip}">
+                                <Border Style="{StaticResource BannerPill}" ToolTip="{DynamicResource Home.Status.PlayersTip}">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon
-                                            VerticalAlignment="Center"
-                                            FontSize="13"
-                                            Foreground="{StaticResource HeroTextBrush}"
-                                            Symbol="People16" />
+                                        <ui:SymbolIcon Style="{StaticResource BannerIcon}" Symbol="People16" />
                                         <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
-                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Text="{Binding PlayersText}" />
                                     </StackPanel>
                                 </Border>
 
-                                <Border Style="{StaticResource HeroPill}" ToolTip="{DynamicResource Home.Status.GameTimeTip}">
+                                <Border Style="{StaticResource BannerPill}" ToolTip="{DynamicResource Home.Status.GameTimeTip}">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon
-                                            VerticalAlignment="Center"
-                                            FontSize="13"
-                                            Foreground="{StaticResource HeroTextBrush}"
-                                            Symbol="GlobeClock20" />
+                                        <ui:SymbolIcon Style="{StaticResource BannerIcon}" Symbol="GlobeClock20" />
                                         <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
-                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Text="{Binding GameTimeText}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border
-                                    Background="{StaticResource HeroUpdateBrush}"
+                                    Background="#59FFB900"
                                     Cursor="Hand"
                                     MouseLeftButtonUp="OnUpdatePillClick"
-                                    Style="{StaticResource HeroPill}"
+                                    Style="{StaticResource BannerPill}"
                                     ToolTip="{DynamicResource Home.Status.NewVersionTip}"
                                     Visibility="{Binding HasNewVersion, Converter={StaticResource BoolToVisibility}}">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon
-                                            VerticalAlignment="Center"
-                                            FontSize="13"
-                                            Foreground="{StaticResource HeroTextBrush}"
-                                            Symbol="CloudArrowDown24" />
+                                        <ui:SymbolIcon Style="{StaticResource BannerIcon}" Symbol="CloudArrowDown24" />
                                         <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
-                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                             Text="{Binding NewVersionText}" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
 
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-
-                                <!--
-                                    快捷输入（快速命令）：简单查询本地解析后直接跳转（物品价格 / KB / 星系 / 角色），
-                                    其余复杂问题转 AI 助手页并自动发送。样式走品牌条的深底白字（Hero* 画笔）。
-                                -->
+                                <!--  快捷输入（快速命令），主题感知配色  -->
                                 <Border
                                     Width="330"
                                     Height="30"
                                     Margin="0,0,8,0"
                                     VerticalAlignment="Center"
-                                    Background="{StaticResource HeroButtonBrush}"
-                                    BorderBrush="{StaticResource HeroPillStrokeBrush}"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
                                     CornerRadius="6">
                                     <Grid>
@@ -424,7 +600,7 @@
                                             Margin="8,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="14"
-                                            Foreground="{StaticResource HeroTextBrush}"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                             Symbol="Search24" />
 
                                         <Grid Grid.Column="1" Margin="6,0,4,0">
@@ -432,7 +608,7 @@
                                                 x:Name="QuickQueryPlaceholder"
                                                 VerticalAlignment="Center"
                                                 FontSize="12"
-                                                Foreground="{StaticResource HeroSecondaryTextBrush}"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                 IsHitTestVisible="False"
                                                 Text="{DynamicResource Home.Quick.Placeholder}"
                                                 TextTrimming="CharacterEllipsis" />
@@ -441,9 +617,9 @@
                                                 VerticalAlignment="Center"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                CaretBrush="{StaticResource HeroTextBrush}"
+                                                CaretBrush="{DynamicResource TextFillColorPrimaryBrush}"
                                                 FontSize="12"
-                                                Foreground="{StaticResource HeroTextBrush}"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                 KeyDown="OnQuickQueryKeyDown"
                                                 TextChanged="OnQuickQueryTextChanged" />
                                         </Grid>
@@ -455,11 +631,11 @@
                                             Margin="0,0,3,0"
                                             VerticalAlignment="Center"
                                             Click="OnQuickQueryGoClick"
-                                            Style="{StaticResource HeroIconButton}"
+                                            Style="{StaticResource BannerIconButton}"
                                             ToolTip="{DynamicResource Home.Quick.Go}">
                                             <ui:SymbolIcon
                                                 FontSize="13"
-                                                Foreground="{StaticResource HeroTextBrush}"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                 Symbol="Send24" />
                                         </Button>
                                     </Grid>
@@ -467,56 +643,56 @@
 
                                 <Button
                                     Click="OnOpenManualClick"
-                                    Style="{StaticResource HeroIconButton}"
+                                    Style="{StaticResource BannerIconButton}"
                                     ToolTip="{DynamicResource Home.Action.Manual}">
                                     <ui:SymbolIcon
                                         FontSize="16"
-                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="BookQuestionMark24" />
                                 </Button>
                                 <Button
                                     Click="OnOpenAboutClick"
-                                    Style="{StaticResource HeroIconButton}"
+                                    Style="{StaticResource BannerIconButton}"
                                     ToolTip="{DynamicResource Home.Action.About}">
                                     <ui:SymbolIcon
                                         FontSize="16"
-                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="Info24" />
                                 </Button>
                                 <Button
                                     Click="OnOpenLogClick"
-                                    Style="{StaticResource HeroIconButton}"
+                                    Style="{StaticResource BannerIconButton}"
                                     ToolTip="{DynamicResource Home.Action.OpenLog}">
                                     <ui:SymbolIcon
                                         FontSize="16"
-                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="Bug16" />
                                 </Button>
                                 <Button
                                     Click="OnOpenConfigClick"
-                                    Style="{StaticResource HeroIconButton}"
+                                    Style="{StaticResource BannerIconButton}"
                                     ToolTip="{DynamicResource Home.Action.OpenConfigFolder}">
                                     <ui:SymbolIcon
                                         FontSize="16"
-                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="DocumentSettings16" />
                                 </Button>
                                 <Button
                                     Click="OnOpenGithubClick"
-                                    Style="{StaticResource HeroIconButton}"
+                                    Style="{StaticResource BannerIconButton}"
                                     ToolTip="GitHub">
                                     <ui:SymbolIcon
                                         FontSize="16"
-                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="Code24" />
                                 </Button>
                                 <Button
                                     Click="OnOpenQqGroupClick"
-                                    Style="{StaticResource HeroIconButton}"
+                                    Style="{StaticResource BannerIconButton}"
                                     ToolTip="{DynamicResource Home.Status.QqGroup}">
                                     <ui:SymbolIcon
                                         FontSize="16"
-                                        Foreground="{StaticResource HeroTextBrush}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="ContactCard16" />
                                 </Button>
                             </StackPanel>
@@ -524,6 +700,7 @@
                     </Grid>
                 </Grid>
             </Border>
+
 
             <!--  ============ 快捷方式 ============  -->
             <controls:CardControl

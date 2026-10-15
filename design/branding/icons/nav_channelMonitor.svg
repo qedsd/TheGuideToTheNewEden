@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 频道监控 · Nav.ChannelMonitor -->
+  <path d="M12 64 C32 40 48 26 64 26 C80 26 96 40 116 64 C96 88 80 102 64 102 C48 102 32 88 12 64 Z" fill="none" stroke="#2DD4BF" stroke-width="9" stroke-linejoin="round"/>
+<circle cx="64" cy="64" r="18" fill="#38BDF8"/>
+<circle cx="64" cy="64" r="7" fill="#1E3A8A"/>
+</svg>

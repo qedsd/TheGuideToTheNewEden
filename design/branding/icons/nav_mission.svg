@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 任务攻略 · Nav.Mission -->
+  <path d="M38 16 V112" stroke="#F59E0B" stroke-width="9" stroke-linecap="round"/>
+<path d="M38 26 C60 18 74 30 94 22 V56 C74 64 60 52 38 60 Z" fill="#F59E0B"/>
+<circle cx="38" cy="112" r="6" fill="#5EEAD4"/>
+</svg>

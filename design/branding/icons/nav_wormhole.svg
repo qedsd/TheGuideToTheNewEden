@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 虫洞 · Nav.Wormhole -->
+  <g fill="none" stroke-width="8" transform="rotate(-28 64 64)">
+<ellipse cx="64" cy="64" rx="46" ry="24" stroke="#2DD4BF"/>
+<ellipse cx="64" cy="64" rx="34" ry="17" stroke="#818CF8"/>
+<ellipse cx="64" cy="64" rx="22" ry="11" stroke="#A78BFA"/>
+</g>
+<circle cx="64" cy="64" r="10" fill="#5EEAD4"/>
+</svg>

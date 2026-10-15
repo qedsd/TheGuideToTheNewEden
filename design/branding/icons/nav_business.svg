@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 商业 · Nav.Business -->
+  <path d="M26 88 L50 62 L70 74 L100 38" fill="none" stroke="#2563EB" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M72 38 H100 V66" fill="none" stroke="#22C55E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="50" cy="62" r="7" fill="#38BDF8"/>
+<circle cx="70" cy="74" r="7" fill="#38BDF8"/>
+</svg>

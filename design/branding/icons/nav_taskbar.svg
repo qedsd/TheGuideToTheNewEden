@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 分屏 · Nav.Tools_Taskbar -->
+  <rect x="12" y="24" width="104" height="80" rx="12" fill="none" stroke="#0EA5E9" stroke-width="9"/>
+<path d="M64 24 V104" stroke="#0EA5E9" stroke-width="8"/>
+<rect x="22" y="34" width="34" height="22" rx="5" fill="#38BDF8"/>
+<rect x="72" y="34" width="34" height="22" rx="5" fill="#5EEAD4"/>
+<path d="M22 74 H44 M72 74 H94" stroke="#94A3B8" stroke-width="8" stroke-linecap="round"/>
+</svg>

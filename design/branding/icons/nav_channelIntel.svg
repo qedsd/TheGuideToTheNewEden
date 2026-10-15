@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 频道预警 · Nav.ChannelIntel -->
+  <circle cx="64" cy="64" r="40" fill="none" stroke="#F43F5E" stroke-width="9"/>
+<path d="M64 24 A40 40 0 0 1 104 64" fill="none" stroke="#5EEAD4" stroke-width="8" stroke-linecap="round"/>
+<path d="M57 44 H71 V68 H57 Z" fill="#EF4444"/>
+<circle cx="64" cy="86" r="7" fill="#EF4444"/>
+</svg>

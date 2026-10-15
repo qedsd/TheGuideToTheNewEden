@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 攻略 · Nav.Guides -->
+  <path d="M64 34 C48 24 28 24 18 30 V92 C28 86 48 86 64 96 Z" fill="none" stroke="#22C55E" stroke-width="9" stroke-linejoin="round"/>
+<path d="M64 34 C80 24 100 24 110 30 V92 C100 86 80 86 64 96 Z" fill="none" stroke="#86EFAC" stroke-width="9" stroke-linejoin="round"/>
+<path d="M64 34 V96" stroke="#F59E0B" stroke-width="8"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 多开 · Nav.GamePreview -->
+  <rect x="14" y="24" width="44" height="36" rx="6" fill="none" stroke="#6366F1" stroke-width="8"/>
+<rect x="14" y="66" width="44" height="36" rx="6" fill="none" stroke="#6366F1" stroke-width="8"/>
+<rect x="70" y="24" width="44" height="78" rx="6" fill="none" stroke="#6366F1" stroke-width="8"/>
+<circle cx="36" cy="42" r="6" fill="#5EEAD4"/>
+<circle cx="36" cy="84" r="6" fill="#38BDF8"/>
+<circle cx="92" cy="63" r="7" fill="#A78BFA"/>
+</svg>

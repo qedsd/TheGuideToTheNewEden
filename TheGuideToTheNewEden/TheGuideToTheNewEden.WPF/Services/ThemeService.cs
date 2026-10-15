@@ -9,9 +9,27 @@ namespace TheGuideToTheNewEden.WPF.Services;
 /// </summary>
 public static class ThemeService
 {
-    /// <summary>主题色候选，供设置页展示为色块。</summary>
+    /// <summary>Logo 品牌青（渐变起点）。</summary>
+    public static readonly Color BrandTeal = Color.FromRgb(0x5E, 0xEA, 0xD4);
+
+    /// <summary>Logo 品牌蓝（渐变中点）——默认强调色。</summary>
+    public static readonly Color BrandBlue = Color.FromRgb(0x38, 0xBD, 0xF8);
+
+    /// <summary>Logo 品牌靛（渐变终点）。</summary>
+    public static readonly Color BrandIndigo = Color.FromRgb(0x63, 0x66, 0xF1);
+
+    /// <summary>
+    /// 默认强调色：Logo 品牌蓝。用户从未选过主题色时（<c>settings.json</c> 无 <c>AppAccentColor</c>）
+    /// 使用它，而不是系统强调色——让软件首屏就是品牌配色（用户要求）。
+    /// </summary>
+    public static readonly Color DefaultAccent = BrandBlue;
+
+    /// <summary>主题色候选，供设置页展示为色块。前三项为 Logo 品牌色。</summary>
     public static readonly IReadOnlyList<Color> AccentColors =
     [
+        BrandBlue,                        // 星门蓝（Logo 渐变中点，默认）
+        BrandTeal,                        // 星云青（Logo 渐变起点）
+        BrandIndigo,                      // 深空靛（Logo 渐变终点）
         Color.FromRgb(0x00, 0x78, 0xD4), // Windows 蓝
         Color.FromRgb(0xE3, 0x00, 0x8C), // 品红
         Color.FromRgb(0xCA, 0x50, 0x10), // 橙红
@@ -22,13 +40,25 @@ public static class ThemeService
         Color.FromRgb(0x4F, 0x6B, 0xED), // 靛蓝
     ];
 
+    /// <summary>品牌色块的友好名称（设置页 tooltip 用）；非品牌色返回 null，走默认的十六进制提示。</summary>
+    private static readonly Dictionary<Color, string> AccentNames = new()
+    {
+        [BrandTeal] = "星云青",
+        [BrandBlue] = "星门蓝",
+        [BrandIndigo] = "深空靛",
+    };
+
+    /// <summary>取主题色的显示名；非品牌色回落到十六进制字符串。</summary>
+    public static string GetAccentName(Color color) =>
+        AccentNames.TryGetValue(color, out var name) ? name : color.ToString();
+
     public static ApplicationTheme Theme { get; private set; } = ApplicationTheme.Light;
 
-    /// <summary>用户选择的强调色；未选择过时为 null（使用系统强调色）。</summary>
+    /// <summary>用户选择的强调色；未选择过时为 null（此时用 <see cref="DefaultAccent"/>）。</summary>
     public static Color? CurrentAccent { get; private set; }
 
-    /// <summary>当前实际生效的强调色。</summary>
-    public static Color AccentColor => CurrentAccent ?? ApplicationAccentColorManager.SystemAccent;
+    /// <summary>当前实际生效的强调色：用户选择 → 品牌默认。</summary>
+    public static Color AccentColor => CurrentAccent ?? DefaultAccent;
 
     /// <summary>
     /// 主题或强调色已变化。界面颜色走 <c>DynamicResource</c> 会自动更新，
@@ -65,13 +95,11 @@ public static class ThemeService
 
     private static void ApplySavedAccentColor()
     {
-        var accent = SettingsService.GetColor(SettingsService.AccentColorKey);
-        if (accent is { } color)
-        {
-            CurrentAccent = color;
-            ApplicationAccentColorManager.Apply(color, Theme);
-        }
+        // 没存过（首次运行 / 旧版本配置）→ 用品牌默认色，而不是系统强调色。
+        var accent = SettingsService.GetColor(SettingsService.AccentColorKey) ?? DefaultAccent;
 
+        CurrentAccent = accent;
+        ApplicationAccentColorManager.Apply(accent, Theme);
         SyncSystemAccentBrushes();
     }
 

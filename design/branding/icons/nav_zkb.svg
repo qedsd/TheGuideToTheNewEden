@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Zkillboard · Nav.ZKB -->
+  <circle cx="64" cy="52" r="30" fill="none" stroke="#EF4444" stroke-width="7" opacity="0.5"/>
+<path d="M64 12 L74 42 L104 52 L74 62 L64 92 L54 62 L24 52 L54 42 Z" fill="#EF4444"/>
+<circle cx="64" cy="52" r="10" fill="#F59E0B"/>
+</svg>

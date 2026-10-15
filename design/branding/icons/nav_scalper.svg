@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 倒货 · Nav.Scalper -->
+  <rect x="14" y="66" width="24" height="26" rx="6" fill="#38BDF8"/>
+<rect x="14" y="34" width="24" height="26" rx="6" fill="#60A5FA"/>
+<path d="M48 76 H92" stroke="#F59E0B" stroke-width="9" stroke-linecap="round"/>
+<path d="M74 58 L92 76 L74 94" fill="none" stroke="#F59E0B" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

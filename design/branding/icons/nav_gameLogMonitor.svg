@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 日志监控 · Nav.GameLogMonitor -->
+  <rect x="24" y="14" width="70" height="86" rx="10" fill="none" stroke="#64748B" stroke-width="9"/>
+<path d="M42 40 H74" stroke="#64748B" stroke-width="8" stroke-linecap="round"/>
+<path d="M42 58 H64" stroke="#64748B" stroke-width="8" stroke-linecap="round"/>
+<path d="M34 78 L46 66 L58 78 L70 66 L82 78" fill="none" stroke="#2DD4BF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

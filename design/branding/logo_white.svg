@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 新伊甸漫游指南 · Logo 单色白版（用于深色背景 / 状态栏反白场景） -->
+  <g fill="#FFFFFF">
+    <circle cx="64" cy="64" r="46" fill="none" stroke="#FFFFFF" stroke-width="10"/>
+    <path d="M64 24 Q64 64 104 64 Q64 64 64 104 Q64 64 24 64 Q64 64 64 24 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!--
+    新伊甸漫游指南 · Logo「星门罗盘」
+    星门之环（EVE 星门）+ 罗盘星（指南针）
+    两元素结构，可缩放至 16px 图标不失形。
+  -->
+  <defs>
+    <linearGradient id="lg" x1="14" y1="8" x2="114" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5EEAD4"/>
+      <stop offset="0.5" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 星门之环 -->
+  <circle cx="64" cy="64" r="46" fill="none" stroke="url(#lg)" stroke-width="10"/>
+
+  <!-- 罗盘星（四角闪星，凹边曲线） -->
+  <path d="M64 24 Q64 64 104 64 Q64 64 64 104 Q64 64 24 64 Q64 64 64 24 Z" fill="url(#lg)"/>
+</svg>

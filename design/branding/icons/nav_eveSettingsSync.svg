@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 配置同步 · Nav.EveSettingsSync -->
+  <rect x="12" y="34" width="40" height="56" rx="8" fill="none" stroke="#2DD4BF" stroke-width="9"/>
+<rect x="76" y="34" width="40" height="56" rx="8" fill="none" stroke="#6366F1" stroke-width="9"/>
+<path d="M58 60 H70" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+<path d="M62 52 L72 60 L62 68" fill="none" stroke="#F59E0B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M70 80 H58" stroke="#38BDF8" stroke-width="8" stroke-linecap="round"/>
+<path d="M66 72 L56 80 L66 88" fill="none" stroke="#38BDF8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

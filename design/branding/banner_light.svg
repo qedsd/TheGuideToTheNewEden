@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="1200" height="200" font-family="'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+  <!--
+    新伊甸漫游指南 · 主页横幅（浅色主题版）
+    与 banner_dark.svg 同构图：晨雾蓝底 → 淡青/淡靛星云 → 灰蓝星野 → 右侧出血星门环。
+  -->
+  <defs>
+    <linearGradient id="bgL" x1="0" y1="0" x2="1200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7FAFF"/>
+      <stop offset="0.5" stop-color="#EAF0FA"/>
+      <stop offset="1" stop-color="#F1F5FC"/>
+    </linearGradient>
+    <radialGradient id="neb1L" gradientUnits="userSpaceOnUse" cx="230" cy="210" r="430">
+      <stop offset="0" stop-color="#38BDF8" stop-opacity="0.16"/>
+      <stop offset="0.55" stop-color="#38BDF8" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="neb2L" gradientUnits="userSpaceOnUse" cx="1000" cy="-30" r="520">
+      <stop offset="0" stop-color="#6366F1" stop-opacity="0.15"/>
+      <stop offset="0.55" stop-color="#6366F1" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="neb3L" gradientUnits="userSpaceOnUse" cx="1120" cy="100" r="260">
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ringL" x1="960" y1="-40" x2="1280" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14B8A6"/>
+      <stop offset="0.55" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="markL" x1="52" y1="66" x2="112" y2="126" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14B8A6"/>
+      <stop offset="0.5" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 底与星云 -->
+  <rect width="1200" height="200" fill="url(#bgL)"/>
+  <rect width="1200" height="200" fill="url(#neb1L)"/>
+  <rect width="1200" height="200" fill="url(#neb2L)"/>
+  <rect width="1200" height="200" fill="url(#neb3L)"/>
+
+  <!-- 星野（灰蓝暗点，弱化） -->
+  <g fill="#64748B">
+    <circle cx="60" cy="30" r="1.4" opacity="0.28"/><circle cx="140" cy="150" r="1" opacity="0.2"/>
+    <circle cx="205" cy="18" r="1.8" opacity="0.34"/><circle cx="240" cy="120" r="1" opacity="0.16"/>
+    <circle cx="310" cy="40" r="1.2" opacity="0.24"/><circle cx="355" cy="165" r="1.6" opacity="0.3"/>
+    <circle cx="415" cy="150" r="1" opacity="0.18"/><circle cx="470" cy="30" r="1.3" opacity="0.28"/>
+    <circle cx="520" cy="140" r="1" opacity="0.2"/><circle cx="565" cy="70" r="1.7" opacity="0.32"/>
+    <circle cx="610" cy="25" r="1" opacity="0.16"/><circle cx="640" cy="150" r="1.2" opacity="0.24"/>
+    <circle cx="700" cy="110" r="1" opacity="0.2"/><circle cx="735" cy="55" r="1.5" opacity="0.3"/>
+    <circle cx="790" cy="160" r="1" opacity="0.16"/><circle cx="825" cy="35" r="1.2" opacity="0.26"/>
+    <circle cx="865" cy="120" r="1.8" opacity="0.32"/><circle cx="905" cy="175" r="1" opacity="0.18"/>
+    <circle cx="940" cy="60" r="1.1" opacity="0.22"/><circle cx="985" cy="140" r="1.4" opacity="0.28"/>
+    <circle cx="1020" cy="20" r="1" opacity="0.16"/><circle cx="1055" cy="170" r="1.2" opacity="0.24"/>
+    <circle cx="1130" cy="45" r="1" opacity="0.2"/><circle cx="1160" cy="130" r="1.6" opacity="0.32"/>
+    <circle cx="1180" cy="70" r="1" opacity="0.18"/><circle cx="95" cy="100" r="1" opacity="0.14"/>
+    <circle cx="330" cy="95" r="1.1" opacity="0.2"/><circle cx="555" cy="35" r="1" opacity="0.16"/>
+    <circle cx="680" cy="170" r="1.1" opacity="0.2"/><circle cx="955" cy="155" r="1" opacity="0.16"/>
+    <circle cx="30" cy="170" r="1.3" opacity="0.24"/><circle cx="505" cy="180" r="1" opacity="0.14"/>
+    <circle cx="880" cy="25" r="1.1" opacity="0.2"/>
+  </g>
+
+  <!-- 闪星（青色） -->
+  <g fill="#0EA5E9" opacity="0.55">
+    <path d="M205 53 Q205 60 212 60 Q205 60 205 67 Q205 60 198 60 Q205 60 205 53 Z"/>
+    <path d="M565 64 Q565 70 571 70 Q565 70 565 76 Q565 70 559 70 Q565 70 565 64 Z"/>
+    <path d="M865 113 Q865 120 872 120 Q865 120 865 127 Q865 120 858 120 Q865 120 865 113 Z"/>
+  </g>
+
+  <!-- 右侧出血星门环 + 罗盘星 -->
+  <circle cx="1120" cy="100" r="170" fill="none" stroke="url(#ringL)" stroke-width="30"/>
+  <path d="M1120 60 Q1120 100 1160 100 Q1120 100 1120 140 Q1120 100 1080 100 Q1120 100 1120 60 Z" fill="url(#ringL)"/>
+
+  <!-- 左侧 Logo 标识（等比 0.65625×128 = 84px） -->
+  <g transform="translate(40,58) scale(0.65625)">
+    <circle cx="64" cy="64" r="46" fill="none" stroke="url(#markL)" stroke-width="10"/>
+    <path d="M64 24 Q64 64 104 64 Q64 64 64 104 Q64 64 24 64 Q64 64 64 24 Z" fill="url(#markL)"/>
+  </g>
+
+  <!-- 应用名 / 副标题 / 版本 -->
+  <text x="150" y="92" font-size="34" font-weight="700" fill="#16204A">新伊甸漫游指南</text>
+  <text x="152" y="119" font-size="12" letter-spacing="5" fill="#5A6B8C">THE GUIDE TO THE NEW EDEN</text>
+  <g>
+    <rect x="404" y="69" width="58" height="23" rx="11.5" fill="#E4EBF7" stroke="#C6D3E8"/>
+    <text x="433" y="84.5" font-size="12" text-anchor="middle" fill="#33517E">v4.0</text>
+  </g>
+</svg>
