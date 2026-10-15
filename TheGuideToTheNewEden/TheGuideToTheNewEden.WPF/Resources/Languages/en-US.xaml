@@ -2324,5 +2324,15 @@
     <sys:String x:Key="AssistantSettingPage_Saved">AI assistant settings saved</sys:String>
     <sys:String x:Key="AssistantSettingPage_Restored">Defaults restored</sys:String>
     <sys:String x:Key="Assistant_Chat_ConfirmDisabled">Refused this write action per settings (write confirmation is disabled under Settings → AI Assistant)</sys:String>
+    <sys:String x:Key="Home.Feature.AssistantDesc">Call app features in natural language: prices, characters, routes, jump bridges, scalping analysis</sys:String>
+    <sys:String x:Key="AssistantTool_character_orders">Open orders</sys:String>
+    <sys:String x:Key="AssistantTool_build_buy_order_text">Buy-order text</sys:String>
+    <sys:String x:Key="AssistantTool_character_mail">Character mail</sys:String>
+    <sys:String x:Key="AssistantTool_character_contracts">Character contracts</sys:String>
+    <sys:String x:Key="AssistantTool_character_industry">Industry jobs</sys:String>
+    <sys:String x:Key="AssistantTool_character_location">Character location</sys:String>
+    <sys:String x:Key="AssistantTool_zkb_entity">ZKB statistics</sys:String>
+    <sys:String x:Key="AssistantTool_ded_info">DED info</sys:String>
+    <sys:String x:Key="AssistantTool_wormhole_info">Wormhole info</sys:String>
 
 </ResourceDictionary>

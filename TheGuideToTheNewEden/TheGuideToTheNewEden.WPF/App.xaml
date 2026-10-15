@@ -12,12 +12,17 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Light" />
                 <ui:ControlsDictionary />
-                <ResourceDictionary Source="pack://application:,,,/Controls/GlobalControlStyles.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Controls/CardControlStyles.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Controls/SettingCardStyles.xaml" />
+                <!--
+                    下面这些 Source **带程序集名**（…;component/…）：不带时 WPF 会按"入口程序集"解析，
+                    于是从**别的入口程序集**（如 probe/AssistantProbe 探针）加载 App.xaml 时会
+                    报"找不到资源 controls/globalcontrolstyles.xaml"。带程序集名对应用本身语义完全等价。
+                -->
+                <ResourceDictionary Source="pack://application:,,,/TheGuideToTheNewEden;component/Controls/GlobalControlStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TheGuideToTheNewEden;component/Controls/CardControlStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TheGuideToTheNewEden;component/Controls/SettingCardStyles.xaml" />
                 <!--  左侧导航的彩色矢量图标（由 design/branding/icons 生成，见 NavIcons.xaml 头注释）  -->
-                <ResourceDictionary Source="pack://application:,,,/Resources/NavIcons.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Resources/Languages/zh-CN.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TheGuideToTheNewEden;component/Resources/NavIcons.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TheGuideToTheNewEden;component/Resources/Languages/zh-CN.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibility" />

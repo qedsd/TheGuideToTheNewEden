@@ -93,18 +93,26 @@ public sealed class AnthropicChatProtocol : IChatProtocol
             : $"{trimmed}/v1/messages";
     }
 
+    /// <summary>
+    /// 把归一化消息转成 Anthropic 的 messages。
+    /// <para>
+    /// **连续的同角色消息要合并**：Anthropic 要求 user/assistant 交替（连续同角色它会在服务端合并，
+    /// 但自己合并更可控，也避免某些兼容网关更严格）。两种情形都会出现连续 user：
+    /// 工具结果的 <c>tool_result</c> 块，以及紧随其后的用户文本——本方法把它们并进**同一条** user 消息。
+    /// </para>
+    /// </summary>
     private static JsonArray BuildMessages(ChatRequest request)
     {
         var messages = new JsonArray();
-        JsonObject? pendingToolResultUser = null;   // 连续 Tool 消息合并为一条 user（Anthropic 不允许 user 紧邻）
+        JsonArray? pendingUserBlocks = null;   // 连续 user 侧内容（tool_result / text）先攒着，遇到 assistant 或收尾时落盘
 
         foreach (var message in request.Messages)
         {
-            // 工具结果：并入挂起的 user 消息（tool_result 块），等遇到非 Tool 消息或收尾时落盘
+            // 工具结果：并入挂起的 user 消息
             if (message.Role == ChatRole.Tool)
             {
-                pendingToolResultUser ??= new JsonObject { ["role"] = "user", ["content"] = new JsonArray() };
-                ((JsonArray)pendingToolResultUser["content"]!).Add(new JsonObject
+                pendingUserBlocks ??= new JsonArray();
+                pendingUserBlocks.Add(new JsonObject
                 {
                     ["type"] = "tool_result",
                     ["tool_use_id"] = message.ToolCallId ?? string.Empty,
@@ -113,14 +121,26 @@ public sealed class AnthropicChatProtocol : IChatProtocol
                 continue;
             }
 
-            if (pendingToolResultUser is not null)
+            // 用户文本：也并入挂起的 user 消息（与 tool_result 同一条，Anthropic 侧语义等价）
+            if (message.Role == ChatRole.User)
             {
-                messages.Add(pendingToolResultUser);
-                pendingToolResultUser = null;
+                pendingUserBlocks ??= new JsonArray();
+                pendingUserBlocks.Add(new JsonObject
+                {
+                    ["type"] = "text",
+                    ["text"] = message.Content ?? string.Empty,
+                });
+                continue;
+            }
+
+            if (pendingUserBlocks is not null)
+            {
+                messages.Add(new JsonObject { ["role"] = "user", ["content"] = pendingUserBlocks });
+                pendingUserBlocks = null;
             }
 
             // 模型要求调用工具的 assistant 消息：content 为 tool_use 块（必须原样回传，含 input）
-            if (message.Role == ChatRole.Assistant && message.ToolCalls is { Count: > 0 })
+            if (message.ToolCalls is { Count: > 0 })
             {
                 var blocks = new JsonArray();
                 foreach (var call in message.ToolCalls)
@@ -140,7 +160,7 @@ public sealed class AnthropicChatProtocol : IChatProtocol
 
             messages.Add(new JsonObject
             {
-                ["role"] = message.Role == ChatRole.Assistant ? "assistant" : "user",
+                ["role"] = "assistant",
                 ["content"] = new JsonArray
                 {
                     new JsonObject { ["type"] = "text", ["text"] = message.Content ?? string.Empty },
@@ -148,9 +168,9 @@ public sealed class AnthropicChatProtocol : IChatProtocol
             });
         }
 
-        if (pendingToolResultUser is not null)
+        if (pendingUserBlocks is not null)
         {
-            messages.Add(pendingToolResultUser);
+            messages.Add(new JsonObject { ["role"] = "user", ["content"] = pendingUserBlocks });
         }
 
         return messages;
@@ -311,7 +331,11 @@ public sealed class AnthropicChatProtocol : IChatProtocol
                             acc.Name = nameNode.GetString() ?? string.Empty;
                         }
 
-                        if (block.TryGetProperty("input", out var inputNode) && inputNode.ValueKind == JsonValueKind.Object)
+                        // 流式下 content_block_start 的 input 是**空对象**（真正的 JSON 走 input_json_delta）——
+                        // 只有非空 input（极少见：服务端一次性给全参数）才追加，否则会拼出 {}{"itemName":…} 这种非法 JSON
+                        if (block.TryGetProperty("input", out var inputNode)
+                            && inputNode.ValueKind == JsonValueKind.Object
+                            && inputNode.EnumerateObject().Any())
                         {
                             acc.Arguments.Append(inputNode.GetRawText());
                         }

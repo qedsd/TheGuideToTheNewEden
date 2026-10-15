@@ -5045,11 +5045,6 @@ icacls $ws | findstr /i "Mandatory"
 - **注意**：默认 `Alt+Q` 若已被多开模块的某项快捷键或其它程序占用，注册会失败——日志里有一条 `Warn`，
   此时在「设置 → AI 助手」改成别的组合键即可。
 
-> **AI 助手模块的当前状态**：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
-> Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）**均已落地**，通过构建与静态自查，
-> **界面已由用户实机确认正常**。剩余一项收尾：四组离线探针
-> （`ToolCallProbe` / `EngineProbe` / `ToolProbe` / `AssistantUiProbe`，断言矩阵见设计文档 §13.6 / §14.6 / §15.5 / §16.6）。
-
 ### 阶段 112：品牌重设计 · 新 Logo + 主页品牌条纯矢量主题感知化
 
 - **新 Logo「星门罗盘」**（设计稿与源文件在仓库根 `design/branding/`）：星门之环 + 罗盘星（四角闪星），
@@ -5325,6 +5320,123 @@ icacls $ws | findstr /i "Mandatory"
   - **独立复核**（脚本外另行解析 SVG 与 XAML 两侧数字比对）：
     环心距右 64 / 纵向 80 / 半径 136 / 描边 24 / 星尖半径 32 —— **五项全部一致**；
     星与环同心；星尖距右缘 32px 在界内。构建 **0 错误**，用户实机确认通过。
+
+---
+
+### 阶段 113：AI 助手探针（四套件 · 364 断言）+ 工具调用日志 + 资源不完整事故排障
+
+> 探针工程：`probe/AssistantProbe/`（新增 8 个文件）；设计见 `AI_ASSISTANT_DESIGN.md` §13.6 / §14.6 / §15.5 / §16.6。
+
+- **工具调用 INFO 日志**（用户要求"给每次工具调用补一条 INFO 日志"）：`AiAssistantEngine.ExecuteOneAsync` 里
+  成功 / 超时 / 抛异常三条路径各记一条 `Core.Log.Info`，格式 `AI 助手 · 工具 <name> 成功 · 1.23s · <参数摘要>`；
+  抛异常仍保留 `Log.Error(ex)`（栈）+ 一条 Info（人话摘要）。另外记：循环上限触发、模型请求了未注册工具、
+  写操作挂起（含参数摘要）。**目的**：出问题时日志里能直接看到"调了什么、多久、成没成"，
+  部分替代探针的诊断价值。
+- **可测性小改**（不是为测试而测试）：`AssistantContext.Endpoint`（`ChatEndpoint?`）可选注入，
+  `null` 时仍用「AI 翻译」设置。这样引擎探针能指向本地 mock 服务，**完全不动用户的 settings.json**——
+  阶段 47 的探针是靠"备份+还原设置文件"绕开的，注入端点更干净。
+- **探针四套件**（`dotnet build ... -p:OutDir=<temp>` 后运行，退出码 0 = 全 PASS）：
+
+  | 套件 | 覆盖 | 断言数 |
+  |---|---|---|
+  | `toolcall` | 四协议的工具声明形状、消息往返、tool_calls 解析、流式累积、**"不带 tools 不得写 tools 字段"回归红线** | 80 |
+  | `engine` | 本地 mock 大模型驱动引擎：无工具轮省钱路径 / 工具轮往返 / 循环上限 / 未知工具 / 抛错 / 超时 / 结果截断(4000) / **写操作确认（挂起=零副作用、应用、拒绝）** / 上下文顺序 / 自定义提示词 / 取消传播 | 62 |
+  | `tools` | 真 SDE 库下的 29 个工具：名字规范、描述长度、schema 合法性（required ⊆ properties）、写/重型工具的确认标记、导航工具的动作标记，以及**确定性执行**（本地词库 `Rifter → 裂谷级`、缺参/未找到的明确原因、结果 ≤ 4000） | 204 |
+  | `ui` | 载入真实应用资源字典后**离屏构造**助手页与对话视图，**监听 WPF 绑定错误**（本项目老坑"绑定到不存在的属性静默失败"）、Markdown 表格/列表渲染成 FlowDocument 的 Table/List、工具步骤区绑定、确认卡片按钮存在且可见、78 个界面键全覆盖 | 18 |
+
+- **探针抓到的两个真实缺陷**（都不是测试问题，已改适配器）：
+  1. **Anthropic 会输出连续的 user 消息**：`tool_result` 那条 user 与紧随其后的用户文本各占一条，
+     Anthropic 虽会在服务端合并，但不能依赖它（也怕兼容网关更严格）→ `BuildMessages` 改为把
+     **所有 user 侧内容（tool_result / text）攒进同一条 user 消息**，遇到 assistant 或收尾时落盘。
+  2. **Anthropic 流式参数拼接出错**：`content_block_start` 里的 `input` 是**空对象** `{}`（真正的 JSON 走
+     `input_json_delta`），原实现把它当内容追加 → 拼出 `{}{"itemName":"Rifter"}` 这种非法 JSON。
+     改为**只在 input 非空时**才追加。
+- **补齐主页功能目录条目**：日志里一直在报
+  `[主页] 导航项「AI 助手」没有对应的功能目录条目（AiAssistantPage），它无法被固定到主页` →
+  `HomeFeatureCatalog` 增加 `assistant` 条目（`Sparkle24` + 已有的 `NavIcon.assistant` 彩色图标 +
+  新增 `Home.Feature.AssistantDesc`），警告消失、助手页可固定到主页。
+- **⚠ 并发构建事故（本轮最大的坑，两度导致启动崩溃）**：
+  - **症状**：启动即弹异常框 `System.IO.IOException: 找不到资源"resources/languages/zh-cn.xaml"`
+    （另一次是 `resources/bannerbackground.dark.xaml`），栈分别落在 `LanguageService.SetLanguage`
+    与 `ThemeService.ApplyBannerDictionary`——都是"运行时构造的绝对 pack URI"。
+  - **排查**：反射读出 `TheGuideToTheNewEden.g.resources`（117 条）确认**资源在 dll 里**；
+    日志时间线显示崩溃那次**没有留下日志**，而相邻两次正常启动都有（说明崩的那次用的是**资源不完整的 dll**）；
+    并且**当时我正在用默认输出目录构建探针**——构建日志里明确有
+    `TheGuideToTheNewEden.WPF -> …\bin\Debug\net8.0-windows10.0.19041\TheGuideToTheNewEden.dll`。
+  - **根因**：探针的 `ProjectReference` 会连带构建主工程。我以**默认 OutDir** 构建探针时，
+    与用户在 Visual Studio 里的构建**同时写主工程的 obj/bin**；WPF 的 BAML/`g.resources` 在并发下
+    可能产出资源残缺的 dll。另外 `obj` 下曾累积 **2757 个 `*_wpftmp*` 残留**（中断/并发构建的痕迹）。
+  - **修法**（三条都落地）：
+    ① **探针构建必须 `-p:OutDir=<temp>`**（ProjectReference 会传播该属性，主工程产物完全不被触碰；
+       实测应用 dll 时间戳不变），已写进 `AssistantProbe.csproj` 头注释；
+    ② 清理 obj 里的 `*_wpftmp*` 残留后干净重建，并用反射校验 `g.resources` 条目；
+    ③ **顺带加固**：运行时构造的绝对 pack URI 一律**带程序集名**（`…/<Assembly>;component/…`）——
+       `App.xaml` 的 5 个字典、`ThemeService` 的 banner、`LanguageService` 的语言字典。
+       不带程序集名时 WPF 按 `Application.ResourceAssembly`（= **入口程序集**）解析，
+       换个宿主（探针、被别的 exe 加载）就必然失败。
+  - **副产品**：探针 `ui` 套件先前报的 3 个"确认卡片按钮找不到"也是这次污染造成的**假失败**；
+    隔离构建后 **364 断言全 PASS**。
+- **验证**：应用干净重建 **0 错误**，`g.resources` 117 条（含两种 banner、两种语言、助手三份 XAML 全在）；
+  实机启动两次（17:42 / 17:45）进程均存活、日志无"找不到资源"、`全局快捷键已注册（Alt+Q）` 正常；
+  探针四套件 **364 PASS / 0 FAIL**。
+
+---
+
+### 阶段 114：AI 助手 · v1.5 P1 九个工具（订单/邮件/合同/工业/位置/ZKB/DED/虫洞/购买文本）
+
+> 设计见 `AI_ASSISTANT_DESIGN.md` §9（v1.5 候选）与 §12（开放度盘点）。工具总数 23 → **32**。
+
+- **新增 9 个只读工具**（各自注册进 `ToolRegistry`、各加一条中英界面键 `AssistantTool_<name>`）：
+  | 工具 | 数据来源 | 说明 |
+  |---|---|---|
+  | `character_orders` | `CharacterOrderService.GetCharacterOrdersAsync/GetCorpOrdersAsync` + `BuildStatusAsync` | 未结订单：方向/价格/剩余量/地点/剩余时间/**与市场参考价的价差**/是否被压单；支持 `onlyCompressed` |
+  | `build_buy_order_text` | 同上 + `OrderPageViewModel.BuildGameOrderText` | 生成游戏内批量购买文本（**复用订单页同一份静态方法**，保证与「复制为游戏批量购买」逐字一致） |
+  | `character_mail` | `CharacterMailService.GetLabelsAsync/GetHeadersAsync` | 标签未读数 + 指定标签下邮件列表（只读，不标记已读） |
+  | `character_contracts` | `CharacterContractService.GetAsync` | 个人/军团合同：类型/价格/发布者/状态/到期 |
+  | `character_industry` | `CharacterIndustryService.GetAsync` | 工业任务：蓝图/产物/状态/完成时间/剩余（人话换算）/设施/概率/成本 |
+  | `character_location` | `CharacterLocationService`（新增一次性查询，见下） | "我在哪"：所有或指定角色的**实时**星系（含星系名/Id） |
+  | `zkb_entity` | `ZkbQueryService.SearchEntitiesAsync/GetStatisticAsync` | 危险值/群体活动比例/击杀与损失/ISK 击毁与损失/单挑战绩；同名多命中时列候选让模型转述 |
+  | `ded_info` | **Core** `DEDService.QueryAllAsync/SearchAsync` | 按关键词搜索或按势力（无人机/天蛇/血袭者/萨沙/天使/古斯塔斯）列场景，可按等级过滤 |
+  | `wormhole_info` | **Core** `WormholeService.QueryWormholeAsync/QueryPortalAsync/QueryWormholeStellar` | 洞系（等级/固定与漫游洞口/天体）与洞口（通往何处/寿命/单次与总质量/再生/重生） |
+- **`CharacterLocationService` 增加一次性查询**：`QueryOnceAsync(ct)` + `LastLocations` 快照（把原 `PollAsync` 的取数逻辑抽成 `CollectAsync`，
+  轮询与一次性查询共用同一段代码）——AI 的"我在哪"不该为了查一次位置就把轮询定时器打开。
+- **发现并修复一个真实功能缺陷**（探针顺带抓到的，详见踩坑 96）：
+  `ToolNameResolver.ResolveSystem` 只查主库英文列，**中文星系名一律解析失败**——影响
+  `system_navigate`/`map_system_info`/`map_route`/`map_jumpbridge_add/remove/import` 以及主页"定位 吉他"。
+  改为"先主库原名、再走 `MapSolarSystemService.Search`（覆盖本地化库）精确唯一命中"，主页路由也改走同一解析入口。
+- **验证**：重定向构建 **0 错误**；语言键 **2229 / 2229 一致、0 重复**；探针 tools 套件新增 22 条（含"只读工具不得要求确认"与
+  9 个工具的确定性分支：角色不存在/缺参/未知势力/未命中），全量探针 **552 断言全 PASS**。
+
+---
+
+### 阶段 115：补齐三套缺失探针（主页路由 / 星图命令与写工具 / 商业重型管线）
+
+> 设计见 `AI_ASSISTANT_DESIGN.md` §6（验证方案）。此前只交付了协议/引擎/工具/界面四套，
+> 本节补齐 `QuickRouteProbe` / `MapProbe` / `BusinessProbe` 三块**从未被自动验证过**的路径。
+
+- **`QuickRouteSuite`（主页快捷输入路由）**：空输入四种写法都不动作；只有关键词没有实体名 → 转助手（不瞎跳）；
+  价格直达（含"查一下 巨神兵级 多少钱"这类带语气词写法，toast 文案带物品名）；星系直达（中英文名、关键词在句尾）；
+  角色全名直达（无授权角色时退化为转助手）；复杂问题转助手且 **pending 提问只可消费一次**（这是"页面已建走事件、未建走 pending"两条路径
+  不重复发送的基础）。助手页 `Init` 消费 pending 那段**只在端点未配置时执行**——已配置会真的发模型请求（烧钱），跳过并注明由实机确认。
+- **`MapProbe`（星图命令通道 + 跳桥写工具）**：
+  - 命令通道：未装载 → 回存 pending（路径/途经点/图层/跳桥层字段完整）+ 只能消费一次；定位型命令（只给 `CenterSystemId`）同样回存；
+  - 星图页真实应用：构造 `MapPage`（顺带验证无缺失 `StaticResource`），`NavigateToMap` 后命令被**即时消费**，
+    `ColorMode`/`ShowBridges` 确实落到 VM；
+  - 三个写工具**真实写盘**：新增/重复（端占用）/缺参/删除/重删/文本导入/文件导入（`A - B`）/冲突/未识别/空输入/坏路径，
+    并在 `finally` 里还原 `Configs/JumpBridgeSetting.json`（含 `ShowBridges` 会落盘这一点）——跑完配置与运行前逐项一致。
+- **`BusinessSuite`（商业重型管线）**：**有意不完整跑**（倒货是分钟级、数百次 ESI，设计 §11.3 的成本控制）：
+  验证设置缺失时明确拒绝；已配置时用"启动 → 取消"验证 **取消能被及时响应**（倒货抛 `OperationCanceledException`；
+  比价被服务层转成"无结果"回执也接受，如实记录差别）与 **执行期间真的上报进度**（界面"正在执行"靠它）。
+- **探针基建三处修复**（都在踩坑 97）：`Pump` 的三种写法都会卡死 → 改为墙钟限时 + `Invoke(Send)`；
+  `Application` 一个进程只能一个 → 静态引用而非依赖 `Application.Current`；"同步等异步"的调用一律放线程池（`RunBlocking`）。
+- **验证**：探针 **552 断言 / 0 失败**（含本阶段新增的 ~130 条）。
+
+> **AI 助手模块的当前状态**：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
+> Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）、离线探针四套件 + 工具调用日志（113）、
+> **v1.5 P1 九个工具（114）、补齐三套探针（115）** 均已落地；探针 **552 断言全 PASS**，构建 0 错误，
+> 语言键 2229/2229 无重复，应用实机启动验证通过。
+> 未做：v1.5 **P2** 五个（测速/名单统计/链接/任务资料/过洞计算）、写操作类（收藏/术语表/购物车/下单）、
+> 逐工具开关、跨轮长期记忆；**截图（视觉输入）登记为待定项**（见设计 §10.4，需视觉模型 + 端点能力标记）。
 
 ## 8. 已知限制与待办
 
@@ -6066,6 +6178,74 @@ icacls $ws | findstr /i "Mandatory"
     而**编译可能照样通过**（乱码仍是合法字符串），问题只在界面文案上暴露，排查时很容易误以为是语言文件的问题。
     改代码一律用编辑工具（`edit` / `write`）；确有需要跑脚本时，也要显式指定 UTF-8 并在写完后**回读校验**。
     更稳的做法：脚本只用来**读取/审计**（查重键、扫图标名、比对绑定），不要用来**改写**代码。
+
+93. **不要把"临时输出目录里的 exe"当成应用交给用户运行**（阶段 113，两度让用户看到启动崩溃；**此条结论已按事实更正**）：
+    前两次崩溃的表象是启动即弹
+    `IOException: 找不到资源"resources/languages/zh-cn.xaml"` / `"resources/bannerbackground.dark.xaml"` / `"assets/app.ico"`
+    （栈落在"运行时构造绝对 pack URI"或 `MainWindow.InitializeComponent`）。当时我判断成"与 IDE 并发构建把产物写坏"，
+    **这个判断是错的**：用户那段时间根本没在构建。
+    真正的证据链是：① `bin` 里的 dll 时间戳与内容都完整（反射列 `*.g.resources` 共 **117 条**，
+    语言/banner/`assets/app.ico` 全在）；② 崩溃提示里出现了**我当天刚写进去**的文案，
+    而 `bin` 的 dll 里**没有**那句话 → 用户运行的其实是我 `-p:OutDir=$TEMP\...` 构建出来的那份 exe
+    （我在给用户的操作说明里把这些临时路径写出来过），**在构建还没写完/拷完的那一刻被启动**，
+    读到的是资源不完整的 dll。
+    - **规则**：需要用户实机验证时，**一定构到应用自己的输出目录（或让用户在 IDE 里生成）**，
+      绝不把临时目录路径当作"可运行的构建产物"给出去；探针构建产物用完即删。
+    - **探针/工具工程**仍然不要写主工程的 `obj`：`ProjectReference` 会连带构建主工程，
+      `-p:OutDir=<temp>` 只能隔离 `bin`，**隔离不了 `obj`**（WPF 把所有资源打包进 `obj\...\<程序集>.g.resources`）。
+      因此探针构建后应校验主工程产物**未被改写**（比对 dll / `g.resources` 时间戳），
+      并且**随时可以删掉临时输出**（阶段 114/115 之后我把 `%TEMP%\dsh-*` 与探针 `bin/obj` 都清掉了）。
+    - **排查"找不到资源"的标准动作**：反射读 `<程序集>.g.resources`（正常 **117 条**），
+      看缺哪一类；对照 `ThemeService`（banner）/`LanguageService`（语言）/`App.xaml`（全局样式）/`Assets/*`（图标）
+      这四处；同时确认跑的是哪个路径下的 exe（`Get-Process | Select Path`）。
+    - 应用侧已有兜底：启动建主窗口失败时弹出**带内层异常**的提示并说明"重新生成解决方案"（见踩坑 99）。
+
+94. **运行时构造的绝对 pack URI 必须带程序集名**（`pack://application:,,,/<Assembly>;component/…`，阶段 113）：
+    不带程序集名时 WPF 按 `Application.ResourceAssembly`（= **入口程序集**）解析，只要本程序集不是入口程序集
+    （探针宿主、被别的 exe 加载）就必然"找不到资源"。已加固三处：`App.xaml` 的 5 个字典、
+    `ThemeService` 的 banner、`LanguageService` 的语言字典。用 `typeof(本类).Assembly.GetName().Name`
+    取名字，不要硬编码程序集名。XAML 里 `Assets/*` 的图标属于同一类，但只在应用自身使用，暂未改。
+
+95. **探针里断言"请求体含某段中文"要先解析 JSON**（阶段 113）：`System.Text.Json` 默认把非 ASCII
+    转义成 `\uXXXX`，直接 `body.Contains("严禁编造")` **永远为假**——会得出"提示词没下发"的**假失败**。
+    正确做法：解析后用递归遍历取出字符串值再比较（探针里的 `ProbeJson.Contains` / `Flatten`）。
+    同理，mock 服务的应答脚本要**按请求序号**给（首个非流式请求要求调工具、其后给普通回答），
+    否则引擎会一直循环到工具轮上限——那恰好会掩盖真实分支，也可能被误读成引擎缺陷。
+
+96. **按名字解析星系必须查本地化库**（阶段 114 修的真实功能缺陷）：主库 `MapSolarSystem.SolarSystemName` 存的是
+    **英文原名**（`Jita`），译名（`吉他`）在**本地化库**里；`MapSolarSystemService.Query(name)` 只查主库，
+    于是中文星系名一律返回 null。影响面很广：`system_navigate`、`map_system_info`、`map_route`、
+    `map_jumpbridge_add/remove/import`，以及主页快捷输入的"定位 吉他"。
+    正解（`ToolNameResolver.ResolveSystem`）：① 先 `Query(name)` 走主库原名；② 未命中再
+    `MapSolarSystemService.Search(name)`（**同时查主库与本地化库**）并取"名字精确相等且唯一"的项，
+    拿 Id 回主库取整条（自动套译名）；③ 多命中一律返回 null，由调用方给明确原因（绝不"张冠李戴"）。
+    星域那边本来就正确（`MapRegionService.QueryAll()` 内部已 `TranMapRegions` 套译名），只有星系漏了。
+    教训：**只按主库名解析 = 只支持英文**；凡是"用户会用中文说的名字"（物品/星系/星域/势力）都要走本地化路径。
+
+97. **探针里推 WPF Dispatcher 队列：不要用 `PushFrame` + 空闲回调，也不要 `DispatcherTimer`**（阶段 115 卡死三次）：
+    - `PushFrame` + `DispatcherPriority.ContextIdle` 退出：星图画布有**持续渲染循环**，低优先级空闲回调被饿死，
+      `PushFrame` **永不返回**（第一次卡死）；
+    - `DispatcherTimer` 限时：它自己也要走队列，同样被渲染循环挡住（第二次卡死）；
+    - 线程池 `System.Threading.Timer` + `BeginInvoke` 关帧：实测仍不返回（第三次卡死）。
+    可用写法：**不用 PushFrame**，按墙钟限时循环，每轮 `Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Send)`
+    ——`Send` 高于渲染/绑定优先级，必定被处理，所以既推得动队列又不可能卡死（`ProbeApplication.Pump`）。
+    配套两条：① 一个进程只能有一个 `Application`，探针要用**静态引用**记住它，别依赖 `Application.Current`
+    （它可能读到 null，再 `new` 就抛"不能在同一 AppDomain 中创建多个 Application 实例"）；
+    ② 探针里"同步等异步"（`task.GetAwaiter().GetResult()`）的调用要**放线程池**（`Task.Run`），
+    否则一旦装了 `DispatcherSynchronizationContext`，续体会投给没在泵的队列而**死锁**；
+    而演示界面异步代码时又**必须**装那个上下文（见踩坑 90），所以"装上下文 + 线程池跑阻塞调用 + 用 Pump 推进"要一起用，
+    用完把上下文还原为 null。
+
+98. **探针断言要挑"只有成功路径才会出现"的标记**（阶段 114）：`map_system_info` 的失败回执是
+    `未找到星系「吉他」`——**它把输入名回显了**，所以 `text.Contains("吉他")` 在失败时也为真，
+    这条断言当时是"假通过"，直到我改成断言成功回执独有的 `安等` 才暴露出中文名解析 bug（踩坑 96）。
+    同理，`character_location` 这类会真打 ESI 的工具，探针只断言"不崩且有输出"，别断言具体数据。
+
+99. **启动期"找不到资源"要给可照做的提示，并且必须带内层异常**（阶段 113/115）：
+    WPF 的外层异常往往只说"在 `TypeConverterMarkupExtension` 上提供值时引发了异常"，
+    真正原因在**内层**（`IOException: 找不到资源 assets/app.ico`）。`App.OnStartup` 里建主窗口失败时，
+    把 `InnerException` 链一起显示并提示"重新生成解决方案"（`TryShowFatalStartupError`），
+    否则用户拿到的只是一句看不懂的话，排查要多绕一圈。
 
 ---
 

@@ -60,9 +60,12 @@ public static class LanguageService
             dictionaries.Remove(old);
         }
 
+        // Source 必须**带程序集名**：不带时 WPF 会拿 Application.ResourceAssembly（= 入口程序集）解析这个绝对 pack URI，
+        // 一旦本程序集不是入口程序集（探针宿主、被别的 exe 加载等）就会报"找不到资源 resources/languages/zh-cn.xaml"。
+        var assemblyName = typeof(LanguageService).Assembly.GetName().Name;
         dictionaries.Add(new ResourceDictionary
         {
-            Source = new Uri($"pack://application:,,,/Resources/Languages/{language}.xaml", UriKind.Absolute),
+            Source = new Uri($"pack://application:,,,/{assemblyName};component/Resources/Languages/{language}.xaml", UriKind.Absolute),
         });
 
         CultureInfo.CurrentUICulture = new CultureInfo(language);

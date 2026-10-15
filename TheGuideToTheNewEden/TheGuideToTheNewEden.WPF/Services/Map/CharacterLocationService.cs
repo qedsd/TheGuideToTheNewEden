@@ -49,6 +49,20 @@ public sealed class CharacterLocationService
         _timer = null;
     }
 
+    /// <summary>最近一轮的位置结果（从未轮询过则为空）。给"我在哪"这类只读查询用。</summary>
+    public IReadOnlyList<CharacterLocation> LastLocations { get; private set; } = [];
+
+    /// <summary>
+    /// 立刻查一轮（**不启动轮询**、不触发 <see cref="LocationsUpdated"/>），并更新 <see cref="LastLocations"/>。
+    /// 供 AI 助手的一次性查询使用；与轮询共用同一段取数逻辑。
+    /// </summary>
+    public async Task<IReadOnlyList<CharacterLocation>> QueryOnceAsync(CancellationToken ct = default)
+    {
+        var locations = await CollectAsync(ct);
+        LastLocations = locations;
+        return locations;
+    }
+
     private async Task PollAsync()
     {
         if (!IsRunning || Interlocked.Exchange(ref _polling, 1) == 1)
@@ -58,34 +72,8 @@ public sealed class CharacterLocationService
 
         try
         {
-            var characters = new List<AuthorizedCharacterData>();
-            foreach (var character in CharacterStore.Characters)
-            {
-                if (character.IsTokenValid() || await CharacterStore.EnsureTokenValidAsync(character))
-                {
-                    characters.Add(character);
-                }
-            }
-
-            var locations = new List<CharacterLocation>(characters.Count);
-            foreach (var character in characters)
-            {
-                try
-                {
-                    var esi = Core.Services.ESIService.GetDefaultESI();
-                    var auth = Core.Services.ESIService.ToEVEStandardSSO(character);
-                    var resp = await esi.Location.GetCharacterLocationAsync(auth);
-                    if (resp?.Model is not null)
-                    {
-                        locations.Add(new CharacterLocation(character, (int)resp.Model.SolarSystemId));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Core.Log.Error($"星图获取角色 {character.CharacterName} 位置失败：{ex.Message}");
-                }
-            }
-
+            var locations = await CollectAsync(CancellationToken.None);
+            LastLocations = locations;
             LocationsUpdated?.Invoke(this, locations);
         }
         catch (Exception ex)
@@ -100,5 +88,41 @@ public sealed class CharacterLocationService
                 _timer?.Start();
             }
         }
+    }
+
+    /// <summary>取一轮所有已授权角色的实时位置（失败/无令牌的角色跳过）。</summary>
+    private static async Task<IReadOnlyList<CharacterLocation>> CollectAsync(CancellationToken ct)
+    {
+        var characters = new List<AuthorizedCharacterData>();
+        foreach (var character in CharacterStore.Characters)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (character.IsTokenValid() || await CharacterStore.EnsureTokenValidAsync(character))
+            {
+                characters.Add(character);
+            }
+        }
+
+        var locations = new List<CharacterLocation>(characters.Count);
+        foreach (var character in characters)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var esi = Core.Services.ESIService.GetDefaultESI();
+                var auth = Core.Services.ESIService.ToEVEStandardSSO(character);
+                var resp = await esi.Location.GetCharacterLocationAsync(auth);
+                if (resp?.Model is not null)
+                {
+                    locations.Add(new CharacterLocation(character, (int)resp.Model.SolarSystemId));
+                }
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error($"星图获取角色 {character.CharacterName} 位置失败：{ex.Message}");
+            }
+        }
+
+        return locations;
     }
 }

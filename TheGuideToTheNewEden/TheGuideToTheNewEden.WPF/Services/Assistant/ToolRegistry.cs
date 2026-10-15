@@ -42,6 +42,16 @@ public static class ToolRegistry
         Register(new Tools.ScalperAnalyseTool());
         Register(new Tools.CompareAnalyseTool());
         Register(new Tools.MarketTrendTool());
+        // 阶段 114：v1.5 P1 九个（订单/购买文本/邮件/合同/工业/位置/ZKB/DED/虫洞）
+        Register(new Tools.CharacterOrdersTool());
+        Register(new Tools.BuildBuyOrderTextTool());
+        Register(new Tools.CharacterMailTool());
+        Register(new Tools.CharacterContractsTool());
+        Register(new Tools.CharacterIndustryTool());
+        Register(new Tools.CharacterLocationTool());
+        Register(new Tools.ZkbEntityTool());
+        Register(new Tools.DedInfoTool());
+        Register(new Tools.WormholeInfoTool());
     }
 
     public static void Register(ITool tool)

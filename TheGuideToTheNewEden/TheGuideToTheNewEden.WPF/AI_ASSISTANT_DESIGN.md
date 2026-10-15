@@ -556,7 +556,11 @@ public sealed class ToolContext
 
 ## 9. 后续候选 / 不建议开放（全局盘点结论，详表见 §12）
 
-### v1.5 候选（P1 高价值，每个约半天：服务已有，只包 schema + 文本化）
+### v1.5 候选（P1 高价值，每个约半天：服务已有，只包 schema + 文本化）——**已于阶段 114 全部实现（23 → 32 个工具）**
+
+> 下面九项均已落地（工具名不变），实现要点与探针覆盖见 `REFACTORING.md` 阶段 114。
+> 两处与原计划的偏差：① `DEDService`/`WormholeService` 实际在 **Core**（不是 WPF 层）；
+> ② `character_location` 走 `CharacterLocationService.QueryOnceAsync`（新增的一次性查询），不再自行打 ESI。
 
 - **角色订单** `character_orders`：`CharacterOrderService.GetCharacterOrdersAsync/GetCorpOrdersAsync` + `BuildStatusAsync`（订单状态/市场参考价差）+ 生成批量购买订单文本——"我有哪些未结订单/被压单" + AI 建议何时出手；
 - **ZKB 实体** `zkb_entity`：`ZkbQueryService.SearchEntitiesAsync`/`GetStatisticAsync`（危险系数/抱团概率/击杀损失）——"XX 是谁、危险吗"；
@@ -568,7 +572,12 @@ public sealed class ToolContext
 - **角色位置** `character_location`：`CharacterLocationService`（当前所在星系，游戏日志轮询的现值，只读）；
 - **生成购买订单文本** `build_buy_order_text`：订单页既有逻辑（复制为游戏批量购买订单：`物品名 1`）。
 
-### v1.5 候选（P2 中等价值）
+### 待定项（本轮明确不做）
+
+- **截图（视觉输入）识别跳桥配置**：需要视觉模型 + 端点能力标记（`SupportsVision`），并遵循 §10.4 的"只做提案、永不自动写"；
+  目前 `map_jumpbridge_import` 只吃**文本/文件**。**用户已确认归为待定项，后续再考虑。**
+
+### v1.5 候选（P2 中等价值）——未做
 
 - **服务器测速** `server_ping`：`TCPingHelper.PingAsync`（各服务器延迟，"哪个服最卡"）；
 - **名单统计** `channel_scan`：频道统计的名单→军团/联盟人数/威胁值逻辑（"分析这份名单"）；
@@ -761,7 +770,7 @@ public static MapViewCommand? TakePendingMapCommand()      // 页面加载后取
 
 ## 12. 全功能开放度盘点（27 个导航目标逐项）
 
-> 结论速览：**已设计 23 个工具（12 通用 + 7 星图 + 4 商业）；P1 候选 9 个（v1.5）；P2 候选 5 个；不建议开放 6 类。**
+> 结论速览：**已实现 32 个工具（v1 通用 12 + 星图 7 + 商业 4 + v1.5 P1 九个，阶段 114）；P2 候选 5 个未做；不建议开放 6 类。**
 
 | # | 导航目标/模块 | 可开放能力（服务） | 类型 | 开放度 | 归属 |
 |---|---|---|---|---|---|

@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using TheGuideToTheNewEden.WPF.Services;
@@ -37,8 +39,54 @@ public partial class App : Application
         ThemeService.Initialize();
         LanguageService.Initialize();
 
-        MainWindow = new Views.MainWindow();
-        MainWindow.Show();
+        try
+        {
+            MainWindow = new Views.MainWindow();
+            MainWindow.Show();
+        }
+        catch (Exception ex) when (TryShowFatalStartupError(ex))
+        {
+            Shutdown(-1);
+        }
+    }
+
+    /// <summary>
+    /// 建主窗口失败时的兜底（**资源不完整**是最常见的一种）。
+    /// <para>
+    /// WPF 把界面/图片资源打包进程序集的一个 <c>*.g.resources</c>；当**多个构建同时写同一工程**时
+    /// （例如 IDE 里点生成、命令行同时 <c>dotnet build</c>），可能产出资源残缺的 dll，症状就是启动即报
+    /// <c>IOException: 找不到资源"…"</c>（阶段 113 两度遇到：语言字典 / banner / app.ico）。
+    /// 这里把那种"看不出所以然"的崩溃框换成一句能照做的提示。
+    /// </para>
+    /// </summary>
+    private static bool TryShowFatalStartupError(Exception ex)
+    {
+        if (ex is not IOException and not System.Windows.Markup.XamlParseException)
+        {
+            return false;
+        }
+
+        Core.Log.Error(ex);
+
+        // 把**内层**异常也带出来：WPF 的外层常常只说"在 X 上提供值时引发了异常"，
+        // 真正的原因在内层（"找不到资源 xxx"）——阶段 113/114 排障时就因为只显示外层而多绕了一圈。
+        var detail = new StringBuilder();
+        var current = ex;
+        for (var depth = 0; current is not null && depth < 4; depth++)
+        {
+            detail.Append(depth == 0 ? string.Empty : "\n→ ").Append(current.Message);
+            current = current.InnerException;
+        }
+
+        MessageBox.Show(
+            "界面资源加载失败。\n\n" +
+            detail + "\n\n" +
+            "常见原因：本次生成的 dll 资源不完整（生成过程中被其它进程同时写，或生成到一半就被启动）。\n" +
+            "请「重新生成解决方案」后重试；若仍失败，请把 Log 目录里的日志反馈回来。",
+            "TheGuideToTheNewEden",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+        return true;
     }
 
     private void OnSingleInstanceActivated(object? sender, string[] args)

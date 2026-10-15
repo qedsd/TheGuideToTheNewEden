@@ -80,6 +80,9 @@ public sealed class AiAssistantEngine
             _onStep = onStep;
         }
 
+        /// <summary>本次使用的端点：上下文指定的优先（探针可指向本地 mock），否则用「AI 翻译」的设置。</summary>
+        private ChatEndpoint Endpoint => _ctx.Endpoint ?? TranslationSettingService.AiEndpoint;
+
         /// <summary>工具执行记录（界面"工具步骤区"数据源，按执行顺序追加）。</summary>
         public IReadOnlyList<ToolStep> Steps => _steps;
 
@@ -122,7 +125,7 @@ public sealed class AiAssistantEngine
             var state = new ChatStreamState();
             var request = new ChatRequest
             {
-                Endpoint = TranslationSettingService.AiEndpoint,
+                Endpoint = Endpoint,
                 SystemPrompt = _ctx.SystemPrompt ?? DefaultSystemPrompt,
                 Messages = _messages,
                 Tools = null,
@@ -242,7 +245,7 @@ public sealed class AiAssistantEngine
                 {
                     completion = await ChatClient.CompleteAsync(new ChatRequest
                     {
-                        Endpoint = TranslationSettingService.AiEndpoint,
+                        Endpoint = Endpoint,
                         SystemPrompt = systemPrompt,
                         Messages = _messages,
                         Tools = ToolRegistry.AllSchemas,
@@ -286,6 +289,7 @@ public sealed class AiAssistantEngine
 
                 if (++ToolRounds > _engine._maxToolRounds)
                 {
+                    Core.Log.Info($"AI 助手：已达到工具轮数上限（{_engine._maxToolRounds} 轮），要求模型基于已有信息作答");
                     _messages.Add(ChatMessage.Assistant("已达到最大工具轮数，请基于已有信息回答。"));
                     return;
                 }
@@ -298,13 +302,16 @@ public sealed class AiAssistantEngine
                     var tool = ToolRegistry.Find(call.Name);
                     if (tool is null)
                     {
+                        Core.Log.Info($"AI 助手 · 工具 {call.Name}：模型请求了未注册的工具名，已忽略并提示模型");
                         _messages.Add(ChatMessage.Tool(call.Id, $"未知工具 {call.Name}，请改用已提供的工具。", call.Name));
                         continue;
                     }
 
                     if (tool.RequiresConfirmation)
                     {
-                        pending.Add(new PendingToolAction(call.Id, tool.Name, DescribeArgs(call.ArgumentsJson), call.ArgumentsJson));
+                        var summary = DescribeArgs(call.ArgumentsJson);
+                        Core.Log.Info($"AI 助手 · 工具 {tool.Name}：写操作，已挂起等待用户确认（{summary}）");
+                        pending.Add(new PendingToolAction(call.Id, tool.Name, summary, call.ArgumentsJson));
                         continue;
                     }
 
@@ -344,6 +351,9 @@ public sealed class AiAssistantEngine
                 _steps.Add(step);
                 _onStep?.Invoke(step);
 
+                // 每次工具调用留一条 INFO 痕迹：出问题时日志里能直接看到"调了什么、多久、成没成"
+                Core.Log.Info($"AI 助手 · 工具 {tool.Name} 成功 · {elapsed:F2}s · {paramSummary}");
+
                 if (result.NavigateAction is not null)
                 {
                     _ctx.Tools.OnUiThread(result.NavigateAction);
@@ -353,6 +363,7 @@ public sealed class AiAssistantEngine
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
+                Core.Log.Info($"AI 助手 · 工具 {tool.Name} 超时或中断 · {DescribeArgs(argumentsJson)}");
                 var step = new ToolStep(tool.Name, DescribeArgs(argumentsJson), "超时或中断", false, 0);
                 _steps.Add(step);
                 _onStep?.Invoke(step);
@@ -365,6 +376,7 @@ public sealed class AiAssistantEngine
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
+                Core.Log.Info($"AI 助手 · 工具 {tool.Name} 失败 · {DescribeArgs(argumentsJson)} · {ex.Message}");
                 var step = new ToolStep(tool.Name, DescribeArgs(argumentsJson), ToolArgs.Truncate(ex.Message, 160), false, 0);
                 _steps.Add(step);
                 _onStep?.Invoke(step);

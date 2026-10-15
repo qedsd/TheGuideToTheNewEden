@@ -2346,5 +2346,15 @@
     <sys:String x:Key="AssistantSettingPage_Saved">AI 助手设置已保存</sys:String>
     <sys:String x:Key="AssistantSettingPage_Restored">已恢复默认设置</sys:String>
     <sys:String x:Key="Assistant_Chat_ConfirmDisabled">已按设置直接拒绝这次写操作（「设置 → AI 助手」里关闭了写操作确认）</sys:String>
+    <sys:String x:Key="Home.Feature.AssistantDesc">用自然语言调用软件功能：查价格、查角色、算路径、导跳桥、分析倒货</sys:String>
+    <sys:String x:Key="AssistantTool_character_orders">未结订单</sys:String>
+    <sys:String x:Key="AssistantTool_build_buy_order_text">生成购买文本</sys:String>
+    <sys:String x:Key="AssistantTool_character_mail">角色邮件</sys:String>
+    <sys:String x:Key="AssistantTool_character_contracts">角色合同</sys:String>
+    <sys:String x:Key="AssistantTool_character_industry">工业任务</sys:String>
+    <sys:String x:Key="AssistantTool_character_location">角色位置</sys:String>
+    <sys:String x:Key="AssistantTool_zkb_entity">ZKB 实体统计</sys:String>
+    <sys:String x:Key="AssistantTool_ded_info">DED 资料</sys:String>
+    <sys:String x:Key="AssistantTool_wormhole_info">虫洞资料</sys:String>
 
 </ResourceDictionary>

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AI 助手探针（一次性验证产物，不参与应用发布）。
+
+    引用主工程而不是链文件：探针要跑真实链路（真实 SDE 库、真实服务层、真实 WPF 资源字典），
+    与阶段 47 的 ChatProbe / 阶段 53 的探针做法一致。主工程是 WinExe，但 SDK 风格下可被引用。
+
+    ⚠ 构建探针**必须同时**重定向输出目录 + 不构建被引用工程，例如：
+        dotnet build probe/AssistantProbe/AssistantProbe.csproj -c Debug `
+            -p:OutDir="$env:TEMP\dsh-probe\" -p:BuildProjectReferences=false
+
+    原因（阶段 113 的排障记录，两度导致用户启动崩溃）：
+      · ProjectReference 默认会**连带构建主工程**。不重定向时探针构建会与 IDE 的构建同时写主工程 obj/bin；
+      · 更要命的是 **obj 目录**：WPF 把界面/图片资源全部打包进 `obj\...\<程序集>.g.resources`，
+        只重定向 OutDir 并不能避免两边同时写这个文件 —— 结果是某个构建读出**资源残缺**的包，
+        症状为启动即崩："找不到资源 resources/languages/zh-cn.xaml" / "resources/bannerbackground.dark.xaml"
+        / "assets/app.ico"（三种都实际出现过）。
+      · 因此探针构建加 `-p:BuildProjectReferences=false`：只引用主工程**已生成**的产物，
+        完全不写主工程的 obj/bin。前提是主工程已生成过（IDE 里生成，或先单独构建主工程）。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>AssistantProbe</AssemblyName>
+    <RootNamespace>TheGuideToTheNewEden.Probe</RootNamespace>
+    <!-- 探针自己有 Main；主工程的 StartupObject 只影响它自己 -->
+    <StartupObject>TheGuideToTheNewEden.Probe.Program</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\TheGuideToTheNewEden\TheGuideToTheNewEden.WPF\TheGuideToTheNewEden.WPF.csproj" />
+  </ItemGroup>
+
+</Project>

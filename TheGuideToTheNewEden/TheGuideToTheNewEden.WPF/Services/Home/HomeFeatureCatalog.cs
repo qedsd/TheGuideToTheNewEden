@@ -107,6 +107,11 @@ public static class HomeFeatureCatalog
         new("game-preview", SymbolRegular.SquareMultiple24, "gamePreview", "Nav.GamePreview", "Nav.GamePreview",
             "Home.Feature.GamePreviewDesc", HomeFeatureKind.Page, typeof(Views.Pages.GamePreviewPage)),
 
+        // ---------- AI 助手 ----------
+        // 彩色磁贴图标用 NavIcons.xaml 里已有的 NavIcon.assistant（该文件由 design/branding/icons 生成）
+        new("assistant", SymbolRegular.Sparkle24, "assistant", "Nav.Assistant", "Nav.Assistant",
+            "Home.Feature.AssistantDesc", HomeFeatureKind.Page, typeof(Views.Pages.AiAssistantPage)),
+
         // ---------- 频道 ----------
         new("channel-intel", SymbolRegular.Alert24, "channelIntel", "Nav.ChannelIntel", "Nav.Channel",
             "Home.Feature.ChannelIntelDesc", HomeFeatureKind.Page, typeof(Views.Pages.ChannelIntelPage)),

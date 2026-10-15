@@ -84,7 +84,8 @@ public static class HomeQuickQueryRouter
         // ③ 星系定位 → 星图
         if (TryStripKeyword(text, SystemKeywords, out var systemText) && systemText.Length > 0)
         {
-            var system = MapSolarSystemService.Query(systemText);
+            // 走统一的名称解析（含中文译名；直接用 MapSolarSystemService.Query 只认英文原名）
+            var system = ToolNameResolver.ResolveSystem(systemText);
             if (system is not null)
             {
                 Navigation.NavigateToSystem(system.SolarSystemID);
