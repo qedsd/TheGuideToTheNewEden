@@ -2342,5 +2342,12 @@
     <sys:String x:Key="AssistantTool_glossary_write">Write glossary</sys:String>
     <sys:String x:Key="AssistantTool_market_favorite">Market favorite</sys:String>
     <sys:String x:Key="AssistantTool_shopping_cart">Scalper cart</sys:String>
+    <sys:String x:Key="AssistantTool_character_assets">Character assets</sys:String>
+    <sys:String x:Key="AssistantTool_character_blueprints">Character blueprints</sys:String>
+    <sys:String x:Key="AssistantTool_character_standings">Character standings</sys:String>
+    <sys:String x:Key="AssistantTool_character_contacts">Character contacts</sys:String>
+    <sys:String x:Key="AssistantTool_character_loyalty">Loyalty points</sys:String>
+    <sys:String x:Key="AssistantTool_character_calendar">Character calendar</sys:String>
+    <sys:String x:Key="AssistantTool_character_medals">Character medals</sys:String>
 
 </ResourceDictionary>

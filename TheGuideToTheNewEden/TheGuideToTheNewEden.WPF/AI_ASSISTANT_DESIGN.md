@@ -566,6 +566,8 @@ public sealed class ToolContext
 | **D. UI + 历史** | `AiAssistantPage`/`AiAssistantChatView`/3 个 VM；`AiAssistantHistoryService`；弹窗共享 VM | `AssistantUiProbe` PASS；页面构造成功 |
 | **F. 主页快捷输入** | `HomeQuickQueryRouter` + Hero 输入框 + `Navigation` handoff 通道（`NavigateToAssistant`/pending）+ 助手页 `SubmitQuery` 自动发送 | `QuickRouteProbe` 全用例 PASS；handoff 双路径（页面已建/未建）PASS |
 | **E. 快捷键 + 设置 + 本地化 + 收尾** | `AiAssistantHotkeyService`；`Assistant.*` 设置键；中英键（约 60 个，含主页快捷输入提示，查重）；静态自查（绑定/引用/键） | build 0 错误；REFACTORING.md 追加阶段记录 |
+| **G. v1.5 P2 + 写操作（阶段 116）** | P2 五个只读（`server_ping`/`channel_scan`/`links_search`/`trade_spread`/`mission_info`）+ 写操作三个（`glossary_write`/`market_favorite`/`shopping_cart`，走确认卡片） | `WriteToolSuite`（写工具直连执行 + 按字节还原）；`ToolSuite` 扩展 |
+| **H. 角色 ESI 直读（阶段 117）** | `CharacterEsiExtraService` + 7 个工具（资产/蓝图/声望/联系人/LP/日历/勋章） | `ToolSuite` 两条确定性分支 × 7 + 描述断言；**成功路径待实机** |
 
 - 本地化键规划：`AssistantPage_*`（页标题/输入占位/未配置引导/发送/停止/清空/弹窗/会话菜单）、`AssistantTool_<name>`（12 个工具中文名）、`AssistantStep_*`（正在执行/完成/失败/工具 N 次/跳转胶囊文案）、`HomePage_QuickInput_*`（主页快捷输入占位提示/发送/直达 toast/转助手提示）。工具名与描述英文，面向 LLM。
 
@@ -806,8 +808,8 @@ public static MapViewCommand? TakePendingMapCommand()      // 页面加载后取
 
 ## 12. 全功能开放度盘点（27 个导航目标逐项）
 
-> 结论速览：**已实现 40 个工具（v1 通用 12 + 星图 7 + 商业 4 + v1.5 P1 九个（阶段 114）+ P2 五个只读与三个写操作（阶段 116））；
-> 不建议开放 6 类；仍未开放：逐工具开关、跨轮长期记忆、截图（视觉输入）。**
+> 结论速览：**已实现 47 个工具（v1 通用 12 + 星图 7 + 商业 4 + v1.5 P1 九个（阶段 114）+ P2 五个只读与三个写操作（阶段 116）
+> + 角色 ESI 直读七个（阶段 117））；不建议开放 6 类；仍未开放：逐工具开关、跨轮长期记忆、截图（视觉输入）、军团级端点（需军团职位）。**
 
 | # | 导航目标/模块 | 可开放能力（服务） | 类型 | 开放度 | 归属 |
 |---|---|---|---|---|---|
@@ -831,9 +833,17 @@ public static MapViewCommand? TakePendingMapCommand()      // 页面加载后取
 | 18 | 翻译-AI/本地 | `TranslationService` | 查询 | 已覆盖 | `translate` |
 | 19 | 频道-翻译 | `ChatTranslationEngine`（订阅实时翻译） | 订阅 | 不建议 | 长驻会话（单条翻译已被 `translate` 覆盖） |
 | 20 | DED | `DEDService.QueryAllAsync/SearchAsync` | 查询 | **P1** | `ded_info`（v1.5） |
-| 21 | 任务 | 任务资料（同 DED 类） | 查询 | **P2** | v1.5 |
-| 22 | 虫洞 | `WormholeService`（洞系/洞口库）+ 过洞计算器 | 查询+计算 | **P1/P2** | `wormhole_info` + 过洞计算（v1.5） |
-| 23 | 快速链接 | `LinkStore` 检索/打开 | 查询+动作 | **P2** | `links_search`（v1.5） |
+| 21 | 任务 | 任务资料（同 DED 类） | 查询 | **P2** | `mission_info`（阶段 116） |
+| 22 | 虫洞 | `WormholeService`（洞系/洞口库）+ 过洞计算器 | 查询+计算 | **P1/P2** | `wormhole_info`（阶段 114；过洞计算并入其洞口资料） |
+| 23 | 快速链接 | `LinkStore` 检索/打开 | 查询+动作 | **P2** | `links_search`（阶段 116；只跳页面、不代开浏览器） |
+| — | 角色-资产（无页面） | `Assets.GetCharacterAssetsAsync` + 资产命名接口 | 查询 | **阶段 117** | `character_assets` |
+| — | 角色-蓝图（无页面） | `Character.GetBlueprintsAsync` + 静态库产物关系 | 查询 | **阶段 117** | `character_blueprints` |
+| — | 角色-声望（无页面） | `Character.GetStandingsAsync` | 查询（私人） | **阶段 117** | `character_standings` |
+| — | 角色-联系人（无页面） | `Contacts.GetContactsAsync` + 标签接口 | 查询（私人） | **阶段 117** | `character_contacts` |
+| — | 角色-LP（无页面） | `Loyalty.GetLoyaltyPointsAsync` | 查询 | **阶段 117** | `character_loyalty` |
+| — | 角色-日历（无页面） | `Calendar.ListCalendarEventSummariesAsync` | 查询 | **阶段 117** | `character_calendar` |
+| — | 角色-勋章（无页面） | `Character.GetMedalsAsync` | 查询 | **阶段 117** | `character_medals` |
+| — | 军团级（资产/蓝本/联系人/结构/部门/奖章） | `Corporation.*` / `Assets.GetCorporationAssetsAsync` 等 | 查询 | **暂缓** | 需要军团职位权限，多数账号拿不到 |
 | 24 | 星图 | `StarMapCanvas` 命令通道 + `ShortestPathHelper` + `JumpBridgeSettingService` | 显示/计算/写 | 已覆盖 | §10 六工具 |
 | 25 | ZKB | `ZkbQueryService`（实体统计/击杀列表/详情/搜索） | 查询 | **P1** | `zkb_entity`（v1.5）；主页快捷输入已支持"KB 一键跳转" |
 | 26 | 数据库 | `GameNameSearchService`/`LocalDbService`（SDE 检索） | 查询 | 已覆盖 | `search_sde`（浏览/详情可后续加深） |
@@ -860,10 +870,33 @@ public static MapViewCommand? TakePendingMapCommand()      // 页面加载后取
 | v1.5 P1 | 9 | 订单/邮件/合同/工业/位置/ZKB/DED/虫洞/购买文本 | **已实现（阶段 114）** |
 | v1.5 P2 | 5 | 测速/名单统计/链接/利差/任务资料 | **已实现（阶段 116）** |
 | v1.5 写操作 | 3 | 术语表 / 市场收藏 / 倒货购物车（均需确认） | **已实现（阶段 116）** |
-| **合计** | **40** | 均为只读或"确认后才写"；订阅型 / 破坏性写操作**不开放** | 探针 662 断言全 PASS |
+| v1.5 角色 ESI 直读 | 7 | 资产/蓝图/声望/联系人/LP/日历/勋章 | **已实现（阶段 117）** |
+| **合计** | **47** | 均为只读或"确认后才写"；订阅型 / 破坏性写操作 / 军团级端点**不开放** | 探针 755 断言全 PASS |
 
-> **仍未开放**：逐工具开关（`Assistant.Tools.*`）、跨轮长期记忆、截图（视觉输入）。
+> **仍未开放**：逐工具开关（`Assistant.Tools.*`）、跨轮长期记忆、截图（视觉输入）；
+> **军团级端点**（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，多数账号拿不到，暂不做。
 > 「过洞计算」原列在 P2，落地时并入了 `wormhole_info` 的洞口资料（计算结果本身需要舰船/技能参数，属"配置型查询"而非一问一答）。
+
+### 角色 ESI 直读组（阶段 117，7 个）
+
+> 起因：用户问「AI 现在可以查询任意 ESI 吗」——结论是**不能**，助手只有固定工具。用户要求"逐个端点包成工具"，
+> 于是按"游戏实用性"挑出 7 个**当时 WPF 侧完全没有消费方**的只读端点。
+
+| 工具 | 端点 | 关键设计（为什么这么做） |
+|---|---|---|
+| `character_assets` | `Assets.GetCharacterAssetsAsync` + `GetCharacterAssetNamesAsync` | **返回聚合汇总，不是上万条明细**：`groupBy=location`（默认）按地点/容器分组，位置本身是别的物品时显示"物品内：船名"；`groupBy=item` 做**全量**按类型汇总。**不含市场估值**——那要对每个 TypeId 查订单（几百次 ESI、分钟级），与一问一答的成本模型冲突 |
+| `character_blueprints` | `Character.GetBlueprintsAsync` | 按 TypeId 聚合（同型多份合并、保留最好 ME/TE）；`onlyOriginals` 三态；产物名走静态库 `industryActivityProducts` |
+| `character_standings` | `Character.GetStandingsAsync` | 声望降序；**描述里标"私人关系数据"，只在用户明确问到时查** |
+| `character_contacts` | `Contacts.GetContactsAsync` + `GetContactLabelsAsync` | `filter=watched/blocked`、标签名映射（失败退化"标签 N"）；同样带隐私提示 |
+| `character_loyalty` | `Loyalty.GetLoyaltyPointsAsync` | LP 余额；明确注明**不含 LP 商店可兑换物**（那需要额外接口 + 比价） |
+| `character_calendar` | `Calendar.ListCalendarEventSummariesAsync` | 默认只看未来 `daysAhead` 天；摘要本来就没有详情字段，描述里写明 |
+| `character_medals` | `Character.GetMedalsAsync` | 颁发军团/颁发人/原因，时间倒序 |
+
+- 服务层：`Services/Characters/CharacterEsiExtraService.cs`（分页统一 `ForEachPageAsync`：0 条或本页少于上一页结束、上限 40 页、
+  **中途失败返回 null 不返回残缺结果**；列表进 `CharacterCache`；名称富化只用本地库，唯一例外是资产容器名且允许失败）。
+- Core 顺带新增 `InvTypeService.QueryBlueprintProducts`（蓝图→产物）：在 WPF 侧直接用 `DBService.StaticDb` 被编译拒绝（`internal`）。
+- **验证边界**：探针只覆盖两条确定性分支（角色不存在 / 无默认角色）；**成功路径未实机验证**（探针环境无授权角色，且真跑会读用户真实数据）。
+- **军团级端点**（`Corporation.*` 的资产/蓝本/联系人/结构/部门/奖章）本轮未做：需要军团职位权限，多数账号不可用。
 
 ---
 

@@ -62,6 +62,14 @@ public static class ToolRegistry
         Register(new Tools.GlossaryWriteTool());
         Register(new Tools.MarketFavoriteTool());
         Register(new Tools.ShoppingCartTool());
+        // 阶段 117：角色 ESI 直读七个（资产/蓝本/声望/联系人/LP/日历/勋章）
+        Register(new Tools.CharacterAssetsTool());
+        Register(new Tools.CharacterBlueprintsTool());
+        Register(new Tools.CharacterStandingsTool());
+        Register(new Tools.CharacterContactsTool());
+        Register(new Tools.CharacterLoyaltyTool());
+        Register(new Tools.CharacterCalendarTool());
+        Register(new Tools.CharacterMedalsTool());
     }
 
     public static void Register(ITool tool)

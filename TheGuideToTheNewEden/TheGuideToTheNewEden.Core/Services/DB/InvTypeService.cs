@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -245,9 +245,42 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return searchInvTypes;
         }
 
-        public static InvTypeBase QueryMarkeType(string name)
+        /// <summary>
+        /// 蓝图 TypeID → 产物 TypeID（静态库 <c>industryActivityProducts</c> 的制造活动 1）。
+        /// 一个蓝图可能有多个产物行，取第一行；查不到/静态库未载入返回空字典。
+        /// </summary>
+        public static Dictionary<int, int> QueryBlueprintProducts(IEnumerable<int> blueprintTypeIds)
         {
-            var target = DBService.MainDb.Queryable<InvType>().First(p =>p.MarketGroupID != null && name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
+            var result = new Dictionary<int, int>();
+            var ids = blueprintTypeIds?.Where(p => p > 0).Distinct().ToList();
+            if (ids == null || ids.Count == 0 || DBService.StaticDb == null)
+            {
+                return result;
+            }
+
+            try
+            {
+                var rows = DBService.StaticDb.Queryable<IndustryActivityProduct>()
+                    .Where(p => ids.Contains(p.TypeID) && p.ActivityID == 1)
+                    .ToList();
+                foreach (var row in rows)
+                {
+                    if (row.ProductTypeID > 0 && !result.ContainsKey(row.TypeID))
+                    {
+                        result[row.TypeID] = row.ProductTypeID;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+
+            return result;
+        }
+
+        public static InvTypeBase QueryMarkeType(string name)
+        {            var target = DBService.MainDb.Queryable<InvType>().First(p =>p.MarketGroupID != null && name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
             if(target == null)
             {
                 var localTypes =  LocalDbService.QueryInvTypes(name);

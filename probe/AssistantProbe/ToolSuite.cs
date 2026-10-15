@@ -25,7 +25,9 @@ internal static class ToolSuite
     private static readonly string[] ReadOnlyTools =
         ["character_orders", "build_buy_order_text", "character_mail", "character_contracts",
          "character_industry", "character_location", "zkb_entity", "ded_info", "wormhole_info",
-         "server_ping", "channel_scan", "trade_spread", "mission_info"];
+         "server_ping", "channel_scan", "trade_spread", "mission_info",
+         "character_assets", "character_blueprints", "character_standings", "character_contacts",
+         "character_loyalty", "character_calendar", "character_medals"];
 
     public static void Run(Check c)
     {
@@ -234,6 +236,35 @@ internal static class ToolSuite
             c.That(tool?.RequiresConfirmation == true, $"{name}：写工具必须要求确认");
             c.That(tool?.IsAction == false, $"{name}：写工具不是导航动作");
         }
+
+        // ---------- 阶段 117：角色 ESI 直读七个 ----------
+        // 两条确定性分支：① 不存在的角色名 → 「未找到角色」；② 不传角色名 → 「未登录任何角色」（无授权角色时）。
+        // 成功路径会真读该角色的 ESI 数据，探针不覆盖（由实机确认）。
+        foreach (var name in new[]
+                 {
+                     "character_assets", "character_blueprints", "character_standings",
+                     "character_contacts", "character_loyalty", "character_calendar", "character_medals",
+                 })
+        {
+            Exec(c, ctx, name, """{"characterName":"绝不存在角色XYZ"}""",
+                text => text.Contains("未找到角色"), $"{name}：角色不存在 → 明确原因（不发 ESI）");
+            Exec(c, ctx, name, """{}""",
+                text => text.Contains("角色") && text.Length > 0, $"{name}：无默认角色 → 给出可照做的提示");
+        }
+
+        // 参数与上限护栏：这些分支不该真的取数
+        Exec(c, ctx, "character_assets", """{"characterName":"绝不存在角色XYZ","top":999}""",
+            text => text.Contains("未找到角色"), "character_assets：top 越界不影响「角色不存在」的判定");
+        Exec(c, ctx, "character_assets", """{"characterName":"绝不存在角色XYZ","groupBy":"item"}""",
+            text => text.Contains("未找到角色"), "character_assets：groupBy=item 同样先解析角色");
+        c.That(ToolRegistry.Find("character_assets")?.Description.Contains("聚合汇总") == true,
+            "character_assets：描述里说明返回的是聚合汇总（免得模型误以为能拿全量明细）");
+        c.That(ToolRegistry.Find("character_contacts")?.Description.Contains("私人") == true,
+            "character_contacts：描述里标明是私人关系数据（隐私提示）");
+        c.That(ToolRegistry.Find("character_standings")?.Description.Contains("私人") == true,
+            "character_standings：描述里标明是私人关系数据（隐私提示）");
+        c.That(ToolRegistry.Find("character_blueprints")?.Description.Contains("onlyOriginals") == true,
+            "character_blueprints：描述里写清原图/拷贝过滤参数");
     }
 
     /// <summary>执行一个工具并断言结果（含"结果不超过 4000 字符"的公共约束）。</summary>

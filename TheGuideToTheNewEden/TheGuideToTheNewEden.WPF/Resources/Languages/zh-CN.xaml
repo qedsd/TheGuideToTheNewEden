@@ -2364,5 +2364,12 @@
     <sys:String x:Key="AssistantTool_glossary_write">写入术语表</sys:String>
     <sys:String x:Key="AssistantTool_market_favorite">市场收藏</sys:String>
     <sys:String x:Key="AssistantTool_shopping_cart">倒货购物车</sys:String>
+    <sys:String x:Key="AssistantTool_character_assets">角色资产</sys:String>
+    <sys:String x:Key="AssistantTool_character_blueprints">角色蓝图</sys:String>
+    <sys:String x:Key="AssistantTool_character_standings">角色声望</sys:String>
+    <sys:String x:Key="AssistantTool_character_contacts">角色联系人</sys:String>
+    <sys:String x:Key="AssistantTool_character_loyalty">忠诚点</sys:String>
+    <sys:String x:Key="AssistantTool_character_calendar">角色日历</sys:String>
+    <sys:String x:Key="AssistantTool_character_medals">角色勋章</sys:String>
 
 </ResourceDictionary>

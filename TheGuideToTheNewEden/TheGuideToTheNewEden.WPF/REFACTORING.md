@@ -5472,12 +5472,68 @@ icacls $ws | findstr /i "Mandatory"
 - 顺带修掉一处**探针自身缺陷**：`QuickRouteSuite` 单独运行（`-- quickroute`）时没初始化 Core，`MapSolarSystemService.Query` 直接 NRE、进程以 exit 2 崩掉；在 `all` 里只是被 `tools` 套件的初始化掩盖了。已在 `Run` 开头补 `ProbeCore.Ensure()`。
 - **未做/后续**：逐工具开关（`Assistant.Tools.*`）、跨轮长期记忆、截图（视觉输入）——仍按设计文档 §9 归为待定；`channel_scan` 的 ZKB 人数上限（30）与 `trade_spread` 的市场数上限（8）是刻意的成本护栏，需要更大范围请用对应页面。
 
-> **AI 助手模块的当前状态**（阶段 116 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
+### 阶段 117：AI 助手 · 角色 ESI 直读七个工具（资产 / 蓝图 / 声望 / 联系人 / LP / 日历 / 勋章）
+
+> 起因（用户提问）：「AI 现在可以查询任意 ESI 吗」——答复是**不能**：助手只有固定工具，没有按路径查任意端点的入口。
+> 用户随后要求「逐个端点包成工具」，遂挑出 7 个高价值只读端点落地。工具总数 40 → **47**。
+
+**这 7 个端点此前在 WPF 侧完全没有消费方**（应用没有对应页面），因此先在 `Services/Characters/` 补了服务层，
+再各包一个工具（沿用"服务不泄漏 ESI 类型、统一映射 DTO"的分层约定）：
+
+- **新增 `Services/Characters/CharacterEsiExtraService.cs`**（+7 个 DTO）：
+  | DTO | 用途 |
+  |---|---|
+  | `CharacterAssetRow` / `CharacterAssetGroup` / `CharacterAssetSummary` | 资产原始行；按地点/容器聚合的分组；两者合一（工具按视图选用） |
+  | `CharacterBlueprintRow` | 蓝图（ME/TE/剩余流程/位置/产物名） |
+  | `CharacterStandingRow` / `CharacterContactRow` / `CharacterLoyaltyRow` / `CharacterCalendarRow` / `CharacterMedalRow` | 其余五类 |
+  - 分页统一走 **`ForEachPageAsync`**：第 1 页起逐页取，`0 条` 结束、**本页少于上一页**也结束（`ESIModelDTO.MaxPages` 常为 0，不能只信它）、
+    上限 **40 页**（防止"资产上万"把时间与限流额度吃光，达上限记 Warn）。**中途某页失败返回 false → 整体返回 null**，
+    不把残缺结果当完整结果（阶段 29 的同一原则）。
+  - 每个端点独立 try/catch + `Log.Error` → 返回 null；列表类型结果进 `CharacterCache`（资产/蓝图 10 分钟，其余 5 分钟）。
+  - **名称富化只用本地库**：物品名走 `InvTypeService.QueryTypes`（一次批量，避免 N+1）、角色/军团/联盟/势力走 `IDNameService.GetByIdsAsync`、
+    地点走 `LocationNameResolver`（结构 ID 仍按既有约定不在本地列表就不解析）。唯一例外是**资产容器名**（`GetCharacterAssetNamesAsync`，
+    失败只记 Warn 并回退显示物品名）。
+  - **Core 新增 `InvTypeService.QueryBlueprintProducts(blueprintTypeIds)`**：蓝图 TypeID → 产物 TypeID（静态库 `industryActivityProducts` 活动 1）。
+    在 WPF 侧直接用 `DBService.StaticDb` 被编译拒绝（`internal`），照分层约定落到 Core 服务层——顺带修掉一个本来会踩的坑。
+- **7 个工具**（全部只读、`RequiresConfirmation=false`、"查不到就说查不到"）：
+  | 工具 | 关键设计 |
+  |---|---|
+  | `character_assets` | **返回聚合汇总而不是上万条明细**：`groupBy=location`（默认）按地点/容器分组（位置本身是别的物品时显示为"物品内：船名"）；`groupBy=item` 做**全量**按类型汇总；`locationKeyword` 按位置名过滤；`top` ≤ 30 |
+  | `character_blueprints` | 按 `TypeId` 聚合（同型多份/多拷贝合并，保留**最好**的 ME/TE）；`onlyOriginals` 三态（省略 = 都看）、`minMe` 过滤；产物名走静态库 |
+  | `character_standings` | 按声望降序、`type` 过滤 npc_corp/faction/agent；描述里**标明是私人关系数据**，只在用户明确问到时查询 |
+  | `character_contacts` | `filter=watched/blocked`、标签名映射（失败退化"标签 N"）、监视中/已拉黑标记；同样带隐私提示 |
+  | `character_loyalty` | LP 余额按军团降序；描述里说明**不含 LP 商店可兑换物**（那需要额外接口与比价） |
+  | `character_calendar` | 默认只看未来 `daysAhead` 天（≤365），`includePast` 可看历史，`response` 按回复状态过滤；摘要字段本来就没有详情，描述里写明 |
+  | `character_medals` | 按时间倒序，含颁发军团/颁发人/原因 |
+- **一处刻意的取舍**：资产**不含市场估值**。要做就得对每个 TypeId 查星域订单（几百次 ESI、分钟级），
+  与"一问一答"的成本模型冲突；需要价格时让模型改用 `market_orders` / `trade_spread` 查具体物品。
+- 本地化：中英各 +7 个 `AssistantTool_*`，两文件键数均为 **2244**、无重复、中英一一对应。
+- **探针**（`ToolSuite` 扩展，机械穷举两条确定性分支）：7 个工具 × {角色不存在 → 「未找到角色」；无默认角色 → 可照做提示}
+  + `character_assets` 的 `top` 越界 / `groupBy=item` 参数路径 + 4 条**描述内容断言**
+  （资产必须写明"聚合汇总"、声望与联系人必须带隐私提示、蓝图必须写明原稿/拷贝过滤参数）。
+- **构建与验证**：`dotnet build` **0 错误、0 新警告**（39 条警告逐条核对，全部来自既有文件，我新增的 9 个文件一条都没有）。
+  | 套件 | 结果 |
+  |---|---|
+  | `toolcall` | 80 / 0 |
+  | `engine` | 62 / 0 |
+  | `tools`（新增 43 条断言） | 479 / 0 |
+  | `quickroute` | 27 / 0 |
+  | `ui`（95 个界面键覆盖，7 个新工具名自动纳入） | 18 / 0 |
+  | `business` | 13 / 0 |
+  | `writes` | 69 / 0 |
+  | **合计** | **755 断言全 PASS** |
+- **未覆盖（如实记录）**：这 7 个工具的**成功路径没有实机验证**——探针环境无授权角色（连"未登录任何角色"都是真实分支），
+  而真跑会读用户真实资产/联系人数据。首次使用请优先看：① `character_assets` 的分组名是否合理（结构名不在本地列表时显示为 ID）；
+  ② `character_blueprints` 的产物名是否解析出来；③ `character_contacts` 的标签名是否可读。
+  另外**军团级**端点（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，本阶段未做。
+
+> **AI 助手模块的当前状态**（阶段 117 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
 > Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）、离线探针四套件 + 工具调用日志（113）、
-> **v1.5 P1 九个工具（114）、补齐三套探针（115）、P2 五个只读 + 三个写工具（116）** 均已落地；工具总数 **40**，
-> 探针 **662 断言全 PASS**（逐个套件运行；`all` 受 `MapProbe` 的 `%TEMP%` 环境限制无法整跑），构建 0 错误，
-> 语言键 2237/2237 无重复，应用实机启动验证通过。
-> 未做：**逐工具开关**（`Assistant.Tools.*`）、**跨轮长期记忆**、**截图（视觉输入）**（设计 §10.4，需视觉模型 + 端点能力标记）。
+> **v1.5 P1 九个工具（114）、补齐三套探针（115）、P2 五个只读 + 三个写工具（116）、角色 ESI 直读七个（117）** 均已落地；
+> 工具总数 **47**，探针 **755 断言全 PASS**（逐个套件运行；`all` 受 `MapProbe` 的 `%TEMP%` 环境限制无法整跑），构建 0 错误，
+> 语言键 2244/2244 无重复，应用实机启动验证通过。
+> 未做：**逐工具开关**（`Assistant.Tools.*`）、**跨轮长期记忆**、**截图（视觉输入）**（设计 §10.4，需视觉模型 + 端点能力标记）、
+> **军团级 ESI 端点**（需军团职位权限）。
 
 ## 8. 已知限制与待办
 
@@ -5641,6 +5697,15 @@ icacls $ws | findstr /i "Mandatory"
     因此：① `writes` 套件的"落盘"断言会自动跳过并说明（内存侧断言照常，见踩坑 100）；
     ② `all` 整套跑不完（`MapProbe` 要向 `%TEMP%` 写跳桥导入的临时文件）——**请逐个套件运行**。
     把探针输出复制到工作区外（如 `%TEMP%` 之外的普通目录）再跑即可完整验证（§8 第 62 条的处置建议）。
+
+65. **角色 ESI 直读七个工具（阶段 117）的成功路径未实机验证**：探针环境没有授权角色（连"未登录任何角色"都是真实分支），
+    而真跑会读用户真实的资产/联系人数据，因此只覆盖了"角色不存在 / 无默认角色"两条确定性分支。
+    首次使用请重点看三处：① `character_assets` 的分组名（**结构位置不在本地结构列表时会显示为 ID**，这是刻意的——
+    不为一个名字额外打 ESI）；② `character_blueprints` 的产物名（走静态库 `industryActivityProducts`，查不到就不显示）；
+    ③ `character_contacts` 的标签名（标签接口失败退化为「标签 N」）。
+    另：资产**不含市场估值**（要对每个 TypeId 查订单，几百次 ESI、分钟级，与一问一答的成本模型冲突）；
+    **军团级端点**（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，本轮未做。
+    分页上限：单个端点最多取 **40 页**（资产条目极多时可能截断，日志里有 Warn）。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -6665,6 +6730,7 @@ Core/Services/DB/InvMarketGroupService.cs   `QueryRootGroupOfType` 改「全表�
 Core/Services/DB/DBService.cs          6 个 `SqlSugarScope` → `ThreadLocal<SqlSugarClient>`（修 SQLite 并发撞库，阶段 63）
 Core/Services/DB/SolarSystemResourcesService.cs  明细关联对象 null 守卫 + `QueryByRegionID` 两处缺陷（阶段 63）
 Core/DBModels/InvTypeMass.cs（新增）+ InvTypeService.cs  `QueryTypeMassAsync` / `QueryShipMassAsync`（阶段 68/76）
+Core/Services/DB/InvTypeService.cs  新增 `QueryBlueprintProducts(blueprintTypeIds)`：蓝图 TypeID → 产物 TypeID（静态库 industryActivityProducts 活动 1；阶段 117）
 Core/Models/GamePreviews/PreviewItem.cs + Core/Helpers/ArgbColorJsonConverter.cs（新增）  角色名叠加 7 个设置项与 ARGB 落盘（阶段 44）
 Core 的 `MapConfig`（`MapCanvasConfig` / `MapSovGroupConfig` / `MapDisplayConfig`）与 `ChannelTranslationSetting` 两个新字段（阶段 47/64/65/67）
 ```
