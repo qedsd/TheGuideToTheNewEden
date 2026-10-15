@@ -37,15 +37,16 @@ public sealed class ServerPingPageViewModel : INotifyPropertyChanged
     private const string EuHost = "tranquility.servers.eveonline.com";
     private const string SerenityHost = "42.186.79.5";
 
-    // 档位阈值（与 WinUI 一致）
-    private const double LatencyExcellent = 100;
-    private const double LatencyGood = 150;
-    private const double LatencyNormal = 250;
-    private const double LatencyPoor = 300;
-    private const double LossExcellent = 0;
-    private const double LossGood = 1;
-    private const double LossNormal = 2;
-    private const double LossPoor = 10;
+    // 档位阈值（与 WinUI 一致）。公开常量 + <see cref="DescribeLatency"/> / <see cref="DescribeLoss"/>：
+    // AI 助手的 server_ping 工具要给出同一套档位文案，阈值与判定必须只有一处来源（不要在两个文件里各写一份）。
+    public const double LatencyExcellent = 100;
+    public const double LatencyGood = 150;
+    public const double LatencyNormal = 250;
+    public const double LatencyPoor = 300;
+    public const double LossExcellent = 0;
+    public const double LossGood = 1;
+    public const double LossNormal = 2;
+    public const double LossPoor = 10;
 
     private readonly Stopwatch _duration = new();
 
@@ -339,6 +340,25 @@ public sealed class ServerPingPageViewModel : INotifyPropertyChanged
             : loss <= LossNormal ? PingQuality.Normal
             : loss <= LossPoor ? PingQuality.Poor
             : PingQuality.Bad;
+
+    /// <summary>延迟档位（&lt;0 = 无数据 → <see cref="PingQuality.Unknown"/>）。供页面与 AI 工具共用。</summary>
+    public static PingQuality DescribeLatency(double latency)
+        => latency < 0 ? PingQuality.Unknown : LatencyQuality(latency);
+
+    /// <summary>丢包档位（&lt;0 = 无数据 → <see cref="PingQuality.Unknown"/>）。供页面与 AI 工具共用。</summary>
+    public static PingQuality DescribeLoss(double lossPercent)
+        => lossPercent < 0 ? PingQuality.Unknown : LossQualityOf(lossPercent);
+
+    /// <summary>档位的中文文案（页面走本地化资源，结果一致；AI 工具直接用它拼回执）。</summary>
+    public static string DescribeQuality(PingQuality quality) => quality switch
+    {
+        PingQuality.Excellent => "极佳",
+        PingQuality.Good => "良好",
+        PingQuality.Normal => "正常",
+        PingQuality.Poor => "较差",
+        PingQuality.Bad => "糟糕",
+        _ => "无数据",
+    };
 
     private string VerdictText(PingQuality quality)
         => quality == PingQuality.Unknown ? string.Empty : FindString($"ServerPingPage_Result_{quality}");

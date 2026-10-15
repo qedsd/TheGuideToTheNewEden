@@ -2356,5 +2356,13 @@
     <sys:String x:Key="AssistantTool_zkb_entity">ZKB 实体统计</sys:String>
     <sys:String x:Key="AssistantTool_ded_info">DED 资料</sys:String>
     <sys:String x:Key="AssistantTool_wormhole_info">虫洞资料</sys:String>
+    <sys:String x:Key="AssistantTool_server_ping">服务器测速</sys:String>
+    <sys:String x:Key="AssistantTool_channel_scan">名单统计</sys:String>
+    <sys:String x:Key="AssistantTool_links_search">快速链接检索</sys:String>
+    <sys:String x:Key="AssistantTool_trade_spread">跨市场利差</sys:String>
+    <sys:String x:Key="AssistantTool_mission_info">任务资料</sys:String>
+    <sys:String x:Key="AssistantTool_glossary_write">写入术语表</sys:String>
+    <sys:String x:Key="AssistantTool_market_favorite">市场收藏</sys:String>
+    <sys:String x:Key="AssistantTool_shopping_cart">倒货购物车</sys:String>
 
 </ResourceDictionary>

@@ -14,16 +14,18 @@ internal static class ToolSuite
 {
     /// <summary>必须有确认门控的工具（写操作 + 重型取数）。</summary>
     private static readonly string[] ConfirmationTools =
-        ["map_jumpbridge_add", "map_jumpbridge_remove", "map_jumpbridge_import", "scalper_analyse", "compare_analyse"];
+        ["map_jumpbridge_add", "map_jumpbridge_remove", "map_jumpbridge_import", "scalper_analyse", "compare_analyse",
+         "glossary_write", "market_favorite", "shopping_cart"];
 
     /// <summary>必须标记为"动作"的工具（结果只想跳页面）。</summary>
     private static readonly string[] ActionTools =
-        ["market_navigate", "system_navigate", "character_navigate", "map_route", "map_layer"];
+        ["market_navigate", "system_navigate", "character_navigate", "map_route", "map_layer", "links_search"];
 
     /// <summary>纯只读工具：**不得**要求确认（确认是给写操作/重型取数用的）。</summary>
     private static readonly string[] ReadOnlyTools =
         ["character_orders", "build_buy_order_text", "character_mail", "character_contracts",
-         "character_industry", "character_location", "zkb_entity", "ded_info", "wormhole_info"];
+         "character_industry", "character_location", "zkb_entity", "ded_info", "wormhole_info",
+         "server_ping", "channel_scan", "trade_spread", "mission_info"];
 
     public static void Run(Check c)
     {
@@ -41,7 +43,8 @@ internal static class ToolSuite
     private static void Schema(Check c)
     {
         var tools = ToolRegistry.All;
-        c.That(tools.Count >= 23, $"注册的工具数 ≥ 23（实际 {tools.Count}）");
+        var productTools = tools.Where(t => !t.Name.StartsWith("probe_", StringComparison.Ordinal)).ToList();
+        c.That(productTools.Count >= 40, $"已注册的产品工具数 ≥ 40（实际 {productTools.Count}，含探针共 {tools.Count}）");
         c.That(ToolRegistry.AllSchemas.Count == tools.Count, "给模型的声明数与注册表一致");
 
         foreach (var tool in tools)
@@ -189,6 +192,48 @@ internal static class ToolSuite
         // character_location 会真的打 ESI 取实时位置（有授权角色时）：只要求"不崩、有输出"
         Exec(c, ctx, "character_location", """{"characterName":"绝不存在角色XYZ"}""",
             text => text.Length > 0, "character_location：不存在的角色名不崩（给出结果或原因）");
+
+        // ---------- 阶段 116：v1.5 P2 五个只读 ----------
+        // 全部只走"确定性失败分支"，不依赖网络与用户配置（成功的取数路径由 WriteToolSuite/实机覆盖）
+        Exec(c, ctx, "server_ping", """{"port":0}""",
+            text => text.Contains("端口"), "server_ping：非法端口 → 明确原因（不发连接）");
+        Exec(c, ctx, "server_ping", """{"host":" ","port":70000}""",
+            text => text.Contains("端口"), "server_ping：空白主机名 + 越界端口仍给明确原因");
+
+        Exec(c, ctx, "channel_scan", """{"names":[]}""",
+            text => text.Contains("不能为空"), "channel_scan：空名单 → 明确原因");
+        Exec(c, ctx, "channel_scan", """{"names":["  ",""]}""",
+            text => text.Contains("不能为空"), "channel_scan：全空白名同样被拒");
+        c.That(ToolRegistry.Find("channel_scan")?.Description.Contains("军团") == true,
+            "channel_scan：描述里写清返回军团/联盟归属（模型靠它选工具）");
+
+        Exec(c, ctx, "links_search", """{}""",
+            text => text.Contains("不能为空"), "links_search：缺 keyword → 明确原因");
+        Exec(c, ctx, "links_search", """{"keyword":"   "}""",
+            text => text.Contains("不能为空"), "links_search：空白关键词同样被拒");
+
+        Exec(c, ctx, "trade_spread", """{"items":[]}""",
+            text => text.Contains("不能为空"), "trade_spread：空 items → 明确原因");
+        Exec(c, ctx, "trade_spread", """{"items":["绝不存在的东西XYZ"]}""",
+            // 工具先看比价设置里有没有市场（没有就直接提示去配置），有市场时才会走到物品解析
+            text => text.Contains("比价设置里没有市场") || text.Contains("没有解析出任何物品"),
+            "trade_spread：未配置市场 / 物品不存在都给出明确原因（不发 ESI）");
+
+        Exec(c, ctx, "mission_info", """{}""",
+            text => text.Contains("keyword") && text.Contains("level"), "mission_info：既无关键词也无等级 → 明确原因");
+        Exec(c, ctx, "mission_info", """{"keyword":"绝不存在任务XYZ"}""",
+            text => text.Contains("没有匹配"), "mission_info：未命中 → 明确原因（本地库）");
+        Exec(c, ctx, "mission_info", """{"level":6}""",
+            text => text.Contains("keyword"), "mission_info：越界等级按「未给等级」处理并提示");
+
+        // ---------- 阶段 116：三个写工具（只验证"挂起语义"，真实写入在 WriteToolSuite 里做并还原） ----------
+        foreach (var name in new[] { "glossary_write", "market_favorite", "shopping_cart" })
+        {
+            var tool = ToolRegistry.Find(name);
+            c.That(tool is not null, $"{name}：已注册（阶段 116 写工具）");
+            c.That(tool?.RequiresConfirmation == true, $"{name}：写工具必须要求确认");
+            c.That(tool?.IsAction == false, $"{name}：写工具不是导航动作");
+        }
     }
 
     /// <summary>执行一个工具并断言结果（含"结果不超过 4000 字符"的公共约束）。</summary>

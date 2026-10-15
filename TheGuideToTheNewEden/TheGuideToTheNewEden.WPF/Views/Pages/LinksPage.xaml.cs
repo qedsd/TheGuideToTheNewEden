@@ -40,14 +40,37 @@ public partial class LinksPage : Page
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         // 页面是常驻缓存的，只有第一次进来时读盘。
-        if (_loaded)
+        if (!_loaded)
+        {
+            _loaded = true;
+            _viewModel.Load();
+            SyncCategoryCombo();
+            UpdateEmptyStates();
+        }
+
+        // 带搜索跳转（AI 助手的 links_search / 别处跳转）：每次进入都要消费，常驻缓存的页面不会重新 Load
+        ApplyPendingSearch();
+    }
+
+    /// <summary>
+    /// 消费"带搜索词跳转到快速链接"的待办（<see cref="Navigation.NavigateToLinks"/>）。
+    /// 只在有待办时动搜索框，避免普通进入页面时把用户上次的筛选清掉。
+    /// </summary>
+    private void ApplyPendingSearch()
+    {
+        var pending = Navigation.TakePendingLinksSearch();
+        if (string.IsNullOrWhiteSpace(pending))
         {
             return;
         }
 
-        _loaded = true;
-        _viewModel.Load();
-        SyncCategoryCombo();
+        // 先写搜索框：它的 TextChanged 会把值回写到 VM 并刷新列表，因此 VM 只需在当前无绑定的情况下补一次
+        SearchBox.Text = pending;
+        if (_viewModel.SearchText != pending)
+        {
+            _viewModel.SearchText = pending;
+        }
+
         UpdateEmptyStates();
     }
 

@@ -233,4 +233,29 @@ public static class Navigation
         _pendingAssistantQuery = null;
         return pending;
     }
+
+    // ==================================================================
+    //  带搜索跳转到快速链接（AI 助手 links_search）
+    // ==================================================================
+
+    private static string? _pendingLinksSearch;
+
+    /// <summary>
+    /// 跳转到「快速链接」页并把搜索框设成指定关键词（同时把主窗口置前）。
+    /// 页面是常驻缓存的，所以待办由页面在**每次** <c>Loaded</c> 时消费（不像星图/市场那样只在首次加载后取一次）。
+    /// </summary>
+    public static void NavigateToLinks(string? searchText)
+    {
+        _pendingLinksSearch = string.IsNullOrWhiteSpace(searchText) ? null : searchText.Trim();
+        Navigate(typeof(Views.Pages.LinksPage));
+        Activate();
+    }
+
+    /// <summary>取走待应用的链接搜索词（快速链接页每次 Loaded 调用；取到即清空）。</summary>
+    public static string? TakePendingLinksSearch()
+    {
+        var pending = _pendingLinksSearch;
+        _pendingLinksSearch = null;
+        return pending;
+    }
 }

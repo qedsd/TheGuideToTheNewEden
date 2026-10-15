@@ -52,6 +52,16 @@ public static class ToolRegistry
         Register(new Tools.ZkbEntityTool());
         Register(new Tools.DedInfoTool());
         Register(new Tools.WormholeInfoTool());
+        // 阶段 116：v1.5 P2 五个只读（测速/名单统计/快速链接/查利差/任务资料）
+        Register(new Tools.ServerPingTool());
+        Register(new Tools.ChannelScanTool());
+        Register(new Tools.LinksSearchTool());
+        Register(new Tools.TradeSpreadTool());
+        Register(new Tools.MissionInfoTool());
+        // 阶段 116：写操作三个（术语表 / 市场收藏 / 倒货购物车；均 RequiresConfirmation）
+        Register(new Tools.GlossaryWriteTool());
+        Register(new Tools.MarketFavoriteTool());
+        Register(new Tools.ShoppingCartTool());
     }
 
     public static void Register(ITool tool)

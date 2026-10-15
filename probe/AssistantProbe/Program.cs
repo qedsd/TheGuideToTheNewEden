@@ -10,6 +10,7 @@ namespace TheGuideToTheNewEden.Probe;
 /// dotnet run --project probe/AssistantProbe -- quickroute # 主页快捷输入路由 + pending 语义
 /// dotnet run --project probe/AssistantProbe -- map        # 星图命令通道 + 跳桥写工具（会写盘后还原）
 /// dotnet run --project probe/AssistantProbe -- business   # 商业重型工具的进度/取消
+/// dotnet run --project probe/AssistantProbe -- writes     # 阶段 116 三个写工具（会写盘，跑完还原）
 /// dotnet run --project probe/AssistantProbe -- ui         # 界面构造与绑定（离屏窗口）
 /// </code>
 /// 退出码：0 = 全 PASS，1 = 有 FAIL，2 = 探针自身异常。
@@ -65,6 +66,11 @@ internal static class Program
             if (suite is "all" or "business")
             {
                 BusinessSuite.Run(check);
+            }
+
+            if (suite is "all" or "writes")
+            {
+                WriteToolSuite.Run(check);
             }
 
             if (suite is "all" or "ui")

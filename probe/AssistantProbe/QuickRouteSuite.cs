@@ -20,6 +20,9 @@ internal static class QuickRouteSuite
 {
     public static void Run(Check c)
     {
+        // 路由要用本地库解析物品名/星系名（ToolNameResolver → MarketTypeNameResolver / MapSolarSystemService），
+        // 所以必须先初始化 Core：阶段 116 单独跑本套件时这里漏了，直接 NRE（`all` 里被 tools 套件的初始化掩盖）。
+        ProbeCore.Ensure();
         ProbeApplication.Ensure();   // 语言键要能解析，toast 文案才可断言
 
         c.Section("QuickRouteSuite · 空输入与兜底");

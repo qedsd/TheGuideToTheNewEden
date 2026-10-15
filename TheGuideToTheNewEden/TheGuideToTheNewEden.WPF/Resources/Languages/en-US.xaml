@@ -2334,5 +2334,13 @@
     <sys:String x:Key="AssistantTool_zkb_entity">ZKB statistics</sys:String>
     <sys:String x:Key="AssistantTool_ded_info">DED info</sys:String>
     <sys:String x:Key="AssistantTool_wormhole_info">Wormhole info</sys:String>
+    <sys:String x:Key="AssistantTool_server_ping">Server ping</sys:String>
+    <sys:String x:Key="AssistantTool_channel_scan">Roster scan</sys:String>
+    <sys:String x:Key="AssistantTool_links_search">Link search</sys:String>
+    <sys:String x:Key="AssistantTool_trade_spread">Market spread</sys:String>
+    <sys:String x:Key="AssistantTool_mission_info">Mission info</sys:String>
+    <sys:String x:Key="AssistantTool_glossary_write">Write glossary</sys:String>
+    <sys:String x:Key="AssistantTool_market_favorite">Market favorite</sys:String>
+    <sys:String x:Key="AssistantTool_shopping_cart">Scalper cart</sys:String>
 
 </ResourceDictionary>
