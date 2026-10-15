@@ -125,12 +125,27 @@
                 SelectionChanged="OnGroupSelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock
-                            Margin="8,7"
-                            FontSize="13"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{Binding Title}"
-                            TextTrimming="CharacterEllipsis" />
+                        <Grid Margin="8,7">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <!--  彩色矢量图标（与导航、磁贴同款；尺寸须显式写死）  -->
+                            <Image
+                                Grid.Column="0"
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Source="{Binding IconSource}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Title}"
+                                TextTrimming="CharacterEllipsis" />
+                        </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -168,13 +183,13 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <ui:SymbolIcon
+                                        <Image
                                             Grid.Column="0"
+                                            Width="20"
+                                            Height="20"
                                             Margin="0,0,12,0"
                                             VerticalAlignment="Center"
-                                            FontSize="20"
-                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                            Symbol="{Binding Icon}" />
+                                            Source="{Binding TileIcon}" />
 
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock

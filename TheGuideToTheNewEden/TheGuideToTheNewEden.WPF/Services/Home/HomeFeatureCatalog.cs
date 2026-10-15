@@ -27,6 +27,7 @@ public enum HomeFeatureKind
 public sealed record HomeFeature(
     string Id,
     SymbolRegular Icon,
+    string IconKey,
     string TitleKey,
     string GroupKey,
     string DescriptionKey,
@@ -34,6 +35,12 @@ public sealed record HomeFeature(
     Type? PageType = null,
     string? ToolTitleKey = null)
 {
+    /// <summary>
+    /// 彩色矢量图标的资源键后缀（对应 <c>Resources/NavIcons.xaml</c> 的 <c>NavIcon.&lt;IconKey&gt;</c>）。
+    /// 主页磁贴用它；<see cref="Icon"/>（Segoe 字体图标）留给仍需单色图标的场景（如设置页）。
+    /// </summary>
+    public string IconResourceKey => "NavIcon." + IconKey;
+
     /// <summary>磁贴 / 列表里的标题（每次读取都重新查资源，语言切换后自动是新语言）。</summary>
     public string Title => Resolve(TitleKey);
 
@@ -81,111 +88,111 @@ public static class HomeFeatureCatalog
     private static List<HomeFeature> Build() =>
     [
         // ---------- 角色 ----------
-        new("characters", SymbolRegular.Person24, "Nav.Characters", "Nav.Characters",
+        new("characters", SymbolRegular.Person24, "characters", "Nav.Characters", "Nav.Characters",
             "Home.Feature.CharactersDesc", HomeFeatureKind.Page, typeof(Views.Pages.Characters.CharactersShellPage)),
 
         // ---------- 商业 ----------
-        new("market", SymbolRegular.ArrowTrending24, "Nav.Market", "Nav.Business",
+        new("market", SymbolRegular.ArrowTrending24, "market", "Nav.Market", "Nav.Business",
             "Home.Feature.MarketDesc", HomeFeatureKind.Page, typeof(Views.Pages.MarketPage)),
-        new("order", SymbolRegular.Receipt24, "Nav.Order", "Nav.Business",
+        new("order", SymbolRegular.Receipt24, "order", "Nav.Order", "Nav.Business",
             "Home.Feature.OrderDesc", HomeFeatureKind.Page, typeof(Views.Pages.OrderPage)),
-        new("scalper", SymbolRegular.ShoppingBag24, "Nav.Scalper", "Nav.Business",
+        new("scalper", SymbolRegular.ShoppingBag24, "scalper", "Nav.Scalper", "Nav.Business",
             "Home.Feature.ScalperDesc", HomeFeatureKind.Page, typeof(Views.Pages.ScalperPage)),
-        new("compare-market", SymbolRegular.ArrowSwap24, "Nav.CompareMarket", "Nav.Business",
+        new("compare-market", SymbolRegular.ArrowSwap24, "compareMarket", "Nav.CompareMarket", "Nav.Business",
             "Home.Feature.CompareMarketDesc", HomeFeatureKind.Page, typeof(Views.Pages.CompareMarketPage)),
-        new("appraisal", SymbolRegular.Calculator24, "Nav.Appraisal", "Nav.Business",
+        new("appraisal", SymbolRegular.Calculator24, "appraisal", "Nav.Appraisal", "Nav.Business",
             "Home.Feature.AppraisalDesc", HomeFeatureKind.Page, typeof(Views.Pages.AppraisalPage)),
 
         // ---------- 多开 ----------
-        new("game-preview", SymbolRegular.SquareMultiple24, "Nav.GamePreview", "Nav.GamePreview",
+        new("game-preview", SymbolRegular.SquareMultiple24, "gamePreview", "Nav.GamePreview", "Nav.GamePreview",
             "Home.Feature.GamePreviewDesc", HomeFeatureKind.Page, typeof(Views.Pages.GamePreviewPage)),
 
         // ---------- 频道 ----------
-        new("channel-intel", SymbolRegular.Alert24, "Nav.ChannelIntel", "Nav.Channel",
+        new("channel-intel", SymbolRegular.Alert24, "channelIntel", "Nav.ChannelIntel", "Nav.Channel",
             "Home.Feature.ChannelIntelDesc", HomeFeatureKind.Page, typeof(Views.Pages.ChannelIntelPage)),
-        new("channel-monitor", SymbolRegular.Comment24, "Nav.ChannelMonitor", "Nav.Channel",
+        new("channel-monitor", SymbolRegular.Comment24, "channelMonitor", "Nav.ChannelMonitor", "Nav.Channel",
             "Home.Feature.ChannelMonitorDesc", HomeFeatureKind.Page, typeof(Views.Pages.ChannelMonitorPage)),
-        new("channel-scan", SymbolRegular.People24, "Nav.ChannelScan", "Nav.Channel",
+        new("channel-scan", SymbolRegular.People24, "channelScan", "Nav.ChannelScan", "Nav.Channel",
             "Home.Feature.ChannelScanDesc", HomeFeatureKind.Page, typeof(Views.Pages.ChannelScanPage)),
-        new("channel-market", SymbolRegular.Money24, "Nav.ChannelMarket", "Nav.Channel",
+        new("channel-market", SymbolRegular.Money24, "channelMarket", "Nav.ChannelMarket", "Nav.Channel",
             "Home.Feature.ChannelMarketDesc", HomeFeatureKind.Page, typeof(Views.Pages.ChannelMarketPage)),
-        new("game-log-monitor", SymbolRegular.DocumentText24, "Nav.GameLogMonitor", "Nav.Channel",
+        new("game-log-monitor", SymbolRegular.DocumentText24, "gameLogMonitor", "Nav.GameLogMonitor", "Nav.Channel",
             "Home.Feature.GameLogMonitorDesc", HomeFeatureKind.Page, typeof(Views.Pages.GameLogMonitorPage)),
 
         // ---------- 翻译 ----------
-        new("translation-ai", SymbolRegular.Translate24, "Nav.TranslationAi", "Nav.Translation",
+        new("translation-ai", SymbolRegular.Translate24, "translationAi", "Nav.TranslationAi", "Nav.Translation",
             "Home.Feature.TranslationAiDesc", HomeFeatureKind.Page, typeof(Views.Pages.AiTranslationPage)),
-        new("translation-channel", SymbolRegular.CommentMultiple24, "Nav.ChannelTranslation", "Nav.Translation",
+        new("translation-channel", SymbolRegular.CommentMultiple24, "channelTranslation", "Nav.ChannelTranslation", "Nav.Translation",
             "Home.Feature.TranslationChannelDesc", HomeFeatureKind.Page, typeof(Views.Pages.ChannelTranslationPage)),
-        new("translation-local", SymbolRegular.LocalLanguage24, "Nav.TranslationLocal", "Nav.Translation",
+        new("translation-local", SymbolRegular.LocalLanguage24, "translationLocal", "Nav.TranslationLocal", "Nav.Translation",
             "Home.Feature.TranslationLocalDesc", HomeFeatureKind.Page, typeof(Views.Pages.LocalTranslationPage)),
 
         // ---------- 攻略 ----------
-        new("ded", SymbolRegular.DataSunburst24, "Nav.DED", "Nav.Guides",
+        new("ded", SymbolRegular.DataSunburst24, "ded", "Nav.DED", "Nav.Guides",
             "Home.Feature.DedDesc", HomeFeatureKind.Page, typeof(Views.Pages.DEDPage)),
-        new("mission", SymbolRegular.DocumentOnePage24, "Nav.Mission", "Nav.Guides",
+        new("mission", SymbolRegular.DocumentOnePage24, "mission", "Nav.Mission", "Nav.Guides",
             "Home.Feature.MissionDesc", HomeFeatureKind.Page, typeof(Views.Pages.MissionPage)),
 
         // ---------- 虫洞 / 链接 / 星图 / KB / 数据库 ----------
-        new("wormhole", SymbolRegular.Target24, "Nav.Wormhole", "Nav.Wormhole",
+        new("wormhole", SymbolRegular.Target24, "wormhole", "Nav.Wormhole", "Nav.Wormhole",
             "Home.Feature.WormholeDesc", HomeFeatureKind.Page, typeof(Views.Pages.WormholePage)),
-        new("links", SymbolRegular.Link24, "Nav.Links", "Nav.Links",
+        new("links", SymbolRegular.Link24, "links", "Nav.Links", "Nav.Links",
             "Home.Feature.LinksDesc", HomeFeatureKind.Page, typeof(Views.Pages.LinksPage)),
-        new("map", SymbolRegular.Map24, "Nav.Map", "Nav.Map",
+        new("map", SymbolRegular.Map24, "map", "Nav.Map", "Nav.Map",
             "Home.Feature.MapDesc", HomeFeatureKind.Page, typeof(Views.Pages.MapPage)),
-        new("zkb", SymbolRegular.Scan24, "Nav.ZKB", "Nav.ZKB",
+        new("zkb", SymbolRegular.Scan24, "zkb", "Nav.ZKB", "Nav.ZKB",
             "Home.Feature.ZkbDesc", HomeFeatureKind.Page, typeof(Views.Pages.ZKBPage)),
-        new("database", SymbolRegular.Database24, "Nav.Database", "Nav.Database",
+        new("database", SymbolRegular.Database24, "database", "Nav.Database", "Nav.Database",
             "Home.Feature.DatabaseDesc", HomeFeatureKind.Page, typeof(Views.Pages.DatabasePage)),
-        new("eve-settings-sync", SymbolRegular.ArrowSync24, "Nav.EveSettingsSync", "Nav.EveSettingsSync",
+        new("eve-settings-sync", SymbolRegular.ArrowSync24, "eveSettingsSync", "Nav.EveSettingsSync", "Nav.EveSettingsSync",
             "Home.Feature.EveSettingsSyncDesc", HomeFeatureKind.Page, typeof(Views.Pages.EveSettingsSyncPage)),
 
         // ---------- 小工具（独立工具窗口，不走主窗口导航） ----------
-        new("tool-ime", SymbolRegular.Keyboard24, "Nav.Tools_IME", "Nav.Tools",
+        new("tool-ime", SymbolRegular.Keyboard24, "toolsIME", "Nav.Tools_IME", "Nav.Tools",
             "Home.Feature.ToolImeDesc", HomeFeatureKind.ToolWindow, typeof(Views.Pages.IMEPage), "Nav.Tools_IME"),
-        new("tool-server-ping", SymbolRegular.Gauge24, "Nav.Tools_ServerPing", "Nav.Tools",
+        new("tool-server-ping", SymbolRegular.Gauge24, "serverPing", "Nav.Tools_ServerPing", "Nav.Tools",
             "Home.Feature.ToolServerPingDesc", HomeFeatureKind.ToolWindow, typeof(Views.Pages.ServerPingPage), "Nav.Tools_ServerPing"),
-        new("tool-keyboard-span", SymbolRegular.Wrench24, "Nav.Tools_KeyboardSpan", "Nav.Tools",
+        new("tool-keyboard-span", SymbolRegular.Wrench24, "keyboardSpan", "Nav.Tools_KeyboardSpan", "Nav.Tools",
             "Home.Feature.ToolKeyboardSpanDesc", HomeFeatureKind.ToolWindow, typeof(Views.Pages.KeyboardSpanPage), "Nav.Tools_KeyboardSpan"),
-        new("tool-taskbar", SymbolRegular.Window24, "Nav.Tools_Taskbar", "Nav.Tools",
+        new("tool-taskbar", SymbolRegular.Window24, "taskbar", "Nav.Tools_Taskbar", "Nav.Tools",
             "Home.Feature.ToolTaskbarDesc", HomeFeatureKind.ToolWindow, typeof(Views.Pages.TaskbarPage), "Nav.Tools_Taskbar"),
 
         // ---------- 设置 ----------
-        new("settings", SymbolRegular.Settings24, "Nav.Settings", "Nav.Settings",
+        new("settings", SymbolRegular.Settings24, "settings", "Nav.Settings", "Nav.Settings",
             "Home.Feature.SettingsDesc", HomeFeatureKind.Page, typeof(Views.Pages.SettingsPage)),
 
         // ---------- 轻量动作（没有页面） ----------
-        new("action-open-log", SymbolRegular.DocumentBulletList24, "Home.Action.OpenLog", "Home.Group.System",
+        new("action-open-log", SymbolRegular.DocumentBulletList24, "gameLogMonitor", "Home.Action.OpenLog", "Home.Group.System",
             "Home.Feature.OpenLogDesc", HomeFeatureKind.Action),
-        new("action-open-config", SymbolRegular.Folder24, "Home.Action.OpenConfigFolder", "Home.Group.System",
+        new("action-open-config", SymbolRegular.Folder24, "eveSettingsSync", "Home.Action.OpenConfigFolder", "Home.Group.System",
             "Home.Feature.OpenConfigDesc", HomeFeatureKind.Action),
-        new("action-check-update", SymbolRegular.CloudArrowDown24, "Home.Action.CheckUpdate", "Home.Group.System",
+        new("action-check-update", SymbolRegular.CloudArrowDown24, "assistant", "Home.Action.CheckUpdate", "Home.Group.System",
             "Home.Feature.CheckUpdateDesc", HomeFeatureKind.Action),
-        new("action-manual", SymbolRegular.BookQuestionMark24, "Home.Action.Manual", "Home.Group.System",
+        new("action-manual", SymbolRegular.BookQuestionMark24, "guides", "Home.Action.Manual", "Home.Group.System",
             "Home.Feature.ManualDesc", HomeFeatureKind.Action),
-        new("action-about", SymbolRegular.Info24, "Home.Action.About", "Home.Group.System",
+        new("action-about", SymbolRegular.Info24, "home", "Home.Action.About", "Home.Group.System",
             "Home.Feature.AboutDesc", HomeFeatureKind.Action),
 
         // ---------- 设置子页（L3：直接落到某个设置分类） ----------
-        new("setting-general", SymbolRegular.Settings24, "SettingPage_General", "Nav.Settings",
+        new("setting-general", SymbolRegular.Settings24, "settings", "SettingPage_General", "Nav.Settings",
             "SettingPage_General_Desc", HomeFeatureKind.Action),
-        new("setting-game-log", SymbolRegular.Document24, "SettingPage_GameLog", "Nav.Settings",
+        new("setting-game-log", SymbolRegular.Document24, "gameLogMonitor", "SettingPage_GameLog", "Nav.Settings",
             "SettingPage_GameLog_Desc", HomeFeatureKind.Action),
-        new("setting-market", SymbolRegular.DataTrending24, "SettingPage_Market", "Nav.Settings",
+        new("setting-market", SymbolRegular.DataTrending24, "market", "SettingPage_Market", "Nav.Settings",
             "SettingPage_Market_Desc", HomeFeatureKind.Action),
-        new("setting-structures", SymbolRegular.Building24, "SettingPage_Structures", "Nav.Settings",
+        new("setting-structures", SymbolRegular.Building24, "database", "SettingPage_Structures", "Nav.Settings",
             "SettingPage_Structures_Desc", HomeFeatureKind.Action),
-        new("setting-esi-scope", SymbolRegular.Shield24, "SettingPage_ESIScope", "Nav.Settings",
+        new("setting-esi-scope", SymbolRegular.Shield24, "characters", "SettingPage_ESIScope", "Nav.Settings",
             "SettingPage_ESIScope_Desc", HomeFeatureKind.Action),
-        new("setting-ai-translation", SymbolRegular.Translate24, "SettingPage_AiTranslation", "Nav.Settings",
+        new("setting-ai-translation", SymbolRegular.Translate24, "translationAi", "SettingPage_AiTranslation", "Nav.Settings",
             "SettingPage_AiTranslation_Desc", HomeFeatureKind.Action),
-        new("setting-glossary", SymbolRegular.LocalLanguage24, "SettingPage_Glossary", "Nav.Settings",
+        new("setting-glossary", SymbolRegular.LocalLanguage24, "translationLocal", "SettingPage_Glossary", "Nav.Settings",
             "SettingPage_Glossary_Desc", HomeFeatureKind.Action),
-        new("setting-keyboard", SymbolRegular.Keyboard24, "SettingPage_KeyboardList", "Nav.Settings",
+        new("setting-keyboard", SymbolRegular.Keyboard24, "keyboardSpan", "SettingPage_KeyboardList", "Nav.Settings",
             "SettingPage_KeyboardList_Desc", HomeFeatureKind.Action),
-        new("setting-test", SymbolRegular.Bug24, "SettingPage_Test", "Nav.Settings",
+        new("setting-test", SymbolRegular.Bug24, "tools", "SettingPage_Test", "Nav.Settings",
             "SettingPage_Test_Desc", HomeFeatureKind.Action),
-        new("setting-update", SymbolRegular.ArrowSync24, "SettingPage_Update", "Nav.Settings",
+        new("setting-update", SymbolRegular.ArrowSync24, "eveSettingsSync", "SettingPage_Update", "Nav.Settings",
             "SettingPage_Update_Desc", HomeFeatureKind.Action),
         // 没有 setting-home：主页本身不是设置子页，且"设置 → 主页"已删（阶段 94），
         // 快捷方式的编辑统一在主页的编辑模式与「⋯」菜单里完成。

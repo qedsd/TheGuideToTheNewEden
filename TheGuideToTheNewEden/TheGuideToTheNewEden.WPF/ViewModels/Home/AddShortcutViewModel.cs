@@ -14,6 +14,17 @@ public sealed class AddShortcutGroup
 
     public string Title { get; init; } = string.Empty;
 
+    /// <summary>该分组所属功能的 <c>IconKey</c>（用于左侧彩色矢量图标；"全部功能"为 null 走 <c>NavIcon.home</c>）。</summary>
+    public string? IconKey { get; init; }
+
+    /// <summary>
+    /// 彩色矢量图标对象（供 <c>Image.Source</c> 绑定）。
+    /// <b>必须返回对象而不是字符串键</b> —— 绑字符串时 <c>ImageSourceConverter</c> 会把它当文件路径解析，
+    /// 而不是去资源字典里查。
+    /// </summary>
+    public object? IconSource =>
+        Application.Current?.TryFindResource("NavIcon." + (IconKey ?? "home"));
+
     public override string ToString() => Title;
 }
 
@@ -30,7 +41,11 @@ public sealed class AddShortcutRow : INotifyPropertyChanged
 
     public HomeFeature Feature { get; }
 
+    /// <summary>字体图标（尚无彩色矢量对应的场景）。</summary>
     public SymbolRegular Icon => Feature.Icon;
+
+    /// <summary>彩色矢量图标对象（右侧列表用，与导航/磁贴同款）。</summary>
+    public object? TileIcon => Application.Current?.TryFindResource(Feature.IconResourceKey);
 
     public string Title => Feature.Title;
 
@@ -84,9 +99,14 @@ public sealed class AddShortcutViewModel : INotifyPropertyChanged
         Groups.Add(new AddShortcutGroup { Key = null, Title = Resolve("Home.Add.GroupAll") });
         foreach (var key in HomeFeatureCatalog.GroupKeys)
         {
+            // 分组图标取该分组下第一个功能的 IconKey（分组本身就是"某个导航页"或"某类设置"）。
+            var iconKey = HomeFeatureCatalog.Features
+                .FirstOrDefault(p => p.GroupKey == key)?.IconKey;
+
             Groups.Add(new AddShortcutGroup
             {
                 Key = key,
+                IconKey = iconKey,
                 Title = Application.Current?.TryFindResource(key) as string ?? key,
             });
         }

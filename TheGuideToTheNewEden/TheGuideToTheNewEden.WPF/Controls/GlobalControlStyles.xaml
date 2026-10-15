@@ -11,6 +11,34 @@
         3. ContentPresenter 在 HeaderedContentControl 的模板里必须写 ContentSource="Header"。
     -->
 
+    <!--
+        ============================================================================
+        品牌字体栈（与 design/branding/banner_*.svg 的 font-family 对齐）
+        ============================================================================
+        设计稿写的是：'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif
+
+        WPF 的 FontFamily 原生支持**逗号分隔的回退序列**：逐个尝试，某个字体缺失
+        或缺少所需字形时自动用下一个；全都没有则落到 WPF 内置的复合字体
+        「全局用户界面 GlobalUserInterface.CompositeFont」。所以这条序列既是"贴近设计稿"，
+        也是"字体缺失时的兜底"——不需要我们自己做检测。
+
+        逐项说明（为什么是这个顺序）：
+          · Segoe UI        —— 设计稿首选，也是 Windows 的 Fluent 标准字体。
+                               本机存在 segoeui.ttf / segoeuib.ttf（Bold），故英文标题走它。
+          · Microsoft YaHei —— 中文优选。Segoe UI 本身**不含汉字**，中文会自动落到它；
+                               顺序放在 Segoe UI 之后，与设计稿一致。
+                               注意：设计稿用的是 "Microsoft YaHei"，而 WPF 里另有 UI 变体
+                               "Microsoft YaHei UI"（字形同款、专用界面优化）。本项目其余
+                               界面走 WPF-UI 默认（YaHei UI），这里为忠于设计稿仍写 YaHei。
+          · PingFang SC     —— 设计稿里给 macOS 用的。Windows 上**永远不存在**，
+                               留着无害（WPF 会跳过），也让设计稿的字栈在文档层面保持一致。
+          · 兜底            —— 尾缀 "Segoe UI Variable Text, Arial"：
+                               Segoe UI Variable 是 Win11 的新字体（Win10 无），Arial 则
+                               自 Windows 起必有。即便前面全失效（如精简版系统删了字体），
+                               仍有 Arial 顶上，比直接掉到 GlobalUserInterface 更可控。
+    -->
+    <FontFamily x:Key="BrandFontFamily">Segoe UI, Microsoft YaHei, PingFang SC, Segoe UI Variable Text, Arial</FontFamily>
+
     <!--  TabItem：选中态 = 圆角底色 + 主题色下划线 + 半粗字重；悬停 = 更浅底色；右侧 Margin 提供标签间距  -->
     <Style TargetType="TabItem">
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />

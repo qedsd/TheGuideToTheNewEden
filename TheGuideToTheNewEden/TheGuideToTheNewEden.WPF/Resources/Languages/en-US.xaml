@@ -4,6 +4,8 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <sys:String x:Key="AppDisplayName">The Guide To The New Eden</sys:String>
+    <!--  品牌条副标题：见 zh-CN.xaml 里同一键的说明（显示「另一语言」的名字，保持中英双语）  -->
+    <sys:String x:Key="AppDisplayNameAlt">新伊甸漫游指南</sys:String>
     <sys:String x:Key="Shell_OpenDenied">Could not open (the system denied the request; the current run context is restricted)</sys:String>
     <sys:String x:Key="Shell_PathCopied">The path has been copied to the clipboard; paste it into File Explorer</sys:String>
 
@@ -66,8 +68,8 @@
     <sys:String x:Key="Home.Add.Hint">Use the button on the right to add or remove; reorder them in Settings → Home.</sys:String>
     <sys:String x:Key="Home.Add.GroupAll">All features</sys:String>
 
-    <sys:String x:Key="Home.Status.Players">Players {0}</sys:String>
-    <sys:String x:Key="Home.Status.PlayersUnknown">Players online: unknown</sys:String>
+    <!--  状态胶囊只显示纯数字，语义靠前置图标 + ToolTip（与 zh-CN 侧一致，见其注释）  -->
+    <sys:String x:Key="Home.Status.PlayersUnknown">—</sys:String>
     <sys:String x:Key="Home.Status.GameTimeTip">EVE Time (UTC)</sys:String>
     <sys:String x:Key="Home.Status.NewVersion">New version {0}</sys:String>
     <sys:String x:Key="Home.Status.NewVersionTip">Open “Settings → Software update”</sys:String>

@@ -135,7 +135,10 @@
                                                 Height="30"
                                                 Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                                 CornerRadius="6">
-                                                <ui:SymbolIcon FontSize="17" Symbol="{Binding Icon}" />
+                                                <Image
+                                                    Width="18"
+                                                    Height="18"
+                                                    Source="{Binding TileIcon}" />
                                             </Border>
                                             <StackPanel
                                                 Grid.Column="1"

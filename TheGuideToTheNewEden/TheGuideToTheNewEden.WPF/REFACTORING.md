@@ -5090,6 +5090,7 @@ icacls $ws | findstr /i "Mandatory"
   - 注意：改 `app.ico` 后**必须重新构建** —— 图标是链接进 exe 的 Win32 资源，换文件不等于生效。
 - **不在本次范围**：左侧导航 35 个菜单图标仍为 WPF-UI 单色 `SymbolIcon`（彩色矢量版已设计完毕，在
   `design/branding/icons/`：`nav-icons.svg` sprite + 35 个单文件 + 预览页，接入时机待定）。
+  → **已于本次接入**，见下方「左侧导航 35 个图标换为彩色矢量」。
 - **圆角裁剪（用户实机反馈"Banner 右上角没有圆角，其余三个角都有"）**：
   根因是 WPF 的 `ClipToBounds="True"` **只按矩形裁切、不认 `CornerRadius`**，
   而装饰层的出血星门环（`Canvas.Top="-28"`）正好从右上角圆角处溢出。
@@ -5109,6 +5110,221 @@ icacls $ws | findstr /i "Mandatory"
   - 色块容器是 `UniformGrid Columns="4"`，11 个色块自动排 3 行（4/4/3），无需改布局。
   - 注意：`syncSystemAccentBrushes()` 会把 `SystemAccentColor*Brush` 与品牌色对齐，
     因此 KB/ZKB 链接、翻译高亮、通知条等 30+ 处引用会一并变品牌色——这是预期行为。
+- **左侧导航 35 个图标换为彩色矢量**（本次，用户要求）：
+  - 图标源：`design/branding/icons/nav_*.svg`（35 个，设计规范见该目录 `preview.html`）。
+  - 转换脚本 `design/branding/_svg_to_wpf_icons.py` → 生成 `Resources/NavIcons.xaml`
+    （35 枚 `DrawingImage`，键名 `NavIcon.<id>`），在 `App.xaml` 合并进资源字典。
+  - 替换脚本 `design/branding/_apply_nav_icons.py` → `MainWindow.xaml` 里 35 个
+    `NavigationViewItem` 的 `SymbolIcon` 全部换成 `<ui:ImageIcon Source="{StaticResource NavIcon.<id>}" />`
+    （子项原本没有 Icon 块，一并补上；`SymbolIcon` 残留 0）。
+  - **SVG → WPF 转换的四个坑**（都已在脚本里处理）：
+    1) `fill="none"` / `stroke="none"` 表示"不画"，不能当画刷输出；
+    2) 同一形状同时有 stroke + fill 时，要合并进**一个** `GeometryDrawing`（Pen + Brush），
+       分成两个会重复绘制、叠加处颜色偏深；
+    3) `transform="rotate(a cx cy)"`（虫洞同心椭圆、设置齿轮八瓣、快速链接双环）必须转成
+       WPF `RotateTransform` 挂到子 `DrawingGroup`，丢了图形会错位；
+    4) `<g>` 上的 `stroke` / `stroke-width` / `transform` 要被子元素继承。
+  - **固有尺寸陷阱（三轮才彻底解决，教训完整记录）**：
+    `DrawingImage` 的固有尺寸取自**绘制内容的包围盒**，而每个图标的图形占比/位置都不同，
+    `ImageIcon` 会把各自拉伸到同一个显示框 —— 表现为图标忽大忽小、比例失真、边缘被裁。
+    1) 首轮：每个图标外层包 `ScaleTransform`。**它确实生效**（实测自然尺寸从 128 变成 15.5×13.7），
+       但**仍不足** —— `ScaleTransform` 只缩放绘制内容，`DrawingImage` 的自然尺寸变成
+       "缩放后内容的包围盒"，于是每个图标还是各不相同的自然尺寸。
+    2) 次轮：在 `ImageIcon` 上写 `Width="20" Height="20"`。能限住外框，
+       但因自然尺寸各异，内容被**非等比拉伸**：实测用户截图中图标宽 25 / 37 / 43px 混杂。
+    3) **最终解法**：在每个 `DrawingGroup` 里、`ScaleTransform` 之后加一枚
+       **透明全画布矩形** `<GeometryDrawing Brush="Transparent" Geometry="M0 0 H128 V128 H0 Z" />`，
+       把绘制包围盒**统一**成 128×128 → 缩放后恒为 20×20。
+       实测复验：35 个图标自然尺寸**全部 = 20.00×20.00**，渲染偏移 x/y 归零。
+    4) `Width`/`Height="20"` 保留在 `ImageIcon` 上（双保险 + 明确意图）。
+  - 反射探针确认：`ImageIcon : IconElement : FrameworkElement`（`Width`/`Height` 可用），
+    其唯一自有属性是 `ImageSource Source`，没有内置尺寸控制。
+  - **验证**：WPF 构建 **0 错误**；静态核对 35 枚图标全部非空、旋转保留
+    （wormhole 3 / links 2 / settings 7）、透明占位 35/35；
+    用 `RenderTargetBitmap` 离屏渲染实测各图标尺寸统一、居中无偏移。
+- **主页快捷方式磁贴同步彩色图标**（`Services/Home/HomeFeatureCatalog.cs` + `Views/Pages/HomePage.xaml`）：
+  - `HomeFeature` 记录新增 `string IconKey` 字段（43 条目录项全部填好），
+    并派生 `IconResourceKey => "NavIcon." + IconKey` 指向 `NavIcons.xaml`。
+    **`SymbolRegular Icon` 保留**（"最近使用"胶囊、设置页分类等仍用单色字体图标）。
+  - 目录 id → 图标 id 的映射：与导航页一一对应的 28 项直接同名（`compare-market`→`compareMarket` 等）；
+    无对应页面的 15 项（轻量动作、设置子页）按语义就近复用
+    （如 `action-open-config`→`eveSettingsSync`、`setting-glossary`→`translationLocal`）。
+  - `HomeShortcutTileViewModel` 新增 `TileIcon`（`object`，查资源后返回 `DrawingImage`），
+    磁贴模板的两处 `ui:SymbolIcon`（小/宽磁贴）换成 `Image Width/Height=28|26 Source={Binding TileIcon}`；
+    同批 UI 一并更新：`AddShortcutWindow`（20px）、`Settings/HomeSettingPage`（18px，原有 30px 底托）。
+  - 尺寸显式写死是刻意的 —— 沿用导航图标那轮的教训（见上一条）。
+  - 验证：构建 **0 错误**；静态核对 43 条目录项的 `IconKey` **全部命中** `NavIcons.xaml` 的 35 个资源，无回落。
+- **「添加功能」窗口左侧分组列表补图标**（`Views/Windows/AddShortcutWindow.xaml`）：
+  - 用户问"左侧菜单栏没有 logo，是刻意还是 bug" —— **是原始设计**（该模板一直只有 `TextBlock`，不是回归）。
+    既然已有成套彩色图标，补上以与导航 / 磁贴统一。
+  - `AddShortcutGroup` 新增 `IconKey`（构造时取该分组下**第一个功能的 IconKey**）+ `IconSource`
+    （查资源后返回对象）；`ListBox.ItemTemplate` 从裸 `TextBlock` 改为 `Image(16px) + TextBlock` 两列。
+  - **一个必须记住的绑定陷阱**：`Image.Source` 绑**字符串**（如 `"NavIcon.home"`）不会去资源字典查，
+    `ImageSourceConverter` 会把它当**文件路径/URI** 解析 → 图标不显示。
+    必须绑**已解析的对象**（`Application.Current.TryFindResource(...)` 的返回值）。
+    本轮同时修掉了上一轮 `HomeShortcutTileViewModel.TileIcon` 的同类问题（那里的 `?? "NavIcon.home"` 字符串回落）。
+  - 验证：构建 **0 错误**；43 个分组的图标映射全部命中 `NavIcons.xaml`。
+- **浅色主题横幅提亮**（用户反馈"banner_light.svg 偏暗，不符合亮色主题要的明亮感"）：
+  - **设计稿**（`design/branding/banner_light.svg`）：底色 `#F7FAFF/#EAF0FA/#F1F5FC` → `#FCFEFF/#F5F9FF/#F8FBFF`；
+    星云透明度 0.16/0.15 → **0.11/0.10**（neb3 0.10→0.07）；星野 `#64748B` → `#94A3B8` 且整体 opacity 0.72；
+    闪星 opacity 0.55→0.70（补偿）；版本胶囊底提亮。合成亮度 **211 → 233**（纯白 255）。
+  - **工程内品牌条（问题比设计稿严重得多）**：那三层背景原本写成「固定半透明色、两主题通用」，
+    但 18% 的深蓝洗在**浅色主题下把浅底直接压成中灰** —— 实测合成亮度仅 **143**（比深色主题还暗）。
+    这是「固定半透明色跨主题复用」这一设计假设本身就错的典型案例：半透明叠加深浅底的结果完全不同。
+  - 修法：三层背景改为**主题感知** —— XAML 里给 `BannerVignette` / `BannerNebulaTeal` / `BannerNebulaIndigo`
+    命名（去掉内联画刷），`HomePage.xaml.cs` 新增 `ApplyBannerBrushes()` 按 `ThemeService.Theme`
+    重建画刷，并订阅 `ThemeService.ThemeChanged` 实时切换（沿用页面既有的 `_languageHooked` 配对模式，新增 `_themeHooked`）。
+    浅色主题：深空洗 2%、青星云 6.3%、靛星云 5.5%；深色主题：原值不变（18% / 22% / 23%）。
+  - 实测亮度：浅色 **143 → 217/211**（径向渐变峰值处，非峰值区域更亮）；深色主题完全不受影响。
+  - 验证：构建 **0 错误**。
+- **消除渐变色层断层（banding）**（用户反馈"左下/右上出现色层断层的光晕"）：
+  - **成因**：星云是**低对比**径向渐变（只有 ~12 个色值跨度），8bit 色深下可用色阶太少，
+    渲染成几段硬边色带。实测截图纵向扫描：`#F3F3F5`(243) → `#F5F5F7`(245) → `#F7F8F8`(247.8)，
+    每段约 50px 一个硬跳 —— 这就是肉眼看到的"同心色环 / 色层断层"。
+    压透明度会加剧（可用色阶更少），所以**不能靠调透明度解决**。
+  - **解法：噪点抖动层（dithering）**。在 `HomePage.xaml` 的三层背景之上加 `BannerNoise`
+    （`IsHitTestVisible="False"`，位于星野 Canvas 之前 → 不影响星门环与内容层），
+    `HomePage.xaml.cs::BuildNoiseBrush()` 生成 8×8 平铺的随机明暗 1px 方块
+    （浅色 5% / 深色 9% 不透明度，固定随机种子避免切换主题时闪烁）。
+  - **量化验证**（离屏渲染 + 纵向扫描）：最长同色段 **158px → 7px**，色阶台阶被打散为微观抖动。
+    同时验证了「多色停」单独无效（低对比下色值不跨阶），**噪点层才是关键**。
+  - **两个实现坑**：
+    1) `SolidColorBrush.Freeze()` 后不可再改属性 —— 循环里复用同一个画刷实例设置
+       `Opacity` 会在第二次抛 `InvalidOperationException`（"处于只读状态"），
+       必须**每格新建画刷**。这个 bug 曾导致程序启动即崩。
+    2) 抖动幅度要够：±1 的微抖动实测**无效**（相邻值只变 1），需 ≥5% 才形成连续过渡带。
+  - 同步更新 `design/branding/banner_light.svg`（改用多色停 + SVG 原生 `<feTurbulence>` 噪点滤镜，
+    观感与工程侧一致）与 `preview.html`。
+  - 验证：构建 **0 错误**。
+  - **最终方案（用户反馈后推翻重做）**：用户指出"噪点颗粒感作用是什么？直接去掉简单显示 banner 不可以吗" ——
+    是对的，**用颗粒感换平滑不划算**。重新量化后确认根因是设计矛盾而非参数问题：
+    | 主题 | 星云透明度 | 蓝通道色值跨度 | 结果 |
+    |---|---|---|---|
+    | 深色 | 22% | **48 级** | 本就平滑，无需噪点 |
+    | 浅色 | 6% | **0~12 级** | 必然出现硬边色带，且压得越低越明显 |
+    即**浅色主题的星云是矛盾体**：不压透明度则画面发闷（亮度 157），压了则 8bit 下必然 banding。
+    而这点淡蓝晕染在浅底上本来就几乎看不出来 —— 不值得为它引入噪点。
+    **最终做法**：浅色主题**整块不用**深空洗与星云三层（`ApplyBannerBrushes()` 里直接置 `null`），
+    保持干净的浅底 + 星野星点 + 右侧星门环；深色主题维持原三层。
+    **噪点层（`BannerNoise` / `BuildNoiseBrush`）已整体删除**（XAML 与 code-behind 均无残留）。
+    `banner_light.svg` 同步精简：删掉三个星云渐变与噪点滤镜，只留极浅底色 + 星野 + 星门环。
+  - 教训沉淀：**遇到 banding 先问"这个渐变值不值得留"** ——
+    低对比装饰性渐变在浅色主题下往往是负收益（观感提升几乎为零，却引入 banding 或噪点）。
+    噪点抖动是最后手段，不是首选。
+- **品牌条背景改为 XAML 静态矢量资源**（用户提问"为什么不能直接显示 banner_light.svg"）：
+  - **答复要点**：WPF 原生不渲染 SVG（`Image.Source` 只认位图，要读须引第三方库）；
+    更关键的是 **SVG 里没有"内容"** —— 界面上的应用名/版本号/在线人数/游戏时间/按钮
+    全是绑 ViewModel 的活元素，SVG 只能当背景。因此采取 **logo 同款处理：SVG 只负责静态背景**。
+  - **落地**：新增 `Resources/BannerBackground.{Dark|Light}.xaml`（各 3 个画刷：底色 + 青/靛星云），
+    键名两套完全一致（`Banner.Bg.*`）；`HomePage.xaml` 三处背景改用 `DynamicResource` 引用；
+    `ThemeService` 新增 `ApplyBannerDictionary()`，在 `Initialize()` 与 `ApplyTheme()` 里
+    随主题整体换入/移除字典（沿用 `LanguageService` 换语言字典的既有模式）。
+  - **代码净减少**：删除 `HomePage.xaml.cs` 的 `ApplyBannerBrushes()`（约 90 行）、
+    `_themeHooked` 字段、`ThemeChanged` 订阅、以及仅它使用的 `ParseColor()`。
+    背景从"代码拼画刷"变成"声明式资源"，主题切换交给 WPF 的 `DynamicResource`。
+  - **浅色主题回撤**：按用户要求恢复星云（不再是"仅深色启用"），
+    与深色主题**同构图、仅配色不同**；星云透明度取 15%（0x26），
+    实测两主题均无可见色带（浅色横向渐变跳变间距 67px，此前压到 6% 时为 158px 硬跳）。
+  - **验证**：离屏渲染核对 —— 两套字典键名完全一致（`True`）；
+    平均亮度深色 26.6 / 浅色 247.5（合理）；两主题色带判定均 ✓ 平滑。构建 **0 错误**。
+- **星野改由 SVG 忠实转换**（用户反馈"svg 里的小星星在软件里变成圆点"）：
+  - **根因**：上一轮改背景时，星野是**手工搬运**的，产生三处失真 ——
+    | 失真 | SVG 原稿 | 手工版 |
+    |---|---|---|
+    | 闪星形状 | 3 个**四角星** path（跨度 14×14） | 写成椭圆，形状丢失 |
+    | 闪星尺寸 | 跨度 14 → 应显示 ~11px | 3.6px（**小 3.1 倍**） |
+    | 星点数量 | **33** 个圆点 | 只实现 20 个（**少 13 个**） |
+    | 坐标映射 | 画布 1200×200 | 按像素直用 → **6 颗星被裁**、其余偏下 |
+  - **修法**：新增 `design/branding/_svg_to_wpf_stars.py`，从 SVG 忠实转出
+    `Banner.Stars` 画刷（33 圆点 + 3 四角星），键注入两份主题字典；
+    `HomePage.xaml` 里那段 20 个手写 `Ellipse` 的 Canvas（约 138 行）换成**一行**画刷引用。
+    坐标用 SVG 的 `1200×200` 空间 + `Stretch="Fill"`，由 WPF 自动缩放 —— 不再手工换算像素。
+  - **教训**：**设计稿进工程一律走脚本转换，不要手工搬运**。
+    手工搬运不会报错、不会崩，只会"悄悄走形"——而这类偏差（形状/数量/坐标）很难靠肉眼逐条核对。
+    这与导航图标当初的处理一致（`_svg_to_wpf_icons.py`）。
+  - **验证**：离屏解析核对 —— 两套字典均为 **33 圆点 + 3 四角星**；
+    星点纵向范围 **16~181** 完整落在 Viewbox 内（此前 6 颗被裁）；
+    四角星面积约为同尺寸圆的 42%（确认是星形而非圆）。构建 **0 错误**。
+- **Logo 位图配色被算反（既有 bug，用户反馈"logo.svg 的颜色到软件 icon 变了"）**：
+  - **根因**：`_gen_logo_bitmap.py::gradient_rgb()` 的渐变插值公式写反了 ——
+    原式 `out = c2 + Σ seg_i × (c_i − c_{i+1})`，起点用了**末色**、增量**符号相反**。
+    正确形式应为 `out = c0 + Σ seg_i × (c_{i+1} − c_i)`。
+  - **表现**：整条渐变**首尾反转**（青 ↔ 靛互换），且中间色算成**灰紫 `#8993CD`**
+    而非品牌蓝 `#38BDF8`。即左上角本应是最亮的青、右下是靛，实际正好相反、中间还发灰。
+  - **影响范围**：`app.ico`（11 帧）+ `logo_*.png` 全部。该 bug 自 commit `4049c85`（品牌重设计）起就存在。
+  - **修法**：改正公式后重新生成 + 重新构建（`app.ico` 是编译期链进 exe 的 Win32 资源）。
+  - **量化验证**：修复后逐像素比对 —— 全部尺寸（16/20/…/256）与 `logo.svg` 定义的最大偏差 **≤1**
+    （取整误差），100% 像素在容差内。修复前偏差达 **97~102**。
+- **新增品牌资产一致性自检 `design/branding/_verify_branding.py`**（防同类问题再犯）：
+  - 动因：这条「设计稿 → 工程资产」的链路已出现**三次静默走形**，都不报错、不崩，只是悄悄画错：
+    ① 导航图标自然尺寸不一致（显示忽大忽小）② 品牌条星野被手工搬运走形（闪星变圆点/少 13 颗/6 颗被裁）
+    ③ Logo 渐变公式反转（青靛互换）。这三类偏差肉眼逐条核对几乎不可能，故固化为检查项。
+  - 四项检查：**A** logo 位图配色 vs `logo.svg`；**B** 导航图标数量（svg ↔ xaml）；
+    **C** 导航图标尺寸统一性（透明占位矩形齐全）；**D** 品牌条星野数量 vs banner SVG。
+    另会提示 assets/ 下的**孤儿文件**（存在但脚本不再生成、无引用）——不自动删除，留人决定。
+  - 跑法：`python design/branding/_verify_branding.py`（退出码 0=通过，1=有失败项）。
+- **全面审计「设计稿 → 工程资产」链路，又修 2 处走形 + 补齐 1 个缺失图层**（用户要求"全面检查"）：
+  - 新增 `design/branding/_audit_branding.py`（细粒度审计，比 `_verify_branding.py` 更全），
+    逐项比对 A logo 位图 / B 导航图标 / C banner 星野与渐变 / D banner ring / E 手写部分。
+  - **发现① 图标 `opacity` 被丢弃**（真 bug）：`_svg_to_wpf_icons.py` 只取 `stroke`/`fill`，
+    不读 `opacity`。影响 `nav_zkb`（外圈 50% 红环）与 `nav_map`（一条 60% 线段）——
+    本该半透明的元素渲染成了实心。
+    修法：新增 `apply_opacity()` 把 opacity 折算进颜色的 alpha 通道
+    （`#EF4444` + 0.5 → `#80EF4444`），同时支持 `fill-opacity` / `stroke-opacity`。
+  - **发现② banner 缺少第 3 层星云（neb3）**：SVG 有 `neb1/2/3` 三层，
+    工程只手写了 2 层 —— 右侧那道青绿辉光（`#2DD4BF` @14%）**从未实现**。
+  - **发现③ banner 渐变几何是手调值**：星云 `Center/Radius` 与 SVG 换算值不同
+    （如 neb1 手写 `0.1,1.05 / 0.42,0.62`，SVG 实为 `0.1917,1.05 / 0.3583,2.15`），
+    且手写用的是**固定比例**（不随 Banner 尺寸变），SVG 语义是固定像素半径。
+  - **修法**：把 banner 背景也改为**脚本生成**（`_svg_to_wpf_banner.py`，取代 `_svg_to_wpf_stars.py`）——
+    底色 + 三层星云 + 星野全部从 SVG 转换，键名 `Banner.Bg.Base` / `Banner.Bg.Nebula1..3` / `Banner.Stars`；
+    `HomePage.xaml` 从 3 层改为 4 层引用。
+  - **banding 回归检查**：新几何更弥散（RadiusY 0.62 → 2.15），色阶变少、有回归风险，
+    故做了离屏渲染复测 —— 色值跨度深色 26~47 级 / 浅色 18~28 级，均高于 15 级安全线，**无可见色带**
+    （与之前那次"浅色仅 0~12 级"的事故性质不同）。
+  - **ring 保持固定色**（用户决定）：`BannerRingBrush` 两主题共用 `#5EEAD4→#38BDF8→#6366F1`，
+    与深色 SVG 一致；浅色 SVG 定义本就不同（`#14B8A6→#0EA5E9`），属**有意为之**，不再改。
+  - 删除 3 个孤儿文件 `assets/logo_20/40/96.png`（10-14 遗留、脚本已不生成、无引用、带旧错误配色）。
+  - **验证**：构建 **0 错误**；`_verify_branding.py` 全部通过；审计 C 段图层数/几何/星点全部 `[OK]`。
+- **品牌符号渐变（`Banner.Symbol`）改为主题感知 + 脚本化**（用户追问"这是哪一块的颜色？大圆环吗"）：
+  - **澄清**：它**不只管大圆环**，而是「星门环 + 罗盘星」这对品牌符号的共用渐变，
+    用在**两处** —— ① 内容层左侧的**迷你「星门罗盘」Logo**（26px 环）；
+    ② 装饰层右侧的**出血大星门环**（264px 环）。两侧都是「环 + 四角星」同款图形。
+  - **发现的问题**：浅色主题下用深色那套配色，青端在浅底上**对比度仅 1.40:1**
+    （实测 `#5EEAD4` vs 底色 `#F5F9FF`），几乎糊在浅底里；
+    而设计稿浅色版本就用更深的青蓝 `#14B8A6`（**2.36:1**）—— 这是设计稿**有意为之的对比度补偿**。
+  - **修法**：把它并入脚本生成，键名 `Banner.Symbol`，两主题各一份
+    （深色 `#5EEAD4→#38BDF8→#6366F1`，浅色 `#14B8A6→#0EA5E9→#6366F1`）；
+    `HomePage.xaml` 删掉手写的 `BannerRingBrush` 定义，4 处引用改为 `DynamicResource Banner.Symbol`。
+    浅色主题下对比度 **1.40 → 2.36**。
+  - **方向为何固定用 `0,0→1,1`**：SVG 里 `ring` 的坐标跨度 `(960,-40)→(1280,240)`、
+    `mark` 是 `(52,66)→(112,126)`，差异极大；若各按画布归一化，套到不同尺寸的图形上会退化成近纯色。
+    用相对对角则两处图形都呈现"左上青 → 右下靛"，与设计稿视觉意图一致且适配任意尺寸。
+  - **共用一支是有依据的**：SVG 里 `ring` 与 `mark` 虽是两个 id，但同主题内**色值完全相同**，
+    故合并为一支画刷（用户确认继续共用）。
+  - **至此颜色 100% 脚本化**：`HomePage.xaml` 里已无任何手写颜色，只剩几何/布局。
+  - **验证**：构建 **0 错误**；审计 D 段两主题色值与各自 SVG `[OK] 一致`、引用数 4 处正确；
+    `_verify_branding.py` 全部通过。
+- **右侧星门环几何修正（用户反馈"位置偏了、星星显示不全"）**：
+  - **根因**：手写的几何有**三个错**（对比设计稿 ×0.8 等比换算）：
+    | 项 | 手写值 | 应为 | 偏差 |
+    |---|---|---|---|
+    | 环心距右边缘 | 0px（贴右缘） | 64px | 偏右 **64px** |
+    | 环心纵向 | y=114 | y=80 | 偏低 **34px** |
+    | 星心 vs 环心 | 偏移 (+14,−4) | **同心 (0,0)** | 不同心 |
+    | 星尖半径 | 42 | 32 | **放大 1.31 倍** |
+  - **"星星显示不全"的直接原因**：星心偏右 14px **且** 星放大 1.31 倍，
+    两者叠加使**星最右尖超出右边界 56px 被裁掉**（设计稿里该尖距右缘尚有 32px）。
+  - **修法**：把「环 + 星」几何也**纳入脚本生成**（`_svg_to_wpf_banner.py` 新增
+    `apply_symbol_figure()`，写入 HomePage.xaml 的 `BEGIN/END BannerSymbol` 标记区块）：
+    ① 统一用**单一比例** `SCALE = 160/200 = 0.8`（banner 实际高 ÷ 设计稿高）——
+       手写版横纵各拍一个数，正是出错根源；
+    ② 环心按**距右边缘**锚定（SVG 距右 80 → 缩放后 64px），环身出血交给圆角裁切；
+    ③ 罗盘星与环**同心**（照搬设计稿，两者中心同为 (1120,100)）；
+    ④ 路径坐标用 `transform_path()` 做严格仿射变换，不再手抄坐标。
+  - **独立复核**（脚本外另行解析 SVG 与 XAML 两侧数字比对）：
+    环心距右 64 / 纵向 80 / 半径 136 / 描边 24 / 星尖半径 32 —— **五项全部一致**；
+    星与环同心；星尖距右缘 32px 在界内。构建 **0 错误**，用户实机确认通过。
 
 ## 8. 已知限制与待办
 

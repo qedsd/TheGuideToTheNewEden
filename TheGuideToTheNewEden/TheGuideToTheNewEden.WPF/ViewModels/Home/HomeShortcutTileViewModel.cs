@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using TheGuideToTheNewEden.WPF.Services.Home;
 using Wpf.Ui.Controls;
 
@@ -37,7 +38,15 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
 
     public HomeFeature? Feature { get; }
 
+    /// <summary>字体图标（仍需单色图标的场景，如设置页列表）。</summary>
     public SymbolRegular Icon => Feature?.Icon ?? SymbolRegular.Add24;
+
+    /// <summary>
+    /// 彩色矢量图标（主页磁贴用）：指向 <c>Resources/NavIcons.xaml</c> 的 <c>NavIcon.*</c> 资源。
+    /// <b>返回的是 DrawingImage 对象而非字符串键</b>——绑字符串时 <c>ImageSourceConverter</c>
+    /// 会把它当文件路径解析。无对应功能时回落到 <c>NavIcon.home</c>。
+    /// </summary>
+    public object? TileIcon => Application.Current?.TryFindResource(Feature?.IconResourceKey ?? "NavIcon.home");
 
     public bool IsWide { get; private set; }
 

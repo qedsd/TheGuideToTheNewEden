@@ -73,6 +73,7 @@ public static class ThemeService
 
         Theme = theme;
         ApplicationThemeManager.Apply(theme, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccent: false);
+        ApplyBannerDictionary(theme);
         ApplySavedAccentColor();
     }
 
@@ -82,6 +83,7 @@ public static class ThemeService
 
         // 切换主题时不要用系统色覆盖用户选择的强调色，保留用户设置。
         ApplicationThemeManager.Apply(theme, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccent: false);
+        ApplyBannerDictionary(theme);
 
         if (applyAccent)
         {
@@ -91,6 +93,37 @@ public static class ThemeService
         SettingsService.SetValue(SettingsService.ThemeKey, theme == ApplicationTheme.Dark ? "Dark" : "Light");
         SettingsService.Save();
         ThemeChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 换上当前主题对应的品牌条背景画刷字典（<c>Resources/BannerBackground.{Dark|Light}.xaml</c>）。
+    /// <para>
+    /// 这两份字典的键名完全相同（<c>Banner.Bg.*</c>），只是色值不同；替换后
+    /// HomePage 里那三层背景的 <c>DynamicResource</c> 会自动取到新值。
+    /// 做法与 <see cref="LanguageService"/> 换语言字典一致：先摘旧的、再挂新的。
+    /// </para>
+    /// </summary>
+    private static void ApplyBannerDictionary(ApplicationTheme theme)
+    {
+        var dictionaries = Application.Current?.Resources.MergedDictionaries;
+        if (dictionaries is null)
+        {
+            return;
+        }
+
+        var old = dictionaries.FirstOrDefault(d =>
+            d.Source?.OriginalString.Contains("Resources/BannerBackground.") == true);
+
+        if (old is not null)
+        {
+            dictionaries.Remove(old);
+        }
+
+        var name = theme == ApplicationTheme.Dark ? "Dark" : "Light";
+        dictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri($"pack://application:,,,/Resources/BannerBackground.{name}.xaml", UriKind.Absolute),
+        });
     }
 
     private static void ApplySavedAccentColor()

@@ -1,26 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="1200" height="200" font-family="'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
   <!--
     新伊甸漫游指南 · 主页横幅（浅色主题版）
-    与 banner_dark.svg 同构图：晨雾蓝底 → 淡青/淡靛星云 → 灰蓝星野 → 右侧出血星门环。
+    结构：极浅冷调底 → 淡青/淡靛双色星云 → 星野 → 右侧出血星门环。
+    与 banner_dark.svg **同构图、仅配色不同**（两主题观感一致）。
+    注意：星云透明度不宜过低 —— 低对比渐变在 8bit 下会渲染成硬边色带（banding）。
+    本稿用 15% 上下，兼顾"看得见"与"不发闷"；工程侧同值见 Resources/BannerBackground.xaml。
   -->
   <defs>
     <linearGradient id="bgL" x1="0" y1="0" x2="1200" y2="200" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F7FAFF"/>
-      <stop offset="0.5" stop-color="#EAF0FA"/>
-      <stop offset="1" stop-color="#F1F5FC"/>
+      <stop offset="0" stop-color="#FCFEFF"/>
+      <stop offset="0.5" stop-color="#F5F9FF"/>
+      <stop offset="1" stop-color="#F8FBFF"/>
     </linearGradient>
     <radialGradient id="neb1L" gradientUnits="userSpaceOnUse" cx="230" cy="210" r="430">
-      <stop offset="0" stop-color="#38BDF8" stop-opacity="0.16"/>
-      <stop offset="0.55" stop-color="#38BDF8" stop-opacity="0.06"/>
+      <stop offset="0" stop-color="#38BDF8" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#38BDF8" stop-opacity="0.055"/>
       <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="neb2L" gradientUnits="userSpaceOnUse" cx="1000" cy="-30" r="520">
       <stop offset="0" stop-color="#6366F1" stop-opacity="0.15"/>
-      <stop offset="0.55" stop-color="#6366F1" stop-opacity="0.06"/>
+      <stop offset="0.6" stop-color="#6366F1" stop-opacity="0.055"/>
       <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="neb3L" gradientUnits="userSpaceOnUse" cx="1120" cy="100" r="260">
-      <stop offset="0" stop-color="#2DD4BF" stop-opacity="0.10"/>
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity="0.09"/>
       <stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="ringL" x1="960" y1="-40" x2="1280" y2="240" gradientUnits="userSpaceOnUse">
@@ -35,14 +38,14 @@
     </linearGradient>
   </defs>
 
-  <!-- 底与星云 -->
+  <!-- 底与星云（与深色版同构图） -->
   <rect width="1200" height="200" fill="url(#bgL)"/>
   <rect width="1200" height="200" fill="url(#neb1L)"/>
   <rect width="1200" height="200" fill="url(#neb2L)"/>
   <rect width="1200" height="200" fill="url(#neb3L)"/>
 
-  <!-- 星野（灰蓝暗点，弱化） -->
-  <g fill="#64748B">
+  <!-- 星野（更浅的蓝灰，整体压淡；亮色主题下只作极轻的点缀） -->
+  <g fill="#94A3B8" opacity="0.72">
     <circle cx="60" cy="30" r="1.4" opacity="0.28"/><circle cx="140" cy="150" r="1" opacity="0.2"/>
     <circle cx="205" cy="18" r="1.8" opacity="0.34"/><circle cx="240" cy="120" r="1" opacity="0.16"/>
     <circle cx="310" cy="40" r="1.2" opacity="0.24"/><circle cx="355" cy="165" r="1.6" opacity="0.3"/>
@@ -62,8 +65,8 @@
     <circle cx="880" cy="25" r="1.1" opacity="0.2"/>
   </g>
 
-  <!-- 闪星（青色） -->
-  <g fill="#0EA5E9" opacity="0.55">
+  <!-- 闪星（青色，亮色主题下加重以承担视觉锚点） -->
+  <g fill="#0EA5E9" opacity="0.7">
     <path d="M205 53 Q205 60 212 60 Q205 60 205 67 Q205 60 198 60 Q205 60 205 53 Z"/>
     <path d="M565 64 Q565 70 571 70 Q565 70 565 76 Q565 70 559 70 Q565 70 565 64 Z"/>
     <path d="M865 113 Q865 120 872 120 Q865 120 865 127 Q865 120 858 120 Q865 120 865 113 Z"/>
@@ -83,7 +86,7 @@
   <text x="150" y="92" font-size="34" font-weight="700" fill="#16204A">新伊甸漫游指南</text>
   <text x="152" y="119" font-size="12" letter-spacing="5" fill="#5A6B8C">THE GUIDE TO THE NEW EDEN</text>
   <g>
-    <rect x="404" y="69" width="58" height="23" rx="11.5" fill="#E4EBF7" stroke="#C6D3E8"/>
+    <rect x="404" y="69" width="58" height="23" rx="11.5" fill="#EDF3FC" stroke="#CBD9EC"/>
     <text x="433" y="84.5" font-size="12" text-anchor="middle" fill="#33517E">v4.0</text>
   </g>
 </svg>

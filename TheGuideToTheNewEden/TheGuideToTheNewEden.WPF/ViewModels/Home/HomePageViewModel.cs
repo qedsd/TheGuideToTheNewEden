@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Threading;
@@ -61,9 +62,33 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
     public string AppName => Resolve("AppDisplayName");
 
+    /// <summary>
+    /// 品牌条的副标题：主标题（当前语言名）下方的「另一语言」品牌名 ——
+    /// 中文界面下是 <c>THE GUIDE TO THE NEW EDEN</c>，英文界面下是「新伊甸漫游指南」。
+    /// 与设计稿 <c>design/branding/banner_*.svg</c> 的两行标题构图一致，品牌始终中英双语。
+    /// <para>
+    /// 字间距：设计稿给英文副标题定了 <c>letter-spacing:5</c>（字号 12），
+    /// 即 0.417em；把英文小标题"撑开"到与上方中文标题相近的宽度。
+    /// WPF 的 <c>TextBlock</c> 没有字间距属性，这里用**细空格**近似：
+    /// U+2009 THIN SPACE 约 0.2em，插两枚得 0.4em ≈ 设计稿的 0.417em（10px 字号下差约 0.2px，不可辨）。
+    /// 中文副标题**不加**间距（中日韩字身本就宽，再撑开会散架）。
+    /// </para>
+    /// </summary>
+    public string AppSubtitle
+    {
+        get
+        {
+            var text = Resolve("AppDisplayNameAlt");
+
+            // 仅在「纯拉丁」时补字间距；含 CJK 则原样返回
+            bool hasCjk = text.Any(c => c >= '\u2E80');
+            return hasCjk ? text : string.Join("\u2009\u2009", text.ToCharArray());
+        }
+    }
+
     public string VersionText => AppVersion.Current;
 
-    /// <summary>在线人数（取不到时显示 "—"）。</summary>
+    /// <summary>在线人数：**纯数字 + 千分位**（语义由图标 + ToolTip 表达）；取不到时为 "—"。</summary>
     public string PlayersText
     {
         get => _playersText;
@@ -161,6 +186,7 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         Market.RefreshTexts();
 
         OnPropertyChanged(nameof(AppName));
+        OnPropertyChanged(nameof(AppSubtitle));
         OnPropertyChanged(nameof(NewVersionText));
         OnPropertyChanged(nameof(CountText));
     }
@@ -293,8 +319,10 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         {
             var response = await Core.Services.ESIService.GetDefaultESI().Status.GetStatusAsync();
             var players = response?.Model?.Players ?? 0;
+            // 胶囊里只显示数字（前缀语义由 People 图标 + ToolTip 承担，见 zh-CN.xaml 的说明）。
+            // 用固定区域格式化：中英的千分位都是 ","，避免系统区域设成欧洲语言时变成空格/点。
             PlayersText = players > 0
-                ? string.Format(Resolve("Home.Status.Players"), players.ToString("N0"))
+                ? players.ToString("N0", CultureInfo.InvariantCulture)
                 : Resolve("Home.Status.PlayersUnknown");
         }
         catch (Exception ex)

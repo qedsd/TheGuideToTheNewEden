@@ -42,7 +42,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:HomePage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Home24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.home}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -51,35 +54,76 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type charPages:CharactersShellPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Person24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.characters}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Business}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="ArrowTrending24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.business}" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Market}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:MarketPage}" />
+                            TargetPageType="{x:Type pages:MarketPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.market}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Order}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:OrderPage}" />
+                            TargetPageType="{x:Type pages:OrderPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.order}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Scalper}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ScalperPage}" />
+                            TargetPageType="{x:Type pages:ScalperPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.scalper}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.CompareMarket}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:CompareMarketPage}" />
+                            TargetPageType="{x:Type pages:CompareMarketPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.compareMarket}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Appraisal}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:AppraisalPage}" />
+                            TargetPageType="{x:Type pages:AppraisalPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.appraisal}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
@@ -88,7 +132,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:GamePreviewPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="SquareMultiple24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.gamePreview}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -98,63 +145,131 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:AiAssistantPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Sparkle24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.assistant}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Channel}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Comment24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.channel}" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.ChannelIntel}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ChannelIntelPage}" />
+                            TargetPageType="{x:Type pages:ChannelIntelPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.channelIntel}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.ChannelMonitor}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ChannelMonitorPage}" />
+                            TargetPageType="{x:Type pages:ChannelMonitorPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.channelMonitor}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.ChannelScan}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ChannelScanPage}" />
+                            TargetPageType="{x:Type pages:ChannelScanPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.channelScan}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.ChannelMarket}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ChannelMarketPage}" />
+                            TargetPageType="{x:Type pages:ChannelMarketPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.channelMarket}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.GameLogMonitor}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:GameLogMonitorPage}" />
+                            TargetPageType="{x:Type pages:GameLogMonitorPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.gameLogMonitor}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
                 <!--  翻译：AI 翻译（对话式）/ 频道翻译（实时）/ 本地词库，三个子项  -->
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Translation}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Translate24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.translation}" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.TranslationAi}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:AiTranslationPage}" />
+                            TargetPageType="{x:Type pages:AiTranslationPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.translationAi}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.ChannelTranslation}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ChannelTranslationPage}" />
+                            TargetPageType="{x:Type pages:ChannelTranslationPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.channelTranslation}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.TranslationLocal}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:LocalTranslationPage}" />
+                            TargetPageType="{x:Type pages:LocalTranslationPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.translationLocal}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
                 <!--  攻略：死亡远征（DED 空间）/ 任务攻略，两个子项  -->
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Guides}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="BookOpen24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.guides}" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
@@ -162,7 +277,10 @@
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:DEDPage}">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="DataSunburst24" />
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.ded}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
 
@@ -171,7 +289,10 @@
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:MissionPage}">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="DocumentOnePage24" />
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.mission}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
@@ -182,7 +303,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:WormholePage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Target24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.wormhole}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -191,7 +315,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:LinksPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Link24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.links}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -200,7 +327,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:MapPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Map24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.map}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -209,7 +339,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:ZKBPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Scan24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.zkb}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -218,7 +351,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:DatabasePage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Database24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.database}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
@@ -227,31 +363,65 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:EveSettingsSyncPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="ArrowSync24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.eveSettingsSync}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Tools}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Toolbox24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.tools}" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Tools_IME}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:IMEPage}" />
+                            TargetPageType="{x:Type pages:IMEPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.toolsIME}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Tools_ServerPing}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ServerPingPage}" />
+                            TargetPageType="{x:Type pages:ServerPingPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.serverPing}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Tools_KeyboardSpan}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:KeyboardSpanPage}" />
+                            TargetPageType="{x:Type pages:KeyboardSpanPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.keyboardSpan}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.Tools_Taskbar}"
                             NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:TaskbarPage}" />
+                            TargetPageType="{x:Type pages:TaskbarPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.taskbar}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
@@ -262,7 +432,10 @@
                     NavigationCacheMode="Required"
                     TargetPageType="{x:Type pages:SettingsPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Settings24" />
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.settings}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.FooterMenuItems>

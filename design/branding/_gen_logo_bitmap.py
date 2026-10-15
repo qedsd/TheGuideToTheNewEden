@@ -57,20 +57,28 @@ def star_points(concavity, tip=1.0):
 
 
 def gradient_rgb(size):
+    """按 SVG 的 linearGradient 定义做**分段线性插值**（与浏览器渲染一致）。
+
+    正确形式： out = c0 + Σ seg_i × (c_{i+1} − c_i)
+        t=0 → c0（青）； t=1 → c2（靛）； 中间按段线性过渡。
+
+    历史 bug（已修）：原式写成 `out = c2 + Σ seg_i × (c_i − c_{i+1})` ——
+    起点用了末色、增量符号相反，导致**整条渐变首尾反转**，
+    且中间色算出灰紫（#8993CD）而非品牌蓝（#38BDF8）。
+    """
     axis = G_TO - G_FROM
     denom = float(axis @ axis)
     ys, xs = np.mgrid[0:size, 0:size]
     coords = np.stack([xs, ys], axis=-1) * (128.0 / size)
     t = ((coords - G_FROM) @ axis) / denom
     t = np.clip(t, 0.0, 1.0)[..., None]
-    out = np.zeros((size, size, 3), dtype=np.float64)
     locs = [s[0] for s in STOPS]
     cols = [np.array(s[1], dtype=np.float64) for s in STOPS]
+    out = np.zeros((size, size, 3), dtype=np.float64) + cols[0]
     for i in range(len(locs) - 1):
         x0, x1 = locs[i], locs[i + 1]
         seg = np.clip((t - x0) / (x1 - x0), 0, 1)
-        out += seg * (cols[i] - cols[i + 1])
-    out += cols[-1]
+        out += seg * (cols[i + 1] - cols[i])
     return np.clip(out, 0, 255).astype(np.uint8)
 
 

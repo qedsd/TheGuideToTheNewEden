@@ -156,11 +156,12 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Visibility="{Binding IsSmall, Converter={StaticResource BoolToVisibility}}">
-                        <ui:SymbolIcon
+                        <!--  彩色矢量图标（NavIcons.xaml）；尺寸必须显式写死，见 REFACTORING §112 的说明  -->
+                        <Image
+                            Width="28"
+                            Height="28"
                             HorizontalAlignment="Center"
-                            FontSize="28"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Symbol="{Binding Icon}" />
+                            Source="{Binding TileIcon}" />
                         <TextBlock
                             MaxHeight="38"
                             Margin="0,10,0,0"
@@ -183,12 +184,13 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <ui:SymbolIcon
+                        <!--  彩色矢量图标（NavIcons.xaml）  -->
+                        <Image
                             Grid.Column="0"
+                            Width="26"
+                            Height="26"
                             VerticalAlignment="Center"
-                            FontSize="26"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Symbol="{Binding Icon}" />
+                            Source="{Binding TileIcon}" />
                         <StackPanel
                             Grid.Column="1"
                             Margin="16,0,0,0"
@@ -243,13 +245,6 @@
                 SizeChanged="OnHeroBannerSizeChanged">
                 <Grid ClipToBounds="True">
                     <Grid.Resources>
-                        <!--  品牌环渐变（固定品牌色，两主题通用）  -->
-                        <LinearGradientBrush x:Key="BannerRingBrush" StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Offset="0" Color="#FF5EEAD4" />
-                            <GradientStop Offset="0.5" Color="#FF38BDF8" />
-                            <GradientStop Offset="1" Color="#FF6366F1" />
-                        </LinearGradientBrush>
-
                         <!--  状态胶囊（主题感知）  -->
                         <Style x:Key="BannerPill" TargetType="Border">
                             <Setter Property="Margin" Value="0,0,8,0" />
@@ -295,196 +290,66 @@
                         </Style>
                     </Grid.Resources>
 
-                    <!--  ===== 背景层：主题底色 =====  -->
-                    <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" />
+                    <!--
+                        背景层：底色 + 三层星云。
+                        全部来自 Resources/BannerBackground.{Dark|Light}.xaml，
+                        而那两个文件由 design/branding/_svg_to_wpf_banner.py 从 banner_*.svg **自动生成**
+                        （不再手写 —— 手写曾漏掉第 3 层星云、且几何与设计稿不符）。
+                        两套字典键名相同，由 ThemeService.ApplyBannerDictionary() 随主题整体换入。
+                    -->
+                    <Border
+                        x:Name="BannerBase"
+                        Background="{DynamicResource Banner.Bg.Base}"
+                        CornerRadius="8" />
+                    <Border
+                        x:Name="BannerNebula1"
+                        Background="{DynamicResource Banner.Bg.Nebula1}"
+                        CornerRadius="8" />
+                    <Border
+                        x:Name="BannerNebula2"
+                        Background="{DynamicResource Banner.Bg.Nebula2}"
+                        CornerRadius="8" />
+                    <Border
+                        x:Name="BannerNebula3"
+                        Background="{DynamicResource Banner.Bg.Nebula3}"
+                        CornerRadius="8" />
 
-                    <!--  ===== 背景层：深空洗（固定半透明，两主题通用） =====  -->
-                    <Border CornerRadius="8">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Offset="0" Color="#2E0D1B3E" />
-                                <GradientStop Offset="1" Color="#170C1230" />
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
+                    <!--
+                        背景层：星野 + 闪星。
+                        画刷 Banner.Stars 由 design/branding/_svg_to_wpf_stars.py 从
+                        banner_*.svg 忠实转出（33 个圆点 + 3 个四角星）；
+                        坐标用 SVG 的 1200×200 空间 + Stretch="Fill"，随 Banner 尺寸自动缩放，
+                        不再手工换算像素（那会导致星点被裁 / 位置偏移）。
+                        星点颜色随主题：深色=亮星，浅色=暗点纹理（两套字典各一份）。
+                    -->
+                    <Border Background="{DynamicResource Banner.Stars}" IsHitTestVisible="False" />
 
-                    <!--  ===== 背景层：青色星云（左下） =====  -->
-                    <Border CornerRadius="8">
-                        <Border.Background>
-                            <RadialGradientBrush Center="0.1,1.05" GradientOrigin="0.1,1.05" RadiusX="0.42" RadiusY="0.62">
-                                <GradientStop Offset="0" Color="#3838BDF8" />
-                                <GradientStop Offset="0.6" Color="#1438BDF8" />
-                                <GradientStop Offset="1" Color="#0038BDF8" />
-                            </RadialGradientBrush>
-                        </Border.Background>
-                    </Border>
-
-                    <!--  ===== 背景层：靛色星云（右上） =====  -->
-                    <Border CornerRadius="8">
-                        <Border.Background>
-                            <RadialGradientBrush Center="0.9,-0.08" GradientOrigin="0.9,-0.08" RadiusX="0.5" RadiusY="0.66">
-                                <GradientStop Offset="0" Color="#3A6366F1" />
-                                <GradientStop Offset="0.6" Color="#166366F1" />
-                                <GradientStop Offset="1" Color="#006366F1" />
-                            </RadialGradientBrush>
-                        </Border.Background>
-                    </Border>
-
-                    <!--  ===== 背景层：星野（主题感知暗/亮点 + 固定青点缀） =====  -->
-                    <Canvas IsHitTestVisible="False">
-                        <!--  主题感知星点：浅主题=暗点纹理，深主题=亮星  -->
-                        <Ellipse
-                            Canvas.Left="60"
-                            Canvas.Top="30"
-                            Width="2.8"
-                            Height="2.8"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.7" />
-                        <Ellipse
-                            Canvas.Left="140"
-                            Canvas.Top="150"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.5" />
-                        <Ellipse
-                            Canvas.Left="240"
-                            Canvas.Top="120"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.4" />
-                        <Ellipse
-                            Canvas.Left="310"
-                            Canvas.Top="40"
-                            Width="2.4"
-                            Height="2.4"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.6" />
-                        <Ellipse
-                            Canvas.Left="420"
-                            Canvas.Top="90"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.45" />
-                        <Ellipse
-                            Canvas.Left="520"
-                            Canvas.Top="140"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.5" />
-                        <Ellipse
-                            Canvas.Left="610"
-                            Canvas.Top="25"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.4" />
-                        <Ellipse
-                            Canvas.Left="700"
-                            Canvas.Top="110"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.5" />
-                        <Ellipse
-                            Canvas.Left="790"
-                            Canvas.Top="160"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.4" />
-                        <Ellipse
-                            Canvas.Left="825"
-                            Canvas.Top="35"
-                            Width="2.4"
-                            Height="2.4"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.65" />
-                        <Ellipse
-                            Canvas.Left="905"
-                            Canvas.Top="175"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.45" />
-                        <Ellipse
-                            Canvas.Left="95"
-                            Canvas.Top="100"
-                            Width="2"
-                            Height="2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.35" />
-                        <Ellipse
-                            Canvas.Left="30"
-                            Canvas.Top="170"
-                            Width="2.6"
-                            Height="2.6"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.6" />
-                        <Ellipse
-                            Canvas.Left="880"
-                            Canvas.Top="25"
-                            Width="2.2"
-                            Height="2.2"
-                            Fill="{DynamicResource TextFillColorTertiaryBrush}"
-                            Opacity="0.5" />
-                        <!--  固定青色点缀（两主题下均为星色）  -->
-                        <Ellipse
-                            Canvas.Left="205"
-                            Canvas.Top="18"
-                            Width="3.6"
-                            Height="3.6"
-                            Fill="#FF38BDF8"
-                            Opacity="0.85" />
-                        <Ellipse
-                            Canvas.Left="565"
-                            Canvas.Top="70"
-                            Width="3.4"
-                            Height="3.4"
-                            Fill="#FF38BDF8"
-                            Opacity="0.8" />
-                        <Ellipse
-                            Canvas.Left="865"
-                            Canvas.Top="120"
-                            Width="3.6"
-                            Height="3.6"
-                            Fill="#FF38BDF8"
-                            Opacity="0.8" />
-                        <Ellipse
-                            Canvas.Left="1180"
-                            Canvas.Top="70"
-                            Width="2"
-                            Height="2"
-                            Fill="#FF38BDF8"
-                            Opacity="0.45" />
-                        <Ellipse
-                            Canvas.Left="1020"
-                            Canvas.Top="20"
-                            Width="2"
-                            Height="2"
-                            Fill="#FF5EEAD4"
-                            Opacity="0.4" />
-                    </Canvas>
-
-                    <!--  ===== 装饰层：右侧出血星门环 + 罗盘星 =====  -->
+                    <!--  BEGIN BannerSymbol: 由 design/branding/_svg_to_wpf_banner.py 生成，勿手改  -->
+                    <!--
+                        装饰层：右侧出血星门环 + 罗盘星。
+                        几何与 design/branding/banner_*.svg 严格同构（等比 0.8）：
+                        · 环心距右边缘 64px、纵向 y=80，
+                        半径 136、描边 24；环身出血由圆角裁切；
+                        · 罗盘星与环**同心**，尖半径 32px（故完整可见）。
+                        颜色用 Banner.Symbol（两主题各一份）。改设计稿后重跑脚本即可。
+                    -->
                     <Canvas
-                        Width="300"
-                        Height="140"
+                        Width="216"
+                        Height="160"
                         HorizontalAlignment="Right"
                         IsHitTestVisible="False">
-                        <!--  大环：中心在画布右缘外，随窗口宽度自然裁切  -->
+                        <!--  大环：环心在画布右缘内侧，环身出血（同设计稿）  -->
                         <Ellipse
-                            Canvas.Left="168"
-                            Canvas.Top="-28"
-                            Width="264"
-                            Height="264"
-                            Stroke="{StaticResource BannerRingBrush}"
-                            StrokeThickness="26" />
-                        <Path Data="M 286,58 Q 286,100 328,100 Q 286,100 286,142 Q 286,100 244,100 Q 286,100 286,58 Z" Fill="{StaticResource BannerRingBrush}" />
+                            Canvas.Left="4"
+                            Canvas.Top="-68"
+                            Width="296"
+                            Height="296"
+                            Stroke="{DynamicResource Banner.Symbol}"
+                            StrokeThickness="24" />
+                        <!--  罗盘星：与环同心，不会戳出边界  -->
+                        <Path Data="M 152 48 Q 152 80 184 80 Q 152 80 152 112 Q 152 80 120 80 Q 152 80 152 48 Z" Fill="{DynamicResource Banner.Symbol}" />
                     </Canvas>
+                    <!--  END BannerSymbol  -->
 
                     <!--  ===== 内容层 =====  -->
                     <Grid Margin="22,16,22,14">
@@ -506,29 +371,53 @@
                                     Canvas.Top="4"
                                     Width="26"
                                     Height="26"
-                                    Stroke="{StaticResource BannerRingBrush}"
+                                    Stroke="{DynamicResource Banner.Symbol}"
                                     StrokeThickness="3.2" />
-                                <Path Data="M 17,7 Q 17,17 27,17 Q 17,17 17,27 Q 17,17 7,17 Q 17,17 17,7 Z" Fill="{StaticResource BannerRingBrush}" />
+                                <Path Data="M 17,7 Q 17,17 27,17 Q 17,17 17,27 Q 17,17 7,17 Q 17,17 17,7 Z" Fill="{DynamicResource Banner.Symbol}" />
                             </Canvas>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="22"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{Binding AppName}" />
-                            <Border
-                                Margin="10,0,0,0"
-                                Padding="9,2"
-                                VerticalAlignment="Center"
-                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="10">
+                            <!--
+                                品牌双行标题（同设计稿 banner_*.svg 的构图）：
+                                上行 = 当前语言的名称，下行 = **另一语言**的名称，
+                                故中文界面下是「新伊甸漫游指南 / THE GUIDE TO THE NEW EDEN」，
+                                英文界面下是「The Guide To The New Eden / 新伊甸漫游指南」。
+                                两者都来自语言资源（AppDisplayName / AppDisplayNameAlt），随语言切换刷新；
+                                英文那行的字间距在 ViewModel 里按设计稿补（见 AppSubtitle）。
+                                
+                                字体用 BrandFontFamily（与设计稿的 font-family 同一字栈，
+                                含字体缺失时的回退链，定义见 Controls/GlobalControlStyles.xaml）。
+                                若不设则继承 WPF-UI 默认字体，与设计稿不一致 —— 这正是原先的问题。
+                            -->
+                            <StackPanel VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock
+                                        FontFamily="{StaticResource BrandFontFamily}"
+                                        FontSize="22"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding AppName}" />
+                                    <Border
+                                        Margin="10,0,0,0"
+                                        Padding="9,2"
+                                        VerticalAlignment="Center"
+                                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10">
+                                        <TextBlock
+                                            FontFamily="{StaticResource BrandFontFamily}"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding VersionText}" />
+                                    </Border>
+                                </StackPanel>
+
                                 <TextBlock
-                                    FontSize="12"
+                                    Margin="1,3,0,0"
+                                    FontFamily="{StaticResource BrandFontFamily}"
+                                    FontSize="10"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding VersionText}" />
-                            </Border>
+                                    Text="{Binding AppSubtitle}" />
+                            </StackPanel>
                         </StackPanel>
 
                         <!--  第二行：状态胶囊（左）+ 工具按钮（右）  -->
@@ -612,16 +501,31 @@
                                                 IsHitTestVisible="False"
                                                 Text="{DynamicResource Home.Quick.Placeholder}"
                                                 TextTrimming="CharacterEllipsis" />
-                                            <TextBox
+                                            <ui:TextBox
                                                 x:Name="QuickQueryBox"
+                                                Margin="-12,0,0,0"
                                                 VerticalAlignment="Center"
                                                 Background="Transparent"
+                                                BorderBrush="Transparent"
                                                 BorderThickness="0"
                                                 CaretBrush="{DynamicResource TextFillColorPrimaryBrush}"
+                                                ClearButtonEnabled="False"
                                                 FontSize="12"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                 KeyDown="OnQuickQueryKeyDown"
-                                                TextChanged="OnQuickQueryTextChanged" />
+                                                TextChanged="OnQuickQueryTextChanged">
+                                                <ui:TextBox.Resources>
+                                                    <!--  ① 背景：静态 + 悬停 + 焦点 + 禁用，全部全透明  -->
+                                                    <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="Transparent" />
+
+                                                    <!--  ② 边框：非焦点时的 1px 底线 + 焦点时的 2px 强调线，都透明  -->
+                                                    <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="TextControlFocusedBorderBrush" Color="Transparent" />
+                                                </ui:TextBox.Resources>
+                                            </ui:TextBox>
                                         </Grid>
 
                                         <Button

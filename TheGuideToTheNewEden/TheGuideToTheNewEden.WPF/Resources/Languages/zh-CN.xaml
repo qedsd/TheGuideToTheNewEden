@@ -4,6 +4,15 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <sys:String x:Key="AppDisplayName">新伊甸漫游指南</sys:String>
+    <!--
+        品牌条的**副标题**：与主标题配对显示，用「另一种语言」的名字 ——
+        中文界面下显示英文名、英文界面下显示中文名，这样品牌始终是中英双语标识
+        （与 design/branding/banner_*.svg 的两行标题构图一致）。
+        键名里的 Alt 即 alternate：**当前语言的另一语言写法**。
+        英文形式统一用全大写（设计稿 banner_dark.svg 里就是 "THE GUIDE TO THE NEW EDEN"），
+        并由 ViewModel 按设计稿的 letter-spacing 补字间距（见 HomePageViewModel.AppSubtitle）。
+    -->
+    <sys:String x:Key="AppDisplayNameAlt">THE GUIDE TO THE NEW EDEN</sys:String>
     <sys:String x:Key="Shell_OpenDenied">无法打开（系统拒绝了请求；当前运行上下文受限）</sys:String>
     <sys:String x:Key="Shell_PathCopied">路径已复制到剪贴板，可粘贴到资源管理器打开</sys:String>
 
@@ -66,8 +75,16 @@
     <sys:String x:Key="Home.Add.Hint">点右侧按钮添加 / 移除；在 设置 → 主页 里拖动排序。</sys:String>
     <sys:String x:Key="Home.Add.GroupAll">全部功能</sys:String>
 
-    <sys:String x:Key="Home.Status.Players">在线 {0}</sys:String>
-    <sys:String x:Key="Home.Status.PlayersUnknown">在线人数未知</sys:String>
+    <!--
+        状态胶囊：只显示纯数字（前面已有 People 图标，语义已足够），**不带"在线"字眼**。
+        原值 "在线 {0}" 在胶囊里冗余，也挤压了同排其他状态项的宽度。
+
+        这里刻意**不留 format 键**：既然只剩数字，就不需要 string.Format 了
+        （且资源值若写成 "{0}" 会被 XAML 当成标记扩展解析而报错，需额外转义，得不偿失）。
+        数字由 ViewModel 直接格式化（千分位，中英一致），此处只保留"取不到"时的占位符。
+        完整语义在 ToolTip（Home.Status.PlayersTip）里，信息不丢。
+    -->
+    <sys:String x:Key="Home.Status.PlayersUnknown">—</sys:String>
     <sys:String x:Key="Home.Status.GameTimeTip">游戏时间（UTC）</sys:String>
     <sys:String x:Key="Home.Status.NewVersion">有新版本 {0}</sys:String>
     <sys:String x:Key="Home.Status.NewVersionTip">点击前往「设置 → 软件更新」</sys:String>

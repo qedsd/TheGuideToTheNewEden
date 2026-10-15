@@ -42,6 +42,27 @@
                     占位文字刻意写得**很短**（"输入或粘贴内容"）：WPF-UI 的 TextBox 占位符在模板里是单行 TextBlock，
                     **不吃 `TextWrapping`**，长句子会被右边缘直接切掉（用户截图反馈"提示文字显示不全"）。
                     完整说明（分词规则、点建议即替换）放在 ToolTip 里，信息不丢。
+
+                    输入框全程保持透明底（含**焦点态**）
+                    背景：WPF-UI 的 TextBox 在获得键盘焦点时会**覆写背景**，
+                    也就是"一聚焦就变白底"。
+
+                    查其模板源码确认机制（Wpf.Ui 4.3.0 的 TextBox.xaml）：
+                      · 模板里 ContentBorder 是 `Background="{TemplateBinding Background}"`；
+                      · Style 给 TextBox.Background 的初始值是
+                        `{DynamicResource TextControlBackground}`；
+                      · 但焦点态由触发器**直接改写 ContentBorder.Background**，
+                        绕过 TemplateBinding：
+                          <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="ContentBorder" Property="Background"
+                                    Value="{DynamicResource TextControlBackgroundFocused}" />
+                    悬停/禁用同理，另有 PointerOver / Disabled 两个键。
+
+                    因此**给这个 TextBox 局部重定义这几个资源键**即可：
+                    模板里的 DynamicResource 是相对**模板化父级（即本 TextBox）**向上查找的，
+                    故元素级 Resources 会盖过 App 级；又因限定在这个元素内，
+                    不会波及同页的富文本（RichTextPresenter 内部的 RichTextBox）。
+                    比"在 Page.Resources 里覆盖"更精准，也比"自己重写 ControlTemplate"更不易碎。
                 -->
                 <ui:TextBox
                     x:Name="InputBox"
@@ -52,7 +73,18 @@
                     PlaceholderText="{DynamicResource IMEPage_InputTip}"
                     Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap"
-                    ToolTip="{DynamicResource IMEPage_InputTipDetail}" />
+                    ToolTip="{DynamicResource IMEPage_InputTipDetail}">
+                    <ui:TextBox.Resources>
+                        <!--
+                            用 Transparent 画刷而非 WPF-UI 的 ControlFillColorTransparentBrush：
+                            后者是"近透明"的 Fill 色，叠在卡片上仍有轻微色差；这里要**全透明**。
+                        -->
+                        <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                        <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="Transparent" />
+                    </ui:TextBox.Resources>
+                </ui:TextBox>
 
                 <ScrollViewer
                     Grid.Row="1"
