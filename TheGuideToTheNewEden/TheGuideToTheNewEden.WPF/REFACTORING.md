@@ -920,6 +920,20 @@ EnableWindowsTargeting true
   阶段 49 回退 net8 后程序集名改为 `TheGuideToTheNewEden`，发布物是 `TheGuideToTheNewEden.exe`——
   阶段 48 的注册表残留正来自这一点。）
 
+- **追记（2026-10-16，用户要求「日志统一到 AppData」）**：日志路径从 exe 相对 `Log\` 改为
+  `%LocalAppData%\TheGuideToTheNewEden\Logs\`。输出根的 `log4net.config` 改为本项目**本地文件**
+  （`<file type="log4net.Util.PatternString" value="%envFolderPath{LocalApplicationData}/TheGuideToTheNewEden/Logs/" />`，
+  写法与 Core 版一致但独立维护），不再链接 WinUI 版（WinUI 自用不受影响）；Core 传递的那份仍按上面的
+  target 摘除（否则与本地配置同名冲突，NETSDK1152 的处置逻辑不变）。
+  **动机**：与 app 其它用户数据（`%LocalAppData%\TheGuideToTheNewEden\Configs\`）统一，不受 clean/重建影响；
+  顺带修掉一个既有错位——设置页「查看日志」本来就开 `Core.Log.GetLogPath()`（AppData），而真实日志在
+  exe 目录，两者自此一致；主页「查看日志」的兜底路径同步由 exe 相对 `Log\` 改为 `GetLogPath()`。
+  **验证**：构建 0 错误；输出根 `log4net.config` 与本地源逐字节一致；冒烟启动后日志生成于
+  `%LocalAppData%\TheGuideToTheNewEden\Logs\20261016.txt`（首行即「启动时已创建托盘图标」），
+  exe 目录 `Log\` 未再被写入；旧日志仍在 exe 目录 `Log\` 下，可自行删除。
+  本追记同时**取代阶段 82「给使用者的结论」里「日志目录是程序目录下的 `Log\`」的说法**——
+  之后排查日志请去 `%LocalAppData%\TheGuideToTheNewEden\Logs\`。
+
 ---
 
 ### 阶段 46：翻译迁移（本地 SDE 数据库专有名词互译，**废弃有道 API**）

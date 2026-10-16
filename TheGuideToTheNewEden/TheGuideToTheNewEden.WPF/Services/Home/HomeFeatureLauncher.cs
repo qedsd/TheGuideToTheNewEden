@@ -89,12 +89,11 @@ public static class HomeFeatureLauncher
             case "action-open-log":
             {
                 // 优先用 log4net 实际挂着的那个 rolling file（log4net.config 若被改过也不用跟着改代码）；
-                // 取不到时退回"程序目录 Log\yyyyMMdd.txt"——那是本项目 log4net.config 的约定。
+                // 取不到时退回 %LocalAppData%\TheGuideToTheNewEden\Logs\——2026-10-16 起日志统一在 AppData。
                 var logFile = Core.Log.GetLogFile();
                 if (string.IsNullOrEmpty(logFile) || !File.Exists(logFile))
                 {
-                    logFile = Path.Combine(
-                        AppContext.BaseDirectory, "Log", DateTime.Now.ToString("yyyyMMdd") + ".txt");
+                    logFile = Path.Combine(Core.Log.GetLogPath(), DateTime.Now.ToString("yyyyMMdd") + ".txt");
                 }
 
                 // 交给 shell 定位（不要自己拉 explorer.exe，见 ShellHelper 的说明）；
