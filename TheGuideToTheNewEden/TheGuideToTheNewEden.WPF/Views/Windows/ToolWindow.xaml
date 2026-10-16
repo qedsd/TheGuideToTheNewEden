@@ -9,7 +9,7 @@
     MinWidth="100"
     MinHeight="100"
     ExtendsContentIntoTitleBar="True"
-    Icon="pack://application:,,,/Assets/app.ico"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
     ScrollViewer.CanContentScroll="False"
     WindowBackdropType="Mica"
     WindowStartupLocation="CenterOwner">
@@ -30,7 +30,7 @@
             Title="{DynamicResource AppDisplayName}"
             Grid.Row="0">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+                <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
             </ui:TitleBar.Icon>
             <ui:TitleBar.TrailingContent>
                 <!--

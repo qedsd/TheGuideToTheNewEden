@@ -49,7 +49,7 @@
                     <Image
                         Width="16"
                         Height="16"
-                        Source="pack://application:,,,/Assets/logo_32.png" />
+                        Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
                     <TextBlock
                         Margin="8,0,0,0"
                         VerticalAlignment="Center"

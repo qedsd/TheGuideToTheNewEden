@@ -551,6 +551,7 @@
                                     Content="{DynamicResource Assistant_Chat_Clear}"
                                     Icon="{ui:SymbolIcon Eraser24}" />
                                 <ui:Button
+                                    x:Name="PopWindowButton"
                                     Margin="4,0"
                                     Click="OnPopWindowClick"
                                     Content="{DynamicResource Assistant_Chat_PopWindow}"

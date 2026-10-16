@@ -2311,14 +2311,13 @@
     <sys:String x:Key="AssistantSettingPage_Section_Behavior">Tool rounds / default character / write confirmation / hotkey / system prompt</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Esi">Open all 197 ESI operations to the assistant (writes confirmed)</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Tools">Declare on demand + enable or disable each of the 44 tools</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Behavior_Desc">How the assistant runs: how many tool rounds it may take, which character it uses by default, whether writes need confirmation, and the global hotkey. Leave the system prompt empty to use the built-in one.</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Restore_Desc">Resets assistant parameters only (rounds / prompt / confirmation / default character / ESI / tool switches / on-demand declaration); the endpoint and API key are left alone.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore_Desc">Resets assistant parameters only (rounds / prompt / confirmation / default character / hotkey / ESI / tool switches / on-demand declaration / hosting); the endpoint and API key are left alone.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Model">Model</sys:String>
     <sys:String x:Key="AssistantSettingPage_Translate">Translation</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools">Tool switches</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Tools_Desc">Enable or disable each tool the assistant may use. **Disabled tools are not sent to the model** — that saves input tokens on every request and keeps the model away from capabilities you do not want; if the model still asks for a disabled tool by name, execution refuses it. Newly added tools default to enabled.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Desc">Enable or disable each tool the assistant may use. Disabled tools are neither declared to the model (saving input tokens) nor executed; new tools start enabled.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">Declare on demand (saves tokens)</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">When on, only the bundles relevant to the current question are sent to the model: at most two of business / characters / star map / channels / general, plus the always-on ESI gateway and name lookup / translate / character list, plus any tool already used in this conversation. When the intent is unclear it falls back to declaring everything — savings only where they are safe. When off, every enabled tool is declared on every request.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">Only the bundles relevant to the current question are sent (at most two), plus the always-on ESI gateway and similar entries; unclear intent falls back to declaring everything. Turn it off to always declare every enabled tool.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">Enable all</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_DisableAll">Disable all</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Count">{0} of {1} tools disabled</sys:String>
@@ -2335,9 +2334,11 @@
     <sys:String x:Key="AssistantSettingPage_DefaultCharacter_Tip">Empty = first character</sys:String>
     <sys:String x:Key="AssistantSettingPage_DefaultCharacter_Desc">Which character is used for questions like "my wallet" or "my skills" (full character name; empty = first character).</sys:String>
     <sys:String x:Key="AssistantSettingPage_Confirm">Write actions need confirmation</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Confirm_Desc">Turning this off is **not** auto-confirm: the assistant simply refuses such actions and says why — actions that modify app configuration always need explicit confirmation.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ShowInMainWindow">Show AI in the main window</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ShowInMainWindow_Desc">Unchecked (default): every AI entry opens in a separate window, leaving the page you are reading in place. Checked: the assistant page is hosted in the main window. Alt+Q always uses the separate window.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Confirm_Desc">Switching this off is not "no confirmation": the assistant then refuses writes outright and explains why.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey">Global hotkey</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">Press anywhere to pop out the assistant window (press again to hide); empty = not registered. Format: Alt+Q / Ctrl+Alt+A.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">Press anywhere to pop up the assistant window (press again to hide). Empty by default, i.e. no shortcut; fill in a combination such as Alt+Q / Ctrl+Alt+A to enable it.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Prompt">Custom system prompt</sys:String>
     <sys:String x:Key="AssistantSettingPage_Prompt_Desc">Empty uses the built-in prompt (which already covers "numbers come from tools", "say so when not found", injection guards). Filling this replaces those rules entirely.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Prompt_Tip">Empty = use the built-in prompt</sys:String>
@@ -2371,7 +2372,7 @@
     <sys:String x:Key="AssistantTool_esi_read">ESI read</sys:String>
     <sys:String x:Key="AssistantTool_esi_write">ESI write</sys:String>
     <sys:String x:Key="AssistantSettingPage_Esi">Full ESI access</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Esi_Desc">Opens all 197 ESI (EVE's official API) operations to the assistant: it searches for an endpoint, reads its parameters, then calls it. Read-only endpoints run directly; write endpoints (send mail, edit contacts, fleet actions…) always ask for your confirmation. Dedicated tools (market / characters / star map…) are still preferred; the gateway covers the long tail.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Esi_Desc">Opens all 197 ESI operations to the assistant. Read endpoints run directly; every write asks you first. Dedicated tools still win; the gateway covers the long tail.</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiEnabled">Enable the ESI gateway</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiEnabled_Desc">When off, the four esi_* tools refuse to run (dedicated tools are unaffected).</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiWrites">Allow ESI write operations</sys:String>

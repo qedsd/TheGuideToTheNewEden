@@ -1,9 +1,11 @@
+using System.IO;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Home;
+using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.ViewModels.Assistant;
 
 namespace TheGuideToTheNewEden.Probe;
@@ -25,17 +27,36 @@ internal static class QuickRouteSuite
         ProbeCore.Ensure();
         ProbeApplication.Ensure();   // 语言键要能解析，toast 文案才可断言
 
-        c.Section("QuickRouteSuite · 空输入与兜底");
-        EmptyAndFallback(c);
+        // 阶段 128：转助手的落点由「在主窗口中显示 AI」决定——
+        // 本套件断言的是**主窗口模式**下那条"待处理提问"链路（窗口模式会把 pending 换成开独立窗口，
+        // 那还会真发一次请求，探针不能那么干）。所以这里临时切到主窗口模式，
+        // 跑完**按字节还原** settings.json + 内存值（与 tools 套件同一套做法）。
+        var settingsFile = Path.Combine(SettingsService.DataPath, "settings.json");
+        var backup = File.Exists(settingsFile) ? File.ReadAllBytes(settingsFile) : null;
+        var hostingBefore = AiAssistantSettingService.ShowInMainWindow;
+        AiAssistantSettingService.SaveShowInMainWindow(true);
+        try
+        {
+            c.Section("QuickRouteSuite · 空输入与兜底");
+            EmptyAndFallback(c);
 
-        c.Section("QuickRouteSuite · 直达跳转（价格 / 星系 / 角色）");
-        DirectJumps(c);
+            c.Section("QuickRouteSuite · 直达跳转（价格 / 星系 / 角色）");
+            DirectJumps(c);
 
-        c.Section("QuickRouteSuite · 转助手与 pending 消费语义");
-        ToAssistant(c);
+            c.Section("QuickRouteSuite · 转助手与 pending 消费语义（主窗口模式）");
+            ToAssistant(c);
 
-        c.Section("QuickRouteSuite · 助手页消费 pending（仅在端点未配置时执行）");
-        ViewModelConsumption(c);
+            c.Section("QuickRouteSuite · 助手页消费 pending（仅在端点未配置时执行）");
+            ViewModelConsumption(c);
+        }
+        finally
+        {
+            AiAssistantSettingService.SaveShowInMainWindow(hostingBefore);
+            if (backup is not null)
+            {
+                File.WriteAllBytes(settingsFile, backup);
+            }
+        }
     }
 
     private static void EmptyAndFallback(Check c)

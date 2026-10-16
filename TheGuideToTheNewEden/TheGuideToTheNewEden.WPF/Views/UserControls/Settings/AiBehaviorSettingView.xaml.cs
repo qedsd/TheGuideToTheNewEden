@@ -14,6 +14,8 @@ public partial class AiBehaviorSettingView : UserControl
     public AiBehaviorSettingView()
     {
         InitializeComponent();
+        // 输入框的**提示**用固定示例（默认值是"不启用"，提示不跟着空——用户要求保留提示）
+        HotkeyBox.PlaceholderText = AiAssistantSettingService.HotkeyHint;
         // 只在**构造时**读一次设置：二级菜单之间来回切换时视图是复用的，重新读会丢未保存的编辑
         Load();
     }
@@ -24,6 +26,7 @@ public partial class AiBehaviorSettingView : UserControl
         RoundsBox.Value = AiAssistantSettingService.MaxToolRounds;
         CharacterBox.Text = AiAssistantSettingService.DefaultCharacter;
         ConfirmToggle.IsChecked = AiAssistantSettingService.ConfirmExpensive;
+        ShowInMainWindowToggle.IsChecked = AiAssistantSettingService.ShowInMainWindow;
         HotkeyBox.Text = AiAssistantSettingService.Hotkey;
         PromptBox.Text = AiAssistantSettingService.SystemPrompt;
     }
@@ -38,6 +41,7 @@ public partial class AiBehaviorSettingView : UserControl
             ConfirmToggle.IsChecked == true,
             HotkeyBox.Text,
             CharacterBox.Text);
+        AiAssistantSettingService.SaveShowInMainWindow(ShowInMainWindowToggle.IsChecked == true);
 
         // 快捷键改完即时生效（不需要重启）：让主窗口重注册
         App.MainWindow?.RegisterAssistantHotkey();

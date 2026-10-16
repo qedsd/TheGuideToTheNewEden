@@ -15,7 +15,7 @@
     MinWidth="960"
     MinHeight="600"
     ExtendsContentIntoTitleBar="True"
-    Icon="pack://application:,,,/Assets/app.ico"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
     WindowBackdropType="Mica"
     mc:Ignorable="d">
 
@@ -139,18 +139,7 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
-                <!--  AI 助手：自然语言调用软件功能（查询数据 + 跳转页面），工具调用带确认门控  -->
-                <ui:NavigationViewItem
-                    Content="{DynamicResource Nav.Assistant}"
-                    NavigationCacheMode="Required"
-                    TargetPageType="{x:Type pages:AiAssistantPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:ImageIcon
-                            Width="20"
-                            Height="20"
-                            Source="{StaticResource NavIcon.assistant}" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+                <!--  AI 助手不在这里：它是**常驻入口**，放在页脚（见文件末尾 FooterMenuItems，阶段 126）  -->
 
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Channel}">
                     <ui:NavigationViewItem.Icon>
@@ -427,6 +416,23 @@
             </ui:NavigationView.MenuItems>
 
             <ui:NavigationView.FooterMenuItems>
+                <!--
+                    AI 助手（阶段 126 从上面的滚动菜单搬来）：它是**常驻入口**而不是普通功能项——
+                    页脚不随菜单滚动、导航折叠成图标时也在，与「设置」同级。
+                    标题栏还另有一个常驻按钮（见下方 TitleBar），导航面板收起时也能进。
+                -->
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Assistant}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:AiAssistantPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.assistant}" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
                 <ui:NavigationViewItem
                     Content="{DynamicResource Nav.Settings}"
                     NavigationCacheMode="Required"
@@ -444,14 +450,14 @@
         <!--  标题栏叠加在 NavigationView 之上；其左侧留白由 NavigationView 自动为汉堡按钮预留  -->
         <ui:TitleBar x:Name="TitleBar" Title="{DynamicResource AppDisplayName}">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+                <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
         <!--  托盘图标：后台运行（H.NotifyIcon，与 WinUI 版所用的库对应）  -->
         <tb:TaskbarIcon
             x:Name="TrayIcon"
-            IconSource="pack://application:,,,/Assets/app.ico"
+            IconSource="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
             MenuActivation="RightClick"
             ToolTipText="{DynamicResource AppDisplayName}">
             <tb:TaskbarIcon.ContextMenu>

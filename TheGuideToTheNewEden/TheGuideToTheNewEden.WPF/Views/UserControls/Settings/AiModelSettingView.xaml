@@ -11,7 +11,9 @@
         **助手与翻译共用这一份**（阶段 125 从原来的「模型与翻译」里拆出来）。
     -->
     <StackPanel Margin="0,0,0,40">
-        <!--  ============ 模型端点 ============  -->
+        <!--  节标题：与其它设置子页一致（三级详情顶部由它提供 24px 间距）  -->
+        <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource AssistantSettingPage_Model}" />
+
         <Border Style="{StaticResource SettingsGroupBorder}">
             <StackPanel>
                 <controls:SettingCard

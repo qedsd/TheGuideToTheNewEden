@@ -103,7 +103,12 @@
             <ScrollViewer
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">
-                <ContentControl x:Name="SectionHost" Margin="36,24,36,32" />
+                <!--
+                    顶部**不给**边距（阶段 129）：分节视图自己以 SettingsSectionHeader 开头（它自带 24px 上边距），
+                    与其它设置子页（根 `Margin="36,0,36,40"` + 节标题）完全一致；
+                    这里再给 24 就比别的页多出一段空白（用户实机反馈"与导航栏隔了一段高度"）。
+                -->
+                <ContentControl x:Name="SectionHost" Margin="36,0,36,32" />
             </ScrollViewer>
         </Grid>
     </Grid>

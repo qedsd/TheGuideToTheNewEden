@@ -7,7 +7,7 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MaxWidth="1000" />
@@ -20,12 +20,10 @@
                     <StackPanel>
                         <!--  系统通知  -->
                         <controls:SettingCard
+                            Title="{DynamicResource TestSettingPage_SystemNotify}"
                             Description="{DynamicResource TestSettingPage_SystemNotify_Desc}"
-                            Icon="Alert24"
-                            Title="{DynamicResource TestSettingPage_SystemNotify}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                            Icon="Alert24">
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <Button
                                     x:Name="SendToastButton"
                                     MinWidth="112"
@@ -42,12 +40,10 @@
 
                         <!--  声音播放  -->
                         <controls:SettingCard
+                            Title="{DynamicResource TestSettingPage_MediaPlayer}"
                             Description="{DynamicResource TestSettingPage_MediaPlayer_Desc}"
-                            Icon="SoundSource24"
-                            Title="{DynamicResource TestSettingPage_MediaPlayer}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                            Icon="SoundSource24">
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <Button
                                     x:Name="PlaySoundButton"
                                     MinWidth="72"
@@ -69,12 +65,10 @@
 
                         <!--  回环回调：现行授权回调通道（浏览器直接打进本进程）  -->
                         <controls:SettingCard
+                            Title="{DynamicResource TestSettingPage_Loopback}"
                             Description="{DynamicResource TestSettingPage_Loopback_Desc}"
-                            Icon="Globe24"
-                            Title="{DynamicResource TestSettingPage_Loopback}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                            Icon="Globe24">
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <Button
                                     x:Name="CheckLoopbackButton"
                                     MinWidth="80"
@@ -89,7 +83,7 @@
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
-                        <controls:SettingCard Icon="Info24" Title="{DynamicResource TestSettingPage_Loopback}">
+                        <controls:SettingCard Title="{DynamicResource TestSettingPage_Loopback}" Icon="Info24">
                             <TextBlock
                                 x:Name="LoopbackValueText"
                                 Width="420"

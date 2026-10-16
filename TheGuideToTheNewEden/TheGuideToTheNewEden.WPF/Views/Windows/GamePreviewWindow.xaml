@@ -41,7 +41,7 @@
                 ShowMaximize="False"
                 ShowMinimize="False">
                 <ui:TitleBar.Icon>
-                    <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+                    <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
                 </ui:TitleBar.Icon>
                 <!--  标题栏要矮于常规尺寸，标题栏按钮也得跟着缩小，否则内容会把高度顶回去  -->
                 <ui:TitleBar.Resources>

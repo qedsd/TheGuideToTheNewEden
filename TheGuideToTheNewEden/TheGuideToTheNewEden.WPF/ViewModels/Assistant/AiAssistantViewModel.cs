@@ -225,10 +225,11 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ContextInfoText));
         ScrollToEndRequested?.Invoke(this, EventArgs.Empty);
 
-        // 主页快捷输入转来的请求：页面已就绪时走事件路径（上面已处理），这里兜住"页面刚创建"的情况
+        // 主页快捷输入转来的请求：页面已就绪时走事件路径（上面已处理），这里兜住"页面刚创建"的情况。
+        // 走 SubmitExternalQuery：**新开一个对话**，不续在上一轮里（阶段 127）。
         if (Navigation.TakePendingAssistantQuery() is { Length: > 0 } pending)
         {
-            SubmitQuery(pending);
+            SubmitExternalQuery(pending);
         }
     }
 
@@ -250,7 +251,8 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        SubmitQuery(pending);
+        // 与 Init 一致：外部转来的提问**新开一个对话**（阶段 127）
+        SubmitExternalQuery(pending);
     }
 
     public void RefreshConfiguration()
@@ -456,7 +458,7 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    /// <summary>外部注入一条请求并立即发送（主页快捷输入的 handoff 用）。</summary>
+    /// <summary>外部注入一条请求并立即发送（**续在当前对话里**；"随手一问"的外部入口请用 <see cref="SubmitExternalQuery"/>）。</summary>
     public void SubmitQuery(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -467,6 +469,37 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         InputText = text;
         _ = SendAsync();
     }
+
+    /// <summary>
+    /// 外部入口（主页 banner 的快捷输入、主页快捷提问转给助手的那条）转来的提问：
+    /// **一律新开一个对话**，不再续在上一轮里——那是"随手一问"，把它混进上次的上下文里，
+    /// 既会让模型看到无关的旧问答，也会把旧对话的标题/内容搅在一起（阶段 127 用户反馈）。
+    /// </summary>
+    public void SubmitExternalQuery(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        // 未配置时**不要**先建一个空对话再报错，否则用户会莫名其妙多出一个「新对话」
+        RefreshConfiguration();
+        if (!IsConfigured)
+        {
+            PageNotifyService.Warning(NotConfiguredText);
+            return;
+        }
+
+        BeginExternalConversation();
+        InputText = text;
+        _ = SendAsync();
+    }
+
+    /// <summary>
+    /// 为外部入口开一个新对话并选中它（<see cref="SubmitExternalQuery"/> 用；探针也直接断言这一层，
+    /// 因为再往下就要真发请求了）。返回新会话。
+    /// </summary>
+    public AiChatSessionViewModel BeginExternalConversation() => CreateSession();
 
     /// <summary>停止所有正在处理的请求。</summary>
     public void StopAll()

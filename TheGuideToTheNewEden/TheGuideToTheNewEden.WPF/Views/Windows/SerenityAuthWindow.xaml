@@ -10,7 +10,7 @@
     MinHeight="500"
     ExtendsContentIntoTitleBar="True"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-    Icon="pack://application:,,,/Assets/app.ico"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
     ScrollViewer.CanContentScroll="False"
     WindowBackdropType="Mica"
     WindowStartupLocation="CenterOwner">
@@ -104,7 +104,7 @@
         <!--  与主窗口一致的标题栏（主题化，避免系统白色标题栏）  -->
         <ui:TitleBar Title="{DynamicResource AddSerenityAuthDialog_Title}">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+                <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
     </Grid>

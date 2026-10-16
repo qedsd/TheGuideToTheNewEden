@@ -35,7 +35,30 @@ public partial class AiAssistantChatView : UserControl
 
         ((INotifyCollectionChanged)Transcript.Items).CollectionChanged -= OnTranscriptChanged;
         ((INotifyCollectionChanged)Transcript.Items).CollectionChanged += OnTranscriptChanged;
+        UpdatePopWindowButton();
         ScrollToEnd();
+    }
+
+    /// <summary>
+    /// 「弹窗」按钮**是否该显示**：只有宿主窗口不是"AI 独立窗口"时才显示。
+    /// <para>
+    /// 抽成纯函数是为了可离线断言（离屏的 <c>ToolWindow</c> 内容不进可视树，探针查不到里面的按钮——
+    /// 与 §9 第 101 条同类的环境限制）。
+    /// </para>
+    /// </summary>
+    public static bool ShouldShowPopWindowButton(Window? host, Window? assistantWindow)
+        => host is null || !ReferenceEquals(host, assistantWindow);
+
+    /// <summary>
+    /// 「弹窗」按钮只在**主窗口里的对话页**显示：本视图被"AI 独立窗口"（<see cref="Windows.AssistantWindow"/>）
+    /// 承载时，点它只会把当前这个窗口关掉，容易误导（阶段 128）。
+    /// </summary>
+    private void UpdatePopWindowButton()
+    {
+        PopWindowButton.Visibility = ShouldShowPopWindowButton(
+            Window.GetWindow(this), Windows.AssistantWindow.CurrentWindow)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -87,7 +110,7 @@ public partial class AiAssistantChatView : UserControl
     private void OnRecheckClick(object sender, RoutedEventArgs e) => ViewModel?.RefreshConfiguration();
 
     /// <summary>「弹窗」：打开/收起独立工具窗口（与页面共享同一个 VM）。</summary>
-    private void OnPopWindowClick(object sender, RoutedEventArgs e) => AssistantPopup.Toggle(this);
+    private void OnPopWindowClick(object sender, RoutedEventArgs e) => Windows.AssistantWindow.Toggle(this);
 
     /// <summary>请求气泡的「展开 / 收起」。</summary>
     private void OnToggleUserClick(object sender, RoutedEventArgs e)

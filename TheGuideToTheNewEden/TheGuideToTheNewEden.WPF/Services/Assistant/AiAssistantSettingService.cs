@@ -25,12 +25,22 @@ public static class AiAssistantSettingService
     private const string EsiDeniedPathsKey = "Assistant.Esi.DeniedPaths";
     private const string DisabledToolsKey = "Assistant.Tools.Disabled";
     private const string AutoRouteKey = "Assistant.Tools.AutoRoute";
+    private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
 
     /// <summary>单次请求的最大工具轮数（防模型连环调工具烧 token）。</summary>
     public const int DefaultMaxToolRounds = 8;
 
-    /// <summary>全局呼出快捷键的默认值。</summary>
-    public const string DefaultHotkey = "Alt+Q";
+    /// <summary>
+    /// 全局呼出快捷键的**默认值：空 = 不启用**（阶段 130 用户要求「AI 默认不启用快捷方式」）。
+    /// 想开启就在设置里填一个组合键（如 <see cref="HotkeyHint"/>）。
+    /// </summary>
+    public const string DefaultHotkey = "";
+
+    /// <summary>
+    /// 设置里那个输入框的**提示示例**（占位文本，不参与默认值）：让用户知道该填什么格式。
+    /// 默认不启用 ≠ 不给提示（用户要求「保留输入框提示的默认快捷方式」）。
+    /// </summary>
+    public const string HotkeyHint = "Alt+Q";
 
     /// <summary>ESI 网关默认一次最多取的页数（分页端点）。</summary>
     /// <remarks>
@@ -44,6 +54,9 @@ public static class AiAssistantSettingService
 
     /// <summary>ESI 错误配额的安全阈值（剩余次数低于它就不再调用）。</summary>
     public const int DefaultEsiErrorLimitFloor = 10;
+
+    /// <summary>默认**不**把 AI 显示在主窗口里（阶段 128 用户要求）：所有入口都开独立窗口。</summary>
+    public const bool DefaultShowInMainWindow = false;
 
     /// <summary>单次请求的最大工具轮数（1–30）。</summary>
     public static int MaxToolRounds { get; private set; } = DefaultMaxToolRounds;
@@ -121,6 +134,21 @@ public static class AiAssistantSettingService
         SettingsService.Save();
     }
 
+    /// <summary>
+    /// **AI 是否显示在主窗口里**（阶段 128）：<c>false</c>（默认）= 所有入口（页脚常驻项、主页 banner 快捷提问、
+    /// 主页磁贴、快捷路由转来的提问）都用**独立窗口**；<c>true</c> = 助手页显示在主窗口里
+    /// （全局快捷键 <c>Alt+Q</c> 两种情况都弹独立窗口）。
+    /// </summary>
+    public static bool ShowInMainWindow { get; private set; } = DefaultShowInMainWindow;
+
+    /// <summary>保存"AI 是否显示在主窗口里"。</summary>
+    public static void SaveShowInMainWindow(bool showInMainWindow)
+    {
+        ShowInMainWindow = showInMainWindow;
+        SettingsService.SetBool(ShowInMainWindowKey, ShowInMainWindow);
+        SettingsService.Save();
+    }
+
     /// <summary>保存禁用集合（设置页提交；只写这一个键）。</summary>
     public static void SaveDisabledTools(IEnumerable<string>? disabledTools)
     {
@@ -169,6 +197,7 @@ public static class AiAssistantSettingService
 
         DisabledTools = disabled;
         AutoRouteTools = SettingsService.GetBool(AutoRouteKey, true);
+        ShowInMainWindow = SettingsService.GetBool(ShowInMainWindowKey, DefaultShowInMainWindow);
     }
 
     /// <summary>保存 ESI 网关设置（设置页与主保存同一处提交）。</summary>
@@ -216,12 +245,19 @@ public static class AiAssistantSettingService
         SettingsService.Save();
     }
 
-    /// <summary>恢复默认值（提示词 / 工具轮数 / 确认开关 / 默认角色 / ESI 网关 / 工具开关 / 按需声明），快捷键保持不变。</summary>
+    /// <summary>
+    /// 恢复默认值（提示词 / 工具轮数 / 确认开关 / 默认角色 / 快捷键 / ESI 网关 / 工具开关 / 按需声明 / 显示位置）。
+    /// <para>
+    /// 阶段 130 起**快捷键也一并复位**（回到 <see cref="DefaultHotkey"/> = 空 = 不启用）——
+    /// 既然"默认不启用"是默认值，那"恢复默认"就该把它恢复成不启用（早先的"保持快捷键不变"已不适用）。
+    /// </para>
+    /// </summary>
     public static void RestoreDefaults()
     {
-        Save(DefaultMaxToolRounds, string.Empty, true, Hotkey, string.Empty);
+        Save(DefaultMaxToolRounds, string.Empty, true, DefaultHotkey, string.Empty);
         SaveEsi(true, true, true, DefaultEsiMaxPages, DefaultEsiMaxResultChars, DefaultEsiErrorLimitFloor, string.Empty);
         SaveDisabledTools([]);
         SaveRouting(true);
+        SaveShowInMainWindow(DefaultShowInMainWindow);
     }
 }

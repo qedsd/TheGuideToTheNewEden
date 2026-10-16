@@ -45,7 +45,7 @@
                     <Image
                         Width="20"
                         Height="20"
-                        Source="pack://application:,,,/Assets/logo_32.png" />
+                        Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
                     <TextBlock
                         x:Name="TitleText"
                         Margin="8,0,0,0"

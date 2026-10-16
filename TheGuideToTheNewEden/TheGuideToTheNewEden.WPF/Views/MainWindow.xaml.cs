@@ -9,6 +9,7 @@ using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.Services.Tools;
 using TheGuideToTheNewEden.WPF.Views.UserControls;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 using Wpf.Ui.Controls;
 // WPF-UI 也有自己的 MenuItem，菜单项这里一律用 WPF 原生的那个。
 using MenuItem = System.Windows.Controls.MenuItem;
@@ -320,7 +321,21 @@ public partial class MainWindow : FluentWindow
     private void OnNavigationViewNavigating(NavigationView sender, NavigatingCancelEventArgs args)
     {
         var pageType = args.Page as Type ?? args.Page?.GetType();
-        if (pageType is null || !ToolPages.TryGetValue(pageType, out var titleKey))
+        if (pageType is null)
+        {
+            return;
+        }
+
+        // AI 助手（阶段 128）：设置里「在主窗口中显示 AI」不勾（默认）时，点页脚常驻项**不导航**，
+        // 改成打开独立窗口——与"工具页开独立窗口"是同一个套路（下面那段）。
+        if (AssistantEntryRouter.ShouldOpenWindow(AiAssistantSettingService.ShowInMainWindow, pageType))
+        {
+            args.Cancel = true;
+            AssistantWindow.Show(this);
+            return;
+        }
+
+        if (!ToolPages.TryGetValue(pageType, out var titleKey))
         {
             return;
         }
@@ -533,6 +548,6 @@ public partial class MainWindow : FluentWindow
             return;
         }
 
-        AssistantPopup.Toggle(this);
+        AssistantWindow.Toggle(this);
     }
 }

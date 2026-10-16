@@ -5608,8 +5608,8 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
 > ESI 全量网关四个元工具（118）、删除那 7 个直读工具并把名称富化下沉为通用能力（119）、
 > DeepSeek DSML 兼容（120）、AI 设置重构 + 逐工具开关 + 输出 token 默认 0（121）、
 > 工具声明的 token 预算与缓存契约（122）、按需声明（123）、设置项改名 AI 并改成钻取式菜单（124）、
-> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）** 均已落地；
-> 工具总数 **44**（47 个旧工具 − 阶段 117 的 7 个 + 网关 4 个），探针 **1045 断言全 PASS**
+> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）、AI 助手改成常驻入口（126，只放页脚）、主页 banner 快捷提问改为新开对话（127）、AI 显示位置可选（128）、AI 设置详情页统一成 SettingCard 逐行 + 清 markdown（129）、AI 快捷键默认不启用（130）** 均已落地；
+> 工具总数 **44**（47 个旧工具 − 阶段 117 的 7 个 + 网关 4 个），探针 **1071 断言全 PASS**
 > （`all` 一次跑完，退出码 0），构建 0 错误，语言键 2280/2280 无重复，应用实机启动验证通过。
 > 工具声明（每次工具轮的固定前缀）已精简到 **23,358 字符**并默认**按需声明**（典型单套餐问题只声明 10,435 字符 ≈ 45%）。
 > 设置里现在只有**一个 AI 入口**（设置 → AI 助手）：模型与翻译 / 行为 / ESI 全量访问 / 工具开关。
@@ -6172,6 +6172,176 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
 - `ui` 套件 49 → **58 条**：图标颜色 3 条 + 五节钻取路径（模型节：API Key + 2 个下拉 + ≥3 个数字框；
   翻译节：≥2 开关 + ≥2 数字框 + ≥1 文本框，且**没有模型端点控件**——两节确实分开了）。
 - 全量 `all` = **1045 PASS / 0 FAIL**；构建 **0 错误**；语言键中英各 **2280**、0 重复、键集一致。
+
+### 阶段 126：AI 助手改成常驻入口（只放页脚）
+
+> 用户要求：「AI 助手功能不应该是一个普通的功能菜单，而是像设置那样是一个永远保持可见的入口」；
+> 选定方案：**页脚第一项（设置之上）**。标题栏常驻按钮做过一版，用户看过之后要求去掉，只保留页脚入口。
+
+#### 一、改动
+
+- `Views/MainWindow.xaml`：助手项从会滚动的 `MenuItems` 搬到 **`FooterMenuItems`，排在「设置」之上**
+  （与设置同级：不随菜单滚动、导航折叠成图标时仍在）。原先它夹在菜单里的「游戏预览」和「频道」之间。
+- ~~标题栏常驻按钮~~：**已按用户要求去掉**（只留页脚入口）。留个记录备查——真要做的话不能用 TitleBar 的内容区：
+  WPF-UI 4.3 的 `TitleBar` **不是 `ContentControl`**（里面放控件报 `MC3028`，写 `<ui:TitleBar.Content>` 报 `MC3074`），
+  只能与 TitleBar **同层右对齐叠一个按钮**，并在右侧留出系统按钮宽度（3×46）。
+  另有一条"不离开当前页"的路子本来就有：全局快捷键 `Alt+Q` → 弹出助手窗口。
+- **顺带修掉一处真缺陷**：`MainWindow.xaml` 里三处 `pack://application:,,,/Assets/...` **没带程序集名**——
+  相对 pack URI 会按**入口程序集**解析，于是从别的入口程序集（探针）构造主窗口时报
+  `IOException: 找不到资源 assets/app.ico`（外层只说"在 TypeConverterMarkupExtension 上提供值时引发了异常"，
+  正是 §9 第 99 条那类"真因在内层"）。改成 `;component/` 形式（与 App.xaml 既有做法一致）后主窗口可从探针构造。
+
+#### 二、验证
+
+- `ui` 套件 58 → **63 条**，新增「主窗口导航」3 条：**真构造 `MainWindow`**，递归枚举导航项断言
+  ① 助手在页脚、② 不在会滚动的顶部菜单、③ 页脚顺序是「助手 → 设置」，另加一条"标题栏没有助手按钮"的收尾断言。
+- 导航↔功能目录（阶段 92）的双向比对**本来就枚举 `MenuItems ∪ FooterMenuItems`**，搬迁不需要改逻辑；
+  实测日志里没有「不在左侧导航」告警。
+- 全量 `all` = **1048 PASS / 0 FAIL**；构建 0 错误；语言键中英各 **2280**。
+
+#### 三、探针踩到的两个坑（已记录）
+
+1. **主窗口核验必须放在套件最后**：`Show()` 会让它成为 `Application.MainWindow`，
+   提前做会让后面所有"依赖 `App.MainWindow` 的界面"断言查不到控件（本轮实测：对话视图整段失败）。
+2. `NavigationView` 内部是 `Frame`，而**离屏窗口的 `Frame` 不承载内容**（§9 第 101 条）——
+   所以只断言选中态；页面是否出现在可视树里只打印诊断，**不写成断言**（将来行为变了也不该判失败）。
+
+### 阶段 127：主页 banner 的快捷提问改成"新开一个对话"
+
+> 用户反馈：「主页的 banner 快捷输入，AI 回答会默认在上一次对话里面继续，不应该是单独开一个新对话吗？」
+
+#### 一、根因
+
+主页 banner（与"主页快捷提问转给助手"那条）的交接路径是
+`Navigation.NavigateToAssistant(query)` → `AiAssistantViewModel` 的待办提问路径（`Init` / `AssistantQueryRequested`）
+→ `SubmitQuery(pending)`，而 `SubmitQuery` → `SendAsync` 用的是 **`SelectedSession ?? CreateSession()`**——
+于是这条"随手一问"被塞进了上一次选中的对话里：模型会看到无关的旧问答，标题/内容也被搅在一起。
+
+#### 二、改法
+
+- 新增 `AiAssistantViewModel.SubmitExternalQuery(text)`：外部入口专用——**先 `BeginExternalConversation()` 新开并选中一个对话**，
+  再走原来的发送路径；两个待办消费点（`Init` 与 `AssistantQueryRequested`）改调它。
+- `SubmitQuery`（页面输入框 / 弹窗里回车）**保持原语义**：续在当前对话里。
+  弹窗与助手页共用同一个 ViewModel，所以"banner 开了新对话 → 接着在弹窗里补充"仍是同一个对话，符合直觉。
+- 小细节：`SubmitExternalQuery` **先查配置再建对话**——未配置时只提示，不会先留下一个空的「新对话」。
+- `BeginExternalConversation()` 单独暴露出来，是为了让探针能只断言"目标会话"这一层（再往下就真发请求了）。
+
+#### 三、验证
+
+- `ui` 套件 63 → **67 条**：① 先有一个对话 → 调外部入口后**新开**并选中它（不是续上一轮）；
+  ② 新对话插在列表最前（与「新建对话」一致）；③ 后续提问会落到新对话里（`SendAsync` 用的就是 `SelectedSession`）；
+  ④ 端点未配置时外部提问**不会留下空对话**（本机已配置则跳过该条并打印原因，避免探针真发请求）。
+- 全量 `all` = **1052 PASS / 0 FAIL**；构建 0 错误。
+
+#### 四、说明
+
+弹窗（`Alt+Q`）里回车**仍然是"续在当前对话"**——它与助手页共用同一份 ViewModel，
+所以 banner 开了新对话之后，弹窗里接着说的是同一件事，这正是想要的；
+"每次弹窗都强制新开"没有做（用户只提了 banner，且那会让"弹窗追问"没法继续）。
+
+### 阶段 128：AI 显示位置可选（默认独立窗口）+ 顺手统一 pack URI
+
+> 用户要求：「AI 设置里面增加一项，AI 功能是否在主窗口显示，默认不勾上；打开 AI 功能（所有入口，
+> 包括主界面 banner）会在一个新窗口显示」。
+
+#### 一、改动
+
+- **设置项**：`Assistant.ShowInMainWindow`（默认 **false**，常量 `AiAssistantSettingService.DefaultShowInMainWindow`），
+  放在「设置 → AI → 行为」，「恢复默认」会复位成 false。
+  语义：**不勾**（默认）= 页脚常驻项、主页 banner 快捷提问、主页磁贴、快捷路由转来的提问都开**独立窗口**；
+  **勾上** = 助手页显示在主窗口里（老行为）。全局快捷键 `Alt+Q` 与对话页「弹窗」按钮两种情况都开独立窗口。
+- **统一分发点**：新增纯函数 `AssistantEntryRouter.ShouldOpenWindow(showInMainWindow, pageType)`，三处入口都用它：
+  1. `Navigation.NavigateToAssistant(query)`（主页 banner / 快捷路由）：窗口模式下 `AssistantWindow.Show(main, query)`，
+     请求交给窗口直接发送（仍是阶段 127 的"新开一个对话"）；
+  2. `Navigation.Navigate(Type)`：程序化导航（主页磁贴等）同样改走窗口，免得绕过拦截；
+  3. `MainWindow.OnNavigationViewNavigating`：**页脚常驻项点击**——窗口模式下 `args.Cancel = true` 改开窗口，
+     与"工具页开独立窗口"是同一个套路。
+- **窗口**：原来的 `AssistantPopup` 升级为公开的 `Views/Windows/AssistantWindow`
+  （`Show` / `Toggle` / `Close` / `IsOpen` / `CurrentWindow`），与助手页**共用同一份 ViewModel**；
+  重复 `Show` 只激活已有窗口，不会开一堆。
+- **抛光**：对话视图被独立窗口承载时隐藏「弹窗」按钮（在那儿点它只会把窗口关掉）；
+  判定抽成纯函数 `AiAssistantChatView.ShouldShowPopWindowButton(host, assistantWindow)`。
+- **顺手统一 pack URI**：为让探针能真构造窗口，发现 `ToolWindow.xaml` 的 `Icon` 同样没带程序集名
+  （与阶段 126 修的 MainWindow 同类），索性把**全项目 16 个窗口 XAML 共 28 处** `pack://application:,,,/Assets/...`
+  统一成 `;component/` 形式——对应用语义等价，但从别的入口程序集构造不再
+  `IOException: 找不到资源 assets/app.ico`（§9 第 99 条那类"真因在内层"）。
+
+#### 二、验证
+
+- `ui` 套件 63 → **80 条**：默认值 false、路由真值表（不勾+助手页→窗口／勾上+助手页→主窗口／不勾+别的页→照常导航）、
+  `Show` 之后存在窗口、**已开则复用同一实例**、`Close` 后复位、弹窗按钮显示规则 3 条（含"主窗口里的对话页显示它"）。
+- `quickroute` 套件：转助手那几条链路**临时切到主窗口模式**再断言 pending 语义，跑完按字节还原 settings.json
+  （**已实测跑前跑后 SHA256 一致**）。窗口模式下那条链路会真开窗并**真发一次模型请求**，探针绝不能那么干。
+- 全量 `all` = **1064 PASS / 0 FAIL**；构建 0 错误；语言键中英各 **2282**（+2）。
+
+#### 三、探针踩到的两个新坑
+
+1. **离屏 `ToolWindow` 的内容也不进可视树**（查不到里面的「弹窗」按钮）——与 §9 第 101 条的 Frame 同类环境限制；
+   于是该规则改用纯函数真值表断言（可见性那半边仍用真视图查：主窗口里的对话页必须显示它）。
+2. **窗口类断言不能比"窗口总数 +1"**：更早的套件可能已经把窗口开着（本轮 `all` 里就是），
+   改成比"实例是否复用"才稳。
+
+### 阶段 129：AI 设置详情页统一成 SettingCard 逐行 + 清理 markdown 残留
+
+> 用户反馈：「AI 设置的行为、ESI 全量等具体详细选项没有像其他那样使用分割控件逐个区分开，而是全挤在一起了，
+> 并且描述是不是文字太多了，甚至还有 md 格式残留」。
+
+#### 一、改法
+
+- **「行为」节**：从"TextBlock 标签 + 控件 + 描述"的堆叠改成 **6 张 `controls:SettingCard` + 4 条 `SettingsDivider`**
+  （与「通用设置」等页同一套观感）：最大工具轮数 `ArrowSync24` / 默认角色 `Person24` / 写操作确认 `Shield24` /
+  在主窗口中显示 AI `WindowNew24` / 全局快捷键 `Keyboard24`；系统提示词单独一节一张卡（`BookOpen24`，420 宽多行框）。
+  分组标题改用 `SettingsSectionHeader`（与其它设置页一致）。
+- **「ESI 全量访问」节**：同样改成 **7 张卡 + 6 条分隔线**（网关 `Shield24` / 允许写 `Document24` /
+  ID 富化 `LocalLanguage24` / 页数 `ArrowClockwise24` / 结果上限 `Cut24` / 错误配额 `DataTrending24` /
+  禁止路径 `Eraser24`）；网关的整体说明挪进第一张卡的描述，不再单独堆一段。
+- **「工具开关」节**：按需声明改成一张 `SettingCard`（`Sparkle24`）；批量按钮与计数移到卡片下方一行；
+  工具分组列表保留（它本来就是按组分的）。
+- **描述压短**：`Tools_Desc` / `Tools_AutoRoute_Desc` / `ShowInMainWindow_Desc` / `Confirm_Desc` / `Esi_Desc` /
+  `Restore_Desc` 中英各重写为 1–2 句；删掉因改版失效的 `AssistantSettingPage_Behavior_Desc`（保持 0 死键）。
+- **markdown 残留清零**：`**加粗**` 在 WPF 里会**原样显示星号**（TextBlock / SettingCard 不渲染 markdown）——
+  共修 5 个中文键、3 个英文键，含一处历史遗留（`AiTranslation_Chat_UseContext_Tip`）。
+
+#### 二、验证
+
+- `ui` 套件 80 → **82 条**：新增 ① **全量扫描**——两份语言字典里任何值都不含 `**`（防再生）；
+  ② 「行为」节 ≥6 张 SettingCard 且 ≥4 条分隔线；③ 「ESI」节 ≥7 张卡且 ≥6 条线。
+  附带确认「模型」节 11 卡 / 9 线、「翻译」节 6 卡 / 3 线本来就合规。
+- 全量 `all` = **1067 PASS / 0 FAIL**；构建 0 错误；语言键中英各 **2281**（删 1 键）、0 重复、键集一致。
+
+#### 三、追加修复：三级详情首行多出一段高度（用户实机截图反馈）
+
+- **症状**：「设置 › AI › 行为」的正文与面包屑之间空了一段，比其它设置子页明显靠下。
+- **根因（量化，探针实测）**：AI 页三级详情是 `ContentControl Margin="36,24,36,32"`（24）+ 节标题自身 `Margin="0,24,0,8"`（24）
+  = **48px**；其它设置子页是根 `Margin="36,0,36,40"`（0）+ 节标题（24）= **24px** → AI 页**多 24px**。
+  另外「模型」「翻译」两节当时**没有节标题**（首行距页顶 24px），与「行为/ESI」的 48px 也不齐——同一个页面里两种间距。
+- **修法**：`SectionHost` 顶部边距 24 → **0**（交给节标题自己的 24px，与其它设置页同一套）；
+  给「模型」「翻译」补 `SettingsSectionHeader`（`AssistantSettingPage_Model` / `_Translate`）→ **五节首行一律 24px**。
+- **验证**：`ui` 新增「三级详情首行与其它设置页齐平」断言——把 AI 节标题与参考页（通用设置）首行分别换算成各自页面的 Y，
+  差值必须 ≤ 4px；实测 **AI 24.0px vs 参考 24.0px**（全量 `all` = **1068 PASS / 0 FAIL**）。这条就是防复发的机器判据。
+
+### 阶段 130：AI 全局快捷键默认不启用（保留输入框提示）
+
+> 用户要求：「AI 默认不启用快捷方式，但是保留输入框提示的默认快捷方式」。
+
+#### 一、改法
+
+- `AiAssistantSettingService`：`DefaultHotkey` 由 `"Alt+Q"` 改成**空**（= 不启用）；
+  新增 `HotkeyHint = "Alt+Q"` 专门当**输入框提示**（占位文本，不参与默认值）——两者分开后，
+  "默认空"不会把提示也一起带走。
+- `MainWindow.RegisterAssistantHotkey()` 本来就有"空 = 不注册"的分支，**无需改动**。
+- 设置页：快捷键输入框的占位文本改由代码设成 `HotkeyHint`（XAML 不再硬编码 `Alt+Q`，避免两处漂移）。
+- 「恢复默认」**现在也把快捷键复位成不启用**：早先的行为是"保持快捷键不变"（当时默认就是 Alt+Q，复位无意义）；
+  既然"不启用"成了默认值，恢复默认就该恢复它。`RestoreDefaults` 的注释与 `_Restore_Desc` 文案同步更新。
+- 文案：`AssistantSettingPage_Hotkey_Desc` 中英各改为"默认留空 = 不启用；想开启就填一个组合键（如 Alt+Q / Ctrl+Alt+A）"。
+- **不动已有用户的数据**：settings.json 里已存 `Assistant.Hotkey = "Alt+Q"` 的照旧生效；
+  想关掉就在设置里清空那个框并保存（或按「恢复默认」）。
+
+#### 二、验证
+
+- `ui` 套件 83 → **86 条**：`DefaultHotkey` 为空、`HotkeyHint` 仍是 `Alt+Q`、
+  设置页输入框的 `PlaceholderText` 等于 `HotkeyHint`（提示确实保留下来了）。
+- 全量 `all` = **1071 PASS / 0 FAIL**；构建 0 错误；语言键中英各 **2281**；markdown 残留 0。
 
 ## 8. 已知限制与待办
 
@@ -7040,6 +7210,14 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
      ② 要么由产品侧公开一个挂载点直接驱动（本次加了 `SettingsPage.AttachDetailBreadcrumb`）；
      ③ **不要**写"Frame.Content 是某页""子页在可视树里"这类断言——在这个环境里必然假失败。
 
+102. **WPF 标记编译会偶发整片失败：一堆 `CS0103: 当前上下文中不存在名称 InitializeComponent / XxxBox / Transcript`**
+     （阶段 129 实测，跨越大量毫不相关的 XAML：`IntelMapView`、`ColorPickerView`、`KbFilterPairControl`…）：
+     这类"所有 XAML 的 x:Name 字段都找不到"的错误**不是代码问题**，而是 `*_wpftmp.csproj` 那一遍
+     （MarkupCompilePass2 前的中转编译）非确定性地没跑成/没把生成的 `.g.cs` 带上。
+     **处置：原样重跑一次 `dotnet build`**——本轮就是这么从"几十个错误"变回"0 错误"的；
+     重跑仍失败才去查 `obj`（必要时清掉该工程的 `obj`）或是不是并行构建在互抢中间产物。
+     ⚠️ 别在这时候去改代码：错误集合与你的改动**无关**是它最明显的特征（本次报错的文件一处都没动过）。
+
 ---
 
 ## 10. 主要文件清单
@@ -7345,7 +7523,7 @@ Views/Pages/AiAssistantPage.xaml(.cs)        助手页（导航项 Nav.Assistant
 Views/UserControls/AiAssistantChatView.xaml(.cs) / AssistantPopup.cs    对话视图 + 弹窗宿主
 Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  设置 → AI 助手（行为 + ESI 全量访问 + 系统提示词）
 probe/AssistantProbe/                        离线探针（toolcall / engine / tools / quickroute / map / business /
-                                             writes / ui / esi / tokens / routing，11 套共 1045 断言，`all` 一次跑完）
+                                             writes / ui / esi / tokens / routing，11 套共 1071 断言，`all` 一次跑完）
 ```
 - 模型端点**复用「设置 → AI 翻译」**的端点（协议 / 地址 / Key / 模型），助手只放自己的行为参数。
 - 每次工具调用都会记一条 INFO（`AI 助手 · 工具 <name> 成功 · 1.23s · <参数摘要>`），排障先看它。

@@ -1640,8 +1640,8 @@ esi_write(operation, path?, query?, body?, characterName?)               → 写
   检索与权限过滤、`Find` 容错（大小写 / `VERB /path` / 纯路径 / 歧义片段返回 null）、URL 构造与参数校验（缺必填、数组参数、URL 编码、语言头）、
   黑名单与错误归一化（403 分 scope / 军团职位、404、420、401、5xx）、整形器（表格 / 行数上限 / 截断 / 非法 JSON）、
   工具面（注册 / schema / 只读写分工 / 确认摘要），以及**一次真实匿名 `GET /status` 冒烟**（连不上时 SKIP 而非 FAIL）。
-- 全部套件 `all`：**1045 PASS / 0 FAIL**（toolcall 124 / engine 62 / tools 446 / quickroute 29 / map 45 / business 15 /
-  writes 71 / ui 58 / esi 163 / tokens 9 / routing 23），退出码 0；构建 0 错误 0 新警告；语言键 2280/2280、0 重复、中英一致。
+- 全部套件 `all`：**1071 PASS / 0 FAIL**（toolcall 124 / engine 62 / tools 446 / quickroute 29 / map 45 / business 15 /
+  writes 71 / ui 86 / esi 163 / tokens 9 / routing 23），退出码 0；构建 0 错误 0 新警告；语言键 2280/2280、0 重复、中英一致。
   （`tokens` 是阶段 122 的声明预算与缓存契约套件，`routing` 是阶段 123 的按需声明套件，
   `ui` 在阶段 124/125 扩到 58 条——钻取式菜单、设置壳页面包屑联动、**图标颜色跟随主题**、
   语言字典能各自独立加载且键集一致。）
@@ -1728,7 +1728,7 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
 
 - `toolcall` 套件 **80 → 121**（+41 条 DSML 断言：真实形状、两种块名、ASCII 竖线、类型语义、直接 JSON、多调用、
   正文保留、句末标记、普通回答回归、截断/空块的错误文案、`ParseResponse` 集成、标准优先、流式拦截、前缀补吐、`FindLoose`）；
-  全量 `all` = **953 PASS / 0 FAIL**（阶段 125 后为 1045，见 §20.8）。
+  全量 `all` = **953 PASS / 0 FAIL**（阶段 130 后为 1071，见 §20.13）。
 - **配置层面的顺带发现（未改用户文件）**：该账号当时 `MaxTokens = 1024`，而 44 个工具声明使单次请求输入约 **11.6k token**；
   输出上限偏小会同时放大"工具调用 JSON 被截断"和"答案被截断"两个风险。
   → **阶段 121 已处理**：默认改成 0（不下发，交给服务端默认），并加了逐工具开关压缩那 11.6k（见 §20）。
@@ -1757,7 +1757,7 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
 |---|---|---|
 | ① 模型 | 协议 / 服务地址 / **API Key** / 模型名 / api-version / 测试连接 + 生成参数（温度 / 思考模式 / **最大输出 token** / 超时 / 流式）· `AiModelSettingView` | `Llm.AiModelSettings` → `Ai.*` |
 | ② 翻译 | 术语库（开关 / 条数上限 / 状态与重新载入）+ 翻译行为（单次请求最大字符数 / 结果缓存与清空）+ 自定义翻译提示词 · `AiTranslationSettingView` | `AiTranslationSettings` → `Ai.Translation.*` |
-| ③ 行为 | 最大工具轮数 / 默认角色 / 写操作确认 / 全局快捷键 / 助手系统提示词（`AiBehaviorSettingView`） | `Assistant.*` |
+| ③ 行为 | 最大工具轮数 / 默认角色 / 写操作确认 / 全局快捷键（**默认不启用，留空即可**）/ 助手系统提示词（`AiBehaviorSettingView`） | `Assistant.*` |
 | ④ ESI 全量访问 | 网关开关 / 允许写 / ID 富化 / 页数上限 / 结果字符上限 / 错误配额阈值 / 禁止调用的路径（§18.5，`AiEsiSettingView`） | `Assistant.Esi.*` |
 | ⑤ 工具开关 | 按需声明开关（§20.6）+ 44 个工具逐个启用/停用 + 全部启用/禁用 + "已关闭 N / 44" 计数（§20.2，`AiToolsSettingView`） | `Assistant.Tools.*` |
 
@@ -1836,7 +1836,7 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
   变化时记 INFO：`AI 助手 · 按需声明：套餐 Business · 12/44 个工具 · 约 10435 字符`）、
   `AssistantContext.StickyTools`（界面从会话历史填充）、设置 `Assistant.Tools.AutoRoute`（默认开）。
 - **验收**：新增 `routing` 套件 23 条（确定性/字典序/核心常驻/套餐命中/两组上限/回退/粘性/**
-  用户关闭的工具永不声明**/节省比例/有限前缀）；全量 `all` = **1006 PASS / 0 FAIL**（阶段 125 后为 1045，见 §20.8）。
+  用户关闭的工具永不声明**/节省比例/有限前缀）；全量 `all` = **1006 PASS / 0 FAIL**（阶段 130 后为 1071，见 §20.13）。
 
 ### 20.7 钻取式二级/三级菜单 + 语言字典完整性（阶段 124）
 
@@ -1859,7 +1859,7 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
   「ESI」（3 开关 / 3 数字框）→「工具开关」（**45 个开关**且**没有别的节的数字框**，即"点开才加载"的机械证据）→
   面包屑返回（列表重新可见、三级内容已卸下）→ 未知分节键返回 false 并留在二级菜单；
   设置壳页侧再验两个方向（AI 页进「行为」→ 外层面包屑第三段显示「行为」；点面包屑里的「AI」→ 页面回二级菜单、
-  第三段收起）；全量 `all` = **1034 PASS / 0 FAIL**（阶段 125 后为 1045，见 §20.8）。
+  第三段收起）；全量 `all` = **1034 PASS / 0 FAIL**（阶段 130 后为 1071，见 §20.13）。
 
 #### 语言字典完整性（新断言，+4 条）
 
@@ -1899,3 +1899,79 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
   旧值留在用户的 settings.json 里（不动用户文件），但没有任何代码读它；用户需在「设置 → AI → 模型」重新填一次。
 - **验证**：`ui` 49 → **58** 条（新增图标颜色 3 条 + 模型/翻译两节各自的控件断言，并要求「翻译」节里**没有模型端点控件**）；
   全量 `all` = **1045 PASS / 0 FAIL**；语言键中英各 **2280**（+5 −2）、0 重复、键集一致。
+
+### 20.9 AI 助手是常驻入口（阶段 126，只放页脚）
+
+> 用户要求：「AI 助手功能不应该是一个普通的功能菜单，而是像设置那样是一个永远保持可见的入口」。
+
+- **页脚第一项（设置之上）**：助手从 `MenuItems`（会滚动）搬到 `FooterMenuItems`… 见 REFACTORING 阶段 126。
+- ~~标题栏常驻按钮~~：**已按用户要求去掉**，只留页脚入口。备查：WPF-UI 4.3 的 `TitleBar` 不是 `ContentControl`（`MC3028`/`MC3074`），
+  所以按钮与 TitleBar 同层右对齐，右侧留出系统按钮宽度（3×46）。导航面板完全收起时页脚项也看不到，这个按钮还在。
+- **顺带修掉一处真缺陷**：`MainWindow.xaml` 的三处 `pack://application:,,,/Assets/...` 没带程序集名，
+  按入口程序集解析 → 从探针构造主窗口时报 `IOException: 找不到资源 assets/app.ico`（§9 第 99 条"真因在内层"）。
+  改成 `;component/` 形式后主窗口可从探针构造。
+- **验收**：`ui` 58 → **63** 条（真构造 `MainWindow`：助手在页脚、不在滚动菜单、页脚顺序 + 标题栏没有助手按钮）；
+  全量 `all` = **1048 PASS / 0 FAIL**；语言键中英各 **2280**。
+
+### 20.10 主页 banner 的快捷提问 = 新开对话（阶段 127）
+
+> 用户反馈：banner 快捷输入的回答会"在上一次对话里继续"，应该单独开一个新对话。
+
+- **根因**：banner → `Navigation.NavigateToAssistant(query)` → VM 的待办提问路径 → `SubmitQuery` →
+  `SendAsync` 用的是 `SelectedSession ?? CreateSession()`，于是这条"随手一问"被塞进上次选中的对话。
+- **改法**：新增 `SubmitExternalQuery`（外部入口专用）= 先 `BeginExternalConversation()` 新开并选中对话，再发送；
+  两个待办消费点改调它。`SubmitQuery`（页面输入框 / 弹窗回车）保持"续在当前对话"。
+  另外 `SubmitExternalQuery` **先查配置再建对话**——未配置时只提示，不会留下一个空的「新对话」。
+- **弹窗（Alt+Q）**与助手页共用同一份 ViewModel：banner 开了新对话后，弹窗里接着说 = 同一个对话（符合直觉）；
+  "每次弹窗都强制新开"没有做（用户只提 banner，且那会让"弹窗追问"无法继续）。
+- **验收**：`ui` 63 → **67** 条（新开并选中 / 插在最前 / 后续提问落在新对话 / 未配置不留空对话——本机已配置则跳过并打印原因）；
+  全量 `all` = **1052 PASS / 0 FAIL**。
+
+### 20.11 AI 显示位置可选：主窗口 vs 独立窗口（阶段 128）
+
+> 用户要求：设置里加「AI 功能是否在主窗口显示」，**默认不勾**；不勾时所有入口（含主页 banner）都在新窗口显示。
+
+- **设置**：`Assistant.ShowInMainWindow`（默认 false，`AiAssistantSettingService.DefaultShowInMainWindow`），
+  位于「设置 → AI → 行为」；「恢复默认」复位为 false。
+- **分发**：纯函数 `AssistantEntryRouter.ShouldOpenWindow(showInMainWindow, pageType)` 是三处入口的唯一判定点——
+  ① `Navigation.NavigateToAssistant`（banner / 快捷路由）→ 窗口模式开窗口并把问题交给它（新开对话）；
+  ② `Navigation.Navigate`（主页磁贴等程序化导航）→ 同样改走窗口；
+  ③ `MainWindow.OnNavigationViewNavigating`（页脚常驻项点击）→ `args.Cancel = true` 改开窗口。
+- **窗口**：`AssistantPopup` → 公开的 `Views/Windows/AssistantWindow`（`Show`/`Toggle`/`Close`/`IsOpen`/`CurrentWindow`），
+  与助手页共用同一份 ViewModel；重复 `Show` 只激活，不开一堆。
+- **抛光**：独立窗口里的对话视图隐藏「弹窗」按钮（点它只会关掉自己），判定是纯函数
+  `AiAssistantChatView.ShouldShowPopWindowButton(host, assistantWindow)`。
+- **顺手**：全项目 16 个窗口 XAML 的 28 处 `pack://application:,,,/Assets/...` 统一补上程序集名
+  （`;component/`）——真机等价，探针从此能真构造这些窗口。
+- **验收**：`ui` 63 → **80** 条；`quickroute` 的转助手断言临时切主窗口模式并**按字节还原** settings.json
+  （实测 SHA256 前后一致）；全量 `all` = **1064 PASS / 0 FAIL**；语言键中英各 **2282**。
+
+### 20.12 AI 设置详情页：SettingCard 逐行 + 无 markdown（阶段 129）
+
+> 用户反馈：行为 / ESI 全量的选项"全挤在一起"、描述文字太多、还有 md 格式残留。
+
+- **统一观感**：「行为」节 = 6 张 `controls:SettingCard` + 4 条 `SettingsDivider`（轮数 / 默认角色 / 写确认 /
+  **在主窗口中显示 AI** / 快捷键，系统提示词单独一节一张卡）；「ESI 全量访问」节 = 7 张卡 + 6 条线；
+  「工具开关」节的按需声明也改成一张卡（批量按钮与计数移到卡片下方一行）。分组标题一律 `SettingsSectionHeader`，
+  与「通用设置」等页一致。（「模型」11 卡 / 9 线、「翻译」6 卡 / 3 线本来就合规。）
+- **描述压短**：`Tools_Desc` / `Tools_AutoRoute_Desc` / `ShowInMainWindow_Desc` / `Confirm_Desc` / `Esi_Desc` /
+  `Restore_Desc` 中英各重写为 1–2 句；删掉失效的 `AssistantSettingPage_Behavior_Desc`（保持 0 死键）。
+- **markdown 清理**：WPF 的 TextBlock / SettingCard **不渲染 markdown**，`**加粗**` 会原样显示星号；
+  本轮修掉 5 个中文键 / 3 个英文键（含历史遗留 `AiTranslation_Chat_UseContext_Tip`），并加**全量扫描断言**防再生。
+- **验收**：`ui` 80 → **83** 条（含"语言值里没有 `**`"的全局扫描、两节的卡片/分隔线计数、**三级详情首行与其它设置页齐平**）；
+  全量 `all` = **1068 PASS / 0 FAIL**；语言键中英各 **2281**。
+- **追加修复（用户截图反馈）**：三级详情首行比其它设置页**多 24px**（`SectionHost` 顶部边距 24 + 节标题自身 24 = 48，而其它页是 0+24=24），
+  且「模型」「翻译」缺节标题导致同页两种间距 → 顶部边距改 0 + 两节补 `SettingsSectionHeader`，五节首行一律 24px；
+  探针实测 **AI 24.0px vs 参考 24.0px**。
+
+### 20.13 全局快捷键默认不启用（阶段 130）
+
+> 用户要求：「AI 默认不启用快捷方式，但是保留输入框提示的默认快捷方式」。
+
+- `Assistant.DefaultHotkey` 由 `Alt+Q` 改成**空**（默认不注册）；新增 `Assistant.HotkeyHint = "Alt+Q"` 只做
+  **输入框占位提示**——默认值与提示从此是两个常量，改一个不会带走另一个。
+- `MainWindow.RegisterAssistantHotkey()` 早有"空 = 不注册"分支，无需改动；设置页的占位文本改由代码设成 `HotkeyHint`。
+- 「恢复默认」现在**也复位快捷键**（恢复成不启用）——早先"保持快捷键不变"的前提（默认就是 Alt+Q）已不成立。
+- 已有用户的 `Assistant.Hotkey` 值不动：照旧生效，想关掉就清空该输入框保存（或按恢复默认）。
+- **验收**：`ui` 83 → **86** 条（默认值为空 / 提示仍是 Alt+Q / 输入框 PlaceholderText == HotkeyHint）；
+  全量 `all` = **1071 PASS / 0 FAIL**。

@@ -1403,7 +1403,7 @@
     <sys:String x:Key="AiTranslation_Chat_Generating">正在翻译…</sys:String>
     <sys:String x:Key="AiTranslation_Chat_PendingCount">正在翻译 {0} 条…</sys:String>
     <sys:String x:Key="AiTranslation_Chat_UseContext">带上上下文（本对话）</sys:String>
-    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">勾上后，本对话**每次**翻译都会把此前所有成功的原文/译文一起发给模型（不限条数）；取消勾选则每次只翻当前这一条。</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">打开后，本对话每次提问都会带上此前成功的问答（不限条数）</sys:String>
     <sys:String x:Key="AiTranslation_Chat_ContextOn">已开启：每次带上此前 {0} 条记录</sys:String>
     <sys:String x:Key="AiTranslation_Chat_ContextOff">未开启：每次只翻当前这一条</sys:String>
     <sys:String x:Key="AiTranslation_Chat_Expand">展开</sys:String>
@@ -2333,14 +2333,13 @@
     <sys:String x:Key="AssistantSettingPage_Section_Behavior">工具轮数 / 默认角色 / 写操作确认 / 快捷键 / 系统提示词</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Esi">把 ESI 的 197 个操作开放给助手（含写操作确认）</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Tools">按需声明 + 逐个启用/停用 44 个工具</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Behavior_Desc">助手的运行参数：最多几轮工具调用、默认用哪个角色、写操作要不要确认、以及弹出助手的全局快捷键。下面的系统提示词留空就用内置的（阶段 106 起的内置提示词已包含 ESI 网关用法与 403 措辞规范）。</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Restore_Desc">只重置助手的参数（轮数 / 提示词 / 确认 / 默认角色 / ESI / 工具开关 / 按需声明），不会动模型端点与 API Key。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore_Desc">只重置助手参数（轮数/提示词/确认/默认角色/快捷键/ESI/工具开关/按需声明/显示位置），不动模型端点与 API Key。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Model">模型</sys:String>
     <sys:String x:Key="AssistantSettingPage_Translate">翻译</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools">工具开关</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Tools_Desc">逐个启用/停用助手可用的工具。**关掉的工具不会下发给模型**——既省每次请求的输入 token，也避免模型选到你不想要的能力；模型万一硬报被关的工具名，执行侧也会直接拒绝。新增的工具默认开启。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Desc">逐个启用或停用助手可用的工具。关掉的既不下发给模型（省输入 token），模型硬报它的名字时执行侧也会拒绝；新增工具默认开启。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">按需声明（省 token）</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">开启后只把"与本次提问相关的套餐"发给模型：商业／角色／星图／频道／通用里最多选两组，再叠加常驻的 ESI 网关与名字解析／翻译／角色清单，以及本对话用过的工具。看不出意图时自动回退成声明全部——**只省有把握的地方**。关掉则每次都声明全部已启用工具。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">只把与本次提问相关的工具组发给模型（最多两组），再叠加常驻的 ESI 网关等入口；看不出意图时自动声明全部。关掉则每次都声明全部已启用工具。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">全部启用</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_DisableAll">全部禁用</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Count">已关闭 {0} / {1} 个工具</sys:String>
@@ -2357,9 +2356,11 @@
     <sys:String x:Key="AssistantSettingPage_DefaultCharacter_Tip">留空 = 第一个角色</sys:String>
     <sys:String x:Key="AssistantSettingPage_DefaultCharacter_Desc">问「我的钱包」「我的技能」这类问题时使用哪个角色（填角色全名；留空用第一个角色）。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Confirm">写操作需要确认</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Confirm_Desc">关闭后**不是免确认**：助手会直接拒绝这类操作并说明原因——修改软件配置的操作永远需要显式确认。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ShowInMainWindow">在主窗口中显示 AI</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ShowInMainWindow_Desc">不勾（默认）时，AI 的所有入口都用独立窗口打开，主窗口保持你正在看的页面；勾上则把助手页放在主窗口里。快捷键 Alt+Q 始终弹独立窗口。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Confirm_Desc">关闭后不是免确认：助手会直接拒绝写操作并说明原因。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey">全局快捷键</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">在任意程序里按下即可直接弹出助手窗口（再按一次收起）；留空 = 不注册。格式如 Alt+Q / Ctrl+Alt+A。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">在任意程序里按下即可弹出助手窗口（再按一次收起）。默认留空 = 不启用；想开启就填一个组合键，格式如 Alt+Q / Ctrl+Alt+A。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Prompt">自定义系统提示词</sys:String>
     <sys:String x:Key="AssistantSettingPage_Prompt_Desc">留空使用内置提示词（已包含"数字以工具为准、查不到就说查不到、注入防护"等规则）。改这里会整体替换这些规则。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Prompt_Tip">留空 = 使用内置提示词</sys:String>
@@ -2393,7 +2394,7 @@
     <sys:String x:Key="AssistantTool_esi_read">ESI 只读调用</sys:String>
     <sys:String x:Key="AssistantTool_esi_write">ESI 写操作</sys:String>
     <sys:String x:Key="AssistantSettingPage_Esi">ESI 全量访问</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Esi_Desc">把 ESI（EVE 官方接口）的全部 197 个操作开放给 AI 助手：助手先检索端点、查看参数，再调用。只读端点直接执行，写端点（发邮件、改联系人、舰队操作等）每次都要你确认。专用工具（市场／角色／星图…）仍优先使用，通用网关用来覆盖其余长尾能力。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Esi_Desc">把 ESI 的全部 197 个操作开放给助手：只读端点直接执行，写端点每次都要你确认；专用工具优先，网关覆盖其余长尾能力。</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiEnabled">启用 ESI 通用网关</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiEnabled_Desc">关闭后 4 个 esi_* 工具直接拒绝调用（专用工具不受影响）。</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiWrites">允许 ESI 写操作</sys:String>

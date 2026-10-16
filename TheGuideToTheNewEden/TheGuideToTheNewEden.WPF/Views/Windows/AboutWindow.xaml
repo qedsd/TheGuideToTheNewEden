@@ -9,7 +9,7 @@
     MinWidth="380"
     MinHeight="320"
     ExtendsContentIntoTitleBar="True"
-    Icon="pack://application:,,,/Assets/app.ico"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
     ResizeMode="CanResize"
     ShowInTaskbar="False"
     WindowBackdropType="Mica"
@@ -26,7 +26,7 @@
             Height="34"
             Title="{DynamicResource Home.Action.About}">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+                <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
@@ -39,7 +39,7 @@
                     Width="64"
                     Height="64"
                     HorizontalAlignment="Left"
-                    Source="pack://application:,,,/Assets/logo_128.png" />
+                    Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_128.png" />
 
                 <TextBlock
                     Margin="0,12,0,0"

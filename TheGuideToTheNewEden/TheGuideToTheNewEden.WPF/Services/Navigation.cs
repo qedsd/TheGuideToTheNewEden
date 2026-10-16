@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using TheGuideToTheNewEden.WPF.Services.Assistant;
 
 namespace TheGuideToTheNewEden.WPF.Services;
 
@@ -11,8 +12,19 @@ public static class Navigation
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+    /// <summary>
+    /// 导航到某页；**助手页是例外**（阶段 128）：设置里「在主窗口中显示 AI」不勾（默认）时，
+    /// 程序化导航（主页磁贴、快捷路由…）也一律改成打开独立窗口，免得绕过导航项的拦截。
+    /// （导航项自身的点击由 <c>MainWindow.OnNavigationViewNavigating</c> 拦截，两条路都通向同一个窗口。）
+    /// </summary>
     public static void Navigate(Type pageType)
     {
+        if (AssistantEntryRouter.ShouldOpenWindow(AiAssistantSettingService.ShowInMainWindow, pageType))
+        {
+            Views.Windows.AssistantWindow.Show(App.MainWindow);
+            return;
+        }
+
         App.MainWindow?.NavigationView.Navigate(pageType);
     }
 
@@ -209,11 +221,25 @@ public static class Navigation
     /// <summary>AI 助手页请求"处理这条自然语言请求"。助手页已就绪时立即收到，否则由页面加载后取走。</summary>
     public static event Action<string>? AssistantQueryRequested;
 
-    /// <summary>跳转到 AI 助手页并让它处理这条请求（同时把主窗口置前）。</summary>
+    /// <summary>
+    /// 打开 AI 助手并让它处理这条请求（同时把主窗口/助手窗口置前）。
+    /// <para>
+    /// 走哪一边由 <see cref="AssistantEntryRouter"/> 决定（阶段 128）：设置里「在主窗口中显示 AI」勾选时
+    /// 仍旧导航到主窗口里的助手页；**不勾（默认）时改用独立窗口**，请求交给它直接发送
+    /// （<c>SubmitExternalQuery</c> ⇒ 按阶段 127 的约定新开一个对话）。
+    /// </para>
+    /// </summary>
     public static void NavigateToAssistant(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
+            return;
+        }
+
+        if (AssistantEntryRouter.ShouldOpenWindow(AiAssistantSettingService.ShowInMainWindow, typeof(Views.Pages.AiAssistantPage)))
+        {
+            Views.Windows.AssistantWindow.Show(App.MainWindow, query);
+            Activate();
             return;
         }
 

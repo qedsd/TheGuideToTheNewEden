@@ -2,97 +2,97 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.Settings.AiToolsSettingView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
-    <!--  设置 → AI → 「工具开关」：按需声明 + 44 个工具逐个启用/停用  -->
+    <!--  设置 → AI → 「工具开关」：按需声明（SettingCard）+ 批量按钮 + 44 个工具的分组开关（阶段 129 统一观感）  -->
     <StackPanel Margin="0,0,0,40">
+        <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource AssistantSettingPage_Tools}" />
+        <TextBlock
+            Margin="0,0,0,8"
+            FontSize="12"
+            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+            Text="{DynamicResource AssistantSettingPage_Tools_Desc}"
+            TextWrapping="Wrap" />
+
         <Border Style="{StaticResource SettingsGroupBorder}">
-            <StackPanel Margin="16,12">
-                <TextBlock
-                    FontSize="14"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="{DynamicResource AssistantSettingPage_Tools}" />
-                <TextBlock
-                    Margin="0,2,0,0"
-                    FontSize="12"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{DynamicResource AssistantSettingPage_Tools_Desc}"
-                    TextWrapping="Wrap" />
+            <controls:SettingCard
+                Description="{DynamicResource AssistantSettingPage_Tools_AutoRoute_Desc}"
+                Icon="Sparkle24"
+                Title="{DynamicResource AssistantSettingPage_Tools_AutoRoute}">
+                <ui:ToggleSwitch x:Name="ToolRouteToggle" />
+            </controls:SettingCard>
+        </Border>
 
-                <!--  按需声明（阶段 123）：只声明与提问相关的套餐 + 核心常驻工具  -->
-                <ui:ToggleSwitch
-                    x:Name="ToolRouteToggle"
-                    Margin="0,10,0,0"
-                    Content="{DynamicResource AssistantSettingPage_Tools_AutoRoute}" />
-                <TextBlock
-                    Margin="0,2,0,0"
-                    FontSize="12"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{DynamicResource AssistantSettingPage_Tools_AutoRoute_Desc}"
-                    TextWrapping="Wrap" />
+        <StackPanel
+            Margin="0,12,0,0"
+            Orientation="Horizontal">
+            <ui:Button
+                Click="OnEnableAllToolsClick"
+                Content="{DynamicResource AssistantSettingPage_Tools_EnableAll}" />
+            <ui:Button
+                Margin="8,0,0,0"
+                Click="OnDisableAllToolsClick"
+                Content="{DynamicResource AssistantSettingPage_Tools_DisableAll}" />
+            <TextBlock
+                x:Name="ToolCountText"
+                Margin="12,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
 
-                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                    <ui:Button Click="OnEnableAllToolsClick" Content="{DynamicResource AssistantSettingPage_Tools_EnableAll}" />
-                    <ui:Button
-                        Margin="8,0,0,0"
-                        Click="OnDisableAllToolsClick"
-                        Content="{DynamicResource AssistantSettingPage_Tools_DisableAll}" />
-                    <TextBlock
-                        x:Name="ToolCountText"
-                        Margin="12,0,0,0"
-                        VerticalAlignment="Center"
-                        FontSize="12"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
-
-                <!--  分组列出全部工具（44 个；分组只是界面归类，不参与存储）  -->
-                <ScrollViewer
-                    MaxHeight="460"
-                    Margin="0,10,0,0"
-                    Padding="0,0,16,0"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="ToolGroups">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="0,0,0,10">
-                                    <TextBlock
-                                        FontSize="13"
-                                        FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="{Binding Title}" />
-                                    <ItemsControl ItemsSource="{Binding Items}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="4,6,0,0">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                        <TextBlock
-                                                            FontSize="13"
-                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                            Text="{Binding DisplayName}" />
-                                                        <TextBlock
-                                                            FontSize="11"
-                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Text="{Binding Name}" />
-                                                    </StackPanel>
-                                                    <ui:ToggleSwitch
-                                                        Grid.Column="1"
-                                                        VerticalAlignment="Center"
-                                                        IsChecked="{Binding IsEnabled, Mode=TwoWay}" />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </StackPanel>
+        <!--  分组列出全部工具（44 个；分组只是界面归类，不参与存储）  -->
+        <Border
+            Margin="0,12,0,0"
+            Style="{StaticResource SettingsGroupBorder}">
+            <ScrollViewer
+                MaxHeight="460"
+                Margin="0,10,0,10"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="ToolGroups">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="16,0,16,10">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Title}" />
+                                <ItemsControl ItemsSource="{Binding Items}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel
+                                                    Grid.Column="0"
+                                                    VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        FontSize="13"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{Binding DisplayName}" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding Name}" />
+                                                </StackPanel>
+                                                <ui:ToggleSwitch
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    IsChecked="{Binding IsEnabled, Mode=TwoWay}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Border>
 
         <StackPanel
