@@ -153,7 +153,8 @@ public static class HomeFeatureLauncher
         "setting-market" => typeof(MarketSettingPage),
         "setting-structures" => typeof(StructuresSettingPage),
         "setting-esi-scope" => typeof(ESIScopeSettingPage),
-        "setting-ai-translation" => typeof(AiTranslationSettingPage),
+        // 阶段 121：AI 设置已合并到「AI 助手」页（id 沿用 setting-ai-translation，见 HomeFeatureCatalog 注释）
+        "setting-ai-translation" => typeof(AiAssistantSettingPage),
         "setting-glossary" => typeof(GlossarySettingPage),
         "setting-keyboard" => typeof(KeyboardListPage),
         "setting-test" => typeof(TestSettingPage),

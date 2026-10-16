@@ -78,7 +78,7 @@
     <!--
         状态胶囊：只显示纯数字（前面已有 People 图标，语义已足够），**不带"在线"字眼**。
         原值 "在线 {0}" 在胶囊里冗余，也挤压了同排其他状态项的宽度。
-
+        
         这里刻意**不留 format 键**：既然只剩数字，就不需要 string.Format 了
         （且资源值若写成 "{0}" 会被 XAML 当成标记扩展解析而报错，需额外转义，得不偿失）。
         数字由 ViewModel 直接格式化（千分位，中英一致），此处只保留"取不到"时的占位符。
@@ -167,7 +167,7 @@
     <sys:String x:Key="Home.Market.AllFavorites">全部收藏 ›</sys:String>
     <sys:String x:Key="Home.Market.More">还有 {0} 个</sys:String>
     <sys:String x:Key="Home.Market.Volume">销量</sys:String>
-    <sys:String x:Key="Home.Market.NoFavorite">还没有收藏物品。在「市场」页点物品右上角的星标，它就会出现在这里。</sys:String>
+    <sys:String x:Key="Home.Market.NoFavorite">还没有收藏物品。在「市场」页点物品的星标，它就会出现在这里。</sys:String>
     <sys:String x:Key="Home.Market.GoMarket">去市场页</sys:String>
     <sys:String x:Key="Home.Market.Note">最近一日历史均价与销量（伏尔戈）；点卡片看实时订单</sys:String>
 
@@ -1365,7 +1365,7 @@
     <sys:String x:Key="TranslationPage_AiManualHint">按回车或「翻译」才会发送请求</sys:String>
     <sys:String x:Key="TranslationPage_AiManualHint_Tip">AI 源按次计费，因此输入时不自动查询；改完内容请按回车或点「翻译」。</sys:String>
     <sys:String x:Key="TranslationPage_NoResultTip_Ai">未返回译文：AI 源按回车或点「翻译」才会请求，失败原因见右下角提示</sys:String>
-    <sys:String x:Key="TranslationPage_AiUnavailable">AI 翻译未配置：请在「设置 → AI 翻译」里选择协议并填写服务地址、API Key 与模型名。</sys:String>
+    <sys:String x:Key="TranslationPage_AiUnavailable">AI 翻译未配置：请在「设置 → AI 助手 → 模型与翻译」里选择协议并填写服务地址、API Key 与模型名。</sys:String>
     <sys:String x:Key="TranslationPage_Timeout">请求已中断或超时</sys:String>
 
     <!--  翻译：协议名（设置页下拉）  -->
@@ -1410,8 +1410,7 @@
     <sys:String x:Key="AiTranslation_Chat_Collapse">收起</sys:String>
 
     <!--  设置：AI 翻译  -->
-    <sys:String x:Key="SettingPage_AiTranslation">AI 翻译</sys:String>
-    <sys:String x:Key="SettingPage_AiTranslation_Desc">接入大模型做整句/上下文翻译；用本地数据库的中英词库约束专有名词</sys:String>
+    <sys:String x:Key="SettingPage_AiTranslation">AI 设置</sys:String>
     <sys:String x:Key="AiSettingPage_Protocol">协议</sys:String>
     <sys:String x:Key="AiSettingPage_Protocol_Desc">选择服务商的接口协议。国内服务商多数直接选「OpenAI 兼容」；Bedrock / Vertex 建议前面挂一层网关转成 OpenAI 协议。</sys:String>
     <sys:String x:Key="AiSettingPage_BaseUrl">服务地址</sys:String>
@@ -1449,7 +1448,9 @@
     <sys:String x:Key="AiSettingPage_GlossaryReady">已载入 {0} 条 · {1}</sys:String>
     <sys:String x:Key="AiSettingPage_GlossaryNotLoaded">尚未载入</sys:String>
     <sys:String x:Key="AiSettingPage_GlossaryLoading">正在载入…</sys:String>
-    <sys:String x:Key="AiSettingPage_Generation">生成与缓存</sys:String>
+    <sys:String x:Key="AiSettingPage_Generation">生成参数</sys:String>
+    <sys:String x:Key="AiSettingPage_TranslationBehavior">翻译行为</sys:String>
+    <sys:String x:Key="AiSettingPage_CustomPrompt">自定义翻译提示词</sys:String>
     <sys:String x:Key="AiSettingPage_Temperature">温度</sys:String>
     <sys:String x:Key="AiSettingPage_Temperature_Desc">翻译建议 0–0.3；设 0 表示不下发该参数（部分推理模型不接受）。</sys:String>
     <sys:String x:Key="AiSettingPage_MaxTokens">最大输出 token</sys:String>
@@ -2157,7 +2158,7 @@
     <sys:String x:Key="EveSettingsSyncPage_ProfileDuplicateTitle">复制配置文件</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameLabel">配置文件名称</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNamePlaceholder">输入名称…</sys:String>
-    <sys:String x:Key="EveSettingsSyncPage_ProfileCopySuffix"> - 副本</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileCopySuffix">- 副本</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameEmpty">名称不能为空</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameInvalid">名称不能包含 \ / : * ? " &lt; &gt; | 等字符</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameDuplicate">已存在同名配置文件</sys:String>
@@ -2284,7 +2285,7 @@
     <sys:String x:Key="Assistant_Chat_NoInput">请输入内容</sys:String>
     <sys:String x:Key="Assistant_Chat_AnswerEmpty">没有返回内容</sys:String>
     <sys:String x:Key="Assistant_Chat_Timeout">请求超时或中断</sys:String>
-    <sys:String x:Key="Assistant_AiUnavailable">助手未配置：请在「设置 → AI 翻译」里填写服务地址、API Key 与模型名（助手复用这份端点设置）</sys:String>
+    <sys:String x:Key="Assistant_AiUnavailable">助手未配置：请在「设置 → AI 助手 → 模型与翻译」里填写服务地址、API Key 与模型名（翻译与助手共用这一份端点设置）</sys:String>
     <sys:String x:Key="Assistant_NotConfigured_Title">先配置 AI 端点</sys:String>
     <sys:String x:Key="Assistant_NotConfigured_Support">支持 OpenAI 兼容 / Azure OpenAI / Anthropic / Gemini，配置一次翻译与助手共用。</sys:String>
     <sys:String x:Key="Assistant_GoConfigure">去配置</sys:String>
@@ -2325,9 +2326,30 @@
     <sys:String x:Key="Home.Quick.ToAssistant">已转到 AI 助手，正在为你处理…</sys:String>
 
     <!--  设置：AI 助手  -->
-    <sys:String x:Key="SettingPage_AiAssistant">AI 助手</sys:String>
-    <sys:String x:Key="SettingPage_AiAssistant_Desc">助手的工具轮数、默认角色、写操作确认、全局快捷键与自定义提示词</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Endpoint_Desc">模型端点复用「AI 翻译」的设置（协议 / 服务地址 / API Key / 模型名）——想换模型请到「设置 → AI 翻译」。</sys:String>
+    <sys:String x:Key="SettingPage_AiAssistant">AI</sys:String>
+    <sys:String x:Key="SettingPage_AiAssistant_Desc">模型、翻译、助手行为、ESI 全量访问、工具开关（点一项看详情）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Model">协议 / 地址 / API Key / 模型名 / 生成参数（助手与翻译共用）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Translate">术语库 / 分段字符数 / 结果缓存 / 翻译提示词</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Behavior">工具轮数 / 默认角色 / 写操作确认 / 快捷键 / 系统提示词</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Esi">把 ESI 的 197 个操作开放给助手（含写操作确认）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Tools">按需声明 + 逐个启用/停用 44 个工具</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Behavior_Desc">助手的运行参数：最多几轮工具调用、默认用哪个角色、写操作要不要确认、以及弹出助手的全局快捷键。下面的系统提示词留空就用内置的（阶段 106 起的内置提示词已包含 ESI 网关用法与 403 措辞规范）。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore_Desc">只重置助手的参数（轮数 / 提示词 / 确认 / 默认角色 / ESI / 工具开关 / 按需声明），不会动模型端点与 API Key。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Model">模型</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Translate">翻译</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools">工具开关</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Desc">逐个启用/停用助手可用的工具。**关掉的工具不会下发给模型**——既省每次请求的输入 token，也避免模型选到你不想要的能力；模型万一硬报被关的工具名，执行侧也会直接拒绝。新增的工具默认开启。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">按需声明（省 token）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">开启后只把"与本次提问相关的套餐"发给模型：商业／角色／星图／频道／通用里最多选两组，再叠加常驻的 ESI 网关与名字解析／翻译／角色清单，以及本对话用过的工具。看不出意图时自动回退成声明全部——**只省有把握的地方**。关掉则每次都声明全部已启用工具。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">全部启用</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_DisableAll">全部禁用</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Count">已关闭 {0} / {1} 个工具</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Esi">ESI 网关（检索 / 说明 / 只读 / 写）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Character">角色</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Business">商业（市场 / 倒货 / 比价 / 估价）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Map">星图</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Channel">频道</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_General">通用与工具</sys:String>
     <sys:String x:Key="AssistantSettingPage_Behavior">行为</sys:String>
     <sys:String x:Key="AssistantSettingPage_MaxToolRounds">单次请求最大工具轮数</sys:String>
     <sys:String x:Key="AssistantSettingPage_MaxToolRounds_Desc">一次提问里助手最多连续调用几轮工具（防止模型连环调工具消耗额度）。默认 8，范围 1–30。</sys:String>
@@ -2364,12 +2386,28 @@
     <sys:String x:Key="AssistantTool_glossary_write">写入术语表</sys:String>
     <sys:String x:Key="AssistantTool_market_favorite">市场收藏</sys:String>
     <sys:String x:Key="AssistantTool_shopping_cart">倒货购物车</sys:String>
-    <sys:String x:Key="AssistantTool_character_assets">角色资产</sys:String>
-    <sys:String x:Key="AssistantTool_character_blueprints">角色蓝图</sys:String>
-    <sys:String x:Key="AssistantTool_character_standings">角色声望</sys:String>
-    <sys:String x:Key="AssistantTool_character_contacts">角色联系人</sys:String>
-    <sys:String x:Key="AssistantTool_character_loyalty">忠诚点</sys:String>
-    <sys:String x:Key="AssistantTool_character_calendar">角色日历</sys:String>
-    <sys:String x:Key="AssistantTool_character_medals">角色勋章</sys:String>
+
+    <!--  阶段 118：ESI 通用网关（esi_search / esi_describe / esi_read / esi_write）  -->
+    <sys:String x:Key="AssistantTool_esi_search">ESI 检索</sys:String>
+    <sys:String x:Key="AssistantTool_esi_describe">ESI 参数说明</sys:String>
+    <sys:String x:Key="AssistantTool_esi_read">ESI 只读调用</sys:String>
+    <sys:String x:Key="AssistantTool_esi_write">ESI 写操作</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Esi">ESI 全量访问</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Esi_Desc">把 ESI（EVE 官方接口）的全部 197 个操作开放给 AI 助手：助手先检索端点、查看参数，再调用。只读端点直接执行，写端点（发邮件、改联系人、舰队操作等）每次都要你确认。专用工具（市场／角色／星图…）仍优先使用，通用网关用来覆盖其余长尾能力。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnabled">启用 ESI 通用网关</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnabled_Desc">关闭后 4 个 esi_* 工具直接拒绝调用（专用工具不受影响）。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiWrites">允许 ESI 写操作</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiWrites_Desc">关闭后只允许只读端点。开启也不等于免确认：每次写操作仍会弹出确认卡片。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnrich">把 ID 补成名称</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnrich_Desc">ESI 返回里大量是裸 ID（钱包对手方、联系人、声望来源、资产类型与地点…）。开启后会自动补成「名称 (id)」，答案才读得懂；关闭则原样返回 ID（省下本地库查询）。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxPages">一次最多取几页</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxPages_Desc">助手在 allPages=true 时最多连续取几页（默认 10）。资产、蓝图这类多页数据靠它取全；整星域订单那种几百页的量级仍请用市场／倒货页。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxResultChars">单条结果字符上限</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxResultChars_Desc">单次工具结果回填给模型的字符上限（默认 3500，调大更费 token）。超长内容会自动截断并在结果里注明。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiErrorLimitFloor">错误配额阈值</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiErrorLimitFloor_Desc">ESI 会因短时间内错误过多而临时封禁。剩余错误配额低于该值时助手停止调用（默认 10，0 = 不检查）。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths">禁止调用的路径</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Tip">每行一条，支持 * 通配；例如 /characters/*/mail</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Desc">命中的端点永远不会被调用（用户确认也绕不过）。留空 = 不禁止任何端点。建议按需加入敏感写操作，例如 /characters/*/mail、/fleets/。</sys:String>
 
 </ResourceDictionary>

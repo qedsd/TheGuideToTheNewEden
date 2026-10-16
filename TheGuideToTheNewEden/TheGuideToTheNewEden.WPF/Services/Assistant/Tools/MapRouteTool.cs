@@ -15,9 +15,8 @@ public sealed class MapRouteTool : ITool
     public string DisplayNameKey => "AssistantTool_map_route";
 
     public string Description =>
-        "计算并在地图上标出从 A 星系到 B 星系的最短路径（可带途经点），途经玩家跳桥。参数 from/to/waypoints/avoid 都是星系名；" +
-        "navType 选 stargate（常规星门，默认）或 capital（旗舰跳跃，按最大跳距 maxJumpLy，默认 8 光年）。" +
-        "任一端星系名未找到或有歧义时不画图、返回原因。";
+        "计算两星系间最短路径并画到星图上：可走常规星门或旗舰跳跃，途经玩家跳桥，支持途经点与避让星系。" +
+        "适合「怎么去某地」「两地多远」「规划路线」。返回跳数并切换星图视图；星系名唯一命中才画图，否则只说明原因。";
 
     public JsonObject? Parameters => new()
     {
@@ -29,7 +28,7 @@ public sealed class MapRouteTool : ITool
             ["waypoints"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" }, ["description"] = "途经星系名（可选）" },
             ["navType"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "stargate", "capital" }, ["description"] = "路线类型（默认 stargate）" },
             ["avoid"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" }, ["description"] = "避开的星系名（可选）" },
-            ["maxJumpLy"] = new JsonObject { ["type"] = "number", ["description"] = "旗舰最大跳距光年（capital 时，默认 8）" },
+            ["maxJumpLy"] = new JsonObject { ["type"] = "number", ["description"] = "旗舰最大跳距光年（capital 时默认 8）" },
         },
         ["required"] = new JsonArray { "from", "to" },
     };

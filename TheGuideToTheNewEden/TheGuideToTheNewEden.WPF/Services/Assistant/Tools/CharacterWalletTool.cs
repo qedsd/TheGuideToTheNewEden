@@ -13,8 +13,8 @@ public sealed class CharacterWalletTool : ITool
     public string DisplayNameKey => "AssistantTool_character_wallet";
 
     public string Description =>
-        "查询某个角色的钱包余额与近期流水（时间/描述/类型/金额正负）。参数 characterName 用角色全名；省略用默认角色。" +
-        "top 控制流水条数（默认 10，上限 30）。适合「我钱包里有多少钱」「最近收支」。";
+        "查询某个角色的钱包余额与近期流水（时间/描述/类型/金额正负）。角色全名（省略 = 默认角色）；" +
+        "流水条数默认 10、上限 30。适合「我钱包里有多少钱」「最近收支」。";
 
     public JsonObject? Parameters => new()
     {

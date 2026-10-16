@@ -253,11 +253,12 @@ public sealed class ChannelTranslationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(DirectionText));
     }
 
-    /// <summary>打开「设置 → AI 翻译」。</summary>
+    /// <summary>打开「设置 → AI → 模型与翻译」（阶段 121 起模型端点与翻译设置都在那里）。</summary>
     public void OpenAiSettings()
     {
         Navigation.Navigate(typeof(Views.Pages.SettingsPage));
-        Views.Pages.SettingsPage.RequestCategory(typeof(Views.Pages.Settings.AiTranslationSettingPage));
+        Views.Pages.SettingsPage.RequestCategory(typeof(Views.Pages.Settings.AiAssistantSettingPage));
+        Views.Pages.Settings.AiAssistantSettingPage.RequestSection("Model");
         Navigation.Activate();
     }
 

@@ -263,7 +263,7 @@ public sealed class AiTranslationProvider : ITranslationProvider
         var chunk = chunkCount > 1 ? $"，第 {chunkIndex}/{chunkCount} 片" : string.Empty;
         var reasoning = raw is not null && raw.Contains("reasoning_content", StringComparison.Ordinal)
             ? "；该响应里只有思维链（reasoning_content），说明用的是推理模型——请换用普通对话模型，或把「最大输出 token」调大"
-            : "；可在「设置 → AI 翻译」调大「最大输出 token」（或设为 0 交给服务端默认）后重试";
+            : "；可在「设置 → AI 助手」调大「最大输出 token」（或设为 0 交给服务端默认）后重试";
 
         return $"模型没有返回译文（{reason}{chunk}）{reasoning}";
     }
@@ -282,7 +282,7 @@ public sealed class AiTranslationProvider : ITranslationProvider
 
     /// <summary>输出被模型输出上限截断时的提示（续写用尽或仍有截断时挂在术语提醒那一栏）。</summary>
     private const string TruncatedWarning =
-        "译文可能不完整：模型的输出上限把这一片截断了（已自动续写，仍未写完）。可以在「设置 → AI 翻译」把「最大输出 token」调大，或把「单次请求最大字符数」调小。";
+        "译文可能不完整：模型的输出上限把这一片截断了（已自动续写，仍未写完）。可以在「设置 → AI 助手」把「最大输出 token」调大，或把「单次请求最大字符数」调小。";
 
     /// <summary>一片最多自动续写几次。</summary>
     private const int MaxContinuations = 3;

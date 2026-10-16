@@ -1,0 +1,5393 @@
+{
+ "source": "https://esi.evetech.net/meta/openapi.json",
+ "generatedAt": "2026-10-16T03:07:25Z",
+ "specVersion": "2020-01-01",
+ "specTitle": "EVE SKINR Ingenuity (ESI) - tranquility",
+ "operationCount": 197,
+ "readOnlyPosts": [
+  "/characters/affiliation",
+  "/characters/{character_id}/assets/locations",
+  "/characters/{character_id}/assets/names",
+  "/characters/{character_id}/cspa",
+  "/corporations/{corporation_id}/assets/locations",
+  "/corporations/{corporation_id}/assets/names",
+  "/universe/ids",
+  "/universe/names"
+ ],
+ "operations": [
+  {
+   "id": "DeleteCharactersCharacterIdContacts",
+   "verb": "DELETE",
+   "path": "/characters/{character_id}/contacts",
+   "summary": "Delete contacts",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-characters.write_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "contact_ids",
+     "type": "array",
+     "required": true,
+     "desc": "A list of contacts to delete"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "DeleteCharactersCharacterIdFittingsFittingId",
+   "verb": "DELETE",
+   "path": "/characters/{character_id}/fittings/{fitting_id}",
+   "summary": "Delete fitting",
+   "tag": "Fittings",
+   "scopes": [
+    "esi-fittings.write_fittings.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "fitting_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fitting of this character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "DeleteCharactersCharacterIdMailLabelsLabelId",
+   "verb": "DELETE",
+   "path": "/characters/{character_id}/mail/labels/{label_id}",
+   "summary": "Delete a mail label",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.organize_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "label_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An EVE label id"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "DeleteCharactersCharacterIdMailMailId",
+   "verb": "DELETE",
+   "path": "/characters/{character_id}/mail/{mail_id}",
+   "summary": "Delete a mail",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.organize_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "mail_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An EVE mail ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "DeleteFleetsFleetIdMembersMemberId",
+   "verb": "DELETE",
+   "path": "/fleets/{fleet_id}/members/{member_id}",
+   "summary": "Kick fleet member",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "member_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The character ID of a member in this fleet"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "DeleteFleetsFleetIdSquadsSquadId",
+   "verb": "DELETE",
+   "path": "/fleets/{fleet_id}/squads/{squad_id}",
+   "summary": "Delete fleet squad",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "squad_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The squad to delete"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "DeleteFleetsFleetIdWingsWingId",
+   "verb": "DELETE",
+   "path": "/fleets/{fleet_id}/wings/{wing_id}",
+   "summary": "Delete fleet wing",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "wing_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The wing to delete"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "GetAlliances",
+   "verb": "GET",
+   "path": "/alliances",
+   "summary": "List all alliances",
+   "tag": "Alliance",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetAlliancesAllianceId",
+   "verb": "GET",
+   "path": "/alliances/{alliance_id}",
+   "summary": "Get alliance's public information",
+   "tag": "Alliance",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "alliance_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the alliance"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetAlliancesAllianceIdContacts",
+   "verb": "GET",
+   "path": "/alliances/{alliance_id}/contacts",
+   "summary": "Get alliance contacts",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-alliances.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "alliance_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the alliance"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetAlliancesAllianceIdContactsLabels",
+   "verb": "GET",
+   "path": "/alliances/{alliance_id}/contacts/labels",
+   "summary": "Get alliance contact labels",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-alliances.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "alliance_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the alliance"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetAlliancesAllianceIdCorporations",
+   "verb": "GET",
+   "path": "/alliances/{alliance_id}/corporations",
+   "summary": "List alliance's corporations",
+   "tag": "Alliance",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "alliance_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the alliance"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetAlliancesAllianceIdIcons",
+   "verb": "GET",
+   "path": "/alliances/{alliance_id}/icons",
+   "summary": "Get alliance icon",
+   "tag": "Alliance",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "alliance_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the alliance"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterId",
+   "verb": "GET",
+   "path": "/characters/{character_id}",
+   "summary": "Get character's public information",
+   "tag": "Character",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdAgentsResearch",
+   "verb": "GET",
+   "path": "/characters/{character_id}/agents_research",
+   "summary": "Get agents research",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_agents_research.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdAssets",
+   "verb": "GET",
+   "path": "/characters/{character_id}/assets",
+   "summary": "Get character assets",
+   "tag": "Assets",
+   "scopes": [
+    "esi-assets.read_assets.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdAttributes",
+   "verb": "GET",
+   "path": "/characters/{character_id}/attributes",
+   "summary": "Get character attributes",
+   "tag": "Skills",
+   "scopes": [
+    "esi-skills.read_skills.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdBlueprints",
+   "verb": "GET",
+   "path": "/characters/{character_id}/blueprints",
+   "summary": "Get blueprints",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_blueprints.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdCalendar",
+   "verb": "GET",
+   "path": "/characters/{character_id}/calendar",
+   "summary": "List calendar event summaries",
+   "tag": "Calendar",
+   "scopes": [
+    "esi-calendar.read_calendar_events.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "from_event",
+     "type": "integer",
+     "desc": "The event ID to retrieve events from"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdCalendarEventId",
+   "verb": "GET",
+   "path": "/characters/{character_id}/calendar/{event_id}",
+   "summary": "Get an event",
+   "tag": "Calendar",
+   "scopes": [
+    "esi-calendar.read_calendar_events.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "event_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The id of the event requested"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdCalendarEventIdAttendees",
+   "verb": "GET",
+   "path": "/characters/{character_id}/calendar/{event_id}/attendees",
+   "summary": "Get attendees",
+   "tag": "Calendar",
+   "scopes": [
+    "esi-calendar.read_calendar_events.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "event_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The id of the event requested"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdClones",
+   "verb": "GET",
+   "path": "/characters/{character_id}/clones",
+   "summary": "Get clones",
+   "tag": "Clones",
+   "scopes": [
+    "esi-clones.read_clones.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdContacts",
+   "verb": "GET",
+   "path": "/characters/{character_id}/contacts",
+   "summary": "Get contacts",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-characters.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdContactsLabels",
+   "verb": "GET",
+   "path": "/characters/{character_id}/contacts/labels",
+   "summary": "Get contact labels",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-characters.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdContracts",
+   "verb": "GET",
+   "path": "/characters/{character_id}/contracts",
+   "summary": "Get contracts",
+   "tag": "Contracts",
+   "scopes": [
+    "esi-contracts.read_character_contracts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdContractsContractIdBids",
+   "verb": "GET",
+   "path": "/characters/{character_id}/contracts/{contract_id}/bids",
+   "summary": "Get contract bids",
+   "tag": "Contracts",
+   "scopes": [
+    "esi-contracts.read_character_contracts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID of a contract"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdContractsContractIdItems",
+   "verb": "GET",
+   "path": "/characters/{character_id}/contracts/{contract_id}/items",
+   "summary": "Get contract items",
+   "tag": "Contracts",
+   "scopes": [
+    "esi-contracts.read_character_contracts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID of a contract"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdCorporationhistory",
+   "verb": "GET",
+   "path": "/characters/{character_id}/corporationhistory",
+   "summary": "Get corporation history",
+   "tag": "Character",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdFatigue",
+   "verb": "GET",
+   "path": "/characters/{character_id}/fatigue",
+   "summary": "Get jump fatigue",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_fatigue.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdFittings",
+   "verb": "GET",
+   "path": "/characters/{character_id}/fittings",
+   "summary": "Get fittings",
+   "tag": "Fittings",
+   "scopes": [
+    "esi-fittings.read_fittings.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdFleet",
+   "verb": "GET",
+   "path": "/characters/{character_id}/fleet",
+   "summary": "Get character fleet info",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.read_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdFwStats",
+   "verb": "GET",
+   "path": "/characters/{character_id}/fw/stats",
+   "summary": "Overview of a character involved in faction warfare",
+   "tag": "Faction Warfare",
+   "scopes": [
+    "esi-characters.read_fw_stats.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdImplants",
+   "verb": "GET",
+   "path": "/characters/{character_id}/implants",
+   "summary": "Get active implants",
+   "tag": "Clones",
+   "scopes": [
+    "esi-clones.read_implants.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdIndustryJobs",
+   "verb": "GET",
+   "path": "/characters/{character_id}/industry/jobs",
+   "summary": "List character industry jobs",
+   "tag": "Industry",
+   "scopes": [
+    "esi-industry.read_character_jobs.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "include_completed",
+     "type": "boolean",
+     "desc": "Whether to retrieve completed character industry jobs. Only includes jobs from the past 90 days"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdKillmailsRecent",
+   "verb": "GET",
+   "path": "/characters/{character_id}/killmails/recent",
+   "summary": "Get a character's recent kills and losses",
+   "tag": "Killmails",
+   "scopes": [
+    "esi-killmails.read_killmails.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdLocation",
+   "verb": "GET",
+   "path": "/characters/{character_id}/location",
+   "summary": "Get character location",
+   "tag": "Location",
+   "scopes": [
+    "esi-location.read_location.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdLoyaltyPoints",
+   "verb": "GET",
+   "path": "/characters/{character_id}/loyalty/points",
+   "summary": "Get loyalty points",
+   "tag": "Loyalty",
+   "scopes": [
+    "esi-characters.read_loyalty.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdMail",
+   "verb": "GET",
+   "path": "/characters/{character_id}/mail",
+   "summary": "Return mail headers",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.read_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "labels",
+     "type": "array",
+     "desc": "Fetch only mails that match one or more of the given labels"
+    },
+    {
+     "name": "last_mail_id",
+     "type": "integer",
+     "desc": "List only mail with an ID lower than the given ID, if present"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdMailLabels",
+   "verb": "GET",
+   "path": "/characters/{character_id}/mail/labels",
+   "summary": "Get mail labels and unread counts",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.read_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdMailLists",
+   "verb": "GET",
+   "path": "/characters/{character_id}/mail/lists",
+   "summary": "Return mailing list subscriptions",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.read_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdMailMailId",
+   "verb": "GET",
+   "path": "/characters/{character_id}/mail/{mail_id}",
+   "summary": "Return a mail",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.read_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "mail_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An EVE mail ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdMedals",
+   "verb": "GET",
+   "path": "/characters/{character_id}/medals",
+   "summary": "Get medals",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_medals.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdMining",
+   "verb": "GET",
+   "path": "/characters/{character_id}/mining",
+   "summary": "Character mining ledger",
+   "tag": "Industry",
+   "scopes": [
+    "esi-industry.read_character_mining.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdNotifications",
+   "verb": "GET",
+   "path": "/characters/{character_id}/notifications",
+   "summary": "Get character notifications",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_notifications.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdNotificationsContacts",
+   "verb": "GET",
+   "path": "/characters/{character_id}/notifications/contacts",
+   "summary": "Get new contact notifications",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_notifications.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdOnline",
+   "verb": "GET",
+   "path": "/characters/{character_id}/online",
+   "summary": "Get character online",
+   "tag": "Location",
+   "scopes": [
+    "esi-location.read_online.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdOrders",
+   "verb": "GET",
+   "path": "/characters/{character_id}/orders",
+   "summary": "List open orders from a character",
+   "tag": "Market",
+   "scopes": [
+    "esi-markets.read_character_orders.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdOrdersHistory",
+   "verb": "GET",
+   "path": "/characters/{character_id}/orders/history",
+   "summary": "List historical orders by a character",
+   "tag": "Market",
+   "scopes": [
+    "esi-markets.read_character_orders.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdPlanets",
+   "verb": "GET",
+   "path": "/characters/{character_id}/planets",
+   "summary": "Get colonies",
+   "tag": "Planetary Interaction",
+   "scopes": [
+    "esi-planets.manage_planets.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdPlanetsPlanetId",
+   "verb": "GET",
+   "path": "/characters/{character_id}/planets/{planet_id}",
+   "summary": "Get colony layout",
+   "tag": "Planetary Interaction",
+   "scopes": [
+    "esi-planets.manage_planets.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "planet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "Planet id of the target planet"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdPortrait",
+   "verb": "GET",
+   "path": "/characters/{character_id}/portrait",
+   "summary": "Get character portraits",
+   "tag": "Character",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdRoles",
+   "verb": "GET",
+   "path": "/characters/{character_id}/roles",
+   "summary": "Get character corporation roles",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_corporation_roles.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdSearch",
+   "verb": "GET",
+   "path": "/characters/{character_id}/search",
+   "summary": "Search on a string",
+   "tag": "Search",
+   "scopes": [
+    "esi-search.search_structures.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "categories",
+     "type": "array",
+     "required": true,
+     "desc": "Type of entities to search for"
+    },
+    {
+     "name": "search",
+     "type": "string",
+     "required": true,
+     "desc": "The string to search on"
+    },
+    {
+     "name": "strict",
+     "type": "boolean",
+     "desc": "Whether the search should be a strict match",
+     "default": false
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdShip",
+   "verb": "GET",
+   "path": "/characters/{character_id}/ship",
+   "summary": "Get current ship",
+   "tag": "Location",
+   "scopes": [
+    "esi-location.read_ship_type.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdSkillqueue",
+   "verb": "GET",
+   "path": "/characters/{character_id}/skillqueue",
+   "summary": "Get character's skill queue",
+   "tag": "Skills",
+   "scopes": [
+    "esi-skills.read_skillqueue.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdSkills",
+   "verb": "GET",
+   "path": "/characters/{character_id}/skills",
+   "summary": "Get character skills",
+   "tag": "Skills",
+   "scopes": [
+    "esi-skills.read_skills.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdStandings",
+   "verb": "GET",
+   "path": "/characters/{character_id}/standings",
+   "summary": "Get standings",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_standings.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdTitles",
+   "verb": "GET",
+   "path": "/characters/{character_id}/titles",
+   "summary": "Get character corporation titles",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_titles.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdWallet",
+   "verb": "GET",
+   "path": "/characters/{character_id}/wallet",
+   "summary": "Get a character's wallet balance",
+   "tag": "Wallet",
+   "scopes": [
+    "esi-wallet.read_character_wallet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdWalletJournal",
+   "verb": "GET",
+   "path": "/characters/{character_id}/wallet/journal",
+   "summary": "Get character wallet journal",
+   "tag": "Wallet",
+   "scopes": [
+    "esi-wallet.read_character_wallet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCharactersCharacterIdWalletTransactions",
+   "verb": "GET",
+   "path": "/characters/{character_id}/wallet/transactions",
+   "summary": "Get wallet transactions",
+   "tag": "Wallet",
+   "scopes": [
+    "esi-wallet.read_character_wallet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "from_id",
+     "type": "integer",
+     "desc": "Only show transactions happened before the one referenced by this id"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetContractsPublicBidsContractId",
+   "verb": "GET",
+   "path": "/contracts/public/bids/{contract_id}",
+   "summary": "Get public contract bids",
+   "tag": "Contracts",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID of a contract"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetContractsPublicItemsContractId",
+   "verb": "GET",
+   "path": "/contracts/public/items/{contract_id}",
+   "summary": "Get public contract items",
+   "tag": "Contracts",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID of a contract"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetContractsPublicRegionId",
+   "verb": "GET",
+   "path": "/contracts/public/{region_id}",
+   "summary": "Get public contracts",
+   "tag": "Contracts",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "region_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An EVE region id"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationCorporationIdMiningExtractions",
+   "verb": "GET",
+   "path": "/corporation/{corporation_id}/mining/extractions",
+   "summary": "Moon extraction timers",
+   "tag": "Industry",
+   "scopes": [
+    "esi-industry.read_corporation_mining.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationCorporationIdMiningObservers",
+   "verb": "GET",
+   "path": "/corporation/{corporation_id}/mining/observers",
+   "summary": "Corporation mining observers",
+   "tag": "Industry",
+   "scopes": [
+    "esi-industry.read_corporation_mining.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationCorporationIdMiningObserversObserverId",
+   "verb": "GET",
+   "path": "/corporation/{corporation_id}/mining/observers/{observer_id}",
+   "summary": "Observed corporation mining",
+   "tag": "Industry",
+   "scopes": [
+    "esi-industry.read_corporation_mining.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    },
+    {
+     "name": "observer_id",
+     "type": "integer",
+     "required": true,
+     "desc": "A mining observer id"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsNpccorps",
+   "verb": "GET",
+   "path": "/corporations/npccorps",
+   "summary": "Get npc corporations",
+   "tag": "Corporation",
+   "scopes": [],
+   "auth": false,
+   "corp": true,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationId",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}",
+   "summary": "Get corporation's public information",
+   "tag": "Corporation",
+   "scopes": [],
+   "auth": false,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdAlliancehistory",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/alliancehistory",
+   "summary": "Get alliance history",
+   "tag": "Corporation",
+   "scopes": [],
+   "auth": false,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdAssets",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/assets",
+   "summary": "Get corporation assets",
+   "tag": "Assets",
+   "scopes": [
+    "esi-assets.read_corporation_assets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdBlueprints",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/blueprints",
+   "summary": "Get corporation blueprints",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_blueprints.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdContacts",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/contacts",
+   "summary": "Get corporation contacts",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-corporations.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdContactsLabels",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/contacts/labels",
+   "summary": "Get corporation contact labels",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-corporations.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdContainersLogs",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/containers/logs",
+   "summary": "Get all corporation ALSC logs",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_container_logs.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdContracts",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/contracts",
+   "summary": "Get corporation contracts",
+   "tag": "Contracts",
+   "scopes": [
+    "esi-contracts.read_corporation_contracts.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdContractsContractIdBids",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/contracts/{contract_id}/bids",
+   "summary": "Get corporation contract bids",
+   "tag": "Contracts",
+   "scopes": [
+    "esi-contracts.read_corporation_contracts.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID of a contract"
+    },
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdContractsContractIdItems",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/contracts/{contract_id}/items",
+   "summary": "Get corporation contract items",
+   "tag": "Contracts",
+   "scopes": [
+    "esi-contracts.read_corporation_contracts.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID of a contract"
+    },
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdCustomsOffices",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/customs_offices",
+   "summary": "List corporation customs offices",
+   "tag": "Planetary Interaction",
+   "scopes": [
+    "esi-planets.read_customs_offices.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdDivisions",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/divisions",
+   "summary": "Get corporation divisions",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_divisions.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdFacilities",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/facilities",
+   "summary": "Get corporation facilities",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_facilities.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdFwStats",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/fw/stats",
+   "summary": "Overview of a corporation involved in faction warfare",
+   "tag": "Faction Warfare",
+   "scopes": [
+    "esi-corporations.read_fw_stats.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdIcons",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/icons",
+   "summary": "Get corporation icon",
+   "tag": "Corporation",
+   "scopes": [],
+   "auth": false,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdIndustryJobs",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/industry/jobs",
+   "summary": "List corporation industry jobs",
+   "tag": "Industry",
+   "scopes": [
+    "esi-industry.read_corporation_jobs.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "include_completed",
+     "type": "boolean",
+     "desc": "Whether to retrieve completed corporation industry jobs. Only includes jobs from the past 90 days",
+     "default": false
+    },
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdKillmailsRecent",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/killmails/recent",
+   "summary": "Get a corporation's recent kills and losses",
+   "tag": "Killmails",
+   "scopes": [
+    "esi-killmails.read_corporation_killmails.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdMedals",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/medals",
+   "summary": "Get corporation medals",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_medals.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdMedalsIssued",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/medals/issued",
+   "summary": "Get corporation issued medals",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_medals.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdMembers",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/members",
+   "summary": "Get corporation members",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_corporation_membership.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdMembersLimit",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/members/limit",
+   "summary": "Get corporation member limit",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.track_members.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdMembersTitles",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/members/titles",
+   "summary": "Get corporation's members' titles",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_titles.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdMembertracking",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/membertracking",
+   "summary": "Track corporation members",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.track_members.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdOrders",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/orders",
+   "summary": "List open orders from a corporation",
+   "tag": "Market",
+   "scopes": [
+    "esi-markets.read_corporation_orders.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdOrdersHistory",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/orders/history",
+   "summary": "List historical orders from a corporation",
+   "tag": "Market",
+   "scopes": [
+    "esi-markets.read_corporation_orders.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdRoles",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/roles",
+   "summary": "Get corporation member roles",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_corporation_membership.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdRolesHistory",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/roles/history",
+   "summary": "Get corporation member roles history",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_corporation_membership.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdShareholders",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/shareholders",
+   "summary": "Get corporation shareholders",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-wallet.read_corporation_wallets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdStandings",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/standings",
+   "summary": "Get corporation standings",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_standings.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdStarbases",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/starbases",
+   "summary": "Get corporation starbases (POSes)",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_starbases.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdStarbasesStarbaseId",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/starbases/{starbase_id}",
+   "summary": "Get starbase (POS) detail",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_starbases.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    },
+    {
+     "name": "starbase_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An EVE starbase (POS) ID"
+    }
+   ],
+   "query": [
+    {
+     "name": "system_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The solar system this starbase (POS) is located in,"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdStructures",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/structures",
+   "summary": "Get corporation structures",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_structures.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdTitles",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/titles",
+   "summary": "Get corporation titles",
+   "tag": "Corporation",
+   "scopes": [
+    "esi-corporations.read_titles.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdWallets",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/wallets",
+   "summary": "Returns a corporation's wallet balance",
+   "tag": "Wallet",
+   "scopes": [
+    "esi-wallet.read_corporation_wallets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdWalletsDivisionJournal",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/wallets/{division}/journal",
+   "summary": "Get corporation wallet journal",
+   "tag": "Wallet",
+   "scopes": [
+    "esi-wallet.read_corporation_wallets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    },
+    {
+     "name": "division",
+     "type": "integer",
+     "required": true,
+     "desc": "Wallet key of the division to fetch journals from"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetCorporationsCorporationIdWalletsDivisionTransactions",
+   "verb": "GET",
+   "path": "/corporations/{corporation_id}/wallets/{division}/transactions",
+   "summary": "Get corporation wallet transactions",
+   "tag": "Wallet",
+   "scopes": [
+    "esi-wallet.read_corporation_wallets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    },
+    {
+     "name": "division",
+     "type": "integer",
+     "required": true,
+     "desc": "Wallet key of the division to fetch journals from"
+    }
+   ],
+   "query": [
+    {
+     "name": "from_id",
+     "type": "integer",
+     "desc": "Only show journal entries happened before the transaction referenced by this id"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetDogmaAttributes",
+   "verb": "GET",
+   "path": "/dogma/attributes",
+   "summary": "Get attributes",
+   "tag": "Dogma",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetDogmaAttributesAttributeId",
+   "verb": "GET",
+   "path": "/dogma/attributes/{attribute_id}",
+   "summary": "Get attribute information",
+   "tag": "Dogma",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "attribute_id",
+     "type": "integer",
+     "required": true,
+     "desc": "A dogma attribute ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetDogmaDynamicItemsTypeIdItemId",
+   "verb": "GET",
+   "path": "/dogma/dynamic/items/{type_id}/{item_id}",
+   "summary": "Get dynamic item information",
+   "tag": "Dogma",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "item_id",
+     "type": "integer",
+     "required": true
+    },
+    {
+     "name": "type_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetDogmaEffects",
+   "verb": "GET",
+   "path": "/dogma/effects",
+   "summary": "Get effects",
+   "tag": "Dogma",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetDogmaEffectsEffectId",
+   "verb": "GET",
+   "path": "/dogma/effects/{effect_id}",
+   "summary": "Get effect information",
+   "tag": "Dogma",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "effect_id",
+     "type": "integer",
+     "required": true,
+     "desc": "A dogma effect ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFleetsFleetId",
+   "verb": "GET",
+   "path": "/fleets/{fleet_id}",
+   "summary": "Get fleet information",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.read_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFleetsFleetIdMembers",
+   "verb": "GET",
+   "path": "/fleets/{fleet_id}/members",
+   "summary": "Get fleet members",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.read_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFleetsFleetIdWings",
+   "verb": "GET",
+   "path": "/fleets/{fleet_id}/wings",
+   "summary": "Get fleet wings",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.read_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFwLeaderboards",
+   "verb": "GET",
+   "path": "/fw/leaderboards",
+   "summary": "List of the top factions in faction warfare",
+   "tag": "Faction Warfare",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFwLeaderboardsCharacters",
+   "verb": "GET",
+   "path": "/fw/leaderboards/characters",
+   "summary": "List of the top pilots in faction warfare",
+   "tag": "Faction Warfare",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFwLeaderboardsCorporations",
+   "verb": "GET",
+   "path": "/fw/leaderboards/corporations",
+   "summary": "List of the top corporations in faction warfare",
+   "tag": "Faction Warfare",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFwStats",
+   "verb": "GET",
+   "path": "/fw/stats",
+   "summary": "An overview of statistics about factions involved in faction warfare",
+   "tag": "Faction Warfare",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFwSystems",
+   "verb": "GET",
+   "path": "/fw/systems",
+   "summary": "Ownership of faction warfare systems",
+   "tag": "Faction Warfare",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetFwWars",
+   "verb": "GET",
+   "path": "/fw/wars",
+   "summary": "Data about which NPC factions are at war",
+   "tag": "Faction Warfare",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetIncursions",
+   "verb": "GET",
+   "path": "/incursions",
+   "summary": "List incursions",
+   "tag": "Incursions",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetIndustryFacilities",
+   "verb": "GET",
+   "path": "/industry/facilities",
+   "summary": "List industry facilities",
+   "tag": "Industry",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetIndustrySystems",
+   "verb": "GET",
+   "path": "/industry/systems",
+   "summary": "List solar system cost indices",
+   "tag": "Industry",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetInsurancePrices",
+   "verb": "GET",
+   "path": "/insurance/prices",
+   "summary": "List insurance levels",
+   "tag": "Insurance",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetKillmailsKillmailIdKillmailHash",
+   "verb": "GET",
+   "path": "/killmails/{killmail_id}/{killmail_hash}",
+   "summary": "Get a single killmail",
+   "tag": "Killmails",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "killmail_hash",
+     "type": "string",
+     "required": true,
+     "desc": "The killmail hash for verification"
+    },
+    {
+     "name": "killmail_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The killmail ID to be queried"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetLoyaltyStoresCorporationIdOffers",
+   "verb": "GET",
+   "path": "/loyalty/stores/{corporation_id}/offers",
+   "summary": "List loyalty store offers",
+   "tag": "Loyalty",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetMarketsGroups",
+   "verb": "GET",
+   "path": "/markets/groups",
+   "summary": "Get item groups",
+   "tag": "Market",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetMarketsGroupsMarketGroupId",
+   "verb": "GET",
+   "path": "/markets/groups/{market_group_id}",
+   "summary": "Get item group information",
+   "tag": "Market",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "market_group_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An Eve item group ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetMarketsPrices",
+   "verb": "GET",
+   "path": "/markets/prices",
+   "summary": "List market prices",
+   "tag": "Market",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetMarketsStructuresStructureId",
+   "verb": "GET",
+   "path": "/markets/structures/{structure_id}",
+   "summary": "List orders in a structure",
+   "tag": "Market",
+   "scopes": [
+    "esi-markets.structure_markets.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "structure_id",
+     "type": "integer",
+     "required": true,
+     "desc": "Return orders in this structure"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetMarketsRegionIdHistory",
+   "verb": "GET",
+   "path": "/markets/{region_id}/history",
+   "summary": "List historical market statistics in a region",
+   "tag": "Market",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "region_id",
+     "type": "integer",
+     "required": true,
+     "desc": "Return statistics in this region"
+    }
+   ],
+   "query": [
+    {
+     "name": "type_id",
+     "type": "integer",
+     "required": true,
+     "desc": "Return statistics for this type"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetMarketsRegionIdOrders",
+   "verb": "GET",
+   "path": "/markets/{region_id}/orders",
+   "summary": "List orders in a region",
+   "tag": "Market",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "region_id",
+     "type": "integer",
+     "required": true,
+     "desc": "Return orders in this region"
+    }
+   ],
+   "query": [
+    {
+     "name": "order_type",
+     "type": "string",
+     "required": true,
+     "enum": [
+      "buy",
+      "sell",
+      "all"
+     ],
+     "desc": "Filter buy/sell orders, return all orders by default. If you query without type_id, we always return both buy…"
+    },
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    },
+    {
+     "name": "type_id",
+     "type": "integer",
+     "desc": "Return orders only for this type"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetMarketsRegionIdTypes",
+   "verb": "GET",
+   "path": "/markets/{region_id}/types",
+   "summary": "List type IDs relevant to a market",
+   "tag": "Market",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "region_id",
+     "type": "integer",
+     "required": true,
+     "desc": "Return statistics in this region"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetMetaChangelog",
+   "verb": "GET",
+   "path": "/meta/changelog",
+   "summary": "Get changelog",
+   "tag": "Meta",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetMetaCompatibilityDates",
+   "verb": "GET",
+   "path": "/meta/compatibility-dates",
+   "summary": "Get compatibility dates",
+   "tag": "Meta",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetRouteOriginDestination",
+   "verb": "GET",
+   "path": "/route/{origin}/{destination}",
+   "summary": "Get route",
+   "tag": "Routes",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "destination",
+     "type": "integer",
+     "required": true,
+     "desc": "destination solar system ID"
+    },
+    {
+     "name": "origin",
+     "type": "integer",
+     "required": true,
+     "desc": "origin solar system ID"
+    }
+   ],
+   "query": [
+    {
+     "name": "avoid",
+     "type": "array",
+     "desc": "avoid solar system ID(s)"
+    },
+    {
+     "name": "connections",
+     "type": "array",
+     "desc": "connected solar system pairs"
+    },
+    {
+     "name": "flag",
+     "type": "string",
+     "enum": [
+      "shortest",
+      "secure",
+      "insecure"
+     ],
+     "desc": "route security preference"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetSovereigntyCampaigns",
+   "verb": "GET",
+   "path": "/sovereignty/campaigns",
+   "summary": "List sovereignty campaigns",
+   "tag": "Sovereignty",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetSovereigntyMap",
+   "verb": "GET",
+   "path": "/sovereignty/map",
+   "summary": "List sovereignty of systems",
+   "tag": "Sovereignty",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetSovereigntyStructures",
+   "verb": "GET",
+   "path": "/sovereignty/structures",
+   "summary": "List sovereignty structures",
+   "tag": "Sovereignty",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetStatus",
+   "verb": "GET",
+   "path": "/status",
+   "summary": "Get the server's status",
+   "tag": "Status",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseAncestries",
+   "verb": "GET",
+   "path": "/universe/ancestries",
+   "summary": "Get ancestries",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseAsteroidBeltsAsteroidBeltId",
+   "verb": "GET",
+   "path": "/universe/asteroid_belts/{asteroid_belt_id}",
+   "summary": "Get asteroid belt information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "asteroid_belt_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseBloodlines",
+   "verb": "GET",
+   "path": "/universe/bloodlines",
+   "summary": "Get bloodlines",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseCategories",
+   "verb": "GET",
+   "path": "/universe/categories",
+   "summary": "Get item categories",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseCategoriesCategoryId",
+   "verb": "GET",
+   "path": "/universe/categories/{category_id}",
+   "summary": "Get item category information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "category_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An Eve item category ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseConstellations",
+   "verb": "GET",
+   "path": "/universe/constellations",
+   "summary": "Get constellations",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseConstellationsConstellationId",
+   "verb": "GET",
+   "path": "/universe/constellations/{constellation_id}",
+   "summary": "Get constellation information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "constellation_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseFactions",
+   "verb": "GET",
+   "path": "/universe/factions",
+   "summary": "Get factions",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseGraphics",
+   "verb": "GET",
+   "path": "/universe/graphics",
+   "summary": "Get graphics",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseGraphicsGraphicId",
+   "verb": "GET",
+   "path": "/universe/graphics/{graphic_id}",
+   "summary": "Get graphic information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "graphic_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseGroups",
+   "verb": "GET",
+   "path": "/universe/groups",
+   "summary": "Get item groups",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetUniverseGroupsGroupId",
+   "verb": "GET",
+   "path": "/universe/groups/{group_id}",
+   "summary": "Get item group information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "group_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An Eve item group ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseMoonsMoonId",
+   "verb": "GET",
+   "path": "/universe/moons/{moon_id}",
+   "summary": "Get moon information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "moon_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniversePlanetsPlanetId",
+   "verb": "GET",
+   "path": "/universe/planets/{planet_id}",
+   "summary": "Get planet information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "planet_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseRaces",
+   "verb": "GET",
+   "path": "/universe/races",
+   "summary": "Get character races",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseRegions",
+   "verb": "GET",
+   "path": "/universe/regions",
+   "summary": "Get regions",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseRegionsRegionId",
+   "verb": "GET",
+   "path": "/universe/regions/{region_id}",
+   "summary": "Get region information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "region_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseSchematicsSchematicId",
+   "verb": "GET",
+   "path": "/universe/schematics/{schematic_id}",
+   "summary": "Get schematic information",
+   "tag": "Planetary Interaction",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "schematic_id",
+     "type": "integer",
+     "required": true,
+     "desc": "A PI schematic ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseStargatesStargateId",
+   "verb": "GET",
+   "path": "/universe/stargates/{stargate_id}",
+   "summary": "Get stargate information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "stargate_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseStarsStarId",
+   "verb": "GET",
+   "path": "/universe/stars/{star_id}",
+   "summary": "Get star information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "star_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseStationsStationId",
+   "verb": "GET",
+   "path": "/universe/stations/{station_id}",
+   "summary": "Get station information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "station_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseStructures",
+   "verb": "GET",
+   "path": "/universe/structures",
+   "summary": "List all public structures",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "filter",
+     "type": "string",
+     "enum": [
+      "market",
+      "manufacturing_basic"
+     ],
+     "desc": "Only list public structures that have this service online"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseStructuresStructureId",
+   "verb": "GET",
+   "path": "/universe/structures/{structure_id}",
+   "summary": "Get structure information",
+   "tag": "Universe",
+   "scopes": [
+    "esi-universe.read_structures.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "structure_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An Eve structure ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseSystemJumps",
+   "verb": "GET",
+   "path": "/universe/system_jumps",
+   "summary": "Get system jumps",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseSystemKills",
+   "verb": "GET",
+   "path": "/universe/system_kills",
+   "summary": "Get system kills",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseSystems",
+   "verb": "GET",
+   "path": "/universe/systems",
+   "summary": "Get solar systems",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseSystemsSystemId",
+   "verb": "GET",
+   "path": "/universe/systems/{system_id}",
+   "summary": "Get solar system information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "system_id",
+     "type": "integer",
+     "required": true
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetUniverseTypes",
+   "verb": "GET",
+   "path": "/universe/types",
+   "summary": "Get types",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "GetUniverseTypesTypeId",
+   "verb": "GET",
+   "path": "/universe/types/{type_id}",
+   "summary": "Get type information",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "type_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An Eve item type ID"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetWars",
+   "verb": "GET",
+   "path": "/wars",
+   "summary": "List wars",
+   "tag": "Wars",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "max_war_id",
+     "type": "integer",
+     "desc": "Only return wars with ID smaller than this"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetWarsWarId",
+   "verb": "GET",
+   "path": "/wars/{war_id}",
+   "summary": "Get war information",
+   "tag": "Wars",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "war_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a war"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "GetWarsWarIdKillmails",
+   "verb": "GET",
+   "path": "/wars/{war_id}/killmails",
+   "summary": "List kills for a war",
+   "tag": "Wars",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "war_id",
+     "type": "integer",
+     "required": true,
+     "desc": "A valid war ID"
+    }
+   ],
+   "query": [
+    {
+     "name": "page",
+     "type": "integer",
+     "desc": "Which page of results to return.",
+     "min": 1
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": true,
+   "write": false
+  },
+  {
+   "id": "PostCharactersAffiliation",
+   "verb": "POST",
+   "path": "/characters/affiliation",
+   "summary": "Character affiliation",
+   "tag": "Character",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 1000,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostCharactersCharacterIdAssetsLocations",
+   "verb": "POST",
+   "path": "/characters/{character_id}/assets/locations",
+   "summary": "Get character asset locations",
+   "tag": "Assets",
+   "scopes": [
+    "esi-assets.read_assets.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 1000,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostCharactersCharacterIdAssetsNames",
+   "verb": "POST",
+   "path": "/characters/{character_id}/assets/names",
+   "summary": "Get character asset names",
+   "tag": "Assets",
+   "scopes": [
+    "esi-assets.read_assets.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 1000,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostCharactersCharacterIdContacts",
+   "verb": "POST",
+   "path": "/characters/{character_id}/contacts",
+   "summary": "Add contacts",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-characters.write_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "label_ids",
+     "type": "array",
+     "desc": "Add custom labels to the new contact"
+    },
+    {
+     "name": "standing",
+     "type": "number",
+     "required": true,
+     "desc": "Standing for the contact"
+    },
+    {
+     "name": "watched",
+     "type": "boolean",
+     "desc": "Whether the contact should be watched, note this is only effective on characters",
+     "default": false
+    }
+   ],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 100,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostCharactersCharacterIdCspa",
+   "verb": "POST",
+   "path": "/characters/{character_id}/cspa",
+   "summary": "Calculate a CSPA charge cost",
+   "tag": "Character",
+   "scopes": [
+    "esi-characters.read_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 100,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostCharactersCharacterIdFittings",
+   "verb": "POST",
+   "path": "/characters/{character_id}/fittings",
+   "summary": "Create fitting",
+   "tag": "Fittings",
+   "scopes": [
+    "esi-fittings.write_fittings.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "description",
+      "type": "string",
+      "required": true
+     },
+     {
+      "name": "items",
+      "type": "array",
+      "required": true,
+      "item": "object"
+     },
+     {
+      "name": "name",
+      "type": "string",
+      "required": true
+     },
+     {
+      "name": "ship_type_id",
+      "type": "integer",
+      "required": true
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostCharactersCharacterIdMail",
+   "verb": "POST",
+   "path": "/characters/{character_id}/mail",
+   "summary": "Send a new mail",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.send_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "approved_cost",
+      "type": "integer"
+     },
+     {
+      "name": "body",
+      "type": "string",
+      "required": true
+     },
+     {
+      "name": "recipients",
+      "type": "array",
+      "required": true,
+      "item": "object"
+     },
+     {
+      "name": "subject",
+      "type": "string",
+      "required": true
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostCharactersCharacterIdMailLabels",
+   "verb": "POST",
+   "path": "/characters/{character_id}/mail/labels",
+   "summary": "Create a mail label",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.organize_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "color",
+      "type": "string",
+      "desc": "Hexadecimal string representing label color, in RGB format"
+     },
+     {
+      "name": "name",
+      "type": "string",
+      "required": true
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostCorporationsCorporationIdAssetsLocations",
+   "verb": "POST",
+   "path": "/corporations/{corporation_id}/assets/locations",
+   "summary": "Get corporation asset locations",
+   "tag": "Assets",
+   "scopes": [
+    "esi-assets.read_corporation_assets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 1000,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostCorporationsCorporationIdAssetsNames",
+   "verb": "POST",
+   "path": "/corporations/{corporation_id}/assets/names",
+   "summary": "Get corporation asset names",
+   "tag": "Assets",
+   "scopes": [
+    "esi-assets.read_corporation_assets.v1"
+   ],
+   "auth": true,
+   "corp": true,
+   "pathParams": [
+    {
+     "name": "corporation_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the corporation"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 1000,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostFleetsFleetIdMembers",
+   "verb": "POST",
+   "path": "/fleets/{fleet_id}/members",
+   "summary": "Create fleet invitation",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "character_id",
+      "type": "integer",
+      "required": true,
+      "desc": "The character you want to invite"
+     },
+     {
+      "name": "role",
+      "type": "string",
+      "required": true,
+      "enum": [
+       "fleet_commander",
+       "wing_commander",
+       "squad_commander",
+       "squad_member"
+      ],
+      "desc": "If a character is invited with the `fleet_commander` role, neither `wing_id` or `squad_id` should be specifie…"
+     },
+     {
+      "name": "squad_id",
+      "type": "integer"
+     },
+     {
+      "name": "wing_id",
+      "type": "integer"
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostFleetsFleetIdWings",
+   "verb": "POST",
+   "path": "/fleets/{fleet_id}/wings",
+   "summary": "Create fleet wing",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostFleetsFleetIdWingsWingIdSquads",
+   "verb": "POST",
+   "path": "/fleets/{fleet_id}/wings/{wing_id}/squads",
+   "summary": "Create fleet squad",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "wing_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The wing_id to create squad in"
+    }
+   ],
+   "query": [],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostUiAutopilotWaypoint",
+   "verb": "POST",
+   "path": "/ui/autopilot/waypoint",
+   "summary": "Set Autopilot Waypoint",
+   "tag": "User Interface",
+   "scopes": [
+    "esi-ui.write_waypoint.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "add_to_beginning",
+     "type": "boolean",
+     "required": true,
+     "desc": "Whether this solar system should be added to the beginning of all waypoints",
+     "default": false
+    },
+    {
+     "name": "clear_other_waypoints",
+     "type": "boolean",
+     "required": true,
+     "desc": "Whether clean other waypoints beforing adding this one",
+     "default": false
+    },
+    {
+     "name": "destination_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The destination to travel to, can be solar system, station or structure's id"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostUiOpenwindowContract",
+   "verb": "POST",
+   "path": "/ui/openwindow/contract",
+   "summary": "Open Contract Window",
+   "tag": "User Interface",
+   "scopes": [
+    "esi-ui.open_window.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "contract_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The contract to open"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostUiOpenwindowInformation",
+   "verb": "POST",
+   "path": "/ui/openwindow/information",
+   "summary": "Open Information Window",
+   "tag": "User Interface",
+   "scopes": [
+    "esi-ui.open_window.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "target_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The target to open"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostUiOpenwindowMarketdetails",
+   "verb": "POST",
+   "path": "/ui/openwindow/marketdetails",
+   "summary": "Open Market Details",
+   "tag": "User Interface",
+   "scopes": [
+    "esi-ui.open_window.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [],
+   "query": [
+    {
+     "name": "type_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The item type to open in market window"
+    }
+   ],
+   "body": null,
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostUiOpenwindowNewmail",
+   "verb": "POST",
+   "path": "/ui/openwindow/newmail",
+   "summary": "Open New Mail Window",
+   "tag": "User Interface",
+   "scopes": [
+    "esi-ui.open_window.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "body",
+      "type": "string",
+      "required": true
+     },
+     {
+      "name": "recipients",
+      "type": "array",
+      "required": true,
+      "item": "integer"
+     },
+     {
+      "name": "subject",
+      "type": "string",
+      "required": true
+     },
+     {
+      "name": "to_corp_or_alliance_id",
+      "type": "integer"
+     },
+     {
+      "name": "to_mailing_list_id",
+      "type": "integer",
+      "desc": "Corporations, alliances and mailing lists are all types of mailing groups. You may only send to one mailing g…"
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PostUniverseIds",
+   "verb": "POST",
+   "path": "/universe/ids",
+   "summary": "Bulk names to IDs",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "string",
+    "minItems": 1,
+    "maxItems": 500,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PostUniverseNames",
+   "verb": "POST",
+   "path": "/universe/names",
+   "summary": "Get names and categories for a set of IDs",
+   "tag": "Universe",
+   "scopes": [],
+   "auth": false,
+   "corp": false,
+   "pathParams": [],
+   "query": [],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 1000,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": false
+  },
+  {
+   "id": "PutCharactersCharacterIdCalendarEventId",
+   "verb": "PUT",
+   "path": "/characters/{character_id}/calendar/{event_id}",
+   "summary": "Respond to an event",
+   "tag": "Calendar",
+   "scopes": [
+    "esi-calendar.respond_calendar_events.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "event_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the event requested"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "response",
+      "type": "string",
+      "required": true,
+      "enum": [
+       "accepted",
+       "declined",
+       "tentative"
+      ]
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PutCharactersCharacterIdContacts",
+   "verb": "PUT",
+   "path": "/characters/{character_id}/contacts",
+   "summary": "Edit contacts",
+   "tag": "Contacts",
+   "scopes": [
+    "esi-characters.write_contacts.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    }
+   ],
+   "query": [
+    {
+     "name": "label_ids",
+     "type": "array",
+     "desc": "Add custom labels to the contact"
+    },
+    {
+     "name": "standing",
+     "type": "number",
+     "required": true,
+     "desc": "Standing for the contact"
+    },
+    {
+     "name": "watched",
+     "type": "boolean",
+     "desc": "Whether the contact should be watched, note this is only effective on characters",
+     "default": false
+    }
+   ],
+   "body": {
+    "type": "array",
+    "item": "integer",
+    "minItems": 1,
+    "maxItems": 100,
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PutCharactersCharacterIdMailMailId",
+   "verb": "PUT",
+   "path": "/characters/{character_id}/mail/{mail_id}",
+   "summary": "Update metadata about a mail",
+   "tag": "Mail",
+   "scopes": [
+    "esi-mail.organize_mail.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "character_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The ID of the character"
+    },
+    {
+     "name": "mail_id",
+     "type": "integer",
+     "required": true,
+     "desc": "An EVE mail ID"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "labels",
+      "type": "array",
+      "item": "integer",
+      "desc": "Labels to assign to the mail. Pre-existing labels are unassigned."
+     },
+     {
+      "name": "read",
+      "type": "boolean",
+      "desc": "Whether the mail is flagged as read"
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PutFleetsFleetId",
+   "verb": "PUT",
+   "path": "/fleets/{fleet_id}",
+   "summary": "Update fleet",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "is_free_move",
+      "type": "boolean",
+      "desc": "Should free-move be enabled in the fleet"
+     },
+     {
+      "name": "motd",
+      "type": "string",
+      "desc": "New fleet MOTD in CCP flavoured HTML"
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PutFleetsFleetIdMembersMemberId",
+   "verb": "PUT",
+   "path": "/fleets/{fleet_id}/members/{member_id}",
+   "summary": "Move fleet member",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "member_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The character ID of a member in this fleet"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "role",
+      "type": "string",
+      "required": true,
+      "enum": [
+       "fleet_commander",
+       "wing_commander",
+       "squad_commander",
+       "squad_member"
+      ],
+      "desc": "If a character is moved to the `fleet_commander` role, neither `wing_id` or `squad_id` should be specified. I…"
+     },
+     {
+      "name": "squad_id",
+      "type": "integer"
+     },
+     {
+      "name": "wing_id",
+      "type": "integer"
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PutFleetsFleetIdSquadsSquadId",
+   "verb": "PUT",
+   "path": "/fleets/{fleet_id}/squads/{squad_id}",
+   "summary": "Rename fleet squad",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "squad_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The squad to rename"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "name",
+      "type": "string",
+      "required": true
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  },
+  {
+   "id": "PutFleetsFleetIdWingsWingId",
+   "verb": "PUT",
+   "path": "/fleets/{fleet_id}/wings/{wing_id}",
+   "summary": "Rename fleet wing",
+   "tag": "Fleets",
+   "scopes": [
+    "esi-fleets.write_fleet.v1"
+   ],
+   "auth": true,
+   "corp": false,
+   "pathParams": [
+    {
+     "name": "fleet_id",
+     "type": "integer",
+     "required": true,
+     "desc": "ID for a fleet"
+    },
+    {
+     "name": "wing_id",
+     "type": "integer",
+     "required": true,
+     "desc": "The wing to rename"
+    }
+   ],
+   "query": [],
+   "body": {
+    "type": "object",
+    "props": [
+     {
+      "name": "name",
+      "type": "string",
+      "required": true
+     }
+    ],
+    "required": true
+   },
+   "language": true,
+   "pageable": false,
+   "write": true
+  }
+ ]
+}

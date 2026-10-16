@@ -22,10 +22,9 @@ public sealed class LinksSearchTool : ITool
     public string DisplayNameKey => "AssistantTool_links_search";
 
     public string Description =>
-        "在软件内置的「快速链接」库里检索 EVE 相关网站/工具（按名称、简介、描述、网址、分类、平台匹配），" +
-        "并把结果跳转展示到「快速链接」页（搜索框已填好关键词）。参数 keyword 是搜索词（中英文均可，如「估价」「kb」「wormhole」）；" +
-        "onlyFavorites=true 只搜收藏过的链接；top 控制返回条数（默认 10，上限 30）。" +
-        "适合「有没有查价格的网站」「给我几个虫洞工具」；返回里会带上网址，需要实际打开时告诉用户去页面点开（助手不代开浏览器）。";
+        "在内置「快速链接」库搜 EVE 网站/工具（匹配名称、简介、描述、网址、分类、平台），" +
+        "结果会展示到「快速链接」页并填好搜索词。适合「有没有查价格的网站」「给我几个虫洞工具」；" +
+        "返回含网址，助手不代开浏览器。";
 
     public JsonObject? Parameters => new()
     {
@@ -33,7 +32,7 @@ public sealed class LinksSearchTool : ITool
         ["properties"] = new JsonObject
         {
             ["keyword"] = new JsonObject { ["type"] = "string", ["description"] = "搜索词（名称/简介/网址/分类等任意片段）" },
-            ["onlyFavorites"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 只搜收藏过的（默认 false）" },
+            ["onlyFavorites"] = new JsonObject { ["type"] = "boolean", ["description"] = "只搜收藏（默认 false）" },
             ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "返回条数（默认 10，上限 30）" },
         },
         ["required"] = new JsonArray { "keyword" },

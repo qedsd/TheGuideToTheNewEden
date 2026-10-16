@@ -202,13 +202,38 @@ public class OpenAiChatProtocol : IChatProtocol
         var text = ReadText(root);
         var usage = ReadUsage(root);
         var finishReason = TryGetString(root, "choices", 0, "finish_reason");
+        var toolCalls = ParseToolCalls(json);
+
+        // DeepSeek 系模型（deepseek-flash 等）的原生工具调用是 DSML 文本，服务端**已知会漏转换**
+        // （标记直接落在 message.content 里）→ 这里做兼容解析，否则用户看到的就是一段 XML。
+        if (toolCalls is not { Count: > 0 })
+        {
+            var dsml = DeepSeekDsmlParser.Parse(text);
+            if (dsml.Detected)
+            {
+                text = dsml.Text;
+                if (dsml.Calls.Count > 0)
+                {
+                    Core.Log.Info($"模型以 DSML 文本返回了 {dsml.Calls.Count} 个工具调用，已兼容解析："
+                                  + string.Join(", ", dsml.Calls.Select(c => c.Name)));
+                    toolCalls = dsml.Calls;
+                }
+                else
+                {
+                    Core.Log.Warn($"模型返回了 DSML 标记但无法解析（truncated={dsml.Truncated}）：{dsml.Error}");
+                    text = string.IsNullOrWhiteSpace(text)
+                        ? dsml.Error ?? "模型返回了无法解析的工具调用标记。"
+                        : $"⚠ {dsml.Error}\n\n{text}";
+                }
+            }
+        }
 
         return new ChatCompletion
         {
             Text = text,
             Usage = usage,
             FinishReason = finishReason,
-            ToolCalls = ParseToolCalls(json),
+            ToolCalls = toolCalls,
             Raw = json,
         };
     }
@@ -334,7 +359,13 @@ public class OpenAiChatProtocol : IChatProtocol
         {
             state.Done = true;
             state.FinalizeToolCalls();
-            return null;
+            var tail = state.FlushPending();   // 结尾恰好是半个 DSML 哨兵时，把扣住的文本交出来
+            if (!string.IsNullOrEmpty(tail))
+            {
+                state.Text.Append(tail);
+            }
+
+            return tail;
         }
 
         try
@@ -366,8 +397,15 @@ public class OpenAiChatProtocol : IChatProtocol
                 return null;
             }
 
-            state.Text.Append(text);
-            return text;
+            // DSML 过滤：正常文本原样吐出；一旦见到工具调用标记就整段扣下（不再把 XML 当回答显示）
+            var emit = state.FilterDelta(text);
+            if (string.IsNullOrEmpty(emit))
+            {
+                return null;
+            }
+
+            state.Text.Append(emit);
+            return emit;
         }
         catch (JsonException)
         {

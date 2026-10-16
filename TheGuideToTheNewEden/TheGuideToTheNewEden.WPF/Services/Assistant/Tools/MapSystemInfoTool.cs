@@ -15,7 +15,7 @@ public sealed class MapSystemInfoTool : ITool
 
     public string Description =>
         "查询某个星系的详情：安全等级、所属星域、是否有玩家跳桥（到哪个星系）、主权归属（军团/联盟）、资源行星数。" +
-        "参数 systemName 用星系名（如 吉他 / Jita）。";
+        "用星系名（如 吉他 / Jita）。";
 
     public JsonObject? Parameters => new()
     {

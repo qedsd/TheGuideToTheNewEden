@@ -1,0 +1,196 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.Settings.AiModelSettingView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--
+        设置 → AI → 「模型」：大模型端点（协议 / 地址 / Key / 模型名 / api-version / 测试连接）
+        与生成参数（温度 / 思考模式 / 最大输出 token / 超时 / 流式）。
+        **助手与翻译共用这一份**（阶段 125 从原来的「模型与翻译」里拆出来）。
+    -->
+    <StackPanel Margin="0,0,0,40">
+        <!--  ============ 模型端点 ============  -->
+        <Border Style="{StaticResource SettingsGroupBorder}">
+            <StackPanel>
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Protocol}"
+                    Description="{DynamicResource AiSettingPage_Protocol_Desc}"
+                    Icon="Translate24">
+                    <ComboBox
+                        x:Name="ProtocolBox"
+                        Width="380"
+                        HorizontalAlignment="Right"
+                        DisplayMemberPath="Name"
+                        SelectionChanged="OnProtocolChanged" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_BaseUrl}"
+                    Description="{DynamicResource AiSettingPage_BaseUrl_Desc}"
+                    Icon="Globe24">
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <ui:TextBox
+                            x:Name="BaseUrlBox"
+                            Width="360"
+                            PlaceholderText="https://api.openai.com/v1" />
+                        <ui:Button
+                            Margin="8,0,0,0"
+                            Click="OnRestoreBaseUrlClick"
+                            Content="{DynamicResource AiSettingPage_RestoreDefault}" />
+                    </StackPanel>
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_ApiKey}"
+                    Description="{DynamicResource AiSettingPage_ApiKey_Desc}"
+                    Icon="Key24">
+                    <ui:PasswordBox
+                        x:Name="ApiKeyBox"
+                        Width="360"
+                        PlaceholderText="sk-..." />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Model}"
+                    Description="{DynamicResource AiSettingPage_Model_Desc}"
+                    Icon="BoxMultiple24">
+                    <ui:TextBox
+                        x:Name="ModelBox"
+                        Width="360"
+                        HorizontalAlignment="Right" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_ApiVersion}"
+                    Description="{DynamicResource AiSettingPage_ApiVersion_Desc}"
+                    Icon="Document24">
+                    <ui:TextBox
+                        x:Name="ApiVersionBox"
+                        Width="360"
+                        HorizontalAlignment="Right"
+                        PlaceholderText="2024-10-21" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Test}"
+                    Description="{DynamicResource AiSettingPage_Test_Desc}"
+                    Icon="Beaker24">
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <TextBlock
+                            x:Name="TestStatusText"
+                            MaxWidth="380"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                        <ui:Button
+                            x:Name="TestButton"
+                            Appearance="Primary"
+                            Click="OnTestClick"
+                            Content="{DynamicResource AiSettingPage_Test}" />
+                    </StackPanel>
+                </controls:SettingCard>
+            </StackPanel>
+        </Border>
+
+        <!--  ============ 生成参数 ============  -->
+        <TextBlock
+            Margin="0,24,0,0"
+            Style="{StaticResource SettingsSectionHeader}"
+            Text="{DynamicResource AiSettingPage_Generation}" />
+        <Border Style="{StaticResource SettingsGroupBorder}">
+            <StackPanel>
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Temperature}"
+                    Description="{DynamicResource AiSettingPage_Temperature_Desc}"
+                    Icon="Temperature24">
+                    <ui:NumberBox
+                        x:Name="TemperatureBox"
+                        Width="160"
+                        HorizontalAlignment="Right"
+                        Maximum="2"
+                        Minimum="0"
+                        SmallChange="0.1"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Thinking}"
+                    Description="{DynamicResource AiSettingPage_Thinking_Desc}"
+                    Icon="BrainCircuit24">
+                    <ComboBox
+                        x:Name="ThinkingBox"
+                        Width="180"
+                        HorizontalAlignment="Right" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_MaxTokens}"
+                    Description="{DynamicResource AiSettingPage_MaxTokens_Desc}"
+                    Icon="DocumentText24">
+                    <ui:NumberBox
+                        x:Name="MaxTokensBox"
+                        Width="160"
+                        HorizontalAlignment="Right"
+                        Maximum="32000"
+                        Minimum="0"
+                        SmallChange="256"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Timeout}"
+                    Description="{DynamicResource AiSettingPage_Timeout_Desc}"
+                    Icon="Timer24">
+                    <ui:NumberBox
+                        x:Name="TimeoutBox"
+                        Width="160"
+                        HorizontalAlignment="Right"
+                        Maximum="600"
+                        Minimum="5"
+                        SmallChange="5"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Title="{DynamicResource AiSettingPage_Stream}"
+                    Description="{DynamicResource AiSettingPage_Stream_Desc}"
+                    Icon="Flash24">
+                    <ui:ToggleSwitch x:Name="StreamToggle" />
+                </controls:SettingCard>
+            </StackPanel>
+        </Border>
+
+        <StackPanel
+            Margin="0,12,0,0"
+            HorizontalAlignment="Left"
+            Orientation="Horizontal">
+            <ui:Button
+                Appearance="Primary"
+                Click="OnSaveClick"
+                Content="{DynamicResource AssistantSettingPage_Save}"
+                Icon="{ui:SymbolIcon Save24}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

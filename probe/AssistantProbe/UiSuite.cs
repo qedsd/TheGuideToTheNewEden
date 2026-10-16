@@ -9,6 +9,7 @@ using TheGuideToTheNewEden.WPF.Controls;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.ViewModels.Assistant;
 using TheGuideToTheNewEden.WPF.Views.Pages;
+using TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 using TheGuideToTheNewEden.WPF.Views.UserControls;
 
 namespace TheGuideToTheNewEden.Probe;
@@ -38,9 +39,87 @@ internal static class UiSuite
 
         c.Section("UiSuite · 本地化键覆盖（助手全部界面键 + 工具名）");
         LocalizationKeys(c);
+        LanguageDictionaryIntegrity(c);
+
+        c.Section("UiSuite · 图标颜色跟随主题");
+        IconColors(c);
 
         c.Section("UiSuite · 页面 / 视图构造与绑定");
         ConstructionAndBinding(c);
+    }
+
+    /// <summary>
+    /// 阶段 125：设置页里"深色主题下图标变黑"的回归守卫。
+    /// <para>
+    /// 根因：WPF-UI 的 <c>SymbolIcon</c> 默认样式**不设 Foreground**，会退回 Control 的默认值（系统色）；
+    /// 项目里 12 处裸 <c>&lt;ui:SymbolIcon&gt;</c>（含设置页面包屑的 ">"）因此变成黑图标。
+    /// 修法是 <c>Controls/GlobalControlStyles.xaml</c> 里一条全局隐式样式；
+    /// 这里断言"裸图标拿到的就是主题色刷子"，并且**换主题后真的会变**（不是写死的黑/白）。
+    /// </para>
+    /// </summary>
+    private static void IconColors(Check c)
+    {
+        var primary = Application.Current?.TryFindResource("TextFillColorPrimaryBrush") as SolidColorBrush;
+        c.That(primary is not null, "主题刷子 TextFillColorPrimaryBrush 可用");
+
+        var host = new StackPanel();
+        var bareIcon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.ChevronRight24 };
+        var secondaryIcon = new Wpf.Ui.Controls.SymbolIcon
+        {
+            Symbol = Wpf.Ui.Controls.SymbolRegular.ChevronRight24,
+            Foreground = Application.Current?.TryFindResource("TextFillColorSecondaryBrush") as Brush,
+        };
+        host.Children.Add(bareIcon);
+        host.Children.Add(secondaryIcon);
+
+        var window = new Window
+        {
+            Width = 300,
+            Height = 120,
+            Left = -4000,
+            Top = -4000,
+            ShowActivated = false,
+            ShowInTaskbar = false,
+            WindowStyle = WindowStyle.None,
+            Content = host,
+        };
+
+        try
+        {
+            window.Show();
+            Pump();
+
+            var bareColor = (bareIcon.Foreground as SolidColorBrush)?.Color;
+            c.That(bareColor == primary?.Color,
+                $"裸 SymbolIcon 的 Foreground = TextFillColorPrimaryBrush（实际 {bareColor}）");
+            c.That((secondaryIcon.Foreground as SolidColorBrush)?.Color
+                   == (Application.Current?.TryFindResource("TextFillColorSecondaryBrush") as SolidColorBrush)?.Color,
+                "元素上显式写的 Foreground 仍然优先（局部值不被隐式样式覆盖）");
+
+            // 换主题必须跟着变（这才是"跟随主题"的证据；写死的黑/白会在这里露馅）。
+            // 注意：主题刷子本身也会随主题换掉，所以每次切换后要**重新取一次**刷子再比。
+            var before = bareColor;
+            Wpf.Ui.Appearance.ApplicationThemeManager.Apply(Wpf.Ui.Appearance.ApplicationTheme.Dark, updateAccent: false);
+            Pump();
+            var darkBrush = (Application.Current?.TryFindResource("TextFillColorPrimaryBrush") as SolidColorBrush)?.Color;
+            var dark = (bareIcon.Foreground as SolidColorBrush)?.Color;
+            Wpf.Ui.Appearance.ApplicationThemeManager.Apply(Wpf.Ui.Appearance.ApplicationTheme.Light, updateAccent: false);
+            Pump();
+            var lightBrush = (Application.Current?.TryFindResource("TextFillColorPrimaryBrush") as SolidColorBrush)?.Color;
+            var light = (bareIcon.Foreground as SolidColorBrush)?.Color;
+
+            c.That(dark == darkBrush && light == lightBrush,
+                $"切主题后图标色跟着变（{before} → 深 {dark} vs {darkBrush} → 浅 {light} vs {lightBrush}）");
+            c.That(dark != light, "深浅主题下的图标色确实不同（不是写死的颜色）");
+        }
+        catch (Exception ex)
+        {
+            c.That(false, $"图标颜色核验抛异常：{ex.Message}");
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     private static void LocalizationKeys(Check c)
@@ -62,6 +141,17 @@ internal static class UiSuite
             "Assistant_Chat_ConfirmDisabled", "Assistant_AiUnavailable", "Assistant_NotConfigured_Title",
             "Assistant_NotConfigured_Support", "Assistant_GoConfigure", "Assistant_Recheck",
             "AssistantStep_Done", "AssistantStep_Failed", "SettingPage_AiAssistant", "SettingPage_AiAssistant_Desc",
+            // 阶段 124：AI 设置页的二级菜单（四节标题 + 菜单简介 + 通知文案）
+            "AssistantSettingPage_Model", "AssistantSettingPage_Behavior", "AssistantSettingPage_Esi",
+            "AssistantSettingPage_Tools", "AssistantSettingPage_Section_Model", "AssistantSettingPage_Section_Behavior",
+            "AssistantSettingPage_Section_Esi", "AssistantSettingPage_Section_Tools",
+            "AssistantSettingPage_Section_Translate", "AiSettingPage_TranslationBehavior", "AiSettingPage_CustomPrompt",
+            "AssistantSettingPage_Behavior_Desc", "AssistantSettingPage_Restore", "AssistantSettingPage_Restore_Desc",
+            "AssistantSettingPage_Model", "AssistantSettingPage_Translate",
+            // 工具分组标题是运行时拼出来的键（$"AssistantSettingPage_ToolsGroup_{category}"），这里显式列出来防拼错
+            "AssistantSettingPage_ToolsGroup_Esi", "AssistantSettingPage_ToolsGroup_Character",
+            "AssistantSettingPage_ToolsGroup_Business", "AssistantSettingPage_ToolsGroup_Map",
+            "AssistantSettingPage_ToolsGroup_Channel", "AssistantSettingPage_ToolsGroup_General",
             "Home.Quick.Placeholder", "Home.Quick.Go", "Home.Quick.JumpedMarket", "Home.Quick.JumpedKb",
             "Home.Quick.JumpedSystem", "Home.Quick.JumpedCharacter", "Home.Quick.ToAssistant",
         };
@@ -77,6 +167,67 @@ internal static class UiSuite
         {
             Console.WriteLine($"    缺键：{key}");
         }
+    }
+
+    /// <summary>
+    /// 两份语言字典自身的完整性：**能各自独立加载**（ResourceDictionary 里同键重复 = 加载即抛
+    /// XamlParseException）+ 中英键集一致。
+    /// <para>
+    /// 为什么要有这条：探针只在中文环境加载 zh-CN，**en-US 的问题永远暴露不出来**——阶段 124 就真漏进去
+    /// 一个重复键（<c>SettingPage_AiAssistant_Desc</c>），只有切到英文界面才会崩。语言字典是编译成 BAML 的，
+    /// 不能当 XML 解析，所以这里直接 new 一个 ResourceDictionary 去加载（不并入 Application.Resources，
+    /// 不污染当前界面），加载成功本身就证明"没有重复键"。
+    /// </para>
+    /// </summary>
+    private static void LanguageDictionaryIntegrity(Check c)
+    {
+        var zh = LoadLanguageDictionary("zh-CN.xaml");
+        var en = LoadLanguageDictionary("en-US.xaml");
+        c.That(zh is not null, "zh-CN 字典能独立加载（有重复键会在这里抛 XamlParseException）");
+        c.That(en is not null, "en-US 字典能独立加载（探针默认只加载 zh-CN，这条专门守住 en）");
+
+        if (zh is null || en is null)
+        {
+            return;
+        }
+
+        var zhKeys = zh.Keys.Cast<object>().Select(key => key.ToString()!).ToHashSet(StringComparer.Ordinal);
+        var enKeys = en.Keys.Cast<object>().Select(key => key.ToString()!).ToHashSet(StringComparer.Ordinal);
+        c.That(zhKeys.Count == zh.Keys.Count && enKeys.Count == en.Keys.Count,
+            $"两份字典内部都不重复（zh {zhKeys.Count} / en {enKeys.Count} 个键）");
+
+        var onlyZh = zhKeys.Except(enKeys, StringComparer.Ordinal).ToList();
+        var onlyEn = enKeys.Except(zhKeys, StringComparer.Ordinal).ToList();
+        c.That(onlyZh.Count == 0 && onlyEn.Count == 0,
+            $"中英键集一致（仅中文 {onlyZh.Count} 个 / 仅英文 {onlyEn.Count} 个）");
+        foreach (var key in onlyZh.Concat(onlyEn).Take(10))
+        {
+            Console.WriteLine($"    [键集差异] {key}");
+        }
+    }
+
+    /// <summary>按 pack URI 加载语言字典（探针是另一个入口程序集，必须带程序集名，同 App.xaml 的写法）。</summary>
+    private static ResourceDictionary? LoadLanguageDictionary(string fileName)
+    {
+        var candidates = new[]
+        {
+            $"pack://application:,,,/TheGuideToTheNewEden;component/Resources/Languages/{fileName}",
+            $"pack://application:,,,/Resources/Languages/{fileName}",
+        };
+
+        foreach (var candidate in candidates)
+        {
+            try
+            {
+                return new ResourceDictionary { Source = new Uri(candidate, UriKind.Absolute) };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"    [诊断] 加载 {candidate} 失败：{ex.Message}");
+            }
+        }
+
+        return null;
     }
 
     private static void ConstructionAndBinding(Check c)
@@ -99,6 +250,235 @@ internal static class UiSuite
         }
 
         c.That(page is not null, "AiAssistantPage 构造成功");
+
+        // 阶段 124：AI 设置页是**钻取式**导航——二级菜单占满整页，点某一节后整页换成该节详情（三级）+ 面包屑。
+        // 真构造一次，然后逐节钻进去：StaticResource 缺失、绑定到只读属性、绑定路径写错这类问题
+        // **编译期与 BAML 期都不报**，只有构造/渲染时才暴露（§9 第 88 条），本套件末尾的
+        // "绑定错误 0 条"断言正好把四节的绑定问题一起看住。
+        try
+        {
+            var settingsPage = new AiAssistantSettingPage();
+            var settingsWindow = new Window
+            {
+                Width = 1000,
+                Height = 780,
+                Left = -4000,
+                Top = -4000,
+                ShowActivated = false,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+                Content = settingsPage,
+            };
+            settingsWindow.Show();
+            Pump();
+
+            var expectedToggles = ToolRegistry.Product.Count;
+            c.That(settingsPage.SectionKeys.Count == 5,
+                $"二级菜单五节齐备（{string.Join(" / ", settingsPage.SectionKeys)}）");
+
+            // 切节之后必须**同步跑一次布局**：新换上去的分节视图只有在布局后才出现在可视树里
+            // （离屏窗口的 Dispatcher 泵不会替我们做这件事，第一版漏了这步 → 除首节外全查到 0 个控件）
+            void Layout()
+            {
+                settingsPage.UpdateLayout();
+                Pump();
+            }
+
+            // ⓪ 初始形态：二级菜单（五节列表）在，三级详情不在
+            var sectionButtons = FindVisuals<System.Windows.Controls.Primitives.ButtonBase>(settingsPage)
+                .Count(button => button is FrameworkElement { Tag: AiAssistantSettingPage.AiSection });
+            c.That(settingsPage.IsShowingSectionList && settingsPage.CurrentSectionKey is null,
+                "初始停在二级菜单（未钻取）");
+            c.That(sectionButtons == 5, $"二级菜单渲染出 5 个可点击的分节行（实际 {sectionButtons} 个）");
+            c.That(!FindVisuals<Wpf.Ui.Controls.PasswordBox>(settingsPage).Any(),
+                "还没钻取时三级内容尚未加载（模型端点不在可视树里）");
+
+            // ① 模型（阶段 125 与翻译拆成两节）：协议 / 思考模式下拉 + API Key 输入框 + 生成参数数字框
+            c.That(settingsPage.SelectSection("Model"), "钻取到「模型」");
+            Layout();
+            c.That(!settingsPage.IsShowingSectionList && settingsPage.CurrentSectionKey == "Model",
+                "已离开二级菜单，进入「模型」三级详情");
+            c.That(settingsPage.BreadcrumbSubTitle is { Length: > 0 },
+                $"三级详情把标题交给外层面包屑（{settingsPage.BreadcrumbSubTitle}），页内不再自带标题栏");
+            var detailRoot = settingsPage.FindName("DetailView") as DependencyObject ?? settingsPage;
+            var bigTexts = FindVisuals<TextBlock>(detailRoot)
+                .Where(block => block.FontSize >= 22 && !string.IsNullOrWhiteSpace(block.Text))
+                .ToList();
+            foreach (var block in bigTexts)
+            {
+                Console.WriteLine($"    [诊断] 三级详情区里的大号文本 {block.FontSize}: 「{block.Text}」");
+            }
+
+            c.That(bigTexts.Count == 0,
+                "三级详情区里没有大号标题栏（标题只在设置页的面包屑里；图标字形是 20 号，已排除）");
+            c.That(FindVisuals<Wpf.Ui.Controls.PasswordBox>(settingsPage).Any(), "模型端点区已加载（API Key 输入框在位）");
+            var combos = FindVisuals<ComboBox>(settingsPage).Count();
+            c.That(combos >= 2, $"模型端点区已加载（协议 / 思考模式下拉在位，共 {combos} 个）");
+            c.That(FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage).Count() >= 3,
+                "「模型」节有生成参数（温度 / 最大输出 token / 超时三个数字框）");
+
+            // ①b 翻译（阶段 125 独立成节）：术语库 + 翻译行为（分段字符数 / 结果缓存）+ 自定义提示词
+            var translateTitle = Application.Current?.TryFindResource("AssistantSettingPage_Translate") as string;
+            c.That(settingsPage.SelectSection("Translate"), $"钻取到「{translateTitle}」");
+            Layout();
+            var translateToggles = FindVisuals<Wpf.Ui.Controls.ToggleSwitch>(settingsPage).Count();
+            var translateNumbers = FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage).Count();
+            var translateBoxes = FindVisuals<Wpf.Ui.Controls.TextBox>(settingsPage).Count();
+            c.That(translateToggles >= 2 && translateNumbers >= 2 && translateBoxes >= 1,
+                $"「翻译」节渲染出术语库/缓存开关、注入上限与分段字符数、自定义提示词（开关 {translateToggles}、数字框 {translateNumbers}、文本框 {translateBoxes}）");
+            c.That(!FindVisuals<Wpf.Ui.Controls.PasswordBox>(settingsPage).Any(),
+                "「翻译」节里没有模型端点控件（模型与翻译确实分开了）");
+
+            // ② 行为：轮数 / 默认角色 / 写确认 / 快捷键 / 系统提示词
+            settingsPage.SelectSection("Behavior");
+            Layout();
+            var behaviorToggles = FindVisuals<Wpf.Ui.Controls.ToggleSwitch>(settingsPage).Count();
+            var behaviorNumbers = FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage).Count();
+            var behaviorBoxes = FindVisuals<Wpf.Ui.Controls.TextBox>(settingsPage).Count();
+            c.That(behaviorToggles >= 1 && behaviorNumbers >= 1 && behaviorBoxes >= 3,
+                $"「行为」节渲染出轮数框 / 角色框 / 快捷键框 / 提示词框与确认开关（开关 {behaviorToggles}、数字框 {behaviorNumbers}、文本框 {behaviorBoxes}）");
+
+            // ③ ESI 全量访问：三个开关 + 三个数字框 + 黑名单
+            settingsPage.SelectSection("Esi");
+            Layout();
+            var esiToggles = FindVisuals<Wpf.Ui.Controls.ToggleSwitch>(settingsPage).Count();
+            var esiNumbers = FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage).Count();
+            c.That(esiToggles >= 3 && esiNumbers >= 3,
+                $"「ESI 全量访问」节渲染出网关/写/富化三个开关与页数·字符·错误配额三个数字框（开关 {esiToggles}、数字框 {esiNumbers}）");
+
+            // ④ 工具开关：按需声明 + 每个产品工具一个开关（**只在这一节**，这正是钻取式导航的意义）
+            settingsPage.SelectSection("Tools");
+            Layout();
+            var toolToggles = FindVisuals<Wpf.Ui.Controls.ToggleSwitch>(settingsPage).Count();
+            c.That(toolToggles >= expectedToggles + 1,
+                $"「工具开关」节渲染出 {toolToggles} 个开关 ≥ 产品工具数 {expectedToggles} + 按需声明开关（模型/行为/ESI 三节此时不占界面）");
+            c.That(FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage).Count() == 0,
+                "「工具开关」节里没有别的节的控件（确认是「点击才加载」而不是全部铺在一页）");
+
+            // ⑤ 面包屑返回二级菜单（点「AI」），再钻一次确认视图被复用
+            settingsPage.ShowSectionList();
+            Layout();
+            c.That(settingsPage.IsShowingSectionList && settingsPage.CurrentSectionKey is null,
+                "面包屑返回后回到二级菜单（四节列表）");
+            c.That(FindVisuals<System.Windows.Controls.Primitives.ButtonBase>(settingsPage)
+                    .Count(button => button is FrameworkElement { Tag: AiAssistantSettingPage.AiSection }) == 5,
+                "返回后五节列表重新可见");
+            c.That(!FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage).Any(),
+                "返回后三级内容已卸下（工具节留下的数字框不该还在）");
+
+            // 未知分节键不崩，留在二级菜单
+            c.That(!settingsPage.SelectSection("NoSuchSection"), "未知分节键返回 false（不抛异常）");
+            Layout();
+            c.That(settingsPage.IsShowingSectionList, "未知键时留在二级菜单，不会显示半截详情");
+
+            settingsWindow.Close();
+        }
+        catch (Exception ex)
+        {
+            c.That(false, $"AiAssistantSettingPage 构造/渲染抛异常：{ex.Message}");
+        }
+
+        // 阶段 124：第三段导航标题由**外层设置页的面包屑**显示（「设置 › AI › 行为」），
+        // AI 页里不再自带标题栏。这里把设置壳页也真构造一次，端到端核验两个方向：
+        // ① 进「行为」节 → 面包屑出现第三段；② 点面包屑里的「AI」→ AI 页回到二级菜单、第三段收起。
+        //
+        // 先单独确认"深链直接落在某一节"这条（用一个自己加载的 AI 页；离屏 Frame 里的子页 Loaded
+        // 时序不好把控，深链逻辑本身在这里独立验），再验壳页的面包屑联动。
+        try
+        {
+            AiAssistantSettingPage.RequestSection("Behavior");
+            var deepLinked = new AiAssistantSettingPage();
+            var linkWindow = new Window
+            {
+                Width = 900,
+                Height = 700,
+                Left = -4000,
+                Top = -4000,
+                ShowActivated = false,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+                Content = deepLinked,
+            };
+            linkWindow.Show();
+            deepLinked.UpdateLayout();
+            Pump();
+            c.That(deepLinked.CurrentSectionKey == "Behavior" && !deepLinked.IsShowingSectionList,
+                $"深链 RequestSection(\"Behavior\") 生效（当前节 {deepLinked.CurrentSectionKey}）");
+            linkWindow.Close();
+        }
+        catch (Exception ex)
+        {
+            c.That(false, $"深链核验抛异常：{ex.Message}");
+        }
+
+        try
+        {
+            SettingsPage.RequestCategory(typeof(AiAssistantSettingPage));
+
+            var shell = new SettingsPage();
+            var shellWindow = new Window
+            {
+                Width = 1000,
+                Height = 780,
+                Left = -4000,
+                Top = -4000,
+                ShowActivated = false,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+                Content = shell,
+            };
+            shellWindow.Show();
+            shell.UpdateLayout();
+            Pump();
+
+            var crumbTitle = shell.FindName("BreadcrumbTitle") as TextBlock;
+            var crumbSubTitle = shell.FindName("BreadcrumbSubTitle") as TextBlock;
+            var crumbSubChevron = shell.FindName("BreadcrumbSubChevron") as Wpf.Ui.Controls.SymbolIcon;
+
+            c.That(crumbTitle is not null && crumbSubTitle is not null && crumbSubChevron is not null,
+                "设置壳页的面包屑三段元素就位");
+            c.That(crumbTitle?.Text == (Application.Current?.TryFindResource("SettingPage_AiAssistant") as string),
+                $"深链 RequestCategory(AI) 生效，面包屑第二段是分类名「{crumbTitle?.Text}」");
+
+            // 离屏窗口里的 Frame **不承载内容**：Content 赋值与 Navigate 都"成功"（Navigate 返回 True、
+            // 无 NavigationFailed），但 Frame.Content 始终是 null——连塞普通控件也一样（已实测）。
+            // 真实窗口里 Frame 正常（设置子页一直在用），所以这里直接驱动面包屑挂载点，
+            // 用一个**真实的** AI 页验两个方向：① 页面层级变化 → 面包屑第三段；② 点面包屑 → 页面回上一层。
+            var aiPage = new AiAssistantSettingPage();
+            shell.AttachDetailBreadcrumb(aiPage);
+            shell.UpdateLayout();
+            Pump();
+            c.That(aiPage.IsShowingSectionList && string.IsNullOrEmpty(crumbSubTitle?.Text)
+                   && crumbSubChevron?.Visibility != Visibility.Visible,
+                "AI 页停在二级菜单时，面包屑只有两段（第三段收起）");
+
+            // ① 进「行为」节 → 面包屑第三段出现
+            aiPage.SelectSection("Behavior");
+            shell.UpdateLayout();
+            Pump();
+            c.That(crumbSubTitle?.Text == (Application.Current?.TryFindResource("AssistantSettingPage_Behavior") as string)
+                   && crumbSubTitle.Visibility == Visibility.Visible
+                   && crumbSubChevron?.Visibility == Visibility.Visible,
+                $"AI 页进入「行为」节后，外层面包屑第三段显示「{crumbSubTitle?.Text}」（页内不再自带标题栏）");
+
+            // ② 点面包屑里的「AI」→ 回二级菜单，第三段收起
+            (shell.FindName("BreadcrumbTitleButton") as System.Windows.Controls.Primitives.ButtonBase)?
+                .RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            shell.UpdateLayout();
+            Pump();
+            c.That(aiPage.IsShowingSectionList, "点面包屑里的「AI」后，AI 页回到二级菜单");
+            c.That(string.IsNullOrEmpty(crumbSubTitle?.Text) && crumbSubChevron?.Visibility != Visibility.Visible,
+                "回到二级菜单后第三段收起（面包屑只剩「设置 › AI」）");
+
+            shell.AttachDetailBreadcrumb(null);
+            c.That(string.IsNullOrEmpty(crumbSubTitle?.Text), "离开详情（回到分类列表）时第三段也收起");
+
+            shellWindow.Close();
+        }
+        catch (Exception ex)
+        {
+            c.That(false, $"设置壳页的面包屑端到端核验抛异常：{ex.Message}");
+        }
 
         var viewModel = new AiAssistantViewModel();
         var view = new AiAssistantChatView { DataContext = viewModel };

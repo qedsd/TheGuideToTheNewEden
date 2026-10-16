@@ -20,18 +20,16 @@ public sealed class GlossaryWriteTool : ITool
     public string DisplayNameKey => "AssistantTool_glossary_write";
 
     public string Description =>
-        "维护**用户自定义术语表**（优先级高于内置 SDE 术语库，AI 翻译时会强制按它译）：" +
-        "英文名 + 中文名即可新增或覆盖一条术语（英文名唯一，忽略大小写；重复添加等于更新）；" +
-        "action 选 add（默认，新增/覆盖）或 remove（按英文名删除）。" +
-        "用于用户明确要求「以后把 Xxx 译成 Yyy」「这条译名记下来」「删掉那条术语」的场景。" +
-        "适合玩家/军团/建筑名这类 SDE 里没有的名词。写操作需要用户确认；一次只改一条。";
+        "维护用户自定义术语表（优先级高于内置 SDE 术语库，翻译时强制按它译）：" +
+        "给英文名与中文译名即可新增或覆盖，也可按英文名删除。" +
+        "适合「以后把 Xxx 译成 Yyy」「记下这条译名」。写操作需用户确认，一次仅一条。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "add", "remove" }, ["description"] = "add（默认）= 新增/覆盖；remove = 按英文名删除" },
+            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "add", "remove" }, ["description"] = "add（默认）新增/覆盖；remove 删除" },
             ["english"] = new JsonObject { ["type"] = "string", ["description"] = "英文名（术语原文，唯一键）" },
             ["chinese"] = new JsonObject { ["type"] = "string", ["description"] = "中文译名（action=add 时必填）" },
             ["note"] = new JsonObject { ["type"] = "string", ["description"] = "可选备注（来源/原因）" },

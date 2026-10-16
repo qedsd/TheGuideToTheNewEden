@@ -7,21 +7,19 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MaxWidth="1000" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+            <StackPanel Grid.Column="0" Margin="36,0,36,40">
                 <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Market}" />
                 <Border Style="{StaticResource SettingsGroupBorder}">
                     <StackPanel>
-                        <controls:SettingCard Icon="Calendar24" Title="{DynamicResource MarketSettingPage_OrderDuration}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                        <controls:SettingCard Title="{DynamicResource MarketSettingPage_OrderDuration}" Icon="Clock16">
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <ui:NumberBox
                                     x:Name="OrderDurationBox"
                                     Width="140"
@@ -39,10 +37,8 @@
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
-                        <controls:SettingCard Icon="Calendar24" Title="{DynamicResource MarketSettingPage_HistoryDuration}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                        <controls:SettingCard Title="{DynamicResource MarketSettingPage_HistoryDuration}" Icon="Clock16">
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <ui:NumberBox
                                     x:Name="HistoryDurationBox"
                                     Width="140"
@@ -61,9 +57,9 @@
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource MarketSettingPage_MaxThread}"
                             Description="{DynamicResource MarketSettingPage_MaxThread_Desc}"
-                            Icon="Settings24"
-                            Title="{DynamicResource MarketSettingPage_MaxThread}">
+                            Icon="Settings24">
                             <ui:NumberBox
                                 x:Name="MaxThreadBox"
                                 Width="140"
@@ -76,24 +72,24 @@
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource MarketSettingPage_ScalperSikpStructure}"
                             Description="{DynamicResource MarketSettingPage_ScalperSikpStructure_Desc}"
-                            Icon="DataTrending24"
-                            Title="{DynamicResource MarketSettingPage_ScalperSikpStructure}">
+                            Icon="DataTrending24">
                             <ui:ToggleSwitch x:Name="ScalperSkipToggle" />
                         </controls:SettingCard>
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource MarketSettingPage_MarketSikpStructure}"
                             Description="{DynamicResource MarketSettingPage_MarketSikpStructure_Desc}"
-                            Icon="DataTrending24"
-                            Title="{DynamicResource MarketSettingPage_MarketSikpStructure}">
+                            Icon="DataTrending24">
                             <ui:ToggleSwitch x:Name="MarketSkipToggle" />
                         </controls:SettingCard>
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
-                        <controls:SettingCard Icon="Delete24" Title="{DynamicResource MarketSettingPage_ClearCache}">
+                        <controls:SettingCard Title="{DynamicResource MarketSettingPage_ClearCache}" Icon="Delete24">
                             <Button
                                 x:Name="ClearCacheButton"
                                 MinWidth="100"

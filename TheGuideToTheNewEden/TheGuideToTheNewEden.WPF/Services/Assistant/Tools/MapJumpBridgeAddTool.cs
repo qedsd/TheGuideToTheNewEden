@@ -12,7 +12,7 @@ public sealed class MapJumpBridgeAddTool : ITool
     public string DisplayNameKey => "AssistantTool_map_jumpbridge_add";
 
     public string Description =>
-        "新增一组玩家跳桥（两个相邻星系之间）。参数 systemA/systemB 用星系名。该操作会写入跳桥配置并影响寻路，" +
+        "新增一组玩家跳桥（两个相邻星系之间，两端都用星系名）。该操作会写入跳桥配置并影响寻路，" +
         "需要用户确认后才会执行；任一端星系未找到或已占用时给出原因。";
 
     public JsonObject? Parameters => new()

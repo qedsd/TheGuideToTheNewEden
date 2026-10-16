@@ -19,10 +19,10 @@ public sealed class ScalperAnalyseTool : ITool
     public string DisplayNameKey => "AssistantTool_scalper_analyse";
 
     public string Description =>
-        "运行倒货分析并给出 top-N 买入候选（推荐度/净利润/回报率/本金/销量/热力）。" +
-        "按当前倒货设置（源/目的市场、目标物品）执行，取数分钟级、大量 ESI 调用，需要用户确认。" +
-        "top 控制条数（默认 15，上限 30）；minProfitIsk/minRoi 过滤净利润/回报率。" +
-        "返回的利润率、净利润、销量等一律以工具数据为准，禁止自行计算；据此给出买入建议时附数据依据。";
+        "运行倒货分析（只读），按推荐度列出买入候选：净利润、回报率、本金、销量、热力。" +
+        "取数分钟级、大量 ESI 调用，需用户确认后执行；" +
+        "返回的利润率、净利润、销量一律以工具数据为准，禁止自行计算。" +
+        "适合「这价还能不能倒」。";
 
     public JsonObject? Parameters => new()
     {

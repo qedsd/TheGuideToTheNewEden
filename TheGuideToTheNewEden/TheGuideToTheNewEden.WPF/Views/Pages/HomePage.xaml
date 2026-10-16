@@ -1000,45 +1000,18 @@
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                     IsActive="{Binding Market.IsLoading}" />
                             </StackPanel>
-
-                            <StackPanel
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Orientation="Horizontal">
-                                <TextBlock
-                                    Margin="0,0,8,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="11.5"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding Market.FavoriteCountText}"
-                                    Visibility="{Binding Market.HasMore, Converter={StaticResource BoolToVisibility}}" />
-                                <ui:Button
-                                    Appearance="Transparent"
-                                    Click="OnGoMarketClick"
-                                    Content="{DynamicResource Home.Market.AllFavorites}" />
-                            </StackPanel>
                         </Grid>
                     </controls:CardControl.Header>
 
                     <StackPanel>
                         <!--  收藏为空  -->
                         <StackPanel Margin="0,4,0,6" Visibility="{Binding Market.HasNoFavorite, Converter={StaticResource BoolToVisibility}}">
-                            <ui:SymbolIcon
-                                FontSize="20"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Symbol="Star24" />
                             <TextBlock
                                 Margin="0,8,0,0"
                                 FontSize="12.5"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{DynamicResource Home.Market.NoFavorite}"
                                 TextWrapping="Wrap" />
-                            <ui:Button
-                                Margin="0,10,0,0"
-                                HorizontalAlignment="Left"
-                                Appearance="Primary"
-                                Click="OnGoMarketClick"
-                                Content="{DynamicResource Home.Market.GoMarket}" />
                         </StackPanel>
 
                         <ItemsControl ItemsSource="{Binding Market.Items}">

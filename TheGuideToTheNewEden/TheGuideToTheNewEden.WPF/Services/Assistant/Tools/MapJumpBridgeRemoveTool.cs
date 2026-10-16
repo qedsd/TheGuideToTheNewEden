@@ -12,7 +12,7 @@ public sealed class MapJumpBridgeRemoveTool : ITool
     public string DisplayNameKey => "AssistantTool_map_jumpbridge_remove";
 
     public string Description =>
-        "删除一组玩家跳桥。参数 systemA/systemB 用星系名（不区分两端顺序）。该操作会写入跳桥配置并影响寻路，" +
+        "删除一组玩家跳桥（两端都用星系名，不区分顺序）。该操作会写入跳桥配置并影响寻路，" +
         "需要用户确认后才会执行。";
 
     public JsonObject? Parameters => new()

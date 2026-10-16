@@ -2,148 +2,109 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.AiAssistantSettingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MaxWidth="1000" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
-                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_AiAssistant}" />
-
-                <!--  模型端点提示：助手复用「AI 翻译」的设置，这里只放行为参数  -->
-                <Border Style="{StaticResource SettingsGroupBorder}">
-                    <StackPanel Margin="16,12">
-                        <TextBlock
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_Endpoint_Desc}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
-
-                <!--  ============ 行为 ============  -->
-                <Border Style="{StaticResource SettingsGroupBorder}">
-                    <StackPanel Margin="16,12">
-                        <TextBlock
-                            FontSize="14"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_Behavior}" />
-
-                        <!--  最大工具轮数  -->
-                        <TextBlock
-                            Margin="0,12,0,0"
-                            Style="{StaticResource TranslationFieldLabel}"
-                            Text="{DynamicResource AssistantSettingPage_MaxToolRounds}" />
-                        <ui:NumberBox
-                            x:Name="RoundsBox"
-                            Width="160"
-                            HorizontalAlignment="Left"
-                            Maximum="30"
-                            Minimum="1"
-                            SmallChange="1" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_MaxToolRounds_Desc}"
-                            TextWrapping="Wrap" />
-
-                        <!--  默认角色  -->
-                        <TextBlock
-                            Margin="0,12,0,0"
-                            Style="{StaticResource TranslationFieldLabel}"
-                            Text="{DynamicResource AssistantSettingPage_DefaultCharacter}" />
-                        <ui:TextBox
-                            x:Name="CharacterBox"
-                            Width="320"
-                            HorizontalAlignment="Left"
-                            PlaceholderText="{DynamicResource AssistantSettingPage_DefaultCharacter_Tip}" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_DefaultCharacter_Desc}"
-                            TextWrapping="Wrap" />
-
-                        <!--  确认写操作  -->
-                        <ui:ToggleSwitch
-                            x:Name="ConfirmToggle"
-                            Margin="0,12,0,0"
-                            Content="{DynamicResource AssistantSettingPage_Confirm}" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_Confirm_Desc}"
-                            TextWrapping="Wrap" />
-
-                        <!--  全局快捷键  -->
-                        <TextBlock
-                            Margin="0,12,0,0"
-                            Style="{StaticResource TranslationFieldLabel}"
-                            Text="{DynamicResource AssistantSettingPage_Hotkey}" />
-                        <ui:TextBox
-                            x:Name="HotkeyBox"
-                            Width="200"
-                            HorizontalAlignment="Left"
-                            PlaceholderText="Alt+Q" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_Hotkey_Desc}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
-
-                <!--  ============ 系统提示词 ============  -->
-                <Border Style="{StaticResource SettingsGroupBorder}">
-                    <StackPanel Margin="16,12">
-                        <TextBlock
-                            FontSize="14"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_Prompt}" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource AssistantSettingPage_Prompt_Desc}"
-                            TextWrapping="Wrap" />
-                        <ui:TextBox
-                            x:Name="PromptBox"
-                            MinHeight="120"
-                            Margin="0,8,0,0"
-                            AcceptsReturn="True"
-                            MaxHeight="260"
-                            PlaceholderText="{DynamicResource AssistantSettingPage_Prompt_Tip}"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
+    <!--
+        设置 → AI：与「设置首页」同一套钻取式导航。
+        SectionView = 二级菜单（四节，占满整页）；点某一节 → DetailView = 三级（该节详情 + 面包屑返回）。
+    -->
+    <Grid>
+        <!--  ============ 二级菜单（整页列表） ============  -->
+        <ScrollViewer
+            x:Name="SectionView"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MaxWidth="1000" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
                 <StackPanel
-                    Margin="0,4,0,0"
-                    HorizontalAlignment="Left"
-                    Orientation="Horizontal">
+                    Grid.Column="0"
+                    Margin="36,20,36,40">
+                    <!--
+                        不画页面标题：当前所在分类已经由设置壳页的面包屑显示（「设置 › AI › …」），
+                        这里直接给菜单项，与其它设置子页保持一致（阶段 125）。
+                    -->
+                    <Border Style="{StaticResource SettingsGroupBorder}">
+                        <ItemsControl x:Name="SectionList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Click="Section_Click"
+                                        Style="{StaticResource SettingsRowButton}"
+                                        Tag="{Binding}">
+                                        <Grid MinHeight="64">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <ui:SymbolIcon
+                                                Grid.Column="0"
+                                                Margin="16,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="20"
+                                                Symbol="{Binding Icon}" />
+
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Margin="16,12"
+                                                VerticalAlignment="Center">
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Title}" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding Description}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <ui:SymbolIcon
+                                                Grid.Column="2"
+                                                Margin="24,0,16,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Symbol="ChevronRight24" />
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+
                     <ui:Button
-                        Appearance="Primary"
-                        Click="OnSaveClick"
-                        Content="{DynamicResource AssistantSettingPage_Save}"
-                        Icon="{ui:SymbolIcon Save24}" />
-                    <ui:Button
-                        Margin="8,0,0,0"
-                        Click="OnRestoreClick"
+                        Margin="0,16,0,0"
+                        HorizontalAlignment="Left"
+                        Click="OnRestoreAllClick"
                         Content="{DynamicResource AssistantSettingPage_Restore}"
                         Icon="{ui:SymbolIcon ArrowReset24}" />
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource AssistantSettingPage_Restore_Desc}"
+                        TextWrapping="Wrap" />
                 </StackPanel>
-            </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!--  ============ 三级菜单（某一节的详情） ============  -->
+        <!--  没有自己的标题栏：导航标题由外层设置页的面包屑显示成「设置 › AI › 节名」（阶段 124）  -->
+        <Grid x:Name="DetailView" Background="Transparent" Visibility="Collapsed">
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ContentControl x:Name="SectionHost" Margin="36,24,36,32" />
+            </ScrollViewer>
         </Grid>
-    </ScrollViewer>
+    </Grid>
 </Page>

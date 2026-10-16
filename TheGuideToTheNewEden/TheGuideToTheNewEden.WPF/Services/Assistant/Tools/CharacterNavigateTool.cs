@@ -13,7 +13,7 @@ public sealed class CharacterNavigateTool : ITool
     public string DisplayNameKey => "AssistantTool_character_navigate";
 
     public string Description =>
-        "打开软件的角色页并进入指定角色的工作区（配合「看看 X 的角色页」类问题使用）。参数 characterName 用角色全名；省略用默认角色。" +
+        "打开软件的角色页并进入指定角色的工作区（配合「看看 X 的角色页」类问题使用）。角色全名（省略 = 默认角色）。" +
         "找不到角色时返回原因、不跳转。";
 
     public JsonObject? Parameters => new()

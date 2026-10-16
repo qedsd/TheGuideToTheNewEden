@@ -25,20 +25,19 @@ public sealed class MissionInfoTool : ITool
     public string DisplayNameKey => "AssistantTool_mission_info";
 
     public string Description =>
-        "查询 EVE 任务（代理人任务）资料：任务标题与攻略正文（含要点、掉落、流程，Markdown 格式）。" +
-        "参数 keyword 按任务名搜索（中英文均可，如「世界碰撞」「Damsel」）；也可只给 level（1–5）列出该等级的任务；" +
-        "top 控制列出的任务条数（默认 10，上限 30）；contentChars 控制返回多少正文字符（默认 1500，上限 6000，超出会截断并注明）。" +
-        "只给 keyword 且唯一命中时直接返回该任务的正文；多命中时先列标题再让用户/模型指定。适合「XX 任务怎么做」「4 级任务有哪些」。";
+        "查本地 EVE 任务资料：任务标题与攻略正文（要点、掉落、流程，Markdown）。" +
+        "可按任务名搜索，或按等级列出任务清单。只读。" +
+        "唯一命中直接返回攻略正文，超长会截断并注明。适合「这个任务怎么做」「4 级任务有哪些」。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["keyword"] = new JsonObject { ["type"] = "string", ["description"] = "任务名关键词（中英文均可）" },
-            ["level"] = new JsonObject { ["type"] = "integer", ["description"] = "任务等级 1–5（不给 keyword 时按等级列出）" },
-            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数（默认 10，上限 30）" },
-            ["contentChars"] = new JsonObject { ["type"] = "integer", ["description"] = "正文返回字符数（默认 1500，上限 6000）" },
+            ["keyword"] = new JsonObject { ["type"] = "string", ["description"] = "任务名关键词，中英文均可" },
+            ["level"] = new JsonObject { ["type"] = "integer", ["description"] = "任务等级 1–5，按等级列出" },
+            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "返回条数，默认 10，上限 30" },
+            ["contentChars"] = new JsonObject { ["type"] = "integer", ["description"] = "正文长度，默认 1500，上限 6000" },
         },
     };
 

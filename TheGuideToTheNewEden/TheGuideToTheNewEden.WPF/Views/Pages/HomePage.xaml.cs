@@ -167,9 +167,6 @@ public partial class HomePage : Page
     private void OnGoCharactersClick(object sender, RoutedEventArgs e)
         => Navigation.Navigate(typeof(CharactersShellPage));
 
-    private void OnGoMarketClick(object sender, RoutedEventArgs e)
-        => Navigation.Navigate(typeof(MarketPage));
-
     private void OnMarketItemClick(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is HomeMarketItemViewModel item)

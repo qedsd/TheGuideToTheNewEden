@@ -24,7 +24,7 @@ public sealed class AiAssistantEngine
     /// <summary>回填给模型的单条工具结果文本上限（防御上下文膨胀）。</summary>
     public const int MaxToolResultChars = 4000;
 
-    /// <summary>内置系统提示词（规则 1–8；工具清单不放进提示词，走 API tools 参数）。</summary>
+    /// <summary>内置系统提示词（规则 1–12；工具清单不放进提示词，走 API tools 参数）。</summary>
     public const string DefaultSystemPrompt =
         """
         你是《新伊甸漫游指南》的内置 AI 助手，帮助 EVE Online 玩家查询游戏数据、跳转到软件对应页面。
@@ -39,6 +39,10 @@ public sealed class AiAssistantEngine
         7. 一次请求里尽量合并可并行的查询（如同时要价格和历史），减少往返。
         8. 涉及倒货/比价/走势时：利润率、净利润、销量、推荐度、价差等数值一律以工具返回为准，不得自行计算或估算；给出买入/卖出/观望建议时必须附上工具数据的依据（数值 + 一句话理由）。
         9. 回答用 Markdown 组织（界面会渲染）：多项数据用表格，结论与关键词用加粗，并列项用列表；不要输出无结构的长段文字。
+        10. 有专用工具（市场/角色/星图/商业/频道等）能满足的问题，优先用专用工具——它们更便宜、已按业务口径整理好。**没有对应专用工具时**，用 ESI 通用网关：先 `esi_search` 找端点，再 `esi_describe` 看参数，最后 `esi_read` 调用；这三步不要跳。
+        11. `esi_read` 只能跑只读端点；写端点（POST/PUT/DELETE）必须用 `esi_write`，它会先让用户确认。调用写操作前必须先 `esi_describe` 确认字段与枚举取值，并在回复里说清"将要执行什么"，不要替用户猜参数。
+        12. 不得编造 operationId、参数名或参数值；`esi_search` 找不到就直说没有这个能力，不要尝试拼路径。ESI 返回 403 时如实转述（缺哪个 scope、是否可能需要军团职位），并给出"settings → 权限选择重新授权"的建议。
+        13. ESI 结果里的 ID 会被自动补成「名称 (id)」（例如 `伏尔戈 (10000002)`）——那是**给人看的展示值**；再次调用工具时参数要写括号里的数字（或直接用该字段自身的数字），不要把带名称的整串当参数传回去。
         """;
 
     private readonly int _maxToolRounds;
@@ -72,6 +76,13 @@ public sealed class AiAssistantEngine
         private bool _userStopped;
         private string? _finalText;
         private bool _finalConsumed;
+        private string _userText = string.Empty;
+
+        /// <summary>本轮已经执行过的工具名（按需声明的"轮内粘性"，只增不减）。</summary>
+        private readonly HashSet<string> _usedToolNames = new(StringComparer.Ordinal);
+
+        /// <summary>上一次真正声明出去的工具名拼串（用于"只在集合变化时记一条日志"）。</summary>
+        private string? _declaredKey;
 
         internal Turn(AiAssistantEngine engine, AssistantContext ctx, Action<ToolStep>? onStep)
         {
@@ -182,6 +193,18 @@ public sealed class AiAssistantEngine
             {
                 _usage = new ChatUsage(_usage.InputTokens + state.Usage.InputTokens, _usage.OutputTokens + state.Usage.OutputTokens);
             }
+
+            // DeepSeek 的 DSML 泄漏（阶段 120）：流里出现过工具调用标记 → 不再把一段 XML 当回答显示，
+            // 改成一句可诊断、可照做的提示（工具轮是非流式、已由协议层兼容解析，这里兜的是"最终回答轮"）。
+            if (state.DsmlSeen)
+            {
+                var parsed = DeepSeekDsmlParser.Parse(state.DsmlRaw);
+                Core.Log.Warn($"最终回答流里出现 DSML 标记：解析到 {parsed.Calls.Count} 个调用，truncated={parsed.Truncated}；已拦截不显示原文");
+                yield return "\n\n> ⚠ 模型这次把工具调用写成了 DSML 文本（服务端没有转成标准 function calling），已拦截不显示原文。"
+                             + (parsed.Calls.Count > 0
+                                 ? $"解析到 {parsed.Calls.Count} 个调用（{string.Join("、", parsed.Calls.Select(c => c.Name))}）——**把这句话重发一次**通常就能正常调用。"
+                                 : parsed.Error ?? "请在 设置 → AI 助手 把「最大输出 token」调大后重试。");
+            }
         }
 
         /// <summary>确认挂起后的继续入口：apply=true 执行挂起工具并继续到最终回答；false 回填"未确认"继续。</summary>
@@ -198,14 +221,22 @@ public sealed class AiAssistantEngine
             {
                 if (apply)
                 {
-                    var tool = ToolRegistry.Find(action.ToolName);
+                    var tool = ToolRegistry.FindLoose(action.ToolName);
                     if (tool is null)
                     {
                         _messages.Add(ChatMessage.Tool(action.Id, $"未知工具 {action.ToolName}。", action.ToolName));
                         continue;
                     }
 
+                    if (!ToolRegistry.IsEnabled(tool.Name))
+                    {
+                        Core.Log.Info($"AI 助手 · 工具 {tool.Name}：挂起期间被用户关闭，已取消执行");
+                        _messages.Add(ChatMessage.Tool(action.Id, $"工具 {tool.Name} 已被关闭，本次操作未执行。", tool.Name));
+                        continue;
+                    }
+
                     await ExecuteOneAsync(tool, action.Id, action.ArgumentsJson, ct);
+                    _usedToolNames.Add(tool.Name);
                 }
                 else
                 {
@@ -219,6 +250,7 @@ public sealed class AiAssistantEngine
 
         internal async Task<Turn> RunAsync(string userText, CancellationToken ct)
         {
+            _userText = userText;
             if (_ctx.Context is { Count: > 0 })
             {
                 foreach (var pair in _ctx.Context)
@@ -231,6 +263,34 @@ public sealed class AiAssistantEngine
             _messages.Add(ChatMessage.User(userText));
             await RunLoopAsync(ct);
             return this;
+        }
+
+        /// <summary>
+        /// 计算本次请求要声明给模型的工具（阶段 123）。集合在一个 Turn 内尽量稳定（缓存友好），
+        /// 只会因为"本轮又用到了新工具"而扩大；每次真正变化时记一条 INFO，便于核对省了多少 token。
+        /// </summary>
+        private IReadOnlyList<ChatTool> DeclaredTools()
+        {
+            var disabled = AiAssistantSettingService.DisabledTools;
+            if (!AiAssistantSettingService.AutoRouteTools)
+            {
+                return ToolRegistry.EnabledSchemas;
+            }
+
+            var sticky = ToolRegistry.MergeNames(_ctx.StickyTools, _usedToolNames);
+            var route = ToolRouter.Resolve(_userText, sticky, disabled);
+            var schemas = ToolRouter.Schemas(route, disabled);
+
+            var key = string.Join(",", route.ToolNames);
+            if (key != _declaredKey)
+            {
+                _declaredKey = key;
+                var bundle = route.FallbackToAll ? "未命中意图 → 全部" : "套餐 " + string.Join("+", route.Bundles);
+                Core.Log.Info($"AI 助手 · 按需声明：{bundle} · {schemas.Count}/{ToolRegistry.Product.Count} 个工具"
+                              + $" · 约 {ToolRegistry.DeclarationChars(schemas)} 字符");
+            }
+
+            return schemas;
         }
 
         private async Task RunLoopAsync(CancellationToken ct)
@@ -248,7 +308,9 @@ public sealed class AiAssistantEngine
                         Endpoint = Endpoint,
                         SystemPrompt = systemPrompt,
                         Messages = _messages,
-                        Tools = ToolRegistry.AllSchemas,
+                        // 按需声明（阶段 123）：默认只声明"与本次提问相关的套餐 + 核心常驻 + 用过的工具"；
+                        // 关掉该设置就是老行为（声明全部已启用工具）。关掉的工具一律不下发。
+                        Tools = DeclaredTools(),
                         Stream = false,
                     }, ct);
                 }
@@ -299,7 +361,8 @@ public sealed class AiAssistantEngine
                 var pending = new List<PendingToolAction>();
                 foreach (var call in completion.ToolCalls)
                 {
-                    var tool = ToolRegistry.Find(call.Name);
+                    // FindLoose：DSML 文本里模型常把 map_system_info 写成 mapsysteminfo（阶段 120）
+                    var tool = ToolRegistry.FindLoose(call.Name);
                     if (tool is null)
                     {
                         Core.Log.Info($"AI 助手 · 工具 {call.Name}：模型请求了未注册的工具名，已忽略并提示模型");
@@ -307,15 +370,29 @@ public sealed class AiAssistantEngine
                         continue;
                     }
 
+                    // 被用户在设置里关掉的工具：既不下发也不执行（模型可能是从历史里看到的旧名字）
+                    if (!ToolRegistry.IsEnabled(tool.Name))
+                    {
+                        Core.Log.Info($"AI 助手 · 工具 {tool.Name}：已被用户关闭，拒绝执行");
+                        _messages.Add(ChatMessage.Tool(call.Id,
+                            $"工具 {tool.Name} 已被用户在设置里关闭，无法使用；请改用手头其它工具，或直接说明这一点。",
+                            tool.Name));
+                        continue;
+                    }
+
                     if (tool.RequiresConfirmation)
                     {
-                        var summary = DescribeArgs(call.ArgumentsJson);
+                        // 写工具可实现 IPendingSummary 给出人话摘要（否则退回截断的参数 JSON）
+                        var summary = tool is IPendingSummary describer
+                            ? describer.DescribePending(ParseArgs(call.ArgumentsJson))
+                            : DescribeArgs(call.ArgumentsJson);
                         Core.Log.Info($"AI 助手 · 工具 {tool.Name}：写操作，已挂起等待用户确认（{summary}）");
                         pending.Add(new PendingToolAction(call.Id, tool.Name, summary, call.ArgumentsJson));
                         continue;
                     }
 
                     await ExecuteOneAsync(tool, call.Id, call.ArgumentsJson, ct);
+                    _usedToolNames.Add(tool.Name);   // 轮内粘性：下一轮继续声明它
                 }
 
                 if (pending.Count > 0)
@@ -328,16 +405,7 @@ public sealed class AiAssistantEngine
 
         private async Task ExecuteOneAsync(ITool tool, string callId, string argumentsJson, CancellationToken ct)
         {
-            JsonElement args;
-            try
-            {
-                using var doc = JsonDocument.Parse(argumentsJson);
-                args = doc.RootElement.Clone();
-            }
-            catch (JsonException)
-            {
-                args = JsonDocument.Parse("{}").RootElement.Clone();
-            }
+            var args = ParseArgs(argumentsJson);
 
             var started = DateTime.UtcNow;
             try
@@ -389,6 +457,20 @@ public sealed class AiAssistantEngine
         {
             var text = argumentsJson?.Trim() ?? string.Empty;
             return text.Length <= 120 ? text : text[..117] + "…";
+        }
+
+        /// <summary>安全解析参数 JSON（非法或为空时给空对象）。</summary>
+        private static JsonElement ParseArgs(string? argumentsJson)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(argumentsJson) ? "{}" : argumentsJson);
+                return doc.RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+                return JsonDocument.Parse("{}").RootElement.Clone();
+            }
         }
     }
 }

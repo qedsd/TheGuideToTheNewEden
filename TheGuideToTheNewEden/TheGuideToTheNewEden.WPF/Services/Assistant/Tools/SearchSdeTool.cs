@@ -13,9 +13,8 @@ public sealed class SearchSdeTool : ITool
     public string DisplayNameKey => "AssistantTool_search_sde";
 
     public string Description =>
-        "在软件的本地静态数据库里按名称检索 EVE 实体：物品、星系、星域、空间站等。参数 keyword 是名称片段（中英文均可），" +
-        "category 限类别（item / solar_system / region / station），limit 控制条数（默认 10，上限 25）。" +
-        "适合「搜一下叫什么来着」「有哪些叫 XX 的」。";
+        "按名称片段搜索本地游戏数据：物品、星系、星域、空间站，以及角色、军团、联盟；中英文均可，可限定只查一类，" +
+        "返回名称、类别与 id，最多 25 条。适合「搜一下叫什么来着」「XX 在哪个星系」。只读、离线，不含市场行情。";
 
     public JsonObject? Parameters => new()
     {

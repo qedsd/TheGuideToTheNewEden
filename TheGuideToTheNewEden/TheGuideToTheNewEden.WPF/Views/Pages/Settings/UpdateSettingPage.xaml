@@ -7,21 +7,21 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MaxWidth="1000" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+            <StackPanel Grid.Column="0" Margin="36,0,36,40">
                 <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Update}" />
                 <Border Style="{StaticResource SettingsGroupBorder}">
                     <StackPanel>
                         <controls:SettingCard
+                            Title="{DynamicResource Settings.Update.Current}"
                             Description="{DynamicResource SettingPage_Update_Desc}"
-                            Icon="Info24"
-                            Title="{DynamicResource Settings.Update.Current}">
+                            Icon="Info24">
                             <TextBlock
                                 x:Name="CurrentVersionText"
                                 VerticalAlignment="Center"
@@ -31,10 +31,8 @@
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
-                        <controls:SettingCard Icon="ArrowSync24" Title="{DynamicResource Settings.Update.Check}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
+                        <controls:SettingCard Title="{DynamicResource Settings.Update.Check}" Icon="ArrowSync24">
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <TextBlock
                                     x:Name="StatusText"
                                     MaxWidth="320"

@@ -189,8 +189,11 @@ public static class HomeFeatureCatalog
             "SettingPage_Structures_Desc", HomeFeatureKind.Action),
         new("setting-esi-scope", SymbolRegular.Shield24, "characters", "SettingPage_ESIScope", "Nav.Settings",
             "SettingPage_ESIScope_Desc", HomeFeatureKind.Action),
-        new("setting-ai-translation", SymbolRegular.Translate24, "translationAi", "SettingPage_AiTranslation", "Nav.Settings",
-            "SettingPage_AiTranslation_Desc", HomeFeatureKind.Action),
+        // 阶段 121：AI 相关设置合并到「AI 助手」页（原「AI 翻译」分类已取消）。
+        // **故意沿用旧 id `setting-ai-translation`**：用户已经把它固定到主页的磁贴不会失效
+        // （改成新 id 会让旧磁贴按"未知 id"被丢弃），只把图标/标题/描述与目标页换掉。
+        new("setting-ai-translation", SymbolRegular.Sparkle24, "translationAi", "SettingPage_AiAssistant", "Nav.Settings",
+            "SettingPage_AiAssistant_Desc", HomeFeatureKind.Action),
         new("setting-glossary", SymbolRegular.LocalLanguage24, "translationLocal", "SettingPage_Glossary", "Nav.Settings",
             "SettingPage_Glossary_Desc", HomeFeatureKind.Action),
         new("setting-keyboard", SymbolRegular.Keyboard24, "keyboardSpan", "SettingPage_KeyboardList", "Nav.Settings",

@@ -14,7 +14,7 @@ public sealed class CharacterOverviewTool : ITool
 
     public string Description =>
         "查询某个角色的概览：出生日期、技能点（总/未分配）、忠诚点、安全等级、个人/公司钱包、军团（联盟）与技能队列状态。" +
-        "参数 characterName 用角色全名；省略用默认角色。适合「我的资产」「X 角色什么情况」。";
+        "角色全名（省略 = 默认角色）。适合「我的资产」「X 角色什么情况」。";
 
     public JsonObject? Parameters => new()
     {

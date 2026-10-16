@@ -265,11 +265,12 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ShowSessionEmptyTip));
     }
 
-    /// <summary>打开「设置 → AI 翻译」（助手复用同一份端点设置）。</summary>
+    /// <summary>打开「设置 → AI → 模型与翻译」（助手复用同一份端点设置）。</summary>
     public void OpenSettings()
     {
         Navigation.Navigate(typeof(SettingsPage));
-        SettingsPage.RequestCategory(typeof(AiTranslationSettingPage));
+        SettingsPage.RequestCategory(typeof(AiAssistantSettingPage));
+        AiAssistantSettingPage.RequestSection("Model");
         Navigation.Activate();
     }
 
@@ -324,6 +325,12 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
             var context = new AssistantContext
             {
                 Context = BuildContext(session, turn),
+                // 按需声明的"会话粘性"（阶段 123）：本对话此前用过的工具始终保留声明
+                StickyTools = session.Turns
+                    .SelectMany(t => t.Steps)
+                    .Select(s => s.ToolName)
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .ToHashSet(StringComparer.Ordinal),
                 SystemPrompt = string.IsNullOrWhiteSpace(AiAssistantSettingService.SystemPrompt)
                     ? null
                     : AiAssistantSettingService.SystemPrompt,

@@ -1,4 +1,7 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
     <!--
         全局默认控件样式：这里放"整个应用统一生效"的隐式样式（不带 x:Key，按 TargetType 匹配）。
@@ -16,26 +19,26 @@
         品牌字体栈（与 design/branding/banner_*.svg 的 font-family 对齐）
         ============================================================================
         设计稿写的是：'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif
-
+        
         WPF 的 FontFamily 原生支持**逗号分隔的回退序列**：逐个尝试，某个字体缺失
         或缺少所需字形时自动用下一个；全都没有则落到 WPF 内置的复合字体
         「全局用户界面 GlobalUserInterface.CompositeFont」。所以这条序列既是"贴近设计稿"，
         也是"字体缺失时的兜底"——不需要我们自己做检测。
-
+        
         逐项说明（为什么是这个顺序）：
-          · Segoe UI        —— 设计稿首选，也是 Windows 的 Fluent 标准字体。
-                               本机存在 segoeui.ttf / segoeuib.ttf（Bold），故英文标题走它。
-          · Microsoft YaHei —— 中文优选。Segoe UI 本身**不含汉字**，中文会自动落到它；
-                               顺序放在 Segoe UI 之后，与设计稿一致。
-                               注意：设计稿用的是 "Microsoft YaHei"，而 WPF 里另有 UI 变体
-                               "Microsoft YaHei UI"（字形同款、专用界面优化）。本项目其余
-                               界面走 WPF-UI 默认（YaHei UI），这里为忠于设计稿仍写 YaHei。
-          · PingFang SC     —— 设计稿里给 macOS 用的。Windows 上**永远不存在**，
-                               留着无害（WPF 会跳过），也让设计稿的字栈在文档层面保持一致。
-          · 兜底            —— 尾缀 "Segoe UI Variable Text, Arial"：
-                               Segoe UI Variable 是 Win11 的新字体（Win10 无），Arial 则
-                               自 Windows 起必有。即便前面全失效（如精简版系统删了字体），
-                               仍有 Arial 顶上，比直接掉到 GlobalUserInterface 更可控。
+        · Segoe UI        —— 设计稿首选，也是 Windows 的 Fluent 标准字体。
+        本机存在 segoeui.ttf / segoeuib.ttf（Bold），故英文标题走它。
+        · Microsoft YaHei —— 中文优选。Segoe UI 本身**不含汉字**，中文会自动落到它；
+        顺序放在 Segoe UI 之后，与设计稿一致。
+        注意：设计稿用的是 "Microsoft YaHei"，而 WPF 里另有 UI 变体
+        "Microsoft YaHei UI"（字形同款、专用界面优化）。本项目其余
+        界面走 WPF-UI 默认（YaHei UI），这里为忠于设计稿仍写 YaHei。
+        · PingFang SC     —— 设计稿里给 macOS 用的。Windows 上**永远不存在**，
+        留着无害（WPF 会跳过），也让设计稿的字栈在文档层面保持一致。
+        · 兜底            —— 尾缀 "Segoe UI Variable Text, Arial"：
+        Segoe UI Variable 是 Win11 的新字体（Win10 无），Arial 则
+        自 Windows 起必有。即便前面全失效（如精简版系统删了字体），
+        仍有 Arial 顶上，比直接掉到 GlobalUserInterface 更可控。
     -->
     <FontFamily x:Key="BrandFontFamily">Segoe UI, Microsoft YaHei, PingFang SC, Segoe UI Variable Text, Arial</FontFamily>
 
@@ -321,6 +324,19 @@
                 <Setter Property="Template" Value="{StaticResource UiVerticalSlider}" />
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!--
+        图标默认色（阶段 125）：WPF-UI 的 SymbolIcon 默认样式**不设 Foreground**，
+        于是退回 Control 的默认值（系统色）——深色主题下就是"黑图标"（§9 第 19 条的同族问题：
+        不显式给色就会退回系统色）。设置页的分类行图标、面包屑的 ">" 都踩到过。
+        这里补一条**全局隐式样式**一次修掉全应用；需要更淡的（如分隔符）或主题色时，
+        在元素上显式写 Foreground 即可覆盖。
+        注意：**不要 BasedOn `{x:Type ui:SymbolIcon}`**——库里没有这个按类型索引的默认样式键，
+        找不到会在页面构造时抛 XamlParseException（§9 里那条"不确定的隐式样式不要 BasedOn"）。
+    -->
+    <Style TargetType="{x:Type ui:SymbolIcon}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
 </ResourceDictionary>

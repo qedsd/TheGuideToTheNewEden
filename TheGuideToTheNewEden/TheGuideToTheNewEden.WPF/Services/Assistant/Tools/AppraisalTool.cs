@@ -16,7 +16,7 @@ public sealed class AppraisalTool : ITool
 
     public string Description =>
         "估价一份物品清单（游戏里复制的多行清单，每行「名称 数量」）。返回总买价、中间价、总卖价、总体积与明细。" +
-        "参数 regionName 用星域名（默认 伏尔戈）；清单超过 200 件时请分批。适合「帮我估价这份清单」「这批货值多少钱」。";
+        "可指定星域名（默认 伏尔戈）；清单超过 200 件时请分批。适合「帮我估价这份清单」「这批货值多少钱」。";
 
     public JsonObject? Parameters => new()
     {

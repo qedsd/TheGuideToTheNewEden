@@ -55,6 +55,18 @@
 	</ItemGroup>
 
 	<!--
+	  ESI 全量操作索引（AI 助手 esi_* 网关的元数据）：由 tools/esi/gen_esi_index.py
+	  从 ESI 官方 OpenAPI 规格生成，197 个操作（只读 171 / 写 26）。
+	  以 Content 复制到输出目录，运行时按 AppContext.BaseDirectory\Resources\Esi\ 读取
+	  （探针工程经 ProjectReference 也会拿到该文件）。刷新规格：重跑脚本即可。
+	-->
+	<ItemGroup>
+		<Content Include="Resources\Esi\EsiOperations.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<!--
 	  运行时数据资源（配置与数据库）体积约 100MB，直接复制会在仓库中重复一份。
 	  这里以“链接”方式引用 WinUI 项目的资源文件：构建时仍各自拷贝到输出目录，
 	  运行时互不影响，仓库不重复存储。

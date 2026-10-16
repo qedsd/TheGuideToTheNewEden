@@ -13,7 +13,7 @@ public sealed class CharacterLocationTool : ITool
     public string DisplayNameKey => "AssistantTool_character_location";
 
     public string Description =>
-        "查询角色当前所在的星系（ESI 实时位置）。参数 characterName 用角色全名；省略则返回**所有**已授权角色的位置。" +
+        "查询角色当前所在的星系（ESI 实时位置）。角色全名（省略 = 返回所有已授权角色的位置）。" +
         "结果含星系名、安全等级与星系 Id。适合「我在哪」「我的小号都在哪」。注意：位置取自 ESI，不是游戏日志，" +
         "角色刚跳跃时可能有一小段延迟。";
 

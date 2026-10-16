@@ -35,11 +35,9 @@ public sealed class TradeSpreadTool : ITool
     public string DisplayNameKey => "AssistantTool_trade_spread";
 
     public string Description =>
-        "查某个物品在**已配置的比价市场清单**上的当前跨市场价差：每个市场的最便宜卖价与最高买价、市场内买卖价差，" +
-        "以及最优的「在 A 买 → 在 B 卖」组合（含税费后的净利与回报率）。参数 items 是物品名数组（1–5 件）；" +
-        "quantity 是要交易的件数（默认 1，上限 100000，价差按该数量逐档吃单计算）；" +
-        "markets 可指定要比的市场名（留空 = 用比价设置里的全部市场）。只读、只查现价，不触发整星域全量抓取。" +
-        "适合「XX 现在能不能倒」「哪里买最便宜哪里卖最贵」；利润/回报率一律以本工具返回为准，不得自行推算。";
+        "查物品在已配置比价市场清单上的当前跨市场利差：各市场最低卖价与最高买价、" +
+        "最优的「A 买 B 卖」组合（含税费净利与回报率）。只读、只查现价，不整星域全量抓取。" +
+        "适合「XX 现在能不能倒」「哪里买最便宜哪里卖最贵」；利润以本工具返回为准，不得自行推算。";
 
     public JsonObject? Parameters => new()
     {
@@ -52,12 +50,12 @@ public sealed class TradeSpreadTool : ITool
                 ["items"] = new JsonObject { ["type"] = "string" },
                 ["description"] = "物品名数组（1–5 件）",
             },
-            ["quantity"] = new JsonObject { ["type"] = "integer", ["description"] = "交易件数（默认 1，上限 100000）" },
+            ["quantity"] = new JsonObject { ["type"] = "integer", ["description"] = "交易件数（默认 1）" },
             ["markets"] = new JsonObject
             {
                 ["type"] = "array",
                 ["items"] = new JsonObject { ["type"] = "string" },
-                ["description"] = "只比这些市场（按名称匹配；留空 = 比价设置里的全部市场）",
+                ["description"] = "限定市场（留空 = 设置里全部）",
             },
         },
         ["required"] = new JsonArray { "items" },

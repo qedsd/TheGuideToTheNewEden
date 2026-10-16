@@ -83,8 +83,13 @@ public sealed class ChatEndpoint
     /// <summary>采样温度；部分推理模型不支持，置为 0 时不下发该字段。</summary>
     public double Temperature { get; init; } = 0.2;
 
-    /// <summary>最大输出 token；&lt;= 0 表示不下发该字段（推理模型走服务端默认）。</summary>
-    public int MaxTokens { get; init; } = 1024;
+    /// <summary>
+    /// 最大输出 token；<b>0 = 不下发该字段</b>（交给服务端默认）。阶段 121 起默认 0——与
+    /// <c>AiModelSettings.MaxTokens</c> 保持一致（两处默认值不同曾是个陷阱：直接 new 端点会静默拿到 1024；
+    /// 阶段 125 起模型端点类从 <c>AiTranslationSettings</c> 拆成了 <c>AiModelSettings</c>）。
+    /// Anthropic 例外：它的 API 必填 <c>max_tokens</c>，0 时由适配器回退到自己的 <c>FallbackMaxTokens</c>。
+    /// </summary>
+    public int MaxTokens { get; init; } = 0;
 
     /// <summary>单次请求超时（秒），覆盖首个字节到最后一个字节。</summary>
     public int TimeoutSeconds { get; init; } = 60;
@@ -234,6 +239,92 @@ public sealed class ChatStreamState
 
     /// <summary>functionCall 出现的顺序计数（生成 fc-N id）。</summary>
     internal int FunctionCallCount { get; set; }
+
+    // ---------- DeepSeek DSML 兼容（阶段 120） ----------
+
+    private readonly System.Text.StringBuilder _pendingText = new();
+
+    /// <summary>
+    /// 流里出现过 DSML 工具调用标记（<c>&lt;｜DSML｜</c>）。一旦为 true，就不再向界面吐原始文本
+    /// （调用方在流结束后据此给一句明确提示，而不是把一段 XML 当回答显示）。
+    /// </summary>
+    public bool DsmlSeen { get; private set; }
+
+    /// <summary>被扣下的原始文本（诊断/解析用；正常流式结束后为空）。</summary>
+    public string DsmlRaw => _pendingText.ToString();
+
+    /// <summary>DSML 哨兵及其前缀（结尾是半个哨兵时要先扣住，等下一块再判断）。</summary>
+    private static readonly string[] SentinelPrefixes = BuildSentinelPrefixes();
+
+    private static string[] BuildSentinelPrefixes()
+    {
+        const string sentinel = "<\uFF5CDSML\uFF5C";
+        const string asciiSentinel = "<|DSML|";
+        var list = new List<string>();
+        for (var i = 1; i <= sentinel.Length; i++)
+        {
+            list.Add(sentinel[..i]);
+        }
+
+        for (var i = 1; i <= asciiSentinel.Length; i++)
+        {
+            list.Add(asciiSentinel[..i]);
+        }
+
+        return [.. list];
+    }
+
+    /// <summary>
+    /// 把流式增量过一遍 DSML 过滤：返回可展示文本；返回 null 表示"这次扣住不给界面"
+    /// （要么已经进了 DSML 块，要么结尾可能是哨兵的前缀、要等下一块）。
+    /// </summary>
+    internal string? FilterDelta(string delta)
+    {
+        if (string.IsNullOrEmpty(delta))
+        {
+            return null;
+        }
+
+        _pendingText.Append(delta);
+
+        if (DsmlSeen)
+        {
+            return null;
+        }
+
+        var buffered = _pendingText.ToString();
+        if (DeepSeekDsmlParser.ContainsDsml(buffered))
+        {
+            DsmlSeen = true;
+            return null;
+        }
+
+        if (SentinelPrefixes.Any(p => buffered.EndsWith(p, StringComparison.Ordinal)))
+        {
+            return null;   // 可能是被切开的哨兵，先扣着
+        }
+
+        _pendingText.Clear();
+        return buffered;
+    }
+
+    /// <summary>流结束时把扣住的文本交出来（没有则 null）。已进入 DSML 块时**保留缓冲**供诊断，不再交给界面。</summary>
+    internal string? FlushPending()
+    {
+        if (DsmlSeen)
+        {
+            return null;   // 留着给 <see cref="DsmlRaw"/> 与引擎的提示用；内容只有这一条响应的标记文本
+        }
+
+        if (_pendingText.Length == 0)
+        {
+            return null;
+        }
+
+        var text = _pendingText.ToString();
+        _pendingText.Clear();
+        return text;
+    }
 }
 
 /// <summary>调用大模型失败（已归一化为可直接展示的信息）。</summary>

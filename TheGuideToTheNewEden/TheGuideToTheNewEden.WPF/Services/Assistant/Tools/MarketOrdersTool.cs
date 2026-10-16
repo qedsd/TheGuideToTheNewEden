@@ -14,10 +14,9 @@ public sealed class MarketOrdersTool : ITool
     public string DisplayNameKey => "AssistantTool_market_orders";
 
     public string Description =>
-        "查询某个物品在某个星域的市场订单：返回卖单最低价前 N 条与买单最高价前 N 条（价格/数量/位置/星系），" +
-        "以及卖/买两侧的 5% 均价、均价与订单条数。参数 itemName 用游戏内物品名（中英文均可）；" +
-        "regionName 用星域名（默认 伏尔戈）。适合回答「物品 X 在 Y 的价格」「现在 X 多少钱」这类问题。" +
-        "返回的价格是工具数据，禁止自行计算或改写。";
+        "查询物品在星域的市场订单：卖单最低价、买单最高价各前几条（价格/数量/位置/星系），" +
+        "以及两侧的 5% 均价、均价与订单条数。适合「物品 X 在 Y 多少钱」。只读，不含合同与历史。" +
+        "价格为工具数据，禁止自行计算或改写。";
 
     public JsonObject? Parameters => new()
     {

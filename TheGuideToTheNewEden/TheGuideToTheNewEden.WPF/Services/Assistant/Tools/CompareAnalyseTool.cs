@@ -17,10 +17,8 @@ public sealed class CompareAnalyseTool : ITool
     public string DisplayNameKey => "AssistantTool_compare_analyse";
 
     public string Description =>
-        "运行多市场比价分析：多个市场 × 多个物品，找出每个物品的最优卖出/买入市场与价格差异、市场集中度建议。" +
-        "按当前比价设置的市场列表执行，取数涉及多个市场，需要用户确认。" +
-        "参数 items 是要比价的物品名数组（游戏内名称）；side 选 sell（在哪里卖出到手最大，默认）或 buy（在哪里买入最便宜）；" +
-        "top 控制返回条数。返回的价格与价差一律以工具数据为准，禁止自行计算。";
+        "多市场比价：多个市场 × 多个物品，按卖出组或买入组给出每个物品的最优市场、与次优的价差及市场集中度建议。" +
+        "按「比价」页设置的市场列表执行，取数较慢、需用户确认；价格与价差以工具数据为准，禁止自行计算或估计。";
 
     public JsonObject? Parameters => new()
     {
@@ -29,7 +27,7 @@ public sealed class CompareAnalyseTool : ITool
         {
             ["items"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" }, ["description"] = "要比价的物品名数组" },
             ["side"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "sell", "buy" }, ["description"] = "卖出组/买入组（默认 sell）" },
-            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "返回条数（默认 10，上限 20）" },
+            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数（默认 10，上限 20）" },
         },
         ["required"] = new JsonArray { "items" },
     };

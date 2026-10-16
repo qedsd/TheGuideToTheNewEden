@@ -18,7 +18,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+            <StackPanel Grid.Column="0" Margin="36,0,36,40">
                 <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Glossary}" />
 
                 <!--  ============ 用户术语表 ============  -->
@@ -154,7 +154,10 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                                            <StackPanel
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Orientation="Horizontal">
                                                 <TextBlock
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -230,9 +233,9 @@
                     Text="{DynamicResource GlossarySettingPage_Status}" />
                 <Border Style="{StaticResource SettingsGroupBorder}">
                     <controls:SettingCard
+                        Title="{DynamicResource GlossarySettingPage_Status}"
                         Description="{DynamicResource GlossarySettingPage_Status_Desc}"
-                        Icon="LocalLanguage24"
-                        Title="{DynamicResource GlossarySettingPage_Status}">
+                        Icon="LocalLanguage24">
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <TextBlock
                                 x:Name="StatusText"

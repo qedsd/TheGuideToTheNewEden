@@ -13,9 +13,9 @@ public sealed class CharacterContractsTool : ITool
     public string DisplayNameKey => "AssistantTool_character_contracts";
 
     public string Description =>
-        "查询某个角色（或军团）的合同列表：合同编号、标题、类型、价格、发布者/接受者、状态、发布时间与到期时间。" +
-        "参数 characterName 用角色全名（省略 = 默认角色）；corporation=true 查军团合同；page 翻页（默认 1）；" +
-        "top 控制条数（默认 12，上限 40）。适合「我有没有没处理的合同」「军团合同里有哪些在等」。";
+        "查角色或军团的合同列表（只读）：编号、标题、类型、价格、发布者/接受者、状态、发布与到期时间。" +
+        "省略 = 默认角色；可查军团合同（需军团合同权限）；支持翻页与条数上限。" +
+        "适合「我有没有没处理的合同」「军团合同里有哪些在等」。";
 
     public JsonObject? Parameters => new()
     {
@@ -23,7 +23,7 @@ public sealed class CharacterContractsTool : ITool
         ["properties"] = new JsonObject
         {
             ["characterName"] = new JsonObject { ["type"] = "string", ["description"] = "角色全名（省略 = 默认角色）" },
-            ["corporation"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 查军团合同（默认 false = 个人）" },
+            ["corporation"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 查军团合同（默认个人）" },
             ["page"] = new JsonObject { ["type"] = "integer", ["description"] = "页码（默认 1）" },
             ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数（默认 12，上限 40）" },
         },

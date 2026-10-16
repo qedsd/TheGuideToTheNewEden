@@ -37,3 +37,18 @@ public interface ITool
     /// <summary>执行工具。参数是模型给出的 JSON 参数（引擎已解析成 <see cref="JsonElement"/>）。</summary>
     Task<ToolResult> ExecuteAsync(ToolContext ctx, JsonElement args, CancellationToken ct);
 }
+
+/// <summary>
+/// 可选接口：让写工具自己写"待确认动作"的人话摘要。
+/// <para>
+/// 引擎默认用截断后的**原始参数 JSON** 当摘要，对 <c>esi_write</c> 这种
+/// "operation + path + body" 结构的参数几乎不可读（用户看不懂确认卡片）。
+/// 实现本接口后，确认卡片显示的就是实现方给出的一句话（如
+/// <c>POST /characters/{character_id}/mail：收件人 123,456；主题 你好</c>）。
+/// </para>
+/// </summary>
+public interface IPendingSummary
+{
+    /// <summary>给用户看的动作摘要（<paramref name="args"/> 是模型给出的参数）。</summary>
+    string DescribePending(JsonElement args);
+}

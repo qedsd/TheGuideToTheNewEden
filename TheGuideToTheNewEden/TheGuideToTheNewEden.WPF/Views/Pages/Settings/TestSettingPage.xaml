@@ -14,7 +14,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+            <StackPanel Grid.Column="0" Margin="36,0,36,40">
                 <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Test}" />
                 <Border Style="{StaticResource SettingsGroupBorder}">
                     <StackPanel>

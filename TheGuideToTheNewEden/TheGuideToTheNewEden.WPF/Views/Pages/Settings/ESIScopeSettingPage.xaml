@@ -7,7 +7,7 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <Grid Margin="36,20,36,24">
+    <Grid Margin="36,0,36,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -15,15 +15,13 @@
 
         <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_ESIScope}" />
 
-        <Border
-            Grid.Row="1"
-            Style="{StaticResource SettingsGroupBorder}">
+        <Border Grid.Row="1" Style="{StaticResource SettingsGroupBorder}">
             <DockPanel>
                 <CheckBox
                     x:Name="SelectAllCheckBox"
-                    DockPanel.Dock="Top"
                     Margin="16,14,16,10"
-                    Content="{DynamicResource ESIScopeSettingPage_SelectAll}" />
+                    Content="{DynamicResource ESIScopeSettingPage_SelectAll}"
+                    DockPanel.Dock="Top" />
 
                 <Border DockPanel.Dock="Top" Style="{StaticResource SettingsDivider}" />
 

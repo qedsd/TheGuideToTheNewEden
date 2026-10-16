@@ -101,12 +101,38 @@
                     Margin="8,0"
                     VerticalAlignment="Center"
                     FontSize="14"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Symbol="ChevronRight24" />
+                <!--  分类名：当子页还有下一层（如 AI 页的分节）时，点它回到子页的上一层  -->
+                <Button
+                    x:Name="BreadcrumbTitleButton"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="BreadcrumbParent_Click"
+                    Cursor="Hand">
+                    <TextBlock
+                        x:Name="BreadcrumbTitle"
+                        VerticalAlignment="Center"
+                        FontSize="24"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                </Button>
+
+                <!--  第三段（子页的下一层，例如 AI 页里的「行为」）；默认收起  -->
+                <ui:SymbolIcon
+                    x:Name="BreadcrumbSubChevron"
+                    Margin="8,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Symbol="ChevronRight24"
+                    Visibility="Collapsed" />
                 <TextBlock
-                    x:Name="BreadcrumbTitle"
+                    x:Name="BreadcrumbSubTitle"
                     VerticalAlignment="Center"
                     FontSize="24"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Visibility="Collapsed" />
             </StackPanel>
 
             <!--  子页是 Page，按 WPF 规则只能由 Window/Frame 承载，故此处用 Frame（隐藏导航栏）  -->

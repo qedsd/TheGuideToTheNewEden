@@ -14,9 +14,9 @@ public sealed class BuildBuyOrderTextTool : ITool
     public string DisplayNameKey => "AssistantTool_build_buy_order_text";
 
     public string Description =>
-        "把某角色被压单的未结订单，转换成 EVE 客户端里可粘贴的批量购买文本（每行「物品名 1」），与订单页的" +
-        "「复制为游戏批量购买」完全同口径。参数 characterName 用角色全名（省略 = 默认角色）；corporation=true 用军团订单；" +
-        "limit 控制最多多少行（默认 30，上限 100）。适合「帮我生成要补货的购买清单」。";
+        "把某角色或军团的被压单未结订单，转成游戏里可粘贴的批量购买文本（每行「物品名 1」），与订单页「复制为" +
+        "游戏批量购买」完全同口径，只取被压单行，最多行数可限制（上限 100）。适合「帮我生成要补货的购买清单」。" +
+        "只读，不写盘。";
 
     public JsonObject? Parameters => new()
     {
@@ -24,7 +24,7 @@ public sealed class BuildBuyOrderTextTool : ITool
         ["properties"] = new JsonObject
         {
             ["characterName"] = new JsonObject { ["type"] = "string", ["description"] = "角色全名（省略 = 默认角色）" },
-            ["corporation"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 用军团订单（默认 false = 个人）" },
+            ["corporation"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 军团（默认个人）" },
             ["limit"] = new JsonObject { ["type"] = "integer", ["description"] = "最多行数（默认 30，上限 100）" },
         },
     };

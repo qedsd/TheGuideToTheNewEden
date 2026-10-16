@@ -14,7 +14,7 @@ public sealed class CharacterSkillsTool : ITool
 
     public string Description =>
         "查询某个角色的技能：技能点（总/未分配）、训练队列，以及按技能组或技能名关键字过滤的明细。" +
-        "参数 characterName 用角色全名；省略用默认角色；query 是组名或技能名关键字。适合「我技能点多少」「学没学 XX」。";
+        "角色全名（省略 = 默认角色）；可按技能组或技能名关键字过滤。适合「我技能点多少」「学没学 XX」。";
 
     public JsonObject? Parameters => new()
     {

@@ -18,6 +18,13 @@ public sealed class AssistantContext
     public string? SystemPrompt { get; init; }
 
     /// <summary>
+    /// 本对话（更早的轮次）**已经用过**的工具名——按需声明路由的"粘性"输入（阶段 123）：
+    /// 用过的工具在后续请求里始终保留声明，避免"上一轮能用、下一轮突然没了"。
+    /// 由界面从当前对话的历史记录里取（<c>AiAssistantViewModel</c>）。
+    /// </summary>
+    public IReadOnlySet<string>? StickyTools { get; init; }
+
+    /// <summary>
     /// 本次使用的模型端点；<c>null</c> = 用「AI 翻译」的设置（<c>TranslationSettingService.AiEndpoint</c>）。
     /// 留这个口子是为了**可测**：探针可以指向本地 mock 服务，而不用动用户的 settings.json。
     /// </summary>

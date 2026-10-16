@@ -7,21 +7,21 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MaxWidth="1000" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+            <StackPanel Grid.Column="0" Margin="36,0,36,40">
                 <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_GameLog}" />
                 <Border Style="{StaticResource SettingsGroupBorder}">
                     <StackPanel>
                         <controls:SettingCard
+                            Title="{DynamicResource Setting_GameLog_EVELogsPath_Title}"
                             Description="{DynamicResource Setting_GameLog_EVELogsPath_Description}"
-                            Icon="Folder24"
-                            Title="{DynamicResource Setting_GameLog_EVELogsPath_Title}">
+                            Icon="Folder24">
                             <ui:TextBox
                                 x:Name="LogsPathTextBox"
                                 Width="280"
@@ -31,9 +31,9 @@
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource Setting_GameLog_ChannelDuration_Title}"
                             Description="{DynamicResource Setting_GameLog_ChannelDuration_Description}"
-                            Icon="Calendar24"
-                            Title="{DynamicResource Setting_GameLog_ChannelDuration_Title}">
+                            Icon="Clock16">
                             <ui:NumberBox
                                 x:Name="ChannelDurationBox"
                                 Width="160"
@@ -46,9 +46,9 @@
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource Setting_GameLog_MaxShowItems_Title}"
                             Description="{DynamicResource Setting_GameLog_MaxShowItems_Description}"
-                            Icon="Document24"
-                            Title="{DynamicResource Setting_GameLog_MaxShowItems_Title}">
+                            Icon="Document24">
                             <ui:NumberBox
                                 x:Name="MaxShowItemsBox"
                                 Width="160"

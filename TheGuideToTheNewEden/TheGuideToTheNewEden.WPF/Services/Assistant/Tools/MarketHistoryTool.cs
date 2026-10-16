@@ -13,16 +13,15 @@ public sealed class MarketHistoryTool : ITool
     public string DisplayNameKey => "AssistantTool_market_history";
 
     public string Description =>
-        "查询某个物品在某星域的市场历史统计：区间最高/最低/均价、现价相对区间位置、近 N 天销量与前期对比。" +
-        "参数 itemName 用游戏内物品名，regionName 用星域名（默认 伏尔戈），days 是统计区间（默认 90）。" +
-        "适合「XX 最近走势怎么样」「XX 是涨是跌」。返回的统计数字是工具数据，禁止自行计算。";
+        "查物品在某星域的历史统计：区间最高/最低/均价、现价在区间的位置、近 N 天销量与前段对比。" +
+        "适合「XX 最近走势怎么样」「XX 是涨是跌」。统计数字为工具数据，禁止自行计算。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品名（游戏内名称，中英文均可）" },
+            ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品名（中英文均可）" },
             ["regionName"] = new JsonObject { ["type"] = "string", ["description"] = "星域名（默认 伏尔戈）" },
             ["days"] = new JsonObject { ["type"] = "integer", ["description"] = "统计区间天数（默认 90）" },
         },

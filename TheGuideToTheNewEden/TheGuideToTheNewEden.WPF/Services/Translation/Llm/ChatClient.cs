@@ -150,6 +150,14 @@ public static class ChatClient
                 break;
             }
         }
+
+        // 流结束（有些服务端不发 [DONE]）：把 DSML 过滤扣住的尾块交出来
+        var tail = state.FlushPending();
+        if (!string.IsNullOrEmpty(tail))
+        {
+            state.Text.Append(tail);
+            yield return tail;
+        }
     }
 
     /// <summary>

@@ -5602,13 +5602,576 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
   ② `character_blueprints` 的产物名是否解析出来；③ `character_contacts` 的标签名是否可读。
   另外**军团级**端点（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，本阶段未做。
 
-> **AI 助手模块的当前状态**（阶段 117 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
+> **AI 助手模块的当前状态**（阶段 124 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
 > Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）、离线探针四套件 + 工具调用日志（113）、
-> **v1.5 P1 九个工具（114）、补齐三套探针（115）、P2 五个只读 + 三个写工具（116）、角色 ESI 直读七个（117）** 均已落地；
-> 工具总数 **47**，探针 **755 断言全 PASS**（逐个套件运行；`all` 受 `MapProbe` 的 `%TEMP%` 环境限制无法整跑），构建 0 错误，
-> 语言键 2244/2244 无重复，应用实机启动验证通过。
+> **v1.5 P1 九个工具（114）、补齐三套探针（115）、P2 五个只读 + 三个写工具（116）、角色 ESI 直读七个（117）、
+> ESI 全量网关四个元工具（118）、删除那 7 个直读工具并把名称富化下沉为通用能力（119）、
+> DeepSeek DSML 兼容（120）、AI 设置重构 + 逐工具开关 + 输出 token 默认 0（121）、
+> 工具声明的 token 预算与缓存契约（122）、按需声明（123）、设置项改名 AI 并改成钻取式菜单（124）、
+> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）** 均已落地；
+> 工具总数 **44**（47 个旧工具 − 阶段 117 的 7 个 + 网关 4 个），探针 **1045 断言全 PASS**
+> （`all` 一次跑完，退出码 0），构建 0 错误，语言键 2280/2280 无重复，应用实机启动验证通过。
+> 工具声明（每次工具轮的固定前缀）已精简到 **23,358 字符**并默认**按需声明**（典型单套餐问题只声明 10,435 字符 ≈ 45%）。
+> 设置里现在只有**一个 AI 入口**（设置 → AI 助手）：模型与翻译 / 行为 / ESI 全量访问 / 工具开关。
 > 未做：**逐工具开关**（`Assistant.Tools.*`）、**跨轮长期记忆**、**截图（视觉输入）**（设计 §10.4，需视觉模型 + 端点能力标记）、
-> **军团级 ESI 端点**（需军团职位权限）。
+> **军团级 ESI 端点**（需军团职位权限——通用网关已能调用这些端点，但角色没有职位时仍是 403）。
+
+---
+
+### 阶段 118：ESI 全量网关（规格驱动、零端点代码）—— 51 个工具 / 197 个 ESI 操作
+
+> 起因（用户提出）：「如何能够快速把整个 ESI 开放成工具，让用户可以指挥 AI 做任何 ESI 允许的事情？
+> 现在是逐个接口开放，代码量太大了。」结论：**不再逐个端点包工具**，改为
+> **4 个元工具 + 1 份由官方 OpenAPI 规格生成的索引**，一次覆盖全部 197 个操作。设计见 `AI_ASSISTANT_DESIGN.md` §18。
+
+#### 先核清的两个事实（决定了方案形态）
+
+| 事实 | 实测结论 |
+|---|---|
+| ESI 官方规格可用 | `https://esi.evetech.net/meta/openapi.json` → 200 / **453 KB**；**197 个操作**（163 GET / 20 POST / 7 PUT / 7 DELETE），**全部带 operationId**；119 个需 scope、78 个匿名；tags 天然分组（Universe 30 / Corporation 22 / Fleets 14 / Character 14 / Market 11…）；每个操作都能拿到 path、动词、参数（含必填与 enum）、请求体字段、scope |
+| EVEStandard 拿不到路由元数据 | `PointyHatGames.EVEStandard 4.1.0` 的包内**只有 DLL、没有 XML 文档**；DLL 里**没有** path 模板（`characters/{characterId}/wallet` 这类字符串不存在）、也没有 `RequiredScope` / `EsiRoute` 之类特性。**反射只能拿到方法名与参数名**，拿不到 path / 动词 / scope / 说明——而"让模型挑端点、拼参数"这四样缺一不可 |
+
+因此：**元数据取自官方规格，调用直接走 HTTP**（OAuth 仍由 `CharacterStore` / `CharacterToolHelper` 负责，令牌刷新走库里已有的 SSO）。
+
+#### 工具面（4 个元工具覆盖 197 个端点）
+
+```
+esi_search(keyword?, tag?, limit?)      → 在索引里检索端点（**按角色实际 scope 过滤**，缺权限的端点不出现）
+esi_describe(operation)                 → path / 参数（必填、enum、默认值）/ 请求体字段 / scope / 调用示例
+esi_read(operation, path?, query?, …)   → 只读端点（含 8 个"查询型 POST"）；写端点会被拒绝
+esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=true（复用阶段 106 的确认挂起机制）
+```
+
+- **引擎只做了一处小改**：新增可选接口 **`IPendingSummary`**（`ITool.cs`）——写工具自己给"确认卡片"的人话摘要。
+  默认摘要（截断的原始参数 JSON）对 `esi_write` 这种 `operation + path + body` 结构几乎不可读；
+  现在卡片上显示的是 `POST /characters/{character_id}/mail：character_id=211；body=- recipients: [1,2] …（Send a new mail）`。
+- **读写分类不能只看动词**：ESI 有 **8 个"查询型 POST"**（`/universe/names`、`/universe/ids`、`/characters/affiliation`、
+  `/characters/{id}/assets/{locations,names}`、`/characters/{id}/cspa`、`/corporations/{id}/assets/{locations,names}`），
+  按动词一刀切会让"查个名字/算个 CSPA"也要用户点确认。索引生成时显式打 `write=false`，并由脚本自检 + 探针双重看住。
+- **默认参数**：`character_id` 省略 = 当前角色、`corporation_id` = 其军团（避免模型去猜 ID，也避免它调别的角色）；
+  `language` 按应用设置自动补 `Accept-Language: zh/en`（索引里 197 个端点全支持）。
+- **服务器跟着角色**：base URL 由 `GameServerSelectorService` 决定（国服 `esi.evepc.163.com` / 欧服 `esi.evetech.net`），
+  与 `CharacterStore` 加载角色用的那份 Auth 文件同源，不会"拿国服令牌打欧服"。
+
+#### 护栏（"让 AI 自由调用"必须配的东西）
+
+1. **权限前置过滤**：检索结果只含该角色已授权 scope 的端点（`AuthorizedCharacterData.Scopes` 是逗号分隔串）；
+   仍缺权限时**不发请求**就给出"缺哪个 scope、去哪重新授权"。
+2. **ESI 错误配额护栏**：读 `X-ESI-Error-Limit-Remain/Reset`，剩余低于阈值（默认 10）直接拒绝调用——
+   连续 4xx/5xx 会被 ESI 临时封禁，这条不能省。
+3. **分页上限**：默认只取第 1 页并回报 `X-Pages`；`allPages=true` 最多取设置里的页数（默认 3）。
+   整星域订单那种几百页的量级仍属市场/倒货页。
+4. **结果整形**（`EsiJsonShaper`）：对象数组 → Markdown 表格（≤8 列 × 30 行）、标量数组 → 逗号连接、
+   长字符串截断、整体按上限硬截断并注明。**不整形就会把 4000 字符上限从中间切断**（引擎的
+   `MaxToolResultChars` 是硬截断），而且界面本来就渲染 Markdown（阶段 109），表格是最省 token 的形态。
+5. **可配置黑名单**：`Assistant.Esi.DeniedPaths`（每行一条、支持 `*`），命中**永不调用**（确认也绕不过）。
+6. **写操作逐次确认**：`esi_write` 一律挂起；`Assistant.Esi.Writes` 关掉后只允许只读端点（**开启也不等于免确认**）。
+
+#### 新增/改动文件
+
+| 文件 | 说明 |
+|---|---|
+| `tools/esi/gen_esi_index.py` | 规格 → 索引的生成脚本（纯标准库；支持 `--spec <本地文件>` 离线生成、`--check` 只自检）。**内含自检**：operationId 唯一、path 以 `/` 开头、GET 不得标成写、非白名单写操作必须标记、`page` 参数类型必须是 integer（这条专门看住"读错 schema 层级"——本轮真踩到：参数类型写在参数的 `schema` 子节点里，读外层会让所有参数变成 string） |
+| `Resources/Esi/EsiOperations.json` | 生成的索引（**102 KB**，197 操作）；`csproj` 以 `Content` + `PreserveNewest` 复制到输出目录，运行时按 `AppContext.BaseDirectory\Resources\Esi\` 读取（探针经 ProjectReference 也能拿到） |
+| `Services/Assistant/Esi/EsiOperationIndex.cs` | 索引模型 + 加载 + 检索 + `Find` 容错 + scope 判定（纯读，不发请求，便于离线断言） |
+| `Services/Assistant/Esi/EsiGateway.cs` | URL 构造与参数校验、Bearer 鉴权、语言头、分页、错误归一化（403 区分"缺 scope"与"军团职位"）、错误配额护栏、黑名单 |
+| `Services/Assistant/Esi/EsiJsonShaper.cs` | JSON → 紧凑文本 / Markdown 表格 + 自截断 |
+| `Services/Assistant/Tools/Esi{Search,Describe,Read,Write}Tool.cs` | 4 个元工具（`EsiWriteTool` 实现 `IPendingSummary`） |
+| `Services/Assistant/Tools/EsiToolHelper.cs` | operationId 解析 + "只读/写"分工检查 |
+| `Services/Assistant/ITool.cs` | + `IPendingSummary`（可选接口） |
+| `Services/Assistant/AiAssistantEngine.cs` | 挂起分支改用 `IPendingSummary`；参数解析收敛为 `ParseArgs`；系统提示词 + 规则 10–12 |
+| `Services/Assistant/AiAssistantSettingService.cs` | + `Assistant.Esi.*` 6 个设置（启用 / 允许写 / 页数上限 / 结果字符上限 / 错误配额阈值 / 黑名单） |
+| `Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)` | + 「ESI 全量访问」分组（6 项设置的 UI） |
+| `probe/AssistantProbe/EsiSuite.cs` + `Program.cs` | 新增 `esi` 套件（133 断言）+ 入口登记 |
+
+#### 验证
+
+- **构建**：`dotnet build -p:OutDir=<临时目录>` → **0 错误、0 新警告**（39 条警告逐条核对，全部来自既有文件）。
+- **探针**：新增 `esi` 套件 **133 断言**（索引完整性、检索与权限过滤、`Find` 容错、URL 构造与参数校验、
+  黑名单与错误归一化、整形器、工具面与分工、末尾一次**真实匿名 `/status` 冒烟**——连不上时明确 SKIP 而不是记失败）。
+  回归全部套件：`all` → **953 PASS / 0 FAIL**（toolcall 80 / engine 62 / tools 502 / quickroute 27 / map 45 /
+  business 15 / writes 71 / ui 18 / esi 133），退出码 0。
+  - `tools` 从 479 → **502**：新增 4 个工具被自动纳入"名字规范 / schema 合法 / required ⊆ properties / 确认标记"矩阵。
+  - `ui` 的 18 条里包含"**51 个工具名全部命中语言字典**"（自动纳入新增的 4 个键）。
+- **语言键**：中英各 **2263**（+19）、**0 重复**、键集完全一致。
+- **静态自查**：设置页 XAML 的 34 个 `DynamicResource` 引用逐个核对（除两个 WPF-UI 主题画刷外全是语言键，
+  15 个新增 ESI 键全部命中）；4 个工具的 `DisplayNameKey` 由 `ui` 套件在真实资源字典下断言命中。
+
+#### 与先前设想的差异（如实记录）
+
+- 黑名单**默认留空**（不默认拦邮件/舰队）。原设想"邮件与舰队类写操作默认进黑名单"，落地时改为默认放行：
+  写操作本来就有"用户逐次确认 + 卡片写明将要发生什么"这道闸，默认拦住会与用户"指挥 AI 做任何 ESI 允许的事"的诉求冲突；
+  设置项与说明里给出了建议模式（`/characters/*/mail`、`/fleets/`）。
+- 不做"动态工具声明"（按 scope 只把可见端点声明成工具）：197 个工具声明一次请求要 8k–30k token，反而更贵、选择准确率更差。
+  检索式（search → describe → call）把 schema 留在本地按需取。
+
+#### 未做 / 边界
+
+- **不支持任意 URL**：只能调用索引里登记的操作（模型给不了任意外网地址）；写死的服务端参数（`X-Compatibility-Date`、
+  `X-Tenant`）由网关忽略，用服务端默认（最新）行为；`datasource` 由 base URL 承担。
+- 不做 ETag/条件请求与响应缓存（每次都是实打实的请求）；`Accept-Language` 之外不暴露其它 header。
+- `/ui/*` 五个动作会操作**游戏客户端**（开市场窗、设航点等），同样走确认；游戏没运行时服务端会报错，文案如实转述。
+- **军团级端点需要军团职位**：网关能调，但角色没有职位时仍是 403（文案会提示这一点）——这是权限，不是代码缺口。
+- ESI 新增/变更端点要**重跑生成脚本 + 重新构建**才会进索引（`--check` 会打印差异前的统计与自检结果）。
+
+### 阶段 119：删除阶段 117 的 7 个角色 ESI 直读工具（能力改由网关 + 通用名称富化承担）
+
+> 起因（用户提问）：「前面单独写过的 ESI 工具是不是可以删了？」
+> 逐个核对后结论：**47 个旧工具里只有 7 个是"纯端点暴露"**，其余不是 ESI、就是带业务口径/被页面共用的服务层封装。
+> 这 7 个连同只服务它们的 912 行服务可以删——**但必须先把它俩的"ID → 名称"富化下沉成网关的通用能力**，
+> 否则助手会开始回答"你监视了 1000125、在 30000142 有 645 件"。
+
+#### 一、先核对（为什么不是"整批删"）
+
+| 类别 | 数量 | 代表 | 结论 |
+|---|---|---|---|
+| 不是 ESI / 本地数据为主 / 导航动作 | 24 | `search_sde`、`map_route`（本地寻路）、`map_jumpbridge_*`（本地 JSON）、`ded_info`/`mission_info`/`wormhole_info`（本地库）、`zkb_entity`（zkillboard）、`server_ping`（TCPing）、`translate`/`links_search`/`shopping_cart`、三个 navigate + `map_layer` | **不能删**（网关只打 ESI） |
+| 重型管线 / 业务口径 | 9 | `scalper_analyse`、`compare_analyse`、`trade_spread`、`market_orders`/`history`/`trend`、`appraisal`、`character_orders`、`build_buy_order_text` | **不能删**（5% 均价、被压单、税后净利…网关只回原始订单） |
+| 角色服务层薄封装 | 7 | `character_wallet`/`skills`/`overview`/`mail`/`contracts`/`industry`/`location` | **不删**（服务被钱包页/技能页/合同页/邮件页共用，删工具只省 39–97 行却丢 TTL 缓存与口径） |
+| **纯端点暴露** | **7** | 阶段 117 的 `character_assets`/`blueprints`/`standings`/`contacts`/`loyalty`/`calendar`/`medals`（**828 行**）+ 只服务它们的 `CharacterEsiExtraService`（**912 行**） | **删**（存在的唯一理由就是"这些端点原本没有消费方"） |
+
+#### 二、前置：通用名称富化 `EsiResponseEnricher`（新增 373 行）
+
+- **覆盖**：解析响应的 JSON，按**字段名**收集 ID 候选并就地改写成 `名称 (id)`，五类解析通道：
+  **物品类型**（`type_id`/`blueprint_type_id`/`product_type_id`/`ship_type_id`/`skill_id`…→ `InvTypeService.QueryTypes`，本地 SDE 且随本地化设置给中文）、
+  **星系**（`solar_system_id`/`system_id`…→ `MapSolarSystemService.Query`）、**星域**（`region_id`…→ `MapRegionService.Query`）、
+  **空间站**（`station_id`…→ `StaStationService.QueryAsync`）、
+  **多态**（`character_id`/`corporation_id`/`alliance_id`/`faction_id`/`contact_id`/`from`/`issuer_id`/`first_party_id`/`tax_receiver_id`/`location_id`/`facility_id`/`destination_id`…→ `LocationNameResolver`，本地库优先、必要时一次 `IDNameService` 的 ESI 兜底）。
+- **安全边界（都是刻意的）**：认出来的 ID 才改（其余字段原样）；**解析不到就保持原值**（绝不写空/写错）；
+  结构 ID（> `int.MaxValue`）**只查本地结构列表**，不触发 ESI 结构解析（不为一个名字额外授权/等待）；
+  单响应上限 **300 个不同 ID**（超出部分保持原值并在结果里注明）；响应 > 4 MB、非 JSON、解析失败一律**原样返回**；
+  任一类别解析异常只记日志（富化是"锦上添花"，不该让整次调用失败）。
+- **可关**：设置 → AI 助手 → 「把 ID 补成名称」（`Assistant.Esi.EnrichNames`，默认开）。
+- **富化值回传的防御（补测时发现的真实缺陷，已修）**：富化把数字改成了字符串 `名称 (id)`，而模型很可能把**看到的整串**当参数传回来
+  （`path: {"region_id": "伏尔戈 (10000002)"}`）。原先 `BuildUrl` 会把它 URL 编码后拼进路径 → 必然 404/400。现在三处一起兜住：
+  ① `IsIdField`（映射表内 或 `_id`/`_ids` 结尾）判定 + `UnwrapId`（`^.+?\(\s*(\d{1,18})\s*\)$`，取最后一个括号里的数字）；
+  ② `BuildUrl` 对 **path 与 query** 的 ID 字段自动还原；③ 写操作的**请求体**走 `UnwrapIdsInJson`（就地遍历，只动 ID 字段，
+  数组与嵌套对象都覆盖，非 ID 字段里恰好带括号数字的不受影响）。另外系统提示词新增**规则 13**：
+  "`名称 (id)` 是展示值，再次调用时参数要写括号里的数字"。
+- **收益**：富化从"7 个角色端点"扩到**全部 197 个端点** —— 钱包流水的对手方、市场订单的物品与地点、
+  工业任务的设施、联系人/声望/勋章/LP 的军团与势力，现在都有名字了（此前只有那 7 个工具有）。
+
+#### 三、删除清单（一次性做完，不留死代码）
+
+| 项 | 内容 |
+|---|---|
+| 工具 | `Character{Assets,Blueprints,Standings,Contacts,Loyalty,Calendar,Medals}Tool.cs`（**828 行**） |
+| 服务 | `Services/Characters/CharacterEsiExtraService.cs`（**912 行**，全仓只有这 7 个工具引用，删前已 grep 确认） |
+| 注册 | `ToolRegistry` 的 7 行 `Register(...)`（原位留注释说明"为什么删、能力去哪了"） |
+| 语言键 | 中英各 7 个 `AssistantTool_character_{assets,blueprints,standings,contacts,loyalty,calendar,medals}` |
+| 探针 | `ToolSuite` 的阶段 117 断言块（7 工具 × 2 条分支 + 4 条描述断言 + 7 条 schema 循环项）+ 两个工具名单数组同步；**新增 7 条"已删除、不许加回来"的断言**（防止又出现"同一端点既有专用工具又有网关"的双份维护） |
+
+#### 四、连带调整
+
+- **`allPages` 默认页数 3 → 10**（`AiAssistantSettingService.DefaultEsiMaxPages`）：原来资产/蓝图这类多页数据由专用工具
+  翻完页再聚合，工具删掉后改由网关承担；默认 3 页会让助手给出"看着完整其实只有第一页"的答案——这是最危险的一类错。
+  设置页文案同步改成"默认 10"，并注明"整星域订单那种几百页的量级仍请用市场/倒货页"。
+- 探针的两个工具名单：`esi_search`/`esi_describe`/`esi_read` 进"只读、不得要求确认"，`esi_write` 进"必须要求确认"。
+
+#### 五、验证
+
+- `dotnet build -p:OutDir=<临时目录>` → **0 错误**（删除后无残留引用：全仓 grep 已删类型/服务只剩注释里的说明）。
+- 探针：`esi` 套件 **133 → 163**（新增 ID→名称富化 17 条：物品/星系/星域/空间站按本地 SDE 断言、
+  结构 ID 与未知 ID 保持原值、数组与嵌套对象逐元素、非 ID 字段不受影响、非 JSON/空输入原样返回、300 上限截断标记、
+  `allPages` 默认值 = 10；另 13 条覆盖**富化值回传的还原**：`UnwrapId` 四种形状、`IsIdField` 判定、
+  path/query 带 `名称 (id)` 时 URL 仍是纯 ID、请求体数组与嵌套对象还原、非 ID 字段不被误改）；
+  `tools` 套件 502 → **431**（少了 7 个工具的 schema 循环与阶段 117 断言块，多了 7 条删除断言）。
+- **全量 `all`：912 PASS / 0 FAIL，退出码 0**（toolcall 80 / engine 62 / tools 431 / quickroute 27 / map 45 /
+  business 15 / writes 71 / ui 18 / esi 163）。
+- 语言键：中英各 **2258**（2263 − 7 + 2）、0 重复、键集完全一致；设置页 36 个 `DynamicResource` 引用核对通过。
+- **净代码变化**：删除 ≈ 1740 行，新增 ≈ 480 行（富化 373 + 设置/UI/键/断言）→ **净减约 1200 行**，且富化覆盖面从 7 个端点扩到 197 个。
+
+#### 六、探针自身的两个坑（记在案）
+
+1. **结构 ID 用例用了真实市场建筑**：`location_id = 1044752365771`（阶段 27 用户添加的市场建筑）**在你本地
+   `MarketStructures.json` 里**，于是"查不到就保持原值"的断言恒假——它其实解析成功了。改用肯定不在本地列表的
+   `1234567890123`。教训：**断言"解析不到"时，别用真实世界里存在的 ID**（用户数据里可能就有）。
+2. **上限用例自造了字段名**：写成 `{"k0":900000000, …}`，而 `k0` 不在富化的字段映射表里 → 收集不到候选、
+   根本走不到上限逻辑，断言恒假。改用映射表里的 `type_id`（数组形式）后通过。教训：**测"上限/阈值"时，
+   输入必须先满足进入该分支的条件**。
+3. **补测"富化值回传"时又踩两次同类问题**：① `GetMarketsRegionIdOrders` 的 `order_type` 在规格里是**必填**
+   （`BuildUrl` 会因缺它直接报错），于是"URL 里的名称被还原"这条断言失败在**前置校验**上而不是还原逻辑上——
+   补上 `order_type` 才对得上；② 我拿 `recipients` 当"数组型 ID 字段"来验，但 ESI 邮件体里
+   `recipients` 是**对象数组**（真正的 ID 字段是里层的 `recipient_id`），改用 `label_ids`（`_ids` 结尾）+ 嵌套对象各验一条。
+   教训：**断言前先确认"这个字段名/这个端点"是不是你以为的形状**——先 `esi_describe` 或查索引，别凭印象写用例。
+
+#### 七、未做 / 边界（如实记录）
+
+- **业务聚合不再由工具提供**：资产"按地点/容器分组"、蓝图"按 TypeId 取最好 ME/TE"、日历"默认只看未来 N 天"
+  这些是原工具的业务加工，网关只给原始数据（模型可用 `allPages` 取全量后自己归纳，或改用市场/角色页面看整理后的视图）。
+  真需要的话，正确做法是给网关加"聚合参数"而不是恢复一个端点工具。
+- **Core 的 `InvTypeService.QueryBlueprintProducts`（阶段 117 为蓝图工具新增）现在没有消费方**：
+  保留（Core 是共享工程，WinUI/后续功能可复用），未删除。
+- **阶段 117 记录的"7 个工具成功路径未实机验证"随工具删除而失效**：这些端点的成功路径现在由
+  `esi` 套件的富化断言 + 一次真实匿名 `GET /status` 冒烟 + 网关的通用护栏覆盖；若日后要针对某个角色做端到端核验，
+  直接在助手页问一句（例如"我的资产汇总"）即可。
+
+### 阶段 120：DeepSeek 的原生工具调用标记（DSML）漏进正文 —— 对话"莫名其妙断开"的真因
+
+> 用户实机反馈（附截图）：助手的回答里出现一段奇怪的标记，然后**对话就断在那里**：
+> `<｜｜DSML｜｜tool_calls>` / `<｜｜DSML｜｜invoke name="mapsysteminfo">` / `<｜｜DSML｜｜parameter name="systemName" string="true">1DQ1-A</parameter>`…
+
+#### 一、定位（日志给了铁证）
+
+- 用户消息 11:47:12，界面底部显示 **`工具 0 次` / 输出 89 token**；`%LocalAppData%\TheGuideToTheNewEden\Logs\20261016.txt`
+  在 **11:47 一条记录都没有**——而 11:46 那几轮 `esi_search` / `esi_describe` / `esi_read` 都在正常记日志。
+  ⇒ **这一轮模型一个工具都没调**，那段标记是被当成**最终回答**显示出来的。
+- 根因（上游已知问题）：DeepSeek V3.2 / V4 系模型（`deepseek-flash` 等）的**原生**工具调用格式是 DSML 文本，
+  官方 API 通常会在服务端转成 OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `message.content` 里
+  （[DeepSeek-V3 issue #1678](https://github.com/deepseek-ai/DeepSeek-V3/issues/1678)、
+  [V3.2 讨论](https://huggingface.co/deepseek-ai/DeepSeek-V3.2/discussions/29)、
+  [V4-Pro 讨论](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/discussions/209)）。
+  我们只认结构化 `tool_calls`，于是把它原样当回答显示 → 用户看到"对话断开"。
+
+#### 二、语法（取自生产环境的 DSML 解析器，不是猜的）
+
+```
+<｜DSML｜tool_calls>            ← V4 的外层块名；V3.2 是 function_calls
+  <｜DSML｜invoke name="func">
+    <｜DSML｜parameter name="key" string="true">value</｜DSML｜parameter>
+  </｜DSML｜invoke>
+</｜DSML｜tool_calls>
+```
+
+要点：`string="true"` 的值按字符串取；`string="false"` 的值**先按 JSON 解析**（数字/布尔/数组/对象），失败退回字符串；
+`invoke` 内也允许直接写一整段 JSON；句末标记 `<｜end▁of▁sentence｜>` 会漏进正文/参数；竖线要同时容忍全角 `｜`(U+FF5C) 与 ASCII `|`、单写与双写。
+
+#### 三、修法（四件事，全部离线可断言）
+
+1. **新增 `DeepSeekDsmlParser`**（协议无关，`Services/Translation/Llm/`）：把正文里的 DSML 解析成标准
+   `ChatToolCall`（合成 `call_dsml_N` 作 id，回填 `tool` 消息要用），并**把标记从正文里摘掉**；
+   覆盖多块、多 `invoke`、直接 JSON 体、类型语义、截断（缺闭合标签时尽力解析并标记）、空块、句末标记清理。
+2. **`OpenAiChatProtocol.ParseResponse`**：没有标准 `tool_calls` 时走 DSML 兼容——
+   解析成功 → 当成工具调用（记一条 INFO）；**解析失败 → 绝不显示原文**，改成可照做的错误
+   （"标记不完整，很可能被最大输出 token 截断，请在 设置 → AI 翻译 调大"）。有标准 `tool_calls` 时优先用标准的（不双重解析）。
+3. **流式**（`ChatStreamState` + `ChatClient`）：哨兵可能被 BPE 切成几块，因此流式侧做"**前缀先扣住**"过滤——
+   见到 `<`、`<｜`、`<｜DSML` 这类前缀就暂不吐字，确认不是哨兵再把扣住的文本补吐出来（不丢字）；
+   一旦确认是 DSML 就整段扣下，`[DONE]` 与流结束都做 flush。引擎在**最终回答轮**检测到 `DsmlSeen` 时，
+   给一句"模型把工具调用写成了 DSML 文本、已拦截，重发一次通常就好"的提示，而不是把 XML 印给用户。
+4. **工具名宽松匹配 `ToolRegistry.FindLoose`**：截图实证模型会把 `map_system_info` 写成 **`mapsysteminfo`**（不写下划线）。
+   先精确、再"去掉下划线/连字符并忽略大小写"后精确、最后唯一前缀匹配；**多命中一律返回 null**（宁可不认，也不要调错工具）。
+   工具轮的 `execute` 与确认后 `ResumeAsync` 都改走它。
+
+#### 四、验证
+
+- 构建：**0 错误**。
+- 探针 `toolcall`：**80 → 121**（+41），全部围绕 DSML：真实形状（用户截图那一轮，含 `mapsysteminfo` 名字）、
+  V3.2 块名 + ASCII 竖线、`string="false"` 的类型语义（number/bool/array）、缺 `string` 属性按字符串、
+  一个块多 `invoke`、`invoke` 内直接 JSON、块前后正文保留、句末标记剔除、**无标记的普通回答原样返回（回归）**、
+  截断/空块给可照做的错误且不留标记、`ParseResponse` 集成（DSML → ToolCalls）、有标准 `tool_calls` 时优先、
+  流式拦截（哨兵切开也不吐半截）、流式前缀补吐不丢字、`FindLoose` 三种情形。
+- 全量 `all`：**953 PASS / 0 FAIL**（toolcall 121 / engine 62 / tools 431 / quickroute 27 / map 45 / business 15 /
+  writes 71 / ui 18 / esi 163），退出码 0。
+
+#### 五、顺带发现（用户配置层面，**未改用户文件**）
+
+- 该账号 `TranslationPage.Ai.MaxTokens = 1024`，而 **44 个工具声明**让单次请求输入约 **11,596 token**（截图里那个数）。
+  输出上限偏小会同时放大两个风险：**工具调用 JSON 被截断**、**Markdown 答案被截断**。
+  建议在 设置 → AI 翻译 把它调到 **4096**（或 0 = 交给服务端默认）。
+- 11.6k token/次的输入成本主要是工具声明本身（44 个 schema）。要压缩有三条路，**本轮未做**：
+  ① ~~逐工具开关（`Assistant.Tools.*`）~~ → **阶段 121 已实现**（`Assistant.Tools.Disabled` + 设置页分组开关）；
+  ② 精简描述文案；③ 按需声明（只声明本轮可能用到的工具）。
+
+### 阶段 121：AI 设置重构（端点并入 AI 助手 / 翻译作为其子设置 / 输出 token 默认 0 / 逐工具开关）
+
+> 用户要求（原话要点）：「设置有点混乱，把 AI 的 key 等设置从 AI 翻译里面移动到 AI 助手里面，翻译放在 AI 助手子设置里面，
+> 最大输出 token 默认改成 0，然后把逐工具开关也加上。」
+
+#### 一、设置结构：两个入口 → 一个入口
+
+| | 之前 | 现在 |
+|---|---|---|
+| 设置 → **AI 翻译** | 协议 / 地址 / Key / 模型 / api-version / 测试连接 + 术语库 + 生成与缓存 + 翻译系统提示词 | **分类删除** |
+| 设置 → **AI 助手** | 轮数 / 默认角色 / 写操作确认 / 快捷键 / 助手提示词 + ESI 全量访问 | ① **模型与翻译**（原 AI 翻译页整块搬来）② 行为 ③ ESI 全量访问 ④ **工具开关** |
+
+- **实现**：原 `AiTranslationSettingPage`（XAML 313 行 + 代码 258 行）删除，内容抽成
+  `Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs)`（UserControl，可被任何页嵌入），
+  由 AI 助手页承载；页内滚动统一交给宿主页（子视图不再自带 `ScrollViewer`）。
+- **连带修正**：3 处「去配置」跳转（助手 VM、AI 翻译页、频道翻译页）都改指 AI 助手分类；
+  主页「添加功能」目录里的 `setting-ai-translation` 条目**故意沿用旧 id**（只换图标 / 标题 / 描述 / 目标页）——
+  改成新 id 会让用户已经固定到主页的磁贴按"未知 id"被丢弃（阶段 94 的 `setting-home` 就是那种处理方式，这次选择保兼容）。
+- **文案同步**：代码 5 处（`TranslateTool` / `AiAssistantEngine` / `DeepSeekDsmlParser` / `AiTranslationProvider` / `ChatTranslationEngine`）
+  与语言键 3 个（`TranslationPage_AiUnavailable`、`Assistant_AiUnavailable`，以及对话框标题键的值改为"AI 设置"），
+  引导语全部从"设置 → AI 翻译"改指"**设置 → AI 助手 → 模型与翻译**"。
+
+#### 二、最大输出 token 默认 0（并修掉一个真陷阱）
+
+- `AiTranslationSettings.MaxTokens` 默认 1024 → **0**（0 = 不下发，交给服务端默认）。
+- **顺带发现的真陷阱**：`ChatEndpoint.MaxTokens` 自己的默认值也是 1024——任何绕过设置层直接
+  `new ChatEndpoint { … }` 的地方会静默拿到 1024，与设置层的 0 不一致（探针"0 不下发"这条断言当场抓到的）。
+  已一并改成 0；**Anthropic 例外**：它的 API 必填 `max_tokens`，0 时适配器回退 `FallbackMaxTokens = 1024`。
+- 用户**已有的 `settings.json` 里存着 1024，不会被自动改写**（那是用户数据）；要生效请在设置页把该值改成 0。
+  另注：本页「恢复默认」只重置助手参数，**不动端点与 Key**（避免误点丢 Key）；端点区保留
+  「恢复默认地址」「恢复内置提示词」两个按钮，逐项恢复更安全。
+
+#### 三、逐工具开关（阶段 116 起挂在待办里的那项）
+
+- **存储**：`Assistant.Tools.Disabled`（**只存被关掉的名字**，逗号分隔）→ 默认空集合 = 全开，
+  新增工具自动启用、不需要迁移，也不会有"44 个布尔键"的噪音。
+- **注册表**：`ToolRegistry.EnabledSchemas`（**发给模型的就是这一份**）、`Enabled`、`IsEnabled`；
+  另有纯函数 `FilterSchemas(tools, disabled)` 供探针离线断言（不碰 settings.json）。
+- **引擎三处**：① 工具轮请求只声明开启的工具（**直接省输入 token**——44 个声明的 schema 约 1.16 万 token/次）；
+  ② 模型硬报被关掉的名字 → 执行侧拒绝并把说明回填给模型；③ 已挂起的写操作在用户确认期间被关掉 → 取消执行。
+- **设置页**：44 个工具按**前缀归类**成 6 组（ESI 网关 / 角色 / 商业 / 星图 / 频道 / 通用与工具），
+  每项一个开关 + 工具英文名；另有「全部启用 / 全部禁用」与"已关闭 N / 44"计数；列表放在限高滚动区里，
+  免得 44 行把设置页撑得老长。
+
+#### 四、验证
+
+- 构建：**0 错误、0 新警告**。
+- 探针：`toolcall` 121 → **124**（`MaxTokens` 默认 0、"0 时请求体不写 max_tokens"、"非 0 才下发"）；
+  `tools` 431 → **446**（过滤语义 + 设置→注册表端到端：**先备份 `settings.json` 字节、跑完按字节还原，
+  并把内存里的禁用集合也还原**）；`ui` 18 → **21**（**真构造并渲染 AI 设置页**：渲染出 51 个开关 ≥ 44 个产品工具、
+  API Key 输入框在位、协议/思考模式两个下拉在位，并纳入既有的"WPF 绑定错误 0 条"断言——设置页大改最容易踩的
+  "StaticResource 缺失 / 绑定到只读属性"这类运行期问题就在这里被看住）。
+- 全量 `all`：**974 PASS / 0 FAIL**，退出码 0。
+- 语言键：中英各 **2269**（2258 − 2 个失效键 + 13 个新键）、0 重复、键集一致；
+  两个改动页的 41 个 `DynamicResource` 引用逐个核对（除两个 WPF-UI 主题画刷外全部命中语言文件）。
+
+#### 五、如实记录 / 边界
+
+- **「恢复默认」不重置端点与 Key**（见上，有意为之）。
+- 工具分组是**前缀归类**（`AiAssistantSettingPage.CategoryOf`）：将来改工具名要同步那里，
+  否则该工具会落到"通用与工具"组——只影响归类，不影响功能。
+- 本轮新增/改动的 UI 未做实机截图核验（按 §8 约定由使用者查看）；设置页的结构与绑定已由 `ui` 套件真构造覆盖。
+
+### 阶段 122：工具声明的 token 预算与缓存契约（精简描述，实测 −17.6%）
+
+> 起因：用户问「精简工具描述与按需声明具体是如何实现省 token」→ 量完真实数据后决定**只做①缓存友好 + ②精简描述**，
+> 按需声明不做（见下"未做"），`MaxToolRounds` 保持 8 不动。
+
+#### 一、先量清楚（一次性审计探针，核验后已删除）
+
+| 项 | 改前实测 |
+|---|---|
+| 44 条工具声明的字符数 | **28,351**（工具描述 7,642 / JSON schema 17,016 / 名字+JSON 骨架 3,693） |
+| 助手系统提示词 | 1,040 |
+| **固定前缀合计** | **29,391 字符 ≈ 0.9–1.2 万 token** |
+| schema 内部（递归分类） | 键名 3,473 / 其它值（type·required·format）1,208 / **参数描述 2,267（118 条）** / enum 203，**其余约 9.9k 是 JSON 语法本身**（引号花括号逗号）——只能靠"少声明工具"省，改文字没用 |
+
+- 关键事实：**只有工具轮带声明**（最终回答轮 `Tools = null`），所以这份前缀按**工具轮数**重复付费；
+  对照当时那一轮的实测输入 11,597 token（对话很短）→ **该轮输入几乎全是这份声明**。
+- 关键计费：DeepSeek `deepseek-flash` 输入**缓存命中 0.02 元/M、未命中 1 元/M（差 50 倍）**，
+  而上下文缓存按**前缀逐字节匹配**——所以"前缀稳定"比"前缀短"更值钱（[官方价](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/)）。
+
+#### 二、① 缓存友好（把顺序与稳定性变成契约）
+
+- `ToolRegistry.All` 的注释里写明**这是缓存契约的一部分**：声明按工具名字典序，**不要**改成按"常用度/最近使用/时间"排序；
+  描述里不要放会变的值（日期/版本/计数）。
+- 探针 `tokens` 套件把契约变成断言：两次取声明完全一致、序列等于字典序、44 条描述与系统提示词里没有
+  日期/年份/"最新版本"这类易变内容（系统提示词 ≤1,100 字符）。
+- 顺带说明"为什么按需声明必须做成固定套餐"：每轮自由挑子集会让工具块变化 → 前缀从该块起全部失效，
+  省了 token 反而多花钱。
+
+#### 三、② 精简描述（28 条超长 + 16 条"点名参数" + 参数描述）
+
+- **文体规则**（写进探针断言，可机械核对）：单条工具描述 **100–135 字符、硬上限 140**；
+  只讲"何时用 + 关键限制/注意事项 +（可选）一个短例子"；**不复述参数表**——参数名只应出现在 schema 里
+  （ESI 网关四个工具豁免，它们是陌生 API 的说明书）；参数描述 ≤24 字符（网关 ≤32）。
+- **执行方式**：28 条超长描述由**并行子代理**分文件改写（每个代理只碰自己的文件，并明确**禁止 dotnet build**——
+  并行构建会互相写坏 `obj`；也禁止 shell 写文件，避免中文被重写坏编码），改完我用预算探针逐条核对长度与文体；
+  剩下 16 条"描述里点名参数"与 4 条参数描述超限由我自己收尾。
+- **效果**：声明总量 **28,351 → 23,358 字符（−17.6%）**，最长描述 132 字符，文体问题 0 条。
+
+#### 四、新增常驻探针 `tokens`（9 条断言）
+
+`dotnet run --project probe/AssistantProbe -- tokens`：单条描述 ≤140 / ≥20、参数描述 ≤24（网关 ≤32）、
+声明总量 ≤26,000、顺序稳定且字典序、无易变内容、无参数名复述、系统提示词 ≤1,100 字符。
+它是这次能安全批量改 28 个文件的**验收器**（改动由代理完成，判定由机械断言完成）。
+
+#### 五、验证
+
+- 构建：**0 错误**。
+- 探针：新增 `tokens` 套件 9 条；全量 `all` = **983 PASS / 0 FAIL**，退出码 0。
+- 与改前对比（同口径 2.5/3/4 字符每 token）：固定前缀约 **11.8k → 9.4k token**（中口径）、**7.3k → 6.0k**（高口径）；
+  更关键的是前缀**既短又稳**，缓存命中率与命中收益同时改善。
+
+#### 六、未做（用户明确）
+
+- **按需声明**（实测可省 54–88%）：它必须做成 4–6 个**固定套餐**（否则毁缓存），并要为"路由误判"兜底
+  （核心常驻 + 会话粘性 + 不确定时全量声明）。本轮不做，代码里也没有埋任何半成品。
+- `MaxToolRounds` 保持 8（用户要求先不动）。
+- enum 移出声明（仅 203 字符，不值）。
+
+#### 七、如实记录
+
+- 探针第一版把"现在/目前"当成易变词，误报 7 条描述——它们是**常量字符串**的一部分，不会让前缀变化；
+  已把规则收窄为日期/年份/版本类（注释里写了原因，免得下次又误报）。
+- 并行改写里有一个代理保守地**没改**参数描述（认为 schema 属于"结构"不该动），收尾轮我补上了。
+  结论：批量改写可以交给代理，但**验收必须交给机械断言**。
+
+### 阶段 123：按需声明（工具套餐路由，缓存友好）
+
+> 承接阶段 122 的结论：按需声明实测能省 54–88%，但**必须**做成固定套餐——每轮自由挑子集会让工具块变化，
+> 前缀缓存从那里起全部失效，省下来的 token 钱不够赔缓存。
+
+#### 一、设计（四条规则）
+
+1. **固定套餐** = 设置页那五组（商业 / 角色 / 星图 / 频道 / 通用），**最多同时选两组**；
+   `Esi`（网关）不参与竞争，它是核心常驻；
+2. **核心常驻** = `esi_search` / `esi_describe` / `esi_read` / `esi_write` + `search_sde` + `translate` + `character_list`
+   —— 保证"没有专用工具时也能靠网关办事"，把误判的代价压到最低；
+3. **粘性**：本对话（界面从会话历史取）与**本轮**已经用过的工具始终保留声明，只增不减；
+4. **看不出意图（一个关键词都没命中）→ 声明全部**：省 token 只在有把握时省。
+
+#### 二、实测数字（`routing` 套件打印，字符口径与 `tokens` 套件同一算法）
+
+| | 字符 | 占全量 |
+|---|---|---|
+| 全量（44 个产品工具） | 23,358 | 100% |
+| 核心常驻（7 个） | 3,987 | 17% |
+| 套餐 Business / General / Character / Map / Channel | 6,448 / 5,863 / 4,392 / 3,027 / 803 | 28% / 25% / 19% / 13% / 3% |
+| **典型单套餐**（"巨神兵级多少钱" → Business） | **10,435** | **45%（省 55%）** |
+| 双套餐（"我的订单被压单了吗" → Business+Character） | 14,703 | 63%（省 37%） |
+| 看不出意图（回退全量） | 23,358 | 0% |
+
+- **关键词表只放意图词，不放实体名**：第一版把"吉他"当意图词，于是"在吉他多少钱"被同时拉进商业与星图两组
+  （58%）；已去掉，并在 `ToolRouter` 里写明原因——实体名到处出现，解析交给核心常驻的 `search_sde` 与 ESI 网关。
+- 7 个典型问法只产生 **6 种**不同的声明集合 → 前缀数量有限，缓存能反复命中。
+
+#### 三、实现
+
+| 位置 | 改动 |
+|---|---|
+| `ToolRegistry` | 抽出共享的 `Product` / `Categories` / `CategoryOf` / `CoreToolNames` / `NamesInCategory` / `SchemasFor` / `DeclarationChars`；**设置页的分组与路由的套餐从此用同一份定义**（删掉了设置页里那份重复的前缀表） |
+| `ToolRouter`（新增） | 纯函数：关键词打分 → 取分最高的 ≤2 组 → 并上核心与粘性 → 剔除用户关闭的 → **按字典序输出**（缓存契约） |
+| `AiAssistantEngine` | `DeclaredTools()` 每轮算一次；集合变化时记一条 INFO：`AI 助手 · 按需声明：套餐 Business · 12/44 个工具 · 约 10435 字符`（这条日志就是"省了多少"的现场证据）；`_usedToolNames` 提供轮内粘性 |
+| `AssistantContext` | 新增 `StickyTools`；界面从当前对话已执行过的工具名填充 |
+| 设置 | `Assistant.Tools.AutoRoute`（**默认开**）+ 设置页「按需声明（省 token）」开关；关掉即回到"每次声明全部已启用工具" |
+| 本地化 | 中英各 +2 键（开关标题与说明） |
+
+#### 四、验证
+
+- 新增 `routing` 套件 **23 条断言**：确定性（同输入同结果）、字典序、只声明注册表里真实存在的工具、
+  核心常驻、套餐命中（中文与英文意图）、两组上限、看不出意图回退全量、会话粘性、
+  **用户关闭的工具永不声明（连核心工具也受开关约束）**、节省比例（单套餐 ≤55%、双套餐 ≤80%）、
+  有限前缀（7 个典型问题 ≤6 种声明集合）。
+- 全量 `all` = **1006 PASS / 0 FAIL**（983 + 23）；构建 **0 错误**；语言键中英各 **2271**（+2）、0 重复、键集一致。
+
+#### 五、边界 / 未做
+
+- 关键词表是**手工维护的中英意图词**：没覆盖到的说法会回退全量（安全，只是不省）。要提命中率就往
+  `ToolRouter.Keywords` 加词——`routing` 套件会守住"确定性、核心常驻、回退、粘性"这些不变量不退化。
+- **两组上限是刻意的**：再多就接近全量，收益消失、前缀集合还变大。
+- 不做"每轮自由挑子集"（毁缓存）、不做向量/模型路由（引入依赖与不确定性）、不做按角色/按页面的上下文路由。
+
+### 阶段 124：设置项改名「AI」并改成钻取式二级/三级菜单
+
+#### 一、改了什么
+
+- 设置首页分类从「AI 助手」改名为「**AI**」（`SettingPage_AiAssistant` 的值与描述同步更新）；
+  主界面左侧导航仍叫「AI 助手」——那是**功能入口**，和"设置分类"不是一回事。
+- AI 设置页改成**与设置首页同一套钻取式导航**（第一版做成"左菜单 + 右详情"被用户否掉：那不是我想要的观感）：
+  - **二级菜单**（`SectionView`）**占满整页**：四节一列卡片，图标 + 标题 + 说明 + 箭头，和设置首页的分类列表长得一样；
+  - 点某一节 → 整页换成 **三级详情**（`DetailView`）：该节内容；
+  - **导航标题不自己画**：第三段交给外层设置页的面包屑显示成「设置 › AI › 行为」（新增
+    `Views/Pages/Settings/ISettingsDetailPage.cs` 契约——子页报告 `BreadcrumbSubTitle` 并触发 `BreadcrumbChanged`，
+    外层面包屑点「AI」时回调 `NavigateBackToParent()`；`SettingsPage` 里对应 `AttachDetailBreadcrumb(page)`）。
+    这样避免"设置页一条标题 + 子页又一条标题"的双标题；
+  - 每节**首次钻进去才构造**、之后缓存（返回再进不重新读设置，未保存的编辑不会丢）。
+- 四个分节：
+
+| 分节 | 内容 | 出处 |
+|---|---|---|
+| 模型与翻译 | 协议 / 地址 / API Key / 模型名 / 生成参数 / 术语库 / 缓存（改动即时保存） | 现成的 `AiTranslationSettingView` |
+| 行为 | 最大工具轮数 / 默认角色 / 写操作确认 / 全局快捷键 / 助手系统提示词 | 新增 `AiBehaviorSettingView` + 自己的「保存」 |
+| ESI 全量访问 | 网关开关 / 允许写 / ID 富化 / 页数 / 结果上限 / 错误配额 / 黑名单 | 新增 `AiEsiSettingView` +「保存」 |
+| 工具开关 | 按需声明 + 44 个工具分组开关 + 全部启用/禁用 + 计数 | 新增 `AiToolsSettingView` +「保存」 |
+
+- 「恢复默认」在**二级菜单页面底部**，并写明**只重置助手参数、不动模型端点与 API Key**。
+- 「去配置」深链直接钻到「模型与翻译」节：新增 `AiAssistantSettingPage.RequestSection(key)` /
+  `SelectSection(key)` / `ShowSectionList()`，三个调用点（助手页 / AI 翻译页 / 频道翻译）都补上 `RequestSection("Model")`。
+- 本地化：中英各 **+6 键**（四节菜单简介 + 行为节说明 + 恢复默认说明），`SettingPage_AiAssistant` 值与描述更新。
+
+#### 二、拆分方式（为什么这样拆）
+
+- **每节自己保存**：三级详情里若再放一个页面级「保存」会有歧义（保存这一节还是全部？）。
+- 控件名与本地化键**原样搬运**（`RoundsBox` / `EsiPagesBox` / `ToolToggleItem` / `ToolGroupItem` …），
+  只把宿主从 `Page` 换成 `UserControl`，把"搬家搬坏"的风险压到最小。
+- 工具分组标题仍是运行时拼键（`AssistantSettingPage_ToolsGroup_{category}`），探针里显式列出这 6 个键防拼错。
+- 模型分节是卡片式布局（其它三节是 `SettingsGroupBorder` 式），所以它的标题独立一行，
+  顺带把原本会失效的 `AssistantSettingPage_Model_Desc` 用了起来（0 死键）。
+
+#### 三、验证
+
+- `ui` 套件 21 → **49 条**：真构造 AI 设置页后按**钻取路径**逐条断言——
+  初始停在二级菜单（4 个可点击分节行、三级内容尚未加载）→ 钻「模型与翻译」（API Key + 2 个下拉、
+  **详情区里没有任何大号标题栏**）→ 「行为」（1 开关 / 1 数字框 / 4 文本框）→ 「ESI」（3 开关 / 3 数字框）→
+  「工具开关」（**45 个开关** = 44 产品工具 + 按需声明，**且这一节里没有别的节的数字框** = "点开才加载"的证据）
+  → 面包屑返回二级菜单（列表重新可见、三级内容已卸下）→ 未知分节键返回 false 并留在二级菜单；
+  深链 `RequestSection("Behavior")` 单独验一次（自己加载的页面里 Loaded 能正常消费待办）；
+  再把**设置壳页**也真构造一次，驱动面包屑挂载点验两个方向：
+  ① AI 页进「行为」→ 外层面包屑第三段显示「行为」；② 点面包屑里的「AI」→ AI 页回到二级菜单、第三段收起。
+- **新增"语言字典完整性"断言**（+4 条）：两份字典各自能独立加载（同键重复 = 加载即抛 XamlParseException）
+  且键集一致。**这条不是空断言**：故意往 en-US 塞一个重复键并重建后，它确实 FAIL，还原后 PASS。
+- 全量 `all` = **1034 PASS / 0 FAIL**；构建 0 错误；语言键中英各 **2277**（+6）、0 重复、键集一致。
+
+#### 四、坑（都记录下来）
+
+1. **探针切换分节后必须 `UpdateLayout()`**：离屏窗口的 Dispatcher 泵不会替新换上的内容做布局，
+   第一版除首节外全查到 0 个控件（是**探针**的问题，不是产品问题；但下次渲染离屏视图同样要注意）。
+2. **`Select-Object -First N` 会提前掐断探针进程 → 退出码 1（假失败）**，核验时别用它截断输出。
+3. **en-US 真的漏进去一个重复键**（`SettingPage_AiAssistant_Desc`：上一轮我只替换了其中一行）——
+   en 字典一加载就会抛 XamlParseException，而探针只在中文环境加载 zh-CN，**永远暴露不出来**。
+   这正是上面第 2 条断言诞生的原因：语言字典是编译成 BAML 的（不能当 XML 解析），
+   所以直接 `new ResourceDictionary { Source = packUri }` 去加载——加载成功本身就证明"没有重复键"。
+4. 验证"验证器"本身也要**重建**：语言字典编译进程序集，改了源文件不重建，探针加载的还是旧 BAML
+   （我第一次"证明"守卫生效时就踩了这个坑，得到的 PASS 是假的）。
+5. **离屏窗口里的 `Frame` 不承载内容**（新发现，已记入 §9）：`Frame.Content = page` 与 `Frame.Navigate(page)`
+   在探针的离屏普通窗口里都"成功"（`Navigate` 返回 `True`、也不触发 `NavigationFailed`），
+   但 `Frame.Content` **始终是 null**——塞普通控件同样如此。真实窗口（FluentWindow）里 Frame 正常，
+   设置子页一直在用。所以核验"设置在 Frame 里的子页"时**不能靠可视树或 Frame.Content**，
+   要么直接驱动子页公开的挂载点（`SettingsPage.AttachDetailBreadcrumb`），要么把子页单独放进窗口。
+
+### 阶段 125：图标跟随主题 + AI 页去掉标题栏 + 模型/翻译拆分与存储重整
+
+#### 一、图标颜色：全项目 12 处裸图标（含面包屑的 `>`）
+
+- **根因**：WPF-UI 的 `SymbolIcon` 默认样式**不设 `Foreground`** → 退回 `Control` 默认值（系统色）→
+  深色主题下就是黑图标。与 §9 第 19 条同源（"自定义样式不显式给色就会退回系统色"）。
+- **审计**：脚本扫设置相关 XAML 的 28 个图标，**12 个没有 `Foreground`**：设置首页分类行图标、
+  面包屑两处 `>`、GeneralSettingPage 的 `ChevronDown`、HomeSettingPage 的尺寸切换、JumpBridge / OneJumpCover /
+  PlanetResource / SovGroup 的刷新与新增等。
+- **修法**：`Controls/GlobalControlStyles.xaml` 加一条**全局隐式样式** `TargetType="{x:Type ui:SymbolIcon}"`
+  设 `Foreground = TextFillColorPrimaryBrush`（分隔符这类要更淡的在元素上显式写 Secondary）。
+  - ⚠️ **第一版写了 `BasedOn="{StaticResource {x:Type ui:SymbolIcon}}"` → 页面构造直接抛 XamlParseException**
+    （`AiAssistantChatView` 第 336 行）。原因：库里**没有**按类型索引的 SymbolIcon 默认样式键——
+    这正是 GlobalControlStyles 头部注释里那条"不确定的隐式样式不要 BasedOn"，也正是"裸图标没颜色"的根因。
+    去掉 `BasedOn` 后正常（若将来库加了这个键，这里的注释会提醒不要再加 BasedOn）。
+- **守卫**：`ui` 套件新增"图标颜色跟随主题"3 条——裸图标的 `Foreground` 必须等于 `TextFillColorPrimaryBrush`、
+  元素上的局部值优先、**切换深浅主题后颜色真的跟着变**（实测 浅 `#E4000000` ↔ 深 `#FFFFFFFF`，
+  写死的黑/白会在这条露馅）。
+
+#### 二、AI 设置页去掉页内标题栏
+
+二级菜单不再显示"AI"大标题与说明（当前分类已由设置壳页面包屑显示），直接就是菜单项——
+与其它设置子页（如 GeneralSettingPage 直接进"外观/…"分组）保持一致。
+
+#### 三、模型 / 翻译拆成两个子菜单 + 存储重整
+
+- **五节**：模型 / 翻译 / 行为 / ESI 全量访问 / 工具开关。
+- **数据结构**（阶段 125 起）：
+
+| 类型 | 内容 | 存储键 |
+|---|---|---|
+| `Llm.AiModelSettings` | 协议 / 地址 / API Key / 模型名 / api-version / 温度 / 最大输出 token / 思考模式 / 超时 / 流式（**助手与翻译共用**） | `Ai.*` |
+| `AiTranslationSettings` | 术语库开关与上限 / 结果缓存 / 新词候选 / 单次请求最大字符数 / 翻译系统提示词 | `Ai.Translation.*` |
+
+- **两个服务**：新增 `AiModelSettingService`（`Ai.*` 读写 + `Endpoint`）；`TranslationSettingService` 只留方向与
+  翻译专属参数（`Ai.Translation.*`），并保留 `AiEndpoint` / `AiStream` 等**转发属性**让协议层与翻译管线不用改调用点。
+- **旧键完全不读**（用户要求「直接当作从未有过就行」）：老版本把模型与翻译挤在 `TranslationPage.Ai.*`，
+  这一轮**不做迁移、也不读旧值**（迁移代码写完后已按要求删除）。旧值仍留在 settings.json 里
+  （我们不动用户文件），但没有任何代码读它——用户需在「设置 → AI → 模型」重新填一次地址与 Key。
+- **视图**：`AiModelSettingView`（端点 + 生成参数 + 测试连接 + 保存）与
+  `AiTranslationSettingView`（术语库 + 翻译行为 + 翻译提示词 + 保存），各带自己的「保存」。
+- **本地化**：+5 键（翻译节标题/说明、翻译行为、自定义翻译提示词、模型节说明）、−2 键（原"模型与翻译"说明），
+  中英各 **2280**。
+
+#### 四、验证
+
+- `ui` 套件 49 → **58 条**：图标颜色 3 条 + 五节钻取路径（模型节：API Key + 2 个下拉 + ≥3 个数字框；
+  翻译节：≥2 开关 + ≥2 数字框 + ≥1 文本框，且**没有模型端点控件**——两节确实分开了）。
+- 全量 `all` = **1045 PASS / 0 FAIL**；构建 **0 错误**；语言键中英各 **2280**、0 重复、键集一致。
 
 ## 8. 已知限制与待办
 
@@ -5772,6 +6335,9 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
     因此：① `writes` 套件的"落盘"断言会自动跳过并说明（内存侧断言照常，见踩坑 100）；
     ② `all` 整套跑不完（`MapProbe` 要向 `%TEMP%` 写跳桥导入的临时文件）——**请逐个套件运行**。
     把探针输出复制到工作区外（如 `%TEMP%` 之外的普通目录）再跑即可完整验证（§8 第 62 条的处置建议）。
+    **（阶段 118 已解除）**：阶段 97 清掉工作区的 Low 完整性标签后，本机 `map`（45）与 `writes`（71）的写盘路径都已通过，
+    `all` 也能一次跑完（953 断言 / 退出码 0）。这条限制只在"工作区又被 DSH 沙箱重新打上 Low 标签"时才复现
+    （判断方式：`icacls <exe>` 看是否带 `Low Mandatory Level`）。
 
 65. **角色 ESI 直读七个工具（阶段 117）的成功路径未实机验证**：探针环境没有授权角色（连"未登录任何角色"都是真实分支），
     而真跑会读用户真实的资产/联系人数据，因此只覆盖了"角色不存在 / 无默认角色"两条确定性分支。
@@ -5781,6 +6347,19 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
     另：资产**不含市场估值**（要对每个 TypeId 查订单，几百次 ESI、分钟级，与一问一答的成本模型冲突）；
     **军团级端点**（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，本轮未做。
     分页上限：单个端点最多取 **40 页**（资产条目极多时可能截断，日志里有 Warn）。
+    **（阶段 119 已失效）**：这 7 个工具连同 `CharacterEsiExtraService` 已删除，能力改由 ESI 通用网关 + 通用名称富化承担
+    （见阶段 119）；以下"军团级端点/资产不含估值"等边界仍然成立，但不再由专用工具负责。
+
+66. **ESI 全量网关（阶段 118）的边界**：它把 197 个 ESI 操作一次性开放给助手，但**不是"任意 HTTP 客户端"**——
+    ① 只能调用索引里登记的 operationId（模型给不出任意外网地址，网关也不接受 URL）；
+    ② 服务端参数（`X-Compatibility-Date` / `X-Tenant` / 条件请求头）由网关忽略，用服务端默认（最新）行为；
+    ③ 不做响应缓存与 ETag；`Accept-Language` 之外不暴露其它 header；
+    ④ 默认只取第 1 页，`allPages` 受设置上限（默认 3 页）——整星域订单那种量级仍走市场/倒货页；
+    ⑤ ESI 错误配额低于阈值会**主动拒绝调用**（默认 10，可在设置里调；0 = 不检查），这是防封禁的必要代价；
+    ⑥ 写操作逐次确认，且可被 `Assistant.Esi.DeniedPaths` 黑名单永久挡住（默认留空，建议按需加 `/characters/*/mail`、`/fleets/`）；
+    ⑦ 军团级端点能否成功取决于**角色的军团职位**（403 时文案会说明这一点），与网关无关；
+    ⑧ ESI 新增或变更端点需**重跑 `tools/esi/gen_esi_index.py` + 重新构建**才会进索引（脚本自带自检，
+    探针的 `esi` 套件会核对条数与读写分类）。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -6364,6 +6943,10 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
     而**编译可能照样通过**（乱码仍是合法字符串），问题只在界面文案上暴露，排查时很容易误以为是语言文件的问题。
     改代码一律用编辑工具（`edit` / `write`）；确有需要跑脚本时，也要显式指定 UTF-8 并在写完后**回读校验**。
     更稳的做法：脚本只用来**读取/审计**（查重键、扫图标名、比对绑定），不要用来**改写**代码。
+    **阶段 119 又踩到一次变体**（只改几处数字，仍中招）：用 `Set-Content -Encoding UTF8` 改两个含中文的 `.md`，
+    **内容没坏，但文件被加上了 UTF-8 BOM**（`git diff` 第一行出现不可见的 `\uFEFF`，字节头由 `35`（`#`）变成 `239,187,191`）。
+    修法：`[IO.File]::WriteAllText($p, [IO.File]::ReadAllText($p), (New-Object Text.UTF8Encoding($false)))`（读时自动剥 BOM、写时不带 BOM），
+    并复核"头 3 字节 + 中文抽查 + `git diff` 无 BOM 行"。**结论不变：改任何文本都用编辑工具，别用 shell 重写。**
 
 93. **不要把"临时输出目录里的 exe"当成应用交给用户运行**（阶段 113，两度让用户看到启动崩溃；**此条结论已按事实更正**）：
     前两次崩溃的表象是启动即弹
@@ -6445,6 +7028,18 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
      - 连带影响：`MapProbe` 会往 `%TEMP%` 写跳桥导入用的临时文件，所以 `all` 整套在本机跑不完——
        **逐个套件运行**即可完成全量验证。
 
+101. **离屏窗口里的 `Frame` 不承载内容——`Frame.Content` 永远是 null，`Navigate` 也"成功但不生效"**（阶段 124 实测）：
+     探针为了核验"设置子页"把 `SettingsPage` 放进离屏 `Window` 跑，结果：深链生效（面包屑第二段已变成分类名，
+     证明 `OpenCategory` 跑过）但 `DetailFrame.Content` 始终是 `null`，子页也不在可视树里。逐步排查否掉了所有
+     "时序不够"的可能：
+      - `UpdateLayout()` + `Pump()` 反复 6 轮（每轮 200ms；Send 优先级会把整条队列排干）→ 仍为 null；
+      - `Navigate(page)` 返回 **`True`**、`NavigationFailed` **从未触发** → 导航"成功"了，但内容没落地；
+      - 往同一个 Frame 里塞**普通 `TextBlock`** 同样读回 null → 与 Page/日志/资源都无关，是 Frame 本身。
+     真实窗口（`FluentWindow`）里 Frame 正常——设置子页一直在用，所以这是**探针环境限制，不是产品缺陷**。
+     **处置**：核验 Frame 里的子页时 ① 要么把子页单独放进窗口（本次"深链落点"就是这么验的），
+     ② 要么由产品侧公开一个挂载点直接驱动（本次加了 `SettingsPage.AttachDetailBreadcrumb`）；
+     ③ **不要**写"Frame.Content 是某页""子页在可视树里"这类断言——在这个环境里必然假失败。
+
 ---
 
 ## 10. 主要文件清单
@@ -6472,7 +7067,9 @@ Converters/InverseBooleanToVisibilityConverter.cs
 Controls/SettingCard.cs + SettingCardStyles.xaml     Win11 设置行控件与样式
 Controls/PagerControl.xaml(.cs)                      通用分页
 Views/Pages/SettingsPage.xaml(.cs)                   设置壳页（分类列表 + 子页 Frame）
-Views/Pages/Settings/{General,GameLog,Market,Structures,ESIScope,KeyboardList,Test,Update,AiTranslation,Glossary}*.xaml(.cs)   （ZKB 子页已于阶段 53 删除；AI 翻译 / 术语表为阶段 47 新增）
+Views/Pages/Settings/{General,GameLog,Market,Structures,ESIScope,KeyboardList,Test,Update,Glossary}*.xaml(.cs)   （ZKB 子页已于阶段 53 删除，AI 翻译子页已于阶段 121 并入 AI 助手）
+Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs)  模型端点 + 术语库 + 生成与缓存（阶段 121 从 AI 翻译设置页抽成，嵌在 AI 助手页里）
+Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  AI 相关设置的唯一入口：模型与翻译 / 行为 / ESI 全量访问 / 工具开关
 Services/Settings/*.cs                               10 个设置子服务
 ```
 
@@ -6717,6 +7314,43 @@ Services/Home/HomeFeatureCatalog.cs                  + eve-settings-sync 功能�
 Resources/Languages/zh-CN.xaml, en-US.xaml           + 106 键（Nav/Home 2 + 页面与对话框 104）；阶段 104 净 +1（新增 2、删 1 个已无引用的 ResolvingNames）
 ```
 
+### AI 助手模块（阶段 105 起；阶段 118 新增 ESI 全量网关）
+```
+Services/Assistant/ITool.cs                 工具契约（Name / DisplayNameKey / Description / Parameters /
+                                            RequiresConfirmation / IsAction）+ **IPendingSummary**（阶段 118：
+                                            写工具自报"确认卡片"的人话摘要，默认退回截断的参数 JSON）
+Services/Assistant/ToolRegistry.cs          静态注册表（**51 个工具**）+ 给模型的 ChatTool 声明
+Services/Assistant/AiAssistantEngine.cs     工具调用循环（工具轮非流式 → 串行执行 → 回填 → 最终回答流式）、
+                                            确认挂起 / ResumeAsync、结果 4000 字符截断、内置系统提示词（12 条规则，
+                                            含 esi_* 三步用法与"专用工具优先"）
+Services/Assistant/AssistantContext.cs      对话级上下文（历史问答 + ToolContext + 可选端点注入，探针用）
+Services/Assistant/ToolContext.cs           工具执行上下文（当前角色 / 全部角色 / UI 线程归位 / 进度回调）
+Services/Assistant/ToolArgs.cs / ToolResult.cs / ToolNameResolver.cs / CharacterToolHelper.cs
+Services/Assistant/AiAssistantHistoryService.cs  Configs/AiAssistantHistory.json（按对话 upsert，40×200）
+Services/Assistant/AiAssistantSettingService.cs  Assistant.* 设置（含阶段 118 的 Assistant.Esi.* 六项）
+Services/Assistant/AssistantHost.cs         共享 VM 宿主（页面 / 弹窗 / 全局快捷键取同一个实例）
+Services/Assistant/Tools/*.cs               44 个工具（通用 12 + 星图 7 + 商业 4 + v1.5 P1 九 + P2 五 + 写操作三 +
+                                            阶段 118 的 esi_search / esi_describe / esi_read / esi_write；
+                                            阶段 117 的 7 个角色 ESI 直读已在阶段 119 删除，能力归网关）
+Services/Assistant/Esi/EsiOperationIndex.cs  ESI 操作索引（197 个操作）：加载 / 检索 / Find 容错 / scope 判定（纯读，便于离线断言）
+Services/Assistant/Esi/EsiGateway.cs         ESI 通用网关：URL 与参数校验、Bearer 鉴权、语言头、分页、错误归一化
+                                            （403 区分"缺 scope"与"军团职位"）、错误配额护栏、黑名单
+Services/Assistant/Esi/EsiJsonShaper.cs      JSON → 紧凑文本 / Markdown 表格 + 自截断
+Services/Assistant/Esi/EsiResponseEnricher.cs 响应的 ID → 名称富化（物品/星系/星域/空间站走本地 SDE，角色/军团/势力/地点走
+                                            LocationNameResolver；上限 300、解析不到保持原值；阶段 119 从已删服务下沉而来）
+Resources/Esi/EsiOperations.json             索引数据（102 KB；脚本生成，csproj 以 Content 复制到输出目录）
+tools/esi/gen_esi_index.py                   索引生成脚本（官方 OpenAPI → 索引；自带自检，支持 --spec 离线 / --check 只自检）
+ViewModels/Assistant/AiAssistantViewModel.cs / AiChatSessionViewModel.cs / AiChatTurnViewModel.cs
+Views/Pages/AiAssistantPage.xaml(.cs)        助手页（导航项 Nav.Assistant，图标 Sparkle24）
+Views/UserControls/AiAssistantChatView.xaml(.cs) / AssistantPopup.cs    对话视图 + 弹窗宿主
+Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  设置 → AI 助手（行为 + ESI 全量访问 + 系统提示词）
+probe/AssistantProbe/                        离线探针（toolcall / engine / tools / quickroute / map / business /
+                                             writes / ui / esi / tokens / routing，11 套共 1045 断言，`all` 一次跑完）
+```
+- 模型端点**复用「设置 → AI 翻译」**的端点（协议 / 地址 / Key / 模型），助手只放自己的行为参数。
+- 每次工具调用都会记一条 INFO（`AI 助手 · 工具 <name> 成功 · 1.23s · <参数摘要>`），排障先看它。
+- ESI 网关的"元数据从哪来、为什么走 HTTP、护栏有哪些"见阶段 118 与 `AI_ASSISTANT_DESIGN.md` §18。
+
 ### 主窗口
 ```
 Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位置持久化、托盘、**导航项右键固定到主页 + 目录↔导航双向比对（阶段 92）**
@@ -6757,11 +7391,13 @@ Services/Translation/Llm/GeminiChatProtocol.cs      Google Gemini（systemInstru
 Services/Translation/Llm/ChatProtocolFactory.cs     协议注册表（openai / azure-openai / anthropic / gemini）
 Services/Translation/Llm/ThinkingModes.cs           思考模式取值（auto/off/low/high；DeepSeek 专有，默认关闭）
 Services/Translation/Llm/ChatClient.cs              HTTP 调用：重试退避、每请求超时、流式读取、错误归一化、测试连接
+Services/Translation/Llm/DeepSeekDsmlParser.cs      DeepSeek 原生工具调用标记（DSML）的兼容解析（阶段 120）：把漏进
+                                                    content 的 DSML 转成标准 ChatToolCall，并保证标记不进正文
 Services/Translation/GlossaryService.cs             术语库：抽取+索引+命中（英文词起点子串 / 中文 CJK 滑窗）+打分去重+注入块
 Services/Translation/AiTranslationProvider.cs       语义层：提示词+术语注入+精确短路+缓存+清理+术语后校验
 Services/Translation/TranslationCache.cs            结果缓存（一键一文件，键含术语库签名与提示词）
 Services/Translation/AiTranslationSettings.cs       AI 设置模型（协议/地址/Key/模型/温度/token/超时/术语/上下文条数/流式/缓存/提示词）
-Views/Pages/Settings/AiTranslationSettingPage.xaml(.cs)  设置子页「AI 翻译」（含测试连接、重新载入术语库、清空缓存）
+Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs)  模型端点 + 术语库 + 生成与缓存（阶段 121 从「设置 → AI 翻译」页抽成 UserControl，嵌在 AI 助手页里；含测试连接 / 重新载入术语库 / 清空缓存）
 Services/Translation/ChatMarkupProtector.cs         聊天标记预清洗（<br>→换行、其余 <...> 标签删除；ToPlainText/ToSingleLine）
 Services/Translation/ChatTranslationEngine.cs        频道翻译引擎：单条队列串行、预清洗、跳过规则、失败去重（可注入替身）
 Services/Settings/ChannelTranslationSettingService.cs 每角色的频道翻译设置（Configs/ChannelTranslationSettings.json，与 WinUI 同格式）

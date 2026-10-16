@@ -6,7 +6,7 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <Grid Margin="36,20,36,24">
+    <Grid Margin="36,0,36,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

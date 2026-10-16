@@ -19,10 +19,8 @@ public sealed class MarketFavoriteTool : ITool
     public string DisplayNameKey => "AssistantTool_market_favorite";
 
     public string Description =>
-        "把物品加入或移出「市场」页的收藏列表（收藏会出现在市场页左侧的「收藏」页签里）。" +
-        "参数 itemName 用游戏内物品名（中英文均可，必须是唯一命中的名称）；action 选 add（默认，收藏）或 remove（取消收藏）。" +
-        "写操作需要用户确认；适合用户明确说「收藏一下 XX」「把 XX 从收藏里去掉」的场景。" +
-        "已有的收藏可用 market_orders / market_trend 查行情，不需要先收藏。";
+        "把物品加入或移出「市场」页的收藏列表，收藏项会出现在市场页左侧的「收藏」页签。" +
+        "这是用户自己维护的清单：写操作需用户确认，只在用户明确说「收藏一下XX」或「把XX从收藏里去掉」时用；行情查询不必先收藏。";
 
     public JsonObject? Parameters => new()
     {
@@ -30,7 +28,7 @@ public sealed class MarketFavoriteTool : ITool
         ["properties"] = new JsonObject
         {
             ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品名（游戏内名称，中英文均可）" },
-            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "add", "remove" }, ["description"] = "add（默认）= 收藏；remove = 取消收藏" },
+            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "add", "remove" }, ["description"] = "add=收藏（默认）；remove=取消" },
         },
         ["required"] = new JsonArray { "itemName" },
     };

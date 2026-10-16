@@ -14,18 +14,16 @@ public sealed class WormholeInfoTool : ITool
     public string DisplayNameKey => "AssistantTool_wormhole_info";
 
     public string Description =>
-        "查询虫洞资料（本地虫洞库）：洞系（如 J244：等级 C1–C6、现象、固定洞口、漫游洞口）或洞口" +
-        "（通往何处、出现在哪些洞、寿命、单次最大通过质量、总质量、质量再生、重生时间）。" +
-        "参数 keyword 给洞名或洞口名的一部分（如「J244」「遗迹」「A239」）；withStellar=true 且唯一命中洞系时附带天体列表；" +
-        "top 控制条数（默认 10，上限 30）。适合「J244 是什么洞」「哪个洞能通高安」「这洞过得去战列吗」。";
+        "查本地虫洞库：洞系（等级、现象、固定与漫游洞口）或洞口（通往何处、寿命、质量上限与再生、重生时间）。" +
+        "适合「J244 是什么洞」「哪个洞能通高安」「这洞过得去战列吗」。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["keyword"] = new JsonObject { ["type"] = "string", ["description"] = "洞名或洞口名关键词（如 J244、遗迹）" },
-            ["withStellar"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 唯一命中洞系时附带天体列表" },
+            ["keyword"] = new JsonObject { ["type"] = "string", ["description"] = "洞名或洞口名关键词" },
+            ["withStellar"] = new JsonObject { ["type"] = "boolean", ["description"] = "唯一命中洞系时带天体" },
             ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数（默认 10，上限 30）" },
         },
         ["required"] = new JsonArray { "keyword" },

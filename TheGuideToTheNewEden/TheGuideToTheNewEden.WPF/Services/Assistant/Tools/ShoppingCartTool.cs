@@ -22,25 +22,22 @@ public sealed class ShoppingCartTool : ITool
     public string DisplayNameKey => "AssistantTool_shopping_cart";
 
     public string Description =>
-        "维护「商业 → 倒货 → 购物车」的内容：action=add（默认）把物品加进购物车，" +
-        "action=remove 移除（itemName 给物品名，或用 index 给购物车里的行号，从 1 开始）；" +
-        "add 需要 itemName 与 quantity，buyPrice（买入价）/ sellPrice（卖出价）建议一并给" +
-        "（取自倒货分析/利差工具的结果，本工具不代为取价；缺省 0 表示待用户自己填），jumps 是两市场跳数（默认 0）。" +
-        "写操作需要用户确认；购物车里已有的同一物品会按数量累加。" +
-        "适合用户说「把这几样加进购物车」「算一下我选中这些要多少本金」；购物车不做持久化，关软件即清空（要留存请用购物车页的「保存记录」）。";
+        "维护「商业 → 倒货 → 购物车」内容：默认把物品加进购物车，也能按物品名或行号移除；" +
+        "写入需用户确认，同物品按数量累加。价格请取自其它分析工具的结果（本工具不取价）；" +
+        "数据不落盘，关闭软件即清空。适合「把这几样加进购物车」。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "add", "remove" }, ["description"] = "add（默认）= 加入；remove = 移除" },
-            ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品名（游戏内名称，中英文均可）" },
-            ["quantity"] = new JsonObject { ["type"] = "number", ["description"] = "数量（add 时必填，> 0）" },
-            ["buyPrice"] = new JsonObject { ["type"] = "number", ["description"] = "买入单价（缺省 0）" },
-            ["sellPrice"] = new JsonObject { ["type"] = "number", ["description"] = "卖出单价（缺省 0）" },
-            ["jumps"] = new JsonObject { ["type"] = "integer", ["description"] = "源/目的市场跳数（默认 0）" },
-            ["index"] = new JsonObject { ["type"] = "integer", ["description"] = "remove 时用：购物车里的行号（从 1 开始）" },
+            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray { "add", "remove" }, ["description"] = "默认 add" },
+            ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品全名，中英文均可" },
+            ["quantity"] = new JsonObject { ["type"] = "number", ["description"] = "数量，加入时必填" },
+            ["buyPrice"] = new JsonObject { ["type"] = "number", ["description"] = "买入单价" },
+            ["sellPrice"] = new JsonObject { ["type"] = "number", ["description"] = "卖出单价" },
+            ["jumps"] = new JsonObject { ["type"] = "integer", ["description"] = "两市场跳数" },
+            ["index"] = new JsonObject { ["type"] = "integer", ["description"] = "行号，从 1 开始" },
         },
     };
 

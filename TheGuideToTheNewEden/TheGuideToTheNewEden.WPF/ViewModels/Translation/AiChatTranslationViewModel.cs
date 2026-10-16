@@ -438,11 +438,12 @@ public sealed class AiChatTranslationViewModel : INotifyPropertyChanged, IDispos
         OnPropertyChanged(nameof(ShowSessionEmptyTip));
     }
 
-    /// <summary>打开「设置 → AI 翻译」。</summary>
+    /// <summary>打开「设置 → AI → 模型与翻译」（阶段 121 起模型端点与翻译设置都在那里）。</summary>
     public void OpenSettings()
     {
         Navigation.Navigate(typeof(SettingsPage));
-        SettingsPage.RequestCategory(typeof(AiTranslationSettingPage));
+        SettingsPage.RequestCategory(typeof(AiAssistantSettingPage));
+        AiAssistantSettingPage.RequestSection("Model");
         Navigation.Activate();
     }
 

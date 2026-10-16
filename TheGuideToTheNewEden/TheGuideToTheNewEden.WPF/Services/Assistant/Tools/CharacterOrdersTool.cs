@@ -13,10 +13,9 @@ public sealed class CharacterOrdersTool : ITool
     public string DisplayNameKey => "AssistantTool_character_orders";
 
     public string Description =>
-        "查询某个角色（或军团）的未结市场订单，并给出与市场参考价的对比：物品、买卖方向、价格、剩余量与挂单地点、" +
-        "当前市场参考价、价差、是否被压单。参数 characterName 用角色全名（省略 = 默认角色）；corporation=true 查军团订单；" +
-        "onlyCompressed=true 只看被压单的行；top 控制条数（默认 12，上限 40）。" +
-        "适合「我有哪些未结订单」「哪些被压单了」「这个价还能不能卖」。";
+        "查角色或军团的未结市场订单，并对比市场参考价：买卖方向、价格、剩余量、挂单地点、价差、是否被压单。" +
+        "只读，不修改游戏内数据；查军团订单需要相关职位，省略角色 = 默认角色，取参考价可能较慢。" +
+        "适合「我有哪些未结订单」「哪些被压单了」。";
 
     public JsonObject? Parameters => new()
     {
@@ -24,7 +23,7 @@ public sealed class CharacterOrdersTool : ITool
         ["properties"] = new JsonObject
         {
             ["characterName"] = new JsonObject { ["type"] = "string", ["description"] = "角色全名（省略 = 默认角色）" },
-            ["corporation"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 查军团订单（默认 false = 个人）" },
+            ["corporation"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 查军团（默认个人）" },
             ["onlyCompressed"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 只返回被压单/未知的行" },
             ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数（默认 12，上限 40）" },
         },

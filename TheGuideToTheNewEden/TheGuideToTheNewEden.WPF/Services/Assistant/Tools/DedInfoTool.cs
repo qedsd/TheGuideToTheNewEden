@@ -24,10 +24,9 @@ public sealed class DedInfoTool : ITool
     public string DisplayNameKey => "AssistantTool_ded_info";
 
     public string Description =>
-        "查询 DED 死亡空间（DED 复合体）资料：场景等级、标题与说明（含掉落/要点）。" +
-        "参数 keyword 按场景名/端口名搜索（如「天蛇 6/10」这样的关键词请只给关键部分）；" +
-        "或给 faction 列出某个势力的全部场景（无人机/天蛇/血袭者/萨沙/天使/古斯塔斯）；level 只看该等级；" +
-        "top 控制条数（默认 15，上限 40）。适合「DED 6/10 怎么打」「天蛇有哪些 DED」。";
+        "查询 DED 死亡空间（复合体）资料：场景等级、标题与要点说明。" +
+        "按关键词或势力搜索（无人机/天蛇/血袭者/萨沙/天使/古斯塔斯），还可按等级过滤。" +
+        "适合「DED 6/10 怎么打」「天蛇有哪些 DED」。";
 
     public JsonObject? Parameters => new()
     {
@@ -35,8 +34,8 @@ public sealed class DedInfoTool : ITool
         ["properties"] = new JsonObject
         {
             ["keyword"] = new JsonObject { ["type"] = "string", ["description"] = "场景名/端口名关键词" },
-            ["faction"] = new JsonObject { ["type"] = "string", ["description"] = "势力名：无人机/天蛇/血袭者/萨沙/天使/古斯塔斯" },
-            ["level"] = new JsonObject { ["type"] = "integer", ["description"] = "只显示该等级（如 6 表示 6/10）" },
+            ["faction"] = new JsonObject { ["type"] = "string", ["description"] = "势力名，见工具说明" },
+            ["level"] = new JsonObject { ["type"] = "integer", ["description"] = "只看该等级，如 6 即 6/10" },
             ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数（默认 15，上限 40）" },
         },
     };

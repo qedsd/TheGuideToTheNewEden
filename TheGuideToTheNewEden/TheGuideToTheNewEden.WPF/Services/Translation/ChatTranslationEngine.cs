@@ -463,7 +463,7 @@ public sealed class ChatTranslationEngine
         var provider = TranslationService.Ai;
         if (!provider.IsAvailable)
         {
-            return TranslationOutcome.Fail("AI 翻译未配置（设置 → AI 翻译）");
+            return TranslationOutcome.Fail("AI 翻译未配置（设置 → AI 助手）");
         }
 
         var request = new TranslationRequest(text, TranslationSettingService.AiFrom, TranslationSettingService.AiTo);

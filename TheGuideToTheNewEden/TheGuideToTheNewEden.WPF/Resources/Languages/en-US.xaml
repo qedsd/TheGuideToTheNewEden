@@ -1349,7 +1349,7 @@
     <sys:String x:Key="TranslationPage_AiManualHint">Press Enter or Translate to send</sys:String>
     <sys:String x:Key="TranslationPage_AiManualHint_Tip">The AI source is billed per request, so typing does not auto-query; press Enter or click Translate when ready.</sys:String>
     <sys:String x:Key="TranslationPage_NoResultTip_Ai">No translation returned: press Enter or Translate to send a request; see the notification for details</sys:String>
-    <sys:String x:Key="TranslationPage_AiUnavailable">AI translation is not configured: choose a protocol and fill in the base URL, API key and model in Settings → AI translation.</sys:String>
+    <sys:String x:Key="TranslationPage_AiUnavailable">AI translation is not configured: choose a protocol and fill in the base URL, API key and model under Settings → AI assistant → Model &amp; translation.</sys:String>
     <sys:String x:Key="TranslationPage_Timeout">Request cancelled or timed out</sys:String>
 
     <!--  Translation: protocol names (settings dropdown)  -->
@@ -1394,8 +1394,7 @@
     <sys:String x:Key="AiTranslation_Chat_Collapse">Collapse</sys:String>
 
     <!--  Settings: AI translation  -->
-    <sys:String x:Key="SettingPage_AiTranslation">AI translation</sys:String>
-    <sys:String x:Key="SettingPage_AiTranslation_Desc">Use an LLM for sentence/context translation, constrained by the local SDE Chinese-English glossary</sys:String>
+    <sys:String x:Key="SettingPage_AiTranslation">AI settings</sys:String>
     <sys:String x:Key="AiSettingPage_Protocol">Protocol</sys:String>
     <sys:String x:Key="AiSettingPage_Protocol_Desc">Pick the provider protocol. Most Chinese providers use "OpenAI compatible"; for Bedrock/Vertex put a gateway in front and speak OpenAI.</sys:String>
     <sys:String x:Key="AiSettingPage_BaseUrl">Base URL</sys:String>
@@ -1433,7 +1432,9 @@
     <sys:String x:Key="AiSettingPage_GlossaryReady">{0} terms · {1}</sys:String>
     <sys:String x:Key="AiSettingPage_GlossaryNotLoaded">Not loaded yet</sys:String>
     <sys:String x:Key="AiSettingPage_GlossaryLoading">Loading…</sys:String>
-    <sys:String x:Key="AiSettingPage_Generation">Generation and caching</sys:String>
+    <sys:String x:Key="AiSettingPage_Generation">Generation</sys:String>
+    <sys:String x:Key="AiSettingPage_TranslationBehavior">Translation behaviour</sys:String>
+    <sys:String x:Key="AiSettingPage_CustomPrompt">Custom translation prompt</sys:String>
     <sys:String x:Key="AiSettingPage_Temperature">Temperature</sys:String>
     <sys:String x:Key="AiSettingPage_Temperature_Desc">0–0.3 is recommended for translation; 0 means the parameter is not sent (some reasoning models reject it).</sys:String>
     <sys:String x:Key="AiSettingPage_MaxTokens">Max output tokens</sys:String>
@@ -2262,7 +2263,7 @@
     <sys:String x:Key="Assistant_Chat_NoInput">Please enter something</sys:String>
     <sys:String x:Key="Assistant_Chat_AnswerEmpty">No content returned</sys:String>
     <sys:String x:Key="Assistant_Chat_Timeout">Request timed out or was interrupted</sys:String>
-    <sys:String x:Key="Assistant_AiUnavailable">Assistant is not configured: fill in the service URL, API key and model under Settings → AI Translation (the assistant reuses that endpoint)</sys:String>
+    <sys:String x:Key="Assistant_AiUnavailable">Assistant is not configured: fill in the service URL, API key and model under Settings → AI assistant → Model &amp; translation (translation and the assistant share this endpoint)</sys:String>
     <sys:String x:Key="Assistant_NotConfigured_Title">Configure the AI endpoint first</sys:String>
     <sys:String x:Key="Assistant_NotConfigured_Support">Supports OpenAI-compatible / Azure OpenAI / Anthropic / Gemini; one configuration serves both translation and the assistant.</sys:String>
     <sys:String x:Key="Assistant_GoConfigure">Configure</sys:String>
@@ -2303,9 +2304,30 @@
     <sys:String x:Key="Home.Quick.ToAssistant">Handed over to the AI assistant, working on it…</sys:String>
 
     <!--  Settings: AI assistant  -->
-    <sys:String x:Key="SettingPage_AiAssistant">AI Assistant</sys:String>
-    <sys:String x:Key="SettingPage_AiAssistant_Desc">Tool rounds, default character, write confirmation, global hotkey and custom system prompt</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Endpoint_Desc">The model endpoint is shared with AI Translation (protocol / URL / API key / model) — change it under Settings → AI Translation.</sys:String>
+    <sys:String x:Key="SettingPage_AiAssistant">AI</sys:String>
+    <sys:String x:Key="SettingPage_AiAssistant_Desc">Model, translation, assistant behaviour, full ESI access, tool switches (pick one)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Model">Protocol / endpoint / API key / model / generation (shared by assistant and translation)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Translate">Glossary / chunk size / result cache / translation prompt</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Behavior">Tool rounds / default character / write confirmation / hotkey / system prompt</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Esi">Open all 197 ESI operations to the assistant (writes confirmed)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Section_Tools">Declare on demand + enable or disable each of the 44 tools</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Behavior_Desc">How the assistant runs: how many tool rounds it may take, which character it uses by default, whether writes need confirmation, and the global hotkey. Leave the system prompt empty to use the built-in one.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore_Desc">Resets assistant parameters only (rounds / prompt / confirmation / default character / ESI / tool switches / on-demand declaration); the endpoint and API key are left alone.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Model">Model</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Translate">Translation</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools">Tool switches</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Desc">Enable or disable each tool the assistant may use. **Disabled tools are not sent to the model** — that saves input tokens on every request and keeps the model away from capabilities you do not want; if the model still asks for a disabled tool by name, execution refuses it. Newly added tools default to enabled.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">Declare on demand (saves tokens)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">When on, only the bundles relevant to the current question are sent to the model: at most two of business / characters / star map / channels / general, plus the always-on ESI gateway and name lookup / translate / character list, plus any tool already used in this conversation. When the intent is unclear it falls back to declaring everything — savings only where they are safe. When off, every enabled tool is declared on every request.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">Enable all</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_DisableAll">Disable all</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Count">{0} of {1} tools disabled</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Esi">ESI gateway (search / describe / read / write)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Character">Characters</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Business">Business (market / scalper / compare / appraisal)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Map">Star map</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_Channel">Channels</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ToolsGroup_General">General &amp; tools</sys:String>
     <sys:String x:Key="AssistantSettingPage_Behavior">Behaviour</sys:String>
     <sys:String x:Key="AssistantSettingPage_MaxToolRounds">Max tool rounds per request</sys:String>
     <sys:String x:Key="AssistantSettingPage_MaxToolRounds_Desc">How many tool rounds the assistant may chain in one question (prevents runaway tool loops). Default 8, range 1–30.</sys:String>
@@ -2342,12 +2364,28 @@
     <sys:String x:Key="AssistantTool_glossary_write">Write glossary</sys:String>
     <sys:String x:Key="AssistantTool_market_favorite">Market favorite</sys:String>
     <sys:String x:Key="AssistantTool_shopping_cart">Scalper cart</sys:String>
-    <sys:String x:Key="AssistantTool_character_assets">Character assets</sys:String>
-    <sys:String x:Key="AssistantTool_character_blueprints">Character blueprints</sys:String>
-    <sys:String x:Key="AssistantTool_character_standings">Character standings</sys:String>
-    <sys:String x:Key="AssistantTool_character_contacts">Character contacts</sys:String>
-    <sys:String x:Key="AssistantTool_character_loyalty">Loyalty points</sys:String>
-    <sys:String x:Key="AssistantTool_character_calendar">Character calendar</sys:String>
-    <sys:String x:Key="AssistantTool_character_medals">Character medals</sys:String>
+
+    <!--  Stage 118: ESI gateway (esi_search / esi_describe / esi_read / esi_write)  -->
+    <sys:String x:Key="AssistantTool_esi_search">ESI search</sys:String>
+    <sys:String x:Key="AssistantTool_esi_describe">ESI describe</sys:String>
+    <sys:String x:Key="AssistantTool_esi_read">ESI read</sys:String>
+    <sys:String x:Key="AssistantTool_esi_write">ESI write</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Esi">Full ESI access</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Esi_Desc">Opens all 197 ESI (EVE's official API) operations to the assistant: it searches for an endpoint, reads its parameters, then calls it. Read-only endpoints run directly; write endpoints (send mail, edit contacts, fleet actions…) always ask for your confirmation. Dedicated tools (market / characters / star map…) are still preferred; the gateway covers the long tail.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnabled">Enable the ESI gateway</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnabled_Desc">When off, the four esi_* tools refuse to run (dedicated tools are unaffected).</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiWrites">Allow ESI write operations</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiWrites_Desc">When off, only read-only endpoints are allowed. Turning it on does not skip confirmation: every write still shows a confirmation card.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnrich">Resolve IDs to names</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiEnrich_Desc">ESI responses are full of bare IDs (wallet counterparties, contacts, standing sources, asset types and locations…). When on, they are rewritten as "Name (id)" so answers stay readable; when off, raw IDs are returned (saves local database lookups).</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxPages">Max pages per call</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxPages_Desc">How many pages the assistant may fetch when allPages=true (default 10). Multi-page data such as assets and blueprints relies on it; region-wide order dumps (hundreds of pages) still belong to the Market/Scalper pages.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxResultChars">Max characters per result</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiMaxResultChars_Desc">Character cap for a single tool result fed back to the model (default 3500; larger costs more tokens). Over-long output is truncated with a note.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiErrorLimitFloor">Error budget floor</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiErrorLimitFloor_Desc">ESI temporarily bans clients that produce too many errors. The assistant stops calling when the remaining error budget drops below this value (default 10; 0 = no check).</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths">Denied paths</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Tip">One pattern per line, * supported; e.g. /characters/*/mail</sys:String>
+    <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Desc">Matching endpoints are never called (not even after confirmation). Empty = nothing denied. Consider adding sensitive writes such as /characters/*/mail or /fleets/.</sys:String>
 
 </ResourceDictionary>

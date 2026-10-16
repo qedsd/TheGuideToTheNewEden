@@ -12,7 +12,7 @@ public sealed class MarketNavigateTool : ITool
     public string DisplayNameKey => "AssistantTool_market_navigate";
 
     public string Description =>
-        "打开软件的市场页并选中指定物品（配合「去看看 X 的市场」类问题使用）。参数 itemName 用游戏内物品名（中英文均可）。" +
+        "打开软件的市场页并选中指定物品（配合「去看看 X 的市场」类问题使用）。用游戏内物品名（中英文均可）。" +
         "找不到或名称有歧义时返回原因、不跳转。";
 
     public JsonObject? Parameters => new()

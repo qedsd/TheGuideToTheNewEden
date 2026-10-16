@@ -17,6 +17,9 @@ public partial class SettingsPage : Page
     private readonly Dictionary<Type, Page> _pageCache = [];
     private Type? _currentPageType;
 
+    /// <summary>当前子页若支持"第三段面包屑"（<see cref="ISettingsDetailPage"/>），挂在这里。</summary>
+    private ISettingsDetailPage? _detailPage;
+
     /// <summary>待打开的分类（由别的页面"去配置"这类按钮设置，进入本页时消费一次）。</summary>
     private static Type? _pendingCategory;
 
@@ -30,11 +33,13 @@ public partial class SettingsPage : Page
         Loaded += (_, _) => ApplyPendingCategory();
     }
 
-    /// <summary>
-    /// 请求"下次进入设置页时直接打开某个分类"（如翻译页 AI 页签的「去配置」）。
+    /// <summary>请求"下次进入设置页时直接打开某个分类"（如翻译页 AI 页签的「去配置」）。
     /// 只记一个待办，进入页面时消费一次，避免影响用户之后正常进入设置页的默认视图。
     /// </summary>
     public static void RequestCategory(Type pageType) => _pendingCategory = pageType;
+
+    /// <summary>当前详情区里的子页（无 = 停在分类列表）。</summary>
+    public Page? CurrentDetailPage => DetailFrame.Content as Page;
 
     private void ApplyPendingCategory()
     {
@@ -64,7 +69,8 @@ public partial class SettingsPage : Page
         // 注意：这里**没有** ZKB 分类——ZKB 实时流的全部设置（连接/通知/上限/排序/过滤）已并入
         // "击杀流"页右上角的设置弹窗（KillStreamSettingView）。原先的"设置 → Zkillboard"子页只维护
         // 一组没有任何代码读取的旧过滤字段，已整体删除（REFACTORING §8 第 48 条）。
-        Add(SymbolRegular.Translate24, "SettingPage_AiTranslation", "SettingPage_AiTranslation_Desc", typeof(AiTranslationSettingPage), () => new AiTranslationSettingPage());
+        // 阶段 121：原「AI 翻译」分类已并入「AI 助手」——模型端点（Key/地址/模型/生成参数）搬到那里，
+        // 翻译相关设置作为该页的「模型与翻译」子设置。设置里因此只有一个 AI 入口。
         Add(SymbolRegular.Sparkle24, "SettingPage_AiAssistant", "SettingPage_AiAssistant_Desc", typeof(AiAssistantSettingPage), () => new AiAssistantSettingPage());
         Add(SymbolRegular.LocalLanguage24, "SettingPage_Glossary", "SettingPage_Glossary_Desc", typeof(GlossarySettingPage), () => new GlossarySettingPage());
         // 「主页」分类（阶段 99 重建，阶段 100/101 扩充）：① 钱包/行情/最近使用三张卡片的显示开关
@@ -125,13 +131,53 @@ public partial class SettingsPage : Page
         BreadcrumbTitle.Text = category.Title;
         CategoryView.Visibility = Visibility.Collapsed;
         DetailView.Visibility = Visibility.Visible;
+        AttachDetailBreadcrumb(page);
     }
 
     private void Back_Click(object sender, RoutedEventArgs e)
     {
+        AttachDetailBreadcrumb(null);
         DetailView.Visibility = Visibility.Collapsed;
         CategoryView.Visibility = Visibility.Visible;
     }
+
+    /// <summary>
+    /// 挂上/摘下子页的"第三段面包屑"（阶段 124）。子页自己有层级时（如 AI 页的分节），
+    /// 面包屑显示成「设置 › AI › 行为」，**不再由子页自己画一条标题栏**。
+    /// <para>
+    /// 公开是给探针用的：**离屏窗口里的 <c>Frame</c> 不承载内容**（<c>Content</c>/<c>Navigate</c> 都"成功"
+    /// 但 <c>Content</c> 始终为 null，连普通控件也一样），所以"面包屑联动"这一段只能直接驱动挂载点来核验。
+    /// </para>
+    /// </summary>
+    public void AttachDetailBreadcrumb(Page? page)
+    {
+        if (_detailPage is not null)
+        {
+            _detailPage.BreadcrumbChanged -= OnDetailBreadcrumbChanged;
+        }
+
+        _detailPage = page as ISettingsDetailPage;
+        if (_detailPage is not null)
+        {
+            _detailPage.BreadcrumbChanged += OnDetailBreadcrumbChanged;
+        }
+
+        UpdateSubBreadcrumb();
+    }
+
+    private void OnDetailBreadcrumbChanged(object? sender, EventArgs e) => UpdateSubBreadcrumb();
+
+    private void UpdateSubBreadcrumb()
+    {
+        var subTitle = _detailPage?.BreadcrumbSubTitle;
+        var hasSub = !string.IsNullOrWhiteSpace(subTitle);
+        BreadcrumbSubTitle.Text = hasSub ? subTitle : string.Empty;
+        BreadcrumbSubTitle.Visibility = hasSub ? Visibility.Visible : Visibility.Collapsed;
+        BreadcrumbSubChevron.Visibility = hasSub ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>点面包屑里的分类名：让子页回到它自己的上一层（无下一层时什么都不做）。</summary>
+    private void BreadcrumbParent_Click(object sender, RoutedEventArgs e) => _detailPage?.NavigateBackToParent();
 
     private SettingsCategory? FindCategory(Type pageType)
     {

@@ -31,11 +31,9 @@ public sealed class ChannelScanTool : ITool
     public string DisplayNameKey => "AssistantTool_channel_scan";
 
     public string Description =>
-        "统计一份角色名单的军团/联盟归属与人数排行（频道里「Ctrl+C 复制成员列表」的粘贴格式即以换行分隔的角色名）。" +
-        "参数 names 是角色全名数组（也可以用换行分隔的整段文本，两种都支持）；withZkb=true 时附带威胁情报" +
-        "（危险值 0–100、抱团比例、击杀/损失），适合判断「这帮人是哪个团的、危险吗」，代价是要逐个角色查 zkillboard，明显更慢；" +
-        "zkbTop 控制查多少人的 ZKB（默认 15，上限 30）。名单上限 300 人；名字越少数越快。" +
-        "注意：只能拿到军团/联盟归属，拿不到在线状态；同名角色极少见但存在时按 ESI 返回的第一个处理。";
+        "统计角色名单的军团/联盟归属与人数排行（游戏内频道成员列表 Ctrl+C 的粘贴内容可直接给）。" +
+        "适合「这帮人是哪个团的」「有哪些大团」。名单上限 300 人；" +
+        "附带威胁情报时逐个查 zkillboard，明显更慢；只能拿到归属，拿不到在线状态。";
 
     public JsonObject? Parameters => new()
     {
@@ -46,11 +44,11 @@ public sealed class ChannelScanTool : ITool
             {
                 ["type"] = "array",
                 ["items"] = new JsonObject { ["type"] = "string" },
-                ["description"] = "角色全名数组（换行分隔的整段文本也可以，作为单个字符串传入时按行切分）",
+                ["description"] = "必填。角色全名，数组或换行文本",
             },
-            ["withZkb"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 附带 ZKB 威胁情报（默认 false，明显更慢）" },
-            ["zkbTop"] = new JsonObject { ["type"] = "integer", ["description"] = "查多少个角色的 ZKB（默认 15，上限 30）" },
-            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "军团/联盟排行显示条数（默认 10，上限 30）" },
+            ["withZkb"] = new JsonObject { ["type"] = "boolean", ["description"] = "开启即附带 ZKB 情报，明显更慢" },
+            ["zkbTop"] = new JsonObject { ["type"] = "integer", ["description"] = "查前几人的 ZKB（默认 15，上限 30）" },
+            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "军团/联盟排行条数（默认 10，上限 30）" },
         },
         ["required"] = new JsonArray { "names" },
     };

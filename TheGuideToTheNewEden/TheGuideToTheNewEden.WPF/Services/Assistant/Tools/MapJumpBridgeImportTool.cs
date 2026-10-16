@@ -18,17 +18,16 @@ public sealed class MapJumpBridgeImportTool : ITool
     public string DisplayNameKey => "AssistantTool_map_jumpbridge_import";
 
     public string Description =>
-        "从一段文本或本地文件批量导入玩家跳桥清单。text 与 filePath 二选一：text 直接粘贴（每行「A ↔ B」或「A - B」或「A,B」，" +
-        "或 JSON 数组 [{System1, System2}]）；filePath 给本机文件路径（工具读取）。该操作会批量写入跳桥配置，" +
-        "需要用户确认后才会执行；已被占用的星系自动跳过并在结果里列出。";
+        "从文本或本机文件批量导入玩家跳桥，每行一组或 JSON 数组。会写盘：" +
+        "需用户确认后执行；两端都被占用的组自动跳过并在结果里列出。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["text"] = new JsonObject { ["type"] = "string", ["description"] = "跳桥清单文本（与 filePath 二选一）" },
-            ["filePath"] = new JsonObject { ["type"] = "string", ["description"] = "本机文件路径（与 text 二选一）" },
+            ["text"] = new JsonObject { ["type"] = "string", ["description"] = "清单文本（与路径二选一）" },
+            ["filePath"] = new JsonObject { ["type"] = "string", ["description"] = "本机路径（与文本二选一）" },
         },
     };
 

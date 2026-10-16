@@ -1,7 +1,9 @@
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
+using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Services.Translation;
 
 namespace TheGuideToTheNewEden.Probe;
@@ -15,7 +17,9 @@ internal static class ToolSuite
     /// <summary>必须有确认门控的工具（写操作 + 重型取数）。</summary>
     private static readonly string[] ConfirmationTools =
         ["map_jumpbridge_add", "map_jumpbridge_remove", "map_jumpbridge_import", "scalper_analyse", "compare_analyse",
-         "glossary_write", "market_favorite", "shopping_cart"];
+         "glossary_write", "market_favorite", "shopping_cart",
+         // 阶段 119：ESI 通用网关的写入口（确认卡片显示 IPendingSummary 给出的人话摘要）
+         "esi_write"];
 
     /// <summary>必须标记为"动作"的工具（结果只想跳页面）。</summary>
     private static readonly string[] ActionTools =
@@ -26,8 +30,8 @@ internal static class ToolSuite
         ["character_orders", "build_buy_order_text", "character_mail", "character_contracts",
          "character_industry", "character_location", "zkb_entity", "ded_info", "wormhole_info",
          "server_ping", "channel_scan", "trade_spread", "mission_info",
-         "character_assets", "character_blueprints", "character_standings", "character_contacts",
-         "character_loyalty", "character_calendar", "character_medals"];
+         // 阶段 119：esi_* 四个元工具（esi_read 只读；esi_write 需要确认，见 ConfirmationTools）
+         "esi_search", "esi_describe", "esi_read"];
 
     public static void Run(Check c)
     {
@@ -40,6 +44,62 @@ internal static class ToolSuite
 
         c.Section("ToolSuite · 确定性执行（本地库，无网络）");
         Execute(c);
+
+        c.Section("ToolSuite · 逐工具开关（阶段 121）");
+        ToolSwitches(c);
+    }
+
+    /// <summary>
+    /// 逐工具开关：纯过滤函数 + 一次真实写盘的端到端（**先备份 settings.json 字节、跑完还原**，
+    /// 内存里的禁用集合也还原成进套件前的样子，避免影响后续套件与用户配置）。
+    /// </summary>
+    private static void ToolSwitches(Check c)
+    {
+        var all = ToolRegistry.All;
+        var productTools = all.Where(t => !t.Name.StartsWith("probe_", StringComparison.Ordinal)).ToList();
+        c.Equal(productTools.Count, 44, "产品工具 44 个（全部列进设置页开关）");
+
+        // 纯函数：过滤语义
+        var disabled = new HashSet<string>(StringComparer.Ordinal) { "map_route", "esi_write" };
+        var schemas = ToolRegistry.FilterSchemas(all, disabled);
+        c.Equal(schemas.Count, all.Count - 2, "禁用 2 个 → 声明少 2 条");
+        c.That(schemas.All(s => s.Name is not ("map_route" or "esi_write")), "被关的工具不在给模型的声明里");
+        c.That(schemas.All(s => !string.IsNullOrWhiteSpace(s.Description)),
+            "过滤后每条声明仍完整（描述都在；Parameters 允许为 null —— 工具声明里 null 就是「无参数」）");
+        c.That(schemas.All(s => all.Any(t => t.Name == s.Name)), "过滤后只做减法，不改动工具本身");
+        c.Equal(ToolRegistry.FilterSchemas(all, null).Count, all.Count, "禁用集合为 null = 全开");
+        c.Equal(ToolRegistry.FilterSchemas(all, new HashSet<string>(StringComparer.Ordinal)).Count, all.Count, "空集合 = 全开");
+
+        // 端到端：设置 → 注册表（写盘；跑完按字节还原）
+        var settingsFile = Path.Combine(SettingsService.DataPath, "settings.json");
+        var backup = File.Exists(settingsFile) ? File.ReadAllBytes(settingsFile) : null;
+        var before = AiAssistantSettingService.DisabledTools.ToHashSet(StringComparer.Ordinal);
+
+        try
+        {
+            AiAssistantSettingService.SaveDisabledTools(["map_route"]);
+            c.That(!AiAssistantSettingService.IsToolEnabled("map_route"), "保存后该工具被标记为关闭");
+            c.That(AiAssistantSettingService.IsToolEnabled("map_system_info"), "其它工具不受影响");
+            c.That(ToolRegistry.EnabledSchemas.All(s => s.Name != "map_route"), "EnabledSchemas 不下发被关的工具");
+            c.That(ToolRegistry.Enabled.All(t => t.Name != "map_route"), "Enabled 列表里没有它");
+            c.That(ToolRegistry.IsEnabled("map_route") == false, "IsEnabled 反映开关（执行侧据此拒绝）");
+
+            AiAssistantSettingService.SaveDisabledTools(null);
+            c.That(AiAssistantSettingService.IsToolEnabled("map_route"), "清空禁用集合后恢复启用");
+        }
+        finally
+        {
+            AiAssistantSettingService.SaveDisabledTools(before);
+            if (backup is not null)
+            {
+                File.WriteAllBytes(settingsFile, backup);
+            }
+        }
+
+        c.That(AiAssistantSettingService.DisabledTools.Count == before.Count,
+            $"跑完还原成进套件前的禁用集合（{before.Count} 个）");
+        c.That(ToolRegistry.FilterSchemas(all, before).Count == all.Count - before.Count,
+            "按还原后的集合过滤，条数自洽");
     }
 
     private static void Schema(Check c)
@@ -237,34 +297,18 @@ internal static class ToolSuite
             c.That(tool?.IsAction == false, $"{name}：写工具不是导航动作");
         }
 
-        // ---------- 阶段 117：角色 ESI 直读七个 ----------
-        // 两条确定性分支：① 不存在的角色名 → 「未找到角色」；② 不传角色名 → 「未登录任何角色」（无授权角色时）。
-        // 成功路径会真读该角色的 ESI 数据，探针不覆盖（由实机确认）。
+        // ---------- 阶段 119：阶段 117 的"角色 ESI 直读七个"已删除 ----------
+        // 能力改由 ESI 通用网关承担（esi_search → esi_describe → esi_read），名称富化下沉为
+        // EsiResponseEnricher（对所有端点生效）。这里断言它们**不会被悄悄加回来**，
+        // 免得又出现"同一端点既有专用工具又有网关"的双份维护。
         foreach (var name in new[]
                  {
                      "character_assets", "character_blueprints", "character_standings",
                      "character_contacts", "character_loyalty", "character_calendar", "character_medals",
                  })
         {
-            Exec(c, ctx, name, """{"characterName":"绝不存在角色XYZ"}""",
-                text => text.Contains("未找到角色"), $"{name}：角色不存在 → 明确原因（不发 ESI）");
-            Exec(c, ctx, name, """{}""",
-                text => text.Contains("角色") && text.Length > 0, $"{name}：无默认角色 → 给出可照做的提示");
+            c.That(ToolRegistry.Find(name) is null, $"{name}：已删除（能力由 esi_* 网关承担，不要加回来）");
         }
-
-        // 参数与上限护栏：这些分支不该真的取数
-        Exec(c, ctx, "character_assets", """{"characterName":"绝不存在角色XYZ","top":999}""",
-            text => text.Contains("未找到角色"), "character_assets：top 越界不影响「角色不存在」的判定");
-        Exec(c, ctx, "character_assets", """{"characterName":"绝不存在角色XYZ","groupBy":"item"}""",
-            text => text.Contains("未找到角色"), "character_assets：groupBy=item 同样先解析角色");
-        c.That(ToolRegistry.Find("character_assets")?.Description.Contains("聚合汇总") == true,
-            "character_assets：描述里说明返回的是聚合汇总（免得模型误以为能拿全量明细）");
-        c.That(ToolRegistry.Find("character_contacts")?.Description.Contains("私人") == true,
-            "character_contacts：描述里标明是私人关系数据（隐私提示）");
-        c.That(ToolRegistry.Find("character_standings")?.Description.Contains("私人") == true,
-            "character_standings：描述里标明是私人关系数据（隐私提示）");
-        c.That(ToolRegistry.Find("character_blueprints")?.Description.Contains("onlyOriginals") == true,
-            "character_blueprints：描述里写清原图/拷贝过滤参数");
     }
 
     /// <summary>执行一个工具并断言结果（含"结果不超过 4000 字符"的公共约束）。</summary>

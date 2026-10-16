@@ -13,9 +13,9 @@ public sealed class TranslateTool : ITool
     public string DisplayNameKey => "AssistantTool_translate";
 
     public string Description =>
-        "翻译文本。优先用软件内置的本地 EVE 词库（物品/星系/星域/空间站专有名词，离线、免费），" +
-        "词库查不到或需要整句翻译时用已配置的 AI 翻译源。参数 direction：auto=自动判定方向、zh_en=中文译成英文、en_zh=英文译成中文。" +
-        "适合「Rifter 是什么」「把这段英文翻译成中文」这类问题。译文以工具返回为准。";
+        "中英互译。优先用内置离线的 EVE 专有名词词库（物品/星系/空间站名，免费、只认专有名词），" +
+        "词库未命中或要整句翻译时用已配置的 AI 源。适合「Rifter 是什么」「把这段英文翻成中文」；" +
+        "译文以工具返回为准。";
 
     public JsonObject? Parameters => new()
     {
@@ -27,7 +27,7 @@ public sealed class TranslateTool : ITool
             {
                 ["type"] = "string",
                 ["enum"] = new JsonArray { "auto", "zh_en", "en_zh" },
-                ["description"] = "翻译方向（默认 auto = 自动判定）",
+                ["description"] = "默认 auto 自动判定",
             },
         },
         ["required"] = new JsonArray { "text" },
@@ -61,7 +61,7 @@ public sealed class TranslateTool : ITool
         {
             return new ToolResult(
                 "翻译不可用：本地化数据库未载入且 AI 翻译源未配置。" +
-                "请先在「设置 → 一般」启用本地化数据库，或在「设置 → AI 翻译」配置端点。");
+                "请先在「设置 → 一般」启用本地化数据库，或在「设置 → AI 助手」配置端点。");
         }
 
         var (from, to) = direction switch

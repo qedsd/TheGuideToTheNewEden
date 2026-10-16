@@ -14,9 +14,8 @@ public sealed class ZkbEntityTool : ITool
     public string DisplayNameKey => "AssistantTool_zkb_entity";
 
     public string Description =>
-        "查询某个角色/军团/联盟在 ZKB（zkillboard）上的战斗统计：危险值（0–100）、群体活动比例（越高越爱抱团）、" +
-        "击杀与损失数量、ISK 击毁与损失、单挑击杀/被单杀数。参数 entityName 用实体全名（同名多个时会列出候选让你确认）；" +
-        "forceRefresh=true 跳过缓存重新拉取。适合「XX 是谁、危险吗」「这个团能打吗」「我最近战绩如何」。";
+        "查角色/军团/联盟在 ZKB（zkillboard）的战斗统计：危险值（0–100）、抱团比例、击杀与损失、" +
+        "ISK 击毁与损失、单挑战绩。只读；同名多实体时列出候选，偶发限流较慢。适合「XX 危险吗」「这团能打吗」。";
 
     public JsonObject? Parameters => new()
     {
@@ -24,7 +23,7 @@ public sealed class ZkbEntityTool : ITool
         ["properties"] = new JsonObject
         {
             ["entityName"] = new JsonObject { ["type"] = "string", ["description"] = "实体全名（角色/军团/联盟）" },
-            ["forceRefresh"] = new JsonObject { ["type"] = "boolean", ["description"] = "true = 跳过缓存重新拉取（默认 false）" },
+            ["forceRefresh"] = new JsonObject { ["type"] = "boolean", ["description"] = "跳过缓存重新拉取（默认 false）" },
         },
         ["required"] = new JsonArray { "entityName" },
     };

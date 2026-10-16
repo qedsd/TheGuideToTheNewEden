@@ -14,41 +14,44 @@
         注意与阶段 97 物理删除的旧 HomeSettingPage（上下移按钮的快捷方式管理页）不同——
         本页的排序用与主页编辑模式一致的拖动方式。
     -->
-    <ScrollViewer x:Name="RootScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer
+        x:Name="RootScroll"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MaxWidth="1000" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+            <StackPanel Grid.Column="0" Margin="36,0,36,40">
 
                 <!--  卡片显示  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource Home.Setting.CardsSection}" />
                 <Border Style="{StaticResource SettingsGroupBorder}">
                     <StackPanel>
                         <controls:SettingCard
+                            Title="{DynamicResource Home.Setting.ShowWallet}"
                             Description="{DynamicResource Home.Setting.ShowWallet_Desc}"
-                            Icon="Wallet24"
-                            Title="{DynamicResource Home.Setting.ShowWallet}">
+                            Icon="Wallet24">
                             <ui:ToggleSwitch x:Name="WalletToggle" />
                         </controls:SettingCard>
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource Home.Setting.ShowMarket}"
                             Description="{DynamicResource Home.Setting.ShowMarket_Desc}"
-                            Icon="DataTrending24"
-                            Title="{DynamicResource Home.Setting.ShowMarket}">
+                            Icon="DataTrending24">
                             <ui:ToggleSwitch x:Name="MarketToggle" />
                         </controls:SettingCard>
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
+                            Title="{DynamicResource Home.Setting.ShowRecent}"
                             Description="{DynamicResource Home.Setting.ShowRecent_Desc}"
-                            Icon="History24"
-                            Title="{DynamicResource Home.Setting.ShowRecent}">
+                            Icon="History24">
                             <ui:ToggleSwitch x:Name="RecentToggle" />
                         </controls:SettingCard>
                     </StackPanel>
@@ -156,7 +159,10 @@
                                                     TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
                                             <!--  行尾操作：宽窄切换 + 移除（Grid.Column="2" 不能省——漏了会挤到图标旁）  -->
-                                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                                            <StackPanel
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
                                                 <!--  宽窄切换：图标随当前尺寸变化（小 → 扩为宽磁贴，宽 → 缩为小磁贴）  -->
                                                 <ui:Button
                                                     Padding="4"
@@ -171,8 +177,8 @@
                                                     </ui:Button.ToolTip>
                                                 </ui:Button>
                                                 <ui:Button
-                                                    Padding="4"
                                                     Margin="2,0,0,0"
+                                                    Padding="4"
                                                     VerticalAlignment="Center"
                                                     Appearance="Transparent"
                                                     Click="OnRemoveClick"

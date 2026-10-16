@@ -31,6 +31,8 @@ public static class CoreInitializer
         GameServerSelectorService.Initialize();
         LocalDbSelectorService.Initialize();
         DBLocalizationSettingService.Initialize();
+        // 模型端点先加载（翻译设置的 AiEndpoint / AiStream 等都转发到它）
+        AiModelSettingService.Initialize();
         TranslationSettingService.Initialize();
         AiAssistantSettingService.Initialize();
         ChannelTranslationSettingService.Initialize();

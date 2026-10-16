@@ -12,7 +12,7 @@ public sealed class SystemNavigateTool : ITool
     public string DisplayNameKey => "AssistantTool_system_navigate";
 
     public string Description =>
-        "打开软件星图并定位到指定星系（配合「某某在哪」类问题使用）。参数 systemName 用星系名（如 吉他 / Jita）。" +
+        "打开软件星图并定位到指定星系（配合「某某在哪」类问题使用）。用星系名（如 吉他 / Jita）。" +
         "找不到或名称有歧义时返回原因、不跳转。";
 
     public JsonObject? Parameters => new()

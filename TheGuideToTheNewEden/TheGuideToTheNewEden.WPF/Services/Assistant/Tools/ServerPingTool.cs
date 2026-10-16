@@ -35,11 +35,8 @@ public sealed class ServerPingTool : ITool
     public string DisplayNameKey => "AssistantTool_server_ping";
 
     public string Description =>
-        "对 EVE 服务器做 TCP 连接测速（TCPing），返回平均/最低/最高延迟、丢包率与档位（极佳/良好/正常/较差/糟糕）。" +
-        "参数 host 留空 = 同时测欧服与国服（tranquility / 42.186.79.5），也可给自定义主机名或 IP；" +
-        "port 默认 26000；samples 测速次数（默认 5，上限 10，次数越多越准也越慢）；timeoutMs 单次连接超时（默认 5000，上限 10000）。" +
-        "适合「现在欧服卡不卡」「哪个服延迟最低」「测一下我的连接质量」。注意：延迟是到游戏登录服务器的网络质量，" +
-        "不代表游戏内体验（还需考虑本地渲染与服务器负载）。";
+        "对 EVE 服务器做 TCP 连接测速（TCPing），返回平均/最低/最高延迟、丢包率与档位。适合「现在欧服卡不卡」「哪个服延迟最低」。" +
+        "不填主机 = 欧服与国服各测一次，次数越多越准也越慢；延迟只反映到登录服务器的网络质量，不代表游戏内体验。";
 
     public JsonObject? Parameters => new()
     {
@@ -49,7 +46,7 @@ public sealed class ServerPingTool : ITool
             ["host"] = new JsonObject { ["type"] = "string", ["description"] = "主机名或 IP；留空 = 欧服 + 国服各测一次" },
             ["port"] = new JsonObject { ["type"] = "integer", ["description"] = "端口（默认 26000）" },
             ["samples"] = new JsonObject { ["type"] = "integer", ["description"] = "测速次数（默认 5，上限 10）" },
-            ["timeoutMs"] = new JsonObject { ["type"] = "integer", ["description"] = "单次连接超时毫秒（默认 5000，上限 10000）" },
+            ["timeoutMs"] = new JsonObject { ["type"] = "integer", ["description"] = "超时毫秒（默认 5000，上限 10000）" },
         },
     };
 

@@ -13,16 +13,15 @@ public sealed class MarketTrendTool : ITool
     public string DisplayNameKey => "AssistantTool_market_trend";
 
     public string Description =>
-        "分析某个物品在某星域的价格走势：当前实时最低卖价/最高买价、历史区间最高/最低/均价、现价相对区间位置（分位）、" +
-        "销量近 N 天与前期对比。参数 itemName 用游戏内物品名，regionName 用星域名（默认 伏尔戈），days 统计区间（默认 90）。" +
-        "适合「XX 走势怎么样」「现在该买还是该等」。返回的统计数字是工具数据，禁止自行计算或估算。";
+        "查物品在某星域的价格走势（只读查询）：当前实时最低卖价/最高买价、历史区间最高/最低/均价、现价在区间中的分位、成交量升降趋势。" +
+        "适合「XX 走势怎么样」「现在该买还是该等」。统计数字以工具返回为准，禁止自行计算或估算。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品名（游戏内名称，中英文均可）" },
+            ["itemName"] = new JsonObject { ["type"] = "string", ["description"] = "物品名（中英文均可）" },
             ["regionName"] = new JsonObject { ["type"] = "string", ["description"] = "星域名（默认 伏尔戈）" },
             ["days"] = new JsonObject { ["type"] = "integer", ["description"] = "统计区间天数（默认 90）" },
         },

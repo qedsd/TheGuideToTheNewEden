@@ -6,7 +6,7 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <Grid Margin="36,20,36,24">
+    <Grid Margin="36,0,36,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -25,8 +25,8 @@
             <Border Style="{StaticResource SettingsGroupBorder}">
                 <DockPanel>
                     <TextBlock
-                        DockPanel.Dock="Top"
                         Margin="16,14,16,10"
+                        DockPanel.Dock="Top"
                         FontSize="14"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -35,10 +35,10 @@
 
                     <Button
                         x:Name="RemoveButton"
-                        DockPanel.Dock="Bottom"
                         Margin="16,10,16,14"
                         HorizontalAlignment="Stretch"
                         Content="{DynamicResource Settings.Structures.Remove}"
+                        DockPanel.Dock="Bottom"
                         Foreground="{DynamicResource SystemFillColorCautionBrush}" />
 
                     <ui:DataGrid
@@ -82,17 +82,15 @@
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Text="{DynamicResource Settings.Structures.AddById}" />
 
-                    <StackPanel
-                        Margin="0,8,0,0"
-                        Orientation="Horizontal">
+                    <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
                         <ui:TextBox
                             x:Name="StructureIdBox"
                             Width="220"
                             PlaceholderText="eg: 1023456789" />
                         <Button
                             x:Name="AddByIdButton"
-                            Margin="8,0,0,0"
                             MinWidth="80"
+                            Margin="8,0,0,0"
                             Content="{DynamicResource Settings.Action.Add}" />
                     </StackPanel>
 

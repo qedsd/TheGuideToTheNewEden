@@ -14,7 +14,7 @@ public sealed class CharacterIndustryTool : ITool
 
     public string Description =>
         "查询某个角色正在进行的工业任务（制造/研发等）：蓝图、产物、状态、进度、开始与完成时间、剩余时间、设施、成功概率、成本。" +
-        "参数 characterName 用角色全名（省略 = 默认角色）；top 控制条数（默认 10，上限 30）。" +
+        "角色全名（省略 = 默认角色）；条数默认 10、上限 30。" +
         "适合「我有哪些活还在跑」「什么时候能造完」。";
 
     public JsonObject? Parameters => new()

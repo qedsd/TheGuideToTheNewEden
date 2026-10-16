@@ -14,8 +14,8 @@ public sealed class MapLayerTool : ITool
     public string DisplayNameKey => "AssistantTool_map_layer";
 
     public string Description =>
-        "切换星图的显示：colorMode 选配色（security 安等 / sovereignty 主权 / resource 行星资源 / kills 击杀 / jumps 跳数），" +
-        "showBridges 控制跳桥层显示。未指定的项保持当前值。适合「星图切成主权视图」这类指令。";
+        "切换星图的显示：配色（安等 / 主权 / 行星资源 / 击杀 / 跳数）与跳桥层开关；未指定的项保持当前值。" +
+        "适合「星图切成主权视图」这类指令。";
 
     public JsonObject? Parameters => new()
     {

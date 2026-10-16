@@ -13,18 +13,17 @@ public sealed class CharacterMailTool : ITool
     public string DisplayNameKey => "AssistantTool_character_mail";
 
     public string Description =>
-        "查询某个角色的邮件：先给标签列表与未读数，再列出指定标签（labelId）下的邮件标题/发件人/时间/已读状态。" +
-        "参数 characterName 用角色全名（省略 = 默认角色）；labelId 省略 = 全部邮件（不按标签过滤）；" +
-        "top 控制邮件条数（默认 12，上限 40）。只读，不会标记已读。适合「我有多少未读邮件」「最近谁给我发邮件」。";
+        "查角色邮件：先给标签与未读数，再列出该标签下邮件的标题、发件人、时间与已读状态。" +
+        "只读，不会标记已读，需邮件权限。适合「我有多少未读邮件」「最近谁给我发邮件」。";
 
     public JsonObject? Parameters => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["characterName"] = new JsonObject { ["type"] = "string", ["description"] = "角色全名（省略 = 默认角色）" },
-            ["labelId"] = new JsonObject { ["type"] = "integer", ["description"] = "邮件标签 Id（省略 = 全部邮件）" },
-            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "邮件条数（默认 12，上限 40）" },
+            ["characterName"] = new JsonObject { ["type"] = "string", ["description"] = "角色全名，省略 = 默认角色" },
+            ["labelId"] = new JsonObject { ["type"] = "integer", ["description"] = "标签 Id，省略 = 全部" },
+            ["top"] = new JsonObject { ["type"] = "integer", ["description"] = "条数，默认 12，上限 40" },
         },
     };
 
