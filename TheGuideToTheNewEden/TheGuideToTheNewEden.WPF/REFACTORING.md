@@ -3349,6 +3349,67 @@ icacls $ws | findstr /i "Mandatory"
 - 退出沙箱后，工作区里的程序（含托盘图标、"查看目录"）立即恢复成 Medium 下的正常行为；
   另外 `%USERPROFILE%\.dsh`、DSH 安装目录、`F:\Code` 下的其它项目本来就**没有**标签，无需处理。
 
+#### 追记（2026-10-16）：问题再现的真正根因——**UAC 被禁用** × 产物文件上的显式 Medium 标签（A/B 实测闭环）
+
+换了一台新电脑（旧机 `F:\Code`，新机 `D:\QEDSD\Code\TheGuideToTheNewEden`，沙箱能力 SID 也随之不同），
+托盘/系统通知**再次**注册失败，但日志形态变了——**不再是 Low/Medium，而是 `应用=Medium vs shell=High`**
+（`Log\20261014/15/16.txt`）。
+
+**时间线（全部来自程序自己的日志，`…\bin\Debug\net8.0-windows10.0.19041\Log\`；10-12/13 的堆栈里已是
+`D:\QEDSD` 路径，说明**新机从 10-12 起就在跑本项目**）**：
+
+| 日期 | 应用完整性 | shell 完整性 | 结果 |
+| --- | --- | --- | --- |
+| 10-12 | High（推断，成功时不记级别） | **High** | 全天多次「启动时已创建托盘图标」**成功**——exe 是刚复制过来的，不带标签 |
+| 10-13 | **Low** | **High** | 失败——DSH 给**新**工作区打了 Low 标签（打开工作区时打标，与旧机行为一致） |
+| 10-14 起 | **Medium** | **High** | 失败——标签被设成 Medium（上一节处置②的命令），应用变 Medium，但 shell 仍是 High |
+| 10-16 | **High** | High | **恢复**——删产物重建（无标签）后 F5 启动一次成功 |
+
+**两个环境事实（本机实测）**：
+
+1. **这台新机器的 UAC 是禁用的**：`HKLM\...\Policies\System\EnableLUA = 0`——机器自身配置，且**一直如此**
+   （10-12 起的日志里 shell 一律 High、从未是 Medium，可证）。登录令牌不再过滤 → 桌面 shell（explorer）、
+   VS（devenv）、终端、**连 DSH 的 shell 本身都一律 High**（本会话实测 `whoami /groups` = High，
+   上一节"DSH 把 shell 降到 Low"在这台机器上并未发生；启动链里 explorer 的父进程是 userinit/winlogon，
+   说明 High 来自登录令牌本身）。
+2. **产物 exe 带显式 Medium 标签**：`icacls TheGuideToTheNewEden.exe` →
+   `Mandatory Label\Medium Mandatory Level:(NW)`（无 `(I)` = 显式设置，来自上一节处置②那条
+   `icacls /setintegritylevel Medium` 命令）。系统自带 exe（`explorer.exe`、`notepad.exe` 实测）**没有**标签。
+
+**机制（微软文档明文）**：进程完整性 = **min(用户令牌，主执行文件标签)**。UAC 开启时用户=Medium，
+文件设 Medium 碰巧无害；**UAC 禁用后用户=High，显式 Medium 标签把进程强行压到 Medium** → 低于 High 的
+shell → UIPI 拒绝 `Shell_NotifyIcon`。⚠️ **更正上一节的一个说法**：「`/setintegritylevel Medium` 即等价于
+系统默认」只在 UAC 开启时成立；**「无标签」才是系统默认**，UAC 禁用的机器上设 Medium 会**制造**本问题。
+
+**A/B 对照实测（同一个探针 exe，唯一变量是文件标签）**：
+
+| 探针位置 | 文件标签 | 进程完整性 | 裸 `NIM_ADD` |
+| --- | --- | --- | --- |
+| `%TEMP%` | 无 | High | **成功** |
+| `bin\Debug\…`（复制件） | 无（**bin 目录的 Medium 标签不可继承**，新文件不带标签） | High | **成功** |
+| 同上，`icacls /setintegritylevel Medium` 后 | Medium | Medium | **失败，错误 5**（与线上故障逐字一致） |
+
+顺带实锤：shell=High 时对 High 进程 `Shell_NotifyIcon` **完全放行**（通知区域本身没有任何问题）。
+
+**修复（已执行并实机验证）**：移除标签实测不可行（`icacls /reset` 只重置 DACL；
+`SetNamedSecurityInfoW` 配 NULL/空 SACL 均返回错误 2——Windows 不允许移除已设的强制标签），
+改为**删除带标签的 `TheGuideToTheNewEden.exe` / `TheGuideToTheNewEden.dll` 后重建**：
+bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒后仍无标签），构建产物重获得**无标签**状态 →
+进程 = 登录令牌（UAC 关=High / UAC 开=Medium），**恒等于 shell** → 两种 UAC 状态下托盘都正常。
+**验证**：重建后 `icacls` 确认 exe/dll 无标签（未动的第三方 dll 仍带 Medium 标签作对照——
+进程完整性只由主 exe 的文件标签决定，已加载 DLL 的标签无影响）；用户随后 F5 启动（10:02:48），
+日志首行即 **「启动时已创建托盘图标」**，一次成功。（09:48:35 有一次来自 devenv 的启动仍报 Medium，
+未完全定因，随后一次重建后再未复现。）
+
+**防复发**：
+
+- **不要再对工作区/产物执行 `icacls /setintegritylevel`**（上一节处置②的命令在 UAC 禁用的机器上会制造此问题）；
+- 若托盘再失败，先看启动日志的「上下文对比」行：应用与 shell 完整性不一致 + 错误 5 →
+  `icacls <exe> | findstr Mandatory` 查文件标签，**有标签就删掉 exe 重建**（新产物无标签）；
+- 三个可选的"一劳永逸"项（按代价递增）：① 保持现状（现状已自愈且重建后稳定）；
+  ② 重新启用 UAC（`EnableLUA=1` + 注销，恢复 Windows 默认安全形态）；
+  ③ 在 DSH 里移除/忘记该工作区（DSH 不会再打标签、也不再降 shell 令牌）。
+
 ### 阶段 83：打开目录 / 定位文件不再自拉 `explorer.exe`（"以前是正常的"的那个报错）
 
 **现象（用户实机反馈）**：在设置里点「App 日志 / App 配置文件」的"查看"，弹出系统错误框
