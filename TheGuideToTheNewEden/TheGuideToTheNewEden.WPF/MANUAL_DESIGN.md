@@ -529,3 +529,20 @@ REFACTORING.md                       §8 增加"改功能即改手册"约定；�
 3. **AI 形态**：`manual_search` + `manual_read` **核心常驻**（推荐：任何问法都能查手册，代价约 +500 字符/工具轮），
    还是放 `General` 套餐（更省，但"这个软件怎么用"若没命中意图词就要回退全量才有手册工具）？
 4. **文件形态**：输出目录下的 md（**可热改、可打开文件位置**，推荐）还是嵌进程序集资源（用户改不坏，但改了要重编译）？
+
+---
+
+## 13. 落地进度（2026-10-16）
+
+四点已按推荐项拍板并落地：**粒度**＝功能级（57 篇，含 `getting-started` / `concepts` / `troubleshooting` 三篇横切与 `home`）；
+**语言**＝先 `zh-CN`（en-US 留 M5）；**AI 形态**＝`manual_search` / `manual_read` 核心常驻（CoreToolNames）；
+**文件形态**＝输出目录 md（csproj Content 复制，运行时 `AppContext.BaseDirectory\Resources\Manuals\<lang>\`）。
+
+**已完成（M1 + M2 主体）**：
+
+- 内容：`Resources\Manuals\zh-CN\` 57 篇全部写完并经过"写作 → 对抗式校对（逐条回核语言键/XAML/REFACTORING/工具源码）→ 机械校验"三道工序；结构校验脚本暂存 `%TEMP%\manual_check.ps1`（front-matter 键、id==路径、group 键存在、page 文件存在、tools 真实存在、H2 slug 顺序与必填节、体量预算、related 链接可解析；当前 0 错误 0 警告）。
+- 服务层：`Services\Manual\ManualDocument.cs`（最小 YAML 解析 + H2 切节）、`ManualService.cs`（懒加载索引 / id 别名宽松查找 / 关键词检索，语言切换自动重建）、`ManualToolMap.cs`（页面类型 → 手册 id，F1 用，失败回填备用）。
+- 界面：`Views\UserControls\ManualBrowserView.xaml(.cs)`（左搜索列表 + 右 MarkdownPresenter 正文）、`Views\Windows\ManualWindow.cs`（工具窗口外壳单实例复用，不设 Owner）。入口：主页品牌条「手册」（默认打开 getting-started）、主窗口 **F1**（按当前页打开对应手册）、正文内链（MarkdownRenderer 把 `[邮件](characters/mail)` 这类无 scheme 链接转成 `manual:` 协议在窗口内跳转）。
+- AI：`Tools\ManualSearchTool.cs` / `ManualReadTool.cs` 注册进 ToolRegistry 并加入 CoreToolNames；系统提示词加规则 14（用法类问题先查说明书，与实时数据冲突时以数据为准）。说明书正文**只进工具结果**，不进系统提示词/固定前缀（token 契约不受影响；全文预算内单条描述 ≤140 字符）。
+
+**待办（后续阶段）**：M3 探针 `manuals` 套件（本仓无探针工程，脚本暂代）；`IManualAware` 壳页右键「查看说明」；工具结果失败回填（ManualToolMap 已备好映射）；en-US 内容与回退提示；PDF 链接退役（PDF 仍随包复制，按钮已改指内置说明书）；REFACTORING.md 追加阶段记录。

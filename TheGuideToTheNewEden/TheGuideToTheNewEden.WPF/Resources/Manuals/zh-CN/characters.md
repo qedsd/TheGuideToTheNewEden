@@ -2,7 +2,7 @@
 id: characters
 title: 角色
 group: Nav.Characters
-page: Views/Pages/Characters/CharactersShellPage.xaml + CharacterCardsPage.xaml + CharacterWorkspacePage.xaml
+page: Views/Pages/Characters/CharactersShellPage.xaml + Views/Pages/Characters/CharacterCardsPage.xaml + Views/Pages/Characters/CharacterWorkspacePage.xaml
 tools: [character_list, character_navigate]
 aliases: [角色, 添加角色, 登录角色, 角色卡片, 移除角色, 授权, 国服, 欧服, characters, add character, login, auth, cards]
 updated: 2026-10-16

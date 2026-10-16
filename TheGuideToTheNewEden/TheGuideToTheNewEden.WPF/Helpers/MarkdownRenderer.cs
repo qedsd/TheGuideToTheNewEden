@@ -33,6 +33,14 @@ public static class MarkdownRenderer
 {
     // ---------- 块级语法 ----------
 
+    /// <summary>
+    /// 说明书内链地址（<c>[邮件](characters/mail)</c> 这类）：没有 scheme、不以 <c>/</c> 开头、
+    /// 只由 id 字符（字母数字 _ - /）与可选 <c>#节锚点</c> 组成。命中即视为手册 id，转 <c>manual:</c> 协议。
+    /// </summary>
+    private static readonly Regex ManualLinkRegex = new(
+        @"^[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9_-]+)*(?:#[A-Za-z0-9_-]+)?$",
+        RegexOptions.Compiled);
+
     private static readonly Regex HeadingRegex = new(
         @"^\s{0,3}(?<hashes>#{1,6})\s*(?<text>.*?)\s*#*\s*$",
         RegexOptions.Compiled);
@@ -653,6 +661,15 @@ public static class MarkdownRenderer
             link.Inlines.Add(new Run(text));
         }
 
+        // 说明书内链（如 characters/mail、market#steps）：没有 scheme、也不像网址，按手册 id 处理。
+        // 转成 manual: 协议交给 OnRequestNavigate 在手册窗口里打开（不进浏览器）。
+        if (ManualLinkRegex.IsMatch(url) && Uri.TryCreate("manual:" + url, UriKind.Absolute, out var manualUri))
+        {
+            link.NavigateUri = manualUri;
+            link.RequestNavigate += OnRequestNavigate;
+            return link;
+        }
+
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
             link.NavigateUri = uri;
@@ -671,6 +688,13 @@ public static class MarkdownRenderer
     private static void OnRequestNavigate(object sender, RequestNavigateEventArgs e)
     {
         e.Handled = true;
+
+        // 手册内链：打开（或跳转）内置说明书窗口，而不是交给系统浏览器。
+        if (string.Equals(e.Uri.Scheme, "manual", StringComparison.OrdinalIgnoreCase))
+        {
+            Views.Windows.ManualWindow.Show(e.Uri.AbsoluteUri["manual:".Length..]);
+            return;
+        }
 
         try
         {

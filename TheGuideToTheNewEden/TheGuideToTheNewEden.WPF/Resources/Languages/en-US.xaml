@@ -2358,6 +2358,12 @@
     <sys:String x:Key="AssistantTool_ded_info">DED info</sys:String>
     <sys:String x:Key="AssistantTool_wormhole_info">Wormhole info</sys:String>
     <sys:String x:Key="AssistantTool_server_ping">Server ping</sys:String>
+    <sys:String x:Key="AssistantTool_manual_search">Manual search</sys:String>
+    <sys:String x:Key="AssistantTool_manual_read">Manual read</sys:String>
+    <sys:String x:Key="Manual.Window.Title">Manual</sys:String>
+    <sys:String x:Key="Manual.Search.Placeholder">Search manuals</sys:String>
+    <sys:String x:Key="Manual.Search.Empty">No matching manuals</sys:String>
+    <sys:String x:Key="Manual.NotFound">Manual not found: {0}</sys:String>
     <sys:String x:Key="AssistantTool_channel_scan">Roster scan</sys:String>
     <sys:String x:Key="AssistantTool_links_search">Link search</sys:String>
     <sys:String x:Key="AssistantTool_trade_spread">Market spread</sys:String>

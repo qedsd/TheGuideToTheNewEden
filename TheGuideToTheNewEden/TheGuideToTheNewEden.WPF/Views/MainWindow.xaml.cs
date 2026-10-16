@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.Services.Home;
+using TheGuideToTheNewEden.WPF.Services.Manual;
 using TheGuideToTheNewEden.WPF.Services.Tools;
 using TheGuideToTheNewEden.WPF.Views.UserControls;
 using TheGuideToTheNewEden.WPF.Views.Windows;
@@ -56,6 +57,9 @@ public partial class MainWindow : FluentWindow
     private GlobalHotkeyService? _assistantHotkey;
 
     private int _assistantHotkeyId = -1;
+
+    /// <summary>主窗口当前显示的页面类型（F1 打开对应说明书用；工具窗口页不算）。</summary>
+    private Type? _currentPageType;
 
     public MainWindow()
     {
@@ -116,6 +120,9 @@ public partial class MainWindow : FluentWindow
 
         Closing += MainWindow_Closing;
 
+        // F1：打开当前页的内置说明书（没登记的页面打开手册列表）。
+        PreviewKeyDown += OnMainWindowPreviewKeyDown;
+
         // 「工具」分组的页面不进主内容区：拦下导航，改为打开独立工具窗口。
         NavigationView.Navigating += OnNavigationViewNavigating;
 
@@ -140,6 +147,19 @@ public partial class MainWindow : FluentWindow
     private void ApplyFrameMargin()
     {
         NavigationView.FrameMargin = new Thickness(0, NavigationTopInset, 0, 0);
+    }
+
+    // ---------- F1：当前页的内置说明书 ----------
+
+    private void OnMainWindowPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.F1)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        ManualWindow.Show(ManualToolMap.TryGetManual(_currentPageType) ?? ManualToolMap.TryGetDefault());
     }
 
     // ---------- 导航右键：固定到主页 ----------
@@ -335,13 +355,15 @@ public partial class MainWindow : FluentWindow
             return;
         }
 
-        if (!ToolPages.TryGetValue(pageType, out var titleKey))
+        if (ToolPages.TryGetValue(pageType, out var titleKey))
         {
+            args.Cancel = true;
+            ToolWindowHost.Show(pageType, titleKey, args.Page as Pages.IToolPage);
             return;
         }
 
-        args.Cancel = true;
-        ToolWindowHost.Show(pageType, titleKey, args.Page as Pages.IToolPage);
+        // 没被拦截 = 真的切页：记住当前页（F1 打开对应手册用）。上面两条分支取消的导航不算切换。
+        _currentPageType = pageType;
     }
 
     /// <summary>

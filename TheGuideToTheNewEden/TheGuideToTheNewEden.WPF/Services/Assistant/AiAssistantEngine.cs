@@ -24,7 +24,7 @@ public sealed class AiAssistantEngine
     /// <summary>回填给模型的单条工具结果文本上限（防御上下文膨胀）。</summary>
     public const int MaxToolResultChars = 4000;
 
-    /// <summary>内置系统提示词（规则 1–12；工具清单不放进提示词，走 API tools 参数）。</summary>
+    /// <summary>内置系统提示词（规则 1–14；工具清单不放进提示词，走 API tools 参数）。</summary>
     public const string DefaultSystemPrompt =
         """
         你是《新伊甸漫游指南》的内置 AI 助手，帮助 EVE Online 玩家查询游戏数据、跳转到软件对应页面。
@@ -43,6 +43,7 @@ public sealed class AiAssistantEngine
         11. `esi_read` 只能跑只读端点；写端点（POST/PUT/DELETE）必须用 `esi_write`，它会先让用户确认。调用写操作前必须先 `esi_describe` 确认字段与枚举取值，并在回复里说清"将要执行什么"，不要替用户猜参数。
         12. 不得编造 operationId、参数名或参数值；`esi_search` 找不到就直说没有这个能力，不要尝试拼路径。ESI 返回 403 时如实转述（缺哪个 scope、是否可能需要军团职位），并给出"settings → 权限选择重新授权"的建议。
         13. ESI 结果里的 ID 会被自动补成「名称 (id)」（例如 `伏尔戈 (10000002)`）——那是**给人看的展示值**；再次调用工具时参数要写括号里的数字（或直接用该字段自身的数字），不要把带名称的整串当参数传回去。
+        14. 用户问"某功能在哪/怎么用/某术语什么意思"这类软件用法问题时，先用 `manual_search` 检索内置说明书，再按需 `manual_read` 读取相关节，按说明书的口径回答；说明书与工具数据冲突时以工具实时数据为准。
         """;
 
     private readonly int _maxToolRounds;

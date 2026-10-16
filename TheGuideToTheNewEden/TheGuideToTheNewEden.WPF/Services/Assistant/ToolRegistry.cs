@@ -71,6 +71,10 @@ public static class ToolRegistry
         Register(new Tools.EsiDescribeTool());
         Register(new Tools.EsiReadTool());
         Register(new Tools.EsiWriteTool());
+        // 阶段 131：内置说明书两个元工具（检索 + 阅读；Core 常驻——说明书正文只进工具结果，
+        // 不进系统提示词/固定前缀，见 MANUAL_DESIGN.md 的 token 契约）
+        Register(new Tools.ManualSearchTool());
+        Register(new Tools.ManualReadTool());
     }
 
     public static void Register(ITool tool)
@@ -229,11 +233,15 @@ public static class ToolRegistry
 
     /// <summary>
     /// 常驻工具（任何路由都必须带上）：ESI 网关四个（覆盖全部 197 个 ESI 端点 = 长尾兜底）、
-    /// 名字解析（<c>search_sde</c>）、翻译（<c>translate</c>）、角色清单（<c>character_list</c>）。
-    /// 前四个是"没有专用工具时也能做事"的保证，后三个是最常用的入口。
+    /// 名字解析（<c>search_sde</c>）、翻译（<c>translate</c>）、角色清单（<c>character_list</c>）、
+    /// 说明书检索与阅读（<c>manual_search</c> / <c>manual_read</c>——所有套餐里都要能查手册）。
+    /// 前四类是"没有专用工具时也能做事"的保证，其余是最常用的入口。
     /// </summary>
     public static readonly string[] CoreToolNames =
-        ["character_list", "esi_describe", "esi_read", "esi_search", "esi_write", "search_sde", "translate"];
+    [
+        "character_list", "esi_describe", "esi_read", "esi_search", "esi_write",
+        "manual_read", "manual_search", "search_sde", "translate",
+    ];
 
     /// <summary>某个套餐里的工具名。</summary>
     public static IReadOnlyList<string> NamesInCategory(string category)

@@ -116,7 +116,8 @@ public static class HomeFeatureLauncher
 
             case "action-manual":
             {
-                OpenManual();
+                // 内置说明书（Markdown，可检索可跳转），默认打开「快速上手」。
+                Views.Windows.ManualWindow.Show("getting-started");
                 break;
             }
 
@@ -161,28 +162,4 @@ public static class HomeFeatureLauncher
         "setting-update" => typeof(UpdateSettingPage),
         _ => null,
     };
-
-    /// <summary>
-    /// 打开使用手册（WinUI 版随程序分发的 PDF，按语言取中文 / 英文）。
-    /// 文件不在（旧安装包）时给出明确提示，而不是静默什么都不发生。
-    /// </summary>
-    private static void OpenManual()
-    {
-        var language = LanguageService.Value;
-        var fileName = string.Equals(language, "zh-CN", StringComparison.OrdinalIgnoreCase)
-            ? "Manual_zh.pdf"
-            : "Manual_en.pdf";
-        var path = Path.Combine(AppContext.BaseDirectory, "Resources", "Manuals", fileName);
-
-        if (!File.Exists(path))
-        {
-            PageNotifyService.Warning(string.Format(Resolve("Home.Action.ManualMissing"), path));
-            return;
-        }
-
-        ShellHelper.OpenFile(path);
-    }
-
-    private static string Resolve(string key)
-        => System.Windows.Application.Current?.TryFindResource(key) as string ?? key;
 }

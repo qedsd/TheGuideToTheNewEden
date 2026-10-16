@@ -96,6 +96,15 @@
 			<Link>Resources\Manuals\%(RecursiveDir)%(Filename)%(Extension)</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<!--
+		  内置说明书（Markdown，按语言分目录，id 即相对路径）。以 Content 复制到输出目录，
+		  运行时按 AppContext.BaseDirectory\Resources\Manuals\<lang>\ 读取
+		  （ManualService / manual_search / manual_read / F1 / 主页「手册」入口共用这一份；
+		  探针工程经 ProjectReference 也会拿到）。与上面 WinUI 链接的 PDF 同树不同目录，互不冲突。
+		-->
+		<Content Include="Resources\Manuals\zh-CN\**\*.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 <!--
