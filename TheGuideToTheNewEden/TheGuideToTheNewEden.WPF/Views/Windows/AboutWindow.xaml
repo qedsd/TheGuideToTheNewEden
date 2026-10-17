@@ -83,6 +83,13 @@
                         Click="OnQqGroupClick"
                         Content="{DynamicResource Home.Status.QqGroup}"
                         Icon="{ui:SymbolIcon Chat24}" />
+                    <!--  内置说明书（Markdown）：原来这里是"打开 PDF"，阶段 131 起改指手册窗口  -->
+                    <ui:Button
+                        Margin="8,0,0,0"
+                        Click="OnManualClick"
+                        Content="{DynamicResource Home.Action.Manual}"
+                        Icon="{ui:SymbolIcon BookQuestionMark24}"
+                        ToolTip="{DynamicResource Nav.Manual}" />
                 </StackPanel>
 
                 <TextBlock

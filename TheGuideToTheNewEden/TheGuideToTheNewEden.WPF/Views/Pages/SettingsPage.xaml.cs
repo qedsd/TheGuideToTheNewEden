@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Manual;
 using TheGuideToTheNewEden.WPF.ViewModels.Settings;
 using TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 using Wpf.Ui.Controls;
@@ -11,7 +12,7 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 设置壳页：分类列表 + 子页详情（面包屑返回）。
 /// 子页实例常驻缓存，切回时保留状态。
 /// </summary>
-public partial class SettingsPage : Page
+public partial class SettingsPage : Page, IManualAware
 {
     private readonly List<SettingsCategory> _categories = [];
     private readonly Dictionary<Type, Page> _pageCache = [];
@@ -40,6 +41,23 @@ public partial class SettingsPage : Page
 
     /// <summary>当前详情区里的子页（无 = 停在分类列表）。</summary>
     public Page? CurrentDetailPage => DetailFrame.Content as Page;
+
+    /// <summary>
+    /// F1：停在分类列表 → <c>settings</c>（怎么进分类）；已进某个分类 → 该分类的手册
+    /// （<c>settings/general</c>…，映射表在 <see cref="ManualToolMap"/>）。
+    /// </summary>
+    public string? ManualId
+    {
+        get
+        {
+            if (DetailView.Visibility != Visibility.Visible || _currentPageType is null)
+            {
+                return "settings";
+            }
+
+            return ManualToolMap.TryGetManual(_currentPageType) ?? "settings";
+        }
+    }
 
     private void ApplyPendingCategory()
     {
@@ -114,6 +132,25 @@ public partial class SettingsPage : Page
         if (sender is FrameworkElement { Tag: SettingsCategory category })
         {
             OpenCategory(category);
+        }
+    }
+
+    /// <summary>
+    /// 分类行右侧的小问号：打开该分类的内置说明书（<c>settings/general</c> …），
+    /// **不进入分类**。必须把 <c>e.Handled</c> 置位——<c>Click</c> 是冒泡事件，
+    /// 否则这一下会同时触发外层整行按钮的 <see cref="Category_Click"/>。
+    /// </summary>
+    private void CategoryManual_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is not FrameworkElement { Tag: SettingsCategory category })
+        {
+            return;
+        }
+
+        if (ManualToolMap.TryGetManual(category.PageType) is { } id)
+        {
+            Views.Windows.ManualWindow.Show(id);
         }
     }
 

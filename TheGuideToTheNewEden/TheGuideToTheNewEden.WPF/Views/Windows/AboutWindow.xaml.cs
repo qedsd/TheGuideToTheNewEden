@@ -56,4 +56,7 @@ public partial class AboutWindow : FluentWindow
 
     private void OnQqGroupClick(object sender, RoutedEventArgs e)
         => ShellHelper.TryOpen("https://jq.qq.com/?_wv=1027&k=m8Ttv1DX", out _);
+
+    /// <summary>打开内置说明书（原来的"打开 PDF"入口，阶段 131 起改指手册窗口）。</summary>
+    private void OnManualClick(object sender, RoutedEventArgs e) => ManualWindow.Show("getting-started");
 }

@@ -532,17 +532,94 @@ REFACTORING.md                       §8 增加"改功能即改手册"约定；�
 
 ---
 
-## 13. 落地进度（2026-10-16）
+## 13. 落地进度（2026-10-16 起；阶段 131 收尾）
 
 四点已按推荐项拍板并落地：**粒度**＝功能级（57 篇，含 `getting-started` / `concepts` / `troubleshooting` 三篇横切与 `home`）；
 **语言**＝先 `zh-CN`（en-US 留 M5）；**AI 形态**＝`manual_search` / `manual_read` 核心常驻（CoreToolNames）；
 **文件形态**＝输出目录 md（csproj Content 复制，运行时 `AppContext.BaseDirectory\Resources\Manuals\<lang>\`）。
 
-**已完成（M1 + M2 主体）**：
+### M1 框架 + 样板（已完成）
 
-- 内容：`Resources\Manuals\zh-CN\` 57 篇全部写完并经过"写作 → 对抗式校对（逐条回核语言键/XAML/REFACTORING/工具源码）→ 机械校验"三道工序；结构校验脚本暂存 `%TEMP%\manual_check.ps1`（front-matter 键、id==路径、group 键存在、page 文件存在、tools 真实存在、H2 slug 顺序与必填节、体量预算、related 链接可解析；当前 0 错误 0 警告）。
-- 服务层：`Services\Manual\ManualDocument.cs`（最小 YAML 解析 + H2 切节）、`ManualService.cs`（懒加载索引 / id 别名宽松查找 / 关键词检索，语言切换自动重建）、`ManualToolMap.cs`（页面类型 → 手册 id，F1 用，失败回填备用）。
-- 界面：`Views\UserControls\ManualBrowserView.xaml(.cs)`（左搜索列表 + 右 MarkdownPresenter 正文）、`Views\Windows\ManualWindow.cs`（工具窗口外壳单实例复用，不设 Owner）。入口：主页品牌条「手册」（默认打开 getting-started）、主窗口 **F1**（按当前页打开对应手册）、正文内链（MarkdownRenderer 把 `[邮件](characters/mail)` 这类无 scheme 链接转成 `manual:` 协议在窗口内跳转）。
-- AI：`Tools\ManualSearchTool.cs` / `ManualReadTool.cs` 注册进 ToolRegistry 并加入 CoreToolNames；系统提示词加规则 14（用法类问题先查说明书，与实时数据冲突时以数据为准）。说明书正文**只进工具结果**，不进系统提示词/固定前缀（token 契约不受影响；全文预算内单条描述 ≤140 字符）。
+- 内容：`Resources\Manuals\zh-CN\` **57 篇**全部写完，经过"写作 → 对抗式校对（逐条回核语言键 / XAML / REFACTORING / 工具源码）→ 机械校验"三道工序。
+- 服务层：`Services\Manual\ManualDocument.cs`（最小 YAML 解析 + H2 切节 + **`{#slug}` 的解析/渲染分离**）、
+  `ManualService.cs`（懒加载索引 / 宽松 id 查找 / 关键词检索 / **概览 + 分节分片读取** / **工具反查** / **语言回退状态** / `DirectoryOverride` 探针挂载点）、
+  `ManualToolMap.cs`（页面类型 → 手册 id、工具 → 手册 id、失败语义与 `/errors` 回填）。
+- 界面：`Views\UserControls\ManualBrowserView.xaml(.cs)`（左搜索列表 + 右 `MarkdownPresenter`；支持 `id#节` 单节渲染 + 「返回全文」、
+  语言回退提示、工具条的**在助手中提问 / 复制本文 / 打开文件位置**）、`Views\Windows\ManualWindow.cs`（工具窗口外壳、单实例、不设 Owner）。
 
-**待办（后续阶段）**：M3 探针 `manuals` 套件（本仓无探针工程，脚本暂代）；`IManualAware` 壳页右键「查看说明」；工具结果失败回填（ManualToolMap 已备好映射）；en-US 内容与回退提示；PDF 链接退役（PDF 仍随包复制，按钮已改指内置说明书）；REFACTORING.md 追加阶段记录。
+### 入口矩阵（§5.2，已落地 7 项）
+
+| # | 入口 | 状态 |
+|---|---|---|
+| 1 | 主页品牌条「手册」 | ✅ 打开 `ManualWindow`（默认 `getting-started`） |
+| 2 | **F1** 打开当前页手册 | ✅ 先问页面自己的 `IManualAware`（壳页精确到子页签），再静态映射，最后回落「快速上手」 |
+| 3 | 左侧导航右键「查看说明」 | ✅ 没有对应手册的项自动隐藏 |
+| 4 | 设置分类行小问号 | ✅ 打开 `settings/<分类>`（`e.Handled` 阻止冒泡触发整行点击） |
+| 5 | 工具窗口 F1 | ✅ `ToolWindow.ManualId` 由 `ToolWindowHost` 按页面类型注入（助手窗口 → `assistant`） |
+| 6 | 关于窗口「使用手册」 | ✅ 新增按钮（原来这里是"打开 PDF"） |
+| 7 | 正文内链 / AI 回答里的 `manual://id#节` | ✅ `MarkdownRenderer` 的 `manual:` 分支 + 窗口内单节定位 |
+| 8 | 助手页「功能说明」按钮（可选） | ⛔ 未做（M5） |
+
+`IManualAware` 的 7 个实现：`CharactersShellPage`、`CharacterWorkspacePage`、`ScalperPage`、`ZKBPage`、`SettingsPage`、`MapPage`、`HomePage`。
+
+### M2 AI 接线（已完成）
+
+- 两个核心常驻元工具：`manual_search`（空检索词 = 全部手册目录）、`manual_read`（不给节 = 一句话 + 章节目录；
+  指定节时按 **`part N/M`** 分片，单片 ≤1,800 字符，**拼回等于原文**）。工具声明只放 ≤140 字符的描述，正文一律走工具结果。
+- 系统提示词规则 **14–16**：14 用法类问题先查手册（与实时数据冲突以数据为准）、15 引用要给出处并可给 `manual://<id>#<slug>` 链接、16 手册里的数字只是示例。
+- **工具失败回填**：异常退出或结果命中失败语义（`失败` / `需要授权` / `权限不足` / `没有权限` / `未登录` / `重新授权` / `已过期`）时，
+  给模型的工具文本尾部追加 `[说明书参考: manual://<id>#errors] …`；只进工具结果、不进固定前缀。
+- 工具 → 手册的映射**不手写第二份**：直接反查各篇 front-matter 的 `tools:` 声明（`ManualService.FindManualIdForTool`），
+  漂移由 `manuals` 套件的双向覆盖断言兜住。本轮据此补上了 `character_location`（只在一篇正文里被提到、没进 `tools:` 声明）的缺口。
+
+### M3 质量闸门（已完成：`manuals` 套件 58 断言）
+
+`probe/AssistantProbe/ManualSuite.cs` 覆盖：
+
+- 结构：id 合法 / front-matter 齐全且日期合法 / 每个 H2 有合法且唯一的 slug / 必填节齐全且顺序正确 /
+  体量预算 / 别名 ≥4 且中英混排 / **渲染正文不含 `{#`** / `group` 键在 zh-en 字典里都存在 / `page` 指向的 XAML 存在 / `children` 真实存在。
+- 覆盖：功能目录里每个**页面 / 工具窗**条目都能经 `ManualToolMap` 找到手册；设置壳页 11 个分类同理；
+  **每个产品工具都至少被一篇手册讲到**；手册声明的工具名都真实存在；元工具在 `CoreToolNames`。
+- 服务行为：检索确定性 / limit / 排序 / 命中 / `Find` 的宽松匹配（`characters_mail`、`manual://characters/mail#errors` 都能命中）/
+  概览含 tldr 与全部节目录 / **502 个节的分片读取全部无损** / `part` 越界钳制 / 未知 slug 返回 null。
+- AI 接线：两个元工具的描述与参数描述符合 token 文体契约；失败关键词基线；回填带 `manual://<id>#errors`。
+- 界面构造：离屏构造 `ManualBrowserView`（XAML / 图标名 / 静态资源 / 工具条语言键这几类**只在运行时才炸**的问题），
+  并验证"窗口还没 Show 就跳转"（F1 首次打开）与 `manual://<id>#节` 链接都能落到目标手册。
+
+**与本文早期预算的偏差（按实测调整，探针注释里写明了理由）**：
+
+| 项 | 设计值 | 实测 | 现取值 |
+|---|---|---|---|
+| 单篇字符 | ≤9,000 | 8,447 | ≤9,000 |
+| `steps` 节 | ≤2,500 | 2,491 | ≤2,500 |
+| 其它节 | ≤1,600 | `errors` 2,187 / `fields` 1,723 | **≤2,200**（超 1,800 的节由 `ReadSection` 分片，体验有兜底） |
+| 系统提示词 | ≤1,100 | 1,317（加了规则 14–16） | **≤1,400**（`TokenSuite` 预算同步上调） |
+
+### M4 PDF 退役（已完成）
+
+- csproj 删除 WinUI `Resources\Manuals\**\*.*` 的 Content 链接 → **WPF 出包不再带 PDF**（WinUI 侧仍自用那两份，
+  文件留在仓库备查；未从 WinUI 项目删除，避免影响旧版）。
+- 删除已无引用的 `Home.Action.ManualMissing` 键；`Home.Feature.ManualDesc` 文案由"（PDF）"改为
+  "内置使用手册（Markdown，可搜索、可按 F1 从当前页进入）"（中英同步）。
+- 输出目录 `Resources\Manuals\` 只剩 `zh-CN\`（已核对）。
+
+### M5 打磨（未做，按约定留待后续）
+
+- `en-US` 内容（当前英文界面显示中文手册 + 窗口顶部回退提示 `Manual.FallbackToZh`）。
+- 助手页「功能说明」按钮；左侧"按导航分组折叠 + 当前文档章节树"；手册页脚的"上次更新 / 适用版本"。
+
+### 验证（阶段 131 收尾）
+
+- `dotnet build`：**0 错误 0 新警告**。
+- 探针逐个套件跑（`all` 在本机跑不完，原因见 `REFACTORING.md` §8 第 69 条）：
+  `manuals` **58/0**、`tokens` **9/0**、`routing` **23/0**、`toolcall` 124/0、`engine` 62/0、`tools` 458/0、
+  `quickroute` 29/0、`business` 13/0、`writes` 69/0、`esi` 163/0、`ui` 87/0。
+- 本轮顺带修正三处**过期探针期望**（产品工具数 44→46、系统提示词预算 1,100→1,400、
+  "未配置端点时提问留在输入框"的产品行为补齐），详见 `REFACTORING.md` 阶段 131 第七节。
+
+### 维护约定（重要）
+
+**改功能即改手册**：任何改动用户可见行为（新增 / 改名 / 改口径 / 新增或解除限制）的阶段，收尾必须同步更新
+`Resources/Manuals/zh-CN/**.md`，并在该阶段的 REFACTORING 记录里注明"手册已更新（id）"。
+结构层由 `manuals` 套件机械兜底；**口径是否过期探针管不到**，只能靠这条约定 + 人工评审（§8.3 清单）。
+

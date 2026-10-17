@@ -60,6 +60,9 @@ public partial class ToolWindow : FluentWindow, IToolWindowShell
     {
         InitializeComponent();
         Loaded += (_, _) => ApplyToTitleBar();
+
+        // F1：工具窗口内容多半不在主窗口的导航里，主窗口的 F1 管不到它，这里自己处理。
+        PreviewKeyDown += OnPreviewKeyDownForManual;
     }
 
     /// <summary>创建并初始化工具窗口。</summary>
@@ -93,6 +96,36 @@ public partial class ToolWindow : FluentWindow, IToolWindowShell
 
     /// <summary>当前内容。</summary>
     public object? GetContent() => ContentFrame.Content;
+
+    // ---------- 内置说明书（F1） ----------
+
+    public static readonly DependencyProperty ManualIdProperty = DependencyProperty.Register(
+        nameof(ManualId),
+        typeof(string),
+        typeof(ToolWindow),
+        new PropertyMetadata(null));
+
+    /// <summary>
+    /// 本窗口对应的说明书 id（F1 打开，如 <c>tools/ime</c>）；<c>null</c> = 本窗口按 F1 不做事。
+    /// 由宿主（<c>ToolWindowHost</c> / 各静态窗口）按页面类型从
+    /// <see cref="Services.Manual.ManualToolMap"/> 取好再赋。
+    /// </summary>
+    public string? ManualId
+    {
+        get => (string?)GetValue(ManualIdProperty);
+        set => SetValue(ManualIdProperty, value);
+    }
+
+    private void OnPreviewKeyDownForManual(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.F1 || ManualId is not { Length: > 0 } id)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        ManualWindow.Show(id);
+    }
 
     // ---------- 标题 ----------
 

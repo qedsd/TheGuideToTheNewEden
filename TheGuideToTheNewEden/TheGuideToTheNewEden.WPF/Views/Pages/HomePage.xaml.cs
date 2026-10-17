@@ -19,11 +19,14 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 任何入口改动后页面重建磁贴。
 /// </para>
 /// </summary>
-public partial class HomePage : Page
+public partial class HomePage : Page, IManualAware
 {
     private readonly HomePageViewModel _viewModel = new();
 
     private bool _languageHooked;
+
+    /// <summary>F1：主页看 <c>home</c> 那篇（品牌条 / 快捷方式 / 数据卡的用法）。</summary>
+    public string? ManualId => "home";
 
     public HomePage()
     {

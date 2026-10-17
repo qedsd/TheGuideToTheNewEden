@@ -18,10 +18,13 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// + HUD 浮层（悬停提示、情报流、选中星系信息卡）。
 /// 页面常驻缓存（NavigationCacheMode=Required），数据只装载一次；装载失败可重试（靠 IsLoaded 判定，不再置"已初始化"）。
 /// </summary>
-public partial class MapPage : Page
+public partial class MapPage : Page, IManualAware
 {
     private readonly MapPageViewModel _viewModel = new();
     private bool _initialized;
+
+    /// <summary>F1：星图看 <c>map</c> 那篇（顶栏各层 / 定位 / 工具窗 / HUD 都在这一篇的章节里）。</summary>
+    public string? ManualId => "map";
 
     private ToolWindow? _coverWindow;
     private ToolWindow? _resourceWindow;

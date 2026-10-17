@@ -171,8 +171,7 @@
     <sys:String x:Key="Home.Status.PlayersTip">Players online on the EVE server (public ESI endpoint)</sys:String>
     <sys:String x:Key="Home.Action.Manual">Manual</sys:String>
     <sys:String x:Key="Home.Action.About">About</sys:String>
-    <sys:String x:Key="Home.Action.ManualMissing">Manual file not found: {0}</sys:String>
-    <sys:String x:Key="Home.Feature.ManualDesc">Open the bundled user manual (PDF)</sys:String>
+    <sys:String x:Key="Home.Feature.ManualDesc">Open the built-in manual (Markdown, searchable; press F1 on any page)</sys:String>
     <sys:String x:Key="Home.Feature.AboutDesc">Version, runtime and community links</sys:String>
     <sys:String x:Key="Home.About.Runtime">Runtime</sys:String>
     <sys:String x:Key="Home.About.Github">GitHub repository</sys:String>
@@ -2364,6 +2363,14 @@
     <sys:String x:Key="Manual.Search.Placeholder">Search manuals</sys:String>
     <sys:String x:Key="Manual.Search.Empty">No matching manuals</sys:String>
     <sys:String x:Key="Manual.NotFound">Manual not found: {0}</sys:String>
+    <sys:String x:Key="Manual.ShowAll">Show full document</sys:String>
+    <sys:String x:Key="Manual.AskAssistant">Ask the assistant</sys:String>
+    <sys:String x:Key="Manual.Copy">Copy source</sys:String>
+    <sys:String x:Key="Manual.Copied">Manual source copied to the clipboard</sys:String>
+    <sys:String x:Key="Manual.CopyFailed">Copy failed: another program is holding the clipboard, try again</sys:String>
+    <sys:String x:Key="Manual.OpenFile">Open file location</sys:String>
+    <sys:String x:Key="Manual.FallbackToZh">No manual in this language yet; showing the {0} version.</sys:String>
+    <sys:String x:Key="Nav.Manual">View manual</sys:String>
     <sys:String x:Key="AssistantTool_channel_scan">Roster scan</sys:String>
     <sys:String x:Key="AssistantTool_links_search">Link search</sys:String>
     <sys:String x:Key="AssistantTool_trade_spread">Market spread</sys:String>

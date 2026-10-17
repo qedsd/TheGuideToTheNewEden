@@ -95,6 +95,9 @@ public static class ToolWindowHost
         {
             tool.SetResourceReference(ToolWindow.DisplayTitleProperty, titleKey);
             tool.SetResourceReference(ToolWindow.SystemTitleProperty, titleKey);
+
+            // F1：工具窗口不在主窗口的导航里，说明书映射在这里直接给它（tools/ime 等）。
+            tool.ManualId = Services.Manual.ManualToolMap.TryGetManual(pageType);
         }
         else
         {

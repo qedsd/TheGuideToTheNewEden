@@ -10,10 +10,19 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 /// 角色功能壳页：一个"全部角色"固定标签 + 每个角色一个可关闭标签。
 /// 标签内容常驻，切换不丢失状态。
 /// </summary>
-public partial class CharactersShellPage : Page
+public partial class CharactersShellPage : Page, IManualAware
 {
     private readonly CharacterCardsPage _cardsPage = new();
     private readonly Dictionary<long, TabItem> _characterTabs = [];
+
+    /// <summary>
+    /// F1：停在"全部角色"→ <c>characters</c>（壳页：标签、添加/移除、国服向导）；
+    /// 停在某个角色的工作区 → 由工作区按它自己的子页签给出（<c>characters/mail</c> 等）。
+    /// </summary>
+    public string? ManualId
+        => Tabs.SelectedItem is TabItem { Content: Frame { Content: CharacterWorkspacePage workspace } }
+            ? workspace.ManualId
+            : "characters";
 
     public CharactersShellPage()
     {

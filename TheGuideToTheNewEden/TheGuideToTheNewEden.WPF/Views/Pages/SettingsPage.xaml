@@ -57,13 +57,27 @@
                                                     TextWrapping="Wrap" />
                                             </StackPanel>
 
-                                            <ui:SymbolIcon
+                                            <StackPanel
                                                 Grid.Column="2"
-                                                Margin="24,0,16,0"
                                                 VerticalAlignment="Center"
-                                                FontSize="14"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Symbol="ChevronRight24" />
+                                                Orientation="Horizontal">
+                                                <!--  分类行的「说明」入口：打开该分类的内置说明书（阶段 131）  -->
+                                                <ui:Button
+                                                    x:Name="CategoryManualButton"
+                                                    Margin="0,0,4,0"
+                                                    Padding="4"
+                                                    Appearance="Transparent"
+                                                    Click="CategoryManual_Click"
+                                                    Icon="{ui:SymbolIcon QuestionCircle24}"
+                                                    Tag="{Binding}"
+                                                    ToolTip="{DynamicResource Nav.Manual}" />
+                                                <ui:SymbolIcon
+                                                    Margin="0,0,16,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Symbol="ChevronRight24" />
+                                            </StackPanel>
                                         </Grid>
                                     </Button>
                                 </DataTemplate>

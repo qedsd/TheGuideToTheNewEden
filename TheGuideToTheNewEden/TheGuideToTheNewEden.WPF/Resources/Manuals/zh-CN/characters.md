@@ -3,7 +3,7 @@ id: characters
 title: 角色
 group: Nav.Characters
 page: Views/Pages/Characters/CharactersShellPage.xaml + Views/Pages/Characters/CharacterCardsPage.xaml + Views/Pages/Characters/CharacterWorkspacePage.xaml
-tools: [character_list, character_navigate]
+tools: [character_list, character_location, character_navigate]
 aliases: [角色, 添加角色, 登录角色, 角色卡片, 移除角色, 授权, 国服, 欧服, characters, add character, login, auth, cards]
 updated: 2026-10-16
 children: [characters/overview, characters/skills, characters/clone, characters/wallet, characters/mail, characters/contract, characters/industry]
@@ -80,8 +80,8 @@ children: [characters/overview, characters/skills, characters/clone, characters/
 | 左栏 · ZKB | 危险系数 / 抱团概率（双色条 + 百分比）、击杀舰船 / 击杀ISK / 损失舰船 / 损失ISK | 数值取自 zkillboard，ISK 按 K/M/B/T 缩写；卡内「**ZKB**」按钮跳到 Zkillboard 页并打开该角色的实体统计 |
 
 ## AI 能替你做什么 {#ai}
-- 工具：`character_list`（列出本软件里已登录的角色名；一个都没有时说明需要先添加角色）、`character_navigate`（打开角色页并进入指定角色的工作区，**动作类**工具，参数是角色全名，省略即默认角色；找不到角色时只回原因、不跳转）。
-- 推荐问法：「我登录了哪些角色」「打开 XX 的角色页」「XX 的角色页看看」。
+- 工具：`character_list`（列出本软件里已登录的角色名；一个都没有时说明需要先添加角色）、`character_location`（某个角色**现在在哪个星系/空间站**，用来回答"我在哪"）、`character_navigate`（打开角色页并进入指定角色的工作区，**动作类**工具，参数是角色全名，省略即默认角色；找不到角色时只回原因、不跳转）。
+- 推荐问法：「我登录了哪些角色」「我现在在哪个星系」「打开 XX 的角色页」「XX 的角色页看看」。
 - **做不到**：不能替你完成授权登录，也不能添加 / 移除角色（登录必须在浏览器里由你本人操作）；不能改游戏内的角色数据。
 - 角色**数据类**问题（技能、钱包、邮件等）由各子页对应的工具回答，见各子页手册；AI 给的数字以工具返回为准，不要采信对话里的旧值。
 

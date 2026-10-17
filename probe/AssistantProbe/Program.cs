@@ -14,6 +14,7 @@ namespace TheGuideToTheNewEden.Probe;
 /// dotnet run --project probe/AssistantProbe -- esi        # 阶段 118 ESI 通用网关（索引/检索/URL/整形/工具面；末尾一次匿名联网冒烟）
 /// dotnet run --project probe/AssistantProbe -- tokens     # 阶段 122 工具声明的 token 预算与缓存友好约束
 /// dotnet run --project probe/AssistantProbe -- routing    # 阶段 123 按需声明（工具套餐路由）
+/// dotnet run --project probe/AssistantProbe -- manuals    # 阶段 131 内置说明书（结构 / 检索分片 / AI 接线）
 /// dotnet run --project probe/AssistantProbe -- ui         # 界面构造与绑定（离屏窗口）
 /// </code>
 /// 退出码：0 = 全 PASS，1 = 有 FAIL，2 = 探针自身异常。
@@ -89,6 +90,11 @@ internal static class Program
             if (suite is "all" or "routing")
             {
                 RoutingSuite.Run(check);
+            }
+
+            if (suite is "all" or "manuals")
+            {
+                ManualSuite.Run(check);
             }
 
             if (suite is "all" or "ui")

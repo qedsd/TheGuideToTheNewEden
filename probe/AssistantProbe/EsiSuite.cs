@@ -391,8 +391,8 @@ internal static class EsiSuite
         c.Section("EsiSuite · 工具面（注册 / Schema / 分工 / 摘要）");
 
         var names = new[] { "esi_search", "esi_describe", "esi_read", "esi_write" };
-        c.Equal(ToolRegistry.All.Count(t => !t.Name.StartsWith("probe_", StringComparison.Ordinal)), 44,
-            "产品工具数 = 44（阶段 118 的 51 减去阶段 119 删除的 7 个角色直读工具）");
+        c.Equal(ToolRegistry.All.Count(t => !t.Name.StartsWith("probe_", StringComparison.Ordinal)), 46,
+            "产品工具数 = 46（阶段 118 的 51 减去阶段 119 删除的 7 个角色直读工具，加上阶段 131 的两个说明书元工具）");
         foreach (var name in names)
         {
             var tool = ToolRegistry.Find(name);

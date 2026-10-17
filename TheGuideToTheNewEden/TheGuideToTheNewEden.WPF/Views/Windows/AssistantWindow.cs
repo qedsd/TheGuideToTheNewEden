@@ -92,6 +92,7 @@ public static class AssistantWindow
             height: 760)
         {
             DisplayTitle = FindString("Nav.Assistant"),
+            ManualId = "assistant", // F1 → 「AI 助手」那篇说明书
         };
         window.Closed += (_, _) => _window = null;
         _window = window;

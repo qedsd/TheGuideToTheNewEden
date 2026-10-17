@@ -6,7 +6,7 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <TabControl>
+    <TabControl x:Name="Tabs">
         <TabItem Header="{DynamicResource BusinessPage_Scalper}">
             <uc:ScalperAnalyseView x:Name="AnalyseView" />
         </TabItem>

@@ -41,6 +41,14 @@ public sealed record ManualDocument(
         new(@"\{\s*#([a-z0-9-]+)\s*\}\s*$",
             System.Text.RegularExpressions.RegexOptions.Compiled);
 
+    /// <summary>
+    /// 渲染用的标题行锚点：把任意标题行末尾的 <c>{#slug}</c> 连同其前的空白一起去掉
+    /// （渲染器不认识这个约定，不剥就会在界面上原样显示 <c>{#tldr}</c>）。
+    /// </summary>
+    private static readonly System.Text.RegularExpressions.Regex HeadingSlugRegex =
+        new(@"^(?<head>[ \t]{0,3}#{1,6}\s+.*?)[ \t]*\{\s*#[a-z0-9-]+\s*\}[ \t]*\r?$",
+            System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.Multiline);
+
     /// <summary>从 Markdown 全文解析一篇说明书。</summary>
     /// <param name="id">手册 id（来自相对路径，不由 front-matter 决定——路径就是 id）。</param>
     /// <param name="markdown">文件全文。</param>
@@ -87,7 +95,9 @@ public sealed record ManualDocument(
             Aliases: ParseList(meta.GetValueOrDefault("aliases")),
             Updated: meta.TryGetValue("updated", out var updated) && updated.Length > 0 ? updated : null,
             Children: ParseList(meta.GetValueOrDefault("children")),
-            Body: body,
+            // 节切分用**带锚点**的原文（slug 就是从这里解析出来的），
+            // 而 Body 是**剥掉锚点**的版本——它才是渲染与全文读取的输入（界面不该出现 {#tldr}）。
+            Body: StripSlugMarkers(body),
             Sections: ParseSections(body, title));
     }
 
@@ -110,6 +120,9 @@ public sealed record ManualDocument(
 
         return null;
     }
+
+    /// <summary>剥掉各标题行末尾的 <c>{#slug}</c> 锚点（渲染与全文读取都看这个版本）。</summary>
+    private static string StripSlugMarkers(string body) => HeadingSlugRegex.Replace(body, "${head}");
 
     /// <summary>front-matter 关闭行（<c>---</c>）的位置；没找到返回 -1。</summary>
     private static int IndexOfFrontMatterClose(string text, int start)

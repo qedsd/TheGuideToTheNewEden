@@ -7,7 +7,7 @@ namespace TheGuideToTheNewEden.Probe;
 /// <summary>
 /// 阶段 122：工具声明的 **token 预算** 与"缓存友好"约束。
 /// <para>
-/// 为什么要有这一套：44 个工具的声明是**每次工具轮请求的固定前缀**（实测 28,351 字符 ≈ 0.9–1.2 万 token，
+/// 为什么要有这一套：46 个工具的声明是**每次工具轮请求的固定前缀**（阶段 131 实测 24,314 字符 ≈ 0.8–1 万 token，
 /// 占那一轮输入的绝大部分）。而 DeepSeek 的上下文缓存按**前缀逐字节匹配**计费——
 /// 命中 0.02 元/M、未命中 1 元/M（相差 50 倍）。所以两件事必须被守住：
 /// ① **前缀要稳定**（顺序固定、描述里不放易变内容），否则缓存从变化处起全部失效；
@@ -23,11 +23,16 @@ internal static class TokenSuite
     /// <summary>单条参数描述字符上限。</summary>
     public const int MaxParamDescriptionChars = 24;
 
-    /// <summary>44 条声明的总字符预算（改前实测 28,351）。</summary>
+    /// <summary>46 条声明的总字符预算（阶段 122 精简后 23,358；阶段 131 加两个说明书工具后实测 24,314）。</summary>
     public const int MaxDeclarationChars = 26000;
 
-    /// <summary>系统提示词字符上限（它是同一份前缀的一部分，改前 1,040）。</summary>
-    public const int MaxSystemPromptChars = 1100;
+    /// <summary>
+    /// 系统提示词字符上限（它是同一份前缀的一部分）。
+    /// 阶段 122 定的是 1,100（当时实测 1,040）；阶段 118 加了 esi_* 三步用法、阶段 131 加了
+    /// 说明书三条规则（14–16）后实测 **1,317**，故预算上调到 1,400 并留一点余量——
+    /// 上调不是"放开"，而是让这条断言继续守住"提示词别无限膨胀"（再加规则就会顶到上限）。
+    /// </summary>
+    public const int MaxSystemPromptChars = 1400;
 
     /// <summary>
     /// 易变内容：**嵌进描述里的会变的值**（日期 / 年份 / "最新版本"之类）。

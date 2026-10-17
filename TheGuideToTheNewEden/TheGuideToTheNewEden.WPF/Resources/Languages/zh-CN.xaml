@@ -186,8 +186,7 @@
     <sys:String x:Key="Home.Status.PlayersTip">EVE 服务器当前在线人数（ESI 公开接口）</sys:String>
     <sys:String x:Key="Home.Action.Manual">使用手册</sys:String>
     <sys:String x:Key="Home.Action.About">关于</sys:String>
-    <sys:String x:Key="Home.Action.ManualMissing">找不到使用手册文件：{0}</sys:String>
-    <sys:String x:Key="Home.Feature.ManualDesc">打开随程序分发的使用手册（PDF）</sys:String>
+    <sys:String x:Key="Home.Feature.ManualDesc">打开内置使用手册（Markdown，可搜索、可按 F1 从当前页进入）</sys:String>
     <sys:String x:Key="Home.Feature.AboutDesc">版本号、运行时与社区链接</sys:String>
     <sys:String x:Key="Home.About.Runtime">运行环境</sys:String>
     <sys:String x:Key="Home.About.Github">GitHub 仓库</sys:String>
@@ -2386,6 +2385,14 @@
     <sys:String x:Key="Manual.Search.Placeholder">搜索说明书</sys:String>
     <sys:String x:Key="Manual.Search.Empty">没有匹配的说明书</sys:String>
     <sys:String x:Key="Manual.NotFound">找不到说明书「{0}」。可以用上面的搜索找相似的。</sys:String>
+    <sys:String x:Key="Manual.ShowAll">返回全文</sys:String>
+    <sys:String x:Key="Manual.AskAssistant">在助手中提问</sys:String>
+    <sys:String x:Key="Manual.Copy">复制本文</sys:String>
+    <sys:String x:Key="Manual.Copied">已复制说明书原文到剪贴板</sys:String>
+    <sys:String x:Key="Manual.CopyFailed">复制失败：剪贴板被其它程序占用，稍后再试</sys:String>
+    <sys:String x:Key="Manual.OpenFile">打开文件位置</sys:String>
+    <sys:String x:Key="Manual.FallbackToZh">该功能暂无本语言的说明书，当前显示的是「{0}」版本。</sys:String>
+    <sys:String x:Key="Nav.Manual">查看说明</sys:String>
     <sys:String x:Key="AssistantTool_channel_scan">名单统计</sys:String>
     <sys:String x:Key="AssistantTool_links_search">快速链接检索</sys:String>
     <sys:String x:Key="AssistantTool_trade_spread">跨市场利差</sys:String>

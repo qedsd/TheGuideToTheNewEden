@@ -24,7 +24,7 @@ public sealed class AiAssistantEngine
     /// <summary>回填给模型的单条工具结果文本上限（防御上下文膨胀）。</summary>
     public const int MaxToolResultChars = 4000;
 
-    /// <summary>内置系统提示词（规则 1–14；工具清单不放进提示词，走 API tools 参数）。</summary>
+    /// <summary>内置系统提示词（规则 1–16；工具清单不放进提示词，走 API tools 参数）。</summary>
     public const string DefaultSystemPrompt =
         """
         你是《新伊甸漫游指南》的内置 AI 助手，帮助 EVE Online 玩家查询游戏数据、跳转到软件对应页面。
@@ -44,6 +44,8 @@ public sealed class AiAssistantEngine
         12. 不得编造 operationId、参数名或参数值；`esi_search` 找不到就直说没有这个能力，不要尝试拼路径。ESI 返回 403 时如实转述（缺哪个 scope、是否可能需要军团职位），并给出"settings → 权限选择重新授权"的建议。
         13. ESI 结果里的 ID 会被自动补成「名称 (id)」（例如 `伏尔戈 (10000002)`）——那是**给人看的展示值**；再次调用工具时参数要写括号里的数字（或直接用该字段自身的数字），不要把带名称的整串当参数传回去。
         14. 用户问"某功能在哪/怎么用/某术语什么意思"这类软件用法问题时，先用 `manual_search` 检索内置说明书，再按需 `manual_read` 读取相关节，按说明书的口径回答；说明书与工具数据冲突时以工具实时数据为准。
+        15. 引用说明书要说明出处（功能名 + 章节名），不要整段照抄；回答里可以给 `manual://<id>#<slug>` 链接，界面里可点击直接打开对应章节。
+        16. 说明书里的数字只是示例；真实价格 / 资产 / 订单数字只能来自数据工具，不得把说明书里的示例当结果回答。
         """;
 
     private readonly int _maxToolRounds;
@@ -428,7 +430,16 @@ public sealed class AiAssistantEngine
                     _ctx.Tools.OnUiThread(result.NavigateAction);
                 }
 
-                _messages.Add(ChatMessage.Tool(callId, ToolArgs.Truncate(result.Text, MaxToolResultChars), tool.Name));
+                // 成功返回里也可能是"失败语义"（工具层把错误写成文本而不是抛异常，如"需要授权"）：
+                // 这时同样回填一行「相关手册」，让模型知道去哪儿查处置步骤（阶段 131，约 30 字符/次）。
+                var toolText = result.Text;
+                if (Services.Manual.ManualToolMap.LooksLikeFailure(toolText))
+                {
+                    Core.Log.Info($"AI 助手 · 工具 {tool.Name}：结果属失败语义，已附「相关手册」提示");
+                    toolText = Services.Manual.ManualToolMap.WithManualHint(tool.Name, toolText);
+                }
+
+                _messages.Add(ChatMessage.Tool(callId, ToolArgs.Truncate(toolText, MaxToolResultChars), tool.Name));
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
@@ -449,7 +460,9 @@ public sealed class AiAssistantEngine
                 var step = new ToolStep(tool.Name, DescribeArgs(argumentsJson), ToolArgs.Truncate(ex.Message, 160), false, 0);
                 _steps.Add(step);
                 _onStep?.Invoke(step);
-                _messages.Add(ChatMessage.Tool(callId, $"工具执行失败：{ex.Message}", tool.Name));
+                _messages.Add(ChatMessage.Tool(callId,
+                    Services.Manual.ManualToolMap.WithManualHint(tool.Name, $"工具执行失败：{ex.Message}"),
+                    tool.Name));
             }
         }
 

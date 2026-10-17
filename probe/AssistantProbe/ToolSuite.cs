@@ -57,7 +57,8 @@ internal static class ToolSuite
     {
         var all = ToolRegistry.All;
         var productTools = all.Where(t => !t.Name.StartsWith("probe_", StringComparison.Ordinal)).ToList();
-        c.Equal(productTools.Count, 44, "产品工具 44 个（全部列进设置页开关）");
+        // 阶段 131 起为 46：44（阶段 119 之后的产品工具）+ manual_search / manual_read 两个说明书元工具
+        c.Equal(productTools.Count, 46, "产品工具 46 个（全部列进设置页开关）");
 
         // 纯函数：过滤语义
         var disabled = new HashSet<string>(StringComparer.Ordinal) { "map_route", "esi_write" };

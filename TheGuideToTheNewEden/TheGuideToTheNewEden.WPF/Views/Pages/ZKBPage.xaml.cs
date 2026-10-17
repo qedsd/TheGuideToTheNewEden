@@ -24,12 +24,21 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 首个标签固定为"击杀流"，其余为按需打开的实体统计标签与 KB 详情标签（可关闭，实例常驻）。
 /// 标签内容统一用 <see cref="Frame"/> 承载（Page 只能由 Window/Frame 托管）。
 /// </summary>
-public partial class ZKBPage : Page
+public partial class ZKBPage : Page, IManualAware
 {
     private readonly ZkbPageViewModel _viewModel = new();
     private readonly DispatcherTimer _searchTimer = new() { Interval = TimeSpan.FromMilliseconds(350) };
     private readonly Dictionary<(EntityType Type, int Id), TabItem> _entityTabs = [];
     private readonly Dictionary<int, TabItem> _killTabs = [];
+
+    /// <summary>
+    /// F1：实体统计标签 → <c>zkb/entity</c>（那篇讲的是实体统计的筛选与统计口径）；
+    /// 击杀流 / KB 详情 → <c>zkb</c>（同一篇的其余章节）。
+    /// </summary>
+    public string? ManualId
+        => Tabs.SelectedItem is TabItem { Content: Frame { Content: EntityStatistPage } }
+            ? "zkb/entity"
+            : "zkb";
 
     /// <summary>头行标签溢出时向左/向右卷动（KbTabsTemplate 内的卷动钮经路由命令调用）。</summary>
     public static readonly RoutedCommand HeaderScrollLeftCommand = new("HeaderScrollLeft", typeof(ZKBPage));

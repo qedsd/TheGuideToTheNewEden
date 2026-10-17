@@ -222,8 +222,9 @@ internal static class UiSuite
         }
     }
 
-    /// <summary>按 pack URI 加载语言字典（探针是另一个入口程序集，必须带程序集名，同 App.xaml 的写法）。</summary>
-    private static ResourceDictionary? LoadLanguageDictionary(string fileName)
+    /// <summary>按 pack URI 加载语言字典（探针是另一个入口程序集，必须带程序集名，同 App.xaml 的写法）。
+    /// <c>internal</c>：ManualsSuite 也要用同一份加载途径核对 group 键。</summary>
+    internal static ResourceDictionary? LoadLanguageDictionary(string fileName)
     {
         var candidates = new[]
         {

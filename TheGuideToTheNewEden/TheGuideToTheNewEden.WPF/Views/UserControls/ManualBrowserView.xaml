@@ -65,18 +65,66 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="4,0,0,8">
-                <TextBlock
-                    x:Name="ManualTitle"
-                    FontSize="18"
-                    FontWeight="SemiBold"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    x:Name="ManualSubTitle"
-                    FontSize="11.5"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    TextTrimming="CharacterEllipsis" />
-            </StackPanel>
+            <Grid Grid.Row="0" Margin="4,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        x:Name="ManualTitle"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        x:Name="ManualSubTitle"
+                        FontSize="11.5"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        TextTrimming="CharacterEllipsis" />
+                    <!--  界面语言没有对应手册、正在显示回退语言（zh-CN）时的提示；不静默  -->
+                    <TextBlock
+                        x:Name="FallbackHint"
+                        Margin="0,4,0,0"
+                        FontSize="11.5"
+                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                        Text="{DynamicResource Manual.FallbackToZh}"
+                        TextWrapping="Wrap"
+                        Visibility="Collapsed" />
+                </StackPanel>
+
+                <!--  工具条：问助手 / 复制正文 / 打开 md 文件；「返回全文」只在看单节时出现  -->
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="12,2,0,0"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal">
+                    <ui:Button
+                        Click="OnAskAssistantClick"
+                        Content="{DynamicResource Manual.AskAssistant}"
+                        Icon="{ui:SymbolIcon Sparkle24}"
+                        ToolTip="{DynamicResource Manual.AskAssistant}" />
+                    <ui:Button
+                        Margin="8,0,0,0"
+                        Click="OnCopyClick"
+                        Content="{DynamicResource Manual.Copy}"
+                        Icon="{ui:SymbolIcon Copy24}"
+                        ToolTip="{DynamicResource Manual.Copy}" />
+                    <ui:Button
+                        Margin="8,0,0,0"
+                        Click="OnOpenFileClick"
+                        Content="{DynamicResource Manual.OpenFile}"
+                        Icon="{ui:SymbolIcon FolderOpen24}"
+                        ToolTip="{DynamicResource Manual.OpenFile}" />
+                    <ui:Button
+                        x:Name="BackToFullButton"
+                        Margin="8,0,0,0"
+                        Click="OnBackToFullClick"
+                        Content="{DynamicResource Manual.ShowAll}"
+                        Icon="{ui:SymbolIcon DocumentText24}"
+                        Visibility="Collapsed" />
+                </StackPanel>
+            </Grid>
 
             <ScrollViewer
                 Grid.Row="1"

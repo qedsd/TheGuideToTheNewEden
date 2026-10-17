@@ -482,10 +482,12 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        // 未配置时**不要**先建一个空对话再报错，否则用户会莫名其妙多出一个「新对话」
+        // 未配置时**不要**先建一个空对话再报错，否则用户会莫名其妙多出一个「新对话」；
+        // 但提问要留在输入框里（配好端点后直接按发送即可），别让用户白敲一遍。
         RefreshConfiguration();
         if (!IsConfigured)
         {
+            InputText = text;
             PageNotifyService.Warning(NotConfiguredText);
             return;
         }

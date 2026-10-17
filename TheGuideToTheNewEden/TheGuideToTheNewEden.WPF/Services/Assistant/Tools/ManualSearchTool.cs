@@ -9,6 +9,7 @@ namespace TheGuideToTheNewEden.WPF.Services.Assistant.Tools;
 /// <para>
 /// 与 <see cref="ManualReadTool"/> 成对（先检索定位、再读正文）；两者都是 Core 常驻工具——
 /// 说明书正文只进工具结果、不进系统提示词（token 契约），所以任何套餐路由下都要能查手册。
+/// 检索词为空时返回**全部手册目录**（回答"这个软件有哪些功能"用）。
 /// </para>
 /// </summary>
 public sealed class ManualSearchTool : ITool
@@ -18,7 +19,7 @@ public sealed class ManualSearchTool : ITool
     public string DisplayNameKey => "AssistantTool_manual_search";
 
     public string Description =>
-        "按关键词检索内置说明书，返回命中的手册、章节与片段。用户问某功能在哪/怎么用/某术语什么意思时先用它定位，再用 manual_read 读正文。";
+        "按关键词检索内置说明书，返回命中的手册与章节片段。用户问某功能在哪/怎么用/报错什么意思时先用它定位，再 manual_read。";
 
     public JsonObject? Parameters => new()
     {
@@ -26,8 +27,8 @@ public sealed class ManualSearchTool : ITool
         ["required"] = new JsonArray("query"),
         ["properties"] = new JsonObject
         {
-            ["query"] = new JsonObject { ["type"] = "string", ["description"] = "关键词（可多个，空格分隔）" },
-            ["max"] = new JsonObject { ["type"] = "integer", ["description"] = "返回条数（默认 5，上限 8）" },
+            ["query"] = new JsonObject { ["type"] = "string", ["description"] = "关键词（空格分隔；空 = 全部目录）" },
+            ["limit"] = new JsonObject { ["type"] = "integer", ["description"] = "返回条数（默认 5，上限 8）" },
         },
     };
 
@@ -38,21 +39,24 @@ public sealed class ManualSearchTool : ITool
     public Task<ToolResult> ExecuteAsync(ToolContext ctx, JsonElement args, CancellationToken ct)
     {
         var query = ToolArgs.ReadString(args, "query")?.Trim() ?? string.Empty;
-        if (query.Length == 0)
-        {
-            return Task.FromResult(new ToolResult("缺少 query：请给出要检索的关键词（功能名、界面文字或术语）。"));
-        }
 
         if (!Services.Manual.ManualService.IsAvailable())
         {
             return Task.FromResult(new ToolResult("说明书目录不存在（输出目录缺少 Resources\\Manuals），无法检索。"));
         }
 
-        var max = Math.Clamp(ToolArgs.ReadInt(args, "max", 5), 1, 8);
-        var hits = Services.Manual.ManualService.Search(query, max);
+        // 空检索词 = 要"有哪些功能"：返回全部手册目录（一行一篇），比报错有用。
+        if (query.Length == 0)
+        {
+            return Task.FromResult(new ToolResult(
+                "全部手册（用 manual_read + id 读概览与正文）：\n" + Services.Manual.ManualService.BuildIndex()));
+        }
+
+        var limit = Math.Clamp(ToolArgs.ReadInt(args, "limit", 5), 1, 8);
+        var hits = Services.Manual.ManualService.Search(query, limit);
         if (hits.Count == 0)
         {
-            return Task.FromResult(new ToolResult($"没有命中「{query}」。可换界面上的文字（按钮/页签名）再试。"));
+            return Task.FromResult(new ToolResult($"没有命中「{query}」。可换界面上的文字（按钮 / 页签名）再试，或留空 query 看全部手册目录。"));
         }
 
         var builder = new StringBuilder();

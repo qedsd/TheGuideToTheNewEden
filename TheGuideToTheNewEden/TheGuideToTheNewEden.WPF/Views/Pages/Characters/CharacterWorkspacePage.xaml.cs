@@ -9,9 +9,26 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 /// <summary>
 /// 角色工作区：左侧信息栏（身份/资产、技能队列、ZKB）+ 右侧子页（实例常驻，切换不丢状态）。
 /// </summary>
-public partial class CharacterWorkspacePage : Page
+public partial class CharacterWorkspacePage : Page, IManualAware
 {
+    /// <summary>子页签顺序 → 手册 id（<see cref="BuildSubTabs"/> 的添加顺序必须与它一致）。</summary>
+    private static readonly string[] SubManualIds =
+    [
+        "characters/overview", "characters/skills", "characters/clone", "characters/wallet",
+        "characters/mail", "characters/contract", "characters/industry",
+    ];
+
     private readonly CharacterWorkspaceViewModel _viewModel;
+
+    /// <summary>F1：按当前子页签给出该子页的说明书（总览 / 技能 / 克隆 / 钱包 / 邮件 / 合同 / 工业）。</summary>
+    public string? ManualId
+    {
+        get
+        {
+            var index = SubTabs.SelectedIndex;
+            return index >= 0 && index < SubManualIds.Length ? SubManualIds[index] : "characters";
+        }
+    }
 
     public CharacterWorkspacePage(CharacterCardViewModel card)
     {

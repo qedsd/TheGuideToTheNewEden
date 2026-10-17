@@ -61,6 +61,9 @@ public partial class MainWindow : FluentWindow
     /// <summary>主窗口当前显示的页面类型（F1 打开对应说明书用；工具窗口页不算）。</summary>
     private Type? _currentPageType;
 
+    /// <summary>主窗口当前显示的页面实例（F1 优先问它的 <see cref="Pages.IManualAware.ManualId"/>）。</summary>
+    private FrameworkElement? _currentPage;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -159,7 +162,25 @@ public partial class MainWindow : FluentWindow
         }
 
         e.Handled = true;
-        ManualWindow.Show(ManualToolMap.TryGetManual(_currentPageType) ?? ManualToolMap.TryGetDefault());
+        ManualWindow.Show(ResolveCurrentManualId());
+    }
+
+    /// <summary>
+    /// 当前该打开哪篇说明书：**先问页面自己**（壳页知道用户停在哪个子页签，如 <c>characters/mail</c>），
+    /// 再回落到页面类型的静态映射（<see cref="ManualToolMap"/>），最后是「快速上手」。
+    /// 三个来源都要求手册真实存在——否则宁可不认，交给下一级兜底。
+    /// </summary>
+    private string? ResolveCurrentManualId()
+    {
+        if (_currentPage is Pages.IManualAware aware && Existing(aware.ManualId) is { } precise)
+        {
+            return precise;
+        }
+
+        return Existing(ManualToolMap.TryGetManual(_currentPageType)) ?? ManualToolMap.TryGetDefault();
+
+        static string? Existing(string? id)
+            => id is { Length: > 0 } && ManualService.Find(id) is not null ? id : null;
     }
 
     // ---------- 导航右键：固定到主页 ----------
@@ -238,6 +259,7 @@ public partial class MainWindow : FluentWindow
         var menu = new ContextMenu { Tag = feature };
 
         menu.Items.Add(CreateMenuItem("open", OnHomeShortcutMenuOpenClick));
+        menu.Items.Add(CreateMenuItem("manual", OnHomeShortcutMenuManualClick));
         menu.Items.Add(CreateMenuItem("pin", OnHomeShortcutMenuPinClick));
         menu.Items.Add(CreateMenuItem("unpin", OnHomeShortcutMenuUnpinClick));
         menu.Items.Add(new Separator());
@@ -270,6 +292,14 @@ public partial class MainWindow : FluentWindow
                     item.Header = Resolve("Home.Quick.Open");
                     break;
 
+                case "manual":
+                    // 该页面没有对应手册时整项隐藏（而不是点了弹"找不到"）
+                    item.Header = Resolve("Nav.Manual");
+                    item.Visibility = ManualToolMap.TryGetManual(feature.PageType) is not null
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
+                    break;
+
                 case "pin":
                     item.Header = Resolve("Home.Quick.Pin");
                     item.Visibility = pinned ? Visibility.Collapsed : Visibility.Visible;
@@ -292,6 +322,17 @@ public partial class MainWindow : FluentWindow
 
     private static void OnHomeShortcutMenuOpenClick(object sender, RoutedEventArgs e)
         => HomeFeatureLauncher.Open(FeatureFromMenu(sender));
+
+    /// <summary>导航右键「查看说明」：打开该功能的内置说明书（没有对应手册时该菜单项已隐藏）。</summary>
+    private static void OnHomeShortcutMenuManualClick(object sender, RoutedEventArgs e)
+    {
+        if (FeatureFromMenu(sender) is not { } feature)
+        {
+            return;
+        }
+
+        ManualWindow.Show(ManualToolMap.TryGetManual(feature.PageType) ?? ManualToolMap.TryGetDefault());
+    }
 
     private static void OnHomeShortcutMenuPinClick(object sender, RoutedEventArgs e)
     {
@@ -363,7 +404,9 @@ public partial class MainWindow : FluentWindow
         }
 
         // 没被拦截 = 真的切页：记住当前页（F1 打开对应手册用）。上面两条分支取消的导航不算切换。
+        // 记类型给静态映射用，记实例给 IManualAware 的"页内精确手册"用（壳页的子页签）。
         _currentPageType = pageType;
+        _currentPage = args.Page as FrameworkElement;
     }
 
     /// <summary>
