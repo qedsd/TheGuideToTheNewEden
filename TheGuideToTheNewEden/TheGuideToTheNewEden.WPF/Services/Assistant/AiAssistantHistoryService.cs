@@ -5,14 +5,35 @@ using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.Services.Assistant;
 
-/// <summary>一条工具执行记录（落盘用；与界面 <c>ToolStep</c> 对应，但不含实时状态）。</summary>
+/// <summary>
+/// 一条工具执行记录（落盘用；与界面 <c>ToolStep</c> 对应）。
+/// <para>
+/// 阶段 132 起这里不只是"显示用的摘要"：<see cref="CallId"/> / <see cref="ArgumentsJson"/> /
+/// <see cref="ResultText"/> 是**重建上下文**所必需的（见 <see cref="AssistantContextBuilder"/>），
+/// 少了它们就没法把此前的工具往返重放给模型。
+/// </para>
+/// </summary>
 public sealed class AiAssistantStep
 {
+    /// <summary>工具调用 ID（重建历史时与 tool 消息配对）。旧数据可能为空 → 该步骤不参与重建。</summary>
+    public string CallId { get; set; } = string.Empty;
+
+    /// <summary>工具轮号（同一轮 = 同一条 assistant 消息里的多个调用）。旧数据默认 0（全归一轮，仍合法）。</summary>
+    public int Round { get; set; }
+
     public string ToolName { get; set; } = string.Empty;
 
+    /// <summary>人话参数摘要（界面显示）。</summary>
     public string ParamSummary { get; set; } = string.Empty;
 
+    /// <summary>调用参数 JSON 原文（重建历史用；截断到 <see cref="AssistantContextBuilder.MaxStoredArgumentsChars"/>）。</summary>
+    public string ArgumentsJson { get; set; } = string.Empty;
+
+    /// <summary>结果摘要（界面显示，160 字符）。</summary>
     public string ResultSummary { get; set; } = string.Empty;
+
+    /// <summary>回填给模型的结果全文（重建历史用；截断到 <see cref="AssistantContextBuilder.MaxStoredResultChars"/>）。</summary>
+    public string ResultText { get; set; } = string.Empty;
 
     public bool Success { get; set; } = true;
 }
@@ -53,8 +74,25 @@ public sealed class AiAssistantSession
     /// <summary>标题（取第一条请求的首行，可被用户重命名）。</summary>
     public string Title { get; set; } = string.Empty;
 
-    /// <summary>本对话是否**每次都带上此前的问答**作为上下文（对话级开关，默认关；不限条数）。</summary>
-    public bool UseContext { get; set; }
+    /// <summary>
+    /// 本对话是否**每次都带上此前的完整历史**（对话级开关，阶段 132 起默认开）。
+    /// <para>
+    /// 打开时带的是重建后的消息序列（含工具往返），不是"问 / 答"两段文本；
+    /// **记忆只存在于单个对话**，不同对话之间不共享，也没有跨对话长期记忆。
+    /// 超出 <c>Assistant.MaxContextChars</c> 预算时最旧的轮次整轮省略。
+    /// </para>
+    /// </summary>
+    public bool UseContext { get; set; } = true;
+
+    /// <summary>
+    /// 内部迁移标记（阶段 132）：<c>null</c> = 这份对话来自"默认不带上下文"的旧版本。
+    /// <para>
+    /// 载入时若为 <c>null</c>，把 <see cref="UseContext"/> 一次性翻成 <c>true</c> 并打上标记——
+    /// 旧文件里的 <c>false</c> 绝大多数是旧默认值而不是用户的选择。打过标记之后，用户在对话底栏
+    /// 关掉它就是真的关掉（不会再被翻回来）。
+    /// </para>
+    /// </summary>
+    public bool? ContextDefaultV2 { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -68,7 +106,8 @@ public sealed class AiAssistantSession
 /// <para>
 /// 落盘策略与 <c>AiTranslationHistoryService</c> 一致：**按对话整体 upsert**（不是整份覆盖），
 /// 页面的会话列表与弹窗共享同一份内存态，关掉应用再打开还在。
-/// 确认挂起状态不入库（只记录"已执行"的结果）。
+/// 确认挂起状态不入库（只记录"已执行/已拒绝"的结果步骤，见 <see cref="AiAssistantStep"/>）。
+/// 这里存的就是**同一个对话的记忆**——不同对话之间不共享，也没有跨对话的长期记忆。
 /// </para>
 /// </summary>
 public static class AiAssistantHistoryService
@@ -127,6 +166,15 @@ public static class AiAssistantHistoryService
                 foreach (var turn in session.Turns)
                 {
                     turn.Steps ??= [];
+                }
+
+                // 阶段 132：上下文语义变了（同一对话内**默认**带上完整历史，含工具往返；记忆仅限单对话）。
+                // 旧文件里的 UseContext=false 大多是"旧默认值"而不是用户的选择，因此一次性翻成 true 并打标记；
+                // 之后用户在对话底栏关掉它会被尊重（标记已存在，不再动）。
+                if (session.ContextDefaultV2 is not true)
+                {
+                    session.UseContext = true;
+                    session.ContextDefaultV2 = true;
                 }
             }
 

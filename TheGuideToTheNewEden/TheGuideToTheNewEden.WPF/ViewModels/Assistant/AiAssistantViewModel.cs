@@ -324,9 +324,17 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         {
             // 每次发送按当前设置建引擎（工具轮数改了不必重启）
             var engine = new AiAssistantEngine(AiAssistantSettingService.MaxToolRounds);
+
+            // 同一对话的历史（含此前的工具往返）按预算重建；预算见 设置 → AI → 行为 →「上下文预算」
+            var contextResult = AssistantContextBuilder.Build(
+                session.Model.Turns,
+                turn.Model,
+                AiAssistantSettingService.MaxContextChars);
+            session.ReportContextUsage(contextResult);
+
             var context = new AssistantContext
             {
-                Context = BuildContext(session, turn),
+                Context = contextResult.Messages,
                 // 按需声明的"会话粘性"（阶段 123）：本对话此前用过的工具始终保留声明
                 StickyTools = session.Turns
                     .SelectMany(t => t.Steps)
@@ -570,20 +578,7 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         return CharacterStore.Characters.FirstOrDefault();
     }
 
-    /// <summary>组装上下文（对话级开关打开时带上此前所有成功问答）。</summary>
-    private static List<(string Question, string Answer)> BuildContext(AiChatSessionViewModel session, AiChatTurnViewModel current)
-    {
-        if (!session.UseContext)
-        {
-            return [];
-        }
-
-        return session.Turns
-            .Where(t => !ReferenceEquals(t, current) && t.CanBeContext)
-            .Select(t => (t.UserText, t.AnswerText))
-            .ToList();
-    }
-
+    /// <summary>组装上下文的工作交给 <see cref="AssistantContextBuilder"/>（纯函数，探针可离线断言）。</summary>
     private static string BuildMeta(AiAssistantEngine.Turn turn, DateTime started)
     {
         var elapsed = (DateTime.UtcNow - started).TotalSeconds;

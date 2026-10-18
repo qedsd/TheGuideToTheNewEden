@@ -2246,7 +2246,7 @@
     <sys:String x:Key="Assistant_Chat_CopySuccess">Copied</sys:String>
     <sys:String x:Key="Assistant_Chat_EmptyTip">Ask in natural language; the assistant calls app features to fetch real data.&#10;e.g. "price of Megathron in Jita", "route from Jita to Domain", "analyse scalping for me"</sys:String>
     <sys:String x:Key="Assistant_Chat_UseContext">Carry context</sys:String>
-    <sys:String x:Key="Assistant_Chat_UseContext_Tip">When on, every question in this chat carries all previous successful Q&amp;A (no limit)</sys:String>
+    <sys:String x:Key="Assistant_Chat_UseContext_Tip">When on, every question in this chat carries the full previous record (including tool calls and their results); once it passes the context budget the earliest middle turns are dropped first, while the very first and the newest turn are kept. Memory lives inside a single chat only.</sys:String>
     <sys:String x:Key="Assistant_Chat_Input">Input</sys:String>
     <sys:String x:Key="Assistant_Chat_Input_Tip">Describe what you need… (Enter to send, Shift+Enter for newline)</sys:String>
     <sys:String x:Key="Assistant_Chat_Input_Hint">Enter to send · Shift+Enter for newline</sys:String>
@@ -2256,8 +2256,11 @@
     <sys:String x:Key="Assistant_Chat_Untitled">New chat</sys:String>
     <sys:String x:Key="Assistant_Chat_EmptySession">(empty chat)</sys:String>
     <sys:String x:Key="Assistant_Chat_NewSession">New chat</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextOn">On: carries the previous {0} Q&amp;A each time</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOn">On: carries the previous {0} Q&amp;A plus their tool calls</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextOff">Off: answers only the current question</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsage">Carrying {0} turn(s) · {1} / {2} chars</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">Carrying {0} turn(s) · {1} / {2} chars · dropped {3}</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">Carrying {0} turn(s) · {1} chars (unlimited)</sys:String>
     <sys:String x:Key="Assistant_Chat_PendingCount">{0} request(s) in progress…</sys:String>
     <sys:String x:Key="Assistant_Chat_NoInput">Please enter something</sys:String>
     <sys:String x:Key="Assistant_Chat_AnswerEmpty">No content returned</sys:String>
@@ -2310,7 +2313,7 @@
     <sys:String x:Key="AssistantSettingPage_Section_Behavior">Tool rounds / default character / write confirmation / hotkey / system prompt</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Esi">Open all 197 ESI operations to the assistant (writes confirmed)</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Tools">Declare on demand + enable or disable each of the 44 tools</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Restore_Desc">Resets assistant parameters only (rounds / prompt / confirmation / default character / hotkey / ESI / tool switches / on-demand declaration / hosting); the endpoint and API key are left alone.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore_Desc">Resets assistant parameters only (rounds / prompt / confirmation / default character / hotkey / context budget / ESI / tool switches / on-demand declaration / hosting); the endpoint and API key are left alone.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Model">Model</sys:String>
     <sys:String x:Key="AssistantSettingPage_Translate">Translation</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools">Tool switches</sys:String>
@@ -2335,6 +2338,8 @@
     <sys:String x:Key="AssistantSettingPage_Confirm">Write actions need confirmation</sys:String>
     <sys:String x:Key="AssistantSettingPage_ShowInMainWindow">Show AI in the main window</sys:String>
     <sys:String x:Key="AssistantSettingPage_ShowInMainWindow_Desc">Unchecked (default): every AI entry opens in a separate window, leaving the page you are reading in place. Checked: the assistant page is hosted in the main window. Alt+Q always uses the separate window.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextChars">Context budget (characters)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextChars_Desc">Every request in a chat carries the full previous record (including tool calls and results); once it passes the budget the earliest middle turns are dropped first, keeping the very first and the newest turn (the newest keeps its question and answer even if its tool results must be compressed). Default 200000 chars, 0 = unlimited. Memory lives inside a single chat; chats never share it.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Confirm_Desc">Switching this off is not "no confirmation": the assistant then refuses writes outright and explains why.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey">Global hotkey</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">Press anywhere to pop up the assistant window (press again to hide). Empty by default, i.e. no shortcut; fill in a combination such as Alt+Q / Ctrl+Alt+A to enable it.</sys:String>

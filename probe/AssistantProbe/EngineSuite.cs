@@ -123,7 +123,9 @@ internal static class EngineSuite
         var turn = await new AiAssistantEngine().SendAsync("幻觉工具", Ctx(server), CancellationToken.None);
         var final = await ReadFinalAsync(turn);
 
-        c.Equal(turn.Steps.Count, 0, "未知工具不产生步骤");
+        c.Equal(turn.Steps.Count, 1, "未知工具也记一条步骤（它同样是一次 tool 往返，重建历史时不能悬空）");
+        c.Equal(turn.Steps[0].Name, "probe_nope", "步骤记的是模型报出的工具名");
+        c.That(!turn.Steps[0].Success, "步骤标记为失败");
         c.That(ProbeJson.Contains(server.RequestBodies[1], "未知工具"), "回填了「未知工具」提示给模型");
         c.That(final.Length > 0, "对话未中断");
     }
@@ -225,6 +227,8 @@ internal static class EngineSuite
 
         await turn.ResumeAsync(false, CancellationToken.None);
         c.Equal(ProbeTools.WriteCalls, 0, "**拒绝后不执行**（零写入）");
+        c.Equal(turn.Steps.Count, 1, "拒绝也记一条步骤（重建历史时不能留下悬空的 tool_calls）");
+        c.That(!turn.Steps[0].Success && turn.Steps[0].CallId is { Length: > 0 }, "拒绝步骤带调用 Id 且标记失败");
         c.That(ProbeJson.Contains(server.RequestBodies[^1], "未确认"), "拒绝的原因回填给模型");
         var final = await ReadFinalAsync(turn);
         c.Equal(final, "好，那就不做", "拒绝后对话继续并给出回答");
@@ -232,15 +236,16 @@ internal static class EngineSuite
 
     private static async Task ContextAsync(Check c)
     {
+        // ① 引擎：上下文消息按顺序插在 system 之后、本次提问之前
         using var server = new MockLlmServer((_, _) => MockLlmServer.Text("好的"));
         var turn = await new AiAssistantEngine().SendAsync(
             "第二个问题",
-            Ctx(server, context: [("第一个问题", "第一个回答")]),
+            Ctx(server, context: [ChatMessage.User("第一个问题"), ChatMessage.Assistant("第一个回答")]),
             CancellationToken.None);
         _ = await ReadFinalAsync(turn);
 
         var body = server.RequestBodies[0];
-        c.That(ProbeJson.Contains(body, "第一个问题") && ProbeJson.Contains(body, "第一个回答"), "上下文问答对已下发");
+        c.That(ProbeJson.Contains(body, "第一个问题") && ProbeJson.Contains(body, "第一个回答"), "上下文消息已下发");
         var flat = ProbeJson.Flatten(body);
         var question = flat.IndexOf("第一个问题", StringComparison.Ordinal);
         var answer = flat.IndexOf("第一个回答", StringComparison.Ordinal);
@@ -251,7 +256,172 @@ internal static class EngineSuite
         var turn2 = await new AiAssistantEngine().SendAsync("只有这一问", Ctx(server2), CancellationToken.None);
         _ = await ReadFinalAsync(turn2);
         c.That(!ProbeJson.Contains(server2.RequestBodies[0], "第一个问题"), "不传上下文时不含历史问答");
+
+        ContextBuilder(c);
     }
+
+    /// <summary>
+    /// 阶段 132：把"轮次历史"重建为消息序列（<see cref="AssistantContextBuilder"/> 是纯函数，不需要引擎与网络）。
+    /// 覆盖：工具往返被完整重放 / 同轮多调用合并 / 跨轮顺序 / 非法序列守卫 / 预算裁剪 / 单轮压缩 / 旧数据兜底。
+    /// </summary>
+    private static void ContextBuilder(Check c)
+    {
+        // ① 工具往返（assistant(tool_calls) → tool(结果) → assistant(回答)）
+        var withTools = Turn(
+            "巨神兵级多少钱",
+            "最低卖价约 5.2 亿",
+            Step("call_1", 1, "market_orders", """{"typeName":"巨神兵级"}""", "最低卖价 520,000,000 ISK（TypeId 24692）"));
+        var replay = AssistantContextBuilder.Build([withTools], null, 0);
+        c.Equal(replay.TurnsIncluded, 1, "带上一轮");
+        c.Equal(replay.Messages.Count, 4, "一条提问 + assistant(tool_calls) + tool 结果 + 最终回答（4 条消息）");
+        c.Equal(replay.Messages[0].Content, "巨神兵级多少钱", "第 1 条是提问");
+        c.Equal(replay.Messages[1].ToolCalls?.Count ?? 0, 1, "第 2 条是带 1 个 tool_call 的 assistant 消息");
+        c.Equal(replay.Messages[1].ToolCalls![0].Id, "call_1", "tool_call 带调用 Id");
+        c.Equal(replay.Messages[1].ToolCalls[0].Name, "market_orders", "tool_call 带工具名");
+        c.That(replay.Messages[1].ToolCalls[0].ArgumentsJson.Contains("巨神兵级", StringComparison.Ordinal),
+            "tool_call 带回参数 JSON（重建后模型看到的参数与当初一致）");
+        c.Equal(replay.Messages[2].Role, ChatRole.Tool, "第 3 条是 tool 结果");
+        c.Equal(replay.Messages[2].ToolCallId, "call_1", "tool 消息用 CallId 与调用配对");
+        c.That((replay.Messages[2].Content ?? string.Empty).Contains("520,000,000", StringComparison.Ordinal),
+            "**工具结果全文**进入上下文，而不是只有 160 字符的界面摘要");
+        c.Equal(replay.Messages[3].Content, "最低卖价约 5.2 亿", "第 4 条是最终回答");
+        c.That(ToolCallsPaired(replay.Messages), "assistant(tool_calls) 后必有对应 tool 结果（消息序列合法）");
+
+        // ② 同一轮里的多个调用合并成**一条** assistant 消息（不能拆成两条）
+        var multi = Turn(
+            "两件事",
+            "都办好了",
+            Step("a1", 1, "market_orders", """{"typeName":"A"}""", "A 的结果"),
+            Step("a2", 1, "market_history", """{"typeName":"B"}""", "B 的结果"));
+        var multiReplay = AssistantContextBuilder.Build([multi], null, 0);
+        c.Equal(multiReplay.Messages.Count, 5, "提问 + assistant(2 个 tool_calls) + 2 条 tool + 回答");
+        c.Equal(multiReplay.Messages[1].ToolCalls?.Count ?? 0, 2, "同轮两个调用在同一条 assistant 消息里");
+        c.That(ToolCallsPaired(multiReplay.Messages), "同轮多调用的配对完整");
+
+        // ③ 跨轮：第二轮的工具往返与第一轮各自成组，顺序不变
+        var twoRounds = Turn(
+            "再看看",
+            "看完了",
+            Step("b1", 1, "market_orders", "{}", "第一轮结果"),
+            Step("b2", 2, "market_history", "{}", "第二轮结果"));
+        var twoRoundReplay = AssistantContextBuilder.Build([twoRounds], null, 0);
+        c.Equal(twoRoundReplay.Messages.Count, 6, "提问 + 2 组（assistant + tool）+ 回答");
+        var bodyOrder = string.Join(
+            "|",
+            twoRoundReplay.Messages.Select(m => m.Role == ChatRole.Tool ? m.Content : m.Role.ToString()));
+        c.That(bodyOrder.IndexOf("第一轮结果", StringComparison.Ordinal) < bodyOrder.IndexOf("第二轮结果", StringComparison.Ordinal),
+            "两轮工具结果保持时间顺序");
+
+        // ④ 预算：**最近的优先**，最早的"头"能共存就钉住，中间的被整轮省略
+        var trimmed = AssistantContextBuilder.Build(
+            [Turn("第一条", new string('a', 400)), Turn("第二条", new string('b', 400)), Turn("第三条", new string('c', 400))],
+            null,
+            900);
+        c.Equal(trimmed.TurnsIncluded, 2, "预算 900 只装得下两轮（每轮约 400 字符）");
+        c.Equal(trimmed.TurnsDropped, 1, "被省略的是**中间**那一轮（整轮省略，不丢半轮）");
+        c.That(trimmed.Messages.Any(m => m.Content == "第一条"), "最早的「头」被钉住（长会话里的原始目标）");
+        c.That(trimmed.Messages.Any(m => m.Content == "第三条"), "最新一轮一定在");
+        c.That(trimmed.Messages.All(m => m.Content != "第二条"), "中间那一轮被省略");
+        var trimmedTexts = trimmed.Messages.Select(message => message.Content).ToList();
+        c.That(trimmedTexts.IndexOf("第一条") < trimmedTexts.IndexOf("第三条"),
+            "顺序仍是时间顺序（头在前、最新在后）");
+
+        // ④b 头连"与最新一轮共存"都做不到 → 让位给最近的轮次
+        var droppedHead = AssistantContextBuilder.Build(
+            [Turn("大目标", new string('a', 400)), Turn("最新", new string('b', 400))],
+            null,
+            500);
+        c.Equal(droppedHead.TurnsIncluded, 1, "预算太小：只带最新一轮");
+        c.That(droppedHead.Messages.Any(m => m.Content == "最新"), "最新一轮仍在");
+        c.That(droppedHead.Messages.All(m => m.Content != "大目标"), "预算不够时放弃「头」（最近的数据优先）");
+
+        // ④c 预算 0 = 不限制：整段历史都带上
+        var unlimited = AssistantContextBuilder.Build([Turn("一", "A"), Turn("二", "B"), Turn("三", "C")], null, 0);
+        c.Equal(unlimited.TurnsIncluded, 3, "预算 0 = 不限制：整段历史都带上");
+        c.Equal(unlimited.TurnsDropped, 0, "不限制时没有省略");
+
+        // ⑤ 最新一轮自己就超预算 → 压缩它的工具结果，提问与回答保留
+        var heavy = Turn("压我", "结论", Step("c9", 1, "market_orders", """{"x":1}""", new string('z', 2000)));
+        var squeezed = AssistantContextBuilder.Build([heavy], null, 500);
+        c.Equal(squeezed.TurnsDropped, 0, "最新一轮不会被丢");
+        c.Equal(squeezed.Messages[0].Content, "压我", "压缩时提问保留");
+        c.Equal(squeezed.Messages[^1].Content, "结论", "压缩时回答保留");
+        var toolLength = squeezed.Messages.First(m => m.Role == ChatRole.Tool).Content?.Length ?? 0;
+        c.That(toolLength is > 0 and <= 300, $"工具结果被逐级压缩到 {toolLength} 字符（≤300）");
+
+        // ⑥ 当前这条不算自己的上文
+        var first = Turn("甲", "A");
+        var second = Turn("乙", "B");
+        var beforeCurrent = AssistantContextBuilder.Build([first, second], second, 0);
+        c.Equal(beforeCurrent.TurnsIncluded, 1, "当前这条不算上文");
+        c.That(beforeCurrent.Messages.All(m => m.Content != "乙"), "当前提问不在上下文里");
+
+        // ⑦ 失败 / 被停止的轮次不进上下文
+        var failed = Turn("失败的", "半截回答");
+        failed.Success = false;
+        var stopped = Turn("停掉的", "半截回答");
+        stopped.Stopped = true;
+        c.Equal(AssistantContextBuilder.Build([failed, stopped], null, 0).Messages.Count, 0,
+            "失败与被停止的轮次都不进上下文");
+
+        // ⑧ 旧数据：步骤没有 CallId → 只重放问答，不造非法的工具往返
+        var legacy = new AiAssistantTurn
+        {
+            UserText = "老对话",
+            AnswerText = "老回答",
+            Success = true,
+            Steps = [new AiAssistantStep { ToolName = "market_orders", ResultSummary = "旧摘要" }],
+        };
+        var legacyReplay = AssistantContextBuilder.Build([legacy], null, 0);
+        c.Equal(legacyReplay.Messages.Count, 2, "旧数据（步骤缺 CallId）只重放问答");
+        c.That(legacyReplay.Messages.All(m => m.Role is ChatRole.User or ChatRole.Assistant),
+            "没有 CallId 的步骤不会生成悬空的 tool 消息");
+    }
+
+    /// <summary>消息序列合法性：每条 assistant(tool_calls) 后面必须紧跟它全部调用的 tool 结果。</summary>
+    private static bool ToolCallsPaired(IReadOnlyList<ChatMessage> messages)
+    {
+        for (var i = 0; i < messages.Count; i++)
+        {
+            if (messages[i].ToolCalls is not { Count: > 0 } calls)
+            {
+                continue;
+            }
+
+            var ids = messages
+                .Skip(i + 1)
+                .TakeWhile(message => message.Role == ChatRole.Tool)
+                .Select(message => message.ToolCallId)
+                .ToHashSet(StringComparer.Ordinal);
+
+            if (calls.Any(call => !ids.Contains(call.Id)))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static AiAssistantTurn Turn(string question, string answer, params AiAssistantStep[] steps) => new()
+    {
+        UserText = question,
+        AnswerText = answer,
+        Steps = [.. steps],
+        Success = true,
+    };
+
+    private static AiAssistantStep Step(string callId, int round, string toolName, string argumentsJson, string resultText) => new()
+    {
+        CallId = callId,
+        Round = round,
+        ToolName = toolName,
+        ParamSummary = toolName,
+        ArgumentsJson = argumentsJson,
+        ResultText = resultText,
+        ResultSummary = resultText.Length <= 160 ? resultText : resultText[..160],
+        Success = true,
+    };
 
     private static async Task CustomPromptAsync(Check c)
     {
@@ -293,7 +463,7 @@ internal static class EngineSuite
 
     private static AssistantContext Ctx(
         MockLlmServer server,
-        IReadOnlyList<(string Question, string Answer)>? context = null,
+        IReadOnlyList<ChatMessage>? context = null,
         string? prompt = null)
         => new()
         {

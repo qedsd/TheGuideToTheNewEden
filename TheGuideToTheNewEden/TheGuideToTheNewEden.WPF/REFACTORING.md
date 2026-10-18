@@ -5604,19 +5604,26 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
   ② `character_blueprints` 的产物名是否解析出来；③ `character_contacts` 的标签名是否可读。
   另外**军团级**端点（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，本阶段未做。
 
-> **AI 助手模块的当前状态**（阶段 124 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
+> **AI 助手模块的当前状态**（阶段 132 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
 > Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）、离线探针四套件 + 工具调用日志（113）、
 > **v1.5 P1 九个工具（114）、补齐三套探针（115）、P2 五个只读 + 三个写工具（116）、角色 ESI 直读七个（117）、
 > ESI 全量网关四个元工具（118）、删除那 7 个直读工具并把名称富化下沉为通用能力（119）、
 > DeepSeek DSML 兼容（120）、AI 设置重构 + 逐工具开关 + 输出 token 默认 0（121）、
 > 工具声明的 token 预算与缓存契约（122）、按需声明（123）、设置项改名 AI 并改成钻取式菜单（124）、
-> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）、AI 助手改成常驻入口（126，只放页脚）、主页 banner 快捷提问改为新开对话（127）、AI 显示位置可选（128）、AI 设置详情页统一成 SettingCard 逐行 + 清 markdown（129）、AI 快捷键默认不启用（130）** 均已落地；
-> 工具总数 **44**（47 个旧工具 − 阶段 117 的 7 个 + 网关 4 个），探针 **1071 断言全 PASS**
-> （`all` 一次跑完，退出码 0），构建 0 错误，语言键 2280/2280 无重复，应用实机启动验证通过。
-> 工具声明（每次工具轮的固定前缀）已精简到 **23,358 字符**并默认**按需声明**（典型单套餐问题只声明 10,435 字符 ≈ 45%）。
-> 设置里现在只有**一个 AI 入口**（设置 → AI 助手）：模型与翻译 / 行为 / ESI 全量访问 / 工具开关。
-> 未做：**逐工具开关**（`Assistant.Tools.*`）、**跨轮长期记忆**、**截图（视觉输入）**（设计 §10.4，需视觉模型 + 端点能力标记）、
-> **军团级 ESI 端点**（需军团职位权限——通用网关已能调用这些端点，但角色没有职位时仍是 403）。
+> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）、AI 助手改成常驻入口（126，只放页脚）、主页 banner 快捷提问改为新开对话（127）、AI 显示位置可选（128）、AI 设置详情页统一成 SettingCard 逐行 + 清 markdown（129）、AI 快捷键默认不启用（130）、内置说明书接入 AI（131：manual_search / manual_read，核心常驻）、单对话记忆：默认带上下文 + 完整工具往返 + 上下文预算 + 工具步骤落盘修复（132）** 均已落地；
+> 工具总数 **46**（47 个旧工具 − 阶段 117 的 7 个 + 网关 4 个 + 说明书 2 个；未含探针自己的 6 个 `probe_*` 替身），
+> 探针 **12 套**（阶段 132 逐套件实跑 **981 条 PASS**：engine 103 / ui 93 / tools 458 / toolcall 124 / tokens 9 /
+> routing 23 / manuals 58 / quickroute 27 / writes 71 / business 15；`esi` 163 与 `map` 45 未重跑，见 §8 第 69 条），
+> 构建 0 错误（45 个警告均为既有基线），语言键 **2299/2299** 无重复，应用实机启动验证通过。
+> 工具声明（每次工具轮的固定前缀）实测 **24,314 字符**并默认**按需声明**（典型单套餐问题只声明 ≈10.4k 字符 ≈ 45%）。
+> 设置里只有**一个 AI 入口**（**设置 → AI**，阶段 124 改名「AI」并改钻取式，阶段 125 拆模型/翻译）：模型 / 翻译 / 行为 / ESI 全量访问 / 工具开关。
+> 记忆**只存在于单个对话**（阶段 132 定调）：同对话每次请求带上此前的完整记录（含工具往返），超出
+> `Assistant.MaxContextChars`（默认 200000 字符）时先省略中间较早的轮次——**最早一轮与最新一轮优先保留**；
+> 底栏常态显示「已带 N 轮 · X / Y 字符」；跨对话不共享，也**不做长期记忆**。
+> 未做：**截图（视觉输入）**（设计 §10.4，需视觉模型 + 端点能力标记）、
+> **军团级 ESI 端点**（需军团职位权限——通用网关已能调用这些端点，但角色没有职位时仍是 403）、
+> **业务聚合下沉**（资产分组 / 蓝图最优 ME-TE / 日历窗口刻意留在页面）、按需声明关键词表为手工维护。
+> 边界与未做的完整清单见 §8 第 70 条，工具/文件的当前清单见 §10「AI 助手模块」。
 
 ---
 
@@ -6417,6 +6424,104 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
 
 ---
 
+### 阶段 132：AI 助手 · 单对话记忆（默认带上下文 / 完整工具往返 / 上下文预算）
+
+> 起因（用户提问）：「AI 助手理应在同一个对话中永远带上上下文，不是吗？从常见的 harness 等软件的设计来看」。
+> 核对代码后确认三处与 harness 的差距，用户拍板**全做**：① 默认关 → **默认开**；
+> ② 只带"问 / 答"两段文本 → **带完整工具往返**；③ 无预算 → **加字符预算**（具体策略与取值见本节"三、"/"七、"，含用户追问后的放宽）。
+> 同时定调：**记忆只存在于单个对话**（不跨对话、不跨角色，也不做长期记忆）——
+> `AI_ASSISTANT_DESIGN.md` §9 里那条"多角色上下文记忆 / 长期记忆"候选**就此删除**，不再是待定项。
+
+#### 一、改前的事实核对（不是凭印象）
+
+| 项 | 改前 | 依据 |
+|---|---|---|
+| 同对话是否带上文 | **带**，但对话级开关 `AiAssistantSession.UseContext` 是普通 `bool` → **默认 false** | `AiAssistantViewModel.BuildContext`（只取 `CanBeContext` 的问答对） |
+| 带什么 | 只有 `(UserText, AnswerText)`；**工具调用、参数、结果全丢**（追问只能让模型再调一次工具） | `AssistantContext.Context` 原类型 `IReadOnlyList<(string Question, string Answer)>` |
+| 上限 | 无 | 同上：全量带上、不截断 |
+| 历史里的工具步骤 | **一个都没有**（`AiChatTurnViewModel.AddStep` 只写界面集合，从未写 `Model.Steps`） | 实测 `AiAssistantHistory.json`：8 个对话 `stepsTotal=0`；即"重开应用后旧步骤消失、也无法重放" |
+
+#### 二、四条改动
+
+1. **默认带上下文**：`AiAssistantSession.UseContext` 默认 `true`。旧对话**一次性迁移**——新增 `ContextDefaultV2` 标记，
+   载入时若为 `null` 就把 `UseContext` 翻成 `true` 并打标记（旧文件里的 `false` 绝大多数是旧默认值而不是用户的选择）；
+   打过标记后，用户在底栏关掉它就是真的关掉。
+2. **完整工具往返**：新增 `Services/Assistant/AssistantContextBuilder.cs`（**纯函数**，探针可离线断言）。
+   每轮重建成 `user(提问)` → 逐轮 `assistant(tool_calls)` + `tool(结果)` → `assistant(最终回答)`；
+   同轮的多个调用按 `Round` 归组成**一条** assistant 消息（与引擎真实形状一致）；
+   `AssistantContext.Context` 因此由"问答对"换成 `IReadOnlyList<ChatMessage>`。
+3. **上下文预算**：新设置 `Assistant.MaxContextChars`（默认 **200000** 字符，**0 = 不限制**，上限 400000）。
+   200k ≈ 5–8 万 token（按本项目一贯的 2.5–4 字符/token 口径），对 1M 窗口的云端模型只占 5–8%；
+   而 DeepSeek 的前缀缓存命中价是未命中的 1/50，历史带全通常比"让模型重查一次"更便宜
+   （首版取 60000，用户追问后按 harness 口径放宽——见本节末尾"预算取值"）。
+   **省略策略 = 滑窗 + 钉住"头"（`AssistantContextBuilder.HeadTurns = 1`）**：
+   超出时先省略**中间**最早的那些轮次（整轮省略，不丢半轮），**最早一轮（原始目标）与最新一轮优先保留**；
+   头只有在"与最新一轮能一起装下"时才钉住，装不下就让位给最近的数据。
+   **最新一轮单独超预算时**逐级压缩它的工具结果（2000 → 800 → 300 → 120 字符），提问与回答永不丢。
+   底栏常态显示用量：`已带 12 轮 · 86k / 200k 字符`（发生省略时追加 `· 省略 3 轮`；预算 0 时显示 `（不限）`）。
+   设置页入口：「设置 → AI → 行为 → 上下文预算（字符）」（`AiBehaviorSettingView` 新卡片 + 保存 + 恢复默认复位）。
+4. **顺带修掉"工具步骤从不落盘"的真实缺陷**：`AiChatTurnViewModel.AddStep` 现在**同时**写 `Model.Steps`
+   （带 `CallId` / 轮号 / 参数 JSON / 结果全文），既让重开应用后旧步骤还在，也是重建工具往返的前提。
+   落盘上限：单条结果 2000 字符、参数 600 字符（`AssistantContextBuilder.MaxStored*`），
+   避免 40 对话 × 200 轮的历史文件被工具结果撑爆。
+
+#### 三、实现里几处值得记的判断
+
+- **`ToolStep` 扩了四个可选字段**（`Round` / `CallId` / `ArgumentsJson` / `ResultText`）：前五个位置参数不变，
+  既有调用点（引擎与探针）零改动。
+- **引擎新增 `ReportStep(...)` 一处收口**：成功 / 超时 / 异常 / **模型报出未注册工具** / **已关闭的工具** /
+  **用户拒绝的写操作**都记一条步骤。这不是为了好看——重建历史时"assistant(tool_calls) 后面必须有 tool 结果"，
+  否则重放出的消息序列是非法的（多数服务端会直接 400）。相应地，`engine` 套件里两条旧断言随行为更新
+  （未注册工具、拒绝写操作：从"0 步"改成"各记 1 步"）。
+- **旧数据兜底**：没有 `CallId` 的步骤不参与重建（只重放问答，不造非法往返）。
+- **失败与被停止的轮次不进上下文**（沿用原语义）：半截回答当历史更容易带偏。
+- **不做摘要式压缩**：只丢最旧的轮次（确定性、零额外模型调用）；真要"压缩"应作为独立功能设计。
+- **不传 `Context` 时行为不变**：上下文开关关掉、或新对话第一条，`AssistantContextResult.Empty`，请求体与阶段 131 一致。
+
+#### 四、设置与本地化
+
+- 新设置键 `Assistant.MaxContextChars`；`AiAssistantSettingService.Save(...)` 增加第 6 个参数（带默认值，调用点只有设置页），
+  `RestoreDefaults` 显式复位；`Initialize` 里 `Math.Clamp(…, 0, MaxContextCharsLimit)`。
+- 语言键中英各 **+3**（`Assistant_Chat_ContextUsage` / `_Trimmed` / `_Unlimited`；底栏从"只在省略时提示"改为**常态显示用量**），
+  并改写 `Assistant_Chat_ContextOn` / `_UseContext_Tip` / `AssistantSettingPage_ContextChars_Desc` / `_Restore_Desc`；
+  两份字典 **2299 / 2299、0 重复、键集一致**。
+
+#### 五、验证（本轮逐个套件跑，`all` 受 §8 第 69 条的 Low 完整性限制）
+
+- 构建（`-p:OutDir=<临时目录>`）**0 错误**；45 个警告逐条核对，全部是既有基线，**本次改动 0 新警告**。
+- `engine` **62 → 103**（+41）：工具往返重放（提问 → assistant(tool_calls) → tool 全文 → 回答）、
+  同轮多调用归组、跨轮顺序、**消息序列合法性**（每条 assistant(tool_calls) 后必有对应 tool 结果）、
+  预算裁剪（900 字符 → 带最新两轮、**钉住最早一轮、省略中间一轮**）、预算不够时放弃"头"、
+  预算 0 = 不限制、单轮超预算压缩到 ≤300 字符且问答保留、当前轮不算自己的上文、
+  失败/被停止轮次不入上下文、旧数据（缺 `CallId`）只重放问答。
+- `ui` **87 → 93**（+6）：上下文预算卡片存在且回填当前值、新对话默认 `UseContext=true`、默认预算 60000、
+  **步骤确实写进落盘模型**（3 条）；「行为」节现在是 7 张卡 / 5 条分隔线。
+- 回归：`tools` 458 / `toolcall` 124 / `tokens` 9 / `routing` 23 / `manuals` 58 / `quickroute` 27 / `writes` 71 / `business` 15，
+  全部 **0 FAIL**（本轮实跑合计 **974** 条；`esi` 163 条本轮未重跑——改动不涉及网关，沿用阶段 131 结果）。
+- **手册已更新**（按 §8 第 68 条「改功能即改手册」）：`assistant`（上下文默认开 + 完整记录 + 预算 + 限制条目 +
+  "做不到"改成"记忆只在单个对话内" + 恢复默认范围，`updated` 改 2026-10-18）、
+  `settings/ai`（行为节新增第 5 条「上下文预算」+ 默认值表 + 恢复默认范围 + 工具数 44 → 46 订正）。
+
+#### 六、边界 / 未做
+
+- **跨对话记忆明确不做**（用户："以后也不会有这个需要"）：不同对话之间不共享任何内容，也没有跨角色记忆。
+- 带完整历史会增加**输入 token**（工具结果尤其大）；DeepSeek 的前缀缓存按前缀逐字节匹配，历史稳定增长正是
+  缓存友好的形态，但仍建议长对话按需新建。
+- 改前已有的旧记录里本来就没有步骤（数据已丢），迁移只能让它们**从现在起**记住工具往返。
+
+#### 七、预算取值（用户追问后定稿）
+
+- 首版默认 60000 字符。用户追问「会不会太少？一般 harness 怎么限」后逐项核对：
+  60000 字符 ≈ 15–24k token，只占 `deepseek-flash` 1M 窗口的 **2–3%**——**限制的真正理由是成本与首字延迟，
+  不是窗口装不下**；而 harness 的普遍做法也不算字符：按「窗口 − 系统提示 − 工具声明 − 预留输出 − 余量」推导
+  可用预算，并在用量约 80–95% 时触发压缩（摘要 / 滑窗 / 头尾保留），而不是等 provider 报错。
+- 因此默认提到 **200000 字符**（≈5–8 万 token，仍只占 1M 窗口 5–8%），并把 harness 里最便宜的两条补上：
+  **钉住最早一轮**（"我到底要干什么"，避免长会话后模型重复取数）与**底栏常态显示用量**。
+- **不做**：按模型窗口自动推导预算（要用户额外维护"模型窗口 token"，对纯云端大窗口收益不大）、
+  摘要式压缩（要额外一次模型调用、结果不确定）。接本地小窗口模型时，把预算手动调小即可（0 = 不限制）。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -6447,22 +6552,22 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
 25. **翻译没有批量模式**（阶段 46 遗留）：一次只查一个名词；"粘贴一份物品清单逐行出译文"未做。
 26. ~~**频道翻译（ChannelTranslationPage）仍是导航占位**~~ → **阶段 47 S4/S5 已完成**（导航为「翻译 → 频道翻译」；真实服务商与真实聊天日志仍未实测，见第 34 条）。以下为历史描述：它对聊天正文做通用文本翻译，需要与第 24 条同一套能力，届时可复用 `ITranslationProvider` 与语言判定，并复用频道日志观察者（`ChannelIntelObserver` 那一套）。
 27. **`Converters/TypeImageConverter` 在受限环境下会抛异常**（阶段 46 核验时暴露）：它走 `BitmapImage.UriSource` 的 WPF URI 下载路径，会经 `MS.Win32.WinInet.get_InternetCacheFolder()`；该调用失败时抛 `COMException 0x80072EE4` 并记一条 ERROR（图标空白，功能不受影响）。翻译页已改走 `HttpClient` + 同线程解码 + `Freeze()`（估价页同一做法）绕开该路径；**共用转换器本身未改**，使用它的 `ChannelMarketWindow` 若在同类环境出现该日志，可照同一方式替换。
-28. **AI 翻译（阶段 47）的边界**：只在**本地 mock 服务**上做过完整核验——真实服务商（OpenAI/DeepSeek/通义/GLM/Kimi/Azure/Claude/Gemini）需要用户自己的 Key，本轮未实测任何一家；协议层的请求形状与响应/流式解析已按各家文档逐字段核对并有断言覆盖，但**首次接入请先用设置页的「测试连接」**。
+28. **AI 翻译（阶段 47）的边界**：只在**本地 mock 服务**上做过完整核验——真实服务商（OpenAI/DeepSeek/通义/GLM/Kimi/Azure/Claude/Gemini）需要用户自己的 Key，本轮未实测任何一家；协议层的请求形状与响应/流式解析已按各家文档逐字段核对并有断言覆盖，但**首次接入请先用「设置 → AI → 模型」页的「测试连接」**（阶段 121/125 起端点与 Key 归到该节，旧 `TranslationPage.Ai.*` 键已不读写）。
 29. **术语库只覆盖 SDE 里的名词**（阶段 47）：物品/舰船/装备/星系/星域/空间站可约束（实测 57,010 条）；**结构（建筑）名不在 SDE 里**（要走 `StructureService` 的 ESI 解析），玩家/军团/联盟名也不在——这些只能靠模型自己或后续的"用户术语表"。
-30. **AI 翻译的 Key 是明文**（阶段 47）：存在共用 `settings.json` 的 `TranslationPage.Ai.ApiKey`，与 `ESILicense.txt` 同一坦诚程度；要更强保护可后续换 DPAPI（`ProtectedData`）。日志里不会输出 Key（异常信息只带 HTTP 状态与服务端 message）。
+30. **AI 翻译的 Key 是明文**（阶段 47）：存在共用 `settings.json` 的 **`Ai.ApiKey`**（阶段 125 前的旧键 `TranslationPage.Ai.ApiKey` 已不读写），与 `ESILicense.txt` 同一坦诚程度；要更强保护可后续换 DPAPI（`ProtectedData`）。日志里不会输出 Key（异常信息只带 HTTP 状态与服务端 message）。
 31. **AI 翻译暂无并发与批处理**（阶段 47）：一次只发一个请求，没有按行批量、没有速率限制器；频道翻译（S4）已把多角色多频道的消息收敛到**一条队列串行翻译**（按次计费 + 易限流下最稳），但"一次请求翻多行"的批量还没做，频道刷屏时 token 消耗与延迟仍然线性增长。
 32. **术语库每进程重新抽取**（阶段 47）：实测 57,010 条 241ms、索引 234ms，约 0.5s 一次，只在首次使用 AI 源或打开设置页时发生；未做落盘缓存（避免与 SDE 更新脱节），如嫌慢可加"版本 + 数据库时间戳"校验的缓存文件。
 33. **语言字典重复键 = 应用启动即崩，且没有任何日志**（阶段 47 实测踩到）：`Resources/Languages/*.xaml` 里同名键会让 `ResourceDictionary` 加载抛 `ArgumentException: Item has already been added`；异常发生在 `App.xaml` 合并字典阶段，**`dotnet build` 0 错误、应用日志 0 字节**，进程以 `0xE0434352` 退出，现场只剩"窗口没出现"。**改语言文件后请查重键**：`(Select-String -Path zh-CN.xaml -Pattern 'x:Key="([^"]+)"' -AllMatches)` 分组看 count>1；或用本项目那次用的 `PageProbe` 思路（加载应用级资源字典并直接构造页面），它能把完整异常链打出来。
 34. **频道翻译（S4）的验证边界**：预清洗/跳过规则/队列/失败去重/设置落盘都是**离线探针**（20/20 断言，注入替身翻译器；追加的 `StripProbe` 15/15 用用户真实 MOTD 覆盖清洗链路，`ViewProbe` 12/12 覆盖列表渲染与可选中复制）验证的；实机只验证到"页面渲染 + 未配置提示"（真实聊天日志 + 真实模型未跑，需要用户 Key 与游戏内频道）。另外频道翻译的**触发关键词依赖 Core 观察者的 `Important` 语义**（不填关键词 = 全部消息都翻译）。
 35. **"AI 新词候选"是启发式，会有误报**（阶段 47 S5）：规则是"大写开头 + 术语库没有 + 译文里没原样出现"，因此句子里的普通英文词（如 `Warp`、`Hold`）也可能进候选——所以候选**只排队、由人确认**，并提供"忽略"（持久化到忽略名单）。若误报过多，可把规则收紧成"多词短语"或"含数字/连字符"，或只对 ≥2 次出现的词入队。
 36. **用户术语表的生效时机**（阶段 47 S5）：改动会立即反映到术语匹配与 AI 缓存键（签名变化 → 缓存不命中），**不需要重启**；但已经在跑的那条频道翻译请求不受影响（下一条生效）。若发现新术语"没生效"，先确认 `Configs/UserGlossary.json` 里确实写入了（设置页列表与文件都会显示）。
-37. **"没有译文输出"先看这两条**（阶段 47 追加）：① 若提示"模型没有返回译文（输出被「最大输出 token」截断）"→ 去设置页把**最大输出 token** 调大（或设 0 交给服务端默认）；如果用的是**推理模型**（响应里只有思维链），请换普通对话模型。② MOTD/长文本请确认已在渠道页点过「开始」——「频道置顶信息」是加入频道时写进日志的，应用只会在**会话启动时补翻日志尾部 20 行**，更早的历史消息不会被翻（这是有意的成本控制）。
+37. **"没有译文输出"先看这两条**（阶段 47 追加）：① 若提示"模型没有返回译文（输出被「最大输出 token」截断）"→ 去「设置 → AI → 模型」把**最大输出 token**（`Ai.MaxTokens`，默认 0 = 交给服务端默认）调大；如果用的是**推理模型**（响应里只有思维链），请换普通对话模型。② MOTD/长文本请确认已在渠道页点过「开始」——「频道置顶信息」是加入频道时写进日志的，应用只会在**会话启动时补翻日志尾部 20 行**，更早的历史消息不会被翻（这是有意的成本控制）。
 38. **翻译页输入框已改为多行**（阶段 47 追加）：回车=查询、**Shift+回车=换行**（`PreviewKeyDown` 实现，因为多行 `TextBox` 会在 `KeyDown` 类处理器里吞掉回车）。粘贴整段 MOTD/邮件正文不会再被折平。
 39. **AI 翻译的对话历史是本地明文**（阶段 47 追加）：存在 `Configs/AiTranslationHistory.json`，上限 40 个对话 / 每对话 200 条记录（超出丢最久未更新的），**没有加密**（与 `settings.json`/`UserGlossary.json` 同等坦诚）；内容就是用户翻过的原文与译文，介意的话可以直接删这个文件（不会影响设置）。另外落盘粒度是"按对话整体 upsert"：页面与弹窗各开一个实例没问题，但在两个实例里同时编辑**同一个**对话属于异常用法（没有逐条合并）。
 40. **上下文只作用于 AI 翻译页，而且是"对话级、不限条数"**（阶段 47 追加）：频道翻译是逐条独立翻译（每条消息自成一句，混入前一条反而容易串味），不消费对话上下文；`TranslationRequest.Context` 这条通路目前只有 AI 翻译页在用。对话级开关打开后会把此前**所有**成功记录都带上，**没有条数或 token 上限**——长对话（几十条、每条又是整段 MOTD）会让提示词迅速膨胀，遇到"上下文超限"一类的报错时，新建一个对话即可重置。另外"并发翻译同一对话"时，上下文只包含**已经成功**的更早记录。
 41. **AI 翻译页可以并发请求**（阶段 47 追加）：等待期间允许继续发送，每条一个请求、各自一个取消令牌，没有队列与并发上限（点「停止」会取消**全部**在跑的请求）。代价是"连发 5 条"会同时产生 5 个请求——按次计费的服务商请自行留意；相册式的顺序由本地记录顺序保证，与返回先后无关。
-42. **长文本翻译的两个真实上限**（阶段 47 追加，已按 DeepSeek 官方参数重做）：**输入上限（上下文窗口）与输出上限是两件事**。以 `deepseek-flash` 为例，上下文 1M token、最大输出 384K token —— 所以"几万字的原文"本身根本不是问题，瓶颈在**输出**（一次能写多少 token）。本项目的处理：分片阈值由设置决定（`TranslationPage.Ai.MaxChunkChars`，默认 12000 字符，0 = 不分片），`finish_reason=length` 时**自动从断点续写**（最多 3 次），续不完会明确提示"译文可能不完整"。默认 12000 字符的意义是"首段结果更快出现、单次失败损失更小"，并不是模型限制；真嫌慢/嫌请求多都可以在设置页调。
-43. **思考模式默认关闭（仅 DeepSeek 系生效）**（阶段 47 追加）：`deepseek-flash` 的思考模式默认开启且 effort=high，翻译前会先写一大段思维链——又慢又贵，而且**思考模式下 `temperature` 无效**。所以设置页新增「思考模式」，默认 `off`；由于 `thinking`/`reasoning_effort` 是 DeepSeek 专有字段，本项目只在"模型名或地址含 deepseek"时才下发（`AiTranslationSettings.ResolveThinkingMode`），别的服务商保持 `auto`（不下发），避免它们不认识该参数直接 400。
+42. **长文本翻译的两个真实上限**（阶段 47 追加，已按 DeepSeek 官方参数重做）：**输入上限（上下文窗口）与输出上限是两件事**。以 `deepseek-flash` 为例，上下文 1M token、最大输出 384K token —— 所以"几万字的原文"本身根本不是问题，瓶颈在**输出**（一次能写多少 token）。本项目的处理：分片阈值由设置决定（`Ai.Translation.MaxChunkChars`，默认 12000 字符，0 = 不分片），`finish_reason=length` 时**自动从断点续写**（最多 3 次），续不完会明确提示"译文可能不完整"。默认 12000 字符的意义是"首段结果更快出现、单次失败损失更小"，并不是模型限制；真嫌慢/嫌请求多都可以在设置页调。
+43. **思考模式默认关闭（仅 DeepSeek 系生效）**（阶段 47 追加）：`deepseek-flash` 的思考模式默认开启且 effort=high，翻译前会先写一大段思维链——又慢又贵，而且**思考模式下 `temperature` 无效**。所以设置页新增「思考模式」，默认 `off`；由于 `thinking`/`reasoning_effort` 是 DeepSeek 专有字段，本项目只在"模型名或地址含 deepseek"时才下发（`AiModelSettings.ResolveThinkingMode`，设置键 `Ai.ThinkingMode`，界面在「设置 → AI → 模型」），别的服务商保持 `auto`（不下发），避免它们不认识该参数直接 400。
 44. **ZKB 模块整体未做实机核验**（阶段 53）：主页面 / 击杀流 / 实体统计（6 子页签）/ KB 详情均只完成编译与静态校验（图标名、主题画刷键、占位符替换），**没有在真实账号 + 真实 ZKB 服务上逐页点击**。首次使用请优先验证：① 切到 ZKB 页时首个"击杀流"标签是否正常渲染；② 点"连接"能否连上并收到 KB（`ZKBStreamConfig.json` 里的 `AutoConnect` 控制是否自动连）；③ 搜索一个角色名能否打开实体统计并出数。
 45. **ZKB 设置已收敛为"单一入口"**（阶段 53 起，09-15 完成）：实时流的**全部**设置（自动连接 / 通知 / 通知阈值 / 列表上限 / 列表排序 + 6 组黑白名单）都在**击杀流页的设置弹窗**（`KillStreamSettingView`）里维护；原先"设置 → Zkillboard"子页（`ZKBSettingPage`）维护的是 `ZKBStreamConfig.Types / Systems / Regions / Characters / Corps / Alliances` 这组**没有任何代码读取**的旧字段（详见第 48 条），已连同该子页与 `SettingsPage` 里的分类项一并删除。`SettingsPage.BuildCategories` 留有注释说明"这里为什么没有 ZKB 分类"。
 46. **托盘气泡没有"每条通知"的身份，点击路由是"最后一次 Show 获胜"**（阶段 53 第五轮补，原"通知点击不跳 KB"已修）：Win32 气泡/Win10+ 操作中心 toast 的点击回调（`TrayBalloonTipClicked`）不带"是哪条通知"的信息，因此 `NotificationService.Show` 提供可选 `onClick` **单槽位**——每次 Show 覆盖上一次，点击气泡时（UI 线程）触发。ZKB 击杀通知传入"打开对应 KB详情"（`KbNavigation.OpenKillmail`：导航 ZKB 页 → 页面 Drain 开详情标签 → `Navigation.Activate()` 前置/恢复主窗口）；频道预警的"点击停止报警"仍走全局 `NotificationClicked` 事件（点任何气泡都会顺带停声，无声音时无害）。已知边界：多条通知堆在操作中心时，点旧的那条执行的也是"最新一条"的动作——ZKB 击杀流高频时点开的是最近一次通知对应的 KB。
@@ -6582,6 +6687,7 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
     **（阶段 118 已解除）**：阶段 97 清掉工作区的 Low 完整性标签后，本机 `map`（45）与 `writes`（71）的写盘路径都已通过，
     `all` 也能一次跑完（953 断言 / 退出码 0）。这条限制只在"工作区又被 DSH 沙箱重新打上 Low 标签"时才复现
     （判断方式：`icacls <exe>` 看是否带 `Low Mandatory Level`）。
+    **（阶段 131 现状）**：工作区又被 DSH 沙箱打上 Low 标签 → 本机 `all` 跑不完，须逐个套件跑（见第 69 条）。
 
 65. **角色 ESI 直读七个工具（阶段 117）的成功路径未实机验证**：探针环境没有授权角色（连"未登录任何角色"都是真实分支），
     而真跑会读用户真实的资产/联系人数据，因此只覆盖了"角色不存在 / 无默认角色"两条确定性分支。
@@ -6598,7 +6704,7 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
     ① 只能调用索引里登记的 operationId（模型给不出任意外网地址，网关也不接受 URL）；
     ② 服务端参数（`X-Compatibility-Date` / `X-Tenant` / 条件请求头）由网关忽略，用服务端默认（最新）行为；
     ③ 不做响应缓存与 ETag；`Accept-Language` 之外不暴露其它 header；
-    ④ 默认只取第 1 页，`allPages` 受设置上限（默认 3 页）——整星域订单那种量级仍走市场/倒货页；
+    ④ 默认只取第 1 页，`allPages` 受设置上限（**默认 10 页**，阶段 119 由 3 调高：资产/蓝图这类多页数据在专用工具删除后靠它取全）——整星域订单那种量级仍走市场/倒货页；
     ⑤ ESI 错误配额低于阈值会**主动拒绝调用**（默认 10，可在设置里调；0 = 不检查），这是防封禁的必要代价；
     ⑥ 写操作逐次确认，且可被 `Assistant.Esi.DeniedPaths` 黑名单永久挡住（默认留空，建议按需加 `/characters/*/mail`、`/fleets/`）；
     ⑦ 军团级端点能否成功取决于**角色的军团职位**（403 时文案会说明这一点），与网关无关；
@@ -6619,6 +6725,28 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
      而工作区内的探针进程是 Low 完整性、`%TEMP%` 是 Medium → 写入被 UIPI 拒绝（§9 第 100 条），
      `all` 会在 `map` 段以 `UnauthorizedAccessException` 结束。阶段 131 的全量验证即逐个套件跑完
      （`toolcall` / `engine` / `tools` / `quickroute` / `business` / `writes` / `esi` / `tokens` / `routing` / `manuals` / `ui`）。
+
+70. **AI 助手（阶段 105–132）的边界与未做**：工具面 **46 个产品工具** + ESI 全量网关（197 个操作），
+     协议层覆盖 OpenAI 兼容 / Azure / Anthropic / Gemini，并兼容 DeepSeek 的 DSML 原生工具标记（阶段 120）。
+     - **记忆只存在于单个对话**（阶段 132 定调，**不是待办**）：同一个对话每次请求都带上此前的完整记录
+       （提问 → 工具调用与结果 → 回答；默认开），对话之间**不共享**，也不做跨对话 / 跨角色的长期记忆。
+       预算 `Assistant.MaxContextChars`（默认 **200000** 字符，0 = 不限；上限 400000）：超出时先省略**中间**较早的
+       轮次，**最早一轮（原始目标）与最新一轮优先保留**；最新一轮即使超预算也压缩工具结果后保留
+       （2000 → 800 → 300 → 120 字符）；底栏常态显示「已带 N 轮 · X / Y 字符」（省略时追加 `· 省略 M 轮`）。
+       **不做摘要式压缩**（那要额外一次模型调用，属独立功能）；接本地小窗口模型时手动把预算调小。
+     - **未做（有意）**：**截图/视觉输入**（需视觉模型 + 端点能力标记，用户已确认归待定）、
+       **军团级 ESI 端点**（网关能调，角色无军团职位时仍 403，属权限而非代码缺口）、
+       **业务聚合下沉**（资产按地点/容器分组、蓝图取最优 ME-TE、日历只看未来 N 天刻意留在页面；
+       要加应给网关加"聚合参数"，而不是恢复端点专用工具）、按需声明的**关键词表为手工维护**
+       （未覆盖的说法安全回退全量，只损失省钱、不损失能力）。
+     - **说明书（阶段 131）**：`manual_search` / `manual_read` 只读、正文只进工具结果；只有 zh-CN 内容
+       （英文界面回落 zh-CN 并在窗口顶部提示，`en-US` 留待 `MANUAL_DESIGN.md` 的 M5）；手册窗口左侧无章节树。
+     - **验证与数据边界**：探针 12 套（阶段 132 逐套件实跑 **981 条 PASS**：engine 103 / ui 93 / tools 458 /
+       toolcall 124 / tokens 9 / routing 23 / manuals 58 / quickroute 27 / writes 71 / business 15；
+       `esi` 163 与 `map` 45 本轮未重跑——改动不涉及它们，见第 69 条的环境限制）；
+       真实模型服务商仍未实测（首次接入先用「设置 → AI → 模型」的「测试连接」）；
+       对话历史 `Configs/AiAssistantHistory.json` 与 API Key（`Ai.ApiKey`）均为**本地明文**，
+       历史里现在还会存下工具参数与结果（单条 ≤2000 字符）。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -6643,6 +6771,8 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
 - ~~ZKB 页本身仍是导航占位（工作区 ZKB 卡的"ZKB"按钮跳到该占位页）~~ → **阶段 53 已完成**：ZKB 主页面、击杀流、实体统计（6 子页签）、KB 详情全部落地，工作区卡片改为直接打开该角色的实体统计标签。
 - 软件更新页"安装"仍交外部 Updater。
 - **预览浮窗不跟随源窗口实时改变宽高比**（阶段 44）：窗口尺寸被锁定为游戏客户区比例，但只在启动/缩放/统一尺寸/恢复位置/布局变化时校正；游戏侧切全屏或改分辨率后，要等下一次这类时机才跟着变（未监听源窗口 `WM_SIZE`）。
+- **AI 助手**（阶段 105–132）的迁移与设计范围**已全部完成**（含 v1.5 P1/P2、ESI 全量网关、内置说明书接入与单对话记忆）；
+  剩余可选项与边界见第 70 条，工具/文件的当前清单见 §10「AI 助手模块」。
 
 ### 环境/协作注意
 - **代码调整不需要截图验证**：改动完成、构建通过后直接说明结果即可，由使用者自行查看界面效果。
@@ -7594,23 +7724,35 @@ Services/Home/HomeFeatureCatalog.cs                  + eve-settings-sync 功能�
 Resources/Languages/zh-CN.xaml, en-US.xaml           + 106 键（Nav/Home 2 + 页面与对话框 104）；阶段 104 净 +1（新增 2、删 1 个已无引用的 ResolvingNames）
 ```
 
-### AI 助手模块（阶段 105 起；阶段 118 新增 ESI 全量网关）
+### AI 助手模块（阶段 105 起；阶段 118 新增 ESI 全量网关；阶段 131 接入内置说明书）
 ```
 Services/Assistant/ITool.cs                 工具契约（Name / DisplayNameKey / Description / Parameters /
                                             RequiresConfirmation / IsAction）+ **IPendingSummary**（阶段 118：
                                             写工具自报"确认卡片"的人话摘要，默认退回截断的参数 JSON）
-Services/Assistant/ToolRegistry.cs          静态注册表（**51 个工具**）+ 给模型的 ChatTool 声明
+Services/Assistant/ToolRegistry.cs          **46 个产品工具**的静态注册表 + 给模型的 ChatTool 声明；另含 Product /
+                                            CategoryOf / CoreToolNames / EnabledSchemas（**设置页分组与按需声明共用这一份定义**）
+Services/Assistant/ToolRouter.cs            按需声明（阶段 123，纯函数）：意图关键词 → 固定套餐（≤2 组）+ 核心常驻 +
+                                            会话/轮内粘性 → 按字典序输出（缓存契约）；看不出意图回退全量
 Services/Assistant/AiAssistantEngine.cs     工具调用循环（工具轮非流式 → 串行执行 → 回填 → 最终回答流式）、
-                                            确认挂起 / ResumeAsync、结果 4000 字符截断、内置系统提示词（12 条规则，
-                                            含 esi_* 三步用法与"专用工具优先"）
-Services/Assistant/AssistantContext.cs      对话级上下文（历史问答 + ToolContext + 可选端点注入，探针用）
+                                            确认挂起 / ResumeAsync、结果 4000 字符截断、内置系统提示词（**规则 1–16**，
+                                            esi_* 三步用法、专用工具优先、按需声明、ID 展示值还原（把「名称 (id)」还原成数字）、说明书检索与引用）
+Services/Assistant/AssistantContext.cs      一次 Send 的上下文（**重建好的完整消息序列**：历史问答 + 工具往返 +
+                                            ToolContext + 可选端点注入，探针用）
 Services/Assistant/ToolContext.cs           工具执行上下文（当前角色 / 全部角色 / UI 线程归位 / 进度回调）
 Services/Assistant/ToolArgs.cs / ToolResult.cs / ToolNameResolver.cs / CharacterToolHelper.cs
-Services/Assistant/AiAssistantHistoryService.cs  Configs/AiAssistantHistory.json（按对话 upsert，40×200）
-Services/Assistant/AiAssistantSettingService.cs  Assistant.* 设置（含阶段 118 的 Assistant.Esi.* 六项）
-Services/Assistant/AssistantHost.cs         共享 VM 宿主（页面 / 弹窗 / 全局快捷键取同一个实例）
-Services/Assistant/Tools/*.cs               44 个工具（通用 12 + 星图 7 + 商业 4 + v1.5 P1 九 + P2 五 + 写操作三 +
-                                            阶段 118 的 esi_search / esi_describe / esi_read / esi_write；
+Services/Assistant/AssistantContextBuilder.cs  **单对话记忆的组装**（阶段 132，纯函数）：把此前轮次重建成
+                                            `user(提问)` → `assistant(tool_calls)` + `tool(结果)` → `assistant(回答)`；
+                                            字符预算内**最近的优先**、**钉住最早一轮**（`HeadTurns=1`，装不下就让位给最近的数据）、
+                                            最新一轮超预算时逐级压缩工具结果；
+                                            落盘上限常量 `MaxStoredResultChars=2000` / `MaxStoredArgumentsChars=600`
+Services/Assistant/AiAssistantHistoryService.cs  Configs/AiAssistantHistory.json（按对话 upsert，40×200；步骤含
+                                            `CallId`/`Round`/参数/结果全文，可重放工具往返；`ContextDefaultV2` 迁移标记）
+Services/Assistant/AiAssistantSettingService.cs  Assistant.* **16 个键**（行为 5 + 上下文预算 1 + 在主窗口显示 1 + `Tools.Disabled`/`Tools.AutoRoute` + `Esi.*` 七项）
+Services/Assistant/AssistantHost.cs         共享 VM 宿主（页面 / 独立窗口 / 全局快捷键取同一个实例）
+Services/Assistant/AssistantEntryRouter.cs  入口分发（阶段 128）：`ShowInMainWindow=false` 时，页脚常驻项 / 主页 banner /
+                                            磁贴 / 快捷路由四处统一改开独立窗口
+Services/Assistant/Tools/*.cs               **46 个产品工具**（通用 12 + 星图 7 + 商业 4 + v1.5 P1 九 + P2 五 + 写操作三 +
+                                            阶段 118 的 esi_search / esi_describe / esi_read / esi_write + 阶段 131 的 manual_search / manual_read（后两者**核心常驻**）；
                                             阶段 117 的 7 个角色 ESI 直读已在阶段 119 删除，能力归网关）
 Services/Assistant/Esi/EsiOperationIndex.cs  ESI 操作索引（197 个操作）：加载 / 检索 / Find 容错 / scope 判定（纯读，便于离线断言）
 Services/Assistant/Esi/EsiGateway.cs         ESI 通用网关：URL 与参数校验、Bearer 鉴权、语言头、分页、错误归一化
@@ -7621,15 +7763,27 @@ Services/Assistant/Esi/EsiResponseEnricher.cs 响应的 ID → 名称富化（�
 Resources/Esi/EsiOperations.json             索引数据（102 KB；脚本生成，csproj 以 Content 复制到输出目录）
 tools/esi/gen_esi_index.py                   索引生成脚本（官方 OpenAPI → 索引；自带自检，支持 --spec 离线 / --check 只自检）
 ViewModels/Assistant/AiAssistantViewModel.cs / AiChatSessionViewModel.cs / AiChatTurnViewModel.cs
-Views/Pages/AiAssistantPage.xaml(.cs)        助手页（导航项 Nav.Assistant，图标 Sparkle24）
-Views/UserControls/AiAssistantChatView.xaml(.cs) / AssistantPopup.cs    对话视图 + 弹窗宿主
-Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  设置 → AI 助手（行为 + ESI 全量访问 + 系统提示词）
+Views/Pages/AiAssistantPage.xaml(.cs)        助手页（导航项 Nav.Assistant，图标 Sparkle24；阶段 126 起是**页脚常驻入口**）
+Views/UserControls/AiAssistantChatView.xaml(.cs)      对话视图（工具步骤区 / Markdown 回答 / 确认卡片 / meta + 复制回答）
+Views/Windows/AssistantWindow.cs            独立助手窗口（阶段 128 取代原 AssistantPopup：Show/Toggle/Close/IsOpen，与页面/弹窗共用同一个 VM）
+Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  设置 → AI（钻取式二级/三级：模型 / 翻译 / 行为 / ESI 全量访问 / 工具开关；阶段 124 分类改名「AI」+ 钻取式，阶段 125 拆「模型 / 翻译」并重整存储）
+Views/UserControls/Settings/AiModelSettingView.xaml(.cs)       模型节：协议 / 地址 / Key / 模型 / 生成参数 / 测试连接（`Ai.*`）
+Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs) 翻译节：术语库 / 结果缓存 / 分片 / 翻译提示词（`Ai.Translation.*`）
+Views/UserControls/Settings/AiBehaviorSettingView.xaml(.cs)    行为节：轮数 / 默认角色 / 写确认 / 在主窗口显示 / 上下文预算 / 快捷键 / 助手提示词
+Views/UserControls/Settings/AiEsiSettingView.xaml(.cs)         ESI 节：网关 / 允许写 / ID 富化 / 页数 / 结果上限 / 错误配额 / 黑名单
+Views/UserControls/Settings/AiToolsSettingView.xaml(.cs)       工具开关节：按需声明 + 46 个工具分组开关 + 全开/全关 + 计数
 probe/AssistantProbe/                        离线探针（toolcall / engine / tools / quickroute / map / business /
-                                             writes / ui / esi / tokens / routing，11 套共 1071 断言，`all` 一次跑完）
+                                             writes / ui / esi / tokens / routing / manuals，**12 套**（阶段 132 逐套件实跑
+                                             **981 条 PASS**：engine 103 / ui 93 / tools 458 / toolcall 124 / tokens 9 / routing 23 /
+                                             manuals 58 / quickroute 27 / writes 71 / business 15；`esi` 163 与 `map` 45 未重跑，见 §8 第 69 条）
 ```
-- 模型端点**复用「设置 → AI 翻译」**的端点（协议 / 地址 / Key / 模型），助手只放自己的行为参数。
+- 模型端点与 Key 在**「设置 → AI → 模型」**（`Ai.Protocol/BaseUrl/ApiKey/Model/ApiVersion/Temperature/MaxTokens/TimeoutSeconds/Stream/ThinkingMode`），翻译参数在 `Ai.Translation.*`，助手行为在 `Assistant.*`；**旧 `TranslationPage.Ai.*` 键已不再读写**（阶段 121 把端点并入助手 → 阶段 124 分类改名「AI」并改钻取式 → 阶段 125 拆成模型/翻译两节并重整存储）。
 - 每次工具调用都会记一条 INFO（`AI 助手 · 工具 <name> 成功 · 1.23s · <参数摘要>`），排障先看它。
 - ESI 网关的"元数据从哪来、为什么走 HTTP、护栏有哪些"见阶段 118 与 `AI_ASSISTANT_DESIGN.md` §18。
+- 工具声明是**每次工具轮的固定前缀**（实测 24,314 字符 ≈ 0.9–1.2 万 token）：按字典序、描述里不放易变内容，这是**缓存契约**；默认按需声明下典型单套餐 ≈ 10.4k 字符（45%）。预算与文体由 `tokens` / `routing` 套件守住（阶段 122/123）。
+- 写操作（`esi_write` 与三个本地写工具）一律挂起等用户确认；`Assistant.ConfirmExpensive=false` 时**改为直接拒绝并说明**，不等于免确认。
+- **未做**：截图/视觉输入（需视觉模型 + 端点能力标记，设计 §10.4）、军团级 ESI 端点（网关能调，角色无军团职位时仍 403）、业务聚合下沉（资产按地点分组 / 蓝图取最优 ME-TE / 日历只看未来 N 天刻意留在页面）、按需声明的关键词表为手工维护（未覆盖的说法安全回退全量，只损失省钱）。
+- **记忆只在单个对话**（阶段 132 定调，不是待办）：同对话默认带完整历史（含工具往返），跨对话不共享、不做长期记忆；超出 `Assistant.MaxContextChars`（默认 **200000** 字符，0 = 不限）时先省略中间较早的轮次，**最早一轮与最新一轮优先保留**，最新一轮压缩工具结果后保留；底栏常态显示用量；**不做摘要式压缩**（那要额外的模型调用，属独立功能）。
 
 ### 内置说明书模块（阶段 131：从 PDF 换成"人机共用"的 Markdown 手册）
 ```
@@ -7645,6 +7799,9 @@ probe/AssistantProbe/ManualSuite.cs     manuals 套件（58 断言：结构 / �
 ```
 - 载体是**输出目录里的 md**（可热改、可"打开文件位置"），不是嵌入式资源；语言目录缺失时回退 zh-CN 并在窗口顶部提示。
 - 手册正文**只进工具结果**，不进系统提示词（token 契约）——这是本模块最重要的一条约束，见 §8 第 67 条。
+- 入口矩阵（设计 §5.2）：主页品牌条「手册」、**F1**（`IManualAware` 先问页面自己 → 页面类型映射 → 回落「快速上手」）、导航项右键、设置分类行的问号、四个工具窗各自 F1、关于窗「使用手册」、正文内链与 AI 回答里的 `manual://<id>#<slug>` 链接。
+- AI 接线：`manual_search` / `manual_read` 是**核心常驻**（任何套餐路由都声明）；系统提示词规则 14–16（用法问题先查手册、引用给出处、手册数字只是示例）；工具失败时在结果尾部回填 `[说明书参考: manual://<id>#errors]`（只在失败时付费）。
+- 未做：`en-US` 内容（约定 M5；当前英文界面回落 zh-CN 并在窗口顶部提示 `Manual.FallbackToZh`）、左侧章节树 / 按导航分组折叠、助手页「功能说明」按钮（设计标注为可选）。
 
 ### 主窗口
 ```
@@ -7663,7 +7820,8 @@ Services/Translation/TranslationLanguages.cs    语言代码表（auto + 中英�
 Services/Translation/TranslationLanguageHelper.cs  按正文脚本判定源语言 / 方向解析 / 语言代码→本地化键
 Services/Translation/LocalDbTranslationProvider.cs  本地数据库源（自动方向，查不到再试另一侧）
 Services/Translation/TranslationService.cs     已注册翻译源 + 按 Key 取源（接入在线翻译只需在此多注册一个）
-Services/Settings/TranslationSettingService.cs     翻译设置（AI/本地各一套 From-To + AI 全套参数，共用 settings.json）
+Services/Settings/TranslationSettingService.cs     翻译设置（AI/本地各一套 From-To + 翻译专属参数 `Ai.Translation.*`；模型端点参数已迁至 `AiModelSettingService`，共用 settings.json）
+Services/Settings/AiModelSettingService.cs          模型端点与生成参数（`Ai.*` 10 个键）读写 + `Endpoint`；助手与翻译共用
 ViewModels/Translation/LocalTranslationViewModel.cs  「本地词库」页 VM：输入即查（350ms 防抖）/方向/结果/复制/语言切换重建
 ViewModels/Translation/AiChatTranslationViewModel.cs 「AI 翻译」页 VM：配置门控 / 多对话 / 对话记录 / 对话级上下文 / 并发翻译与逐条取消
 ViewModels/Translation/AiChatSessionViewModel.cs     一个翻译对话（标题/预览/记录集合/新建与清空/**对话级上下文开关**）
@@ -7685,14 +7843,15 @@ Services/Translation/Llm/AnthropicChatProtocol.cs   Anthropic Messages（顶层 
 Services/Translation/Llm/GeminiChatProtocol.cs      Google Gemini（systemInstruction / contents / alt=sse）
 Services/Translation/Llm/ChatProtocolFactory.cs     协议注册表（openai / azure-openai / anthropic / gemini）
 Services/Translation/Llm/ThinkingModes.cs           思考模式取值（auto/off/low/high；DeepSeek 专有，默认关闭）
+Services/Translation/Llm/AiModelSettings.cs          模型与生成参数模型（`Ai.*`；`ResolveThinkingMode` 的 DeepSeek 安全阀在此）
 Services/Translation/Llm/ChatClient.cs              HTTP 调用：重试退避、每请求超时、流式读取、错误归一化、测试连接
 Services/Translation/Llm/DeepSeekDsmlParser.cs      DeepSeek 原生工具调用标记（DSML）的兼容解析（阶段 120）：把漏进
                                                     content 的 DSML 转成标准 ChatToolCall，并保证标记不进正文
 Services/Translation/GlossaryService.cs             术语库：抽取+索引+命中（英文词起点子串 / 中文 CJK 滑窗）+打分去重+注入块
 Services/Translation/AiTranslationProvider.cs       语义层：提示词+术语注入+精确短路+缓存+清理+术语后校验
 Services/Translation/TranslationCache.cs            结果缓存（一键一文件，键含术语库签名与提示词）
-Services/Translation/AiTranslationSettings.cs       AI 设置模型（协议/地址/Key/模型/温度/token/超时/术语/上下文条数/流式/缓存/提示词）
-Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs)  模型端点 + 术语库 + 生成与缓存（阶段 121 从「设置 → AI 翻译」页抽成 UserControl，嵌在 AI 助手页里；含测试连接 / 重新载入术语库 / 清空缓存）
+Services/Translation/AiTranslationSettings.cs       AI 翻译专属设置（术语库 / 结果缓存 / 新词候选 / 单次请求最大字符数 / 翻译系统提示词 = `Ai.Translation.*`；模型参数见 `Llm/AiModelSettings.cs`）
+Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs)  术语库 + 结果缓存 + 单次请求最大字符数 + 翻译系统提示词（阶段 121 从「设置 → AI 翻译」页抽成 UserControl；阶段 125 起是「设置 → AI → 翻译」节，模型端点与「测试连接」在 `AiModelSettingView`）
 Services/Translation/ChatMarkupProtector.cs         聊天标记预清洗（<br>→换行、其余 <...> 标签删除；ToPlainText/ToSingleLine）
 Services/Translation/ChatTranslationEngine.cs        频道翻译引擎：单条队列串行、预清洗、跳过规则、失败去重（可注入替身）
 Services/Settings/ChannelTranslationSettingService.cs 每角色的频道翻译设置（Configs/ChannelTranslationSettings.json，与 WinUI 同格式）

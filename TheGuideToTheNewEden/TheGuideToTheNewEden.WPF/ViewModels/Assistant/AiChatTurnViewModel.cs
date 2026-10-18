@@ -243,10 +243,28 @@ public sealed class AiChatTurnViewModel : INotifyPropertyChanged
     public void AddStep(ToolStep step)
     {
         Steps.Add(new AiToolStepViewModel(step));
+
+        // 阶段 132：步骤**同时**写进落盘模型（此前只进界面，历史文件里一个步骤都没有——
+        // 于是重新打开应用后既看不到旧步骤，也没法把工具往返重放给模型）。
+        Model.Steps.Add(new AiAssistantStep
+        {
+            CallId = step.CallId ?? string.Empty,
+            Round = step.Round,
+            ToolName = step.Name,
+            ParamSummary = step.ParamSummary,
+            ArgumentsJson = Truncate(step.ArgumentsJson, AssistantContextBuilder.MaxStoredArgumentsChars),
+            ResultSummary = step.ResultSummary,
+            ResultText = Truncate(step.ResultText, AssistantContextBuilder.MaxStoredResultChars),
+            Success = step.Success,
+        });
+
         ProgressText = string.Empty;
         OnPropertyChanged(nameof(HasSteps));
         NotifyState();
     }
+
+    private static string Truncate(string? text, int maxLength)
+        => string.IsNullOrEmpty(text) || text.Length <= maxLength ? text ?? string.Empty : text[..maxLength];
 
     private string _progressText = string.Empty;
 

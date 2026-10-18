@@ -2268,7 +2268,7 @@
     <sys:String x:Key="Assistant_Chat_CopySuccess">已复制</sys:String>
     <sys:String x:Key="Assistant_Chat_EmptyTip">用自然语言提问，助手会调用软件功能查真实数据。&#10;例如「巨神兵级在吉他的价格」「吉他到多美怎么走」「帮我分析倒货」</sys:String>
     <sys:String x:Key="Assistant_Chat_UseContext">带上上下文</sys:String>
-    <sys:String x:Key="Assistant_Chat_UseContext_Tip">打开后，本对话每次提问都会带上此前成功的问答（不限条数）</sys:String>
+    <sys:String x:Key="Assistant_Chat_UseContext_Tip">打开后，本对话每次提问都会带上此前的完整记录（含工具调用与结果）；超出「上下文预算」时先省略中间较早的轮次，最早一轮与最新一轮优先保留。记忆只存在于单个对话。</sys:String>
     <sys:String x:Key="Assistant_Chat_Input">输入</sys:String>
     <sys:String x:Key="Assistant_Chat_Input_Tip">描述你的需求…（回车发送，Shift+回车换行）</sys:String>
     <sys:String x:Key="Assistant_Chat_Input_Hint">回车发送 · Shift+回车换行</sys:String>
@@ -2278,8 +2278,11 @@
     <sys:String x:Key="Assistant_Chat_Untitled">新对话</sys:String>
     <sys:String x:Key="Assistant_Chat_EmptySession">（空对话）</sys:String>
     <sys:String x:Key="Assistant_Chat_NewSession">新对话</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextOn">已开启：每次带上此前 {0} 条问答</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOn">已开启：每次带上此前 {0} 条问答（含工具调用）</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextOff">未开启：每次只回答当前这一条</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsage">已带 {0} 轮 · {1} / {2} 字符</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">已带 {0} 轮 · {1} / {2} 字符 · 省略 {3} 轮</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">已带 {0} 轮 · {1} 字符（不限）</sys:String>
     <sys:String x:Key="Assistant_Chat_PendingCount">正在处理 {0} 条…</sys:String>
     <sys:String x:Key="Assistant_Chat_NoInput">请输入内容</sys:String>
     <sys:String x:Key="Assistant_Chat_AnswerEmpty">没有返回内容</sys:String>
@@ -2332,7 +2335,7 @@
     <sys:String x:Key="AssistantSettingPage_Section_Behavior">工具轮数 / 默认角色 / 写操作确认 / 快捷键 / 系统提示词</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Esi">把 ESI 的 197 个操作开放给助手（含写操作确认）</sys:String>
     <sys:String x:Key="AssistantSettingPage_Section_Tools">按需声明 + 逐个启用/停用 44 个工具</sys:String>
-    <sys:String x:Key="AssistantSettingPage_Restore_Desc">只重置助手参数（轮数/提示词/确认/默认角色/快捷键/ESI/工具开关/按需声明/显示位置），不动模型端点与 API Key。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Restore_Desc">只重置助手参数（轮数/提示词/确认/默认角色/快捷键/上下文预算/ESI/工具开关/按需声明/显示位置），不动模型端点与 API Key。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Model">模型</sys:String>
     <sys:String x:Key="AssistantSettingPage_Translate">翻译</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools">工具开关</sys:String>
@@ -2357,6 +2360,8 @@
     <sys:String x:Key="AssistantSettingPage_Confirm">写操作需要确认</sys:String>
     <sys:String x:Key="AssistantSettingPage_ShowInMainWindow">在主窗口中显示 AI</sys:String>
     <sys:String x:Key="AssistantSettingPage_ShowInMainWindow_Desc">不勾（默认）时，AI 的所有入口都用独立窗口打开，主窗口保持你正在看的页面；勾上则把助手页放在主窗口里。快捷键 Alt+Q 始终弹独立窗口。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextChars">上下文预算（字符）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextChars_Desc">同一个对话每次请求都会带上此前的完整记录（含工具调用与结果）；超出预算时从中间最早的轮次开始省略，最早一轮与最新一轮优先保留（最新一轮即使超预算也会压缩工具结果后保留）。默认 200000 字符，0 = 不限制。记忆只存在于单个对话，不同对话之间不共享。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Confirm_Desc">关闭后不是免确认：助手会直接拒绝写操作并说明原因。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey">全局快捷键</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">在任意程序里按下即可弹出助手窗口（再按一次收起）。默认留空 = 不启用；想开启就填一个组合键，格式如 Alt+Q / Ctrl+Alt+A。</sys:String>

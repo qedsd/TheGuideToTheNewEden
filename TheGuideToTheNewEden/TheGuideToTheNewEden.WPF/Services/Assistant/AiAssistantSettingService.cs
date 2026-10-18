@@ -26,6 +26,7 @@ public static class AiAssistantSettingService
     private const string DisabledToolsKey = "Assistant.Tools.Disabled";
     private const string AutoRouteKey = "Assistant.Tools.AutoRoute";
     private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
+    private const string MaxContextCharsKey = "Assistant.MaxContextChars";
 
     /// <summary>单次请求的最大工具轮数（防模型连环调工具烧 token）。</summary>
     public const int DefaultMaxToolRounds = 8;
@@ -58,6 +59,20 @@ public static class AiAssistantSettingService
     /// <summary>默认**不**把 AI 显示在主窗口里（阶段 128 用户要求）：所有入口都开独立窗口。</summary>
     public const bool DefaultShowInMainWindow = false;
 
+    /// <summary>
+    /// 对话上下文的默认字符预算（阶段 132）：同一个对话每次请求都带上此前的完整历史（含工具往返），
+    /// 超出预算时**从中间最旧的轮次开始整轮省略**（最早一轮与最新一轮优先保留）。
+    /// <para>
+    /// 200,000 字符 ≈ 5–8 万 token（按本项目一贯的 2.5–4 字符/token 口径）：对 1M 窗口的云端模型只占 5–8%，
+    /// 而 DeepSeek 的前缀缓存命中价是未命中的 1/50，历史带全通常比"让模型重查一次"更便宜。
+    /// 本地小窗口模型请按窗口自行调小（0 = 不限制）。
+    /// </para>
+    /// </summary>
+    public const int DefaultMaxContextChars = 200000;
+
+    /// <summary>上下文预算的上限（设置页 NumberBox 同值；0 = 不限制）。</summary>
+    public const int MaxContextCharsLimit = 400000;
+
     /// <summary>单次请求的最大工具轮数（1–30）。</summary>
     public static int MaxToolRounds { get; private set; } = DefaultMaxToolRounds;
 
@@ -75,6 +90,12 @@ public static class AiAssistantSettingService
 
     /// <summary>默认角色名（空 = 第一个角色）。</summary>
     public static string DefaultCharacter { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// 对话上下文的字符预算（阶段 132；0 = 不限制）。
+    /// <para>预算按"重建出来的消息内容 + 工具参数"估算，超出时最旧的轮次整轮省略（见 <see cref="AssistantContextBuilder"/>）。</para>
+    /// </summary>
+    public static int MaxContextChars { get; private set; } = DefaultMaxContextChars;
 
     // ------------------------------------------------------------------
     //  ESI 通用网关（esi_search / esi_describe / esi_read / esi_write，阶段 118）
@@ -178,6 +199,9 @@ public static class AiAssistantSettingService
 
         DefaultCharacter = SettingsService.GetValue(DefaultCharacterKey) ?? string.Empty;
 
+        MaxContextChars = Math.Clamp(
+            SettingsService.GetInt(MaxContextCharsKey, DefaultMaxContextChars), 0, MaxContextCharsLimit);
+
         EsiEnabled = SettingsService.GetBool(EsiEnabledKey, true);
         EsiAllowWrites = SettingsService.GetBool(EsiWritesKey, true);
         EsiEnrichNames = SettingsService.GetBool(EsiEnrichKey, true);
@@ -229,24 +253,33 @@ public static class AiAssistantSettingService
     }
 
     /// <summary>保存全部助手设置（设置页统一提交）。</summary>
-    public static void Save(int maxToolRounds, string? systemPrompt, bool confirmExpensive, string? hotkey, string? defaultCharacter)
+    public static void Save(
+        int maxToolRounds,
+        string? systemPrompt,
+        bool confirmExpensive,
+        string? hotkey,
+        string? defaultCharacter,
+        int maxContextChars = DefaultMaxContextChars)
     {
         MaxToolRounds = Math.Clamp(maxToolRounds, 1, 30);
         SystemPrompt = (systemPrompt ?? string.Empty).Trim();
         ConfirmExpensive = confirmExpensive;
         Hotkey = (hotkey ?? string.Empty).Trim();
         DefaultCharacter = (defaultCharacter ?? string.Empty).Trim();
+        MaxContextChars = Math.Clamp(maxContextChars, 0, MaxContextCharsLimit);
 
         SettingsService.SetInt(MaxToolRoundsKey, MaxToolRounds);
         SettingsService.SetValue(SystemPromptKey, SystemPrompt);
         SettingsService.SetBool(ConfirmExpensiveKey, ConfirmExpensive);
         SettingsService.SetValue(HotkeyKey, Hotkey);
         SettingsService.SetValue(DefaultCharacterKey, DefaultCharacter);
+        SettingsService.SetInt(MaxContextCharsKey, MaxContextChars);
         SettingsService.Save();
     }
 
     /// <summary>
-    /// 恢复默认值（提示词 / 工具轮数 / 确认开关 / 默认角色 / 快捷键 / ESI 网关 / 工具开关 / 按需声明 / 显示位置）。
+    /// 恢复默认值（提示词 / 工具轮数 / 确认开关 / 默认角色 / 快捷键 / 上下文预算 / ESI 网关 / 工具开关 /
+    /// 按需声明 / 显示位置）。
     /// <para>
     /// 阶段 130 起**快捷键也一并复位**（回到 <see cref="DefaultHotkey"/> = 空 = 不启用）——
     /// 既然"默认不启用"是默认值，那"恢复默认"就该把它恢复成不启用（早先的"保持快捷键不变"已不适用）。
@@ -254,7 +287,7 @@ public static class AiAssistantSettingService
     /// </summary>
     public static void RestoreDefaults()
     {
-        Save(DefaultMaxToolRounds, string.Empty, true, DefaultHotkey, string.Empty);
+        Save(DefaultMaxToolRounds, string.Empty, true, DefaultHotkey, string.Empty, DefaultMaxContextChars);
         SaveEsi(true, true, true, DefaultEsiMaxPages, DefaultEsiMaxResultChars, DefaultEsiErrorLimitFloor, string.Empty);
         SaveDisabledTools([]);
         SaveRouting(true);

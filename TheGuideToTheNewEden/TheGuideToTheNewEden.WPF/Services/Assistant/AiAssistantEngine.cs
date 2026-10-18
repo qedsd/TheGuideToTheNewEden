@@ -227,23 +227,31 @@ public sealed class AiAssistantEngine
                     var tool = ToolRegistry.FindLoose(action.ToolName);
                     if (tool is null)
                     {
-                        _messages.Add(ChatMessage.Tool(action.Id, $"未知工具 {action.ToolName}。", action.ToolName));
+                        var message = $"未知工具 {action.ToolName}。";
+                        ReportStep(ToolRounds, action.Id, action.ToolName, action.ArgumentsJson, action.ParamSummary, message, false, 0);
+                        _messages.Add(ChatMessage.Tool(action.Id, message, action.ToolName));
                         continue;
                     }
 
                     if (!ToolRegistry.IsEnabled(tool.Name))
                     {
                         Core.Log.Info($"AI 助手 · 工具 {tool.Name}：挂起期间被用户关闭，已取消执行");
-                        _messages.Add(ChatMessage.Tool(action.Id, $"工具 {tool.Name} 已被关闭，本次操作未执行。", tool.Name));
+                        var message = $"工具 {tool.Name} 已被关闭，本次操作未执行。";
+                        ReportStep(ToolRounds, action.Id, tool.Name, action.ArgumentsJson, action.ParamSummary, message, false, 0);
+                        _messages.Add(ChatMessage.Tool(action.Id, message, tool.Name));
                         continue;
                     }
 
-                    await ExecuteOneAsync(tool, action.Id, action.ArgumentsJson, ct);
+                    await ExecuteOneAsync(tool, action.Id, action.ArgumentsJson, ToolRounds, ct);
                     _usedToolNames.Add(tool.Name);
                 }
                 else
                 {
-                    _messages.Add(ChatMessage.Tool(action.Id, "用户未确认该操作，已跳过。", action.ToolName));
+                    // 拒绝也要记一条步骤：重建历史时"assistant(tool_calls) 后面必须有 tool 结果"，
+                    // 否则重放给模型的消息序列是非法的（多数服务端会直接 400）。
+                    var message = "用户未确认该操作，已跳过。";
+                    ReportStep(ToolRounds, action.Id, action.ToolName, action.ArgumentsJson, action.ParamSummary, message, false, 0);
+                    _messages.Add(ChatMessage.Tool(action.Id, message, action.ToolName));
                 }
             }
 
@@ -254,13 +262,12 @@ public sealed class AiAssistantEngine
         internal async Task<Turn> RunAsync(string userText, CancellationToken ct)
         {
             _userText = userText;
+
+            // 阶段 132：上下文是**重建好的完整消息序列**（含此前的工具往返，见 AssistantContextBuilder），
+            // 不是"问 / 答"文本对——模型能直接引用此前工具返回的原始数据。
             if (_ctx.Context is { Count: > 0 })
             {
-                foreach (var pair in _ctx.Context)
-                {
-                    _messages.Add(ChatMessage.User(pair.Question));
-                    _messages.Add(ChatMessage.Assistant(pair.Answer));
-                }
+                _messages.AddRange(_ctx.Context);
             }
 
             _messages.Add(ChatMessage.User(userText));
@@ -369,7 +376,11 @@ public sealed class AiAssistantEngine
                     if (tool is null)
                     {
                         Core.Log.Info($"AI 助手 · 工具 {call.Name}：模型请求了未注册的工具名，已忽略并提示模型");
-                        _messages.Add(ChatMessage.Tool(call.Id, $"未知工具 {call.Name}，请改用已提供的工具。", call.Name));
+                        var message = $"未知工具 {call.Name}，请改用已提供的工具。";
+                        // 未注册的工具也记一条步骤：它同样是一次 assistant(tool_calls) + tool 往返，
+                        // 重建历史时缺了它就会留下"悬空的 tool_calls"。
+                        ReportStep(ToolRounds, call.Id, call.Name, call.ArgumentsJson, "未注册的工具名", message, false, 0);
+                        _messages.Add(ChatMessage.Tool(call.Id, message, call.Name));
                         continue;
                     }
 
@@ -377,9 +388,9 @@ public sealed class AiAssistantEngine
                     if (!ToolRegistry.IsEnabled(tool.Name))
                     {
                         Core.Log.Info($"AI 助手 · 工具 {tool.Name}：已被用户关闭，拒绝执行");
-                        _messages.Add(ChatMessage.Tool(call.Id,
-                            $"工具 {tool.Name} 已被用户在设置里关闭，无法使用；请改用手头其它工具，或直接说明这一点。",
-                            tool.Name));
+                        var message = $"工具 {tool.Name} 已被用户在设置里关闭，无法使用；请改用手头其它工具，或直接说明这一点。";
+                        ReportStep(ToolRounds, call.Id, tool.Name, call.ArgumentsJson, "已被用户关闭", message, false, 0);
+                        _messages.Add(ChatMessage.Tool(call.Id, message, tool.Name));
                         continue;
                     }
 
@@ -394,7 +405,7 @@ public sealed class AiAssistantEngine
                         continue;
                     }
 
-                    await ExecuteOneAsync(tool, call.Id, call.ArgumentsJson, ct);
+                    await ExecuteOneAsync(tool, call.Id, call.ArgumentsJson, ToolRounds, ct);
                     _usedToolNames.Add(tool.Name);   // 轮内粘性：下一轮继续声明它
                 }
 
@@ -406,7 +417,7 @@ public sealed class AiAssistantEngine
             }
         }
 
-        private async Task ExecuteOneAsync(ITool tool, string callId, string argumentsJson, CancellationToken ct)
+        private async Task ExecuteOneAsync(ITool tool, string callId, string argumentsJson, int round, CancellationToken ct)
         {
             var args = ParseArgs(argumentsJson);
 
@@ -418,17 +429,6 @@ public sealed class AiAssistantEngine
                 var paramSummary = !string.IsNullOrWhiteSpace(result.ParamSummary)
                     ? result.ParamSummary
                     : DescribeArgs(argumentsJson);
-                var step = new ToolStep(tool.Name, paramSummary, ToolArgs.Truncate(result.Text, 160), true, elapsed);
-                _steps.Add(step);
-                _onStep?.Invoke(step);
-
-                // 每次工具调用留一条 INFO 痕迹：出问题时日志里能直接看到"调了什么、多久、成没成"
-                Core.Log.Info($"AI 助手 · 工具 {tool.Name} 成功 · {elapsed:F2}s · {paramSummary}");
-
-                if (result.NavigateAction is not null)
-                {
-                    _ctx.Tools.OnUiThread(result.NavigateAction);
-                }
 
                 // 成功返回里也可能是"失败语义"（工具层把错误写成文本而不是抛异常，如"需要授权"）：
                 // 这时同样回填一行「相关手册」，让模型知道去哪儿查处置步骤（阶段 131，约 30 字符/次）。
@@ -439,15 +439,25 @@ public sealed class AiAssistantEngine
                     toolText = Services.Manual.ManualToolMap.WithManualHint(tool.Name, toolText);
                 }
 
-                _messages.Add(ChatMessage.Tool(callId, ToolArgs.Truncate(toolText, MaxToolResultChars), tool.Name));
+                // 每次工具调用留一条 INFO 痕迹：出问题时日志里能直接看到"调了什么、多久、成没成"
+                Core.Log.Info($"AI 助手 · 工具 {tool.Name} 成功 · {elapsed:F2}s · {paramSummary}");
+
+                if (result.NavigateAction is not null)
+                {
+                    _ctx.Tools.OnUiThread(result.NavigateAction);
+                }
+
+                // 步骤与 tool 消息共用同一份文本（阶段 132）：历史里存的就是模型当初看到的
+                var toolMessage = ToolArgs.Truncate(toolText, MaxToolResultChars);
+                ReportStep(round, callId, tool.Name, argumentsJson, paramSummary, toolMessage, true, elapsed);
+                _messages.Add(ChatMessage.Tool(callId, toolMessage, tool.Name));
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
                 Core.Log.Info($"AI 助手 · 工具 {tool.Name} 超时或中断 · {DescribeArgs(argumentsJson)}");
-                var step = new ToolStep(tool.Name, DescribeArgs(argumentsJson), "超时或中断", false, 0);
-                _steps.Add(step);
-                _onStep?.Invoke(step);
-                _messages.Add(ChatMessage.Tool(callId, $"工具 {tool.Name} 执行超时或中断。", tool.Name));
+                var message = $"工具 {tool.Name} 执行超时或中断。";
+                ReportStep(round, callId, tool.Name, argumentsJson, "超时或中断", message, false, 0);
+                _messages.Add(ChatMessage.Tool(callId, message, tool.Name));
             }
             catch (OperationCanceledException)
             {
@@ -457,13 +467,44 @@ public sealed class AiAssistantEngine
             {
                 Core.Log.Error(ex);
                 Core.Log.Info($"AI 助手 · 工具 {tool.Name} 失败 · {DescribeArgs(argumentsJson)} · {ex.Message}");
-                var step = new ToolStep(tool.Name, DescribeArgs(argumentsJson), ToolArgs.Truncate(ex.Message, 160), false, 0);
-                _steps.Add(step);
-                _onStep?.Invoke(step);
-                _messages.Add(ChatMessage.Tool(callId,
-                    Services.Manual.ManualToolMap.WithManualHint(tool.Name, $"工具执行失败：{ex.Message}"),
-                    tool.Name));
+                var message = Services.Manual.ManualToolMap.WithManualHint(tool.Name, $"工具执行失败：{ex.Message}");
+                ReportStep(round, callId, tool.Name, argumentsJson, DescribeArgs(argumentsJson), message, false, 0);
+                _messages.Add(ChatMessage.Tool(callId, message, tool.Name));
             }
+        }
+
+        /// <summary>
+        /// 记一条工具步骤（界面"步骤区"与**落盘历史**同源）。
+        /// <para>
+        /// 阶段 132：步骤现在带 <see cref="ToolStep.CallId"/> / 参数 / 结果全文 / 轮号并会落盘——
+        /// 重新打开应用后，同一个对话的后续提问仍能重建出完整的工具往返
+        /// （此前步骤只进了界面、`AiAssistantTurn.Steps` 永远是空的，历史文件里一个步骤都没有）。
+        /// 模型请求了未注册/已关闭的工具、以及用户拒绝的写操作**也**记一条：保证重建时
+        /// "assistant(tool_calls) 后面必有 tool 结果"。
+        /// </para>
+        /// </summary>
+        private void ReportStep(
+            int round,
+            string callId,
+            string toolName,
+            string? argumentsJson,
+            string paramSummary,
+            string resultText,
+            bool success,
+            double elapsedSeconds)
+        {
+            var step = new ToolStep(
+                toolName,
+                paramSummary,
+                ToolArgs.Truncate(resultText, 160),
+                success,
+                elapsedSeconds,
+                round,
+                callId,
+                argumentsJson,
+                ToolArgs.Truncate(resultText, MaxToolResultChars));
+            _steps.Add(step);
+            _onStep?.Invoke(step);
         }
 
         /// <summary>参数 JSON 的人话摘要（工具没给 ParamSummary 时兜底）。</summary>

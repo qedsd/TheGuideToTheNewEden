@@ -6,10 +6,16 @@ namespace TheGuideToTheNewEden.WPF.Services.Assistant;
 public sealed class AssistantContext
 {
     /// <summary>
-    /// 对话级"带上上下文"：此前**成功**轮次的问答对（引擎拼进消息开头，按问答对交替；
-    /// 只含问/答，不含工具内部往返，防止消息膨胀）。
+    /// 对话级"带上上下文"：本对话此前**成功**轮次重建出来的完整消息序列
+    /// （<c>user(提问)</c> → <c>assistant(tool_calls)</c> → <c>tool(结果)</c> … → <c>assistant(回答)</c>，
+    /// 由 <see cref="AssistantContextBuilder"/> 生成；引擎按顺序插到 system 之后、本次提问之前）。
+    /// <para>
+    /// 阶段 132 起**含工具往返**（此前只有"问 / 答"两段文本）。预算由界面按
+    /// <c>Assistant.MaxContextChars</c> 控制：超出时最旧的轮次整轮省略。
+    /// **记忆只存在于单个对话**，不同对话之间不共享。
+    /// </para>
     /// </summary>
-    public IReadOnlyList<(string Question, string Answer)>? Context { get; init; }
+    public IReadOnlyList<ChatMessage>? Context { get; init; }
 
     /// <summary>工具执行上下文（当前角色 / UI 线程归位 / 进度回调）。</summary>
     public required ToolContext Tools { get; init; }

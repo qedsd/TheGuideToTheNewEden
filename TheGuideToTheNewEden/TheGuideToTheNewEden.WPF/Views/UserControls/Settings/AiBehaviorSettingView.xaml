@@ -61,6 +61,23 @@
                 <Border Style="{StaticResource SettingsDivider}" />
 
                 <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_ContextChars_Desc}"
+                    Icon="Document24"
+                    Title="{DynamicResource AssistantSettingPage_ContextChars}">
+                    <!--  0 = 不限制；单位是字符（重建出来的历史内容 + 工具参数）  -->
+                    <ui:NumberBox
+                        x:Name="ContextCharsBox"
+                        Width="160"
+                        HorizontalAlignment="Right"
+                        Maximum="400000"
+                        Minimum="0"
+                        SmallChange="1000"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
                     Description="{DynamicResource AssistantSettingPage_Hotkey_Desc}"
                     Icon="Keyboard24"
                     Title="{DynamicResource AssistantSettingPage_Hotkey}">

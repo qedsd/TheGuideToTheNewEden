@@ -138,7 +138,9 @@ internal static class UiSuite
             "Assistant_Chat_UseContext_Tip", "Assistant_Chat_Input", "Assistant_Chat_Input_Tip",
             "Assistant_Chat_Input_Hint", "Assistant_Chat_Send", "Assistant_Chat_Stop", "Assistant_Chat_PopWindow",
             "Assistant_Chat_Untitled", "Assistant_Chat_EmptySession", "Assistant_Chat_NewSession",
-            "Assistant_Chat_ContextOn", "Assistant_Chat_ContextOff", "Assistant_Chat_PendingCount",
+            "Assistant_Chat_ContextOn", "Assistant_Chat_ContextOff",
+            "Assistant_Chat_ContextUsage", "Assistant_Chat_ContextUsageTrimmed", "Assistant_Chat_ContextUsageUnlimited",
+            "Assistant_Chat_PendingCount",
             "Assistant_Chat_NoInput", "Assistant_Chat_AnswerEmpty", "Assistant_Chat_Timeout",
             "Assistant_Chat_ConfirmDisabled", "Assistant_AiUnavailable", "Assistant_NotConfigured_Title",
             "Assistant_NotConfigured_Support", "Assistant_GoConfigure", "Assistant_Recheck",
@@ -150,6 +152,8 @@ internal static class UiSuite
             "AssistantSettingPage_Section_Translate", "AiSettingPage_TranslationBehavior", "AiSettingPage_CustomPrompt",
             "AssistantSettingPage_Behavior", "AssistantSettingPage_Esi",
             "AssistantSettingPage_Model", "AssistantSettingPage_Translate",
+            // 阶段 132：上下文预算（设置卡片 + 底栏提示）
+            "AssistantSettingPage_ContextChars", "AssistantSettingPage_ContextChars_Desc",
             // 工具分组标题是运行时拼出来的键（$"AssistantSettingPage_ToolsGroup_{category}"），这里显式列出来防拼错
             "AssistantSettingPage_ToolsGroup_Esi", "AssistantSettingPage_ToolsGroup_Character",
             "AssistantSettingPage_ToolsGroup_Business", "AssistantSettingPage_ToolsGroup_Map",
@@ -360,6 +364,13 @@ internal static class UiSuite
             c.That(behaviorCards >= 6 && behaviorDividers >= 4,
                 $"「行为」节是 6 个 SettingCard 行 + 分隔线（实际卡片 {behaviorCards}、分隔线 {behaviorDividers}）");
 
+            // 阶段 132：行为节多了一张「上下文预算」卡片
+            var contextBox = FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage)
+                .FirstOrDefault(box => box is FrameworkElement { Name: "ContextCharsBox" });
+            c.That(contextBox is not null, "「行为」节有「上下文预算（字符）」数字框");
+            c.That(contextBox is null || Math.Abs((contextBox.Value ?? -1) - AiAssistantSettingService.MaxContextChars) < 0.5,
+                "上下文预算框回填了当前设置值");
+
             // 阶段 130：快捷键**默认不启用**（默认值为空），但输入框提示保留（示例 Alt+Q）
             c.That(AiAssistantSettingService.DefaultHotkey.Length == 0,
                 "全局快捷键的默认值是空 = 默认不启用");
@@ -569,6 +580,12 @@ internal static class UiSuite
         });
         turn.AddStep(new ToolStep("market_orders", "巨神兵级 @ 伏尔戈", "最低卖价 4,949,000", true, 0.83));
         turn.AddStep(new ToolStep("market_trend", "巨神兵级 @ 伏尔戈 90天", "位于区间 50%", false, 0.12));
+
+        // 阶段 132：步骤必须**同时**写进落盘模型（此前只进界面 → 历史文件里一个步骤都没有，
+        // 于是重新打开应用后既看不到旧步骤，也没法把工具往返重放给模型）
+        c.Equal(turn.Model.Steps.Count, 2, "工具步骤写进了落盘模型（不再只进界面）");
+        c.Equal(turn.Model.Steps[0].ToolName, "market_orders", "落盘步骤带工具名");
+        c.That(turn.Model.Steps[0].ResultSummary.Length > 0, "落盘步骤带结果摘要（界面重开后仍能看到）");
         turn.SetAnswer(
             "| 项目 | 值 |\n|---|---|\n| 当前最低卖价 | 4,949,000 ISK |\n| 当前最高买价 | 4,759,000 ISK |\n\n" +
             "**涨了多少**：从 90 天低点涨了约 +5.6%。\n\n- 区间位置 50%，不算低\n- 价差 190,000 ISK\n");
@@ -658,6 +675,10 @@ internal static class UiSuite
 
         var checkBoxes = FindVisuals<CheckBox>(view).ToList();
         c.That(checkBoxes.Count >= 1, "上下文开关存在（CheckBox）");
+
+        // 阶段 132：同一对话默认带上完整历史（含工具往返）；记忆只存在于单个对话
+        c.That(new AiAssistantSession().UseContext, "新建对话默认带上下文（UseContext 默认 true）");
+        c.Equal(AiAssistantSettingService.DefaultMaxContextChars, 200000, "上下文预算默认 200000 字符");
 
         // 「弹窗」按钮在主窗口的对话页里必须可见（只在独立窗口里才隐藏，见下面的窗口核验）
         var pagePopButton = FindVisuals<System.Windows.Controls.Primitives.ButtonBase>(view)

@@ -27,6 +27,7 @@ public partial class AiBehaviorSettingView : UserControl
         CharacterBox.Text = AiAssistantSettingService.DefaultCharacter;
         ConfirmToggle.IsChecked = AiAssistantSettingService.ConfirmExpensive;
         ShowInMainWindowToggle.IsChecked = AiAssistantSettingService.ShowInMainWindow;
+        ContextCharsBox.Value = AiAssistantSettingService.MaxContextChars;
         HotkeyBox.Text = AiAssistantSettingService.Hotkey;
         PromptBox.Text = AiAssistantSettingService.SystemPrompt;
     }
@@ -35,12 +36,17 @@ public partial class AiBehaviorSettingView : UserControl
     public void Save()
     {
         var rounds = (int)Math.Clamp(RoundsBox.Value ?? AiAssistantSettingService.DefaultMaxToolRounds, 1, 30);
+        var contextChars = (int)Math.Clamp(
+            ContextCharsBox.Value ?? AiAssistantSettingService.DefaultMaxContextChars,
+            0,
+            AiAssistantSettingService.MaxContextCharsLimit);
         AiAssistantSettingService.Save(
             rounds,
             PromptBox.Text,
             ConfirmToggle.IsChecked == true,
             HotkeyBox.Text,
-            CharacterBox.Text);
+            CharacterBox.Text,
+            contextChars);
         AiAssistantSettingService.SaveShowInMainWindow(ShowInMainWindowToggle.IsChecked == true);
 
         // 快捷键改完即时生效（不需要重启）：让主窗口重注册

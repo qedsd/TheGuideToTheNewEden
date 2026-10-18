@@ -28,7 +28,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
 
     public Guid Id => Model.Id;
 
-    /// <summary>本对话是否"每次请求都带上此前的问答当上下文"（对话级开关，不限条数）。</summary>
+    /// <summary>本对话是否"每次请求都带上此前的完整历史"（对话级开关，阶段 132 起默认开；记忆仅限本对话）。</summary>
     public bool UseContext
     {
         get => Model.UseContext;
@@ -40,6 +40,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
             }
 
             Model.UseContext = value;
+            Model.ContextDefaultV2 = true;   // 用户显式改过 → 以后不再按"旧默认值"翻回来
             OnPropertyChanged();
             OnPropertyChanged(nameof(ContextInfoText));
             _onChanged?.Invoke();
@@ -49,9 +50,62 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
     /// <summary>可当上下文的记录数（成功的、有回答的）。</summary>
     public int ContextCandidateCount => Turns.Count(t => t.CanBeContext);
 
-    public string ContextInfoText => Model.UseContext
-        ? string.Format(FindString("Assistant_Chat_ContextOn"), ContextCandidateCount)
-        : FindString("Assistant_Chat_ContextOff");
+    private AssistantContextResult? _lastContext;
+
+    /// <summary>记下"最近一次请求实际带了什么"（由 VM 在发送前调用），供底栏提示显示。</summary>
+    public void ReportContextUsage(AssistantContextResult result)
+    {
+        _lastContext = result;
+        OnPropertyChanged(nameof(ContextInfoText));
+    }
+
+    public string ContextInfoText
+    {
+        get
+        {
+            if (!Model.UseContext)
+            {
+                return FindString("Assistant_Chat_ContextOff");
+            }
+
+            var last = _lastContext;
+            if (last is null)
+            {
+                // 还没发过请求：只报"能带几条"
+                return string.Format(FindString("Assistant_Chat_ContextOn"), ContextCandidateCount);
+            }
+
+            var budget = AiAssistantSettingService.MaxContextChars;
+            if (budget <= 0)
+            {
+                return string.Format(
+                    FindString("Assistant_Chat_ContextUsageUnlimited"),
+                    last.TurnsIncluded,
+                    Compact(last.Chars));
+            }
+
+            return last.TurnsDropped > 0
+                ? string.Format(
+                    FindString("Assistant_Chat_ContextUsageTrimmed"),
+                    last.TurnsIncluded,
+                    Compact(last.Chars),
+                    Compact(budget),
+                    last.TurnsDropped)
+                : string.Format(
+                    FindString("Assistant_Chat_ContextUsage"),
+                    last.TurnsIncluded,
+                    Compact(last.Chars),
+                    Compact(budget));
+        }
+    }
+
+    /// <summary>字符数的紧凑写法（86,000 → 86k），底栏一行放得下。</summary>
+    private static string Compact(int value) => value switch
+    {
+        >= 100_000 => $"{value / 1000}k",
+        >= 1_000 => $"{value / 1000.0:0.#}k",
+        _ => value.ToString(),
+    };
 
     /// <summary>对话标题：用户改过就用用户的，否则取第一条请求的首行。</summary>
     public string Title

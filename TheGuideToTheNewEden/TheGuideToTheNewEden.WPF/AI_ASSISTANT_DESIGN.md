@@ -224,7 +224,7 @@ public sealed record ChatToolCall     // 模型返回的一次工具调用（归
 
 ```
 SendAsync(userText, ct):
-  messages = 系统提示词 + 本对话历史（对话级上下文开关打开时带上此前成功轮次）+ user
+  messages = 系统提示词 + 本对话历史（阶段 132：默认带上，含此前的工具往返）+ user
   toolRounds = 0
   loop:
     req = { Endpoint, SystemPrompt, Messages, Tools = ToolRegistry.All, Stream = false }   // 工具推理轮：非流式（快、省 token）
@@ -247,7 +247,13 @@ SendAsync(userText, ct):
 - **工具推理轮用非流式**：工具调用通常在第一个 completion 里整批返回，非流式更稳更快；**最终回答用流式**，满足"增量长出来"的体验。
 - **取消**：整个 SendAsync 持有一个 `CancellationTokenSource`；「停止」取消全部（含正在执行的工具——工具执行器都接 `ct`）。
 - **并发**：同轮多个 tool_calls 默认**串行**执行（v1 工具都是轻量查询，串行足够；倒货那种重型并发由未来工具自己内部处理）。
-- **上下文**：对话级「带上上下文」开关（照 AI 翻译页），打开时把本对话此前**成功**轮次按"问：… / 答：…"拼进 user 消息之前（不含工具内部往返，只含用户问与最终答，避免消息膨胀）。
+- **上下文（阶段 132 定型）**：**记忆只存在于单个对话**——不同对话之间不共享任何内容，也没有跨对话的长期记忆（此条为最终取向，不再作为候选）。
+  对话底栏的「带上上下文」开关**默认开**；打开时把本对话此前**成功**轮次用 `AssistantContextBuilder` 重建成
+  `user(提问)` → `assistant(tool_calls)` → `tool(结果)` → `assistant(回答)` 的完整消息序列（含工具往返，
+  模型能直接引用此前工具返回的原始数据）。预算 `Assistant.MaxContextChars`（默认 **200000** 字符，0 = 不限制）：
+  超出时先省略**中间**较早的轮次，**最早一轮与最新一轮优先保留**；最新一轮即使超预算也会逐级压缩工具结果后保留
+  （提问与回答不丢）；底栏常态显示「已带 N 轮 · X / Y 字符」。
+  旧版本"只带问答两段文本、默认关"的行为已废弃；旧对话在载入时会被一次性翻成"带上下文"（见 `AiAssistantSession.ContextDefaultV2`）。
 - **错误策略**：工具异常 → 把错误文本作为 tool 结果回填（不中断对话）；模型侧异常走 `ChatClient` 既有归一化；`OperationCanceledException` 区分"用户停止"与"超时/中断"（照阶段 47 追加的教训，不要把超时说成"已停止"）。
 
 ### 3.3 工具层
@@ -633,8 +639,9 @@ public sealed class ToolContext
 
 - ~~写操作类工具（收藏、术语表、购物车）~~ → **阶段 116 已完成**（`market_favorite` / `glossary_write` / `shopping_cart`，走确认卡片）；
   仍暂缓的只剩**下单 / 删除类**（`esi-ui` 之外的破坏性写操作）；
-- 逐工具开关（v1 全部工具恒可用；如需可加 `Assistant.Tools.*` 开关键）；
-- 多角色上下文记忆 / 长期记忆（超出单轮对话范围）。
+- 逐工具开关（v1 全部工具恒可用；如需可加 `Assistant.Tools.*` 开关键）——**阶段 121 已完成**（`Assistant.Tools.Disabled`）；
+- ~~多角色上下文记忆 / 长期记忆（超出单轮对话范围）~~ → **明确不做（阶段 132 用户拍板）**：
+  记忆**只存在于单个对话**，不跨对话、不跨角色，也不做长期记忆——因此本项从候选清单中删除，不再是"待定"。
 
 **主页快捷输入的有意取舍**：
 
@@ -811,7 +818,8 @@ public static MapViewCommand? TakePendingMapCommand()      // 页面加载后取
 > 结论速览：**已实现 44 个工具（v1 通用 12 + 星图 7 + 商业 4 + v1.5 P1 九个（阶段 114）+ P2 五个只读与三个写操作（阶段 116）
 > + **ESI 全量网关四个元工具（阶段 118，覆盖全部 197 个 ESI 操作，见 §18）**；阶段 117 的 7 个角色 ESI 直读工具已于
 > **阶段 119 删除**（能力并入网关 + §18.8 的通用名称富化），故 47 − 7 + 4 = 44）；
-> 不建议开放 6 类；仍未开放：逐工具开关、跨轮长期记忆、截图（视觉输入）、军团级端点（需军团职位）。
+> 不建议开放 6 类；仍未开放：截图（视觉输入）、军团级端点（需军团职位）。
+> （"逐工具开关"阶段 121 已做；"跨轮长期记忆"阶段 132 明确**不做**——记忆只存在于单个对话。）
 > 注：§18 的网关落地后，"某某端点没被包成工具"不再是能力缺口——需要新端点时优先走 `esi_*`，而不是再写一个专用工具。**
 
 | # | 导航目标/模块 | 可开放能力（服务） | 类型 | 开放度 | 归属 |
@@ -877,8 +885,8 @@ public static MapViewCommand? TakePendingMapCommand()      // 页面加载后取
 | **合计（现行）** | **44** | 通用 12 + 星图 7 + 商业 4 + P1 九 + P2 五 + 写操作三 + ESI 网关四 | 与 `ToolRegistry` 一致（探针 `esi` 套件断言） |
 | **合计** | **47** | 均为只读或"确认后才写"；订阅型 / 破坏性写操作 / 军团级端点**不开放** | 探针 755 断言全 PASS |
 
-> **仍未开放**：逐工具开关（`Assistant.Tools.*`）、跨轮长期记忆、截图（视觉输入）；
-> **军团级端点**（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，多数账号拿不到，暂不做。
+> **仍未开放**：截图（视觉输入）；**军团级端点**（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，多数账号拿不到，暂不做。
+> **记忆的边界**（阶段 132）：只存在于单个对话内，不跨对话、不跨角色，也不做长期记忆（原候选已删除）。
 > 「过洞计算」原列在 P2，落地时并入了 `wormhole_info` 的洞口资料（计算结果本身需要舰船/技能参数，属"配置型查询"而非一问一答）。
 
 ### 角色 ESI 直读组（阶段 117 设计，**阶段 119 已删除**）
@@ -1267,7 +1275,8 @@ SelectedSession + PropertyChanged 转发（SessionTitle 等）
 IsConfigured / IsNotConfigured / EndpointSummary           // 读 TranslationSettingService.AiEndpoint
 InputText / HasPending / PendingText("正在处理 N 条…")
 NewSession / DeleteSession / ClearSession / BeginRenameSelectedSession
-SendAsync(): 构造 AssistantContext{ Context=UseContext? 此前成功轮次, Tools=构建 } → engine.SendAsync
+SendAsync(): 构造 AssistantContext{ Context=AssistantContextBuilder.Build(本对话轮次, 预算), Tools=构建 } → engine.SendAsync
+    （阶段 132：Context 是重建好的完整消息序列，含此前工具往返；本对话开关默认开）
     → 每条一个 AiChatTurnViewModel + 自己的 CancellationTokenSource（并发发送，各等各的，照 AI 翻译页）
     → onStep 回调 → 追加到该 turn 的 Steps
     → PendingConfirmations → 设 turn.Pending（等待用户点 应用/拒绝 → turn.ResumeAsync）
@@ -1413,7 +1422,9 @@ public sealed class AiAssistantEngine
 
 public sealed class AssistantContext
 {
-    public IReadOnlyList<(string Question, string Answer)>? Context;  // 对话级"带上上下文"：此前成功轮次（问答对）
+    // 阶段 132 起是**重建好的完整消息序列**（含工具往返），由 AssistantContextBuilder 生成；预算见 §21。
+    // 旧形状（阶段 B）：IReadOnlyList<(string Question, string Answer)>? Context;
+    public IReadOnlyList<ChatMessage>? Context;
     public required ToolContext Tools;
     public string? SystemPrompt;                                     // null=内置（§5.1 草案）
 }
@@ -1529,10 +1540,14 @@ Schema: systemName(string, required)
 
 ### 14.5 引擎内部消息构建与上下文
 
-- `messages` 起始 = system + Context（对话级开关打开时传入的问答对，`ChatMessage.User(question)`/`Assistant(answer)` 交替）+ 本次 userText；
+> **阶段 132 已更新**（下面第 1、4 条为准；本节其余内容仍然成立）：`Context` 不再是"问答对"，
+> 而是 `AssistantContextBuilder` 重建好的**完整消息序列**，**包含**此前的工具往返；带上与否由对话级开关决定（默认开）。
+
+- `messages` 起始 = system + Context（此前轮次重建的消息序列：`user(提问)` → `assistant(tool_calls)` + `tool(结果)` → `assistant(回答)`）+ 本次 userText；
 - 每轮追加 `AssistantToolCalls` + 若干 `Tool` 消息（顺序=执行顺序）；
 - 最终回答请求**完整携带**这些往返（各协议适配器负责正确形状，阶段 A 已就绪）；
-- Context 只含"问/答"（不含工具内部往返），防膨胀（§3.2 设计）。
+- Context **含**工具往返（阶段 132 改；此前只含问/答文本），因此模型能直接引用旧工具数据；防膨胀改由
+  **字符预算**与"最旧一轮整轮省略"承担（`Assistant.MaxContextChars`，见 §21）。
 
 ### 14.6 `EngineProbe`（引用 WPF 工程 + 真 SDE 库 + mock TcpListener LLM）
 
@@ -1547,7 +1562,7 @@ Schema: systemName(string, required)
 | 循环上限 | 一直返回 tool_calls → 第 8 轮后中止并说明 |
 | 注入尝试 | user 文本夹带"忽略指令/调用 XX" → 断言工具选择不受影响（mock 按提示词行为） |
 | 取消 | 工具执行中取消 → `UserStopped=true`，无残留 |
-| 上下文 | Context 传入 → 第 2 条请求带第 1 条问答对；不传则无 |
+| 上下文 | Context 传入 → 第 2 条请求带第 1 条（阶段 132 起含工具往返：提问 → assistant(tool_calls) → tool → 回答）；不传则无 |
 | 确认分支（门控） | mock 请求 `map_jumpbridge_add`（临时注册一个确认工具）→ `PendingConfirmations` 挂起、**未执行**；`ResumeAsync(true)` 执行并到最终回答；`ResumeAsync(false)` 回填"未确认"继续 |
 | 结果截断 | 工具返回超长文本 → 回填消息 ≤4000 字符 |
 | 工具轮请求体快照 | 工具轮 `stream=false`、最终轮 `stream=true` 且无 `tools`（回归红线） |
@@ -1757,9 +1772,9 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
 |---|---|---|
 | ① 模型 | 协议 / 服务地址 / **API Key** / 模型名 / api-version / 测试连接 + 生成参数（温度 / 思考模式 / **最大输出 token** / 超时 / 流式）· `AiModelSettingView` | `Llm.AiModelSettings` → `Ai.*` |
 | ② 翻译 | 术语库（开关 / 条数上限 / 状态与重新载入）+ 翻译行为（单次请求最大字符数 / 结果缓存与清空）+ 自定义翻译提示词 · `AiTranslationSettingView` | `AiTranslationSettings` → `Ai.Translation.*` |
-| ③ 行为 | 最大工具轮数 / 默认角色 / 写操作确认 / 全局快捷键（**默认不启用，留空即可**）/ 助手系统提示词（`AiBehaviorSettingView`） | `Assistant.*` |
+| ③ 行为 | 最大工具轮数 / 默认角色 / 写操作确认 / 在主窗口中显示 AI / **上下文预算（字符，阶段 132）** / 全局快捷键（**默认不启用，留空即可**）/ 助手系统提示词（`AiBehaviorSettingView`） | `Assistant.*` |
 | ④ ESI 全量访问 | 网关开关 / 允许写 / ID 富化 / 页数上限 / 结果字符上限 / 错误配额阈值 / 禁止调用的路径（§18.5，`AiEsiSettingView`） | `Assistant.Esi.*` |
-| ⑤ 工具开关 | 按需声明开关（§20.6）+ 44 个工具逐个启用/停用 + 全部启用/禁用 + "已关闭 N / 44" 计数（§20.2，`AiToolsSettingView`） | `Assistant.Tools.*` |
+| ⑤ 工具开关 | 按需声明开关（§20.6）+ 46 个工具逐个启用/停用 + 全部启用/禁用 + "已关闭 N / 46" 计数（§20.2，`AiToolsSettingView`） | `Assistant.Tools.*` |
 
 - **模型与翻译为什么分开**：端点是两者**共用**的（助手要它、翻译也要它），挂在"翻译设置"下面名不副实；
   阶段 121 只搬了界面，阶段 125 把数据也搬正。
@@ -1769,7 +1784,7 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
   并各自补上 `AiAssistantSettingPage.RequestSection("Model")` → 直接落到「模型」节。
 - 主页「添加功能」里的 `setting-ai-translation` 条目**沿用旧 id**（只换图标/标题/描述/目标页），
   这样用户已经固定的磁贴不会失效。
-- 左侧菜单下方的「恢复默认」只重置助手参数（轮数/提示词/确认/默认角色/ESI/工具开关/按需声明），**不动端点与 Key**。
+- 左侧菜单下方的「恢复默认」只重置助手参数（轮数/提示词/确认/默认角色/**上下文预算**/快捷键/ESI/工具开关/按需声明/显示位置），**不动端点与 Key**。
 
 ### 20.2 逐工具开关
 
@@ -1975,3 +1990,74 @@ OpenAI 风格的 `tool_calls`，但**已知会漏**——标记直接落在 `mes
 - 已有用户的 `Assistant.Hotkey` 值不动：照旧生效，想关掉就清空该输入框保存（或按恢复默认）。
 - **验收**：`ui` 83 → **86** 条（默认值为空 / 提示仍是 Alt+Q / 输入框 PlaceholderText == HotkeyHint）；
   全量 `all` = **1071 PASS / 0 FAIL**。
+
+---
+
+## 21. 单对话记忆：上下文 = 完整历史（阶段 132 实施记录）
+
+> 起因（用户）：「AI 助手理应在同一个对话中永远带上上下文，不是吗？从常见的 harness 等软件的设计来看」。
+> 改前核对出的三处差距与一处真实缺陷（见 `REFACTORING.md` 阶段 132）：默认关、只带问答两段文本、
+> 没有预算、**工具步骤从未落盘**。本轮四条一起做，并把"记忆的范围"定死。
+
+### 21.1 定调：记忆只存在于单个对话
+
+- **不跨对话**：不同对话之间不共享任何内容（没有全局记忆、没有跨角色记忆）。
+- **不做长期记忆**：设计文档原 §9 的候选"多角色上下文记忆 / 长期记忆"**已删除**，不再是待定项。
+- 对话内：**默认带上**（`AiAssistantSession.UseContext` 默认 `true`）；旧对话一次性迁移（`ContextDefaultV2` 标记），
+  迁移后用户在底栏关掉即为关掉。
+
+### 21.2 带什么：重建后的完整消息序列
+
+`Services/Assistant/AssistantContextBuilder.cs`（纯函数）把此前**成功**轮次重建成：
+
+```
+user(提问)
+assistant(tool_calls: [同轮的 N 个调用])     ← 与引擎真实形状一致：一轮 = 一条 assistant + N 条 tool
+tool(结果 1) … tool(结果 N)
+assistant(最终回答)
+```
+
+- 工具结果用**落盘的 `ResultText`**（引擎回填给模型的同一份文本，≤4000 字符；落盘再压到 ≤2000），
+  不是界面那 160 字符摘要——所以追问"刚才那第二条"时模型手里有原始数据。
+- 同轮多调用靠 `AiAssistantStep.Round` 归组；旧数据（无 `CallId`）不参与重建，只重放问答（不造非法序列）。
+- 失败 / 被停止的轮次不进上下文；当前这一轮不算自己的上文。
+
+### 21.3 预算与压缩
+
+- 设置键 `Assistant.MaxContextChars`（默认 **200000** 字符，**0 = 不限制**，上限 400000），
+  入口「设置 → AI → 行为 → 上下文预算（字符）」。
+- 超预算：**先省略中间的较早轮次**（整轮省略，不丢半轮），并且
+  **钉住最早一轮**（`HeadTurns = 1`，长会话里的"我到底要干什么"——纯滑窗会把它先丢掉，模型随后开始重复取数）
+  与**最新一轮**；头只有在"与最新一轮能一起装下"时才钉住，装不下就让位给最近的数据。
+  底栏常态显示「已带 N 轮 · X / Y 字符」，发生省略时追加「· 省略 M 轮」（预算 0 时显示「（不限）」）。
+- 最新一轮单独超预算：逐级压缩它的工具结果（2000 → 800 → 300 → 120 字符），**提问与回答永不丢**。
+- **取值依据**（用户追问「60000 会不会太少、harness 一般怎么限」后定稿）：60000 字符 ≈ 15–24k token，
+  只占 1M 窗口的 2–3%——限制的真正理由是**成本与首字延迟**，不是窗口装不下；harness 的普遍做法也不是定字符数，
+  而是按「窗口 − 系统提示 − 工具声明 − 预留输出 − 余量」推导预算、在约 80–95% 用量时压缩。
+  因此放宽到 200000（≈5–8 万 token，仍只占 1M 窗口 5–8%），并把"钉住最早一轮 + 用量可见"这两条便宜改进补上。
+- **不做摘要式压缩**：那需要额外一次模型调用且结果不确定，属独立功能（真要做应放在 `Build` 之外的
+  "上下文整理"环节）；也**不做**按模型窗口的自动推导（要用户额外维护"窗口 token"，对纯云端大窗口收益不大）。
+
+### 21.4 落盘与迁移
+
+| 项 | 内容 |
+|---|---|
+| `AiAssistantStep` | + `CallId` / `Round` / `ArgumentsJson`（≤600）/ `ResultText`（≤2000）——重建所必需 |
+| `AiAssistantSession` | `UseContext` 默认 `true`；+ `ContextDefaultV2`（迁移标记，`null` = 旧文件） |
+| `AiChatTurnViewModel.AddStep` | **同时**写界面集合与 `Model.Steps`（改前只写界面 → 历史里步骤恒为空） |
+| 引擎 `ReportStep` | 成功 / 超时 / 异常 / 未注册工具 / 已关闭工具 / **用户拒绝的写操作** 都记步骤，保证序列合法 |
+
+### 21.5 验证（详见 `REFACTORING.md` 阶段 132）
+
+- `engine` **103 / 0**（新增 41 条：工具往返重放、同轮归组、跨轮顺序、序列合法性、预算裁剪与"钉住最早一轮"、
+  头装不下时让位、预算 0 = 不限制、单轮压缩、失败轮次、旧数据兜底、当前轮排除）；`ui` **93 / 0**；
+  `tools` 458 / `toolcall` 124 / `tokens` 9 / `routing` 23 /
+  `manuals` 58 / `quickroute` 27 / `writes` 71 / `business` 15 全 PASS（本轮实跑合计 981）。
+- 构建 0 错误、0 新警告；语言键 **2299 / 2299**、0 重复、键集一致。
+- 手册同步更新：`assistant`、`settings/ai`（按"改功能即改手册"约定）。
+
+### 21.6 边界
+
+- 带完整历史会显著增加**输入 token**（工具结果尤其大）：DeepSeek 的前缀缓存按前缀逐字节匹配，
+  历史稳定增长正是缓存友好的形态；长对话仍建议按需新建。
+- 改前已有的旧记录里**本来就没有步骤**（数据已丢），迁移只能让它们从现在起记住工具往返。

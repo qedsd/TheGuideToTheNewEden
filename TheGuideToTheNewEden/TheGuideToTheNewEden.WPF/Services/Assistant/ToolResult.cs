@@ -11,8 +11,29 @@ public sealed record ToolResult(
     Action? NavigateAction = null,
     string? ParamSummary = null);
 
-/// <summary>一次工具执行记录（界面"工具步骤区"的数据源）。</summary>
-public sealed record ToolStep(string Name, string ParamSummary, string ResultSummary, bool Success, double ElapsedSeconds);
+/// <summary>
+/// 一次工具执行记录（界面"工具步骤区"的数据源，同时是**落盘历史**的来源）。
+/// <para>
+/// 阶段 132 起后四个字段是"重建上下文"所必需的：同一条 assistant(tool_calls) 里的多个调用靠
+/// <paramref name="Round"/> 归组，回填用的 tool 消息靠 <paramref name="CallId"/> 配对，
+/// <paramref name="ArgumentsJson"/> / <paramref name="ResultText"/> 决定重放给模型的内容。
+/// 前五个参数是原有形状（界面显示用），保持位置不变以免改动既有调用点。
+/// </para>
+/// </summary>
+/// <param name="Round">工具轮号（同一轮 = 同一条 assistant 消息里的多个调用）。</param>
+/// <param name="CallId">工具调用 ID（tool 消息配对用）。</param>
+/// <param name="ArgumentsJson">调用参数 JSON 原文。</param>
+/// <param name="ResultText">回填给模型的结果全文（已按引擎上限截断）。</param>
+public sealed record ToolStep(
+    string Name,
+    string ParamSummary,
+    string ResultSummary,
+    bool Success,
+    double ElapsedSeconds,
+    int Round = 0,
+    string? CallId = null,
+    string? ArgumentsJson = null,
+    string? ResultText = null);
 
 /// <summary>
 /// 挂起的待确认动作（引擎命中 <see cref="ITool.RequiresConfirmation"/> 工具时生成；
