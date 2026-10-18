@@ -135,8 +135,11 @@ internal static class UiSuite
             "Assistant_Chat_Collapse", "Assistant_Chat_Confirm_Title", "Assistant_Chat_Confirm_Hint",
             "Assistant_Chat_Confirm_Apply", "Assistant_Chat_Confirm_Reject", "Assistant_Chat_CopyAnswer",
             "Assistant_Chat_CopySuccess", "Assistant_Chat_EmptyTip", "Assistant_Chat_UseContext",
+            // 阶段 133：空态是三枚可点的示例（清空输入按钮与回车提示行已按用户要求去掉）
+            "Assistant_Chat_Clear", "Assistant_Chat_SidebarCollapse", "Assistant_Chat_SidebarExpand",
+            "Assistant_Chat_Example_1", "Assistant_Chat_Example_2", "Assistant_Chat_Example_3",
             "Assistant_Chat_UseContext_Tip", "Assistant_Chat_Input", "Assistant_Chat_Input_Tip",
-            "Assistant_Chat_Input_Hint", "Assistant_Chat_Send", "Assistant_Chat_Stop", "Assistant_Chat_PopWindow",
+            "Assistant_Chat_Send", "Assistant_Chat_Stop", "Assistant_Chat_PopWindow",
             "Assistant_Chat_Untitled", "Assistant_Chat_EmptySession", "Assistant_Chat_NewSession",
             "Assistant_Chat_ContextOn", "Assistant_Chat_ContextOff",
             "Assistant_Chat_ContextUsage", "Assistant_Chat_ContextUsageTrimmed", "Assistant_Chat_ContextUsageUnlimited",
@@ -675,6 +678,64 @@ internal static class UiSuite
 
         var checkBoxes = FindVisuals<CheckBox>(view).ToList();
         c.That(checkBoxes.Count >= 1, "上下文开关存在（CheckBox）");
+
+        // 阶段 133 追加：标题重命名改为**双击标题**，右侧的"改名"按钮已去掉（可发现性靠标题的悬停提示）。
+        var renameName = Application.Current?.TryFindResource("Assistant_Chat_Rename") as string ?? "\u0000";
+        var renameTip = Application.Current?.TryFindResource("Assistant_Chat_Rename_Tip") as string ?? "\u0000";
+        c.That(!FindVisuals<System.Windows.Controls.Primitives.ButtonBase>(view)
+                .Any(button => System.Windows.Automation.AutomationProperties.GetName(button) == renameName),
+            "顶栏没有「重命名对话」按钮（重命名只走双击标题）");
+        c.That(FindVisuals<TextBlock>(view).Any(block => block.ToolTip as string == renameTip),
+            "标题带「双击标题可重命名」的悬停提示（按钮去掉后靠它告知用法）");
+
+        // 阶段 133 追加：开关的说明与用量**只在悬停提示**里（界面上不再明文显示一行注释）。
+        // 提示是绑在 VM 上的字符串（说明 + 用量两行）——ToolTip 不在逻辑树里，XAML 里写 {Binding} 拿不到 DataContext。
+        var contextSwitch = checkBoxes[0];
+        var toolTipText = contextSwitch.ToolTip as string ?? string.Empty;
+        c.That(toolTipText.Contains(viewModel.SelectedSession?.ContextInfoText ?? "\u0000", StringComparison.Ordinal),
+            $"上下文开关的悬停提示含当前用量（提示「{toolTipText}」）");
+        c.That(toolTipText.Contains('\n') &&
+                toolTipText.StartsWith(Application.Current?.TryFindResource("Assistant_Chat_UseContext_Tip") as string ?? "\u0000", StringComparison.Ordinal),
+            "悬停提示是「说明 + 实时用量」两行");
+
+        // 阶段 133 追加：对话列表可以收起 / 展开（状态记在 Assistant.SidebarCollapsed）。
+        // 用户可能把侧栏存成"收起了"，先归零到展开再测，测完把设置还原。
+        var sidebarToggle = FindVisuals<System.Windows.Controls.Primitives.ButtonBase>(view)
+            .FirstOrDefault(button => button is FrameworkElement { Name: "SidebarToggle" });
+        var sidebarHost = view.FindName("SidebarHost") as FrameworkElement;
+        c.That(sidebarToggle is not null && sidebarHost is not null,
+            "顶栏有「收起/展开对话列表」按钮，且侧栏是可隐藏的元素（SidebarHost）");
+        if (sidebarToggle is not null && sidebarHost is not null)
+        {
+            var originalCollapsed = AiAssistantSettingService.SidebarCollapsed;
+            try
+            {
+                if (AiAssistantSettingService.SidebarCollapsed)
+                {
+                    sidebarToggle.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                    Pump();
+                }
+
+                c.That(sidebarHost.Visibility == Visibility.Visible, "准备：对话列表当前是展开的");
+
+                sidebarToggle.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                Pump();
+                c.That(sidebarHost.Visibility == Visibility.Collapsed, "点一下 → 对话列表收起");
+                c.That((sidebarToggle.ToolTip as string)
+                       == (Application.Current?.TryFindResource("Assistant_Chat_SidebarExpand") as string ?? "\u0000"),
+                    "收起后按钮提示变成「展开对话列表」");
+                c.That(AiAssistantSettingService.SidebarCollapsed, "收起状态被记住（Assistant.SidebarCollapsed）");
+
+                sidebarToggle.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                Pump();
+                c.That(sidebarHost.Visibility == Visibility.Visible, "再点一下 → 对话列表重新展开");
+                c.That(!AiAssistantSettingService.SidebarCollapsed, "展开状态同样被记住");
+            }
+            finally
+            {
+                AiAssistantSettingService.SaveSidebarCollapsed(originalCollapsed);   // 别把探针的点击留给用户
+            }
+        }
 
         // 阶段 132：同一对话默认带上完整历史（含工具往返）；记忆只存在于单个对话
         c.That(new AiAssistantSession().UseContext, "新建对话默认带上下文（UseContext 默认 true）");

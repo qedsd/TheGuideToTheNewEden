@@ -1254,6 +1254,10 @@ Services/Assistant/AiAssistantHistoryService.cs    历史落盘
 
 ### 16.2 `AiAssistantChatView`（克隆 `AiTranslationChatView` 的差异清单）
 
+> **阶段 133 已按"常见 harness"观感重排，下面这张表里的"气泡/卡片"描述已不是现状**：
+> 现状 = 浅色侧栏 + 纯文本回答（不套气泡）+ 工具调用暗色小字 + 单一圆角输入区 + 空态示例，
+> 详见 `REFACTORING.md` 阶段 133 与本文件 §22。控件名与结构断言未变。
+
 | 区块 | 差异实现 |
 |---|---|
 | 左会话列表 | 同款（新建/删除/清空/改名/右键菜单）；空态文案独立键 |
@@ -2061,3 +2065,57 @@ assistant(最终回答)
 - 带完整历史会显著增加**输入 token**（工具结果尤其大）：DeepSeek 的前缀缓存按前缀逐字节匹配，
   历史稳定增长正是缓存友好的形态；长对话仍建议按需新建。
 - 改前已有的旧记录里**本来就没有步骤**（数据已丢），迁移只能让它们从现在起记住工具往返。
+
+---
+
+## 22. 界面重排（阶段 133 实施记录）
+
+> 用户反馈：「AI 助手界面 UI 不够简洁美观，重新参考常见 harness 设计一下」。
+
+### 22.1 设计取向（三条）
+
+| 取向 | 做法 |
+|---|---|
+| **去卡片化** | 不再用 `CardControl` 把左栏 / 记录 / 输入各包一层；左栏换成**浅色侧栏 + 1px 分隔线**，回答正文**直接落在页面底色**上 |
+| **少标签** | 去掉「我 / 助手 / 请求 / 回答」标签行与逐条时间戳行；时间进气泡 ToolTip 与 meta 行；工具调用压成**一排暗色小字**（状态图标 + 工具名 + 参数摘要 + 耗时） |
+| **单一输入区** | 一个圆角 `ui:TextBox`；输入框内的**一行**同时放「带上上下文」勾选、用量文字与 弹窗 / 停止 / 发送 三个动作（首版是"框内图标 + 框下开关/端点"，追加迭代按用户要求全部收拢，见 22.5） |
+
+### 22.2 六条容易踩的实现细节
+
+1. **用户气泡要"贴文字"**：气泡里的 `RichTextPresenter` 必须 `HorizontalAlignment="Left"`——
+   默认它会横向拉伸到 `MaxWidth`，短提问也变成 600px 大灰带（与 AI 翻译页同款坑）。
+2. **深色主题出图（底色）的坑**：离屏渲染核验时 `Window.Background` 不能用 `TryFindResource` 取刷子（那是**快照**，
+   换主题后还是上一个主题的底），要 `SetResourceReference(Window.BackgroundProperty, "ApplicationBackgroundBrush")`。
+3. **出图必须包一层带底色的容器**：视图自身是 `Transparent`，`RenderTargetBitmap.Render(view)` 不含窗口底色——
+   深色主题下白字落在"白"底上，看起来像文字全没了。正确做法：`Border{Background=ApplicationBackgroundBrush}` 包住视图再渲染。
+4. **ToolTip 里的 `{Binding}` 拿不到 DataContext**：ToolTip 不在控件的逻辑树里，`<CheckBox.ToolTip><TextBlock Text="{Binding …}"/>`
+   实测第二行恒为空（探针抓到）。要显示动态内容就把整段提示做成 VM 上的**字符串属性**（`ContextTooltip`）再绑 `ToolTip`。
+5. **出图前要 `UpdateLayout()`**：把元素设成 `Collapsed` 之后只 `Pump` 不够，`RenderTargetBitmap` 会渲染**上一帧**的布局
+   （阶段 133 目检"收起侧栏"时被它误导过一次：以为列宽没生效，其实是图没重排）。
+6. **不要给 `ui:Button` 写无 `BasedOn` 的显式样式**（会顶掉 WPF-UI 的按钮模板，见阶段 15/16 的教训）——
+   悬停才显示复制按钮这种事就放弃，保持常显、调低不透明度即可。
+
+### 22.3 验证方式（可复用）
+
+界面改动"不靠截图也能验"的既有规矩没变（构建 + 探针结构断言 + 绑定错误监听），但**这次额外做了一次性出图目检**：
+一个临时 `shot` 套件用离屏窗口 + `RenderTargetBitmap` 出浅色 / 深色 / 空态三张图，逐张看过再收工（核验后已删除）。
+以后改这个界面建议照做——"简洁美观"这类要求，字符串断言管不了。
+
+### 22.4 语言键与手册
+
+- 净 **+4**：`Assistant_Chat_Example_1/2/3`（空态示例，+3）、`Assistant_Chat_SidebarCollapse/Expand`（+2）；
+  改写 `Assistant_Chat_EmptyTip` / `Assistant_Chat_NoSessions`；追加迭代删掉了 `Assistant_Chat_ClearInput` 与
+  `Assistant_Chat_Input_Hint`（−2）。中英各 **2303 / 2303**、0 重复。
+- 手册 `assistant` 的「管理对话 / 提问 / 读回答 / 独立窗口」小节已按新布局改写（§8 第 68 条约定）。
+
+### 22.5 追加迭代（用户反馈，四条）
+
+| 要求 | 落地 |
+|---|---|
+| 勾选框与「发送」同一行 | 动作行 = `☑ 带上上下文 | 用量 | 弹窗 · 停止 · 发送`，不再是框外一行 |
+| 去掉「清除输入」按钮 | 按钮、`OnClearInputClick`、`AiAssistantViewModel.ClearInput()`、语言键一并删除 |
+| 去掉右下角的端点（大模型）提示 | 端点摘要与整行状态栏删除；`EndpointSummary` 属性与其赋值、`ChatProtocolFactory` 的 using 一并删除 |
+| 「两轮」像上限、太少 | 那是"本对话已有轮数"不是上限；上限是 **200,000 字符**（≈5–8 万 token，几十轮）。文案改为**不报轮数**（「带上全部记录（含工具调用）」），发过之后显示实测「已带 N 轮 · X / 200k 字符」；回车提示行也删（占位文本里已有） |
+| 开关说明/用量别在界面上明文显示 | 删掉勾选框右侧的 `ContextInfoText` 行；悬停提示改成两行（说明 + 实时用量），界面上只留 `☑ 带上上下文` |
+| 需要能收起对话列表 | 顶栏最左加「收起/展开对话列表」按钮（`PanelLeftContract24` / `PanelLeftExpand24`）；收起 = 列宽归 0 + 侧栏隐藏；状态记在 `Assistant.SidebarCollapsed`（界面偏好，与"显示位置"同类） |
+| 标题重命名改为双击 | 顶栏的改名笔去掉（`OnRenameClick` 一并删除）；双击标题改名，可发现性靠标题的悬停提示；左栏右键「重命名对话」保留 |

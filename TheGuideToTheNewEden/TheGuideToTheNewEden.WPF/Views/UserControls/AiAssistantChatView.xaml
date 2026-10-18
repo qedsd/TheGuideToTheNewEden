@@ -6,6 +6,17 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent">
 
+    <!--
+        阶段 133：按"常见 harness（Claude Code / Cursor / Codex 这类）"的观感重排。
+        三条取向：
+          ① **去卡片化**：不再用 CardControl 把左栏/记录/输入各包一层；改用"侧栏浅色底 + 1px 分隔线 + 留白"，
+             回答正文直接落在页面底色上（不再是一个个大灰气泡），只有用户提问保留一个浅色圆角气泡；
+          ② **少标签**：去掉「我 / 助手 / 请求 / 回答」这类重复标签与逐条时间戳行（时间进 ToolTip 与 meta 行），
+             工具调用压成一排暗色小字（图标 + 工具名 + 参数 + 耗时），meta（模型·耗时·token）只在末尾一行小字；
+          ③ **单一输入区**：一个圆角输入框 + 底部一排图标动作，上下文开关与用量、端点摘要压到输入框下面一行。
+        探针依赖的元素名（SessionList / Transcript / TranscriptScroll / PopWindowButton）与
+        "MarkdownPresenter / 步骤 ItemsControl / 确认卡片按钮 / CheckBox"这几处结构都保留。
+    -->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
@@ -14,11 +25,6 @@
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
             <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
             <Setter Property="FontSize" Value="14" />
-        </Style>
-        <Style x:Key="ChatRichTextSecondary" TargetType="{x:Type controls:RichTextPresenter}">
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
-            <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
-            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <!--
@@ -30,11 +36,14 @@
             <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
             <Setter Property="FontSize" Value="14" />
         </Style>
+
+        <!--  工具名 / meta 这类次要小字  -->
         <Style x:Key="ChatLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="11" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
+
         <Style
             x:Key="ChatSessionItem"
             BasedOn="{StaticResource StretchListItem}"
@@ -44,531 +53,594 @@
     </UserControl.Resources>
 
     <Grid>
-        <!--  ============ 已配置：左对话列表 + 右对话记录 ============  -->
-        <Grid Margin="12" Visibility="{Binding IsConfigured, Converter={StaticResource BoolToVis}}">
+        <!--  ============ 已配置：左对话列表（浅色侧栏） + 右对话记录 ============  -->
+        <Grid Visibility="{Binding IsConfigured, Converter={StaticResource BoolToVis}}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250" />
+                <!--  阶段 133 追加：可收起。左列用 Auto + 侧栏自身定宽（236）：
+                      收起 = 把侧栏 Collapsed，Auto 列自然归零——收起/展开只动一个可见性。  -->
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <!--  ============ 左：对话列表 ============  -->
-            <controls:CardControl
+            <Grid
+                x:Name="SidebarHost"
                 Grid.Column="0"
-                Margin="0,0,6,0"
-                Header="{DynamicResource Assistant_Chat_Sessions}">
-                <Grid>
-                    <ListBox
-                        x:Name="SessionList"
-                        HorizontalContentAlignment="Stretch"
-                        ItemContainerStyle="{StaticResource ChatSessionItem}"
-                        ItemsSource="{Binding Sessions}"
-                        PreviewMouseRightButtonDown="OnSessionPreviewMouseRightButtonDown"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                        SelectedItem="{Binding SelectedSession, Mode=TwoWay}"
-                        VirtualizingStackPanel.IsVirtualizing="True"
-                        VirtualizingStackPanel.VirtualizationMode="Recycling">
-                        <ListBox.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Click="OnRenameSessionClick" Header="{DynamicResource Assistant_Chat_Rename}" />
-                                <MenuItem Click="OnDeleteSessionClick" Header="{DynamicResource Assistant_Chat_Delete}" />
-                                <MenuItem Click="OnClearSessionClick" Header="{DynamicResource Assistant_Chat_Clear}" />
-                            </ContextMenu>
-                        </ListBox.ContextMenu>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="4,6">
-                                    <TextBlock
-                                        FontSize="13"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="{Binding Title}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        Margin="0,2,0,0"
-                                        FontSize="11"
-                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding Preview}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        Margin="0,2,0,0"
-                                        FontSize="10"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{Binding UpdatedText}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                Width="236"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
+                <Grid Grid.Row="0" Margin="14,10,8,9">
                     <TextBlock
-                        Margin="12"
-                        HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="12"
-                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                        Text="{DynamicResource Assistant_Chat_NoSessions}"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding HasSession, Converter={StaticResource InverseBoolToVisibility}}" />
-                </Grid>
-
-                <controls:CardControl.Footer>
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Assistant_Chat_Sessions}" />
                     <ui:Button
-                        HorizontalAlignment="Center"
-                        Appearance="Primary"
+                        HorizontalAlignment="Right"
+                        Appearance="Transparent"
+                        AutomationProperties.Name="{DynamicResource Assistant_Chat_New}"
                         Click="OnNewSessionClick"
-                        Content="{DynamicResource Assistant_Chat_New}"
-                        Icon="{ui:SymbolIcon Add24}" />
-                </controls:CardControl.Footer>
-            </controls:CardControl>
+                        Icon="{ui:SymbolIcon Add24}"
+                        Padding="5"
+                        ToolTip="{DynamicResource Assistant_Chat_New}" />
+                </Grid>
+                <Border
+                    Grid.Row="0"
+                    Height="1"
+                    VerticalAlignment="Bottom"
+                    Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
-            <!--  ============ 右：对话记录 ============  -->
-            <Grid Grid.Column="1" Margin="6,0,0,0">
+                <ListBox
+                    x:Name="SessionList"
+                    Grid.Row="1"
+                    Margin="6,6,6,8"
+                    Padding="0"
+                    HorizontalContentAlignment="Stretch"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemContainerStyle="{StaticResource ChatSessionItem}"
+                    ItemsSource="{Binding Sessions}"
+                    PreviewMouseRightButtonDown="OnSessionPreviewMouseRightButtonDown"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectedItem="{Binding SelectedSession, Mode=TwoWay}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Click="OnRenameSessionClick" Header="{DynamicResource Assistant_Chat_Rename}" />
+                            <MenuItem Click="OnDeleteSessionClick" Header="{DynamicResource Assistant_Chat_Delete}" />
+                            <MenuItem Click="OnClearSessionClick" Header="{DynamicResource Assistant_Chat_Clear}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="9,7">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    FontSize="13"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Title}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Text="{Binding UpdatedText}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Margin="0,2,0,0"
+                                    FontSize="11"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Text="{Binding Preview}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="18"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                    Text="{DynamicResource Assistant_Chat_NoSessions}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasSession, Converter={StaticResource InverseBoolToVisibility}}" />
+
+                <!--  侧栏与对话区之间的 1px 分隔线（放进侧栏里：收起时一起消失）  -->
+                <Border
+                    Width="1"
+                    HorizontalAlignment="Right"
+                    Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
+
+            <!--  ============ 右：对话记录 + 输入 ============  -->
+            <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <controls:CardControl Grid.Row="0">
-                    <controls:CardControl.Header>
+                <!--  顶栏：[收起/展开对话列表] 会话标题（**双击改名**，没有右侧改名按钮）… 处理中提示  -->
+                <Grid Grid.Row="0" Margin="10,10,12,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:Button
+                        x:Name="SidebarToggle"
+                        Grid.Column="0"
+                        Margin="0,0,4,0"
+                        VerticalAlignment="Center"
+                        Appearance="Transparent"
+                        AutomationProperties.Name="{DynamicResource Assistant_Chat_SidebarCollapse}"
+                        Click="OnToggleSidebarClick"
+                        Padding="5"
+                        ToolTip="{DynamicResource Assistant_Chat_SidebarCollapse}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="13"
-                                    FontWeight="SemiBold"
-                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    MouseLeftButtonDown="OnTitleMouseLeftButtonDown"
-                                    Text="{Binding SessionTitle}"
-                                    TextTrimming="CharacterEllipsis"
-                                    ToolTip="{DynamicResource Assistant_Chat_Rename_Tip}"
-                                    Visibility="{Binding SelectedSession.IsRenaming, Converter={StaticResource InverseBoolToVisibility}}" />
-                                <TextBox
-                                    VerticalAlignment="Center"
-                                    FontSize="13"
-                                    KeyDown="OnTitleKeyDown"
-                                    LostFocus="OnTitleLostFocus"
-                                    Text="{Binding SelectedSession.TitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Visibility="{Binding SelectedSession.IsRenaming, Converter={StaticResource BoolToVis}}" />
-                            </Grid>
-
-                            <ui:Button
-                                Grid.Column="1"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"
-                                Appearance="Transparent"
-                                AutomationProperties.Name="{DynamicResource Assistant_Chat_Rename}"
-                                Click="OnRenameClick"
-                                Icon="{ui:SymbolIcon Edit24}"
-                                ToolTip="{DynamicResource Assistant_Chat_Rename}"
-                                Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}" />
-
-                            <TextBlock
-                                Grid.Column="2"
-                                MaxWidth="320"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{Binding PendingText}"
-                                TextTrimming="CharacterEllipsis"
-                                Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}" />
+                            <ui:SymbolIcon
+                                x:Name="SidebarToggleCollapseIcon"
+                                FontSize="14"
+                                Symbol="PanelLeftContract24" />
+                            <ui:SymbolIcon
+                                x:Name="SidebarToggleExpandIcon"
+                                FontSize="14"
+                                Symbol="PanelLeftExpand24"
+                                Visibility="Collapsed" />
                         </Grid>
-                    </controls:CardControl.Header>
+                    </ui:Button>
 
-                    <Grid>
-                        <ScrollViewer
-                            x:Name="TranscriptScroll"
-                            HorizontalScrollBarVisibility="Disabled"
-                            VerticalScrollBarVisibility="Auto">
-                            <!--  不用 ListBox：列表项的选中语义会跟"在气泡里拖选文字"打架  -->
-                            <ItemsControl x:Name="Transcript" ItemsSource="{Binding SelectedSession.Turns}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="2,4">
-                                            <!--  请求气泡：靠右  -->
+                    <Grid Grid.Column="1">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            MouseLeftButtonDown="OnTitleMouseLeftButtonDown"
+                            Text="{Binding SessionTitle}"
+                            TextTrimming="CharacterEllipsis"
+                            ToolTip="{DynamicResource Assistant_Chat_Rename_Tip}"
+                            Visibility="{Binding SelectedSession.IsRenaming, Converter={StaticResource InverseBoolToVisibility}}" />
+                        <TextBox
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            KeyDown="OnTitleKeyDown"
+                            LostFocus="OnTitleLostFocus"
+                            Text="{Binding SelectedSession.TitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="{Binding SelectedSession.IsRenaming, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+
+                    <TextBlock
+                        Grid.Column="2"
+                        MaxWidth="320"
+                        Margin="10,0,4,0"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding PendingText}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+                <Border
+                    Grid.Row="0"
+                    Height="1"
+                    VerticalAlignment="Bottom"
+                    Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+                <!--  记录区  -->
+                <Grid Grid.Row="1">
+                    <ScrollViewer
+                        x:Name="TranscriptScroll"
+                        Padding="18,14,18,6"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+                        <!--  不用 ListBox：列表项的选中语义会跟"在气泡里拖选文字"打架  -->
+                        <ItemsControl x:Name="Transcript" ItemsSource="{Binding SelectedSession.Turns}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,18">
+                                        <!--  提问：右侧浅色圆角块（无「我」标签，时间在 ToolTip）  -->
+                                        <Border
+                                            MaxWidth="600"
+                                            Padding="12,9"
+                                            HorizontalAlignment="Right"
+                                            AutomationProperties.Name="{DynamicResource Assistant_Chat_Request}"
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                            CornerRadius="8"
+                                            ToolTip="{Binding TimeText}">
+                                            <StackPanel>
+                                                <!--  RichTextPresenter 不设 Left 时会横向拉伸到 MaxWidth，
+                                                      短提问也会变成一条大灰带；靠左即"气泡贴着文字"  -->
+                                                <controls:RichTextPresenter
+                                                    HorizontalAlignment="Left"
+                                                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                                    Text="{Binding UserDisplay, Mode=OneWay}">
+                                                    <controls:RichTextPresenter.Style>
+                                                        <Style BasedOn="{StaticResource ChatRichText}" TargetType="{x:Type controls:RichTextPresenter}">
+                                                            <Setter Property="MaxHeight" Value="58" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsUserExpanded}" Value="True">
+                                                                    <Setter Property="MaxHeight" Value="100000" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </controls:RichTextPresenter.Style>
+                                                </controls:RichTextPresenter>
+                                                <ui:Button
+                                                    Margin="0,4,0,0"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Right"
+                                                    Appearance="Transparent"
+                                                    Click="OnToggleUserClick"
+                                                    Content="{Binding UserExpandLabel}"
+                                                    FontSize="12"
+                                                    Visibility="{Binding CanExpandUser, Converter={StaticResource BoolToVis}}" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!--  回答：**不套气泡**，直接落在页面底色上；
+                                              工具步骤 → 实时进度 → 确认卡片 → Markdown 正文 → meta  -->
+                                        <StackPanel
+                                            Margin="0,12,0,0"
+                                            AutomationProperties.Name="{DynamicResource Assistant_Chat_Answer}">
+                                            <!--  工具步骤：一排暗色小字（成功/失败看图标，状态在 ToolTip）  -->
+                                            <ItemsControl
+                                                Margin="0,0,0,8"
+                                                ItemsSource="{Binding Steps}"
+                                                Visibility="{Binding HasSteps, Converter={StaticResource BoolToVis}}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,1">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <ui:SymbolIcon
+                                                                Grid.Column="0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                                Symbol="Checkmark24"
+                                                                ToolTip="{Binding StatusText}"
+                                                                Visibility="{Binding Success, Converter={StaticResource BoolToVis}}" />
+                                                            <ui:SymbolIcon
+                                                                Grid.Column="0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                                                Symbol="Dismiss24"
+                                                                ToolTip="{Binding StatusText}"
+                                                                Visibility="{Binding Success, Converter={StaticResource InverseBoolToVisibility}}" />
+
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                Margin="6,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="12"
+                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                Text="{Binding DisplayName}" />
+                                                            <TextBlock
+                                                                Grid.Column="2"
+                                                                Margin="8,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{Binding ParamSummary}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                ToolTip="{Binding ResultSummary}" />
+                                                            <TextBlock
+                                                                Grid.Column="3"
+                                                                Margin="8,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{Binding ElapsedText}"
+                                                                Visibility="{Binding HasElapsed, Converter={StaticResource BoolToVis}}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!--  重型工具实时进度  -->
+                                            <TextBlock
+                                                Margin="0,0,0,6"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                Text="{Binding ProgressText}"
+                                                Visibility="{Binding HasProgress, Converter={StaticResource BoolToVis}}" />
+
+                                            <!--  确认卡片：写操作（如跳桥增删）需要用户确认  -->
                                             <Border
-                                                MaxWidth="560"
-                                                Padding="10,8"
-                                                HorizontalAlignment="Right"
-                                                Background="{DynamicResource SubtleFillColorTertiaryBrush}"
-                                                CornerRadius="6">
+                                                Margin="0,0,0,8"
+                                                Padding="12,10"
+                                                Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                                                CornerRadius="8"
+                                                Visibility="{Binding HasPendingConfirmation, Converter={StaticResource BoolToVis}}">
                                                 <StackPanel>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Style="{StaticResource ChatLabel}" Text="{DynamicResource Assistant_Chat_Request}" />
-                                                        <TextBlock
-                                                            Margin="8,0,0,0"
-                                                            Style="{StaticResource ChatLabel}"
-                                                            Text="{Binding TimeText}" />
-                                                    </StackPanel>
-                                                    <controls:RichTextPresenter
-                                                        Margin="0,4,0,0"
-                                                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                                        Text="{Binding UserDisplay, Mode=OneWay}">
-                                                        <controls:RichTextPresenter.Style>
-                                                            <Style BasedOn="{StaticResource ChatRichText}" TargetType="{x:Type controls:RichTextPresenter}">
-                                                                <Setter Property="MaxHeight" Value="58" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsUserExpanded}" Value="True">
-                                                                        <Setter Property="MaxHeight" Value="100000" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </controls:RichTextPresenter.Style>
-                                                    </controls:RichTextPresenter>
-                                                    <ui:Button
-                                                        Margin="0,4,0,0"
-                                                        Padding="0"
-                                                        HorizontalAlignment="Right"
-                                                        Appearance="Transparent"
-                                                        Click="OnToggleUserClick"
-                                                        Content="{Binding UserExpandLabel}"
+                                                    <TextBlock
                                                         FontSize="12"
-                                                        Visibility="{Binding CanExpandUser, Converter={StaticResource BoolToVis}}" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!--  回答气泡：靠左；工具步骤区 → 回答 → 确认卡片 → meta  -->
-                                            <Border
-                                                Margin="0,6,0,0"
-                                                Padding="10,8"
-                                                HorizontalAlignment="Left"
-                                                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
-                                                CornerRadius="6">
-                                                <StackPanel>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Style="{StaticResource ChatLabel}" Text="{DynamicResource Assistant_Chat_Answer}" />
-                                                        <TextBlock
-                                                            Margin="8,0,0,0"
-                                                            Style="{StaticResource ChatLabel}"
-                                                            Text="{Binding TimeText}" />
-                                                        <controls:SpinnerIcon
-                                                            Width="14"
-                                                            Height="14"
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="14"
-                                                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                            IsActive="{Binding ShowPendingBadge}" />
-                                                    </StackPanel>
-
-                                                    <!--  工具步骤区：每一步一行（图标 + 工具名 + 参数 + 耗时）  -->
-                                                    <ItemsControl
-                                                        Margin="0,6,0,0"
-                                                        ItemsSource="{Binding Steps}"
-                                                        Visibility="{Binding HasSteps, Converter={StaticResource BoolToVis}}">
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{DynamicResource Assistant_Chat_Confirm_Title}" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="11"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{DynamicResource Assistant_Chat_Confirm_Hint}"
+                                                        TextWrapping="Wrap" />
+                                                    <ItemsControl Margin="0,4,0,0" ItemsSource="{Binding PendingLines}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <Grid Margin="0,1">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                    </Grid.ColumnDefinitions>
-
-                                                                    <ui:SymbolIcon
-                                                                        Grid.Column="0"
-                                                                        VerticalAlignment="Center"
-                                                                        FontSize="12"
-                                                                        Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                                        Symbol="Checkmark24"
-                                                                        Visibility="{Binding Success, Converter={StaticResource BoolToVis}}" />
-                                                                    <ui:SymbolIcon
-                                                                        Grid.Column="0"
-                                                                        VerticalAlignment="Center"
-                                                                        FontSize="12"
-                                                                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"
-                                                                        Symbol="Dismiss24"
-                                                                        Visibility="{Binding Success, Converter={StaticResource InverseBoolToVisibility}}" />
-
-                                                                    <TextBlock
-                                                                        Grid.Column="1"
-                                                                        Margin="5,0,0,0"
-                                                                        VerticalAlignment="Center"
-                                                                        FontSize="12"
-                                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                        Text="{Binding DisplayName}" />
-                                                                    <TextBlock
-                                                                        Grid.Column="2"
-                                                                        Margin="6,0,0,0"
-                                                                        VerticalAlignment="Center"
-                                                                        FontSize="11"
-                                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                        Text="{Binding ParamSummary}"
-                                                                        TextTrimming="CharacterEllipsis"
-                                                                        ToolTip="{Binding ResultSummary}" />
-                                                                    <TextBlock
-                                                                        Grid.Column="3"
-                                                                        Margin="6,0,0,0"
-                                                                        VerticalAlignment="Center"
-                                                                        FontSize="11"
-                                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                        Text="{Binding StatusText}" />
-                                                                    <TextBlock
-                                                                        Grid.Column="4"
-                                                                        Margin="6,0,0,0"
-                                                                        VerticalAlignment="Center"
-                                                                        FontSize="11"
-                                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                        Text="{Binding ElapsedText}"
-                                                                        Visibility="{Binding HasElapsed, Converter={StaticResource BoolToVis}}" />
-                                                                </Grid>
+                                                                <TextBlock
+                                                                    FontSize="12"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{Binding}"
+                                                                    TextWrapping="Wrap" />
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
-
-                                                    <!--  重型工具实时进度  -->
-                                                    <TextBlock
-                                                        Margin="0,4,0,0"
-                                                        FontSize="11"
-                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                        Text="{Binding ProgressText}"
-                                                        Visibility="{Binding HasProgress, Converter={StaticResource BoolToVis}}" />
-
-                                                    <!--  确认卡片：写操作（如跳桥增删）需要用户确认  -->
-                                                    <Border
-                                                        Margin="0,6,0,0"
-                                                        Padding="10,8"
-                                                        Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
-                                                        CornerRadius="6"
-                                                        Visibility="{Binding HasPendingConfirmation, Converter={StaticResource BoolToVis}}">
-                                                        <StackPanel>
-                                                            <TextBlock
-                                                                FontSize="12"
-                                                                FontWeight="SemiBold"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource Assistant_Chat_Confirm_Title}" />
-                                                            <TextBlock
-                                                                Margin="0,2,0,0"
-                                                                FontSize="11"
-                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                Text="{DynamicResource Assistant_Chat_Confirm_Hint}"
-                                                                TextWrapping="Wrap" />
-                                                            <ItemsControl Margin="0,4,0,0" ItemsSource="{Binding PendingLines}">
-                                                                <ItemsControl.ItemTemplate>
-                                                                    <DataTemplate>
-                                                                        <TextBlock
-                                                                            FontSize="12"
-                                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                            Text="{Binding}"
-                                                                            TextWrapping="Wrap" />
-                                                                    </DataTemplate>
-                                                                </ItemsControl.ItemTemplate>
-                                                            </ItemsControl>
-                                                            <StackPanel
-                                                                Margin="0,8,0,0"
-                                                                HorizontalAlignment="Right"
-                                                                Orientation="Horizontal">
-                                                                <ui:Button
-                                                                    Margin="4,0"
-                                                                    Appearance="Primary"
-                                                                    Click="OnConfirmApplyClick"
-                                                                    Content="{DynamicResource Assistant_Chat_Confirm_Apply}"
-                                                                    Icon="{ui:SymbolIcon Checkmark24}" />
-                                                                <ui:Button
-                                                                    Margin="4,0"
-                                                                    Click="OnConfirmRejectClick"
-                                                                    Content="{DynamicResource Assistant_Chat_Confirm_Reject}"
-                                                                    Icon="{ui:SymbolIcon Dismiss24}" />
-                                                            </StackPanel>
-                                                        </StackPanel>
-                                                    </Border>
-
-                                                    <!--  回答正文（Markdown 渲染；流式增量按节流批量长进来）  -->
-                                                    <controls:MarkdownPresenter
-                                                        Margin="0,4,0,0"
-                                                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                                        Markdown="{Binding AnswerDisplay, Mode=OneWay}"
-                                                        Visibility="{Binding ShowAnswerBubble, Converter={StaticResource BoolToVis}}">
-                                                        <controls:MarkdownPresenter.Style>
-                                                            <Style BasedOn="{StaticResource ChatMarkdown}" TargetType="{x:Type controls:MarkdownPresenter}">
-                                                                <!--  折叠：约五行高度；展开：不限高  -->
-                                                                <Setter Property="MaxHeight" Value="96" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsAnswerExpanded}" Value="True">
-                                                                        <Setter Property="MaxHeight" Value="100000" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </controls:MarkdownPresenter.Style>
-                                                    </controls:MarkdownPresenter>
-
-                                                    <ui:Button
-                                                        Margin="0,4,0,0"
-                                                        Padding="0"
+                                                    <StackPanel
+                                                        Margin="0,8,0,0"
                                                         HorizontalAlignment="Right"
-                                                        Appearance="Transparent"
-                                                        Click="OnToggleAnswerClick"
-                                                        Content="{Binding AnswerExpandLabel}"
-                                                        FontSize="12"
-                                                        Visibility="{Binding CanExpandAnswer, Converter={StaticResource BoolToVis}}" />
-
-                                                    <TextBlock
-                                                        Margin="0,4,0,0"
-                                                        FontSize="12"
-                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Text="{DynamicResource Assistant_Chat_Generating}"
-                                                        Visibility="{Binding ShowPendingHint, Converter={StaticResource BoolToVis}}" />
-
-                                                    <TextBlock
-                                                        Margin="0,4,0,0"
-                                                        FontSize="12"
-                                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                                        Text="{DynamicResource Assistant_Chat_Stopped}"
-                                                        Visibility="{Binding ShowStopped, Converter={StaticResource BoolToVis}}" />
-
-                                                    <TextBlock
-                                                        Margin="0,4,0,0"
-                                                        FontSize="12"
-                                                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"
-                                                        Text="{Binding Error}"
-                                                        TextWrapping="Wrap"
-                                                        Visibility="{Binding ShowError, Converter={StaticResource BoolToVis}}" />
-
-                                                    <Grid Margin="0,6,0,0">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <TextBlock
-                                                            Grid.Column="0"
-                                                            FontSize="11"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{Binding Meta}"
-                                                            Visibility="{Binding HasMeta, Converter={StaticResource BoolToVis}}" />
-
+                                                        Orientation="Horizontal">
                                                         <ui:Button
-                                                            Grid.Column="1"
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Top"
-                                                            Appearance="Transparent"
-                                                            AutomationProperties.Name="{DynamicResource Assistant_Chat_CopyAnswer}"
-                                                            Click="OnCopyAnswerClick"
-                                                            Icon="{ui:SymbolIcon Copy24}"
-                                                            ToolTip="{DynamicResource Assistant_Chat_CopyAnswer}"
-                                                            Visibility="{Binding HasAnswer, Converter={StaticResource BoolToVis}}" />
-                                                    </Grid>
+                                                            Margin="4,0"
+                                                            Appearance="Primary"
+                                                            Click="OnConfirmApplyClick"
+                                                            Content="{DynamicResource Assistant_Chat_Confirm_Apply}"
+                                                            Icon="{ui:SymbolIcon Checkmark24}" />
+                                                        <ui:Button
+                                                            Margin="4,0"
+                                                            Click="OnConfirmRejectClick"
+                                                            Content="{DynamicResource Assistant_Chat_Confirm_Reject}"
+                                                            Icon="{ui:SymbolIcon Dismiss24}" />
+                                                    </StackPanel>
                                                 </StackPanel>
                                             </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
 
+                                            <!--  回答正文（Markdown 渲染；流式增量按节流批量长进来）  -->
+                                            <controls:MarkdownPresenter
+                                                ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                                Markdown="{Binding AnswerDisplay, Mode=OneWay}"
+                                                Visibility="{Binding ShowAnswerBubble, Converter={StaticResource BoolToVis}}">
+                                                <controls:MarkdownPresenter.Style>
+                                                    <Style BasedOn="{StaticResource ChatMarkdown}" TargetType="{x:Type controls:MarkdownPresenter}">
+                                                        <!--  折叠：约五行高度；展开：不限高  -->
+                                                        <Setter Property="MaxHeight" Value="96" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsAnswerExpanded}" Value="True">
+                                                                <Setter Property="MaxHeight" Value="100000" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </controls:MarkdownPresenter.Style>
+                                            </controls:MarkdownPresenter>
+
+                                            <ui:Button
+                                                Margin="0,4,0,0"
+                                                Padding="0"
+                                                HorizontalAlignment="Right"
+                                                Appearance="Transparent"
+                                                Click="OnToggleAnswerClick"
+                                                Content="{Binding AnswerExpandLabel}"
+                                                FontSize="12"
+                                                Visibility="{Binding CanExpandAnswer, Converter={StaticResource BoolToVis}}" />
+
+                                            <TextBlock
+                                                Margin="0,4,0,0"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Text="{DynamicResource Assistant_Chat_Generating}"
+                                                Visibility="{Binding ShowPendingHint, Converter={StaticResource BoolToVis}}" />
+
+                                            <TextBlock
+                                                Margin="0,4,0,0"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                Text="{DynamicResource Assistant_Chat_Stopped}"
+                                                Visibility="{Binding ShowStopped, Converter={StaticResource BoolToVis}}" />
+
+                                            <TextBlock
+                                                Margin="0,4,0,0"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                                Text="{Binding Error}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{Binding ShowError, Converter={StaticResource BoolToVis}}" />
+
+                                            <!--  meta：时间 · 模型 · 耗时 · token · 工具次数（小字一行）+ 复制  -->
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel
+                                                    Grid.Column="0"
+                                                    Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+                                                    <TextBlock Style="{StaticResource ChatLabel}" Text="{Binding TimeText}" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        Style="{StaticResource ChatLabel}"
+                                                        Text="{Binding Meta}"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        Visibility="{Binding HasMeta, Converter={StaticResource BoolToVis}}" />
+                                                </StackPanel>
+
+                                                <ui:Button
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Appearance="Transparent"
+                                                    AutomationProperties.Name="{DynamicResource Assistant_Chat_CopyAnswer}"
+                                                    Click="OnCopyAnswerClick"
+                                                    FontSize="12"
+                                                    Icon="{ui:SymbolIcon Copy24}"
+                                                    Opacity="0.75"
+                                                    Padding="5"
+                                                    ToolTip="{DynamicResource Assistant_Chat_CopyAnswer}"
+                                                    Visibility="{Binding HasAnswer, Converter={StaticResource BoolToVis}}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!--  空态：一句话 + 三个可直接点的示例  -->
+                    <StackPanel
+                        MaxWidth="560"
+                        Margin="24"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding ShowSessionEmptyTip, Converter={StaticResource BoolToVis}}">
                         <TextBlock
-                            Margin="24"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                             Text="{DynamicResource Assistant_Chat_EmptyTip}"
                             TextAlignment="Center"
-                            TextWrapping="Wrap"
-                            Visibility="{Binding ShowSessionEmptyTip, Converter={StaticResource BoolToVis}}" />
-                    </Grid>
-
-                    <controls:CardControl.Footer>
-                        <Grid>
-                            <CheckBox
-                                VerticalAlignment="Center"
-                                Content="{DynamicResource Assistant_Chat_UseContext}"
-                                IsChecked="{Binding SelectedSession.UseContext, Mode=TwoWay}"
-                                IsEnabled="{Binding HasSession}"
-                                ToolTip="{DynamicResource Assistant_Chat_UseContext_Tip}" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                FontSize="11"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="{Binding ContextInfoText}" />
-                        </Grid>
-                    </controls:CardControl.Footer>
-                </controls:CardControl>
-
-                <!--  ============ 输入 ============  -->
-                <controls:CardControl
-                    Grid.Row="1"
-                    Margin="0,8,0,0"
-                    Header="{DynamicResource Assistant_Chat_Input}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock
-                            Grid.Row="0"
-                            HorizontalAlignment="Right"
-                            FontSize="11"
-                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="{Binding EndpointSummary}"
-                            TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding EndpointSummary}" />
-
-                        <ui:TextBox
-                            Grid.Row="1"
-                            Margin="0,8,0,0"
-                            MinHeight="70"
-                            MaxHeight="160"
-                            AcceptsReturn="True"
-                            PlaceholderText="{DynamicResource Assistant_Chat_Input_Tip}"
-                            PreviewKeyDown="OnInputPreviewKeyDown"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                             TextWrapping="Wrap" />
-                    </Grid>
+                        <WrapPanel
+                            Margin="0,14,0,0"
+                            HorizontalAlignment="Center">
+                            <ui:Button
+                                Margin="4"
+                                Click="OnExampleClick"
+                                Content="{DynamicResource Assistant_Chat_Example_1}"
+                                FontSize="12"
+                                Padding="10,6" />
+                            <ui:Button
+                                Margin="4"
+                                Click="OnExampleClick"
+                                Content="{DynamicResource Assistant_Chat_Example_2}"
+                                FontSize="12"
+                                Padding="10,6" />
+                            <ui:Button
+                                Margin="4"
+                                Click="OnExampleClick"
+                                Content="{DynamicResource Assistant_Chat_Example_3}"
+                                FontSize="12"
+                                Padding="10,6" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
 
-                    <controls:CardControl.Footer>
-                        <Grid>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="11"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="{DynamicResource Assistant_Chat_Input_Hint}" />
-                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                                <ui:Button
-                                    Margin="4,0"
-                                    Appearance="Primary"
-                                    Click="OnSendClick"
-                                    Content="{DynamicResource Assistant_Chat_Send}"
-                                    Icon="{ui:SymbolIcon Send24}" />
-                                <ui:Button
-                                    Margin="4,0"
-                                    Click="OnStopClick"
-                                    Content="{DynamicResource Assistant_Chat_Stop}"
-                                    Icon="{ui:SymbolIcon Stop24}"
-                                    Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}" />
-                                <ui:Button
-                                    Margin="4,0"
-                                    Click="OnClearInputClick"
-                                    Content="{DynamicResource Assistant_Chat_Clear}"
-                                    Icon="{ui:SymbolIcon Eraser24}" />
-                                <ui:Button
-                                    x:Name="PopWindowButton"
-                                    Margin="4,0"
-                                    Click="OnPopWindowClick"
-                                    Content="{DynamicResource Assistant_Chat_PopWindow}"
-                                    Icon="{ui:SymbolIcon WindowNew24}" />
-                            </StackPanel>
+                <!--  输入区：一个圆角输入框 + 底部一排图标动作；开关与用量在下面一行  -->
+                <Grid Grid.Row="2" Margin="18,0,18,12">
+                    <!--  阶段 133 追加：输入区合并成**单个圆角框**
+                          （输入 → 一行动作：「带上上下文」开关 + 用量 + 弹窗/停止/发送）。
+                          回车提示已写在占位文本里，不再单独占一行；「清空输入」按钮与端点摘要按用户要求去掉。  -->
+                    <Border
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid Margin="10,7,8,7">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <ui:TextBox
+                                Grid.Row="0"
+                                MinHeight="52"
+                                MaxHeight="150"
+                                Padding="2,2,2,2"
+                                AcceptsReturn="True"
+                                AutomationProperties.Name="{DynamicResource Assistant_Chat_Input}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                PlaceholderText="{DynamicResource Assistant_Chat_Input_Tip}"
+                                PreviewKeyDown="OnInputPreviewKeyDown"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                                TextWrapping="Wrap" />
+
+                            <Grid Grid.Row="1" Margin="2,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <CheckBox
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Content="{DynamicResource Assistant_Chat_UseContext}"
+                                    FontSize="12"
+                                    IsChecked="{Binding SelectedSession.UseContext, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSession}"
+                                    ToolTip="{Binding SelectedSession.ContextTooltip}" />
+
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <ui:Button
+                                        x:Name="PopWindowButton"
+                                        Margin="2,0"
+                                        Appearance="Transparent"
+                                        AutomationProperties.Name="{DynamicResource Assistant_Chat_PopWindow}"
+                                        Click="OnPopWindowClick"
+                                        Icon="{ui:SymbolIcon WindowNew24}"
+                                        Padding="5"
+                                        ToolTip="{DynamicResource Assistant_Chat_PopWindow}" />
+                                    <ui:Button
+                                        Margin="6,0,0,0"
+                                        Click="OnStopClick"
+                                        Content="{DynamicResource Assistant_Chat_Stop}"
+                                        Icon="{ui:SymbolIcon Stop24}"
+                                        Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}" />
+                                    <ui:Button
+                                        Margin="6,0,0,0"
+                                        Appearance="Primary"
+                                        Click="OnSendClick"
+                                        Content="{DynamicResource Assistant_Chat_Send}"
+                                        Icon="{ui:SymbolIcon Send24}" />
+                                </StackPanel>
+                            </Grid>
                         </Grid>
-                    </controls:CardControl.Footer>
-                </controls:CardControl>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
 
         <!--  ============ 未配置：整页引导 ============  -->
         <Border
-            Margin="12"
-            Padding="24"
-            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
-            CornerRadius="6"
+            Margin="24"
+            Padding="32"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="8"
             Visibility="{Binding IsNotConfigured, Converter={StaticResource BoolToVis}}">
             <StackPanel
                 MaxWidth="520"
@@ -576,13 +648,13 @@
                 VerticalAlignment="Center">
                 <ui:SymbolIcon
                     HorizontalAlignment="Center"
-                    FontSize="32"
-                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                    FontSize="30"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                     Symbol="Settings24" />
                 <TextBlock
-                    Margin="0,12,0,0"
+                    Margin="0,14,0,0"
                     HorizontalAlignment="Center"
-                    FontSize="18"
+                    FontSize="17"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{DynamicResource Assistant_NotConfigured_Title}"
@@ -604,7 +676,7 @@
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
                 <StackPanel
-                    Margin="0,18,0,0"
+                    Margin="0,20,0,0"
                     HorizontalAlignment="Center"
                     Orientation="Horizontal">
                     <ui:Button

@@ -5604,17 +5604,17 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
   ② `character_blueprints` 的产物名是否解析出来；③ `character_contacts` 的标签名是否可读。
   另外**军团级**端点（军团资产/蓝本/联系人/结构/部门）需要军团职位权限，本阶段未做。
 
-> **AI 助手模块的当前状态**（阶段 132 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
+> **AI 助手模块的当前状态**（阶段 133 更新）：协议层（105）、引擎与工具层（106）、23 个工具（107）、界面与历史（108）、
 > Markdown 渲染（109）、主页快捷输入（110）、全局快捷键与设置（111）、离线探针四套件 + 工具调用日志（113）、
 > **v1.5 P1 九个工具（114）、补齐三套探针（115）、P2 五个只读 + 三个写工具（116）、角色 ESI 直读七个（117）、
 > ESI 全量网关四个元工具（118）、删除那 7 个直读工具并把名称富化下沉为通用能力（119）、
 > DeepSeek DSML 兼容（120）、AI 设置重构 + 逐工具开关 + 输出 token 默认 0（121）、
 > 工具声明的 token 预算与缓存契约（122）、按需声明（123）、设置项改名 AI 并改成钻取式菜单（124）、
-> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）、AI 助手改成常驻入口（126，只放页脚）、主页 banner 快捷提问改为新开对话（127）、AI 显示位置可选（128）、AI 设置详情页统一成 SettingCard 逐行 + 清 markdown（129）、AI 快捷键默认不启用（130）、内置说明书接入 AI（131：manual_search / manual_read，核心常驻）、单对话记忆：默认带上下文 + 完整工具往返 + 上下文预算 + 工具步骤落盘修复（132）** 均已落地；
+> 设置图标跟随主题 + 模型/翻译拆分与存储重整（125）、AI 助手改成常驻入口（126，只放页脚）、主页 banner 快捷提问改为新开对话（127）、AI 显示位置可选（128）、AI 设置详情页统一成 SettingCard 逐行 + 清 markdown（129）、AI 快捷键默认不启用（130）、内置说明书接入 AI（131：manual_search / manual_read，核心常驻）、单对话记忆：默认带上下文 + 完整工具往返 + 上下文预算 + 工具步骤落盘修复（132）、界面按 harness 观感重排：去卡片化 + 空态示例 + 单一输入区（133）** 均已落地；
 > 工具总数 **46**（47 个旧工具 − 阶段 117 的 7 个 + 网关 4 个 + 说明书 2 个；未含探针自己的 6 个 `probe_*` 替身），
-> 探针 **12 套**（阶段 132 逐套件实跑 **981 条 PASS**：engine 103 / ui 93 / tools 458 / toolcall 124 / tokens 9 /
+> 探针 **12 套**（阶段 133 逐套件实跑 **992 条 PASS**：engine 103 / ui 104 / tools 458 / toolcall 124 / tokens 9 /
 > routing 23 / manuals 58 / quickroute 27 / writes 71 / business 15；`esi` 163 与 `map` 45 未重跑，见 §8 第 69 条），
-> 构建 0 错误（45 个警告均为既有基线），语言键 **2299/2299** 无重复，应用实机启动验证通过。
+> 构建 0 错误（45 个警告均为既有基线），语言键 **2301/2301** 无重复，应用实机启动验证通过。
 > 工具声明（每次工具轮的固定前缀）实测 **24,314 字符**并默认**按需声明**（典型单套餐问题只声明 ≈10.4k 字符 ≈ 45%）。
 > 设置里只有**一个 AI 入口**（**设置 → AI**，阶段 124 改名「AI」并改钻取式，阶段 125 拆模型/翻译）：模型 / 翻译 / 行为 / ESI 全量访问 / 工具开关。
 > 记忆**只存在于单个对话**（阶段 132 定调）：同对话每次请求带上此前的完整记录（含工具往返），超出
@@ -6519,6 +6519,72 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
   **钉住最早一轮**（"我到底要干什么"，避免长会话后模型重复取数）与**底栏常态显示用量**。
 - **不做**：按模型窗口自动推导预算（要用户额外维护"模型窗口 token"，对纯云端大窗口收益不大）、
   摘要式压缩（要额外一次模型调用、结果不确定）。接本地小窗口模型时，把预算手动调小即可（0 = 不限制）。
+
+---
+
+### 阶段 133：AI 助手界面按"常见 harness"观感重排（去卡片化）
+
+> 起因（用户反馈）：「AI 助手界面 UI 不够简洁美观，重新参考常见 harness 设计一下」。
+> 参考对象：Claude Code / Cursor / Codex CLI 这类工具对话界面（左侧窄列表 + 右侧纯文本记录 + 底部单一输入区）。
+
+#### 一、改了什么（对照旧界面的三条取向）
+
+| 取向 | 旧界面 | 新界面 |
+|---|---|---|
+| **去卡片化** | 左栏 / 记录 / 输入各包一层 `CardControl`（带标题栏、分隔线、圆角边框） | 左栏换成**浅色侧栏 + 1px 分隔线**；回答正文**直接落在页面底色上**（不再是大灰气泡）；只有用户提问保留一个浅色圆角气泡 |
+| **少标签** | 每条记录上方一行「我 / 助手 + 时间」标签；工具步骤每行带"完成/失败"状态文字 | 时间进气泡 ToolTip 与 meta 行；工具调用压成**一排暗色小字**（成功/失败图标 + 工具名 + 参数摘要 + 耗时，状态文字变成图标悬停提示） |
+| **单一输入区** | 一个带「输入」标题栏的卡片 + 按钮密集的底栏 | 一个**圆角输入框** + 底部一排图标动作；「带上上下文」开关与用量、端点摘要压到输入框下面一行 |
+
+具体改动：
+- `AiAssistantChatView.xaml` 整体重排：左栏 236px 浅色侧栏（`CardBackgroundFillColorDefaultBrush`）+ 顶栏标题 + 右上角 `+` 新建（原"底部新建对话"主按钮）；记录区顶栏只留标题（双击改名）+ 改名笔 + 处理中计数；底部一个圆角 `ui:TextBox`（无边框）+ 图标动作（**首版是 橡皮擦 / 弹窗 / 停止 / 发送 + 框下一行开关与端点摘要；追加迭代按用户要求收拢成"一行：勾选框 + 用量 + 弹窗·停止·发送"，见本节"五"**）。
+- **用户气泡贴文字**：气泡里的 `RichTextPresenter` 设 `HorizontalAlignment="Left"`——不设的话 RichTextBox 会横向拉伸到 `MaxWidth`，短提问也变成一条 600px 大灰带（踩到与翻译页同款的坑）。背景换 `SubtleFillColorSecondaryBrush`（略强于原来的 Tertiary）。
+- **空态**：一句话说明 + **三枚可点的示例**（巨神兵级在吉他的价格 / 吉他到多美怎么走 / 帮我分析倒货），点一下即当提问发出（新增 `OnExampleClick` → `SubmitQuery`）。
+- 未配置引导页同步去卡片化（浅色圆角块 + 图标）。
+- 全部既有控件名与事件处理函数不变（`SessionList` / `Transcript` / `TranscriptScroll` / `PopWindowButton`），探针结构断言零改动。
+
+#### 二、语言键（净 +4，0 死键）
+
+- 新增：`Assistant_Chat_Example_1/2/3`（空态示例）、`Assistant_Chat_ClearInput`（清空输入，橡皮擦的 ToolTip/AutomationName；**阶段 133 追加迭代里按钮与键都已删除**，见本节"五"；旧按钮文字「清空当前对话」只留在左栏右键菜单，此前"橡皮擦写着清空当前对话却只清输入框"的歧义就此消除）。
+- 改写：`Assistant_Chat_EmptyTip`（示例挪进三枚按钮，只剩一句话）、`Assistant_Chat_NoSessions`（"点下方新建对话" → "点右上角 + 新建"）。
+- 中英各 **2303 / 2303**（首版 2303 → 追加迭代删 2 个又加回 2 个，净 +4）、0 重复、键集一致。
+
+#### 三、验证（含实机目检出图）
+
+- 构建（重定向输出）**0 错误**；45 个警告逐条核对，全部既有基线，本次 **0 新警告**。
+- **界面出图目检**（一次性 `shot` 探针，核验后已删除，见 §7）：离屏 1040×760 窗口构造带"3 步工具 + Markdown 表格 + 待确认写操作 + 空对话"的会话，`RenderTargetBitmap` 出图浅色 / 深色 / 空态三张，逐张看过：
+  - 回答正文落在页面底色、无气泡；工具步骤暗色一行 ✓；确认卡片黄底 + 应用/拒绝 ✓；meta 行 `时间 · 模型 · 耗时 · token · 工具 N 次` + 复制 ✓；输入区单框 + 图标动作 ✓；空态三枚示例 ✓；**深色主题**（此前快照问题是 `Window.Background` 取了上个主题的静态刷子——改用 `SetResourceReference` 走 DynamicResource 后正常）。
+  - 顺带发现并修掉一处浅色下不明显的缺陷：用户气泡被 RichTextBox 撑成 600px 宽条（见上"贴文字"）。
+- 探针回归：`ui` **104 / 0**（含"WPF 绑定错误 0 条"、Markdown 渲染、步骤区绑定、确认卡片可见、上下文开关存在且悬停提示含用量、**对话列表收起/展开双向**、**标题无改名按钮且带双击提示**、弹窗按钮两态）、`manuals` 58 / 0、`tokens` 9 / 0、`routing` 23 / 0、`toolcall` 124 / 0、`engine` 103 / 0。
+- **手册已更新**（§8 第 68 条）：`assistant` 的「管理对话 / 提问 / 读回答 / 独立窗口」小节全部按新布局改写（+ 号新建、橡皮擦=清空输入、空态示例、meta 含时间等）。
+
+#### 四、边界 / 未做
+
+- **没有做**：hover 才显示复制按钮（WPF-UI 按钮无类型键样式可 BasedOn，避免踩阶段 15/16 的坑，复制按钮保持常显、暗一点）。
+- 侧栏会话项仍是 2 行（标题 + 预览），没做拖拽排序 / 分组折叠（照旧）。
+- 深色主题下用户气泡用 `SubtleFillColorSecondaryBrush` 浅色覆盖，对比度足够；若用户反馈仍不够，再往上调一档。
+
+#### 五、追加迭代（用户反馈：输入区再收拢 + 上下文文案歧义）
+
+用户拿到首版后提了四条，全部照做：
+
+| # | 要求 | 落地 |
+|---|---|---|
+| 1 | 「带上上下文」开关放到**与发送同一行** | 输入框内的动作行改为 `☑ 带上上下文 | 用量文字 | 弹窗 · 停止 · 发送`；勾选框不再是框外独立一行 |
+| 2 | **去掉「清除输入」按钮** | XAML 删除橡皮擦按钮；`AiAssistantChatView.xaml.cs` 的 `OnClearInputClick`、`AiAssistantViewModel.ClearInput()`、语言键 `Assistant_Chat_ClearInput` 一并删除（不留死代码/死键） |
+| 3 | **去掉右下角的端点（大模型）提示** | 删除端点摘要 TextBlock 与整行状态栏；`AiAssistantViewModel.EndpointSummary` 属性与其在 `RefreshConfiguration` 里的赋值一并删除（`ChatProtocolFactory` 也随之不再需要，`using …Translation.Llm` 一并去掉） |
+| 4 | 提示里的「两轮」像上限，**太少** | 那句其实是"本对话当前已有的成功轮数"（截图里正好 2 条），不是上限。**上限是字符预算 200,000**（≈5–8 万 token，几十轮）：超出才丢中间较早的轮次，最早一轮与最新一轮优先保留。文案改为**不报轮数**：「已开启：带上全部记录（含工具调用）」，发过一次后显示实测用量「已带 12 轮 · 86k / 200k 字符」。回车提示行同样删除（占位文本里已经有） |
+| 5 | 开关的说明/用量**不要在界面上明文显示**，放 ToolTip | 删掉勾选框右侧那行 `ContextInfoText`；勾选框的悬停提示改成两行（说明 + 实时用量），界面上只剩 `☑ 带上上下文` |
+| 6 | 需要能**收起对话列表** | 顶栏最左加「收起/展开对话列表」按钮（`PanelLeftContract24` / `PanelLeftExpand24`，图标名先扫 `Wpf.Ui.dll` 确认）；收起 = 侧栏 `Collapsed`（左列是 **Auto**，自然归 0；不联动改 `ColumnDefinition.Width`）；状态存 `Assistant.SidebarCollapsed`（与"显示位置"同类的界面偏好，`RestoreDefaults` 一并复位） |
+| 7 | 标题重命名**改为双击**，不要右侧按钮 | 删掉顶栏的改名笔（`OnRenameClick` 一并删除，`BeginRenameSelectedSession` 仍由双击路径使用）；双击标题进入改名（标题本来就带「双击标题可重命名」悬停提示，可发现性靠它）；左栏右键「重命名对话」保留 |
+
+- **ToolTip 里的绑定坑**：ToolTip 不在勾选框的逻辑树里，`<CheckBox.ToolTip><TextBlock Text="{Binding …}"/></CheckBox.ToolTip>`
+  里的绑定**拿不到 DataContext**（探针当场抓到第二行恒为空）。改成 VM 上的字符串属性
+  （`AiChatSessionViewModel.ContextTooltip` = 说明 + `\n` + 用量）绑到 `ToolTip` 即可。
+- 语言键：中英各 **2303 / 2303**（净 +4：三枚示例 + `Assistant_Chat_SidebarCollapse/Expand`；迭代中删掉了 `ClearInput` 与 `Input_Hint`）、0 重复、键集一致。
+- 手册同步：`assistant` 的「管理对话 / 提问 / 独立窗口」小节改成新布局（勾选框与发送同行、没有清空按钮、去掉了端点摘要、用量改为悬停可见、可收起对话列表）。
+- 验证：构建 0 错误；`ui` **104** / `manuals` 58 / `tokens` 9 / `routing` 23 / `engine` 103 / `toolcall` 124 全 0 FAIL；
+  出图目检浅色 + 深色（**新踩一个坑**：视图本身 `Transparent`，出图时不能直接渲染视图——窗口底色不在它的视觉树里，
+  深色下白字落在"白"底上像文字消失；要先包一层 `Background` 绑到 `ApplicationBackgroundBrush` 的 `Border` 再渲染）。
 
 ---
 
@@ -7764,7 +7830,8 @@ Resources/Esi/EsiOperations.json             索引数据（102 KB；脚本生�
 tools/esi/gen_esi_index.py                   索引生成脚本（官方 OpenAPI → 索引；自带自检，支持 --spec 离线 / --check 只自检）
 ViewModels/Assistant/AiAssistantViewModel.cs / AiChatSessionViewModel.cs / AiChatTurnViewModel.cs
 Views/Pages/AiAssistantPage.xaml(.cs)        助手页（导航项 Nav.Assistant，图标 Sparkle24；阶段 126 起是**页脚常驻入口**）
-Views/UserControls/AiAssistantChatView.xaml(.cs)      对话视图（工具步骤区 / Markdown 回答 / 确认卡片 / meta + 复制回答）
+Views/UserControls/AiAssistantChatView.xaml(.cs)      对话视图（阶段 133 起 harness 式布局：浅色侧栏 + 纯文本回答 +
+                                            用户气泡贴文字 + 工具调用暗色小字 + 单一圆角输入区 + 空态示例；结构断言不变）
 Views/Windows/AssistantWindow.cs            独立助手窗口（阶段 128 取代原 AssistantPopup：Show/Toggle/Close/IsOpen，与页面/弹窗共用同一个 VM）
 Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  设置 → AI（钻取式二级/三级：模型 / 翻译 / 行为 / ESI 全量访问 / 工具开关；阶段 124 分类改名「AI」+ 钻取式，阶段 125 拆「模型 / 翻译」并重整存储）
 Views/UserControls/Settings/AiModelSettingView.xaml(.cs)       模型节：协议 / 地址 / Key / 模型 / 生成参数 / 测试连接（`Ai.*`）

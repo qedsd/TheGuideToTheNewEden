@@ -26,6 +26,7 @@ public static class AiAssistantSettingService
     private const string DisabledToolsKey = "Assistant.Tools.Disabled";
     private const string AutoRouteKey = "Assistant.Tools.AutoRoute";
     private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
+    private const string SidebarCollapsedKey = "Assistant.SidebarCollapsed";
     private const string MaxContextCharsKey = "Assistant.MaxContextChars";
 
     /// <summary>单次请求的最大工具轮数（防模型连环调工具烧 token）。</summary>
@@ -58,6 +59,9 @@ public static class AiAssistantSettingService
 
     /// <summary>默认**不**把 AI 显示在主窗口里（阶段 128 用户要求）：所有入口都开独立窗口。</summary>
     public const bool DefaultShowInMainWindow = false;
+
+    /// <summary>对话列表默认展开（阶段 133 追加的"收起/展开对话列表"，属于界面偏好；与显示位置同类）。</summary>
+    public const bool DefaultSidebarCollapsed = false;
 
     /// <summary>
     /// 对话上下文的默认字符预算（阶段 132）：同一个对话每次请求都带上此前的完整历史（含工具往返），
@@ -162,11 +166,25 @@ public static class AiAssistantSettingService
     /// </summary>
     public static bool ShowInMainWindow { get; private set; } = DefaultShowInMainWindow;
 
+    /// <summary>对话列表（左栏）是否收起（阶段 133 追加；界面偏好，会记住）。</summary>
+    public static bool SidebarCollapsed { get; private set; } = DefaultSidebarCollapsed;
+
     /// <summary>保存"AI 是否显示在主窗口里"。</summary>
     public static void SaveShowInMainWindow(bool showInMainWindow)
     {
         ShowInMainWindow = showInMainWindow;
         SettingsService.SetBool(ShowInMainWindowKey, ShowInMainWindow);
+        SettingsService.Save();
+    }
+
+    /// <summary>
+    /// 记住"对话列表是否收起"（阶段 133 追加）。与显示位置一样属于**界面偏好**，
+    /// 存在 settings.json 里（不单列设置项，用户直接点左栏顶部的按钮切换）。
+    /// </summary>
+    public static void SaveSidebarCollapsed(bool collapsed)
+    {
+        SidebarCollapsed = collapsed;
+        SettingsService.SetBool(SidebarCollapsedKey, SidebarCollapsed);
         SettingsService.Save();
     }
 
@@ -222,6 +240,7 @@ public static class AiAssistantSettingService
         DisabledTools = disabled;
         AutoRouteTools = SettingsService.GetBool(AutoRouteKey, true);
         ShowInMainWindow = SettingsService.GetBool(ShowInMainWindowKey, DefaultShowInMainWindow);
+        SidebarCollapsed = SettingsService.GetBool(SidebarCollapsedKey, DefaultSidebarCollapsed);
     }
 
     /// <summary>保存 ESI 网关设置（设置页与主保存同一处提交）。</summary>
@@ -292,5 +311,6 @@ public static class AiAssistantSettingService
         SaveDisabledTools([]);
         SaveRouting(true);
         SaveShowInMainWindow(DefaultShowInMainWindow);
+        SaveSidebarCollapsed(DefaultSidebarCollapsed);
     }
 }

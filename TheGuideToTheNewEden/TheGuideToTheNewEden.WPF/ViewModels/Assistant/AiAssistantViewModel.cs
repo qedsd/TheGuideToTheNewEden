@@ -7,7 +7,6 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Settings;
-using TheGuideToTheNewEden.WPF.Services.Translation.Llm;
 using TheGuideToTheNewEden.WPF.Views.Pages;
 using TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -61,15 +60,6 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public bool IsNotConfigured => !IsConfigured;
-
-    private string _endpointSummary = string.Empty;
-
-    /// <summary>当前端点摘要（如「OpenAI 兼容 · deepseek-chat」）。</summary>
-    public string EndpointSummary
-    {
-        get => _endpointSummary;
-        private set => Set(ref _endpointSummary, value);
-    }
 
     public string NotConfiguredText => FindString("Assistant_AiUnavailable");
 
@@ -257,11 +247,8 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
 
     public void RefreshConfiguration()
     {
-        var endpoint = TranslationSettingService.AiEndpoint;
-        IsConfigured = endpoint.IsConfigured;
-        EndpointSummary = IsConfigured
-            ? $"{FindString(ChatProtocolFactory.Get(endpoint.Protocol).DisplayNameKey)} · {endpoint.Model}"
-            : string.Empty;
+        // 阶段 133 追加：对话页不再显示端点摘要（用户要求去掉），这里只判"配没配好"
+        IsConfigured = TranslationSettingService.AiEndpoint.IsConfigured;
 
         OnPropertyChanged(nameof(NotConfiguredText));
         OnPropertyChanged(nameof(ShowSessionEmptyTip));
@@ -532,7 +519,7 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>界面确认卡片：应用 / 拒绝挂起的写操作。</summary>
     public void ResolveConfirmation(bool apply) => _confirmation?.TrySetResult(apply);
 
-    public void ClearInput() => InputText = string.Empty;
+    // 阶段 133 追加：输入框旁的「清空输入」按钮已去掉（用户要求），ClearInput 随之删除。
 
     private async Task<bool> WaitForConfirmationAsync(CancellationToken ct)
     {

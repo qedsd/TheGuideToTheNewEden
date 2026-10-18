@@ -43,7 +43,24 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
             Model.ContextDefaultV2 = true;   // 用户显式改过 → 以后不再按"旧默认值"翻回来
             OnPropertyChanged();
             OnPropertyChanged(nameof(ContextInfoText));
+            OnPropertyChanged(nameof(ContextTooltip));
             _onChanged?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// 上下文开关的悬停提示：**说明 + 实时用量**两行（阶段 133 追加）。
+    /// <para>
+    /// 为什么不是 XAML 里两行 TextBlock：ToolTip 不在勾选框的逻辑树里，里面的 <c>{Binding}</c>
+    /// 拿不到 DataContext（实测第二行恒为空）；绑成一个字符串属性最省事。
+    /// </para>
+    /// </summary>
+    public string ContextTooltip
+    {
+        get
+        {
+            var tip = FindString("Assistant_Chat_UseContext_Tip");
+            return string.IsNullOrWhiteSpace(tip) ? ContextInfoText : $"{tip}\n{ContextInfoText}";
         }
     }
 
@@ -57,6 +74,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
     {
         _lastContext = result;
         OnPropertyChanged(nameof(ContextInfoText));
+        OnPropertyChanged(nameof(ContextTooltip));
     }
 
     public string ContextInfoText
@@ -71,8 +89,9 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
             var last = _lastContext;
             if (last is null)
             {
-                // 还没发过请求：只报"能带几条"
-                return string.Format(FindString("Assistant_Chat_ContextOn"), ContextCandidateCount);
+                // 还没发过请求：只说明"带全部记录"，**不报轮数**——
+                // 旧文案「每次带上此前 N 条问答」容易被读成"上限 N 轮"（阶段 133 追加修正）
+                return FindString("Assistant_Chat_ContextOn");
             }
 
             var budget = AiAssistantSettingService.MaxContextChars;
@@ -247,6 +266,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(ContextCandidateCount));
         OnPropertyChanged(nameof(ContextInfoText));
+        OnPropertyChanged(nameof(ContextTooltip));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
