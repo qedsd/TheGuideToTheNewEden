@@ -1,7 +1,12 @@
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
+using TheGuideToTheNewEden.WPF.Converters;
 using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.ViewModels.GamePreview;
 
@@ -26,6 +31,10 @@ public partial class GamePreviewPage : Page
     private bool _initialized;
     private bool _exitHooked;
     private PreviewItem? _subscribedItem;
+    private ScrollViewer? _viewport;
+
+    /// <summary>把"视口值 − 内边距"的换算集中在一处（与 XAML 时代的写法同一语义）。</summary>
+    private static readonly ViewportMaxHeightConverter ViewportInset = new();
 
     public GamePreviewPage()
     {
@@ -37,12 +46,16 @@ public partial class GamePreviewPage : Page
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         _viewModel.Setting.PropertyChanged += OnGlobalSettingPropertyChanged;
         PreviewArea.SizeChanged += (_, _) => UpdatePreviewLayout();
+        // 参数条显隐/换行会改变它占的高度（画面高度要给让位），这里跟着重算
+        PreviewInfo.SizeChanged += (_, _) => UpdatePreviewLayout();
     }
 
     // ---------- 生命周期 ----------
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        AttachViewportClamp();
+
         if (!_exitHooked)
         {
             _exitHooked = true;
@@ -70,6 +83,79 @@ public partial class GamePreviewPage : Page
         // 缩略图是直接画在主窗口上的，离开页面必须注销，否则那块区域会留下游戏画面
         _selectionPreview.StateChanged -= OnSelectionPreviewStateChanged;
         _selectionPreview.Detach();
+        DetachViewportClamp();
+    }
+
+    // ---------- 视口夹取 ----------
+
+    /// <summary>
+    /// 把页面夹在承载页面的外层 <see cref="ScrollViewer"/> 视口内。
+    /// <para>
+    /// 为什么不能写在 XAML 里：页面被 <c>Frame</c> 承载时，<c>RelativeSource=FindAncestor,
+    /// AncestorType=ScrollViewer</c> 实测解析不到（日志里只有一条 "Cannot find source for binding"），
+    /// 页面于是被以无限高度测量——设置区自己的 ScrollViewer 永远拿不到受限高度（滚轮滚的是整页），
+    /// 老的三列布局也会横向溢出。这里在 <c>Loaded</c> 后用可视树找一次，并在视口尺寸变化时刷新。
+    /// </para>
+    /// </summary>
+    private void AttachViewportClamp()
+    {
+        if (_viewport is not null)
+        {
+            return;
+        }
+
+        _viewport = FindVisualAncestor<ScrollViewer>(this);
+        if (_viewport is null)
+        {
+            return;
+        }
+
+        _viewport.SizeChanged += OnViewportSizeChanged;
+        ApplyViewportClamp();
+    }
+
+    private void DetachViewportClamp()
+    {
+        if (_viewport is null)
+        {
+            return;
+        }
+
+        _viewport.SizeChanged -= OnViewportSizeChanged;
+        _viewport = null;
+    }
+
+    private void OnViewportSizeChanged(object sender, SizeChangedEventArgs e) => ApplyViewportClamp();
+
+    private void ApplyViewportClamp()
+    {
+        if (_viewport is null)
+        {
+            return;
+        }
+
+        PageRoot.MaxHeight = Clamp(_viewport.ViewportHeight, 20);
+        PageRoot.MaxWidth = Clamp(_viewport.ViewportWidth, 28);
+
+        static double Clamp(double viewport, double inset)
+            => (double)ViewportInset.Convert(viewport, typeof(double), inset.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+    }
+
+    private static T? FindVisualAncestor<T>(DependencyObject child)
+        where T : DependencyObject
+    {
+        var parent = VisualTreeHelper.GetParent(child);
+        while (parent is not null)
+        {
+            if (parent is T match)
+            {
+                return match;
+            }
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return null;
     }
 
     private void OnApplicationExit(object? sender, ExitEventArgs e)
@@ -83,12 +169,22 @@ public partial class GamePreviewPage : Page
     /// <summary>
     /// 预览区"宽度占满、高度按源画面比例"：这样画面不会被拉伸，也不会出现黑边。
     /// 高度夹在卡片可用高度内，超出时由缩略图按比例在内部留边（不会溢出被裁）。
+    /// <para>
+    /// 参数条与分隔线也在"画面 + 参数条"这一组里（垂直居中），所以高瘦的源窗口（比例 &lt; 1）必须先把它们的高度扣掉，
+    /// 否则画面会占满整列、把参数条顶出可视区。
+    /// </para>
     /// </summary>
     private void UpdatePreviewLayout()
     {
         var aspect = _selectionPreview.SourceAspect > 0 ? _selectionPreview.SourceAspect : DefaultPreviewAspect;
         var width = PreviewArea.ActualWidth;
         var availableHeight = PreviewArea.ActualHeight;
+
+        if (PreviewInfo.Visibility == Visibility.Visible)
+        {
+            // 上方分隔线（1px）+ 它的上外边距（10px）
+            availableHeight = Math.Max(0, availableHeight - PreviewInfo.ActualHeight - 11);
+        }
 
         if (width > 0 && aspect > 0)
         {
@@ -263,6 +359,182 @@ public partial class GamePreviewPage : Page
         if ((sender as FrameworkElement)?.DataContext is PreviewHotKeyGroup group)
         {
             _viewModel.UpdateGroup(group);
+        }
+    }
+
+    // ---------- 分组角色点选 ----------
+
+    private void OnGroupCharacterListLoaded(object sender, RoutedEventArgs e)
+        => UpdateGroupMemberCount(sender as DependencyObject);
+
+    private void OnGroupCharacterChipLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is ToggleButton chip
+            && chip.DataContext is CharacterCandidate candidate
+            && TryGetGroup(chip) is { } group)
+        {
+            chip.IsChecked = ContainsMember(group, candidate.Name);
+        }
+    }
+
+    /// <summary>点胶囊 = 加入/移出该分组。成员关系写回 <see cref="PreviewHotKeyGroup.GameNames"/>，切换逻辑立即生效。</summary>
+    private void OnGroupCharacterChipClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ToggleButton chip
+            || chip.DataContext is not CharacterCandidate candidate
+            || TryGetGroup(chip) is not { } group)
+        {
+            return;
+        }
+
+        if (chip.IsChecked == true)
+        {
+            // 先按忽略大小写清掉同名的旧写法，再写入候选列表里的标准写法（避免大小写不同的两份）
+            group.GameNames.RemoveWhere(n => string.Equals(n, candidate.Name, StringComparison.OrdinalIgnoreCase));
+            group.GameNames.Add(candidate.Name);
+        }
+        else
+        {
+            group.GameNames.RemoveWhere(n => string.Equals(n, candidate.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        UpdateGroupMemberCount(chip);
+        _viewModel.Save();
+    }
+
+    private void OnSelectAllGroupCharactersClick(object sender, RoutedEventArgs e)
+    {
+        if (TryGetGroup(sender) is not { } group)
+        {
+            return;
+        }
+
+        foreach (var candidate in _viewModel.CharacterCandidates)
+        {
+            group.GameNames.Add(candidate.Name);
+        }
+
+        SyncGroupChips(sender, group);
+        UpdateGroupMemberCount(sender);
+        _viewModel.Save();
+    }
+
+    private void OnClearGroupCharactersClick(object sender, RoutedEventArgs e)
+    {
+        if (TryGetGroup(sender) is not { } group)
+        {
+            return;
+        }
+
+        group.GameNames.Clear();
+        SyncGroupChips(sender, group);
+        UpdateGroupMemberCount(sender);
+        _viewModel.Save();
+    }
+
+    /// <summary>手工加一个不在候选列表里的角色（未登录 / 未保存配置），加完立即出现胶囊并选中。</summary>
+    private void OnAddGroupCharacterClick(object sender, RoutedEventArgs e)
+    {
+        if (TryGetGroup(sender) is not { } group
+            || FindGroupRoot(sender as DependencyObject) is not { } root
+            || FindByName<TextBox>(root, "GroupNewCharacter") is not { } input)
+        {
+            return;
+        }
+
+        var name = input.Text?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            return;
+        }
+
+        group.GameNames.Add(name);
+        input.Text = string.Empty;
+        _viewModel.AddCharacterCandidate(name);
+        UpdateGroupMemberCount(sender);
+        _viewModel.Save();
+    }
+
+    /// <summary>把成员关系同步到该卡片上的点选胶囊（HashSet 没有变更通知，只能手动刷）。</summary>
+    private static void SyncGroupChips(object? element, PreviewHotKeyGroup group)
+    {
+        if (FindGroupRoot(element) is not { } root)
+        {
+            return;
+        }
+
+        foreach (var chip in FindDescendants<ToggleButton>(root))
+        {
+            if (chip.DataContext is CharacterCandidate candidate)
+            {
+                chip.IsChecked = ContainsMember(group, candidate.Name);
+            }
+        }
+    }
+
+    private static bool ContainsMember(PreviewHotKeyGroup group, string name)
+        => group.GameNames.Any(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
+
+    private void UpdateGroupMemberCount(object? element)
+    {
+        if (FindGroupRoot(element) is not { } root
+            || root.DataContext is not PreviewHotKeyGroup group
+            || FindByName<TextBlock>(root, "GroupSelectedCount") is not { } count)
+        {
+            return;
+        }
+
+        var format = Application.Current?.TryFindResource("GamePreviewPage_GroupHotkey_Count") as string ?? "{0} / {1}";
+        count.Text = string.Format(format, group.GameNames.Count, _viewModel.CharacterCandidates.Count);
+    }
+
+    /// <summary>
+    /// 分组卡片（DataTemplate 生成）的最高一层"DataContext 是分组"的元素。
+    /// 胶囊自身的 DataContext 是候选角色，所以要往上找到卡片根才能取分组、找同卡片的控件。
+    /// </summary>
+    private static FrameworkElement? FindGroupRoot(object? element)
+    {
+        FrameworkElement? root = null;
+        var current = element as DependencyObject;
+        while (current is not null)
+        {
+            if (current is FrameworkElement frameworkElement && frameworkElement.DataContext is PreviewHotKeyGroup)
+            {
+                root = frameworkElement;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return root;
+    }
+
+    private static PreviewHotKeyGroup? TryGetGroup(object? sender)
+        => sender is FrameworkElement element
+            ? element.DataContext as PreviewHotKeyGroup ?? FindGroupRoot(element)?.DataContext as PreviewHotKeyGroup
+            : null;
+
+    /// <summary>模板里的 x:Name 没有可靠的 namescope 入口，直接按 <see cref="FrameworkElement.Name"/> 在可视化树里找。</summary>
+    private static T? FindByName<T>(DependencyObject root, string name)
+        where T : FrameworkElement
+        => FindDescendants<T>(root).FirstOrDefault(element => element.Name == name);
+
+    private static IEnumerable<T> FindDescendants<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (var nested in FindDescendants<T>(child))
+            {
+                yield return nested;
+            }
         }
     }
 

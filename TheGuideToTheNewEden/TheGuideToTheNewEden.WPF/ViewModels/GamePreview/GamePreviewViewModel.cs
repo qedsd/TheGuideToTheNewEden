@@ -57,6 +57,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             Interval = TimeSpan.FromSeconds(1),
         };
         _processMonitor.Tick += async (_, _) => await RefreshAsync();
+
+        // 顶部客户端条的"运行计数胶囊"与空态提示都靠这两个集合/属性变化驱动
+        Processes.CollectionChanged += OnProcessesChanged;
     }
 
     // ---------- 绑定属性 ----------
@@ -131,6 +134,22 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public bool Running => _manager.RunningCount > 0;
+
+    /// <summary>是否发现了客户端（顶部客户端条的空态与胶囊列表二选一）。</summary>
+    public bool HasProcesses => Processes.Count > 0;
+
+    public int ProcessCount => Processes.Count;
+
+    public int RunningProcessCount => Processes.Count(p => p.Running);
+
+    /// <summary>左侧计数胶囊的文字（运行数 / 总数）。语言中立，语义靠 ToolTip 的「预览中」。</summary>
+    public string ProcessCountText => $"{RunningProcessCount} / {ProcessCount}";
+
+    /// <summary>
+    /// 分组快捷键可点选的角色（当前发现的客户端 + 已保存配置 + 各分组里手工加过的名字，去重后按发现顺序）。
+    /// 只作展示与点选，真正的成员关系仍存在 <see cref="PreviewHotKeyGroup.GameNames"/>。
+    /// </summary>
+    public ObservableCollection<CharacterCandidate> CharacterCandidates { get; } = [];
 
     /// <summary>顺序编辑框内容（每行一个窗口标题）。</summary>
     public string OrderText
@@ -298,6 +317,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
             OnPropertyChanged(nameof(Running));
 
+            // 窗口标题变成"EVE - 角色名"、以及预览启动后新落盘的配置，都会让候选角色变化
+            RefreshCharacterCandidates();
+
             // 只有顺序真的变了才落盘：定时器每秒都会刷新，不能每轮都写文件
             if (orderChanged)
             {
@@ -320,6 +342,136 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         {
             Core.Log.Error(ex);
         }
+    }
+
+    /// <summary>
+    /// 列表增删/移动时维护"运行计数"与空态：只在加入时订阅、移出时退订，
+    /// 逐项的 <see cref="ProcessInfo.Running"/> 变化才会反映到计数胶囊上。
+    /// </summary>
+    private void OnProcessesChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (ProcessInfo process in e.OldItems)
+            {
+                process.PropertyChanged -= OnProcessPropertyChanged;
+            }
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (ProcessInfo process in e.NewItems)
+            {
+                process.PropertyChanged += OnProcessPropertyChanged;
+            }
+        }
+
+        OnPropertyChanged(nameof(HasProcesses));
+        RaiseProcessCounts();
+        RefreshCharacterCandidates();
+    }
+
+    private void OnProcessPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ProcessInfo.Running))
+        {
+            RaiseProcessCounts();
+            RefreshCharacterCandidates();
+        }
+    }
+
+    private void RaiseProcessCounts()
+    {
+        OnPropertyChanged(nameof(ProcessCount));
+        OnPropertyChanged(nameof(RunningProcessCount));
+        OnPropertyChanged(nameof(ProcessCountText));
+    }
+
+    // ---------- 分组快捷键的候选角色 ----------
+
+    /// <summary>
+    /// 重建 <see cref="CharacterCandidates"/>：发现中的角色（按列表顺序）→ 已保存配置 / 其他分组里手工加过的名字（按字母）。
+    /// 内容（名字 + 是否预览中）没有变化时直接返回——定时刷新每秒都会调用，不能每次都重建列表（会打断点选）。
+    /// </summary>
+    private void RefreshCharacterCandidates()
+    {
+        var ordered = new List<CharacterCandidate>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void Add(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return;
+            }
+
+            var trimmed = name.Trim();
+            if (seen.Add(trimmed))
+            {
+                ordered.Add(new CharacterCandidate(trimmed, IsCharacterPreviewing(trimmed)));
+            }
+        }
+
+        foreach (var process in Processes)
+        {
+            Add(process.GetCharacterName());
+        }
+
+        // 未登录 / 已保存配置里的角色，以及旧配置里手工写进分组的名字，按名称排序补在后面
+        var extras = new SortedSet<string>(StringComparer.CurrentCultureIgnoreCase);
+        foreach (var item in _setting.PreviewItems)
+        {
+            if (!string.IsNullOrWhiteSpace(item.Name) && !item.Name.StartsWith('*'))
+            {
+                extras.Add(item.Name);
+            }
+        }
+
+        foreach (var group in _setting.HotKeyGroups)
+        {
+            foreach (var name in group.GameNames)
+            {
+                extras.Add(name);
+            }
+        }
+
+        foreach (var name in extras)
+        {
+            Add(name);
+        }
+
+        if (CharacterCandidates.Count == ordered.Count
+            && CharacterCandidates.Zip(ordered).All(pair => pair.First == pair.Second))
+        {
+            return;
+        }
+
+        CharacterCandidates.Clear();
+        foreach (var candidate in ordered)
+        {
+            CharacterCandidates.Add(candidate);
+        }
+    }
+
+    private bool IsCharacterPreviewing(string name)
+        => Processes.Any(p => p.Running
+            && string.Equals(p.GetCharacterName(), name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>手工添加一个候选角色（不在列表里的角色名也能进分组），已经存在则忽略。</summary>
+    public void AddCharacterCandidate(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        var trimmed = name.Trim();
+        if (CharacterCandidates.Any(c => string.Equals(c.Name, trimmed, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        CharacterCandidates.Add(new CharacterCandidate(trimmed, IsCharacterPreviewing(trimmed)));
     }
 
     private bool InsertByOrder(ProcessInfo process)
@@ -842,7 +994,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         var targets = GetSwitchTargets(p =>
         {
             var name = p.GetCharacterName();
-            return !string.IsNullOrEmpty(name) && group.GameNames.Contains(name);
+            // 不区分大小写：手工加进来的角色名可能与游戏里的写法大小写不同（旧的 StringSetConverter 也是 IgnoreCase）
+            return !string.IsNullOrEmpty(name)
+                && group.GameNames.Any(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
         });
 
         if (targets.Count == 0)
