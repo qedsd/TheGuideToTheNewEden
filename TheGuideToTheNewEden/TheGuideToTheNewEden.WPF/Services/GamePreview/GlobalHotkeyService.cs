@@ -235,10 +235,26 @@ public sealed class GlobalHotkeyService : IDisposable
         map.TryAdd("end", 0x23);
         map.TryAdd("pageup", 0x21);
         map.TryAdd("pagedown", 0x22);
+        map.TryAdd("menu", 0x5D);
+        map.TryAdd("apps", 0x5D);
         map.TryAdd("up", 0x26);
         map.TryAdd("down", 0x28);
         map.TryAdd("left", 0x25);
         map.TryAdd("right", 0x27);
+
+        // 友好符号别名：按键选择器直接输出 Ctrl+- / Ctrl+[ 这类可读组合，
+        // 不再逼用户记 VK_OEM_MINUS 之类的内部名（CSV 里的 OEM 名仍然可用）。
+        map.TryAdd("-", 0xBD);
+        map.TryAdd("=", 0xBB);
+        map.TryAdd("[", 0xDB);
+        map.TryAdd("]", 0xDD);
+        map.TryAdd("\\", 0xDC);
+        map.TryAdd(";", 0xBA);
+        map.TryAdd("'", 0xDE);
+        map.TryAdd(",", 0xBC);
+        map.TryAdd(".", 0xBE);
+        map.TryAdd("/", 0xBF);
+        map.TryAdd("`", 0xC0);
         return map;
     }
 }

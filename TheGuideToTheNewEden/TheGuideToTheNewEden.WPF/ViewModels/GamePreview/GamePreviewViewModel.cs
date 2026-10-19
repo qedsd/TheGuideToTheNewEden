@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
@@ -32,12 +33,15 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     private bool _refreshing;
     private bool _disposed;
     private ProcessInfo? _selectedProcess;
-    private bool _isGlobalSetting;
+    private int _settingsTabIndex = 1;
+    private PreviewHotKeyGroup? _selectedHotKeyGroup;
+    private string _groupFilter = string.Empty;
     private int _forwardHotkeyId = -1;
     private int _backwardHotkeyId = -1;
     private string _lastActiveGuid = string.Empty;
     private PreviewHotKeyGroup? _lastActiveGroup;
-    private string _orderText = string.Empty;
+    private string _clientFilter = string.Empty;
+    private bool _isPreviewVisible = true;
 
     public GamePreviewViewModel()
     {
@@ -60,6 +64,19 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         // 顶部客户端条的"运行计数胶囊"与空态提示都靠这两个集合/属性变化驱动
         Processes.CollectionChanged += OnProcessesChanged;
+
+        // 客户端列表的搜索过滤：只影响视图，不动 Processes 本身（排序/启停/快捷键仍按完整列表走）
+        ProcessesView = CollectionViewSource.GetDefaultView(Processes);
+        ProcessesView.Filter = FilterProcess;
+        // 视图的增删在 Processes.CollectionChanged 之后才落定，用视图自己的事件补一次"可见数量"
+        ProcessesView.CollectionChanged += (_, _) => NotifyVisibleProcessesChanged();
+
+        // 分组快捷键：独立页签里的"分组列表 + 编辑区"。列表支持搜索/上下移，编辑区只显示当前分组。
+        HotKeyGroupsView = CollectionViewSource.GetDefaultView(HotKeyGroups);
+        HotKeyGroupsView.Filter = FilterHotKeyGroup;
+        HotKeyGroupsView.CollectionChanged += (_, _) => NotifyHotKeyGroupsViewChanged();
+        HotKeyGroups.CollectionChanged += OnHotKeyGroupsChanged;
+        SelectedHotKeyGroup = HotKeyGroups.FirstOrDefault();
     }
 
     // ---------- 绑定属性 ----------
@@ -80,8 +97,20 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(SelectedRunning));
 
                 // 选中进程 → 切回"选中项设置"（否则用户点了进程却看不到它的设置）；
-                // 取消选中 → 回到"全局设置"（此时"选中项设置"页签已隐藏，不能停在空页上）
-                IsGlobalSetting = value is null;
+                // 取消选中 → 若正停在已隐藏的"选中项设置"上则回到全局设置，停在分组页签时保持不变
+                if (value is null)
+                {
+                    if (_settingsTabIndex == 0)
+                    {
+                        SettingsTabIndex = 1;
+                    }
+                }
+                else
+                {
+                    SettingsTabIndex = 0;
+                }
+
+                // 无论索引是否变化都通知一次：HasSelection 变化会改变 getter 的归一化结果
                 OnPropertyChanged(nameof(SettingsTabIndex));
             }
         }
@@ -92,19 +121,20 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     public bool HasSelection => _selectedProcess is not null;
 
     /// <summary>
-    /// 设置区当前应选中的页签索引：0 = 选中项设置、1 = 全局设置。
+    /// 设置区当前应选中的页签索引：0 = 选中项设置、1 = 全局设置、2 = 分组设置、3 = 切换顺序。
     /// <para>
-    /// 刻意由 VM 直接给出、并且**没选中进程时恒为 1**：WPF 的 <c>TabControl</c> 允许选中一个
+    /// 刻意由 VM 直接给出、并且**没选中进程时 0 归一化为 1**：WPF 的 <c>TabControl</c> 允许选中一个
     /// <c>Visibility=Collapsed</c> 的 <c>TabItem</c>（实测确实是这么干的），
     /// 若启动时 <c>SelectedIndex=0</c> 而该项已隐藏，就会停在隐藏项上、全局设置点不到。
+    /// 分组/顺序页签（2/3）在无选中进程时仍然可选。
     /// </para>
     /// </summary>
     public int SettingsTabIndex
     {
-        get => !HasSelection || IsGlobalSetting ? 1 : 0;
+        get => !HasSelection && _settingsTabIndex == 0 ? 1 : _settingsTabIndex;
 
-        // 用户点页签时回写：未选中进程时"选中项设置"是隐藏的，不会走到 index 0
-        set => IsGlobalSetting = value > 0;
+        // 用户点页签时回写；0 只在有选中进程时有效，其余情况由 getter 归一化
+        set => Set(ref _settingsTabIndex, Math.Clamp(value, 0, 3));
     }
 
     /// <summary>
@@ -120,30 +150,84 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
     public bool SelectedRunning => _selectedProcess?.Running ?? false;
 
-    /// <summary>右侧显示全局设置（true）还是选中项设置（false）。</summary>
-    public bool IsGlobalSetting
-    {
-        get => _isGlobalSetting;
-        set
-        {
-            if (Set(ref _isGlobalSetting, value))
-            {
-                OnPropertyChanged(nameof(SettingsTabIndex));
-            }
-        }
-    }
-
     public bool Running => _manager.RunningCount > 0;
 
-    /// <summary>是否发现了客户端（顶部客户端条的空态与胶囊列表二选一）。</summary>
+    /// <summary>是否发现了客户端（客户端列表的空态与列表二选一）。</summary>
     public bool HasProcesses => Processes.Count > 0;
 
     public int ProcessCount => Processes.Count;
 
     public int RunningProcessCount => Processes.Count(p => p.Running);
 
+    /// <summary>还没解析出角色名的客户端数（登录界面 / 选人界面）。它们不能成为分组成员，但要让用户知道原因。</summary>
+    public int UnnamedClientCount => Processes.Count(p => string.IsNullOrEmpty(p.GetCharacterName()));
+
+    public bool HasUnnamedClients => UnnamedClientCount > 0;
+
+    public string UnnamedClientHint
+        => string.Format(FindString("GamePreviewPage_GroupHotkey_UnnamedClients"), UnnamedClientCount);
+
+    /// <summary>角色名重复的组数（两个客户端同名时，分组候选按名字去重，只会出现一个胶囊）。</summary>
+    public int DuplicateCharacterNameCount => Processes
+        .Select(p => p.GetCharacterName())
+        .Where(n => !string.IsNullOrEmpty(n))
+        .GroupBy(n => n!, StringComparer.OrdinalIgnoreCase)
+        .Count(g => g.Count() > 1);
+
+    public bool HasDuplicateCharacterNames => DuplicateCharacterNameCount > 0;
+
+    public string DuplicateCharacterNameHint
+        => string.Format(FindString("GamePreviewPage_GroupHotkey_DuplicateNames"), DuplicateCharacterNameCount);
+
     /// <summary>左侧计数胶囊的文字（运行数 / 总数）。语言中立，语义靠 ToolTip 的「预览中」。</summary>
     public string ProcessCountText => $"{RunningProcessCount} / {ProcessCount}";
+
+    /// <summary>左侧客户端列表的过滤视图（搜索只影响显示，不影响排序与启停）。</summary>
+    public ICollectionView ProcessesView { get; }
+
+    /// <summary>客户端搜索框内容（匹配角色名或窗口标题，忽略大小写）。</summary>
+    public string ClientFilter
+    {
+        get => _clientFilter;
+        set
+        {
+            if (!Set(ref _clientFilter, value ?? string.Empty))
+            {
+                return;
+            }
+
+            // 过滤刷新可能让 ListBox 把"仍在视图里"的选中项也丢掉，这里补回来；
+            // 被过滤掉的选中项则不强行保留（用户正在找别的客户端）。
+            var selected = _selectedProcess;
+            ProcessesView.Refresh();
+            NotifyVisibleProcessesChanged();
+
+            if (selected is not null
+                && ProcessesView.Contains(selected)
+                && !ReferenceEquals(SelectedProcess, selected))
+            {
+                SelectedProcess = selected;
+            }
+        }
+    }
+
+    /// <summary>过滤后仍可见的客户端数。</summary>
+    public int VisibleProcessCount => ProcessesView.Cast<object>().Count();
+
+    public bool HasVisibleProcesses => VisibleProcessCount > 0;
+
+    /// <summary>有客户端、但都被搜索条件挡掉——用于显示"没有匹配的客户端"而不是"未发现客户端"。</summary>
+    public bool HasNoMatch => HasProcesses && VisibleProcessCount == 0;
+
+    /// <summary>
+    /// 页面内的实时画面侧栏是否展开（阶段 135：画面不再是主区域，收起后设置区拿回全部宽度）。
+    /// 默认在宽视口展开、窄视口收起（首次 <c>Loaded</c> 时由页面按视口宽度决定）。
+    /// </summary>
+    public bool IsPreviewVisible
+    {
+        get => _isPreviewVisible;
+        set => Set(ref _isPreviewVisible, value);
+    }
 
     /// <summary>
     /// 分组快捷键可点选的角色（当前发现的客户端 + 已保存配置 + 各分组里手工加过的名字，去重后按发现顺序）。
@@ -151,12 +235,13 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public ObservableCollection<CharacterCandidate> CharacterCandidates { get; } = [];
 
-    /// <summary>顺序编辑框内容（每行一个窗口标题）。</summary>
-    public string OrderText
-    {
-        get => _orderText;
-        set => Set(ref _orderText, value);
-    }
+    /// <summary>
+    /// "切换顺序"页签的列表：按 <see cref="PreviewSetting.ProcessOrder"/> 的顺序展示（含已关闭的旧标题），
+    /// 新发现但不在顺序里的客户端追加在末尾。
+    /// </summary>
+    public ObservableCollection<SwitchOrderEntry> SwitchOrderEntries { get; } = [];
+
+    public bool HasSwitchOrderEntries => SwitchOrderEntries.Count > 0;
 
     public string ProcessKeywords
     {
@@ -210,6 +295,98 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public ObservableCollection<PreviewHotKeyGroup> HotKeyGroups => _setting.HotKeyGroups;
+
+    /// <summary>分组列表的过滤视图（按分组名搜索；只影响显示，不改 HotKeyGroups 本身）。</summary>
+    public ICollectionView HotKeyGroupsView { get; }
+
+    /// <summary>分组搜索框内容（当前按分组名匹配，忽略大小写）。</summary>
+    public string GroupFilter
+    {
+        get => _groupFilter;
+        set
+        {
+            if (!Set(ref _groupFilter, value ?? string.Empty))
+            {
+                return;
+            }
+
+            var selected = _selectedHotKeyGroup;
+            HotKeyGroupsView.Refresh();
+            NotifyHotKeyGroupsViewChanged();
+
+            // 刷新视图可能让 ListBox 把仍在视图里的选中项也丢掉，这里补回来；
+            // 选中项被过滤掉（或本来没选）时自动落到第一个可见分组。
+            if (selected is not null && HotKeyGroupsView.Contains(selected))
+            {
+                if (!ReferenceEquals(SelectedHotKeyGroup, selected))
+                {
+                    SelectedHotKeyGroup = selected;
+                }
+            }
+            else
+            {
+                SelectedHotKeyGroup = HotKeyGroupsView.Cast<PreviewHotKeyGroup>().FirstOrDefault();
+            }
+        }
+    }
+
+    /// <summary>分组列表里当前选中的分组。</summary>
+    public PreviewHotKeyGroup? SelectedHotKeyGroup
+    {
+        get => _selectedHotKeyGroup;
+        set
+        {
+            if (Set(ref _selectedHotKeyGroup, value))
+            {
+                OnPropertyChanged(nameof(HasSelectedHotKeyGroup));
+            }
+        }
+    }
+
+    public bool HasSelectedHotKeyGroup => _selectedHotKeyGroup is not null;
+
+    public bool HasHotKeyGroups => HotKeyGroups.Count > 0;
+
+    public int VisibleHotKeyGroupCount => HotKeyGroupsView.Cast<object>().Count();
+
+    /// <summary>有分组、但都被搜索条件挡掉。</summary>
+    public bool HasGroupNoMatch => HasHotKeyGroups && VisibleHotKeyGroupCount == 0;
+
+    /// <summary>当前分组的"单独排序"列表（角色名顺序）。</summary>
+    public ObservableCollection<GroupOrderEntry> GroupOrderEntries { get; } = [];
+
+    public bool HasGroupOrderEntries => GroupOrderEntries.Count > 0;
+
+    private bool FilterHotKeyGroup(object item)
+    {
+        if (item is not PreviewHotKeyGroup group)
+        {
+            return false;
+        }
+
+        var query = _groupFilter.Trim();
+        return query.Length == 0
+            || (!string.IsNullOrEmpty(group.GroupName)
+                && group.GroupName.Contains(query, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void NotifyHotKeyGroupsViewChanged()
+    {
+        OnPropertyChanged(nameof(VisibleHotKeyGroupCount));
+        OnPropertyChanged(nameof(HasGroupNoMatch));
+    }
+
+    private void OnHotKeyGroupsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasHotKeyGroups));
+        NotifyHotKeyGroupsViewChanged();
+
+        // 分组被移除后如果仍指着已不存在的对象，清掉选中（RemoveGroup 会主动选邻居，这里是兜底）
+        if (_selectedHotKeyGroup is not null && !HotKeyGroups.Contains(_selectedHotKeyGroup))
+        {
+            SelectedHotKeyGroup = null;
+        }
+    }
 
     // ---------- 初始化 ----------
 
@@ -267,11 +444,13 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                 byHandle.TryAdd(process.MainWindowHandle, process);
             }
 
+            var orderChanged = false;
             foreach (var existing in Processes.ToList())
             {
                 if (byHandle.Remove(existing.MainWindowHandle, out var fresh))
                 {
-                    var renamed = existing.WindowTitle != fresh.WindowTitle;
+                    var oldTitle = existing.WindowTitle;
+                    var renamed = oldTitle != fresh.WindowTitle;
                     var hadCharacter = !string.IsNullOrEmpty(existing.GetCharacterName());
                     var oldProcess = existing.Process;
                     existing.WindowTitle = fresh.WindowTitle;
@@ -280,6 +459,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                     DisposeProcess(oldProcess);
                     if (renamed)
                     {
+                        // 切换顺序存的是窗口标题：角色切换后把旧标题原位替换成新标题，
+                        // 否则顺序页签里会留下一条"未发现"的旧标题、新标题被追加到末尾。
+                        orderChanged |= ReplaceOrderTitle(oldTitle, fresh.WindowTitle);
                         OnCharacterSwitched(existing);
 
                         // "自动开始新出现的进程"原来只覆盖**新发现**的进程：EVE 刚启动时标题只有 "EVE"、
@@ -305,7 +487,6 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                 }
             }
 
-            var orderChanged = false;
             foreach (var fresh in byHandle.Values)
             {
                 orderChanged |= InsertByOrder(fresh);
@@ -373,7 +554,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
     private void OnProcessPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ProcessInfo.Running))
+        // 标题变化 = 新客户端选好角色 / 切换角色：候选角色必须立刻刷新，
+        // 不能只等 1 秒定时器的下一轮（分组设置里看不到新客户端通常就是这一步慢了）。
+        if (e.PropertyName is nameof(ProcessInfo.Running) or nameof(ProcessInfo.WindowTitle))
         {
             RaiseProcessCounts();
             RefreshCharacterCandidates();
@@ -385,6 +568,42 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ProcessCount));
         OnPropertyChanged(nameof(RunningProcessCount));
         OnPropertyChanged(nameof(ProcessCountText));
+        OnPropertyChanged(nameof(UnnamedClientCount));
+        OnPropertyChanged(nameof(HasUnnamedClients));
+        OnPropertyChanged(nameof(UnnamedClientHint));
+        OnPropertyChanged(nameof(DuplicateCharacterNameCount));
+        OnPropertyChanged(nameof(HasDuplicateCharacterNames));
+        OnPropertyChanged(nameof(DuplicateCharacterNameHint));
+        NotifyVisibleProcessesChanged();
+    }
+
+    /// <summary>过滤视图的"可见数量 / 是否无匹配"跟着集合与搜索词变化。</summary>
+    private void NotifyVisibleProcessesChanged()
+    {
+        OnPropertyChanged(nameof(VisibleProcessCount));
+        OnPropertyChanged(nameof(HasVisibleProcesses));
+        OnPropertyChanged(nameof(HasNoMatch));
+    }
+
+    private bool FilterProcess(object item)
+    {
+        if (item is not ProcessInfo process)
+        {
+            return false;
+        }
+
+        var query = _clientFilter.Trim();
+        if (query.Length == 0)
+        {
+            return true;
+        }
+
+        return Contains(process.GetCharacterName(), query)
+            || Contains(process.WindowTitle, query);
+
+        static bool Contains(string? text, string query)
+            => !string.IsNullOrEmpty(text)
+                && text.Contains(query, StringComparison.OrdinalIgnoreCase);
     }
 
     // ---------- 分组快捷键的候选角色 ----------
@@ -521,32 +740,139 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     private void SyncOrderFromProcesses()
     {
         _setting.ProcessOrder = Processes.Select(p => p.WindowTitle).ToList();
-        OrderText = string.Join(Environment.NewLine, _setting.ProcessOrder);
+        RebuildSwitchOrder();
         Save();
     }
 
-    /// <summary>把顺序编辑框内容写回（每行一个标题，忽略空行）。</summary>
-    public void ApplyOrderText()
-    {
-        var titles = OrderText
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Distinct()
-            .ToList();
+    // ---------- 切换顺序（独立页签） ----------
 
-        if (titles.Count == 0)
+    /// <summary>
+    /// 用"保存的顺序 + 当前进程"重建列表：
+    /// 先按 <see cref="PreviewSetting.ProcessOrder"/> 逐个列出（保留已关闭客户端的旧标题），
+    /// 再追加尚未写入顺序的进程。重复标题只保留一次。
+    /// </summary>
+    public void RebuildSwitchOrder()
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var entries = new List<SwitchOrderEntry>();
+
+        foreach (var title in _setting.ProcessOrder)
+        {
+            if (string.IsNullOrWhiteSpace(title) || !seen.Add(title))
+            {
+                continue;
+            }
+
+            entries.Add(new SwitchOrderEntry(title, Processes.FirstOrDefault(p => p.WindowTitle == title)));
+        }
+
+        foreach (var process in Processes)
+        {
+            if (seen.Add(process.WindowTitle))
+            {
+                entries.Add(new SwitchOrderEntry(process.WindowTitle, process));
+            }
+        }
+
+        SwitchOrderEntries.Clear();
+        foreach (var entry in entries)
+        {
+            SwitchOrderEntries.Add(entry);
+        }
+
+        RenumberSwitchOrderEntries();
+        OnPropertyChanged(nameof(HasSwitchOrderEntries));
+    }
+
+    /// <summary>上移/下移一个顺序项（立即写回 ProcessOrder、重排进程列表并保存）。</summary>
+    public void MoveSwitchOrderEntry(SwitchOrderEntry entry, int delta)
+    {
+        var index = SwitchOrderEntries.IndexOf(entry);
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= SwitchOrderEntries.Count)
         {
             return;
         }
 
-        _setting.ProcessOrder = titles;
+        SwitchOrderEntries.Move(index, target);
+        RenumberSwitchOrderEntries();
+        CommitSwitchOrder();
+    }
+
+    /// <summary>按角色名排序（已关闭的旧标题排在最后），立即生效。</summary>
+    public void SortSwitchOrderByName()
+    {
+        var sorted = SwitchOrderEntries
+            .OrderBy(e => e.IsPresent ? 0 : 1)
+            .ThenBy(e => e.CharacterName, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+
+        for (var i = 0; i < sorted.Count; i++)
+        {
+            var current = SwitchOrderEntries.IndexOf(sorted[i]);
+            if (current != i)
+            {
+                SwitchOrderEntries.Move(current, i);
+            }
+        }
+
+        RenumberSwitchOrderEntries();
+        CommitSwitchOrder();
+    }
+
+    /// <summary>用当前进程列表重建顺序（丢弃已关闭的旧标题），立即生效。</summary>
+    public void FillSwitchOrderFromProcesses()
+    {
+        _setting.ProcessOrder = Processes.Select(p => p.WindowTitle).ToList();
+        RebuildSwitchOrder();
         ReorderProcessesBySetting();
         Save();
     }
 
-    /// <summary>用当前进程列表填充顺序编辑框。</summary>
-    public void FillOrderFromProcesses()
+    /// <summary>从顺序中移除一个"未发现"的旧标题（当前仍存在的客户端不允许移除，只能调整位置）。</summary>
+    public void RemoveSwitchOrderEntry(SwitchOrderEntry entry)
     {
-        OrderText = string.Join(Environment.NewLine, Processes.Select(p => p.WindowTitle));
+        if (entry.IsPresent)
+        {
+            return;
+        }
+
+        SwitchOrderEntries.Remove(entry);
+        RenumberSwitchOrderEntries();
+        CommitSwitchOrder();
+    }
+
+    /// <summary>把列表顺序写回 ProcessOrder、重排左侧客户端列表并保存。</summary>
+    private void CommitSwitchOrder()
+    {
+        _setting.ProcessOrder = SwitchOrderEntries.Select(e => e.WindowTitle).ToList();
+        ReorderProcessesBySetting();
+        OnPropertyChanged(nameof(HasSwitchOrderEntries));
+        Save();
+    }
+
+    private void RenumberSwitchOrderEntries()
+    {
+        for (var i = 0; i < SwitchOrderEntries.Count; i++)
+        {
+            SwitchOrderEntries[i].UpdatePosition(i, SwitchOrderEntries.Count);
+        }
+    }
+
+    /// <summary>角色切换后把顺序里的旧窗口标题原位替换成新标题（保留原位置）。</summary>
+    private bool ReplaceOrderTitle(string oldTitle, string newTitle)
+    {
+        var changed = false;
+        for (var i = 0; i < _setting.ProcessOrder.Count; i++)
+        {
+            if (string.Equals(_setting.ProcessOrder[i], oldTitle, StringComparison.Ordinal))
+            {
+                _setting.ProcessOrder[i] = newTitle;
+                changed = true;
+            }
+        }
+
+        return changed;
     }
 
     private void ReorderProcessesBySetting()
@@ -828,14 +1154,39 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
     public void AddGroup()
     {
-        var group = new PreviewHotKeyGroup { GroupName = $"{FindString("GamePreviewPage_GroupHotkey")}{_setting.HotKeyGroups.Count + 1}" };
+        // 新建的分组要立刻可见：清掉可能正在生效的搜索
+        if (!string.IsNullOrEmpty(_groupFilter))
+        {
+            GroupFilter = string.Empty;
+        }
+
+        var group = new PreviewHotKeyGroup { GroupName = CreateGroupName() };
         _setting.HotKeyGroups.Add(group);
+        SelectedHotKeyGroup = group;
         UpdateHotkeyRegistration();
         Save();
     }
 
+    /// <summary>默认分组名：在"分组快捷键"后取一个还没用过的序号（删过中间分组后不会撞名）。</summary>
+    private string CreateGroupName()
+    {
+        var prefix = FindString("GamePreviewPage_GroupHotkey");
+        var index = _setting.HotKeyGroups.Count + 1;
+        string name;
+        do
+        {
+            name = $"{prefix}{index++}";
+        }
+        while (_setting.HotKeyGroups.Any(g => string.Equals(g.GroupName, name, StringComparison.OrdinalIgnoreCase)));
+
+        return name;
+    }
+
     public void RemoveGroup(PreviewHotKeyGroup group)
     {
+        var wasSelected = ReferenceEquals(_selectedHotKeyGroup, group);
+        var index = HotKeyGroups.IndexOf(group);
+
         if (_groupHotkeys.Remove(group, out var ids))
         {
             _hotkeys.Unregister(ids.Forward);
@@ -848,6 +1199,14 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             _lastActiveGroup = null;
         }
 
+        // 删掉的是当前分组时：优先选原位置之后的下一个可见分组，否则回到第一个可见分组
+        if (wasSelected)
+        {
+            var visible = HotKeyGroupsView.Cast<PreviewHotKeyGroup>().ToList();
+            SelectedHotKeyGroup = visible.FirstOrDefault(g => HotKeyGroups.IndexOf(g) >= index)
+                ?? visible.FirstOrDefault();
+        }
+
         Save();
     }
 
@@ -856,6 +1215,159 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     {
         UpdateHotkeyRegistration();
         Save();
+    }
+
+    // ---------- 分组单独排序 ----------
+
+    /// <summary>
+    /// 重建当前分组的"单独排序"列表：先保留 <see cref="PreviewHotKeyGroup.Order"/> 里仍是成员的顺序，
+    /// 其余成员按全局切换顺序（再按名字）追加到末尾。
+    /// </summary>
+    public void RebuildGroupOrder()
+    {
+        GroupOrderEntries.Clear();
+        if (SelectedHotKeyGroup is not { } group)
+        {
+            OnPropertyChanged(nameof(HasGroupOrderEntries));
+            return;
+        }
+
+        var members = group.GameNames
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var ordered = new List<string>();
+
+        foreach (var name in group.Order ?? new List<string>())
+        {
+            var member = members.FirstOrDefault(m => string.Equals(m, name, StringComparison.OrdinalIgnoreCase));
+            if (member is not null && seen.Add(member))
+            {
+                ordered.Add(member);
+            }
+        }
+
+        var remaining = members
+            .Where(n => !seen.Contains(n))
+            .Select(n => (Name: n, GlobalIndex: GlobalNameOrderIndex(n)))
+            .OrderBy(x => x.GlobalIndex)
+            .ThenBy(x => x.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(x => x.Name);
+
+        ordered.AddRange(remaining);
+
+        foreach (var name in ordered)
+        {
+            var isRunning = Processes.Any(p => p.Running
+                && string.Equals(p.GetCharacterName(), name, StringComparison.OrdinalIgnoreCase));
+            GroupOrderEntries.Add(new GroupOrderEntry(name, isRunning));
+        }
+
+        RenumberGroupOrderEntries();
+        OnPropertyChanged(nameof(HasGroupOrderEntries));
+
+        // 只有"单独排序"模式才把补全后的顺序写回；跟随全局时保留用户之前的自定义顺序
+        if (!group.UseGlobalOrder)
+        {
+            group.Order = ordered;
+        }
+    }
+
+    public void MoveGroupOrderEntry(GroupOrderEntry entry, int delta)
+    {
+        if (SelectedHotKeyGroup is not { UseGlobalOrder: false } group)
+        {
+            return;
+        }
+
+        var index = GroupOrderEntries.IndexOf(entry);
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= GroupOrderEntries.Count)
+        {
+            return;
+        }
+
+        GroupOrderEntries.Move(index, target);
+        RenumberGroupOrderEntries();
+        CommitGroupOrder(group);
+    }
+
+    public void SortGroupOrderByName()
+    {
+        if (SelectedHotKeyGroup is not { UseGlobalOrder: false } group)
+        {
+            return;
+        }
+
+        var sorted = GroupOrderEntries
+            .OrderBy(e => e.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+
+        for (var i = 0; i < sorted.Count; i++)
+        {
+            var current = GroupOrderEntries.IndexOf(sorted[i]);
+            if (current != i)
+            {
+                GroupOrderEntries.Move(current, i);
+            }
+        }
+
+        RenumberGroupOrderEntries();
+        CommitGroupOrder(group);
+    }
+
+    /// <summary>把当前分组顺序重置为"跟随全局"时的顺序（仍保持在单独排序模式）。</summary>
+    public void FillGroupOrderFromGlobal()
+    {
+        if (SelectedHotKeyGroup is not { UseGlobalOrder: false } group)
+        {
+            return;
+        }
+
+        group.Order = [];
+        RebuildGroupOrder();
+        Save();
+    }
+
+    private void CommitGroupOrder(PreviewHotKeyGroup group)
+    {
+        group.Order = GroupOrderEntries.Select(e => e.Name).ToList();
+        Save();
+    }
+
+    private void RenumberGroupOrderEntries()
+    {
+        for (var i = 0; i < GroupOrderEntries.Count; i++)
+        {
+            GroupOrderEntries[i].UpdatePosition(i, GroupOrderEntries.Count);
+        }
+    }
+
+    private int GlobalNameOrderIndex(string name)
+    {
+        var process = Processes.FirstOrDefault(p => string.Equals(p.GetCharacterName(), name, StringComparison.OrdinalIgnoreCase));
+        return process is null ? int.MaxValue : OrderIndexOf(process);
+    }
+
+    /// <summary>分组自定义顺序里的位置；未列出的成员返回 int.MaxValue（稳定排序后保持全局顺序）。</summary>
+    private static int GroupOrderIndex(PreviewHotKeyGroup group, string? name)
+    {
+        if (string.IsNullOrEmpty(name) || group.Order is not { } order)
+        {
+            return int.MaxValue;
+        }
+
+        for (var i = 0; i < order.Count; i++)
+        {
+            if (string.Equals(order[i], name, StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return int.MaxValue;
     }
 
     // ---------- 快捷键 ----------
@@ -1005,6 +1517,14 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        // 分组单独排序：只调整顺序，不改变成员集合；Order 里没有的成员保持全局顺序排在后面。
+        if (!group.UseGlobalOrder)
+        {
+            targets = targets
+                .OrderBy(p => GroupOrderIndex(group, p.GetCharacterName()))
+                .ToList();
+        }
+
         var restart = (_lastActiveGroup != group && group.Restart)
             || string.IsNullOrEmpty(group.LastActiveProcessGUID)
             || targets.All(p => p.GUID != group.LastActiveProcessGUID);
@@ -1039,9 +1559,12 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     {
         _manager.ApplyForeground(hWnd);
 
-        // 用"用户当前看着的那个客户端"作为下一次切换的起点
+        // 用"用户当前看着的那个客户端"作为下一次切换的起点。
+        // 只有前台换成了**另一个**客户端时才清掉分组游标：分组快捷键自己激活目标也会触发前台变化，
+        // 若无条件清空，Restart=true 的分组每次都会从第一个成员重新开始（永远切不动）。
         var process = Processes.FirstOrDefault(p => p.MainWindowHandle == hWnd);
-        if (process is { Running: true } && process.Setting?.RespondGlobalHotKey == true)
+        if (process is { Running: true } && process.Setting?.RespondGlobalHotKey == true
+            && process.GUID != _lastActiveGuid)
         {
             _lastActiveGuid = process.GUID;
             _lastActiveGroup = null;

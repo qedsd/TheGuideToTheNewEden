@@ -54,6 +54,12 @@ public sealed class KeyboardHook : IDisposable
     private IntPtr _hookHandle = IntPtr.Zero;
     private HookProc? _hookProc; // 必须持有引用，否则会被 GC 回收（回调时进程直接崩）
 
+    /// <summary>
+    /// 为 true 时吞掉所有键盘消息（事件仍会派发）。录制快捷键时用：
+    /// 避免 Win/Alt+Tab/Esc 等触发系统或窗口动作，捕获完立即恢复。
+    /// </summary>
+    public bool SuppressAll { get; set; }
+
     /// <summary>某个键被按下（含系统键）。</summary>
     public event Action<KeyboardKeyInfo>? KeyPressed;
 
@@ -112,6 +118,7 @@ public sealed class KeyboardHook : IDisposable
         {
             _hookHandle = IntPtr.Zero;
             _hookProc = null;
+            SuppressAll = false;
             Clear();
         }
 
@@ -127,6 +134,15 @@ public sealed class KeyboardHook : IDisposable
         }
     }
 
+    /// <summary>查询某个虚拟键当前是否被钩子记为按住（不受 SuppressAll 影响）。</summary>
+    public bool IsPressed(int virtualKey)
+    {
+        lock (_pressed)
+        {
+            return _pressed.ContainsKey(virtualKey);
+        }
+    }
+
     public void Dispose() => Stop();
 
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -135,9 +151,14 @@ public sealed class KeyboardHook : IDisposable
         // 不挡一下的话 Stop() 之后仍可能多计一次按键（探针里手动调用回调时也能观察到）。
         if (nCode == 0 && _hookHandle != IntPtr.Zero)
         {
+            var message = wParam.ToInt32();
+            var isKeyMessage = message is WmKeyDown or WmKeyUp or WmSysKeyDown or WmSysKeyUp;
+            // 先记下本次消息是否要吞：事件处理器可能在回调里 Stop 录制并把 SuppressAll 复位，
+            // 但触发捕获的那一下按键仍应被吞掉。
+            var suppress = SuppressAll;
+
             try
             {
-                var message = wParam.ToInt32();
                 if (message is WmKeyDown or WmSysKeyDown)
                 {
                     HandleKeyDown(lParam);
@@ -151,6 +172,12 @@ public sealed class KeyboardHook : IDisposable
             {
                 // 钩子回调里绝不能把异常抛回系统。
                 Core.Log.Error(ex);
+            }
+
+            // 录制模式：事件已经派发出去，但不再把按键交给系统/当前窗口。
+            if (suppress && isKeyMessage)
+            {
+                return new IntPtr(1);
             }
         }
 

@@ -746,7 +746,7 @@ EnableWindowsTargeting true
   Services/GamePreview/SelectionPreview.cs         页面内"选中进程"实时画面（DWM 缩略图直接画到主窗口）
   Services/GamePreview/PreviewColorHelper.cs       System.Drawing.Color ↔ WPF 画刷 / #RRGGBB
   Services/Settings/GamePreviewSettingService.cs   Configs/GamePreviewSetting.json（与 WinUI 同结构）
-  ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发（只管业务编排）
+  ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发 + 客户端搜索过滤 + 画面侧栏展开状态 + 分组列表/搜索/选中（只管业务编排）
   Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（DWM 缩略图，两种样式共用一个窗口类）
   Views/Pages/GamePreviewPage.xaml(.cs)            多开页（阶段 134 起：顶部客户端条 + 预览 / 设置两分栏）
   ```
@@ -6810,6 +6810,851 @@ esi_write(operation, path?, query?, body?) → 写端点，RequiresConfirmation=
 
 ---
 
+### 阶段 135：多开页改为「设置为主、画面为辅」+ 颜色选择器 + 客户端搜索
+
+> 起因（用户反馈）：**「现在把预览画面当作最重要 UI 显示，但该功能的预览界面并不重要，重要的是设置及小窗；
+> 现在页面的预览画面喧宾夺主，导致数十个客户端时参数设置界面不够友好」**。同轮另外三点：
+> 选中项的「停止预览」不够醒目、各种颜色设置要接入已有的颜色选择器、设置 Tab 宽度太小显示不全。
+
+#### 一、改前的问题（逐条对应）
+
+| # | 阶段 134 的布局 | 用户实际感受 |
+|---|---|---|
+| 1 | 预览占中间 `*` 列（908 内容区下约 370，最大化约 854），设置固定 300 | 真正天天调的是参数，却被挤在 300 宽：页签/长标签被截、滑块与颜色输入挤在一起 |
+| 2 | 停止预览是标题行里的 `Secondary` 小按钮（只有一个小红图标） | 多开时最常用的操作之一反而最难找 |
+| 3 | 颜色设置是「20px 色块 + `#AARRGGBB` 文本框」 | 要手输十六进制、无法直观调色；项目里已有 `ColorPickerView` 却没接 |
+| 4 | 客户端列表固定 220、没有搜索 | 十几个以上时只能滚动翻找 |
+| 5 | 预览区高度按"可用高度铺满" | 高瘦窗口会把设置挤走，视觉上更像页面主体 |
+
+#### 二、新布局
+
+```
+┌ 客户端 220 ┬─ 设置（主区域，*）──────────────────────┬ 画面 260（可折叠为 40）┐
+│ 搜索…      │ 选中项设置 | 全局设置                   │ 预览            [收起] │
+│ ● QEDSD  ■ │ 预览窗口 …                             │ ● QEDSD              │
+│ ● QEDSD2 ■ │ 显示预览窗口            [开关]          │ [■ 停止预览]（整行红）│
+│ …          │ 显示样式                [无标题栏]      │ ┌ DWM 实时画面 ┐      │
+│ [开始全部] │ 不透明度                [—●—] 100       │ └──────────────┘      │
+│ [停止全部] │ 高亮边框颜色            [■ #008000 🎨]  │ 显示样式 / 不透明度…  │
+└────────────┴─────────────────────────────────────────┴───────────────────────┘
+```
+
+- **设置是主列**：`*` 宽度，908 内容区下约 412、1440 窗口下 916；页签、设置标签、滑块、颜色按钮全部有位置。
+- **画面降级为右侧 260 侧栏**：标题 / 选中项 / 整行启停按钮 / 画面 / 紧凑参数纵排；
+  高度按源比例算并**夹在 120–220 DIP**，不再"按可用高度铺满"；去掉投影，视觉权重明显降低。
+- **可折叠**：标题行右侧「收起」把侧栏收成 40 DIP 导轨（顶部展开按钮 + 竖排「预览」文字）；
+  折叠后设置区拿回全部宽度。宽视口首次进入默认展开，窄视口（视口 < 900 DIP）默认收起；
+  之后的展开/收起完全按用户操作，不再随窗口尺寸跳变。
+- **停止按钮**（四处一起强化）：
+  1. 选中项：整行 `Appearance="Danger"`（红底白字）「停止预览」，带 `RecordStop24` 图标、SemiBold；
+  2. 选中项设置 →「操作」组顶部：同一对启停按钮（收起画面侧栏时仍够得着，不必先展开画面）；
+  3. 客户端列表：运行中的项在右侧常显一个红色停止图标，点它直接停该项（不必先选中）；
+  4. 页脚「停止全部」由纯图标改为带文字的 `Danger` 按钮。
+- **「操作」组不再一行一个按钮**：4 个操作改为 `WrapPanel`，按内容宽度水平排布、放不下自动换行。
+  设置区在 1156 窗口下约 400 DIP，实测「停止预览 / 激活游戏窗口 / 恢复位置」同排、
+  「应用到其余配置」落到第二行（3 + 1），比原来的 4 行省掉一半高度；窗口放宽后 4 个可同排。
+  启停仍保留红/主题色与加粗，是这组里最醒目的一项。
+- **颜色设置接入已有选择器**：4 项（高亮边框颜色 / 叠加背景色 / 叠加高亮背景色 / 叠加文字颜色）统一换成
+  `ColorPickerButton`。按钮本身显示「透明棋盘 + 色块 + #AARRGGBB + 调色图标」，点开弹层复用
+  `ColorPickerView`（A/R/G/B 滑杆与数值、HEX 输入、实时预览）；`StaysOpen=False`，切页签/卸载自动关闭。
+  颜色值直接是 Core 的 `System.Drawing.Color`，TwoWay 绑定到 `PreviewItem`，拖动即套用到预览窗口。
+- **客户端搜索**：列表上方新增搜索框（匹配角色名或窗口标题，忽略大小写）；无匹配时显示
+  「没有匹配的客户端 + 清空搜索」，与"未发现客户端"空态区分。过滤只作用于显示，排序/启停/快捷键仍走完整列表。
+- **设置行标签**改为自动换行（原 `CharacterEllipsis` 截断），长句不再丢信息；预览参数从 4 列 `WrapPanel`
+  改为纵向紧凑行，260 宽下不挤。
+
+#### 三、代码改动
+
+- `Views/UserControls/ColorPickerButton.xaml(.cs)`（新增）：颜色按钮 + `Popup` + `ColorPickerView`；
+  `Color` 依赖属性（`System.Drawing.Color`、`BindsTwoWayByDefault`），用 `SetCurrentValue` 回写以免顶掉绑定；
+  `Unloaded` 关闭弹层；`AutomationProperties.Name` 用「选择颜色」。
+- `Views/Pages/GamePreviewPage.xaml(.cs)`：
+  - 三列改为「客户端 220 + 设置 `*` + 画面 `Auto`」；画面面板 260、导轨 40，两块同列按 `IsPreviewVisible` 二选一；
+  - 新增 `OnTogglePreviewClick` / `OnClearFilterClick`；`UpdatePreviewLayout` 改为 `Math.Clamp(width/aspect, 120, 220)`；
+  - `OnLoaded` 首次按视口宽度决定画面是否展开（`AutoShowPreviewWidth = 900`）；
+  - 删除页面内已无用的 `Swatch` 样式与 `ColorHex` 资源（颜色按钮自带）；
+  - 移除预览框投影，降低画面视觉权重；
+  - 「操作」组由竖向 `StackPanel` 改为 `WrapPanel`（按钮 `MinHeight=34`、右/下 8px 间距；
+    「恢复位置」直接绑 `ShowPreviewWindow` 控制显隐，不再套条件 `StackPanel`）。
+- `ViewModels/GamePreview/GamePreviewViewModel.cs`：
+  - 新增 `ProcessesView`（`CollectionViewSource.GetDefaultView(Processes)` + 过滤）、`ClientFilter`、
+    `VisibleProcessCount` / `HasVisibleProcesses` / `HasNoMatch`、`IsPreviewVisible`；
+  - 过滤只影响视图；选中项若仍在视图中则刷新后补回选择（避免输入搜索时设置面板被清空）；
+  - 视图自己的 `CollectionChanged` 再补一次可见数量（`Processes.CollectionChanged` 早于视图更新）。
+- 语言键：中英各新增 7 个（`ClientFilterPlaceholder` / `NoMatch` / `ClearFilter` / `HidePreview` /
+  `ShowPreview` / `PickColor` / `PickColorTip`），并把 `PreviewTip` 的"上方客户端"改为"左侧客户端"；
+  中英各 **2324** 键、0 重复、键集完全一致（其中 `GamePreviewPage_*` 各 115）。
+
+#### 四、验证
+
+- **构建**：`dotnet build` **0 错误 / 39 警告**（与改前基线一致，无新增）。
+- **一次性探针**（`probe/GamePreviewProbe`，核验后已删除）：真实 `App.xaml` 资源 + 真实 `GamePreviewPage`，
+  16 个假客户端（4 个运行中）、选中运行/未运行两种状态，离屏渲染：
+  | 场景 | 实测 |
+  |---|---|
+  | 1440×900，画面展开 | 设置 **916**、画面 **260**；tab 页签完整；4 个颜色按钮；停止预览按钮 `Appearance=Danger`、234×31 |
+  | 1440×900，画面收起 | 设置 **1136**、导轨 **40**（竖排「预览」可见） |
+  | 908×700（约用户 1156 窗口的内容量级） | 设置 **384**、画面 **260**；页签与行标签均不截断 |
+  | 960×620，画面收起 | 设置 **656**、列表一屏 10 项、搜索框可见 |
+  | 搜索 `Pilot 1` / `no-match` | 可见 6 / 0，`HasNoMatch` 正确；无匹配空态与「清空搜索」正常 |
+  | 颜色绑定 | 模型 → 按钮、按钮 → 模型 **双向都通过**（A=200 的透明色也正确回写） |
+- **实机**（真实 EVE 客户端 2 个：`QEDSD` / `QEDSD222`）：
+  - 进入「多开」→ 左侧 2 项、运行计数 `2 / 2`、每项红色停止钮、页脚红色「停止全部」；
+  - 点选 `QEDSD` → 设置面板切到「选中项设置」并完整显示；右侧 260 侧栏出现**真实 DWM 实时画面**，
+    顶部整行红色「停止预览」；参数纵排显示 显示样式/不透明度/高亮/快捷键；
+  - 打开「高亮边框颜色」→ 弹层正确显示绿色预览、A/R/G/B 滑杆与数值、HEX `#008000`、关闭按钮；
+  - 「操作」组在 1156 窗口（设置约 400 DIP）下实测 **3 + 1** 两行：
+    「停止预览 / 激活游戏窗口 / 恢复位置」同排，「应用到其余配置」自动落到第二行；
+  - 全程无崩溃；关闭应用后预览窗口随之销毁。
+- 未做：未在实机点「停止预览」（会结束正在运行的预览，留给用户日常使用）；未改预览窗口本身的行为。
+
+#### 五、已知边界
+
+- 画面侧栏的"首次展开/收起"只在页面首次 `Loaded` 判断一次；用户之后的选择不持久化到配置文件。
+- 窄视口下如果用户仍手动展开画面，设置列会被压窄（页签仍可见，行标签换行）；这是用户主动选择的结果。
+- 超高/超宽源画面在页面侧栏内按 120–220 高度上限留边（刻意不铺满）；桌面预览小窗不受影响。
+- 搜索只匹配角色名与窗口标题；被过滤掉的当前选中项会被清空（若仍在视图中则会补回）。
+- `Popup` 内容不在 `RenderTargetBitmap` 的页面树里，离屏探针只验证了颜色按钮本身；弹层已用实机截图核验。
+
+---
+
+### 阶段 136：分组设置独立成第三个页签（紧凑列表 + 编辑当前分组）
+
+> 起因（用户反馈）：**「全局设置的分组设置目前这样分组太多的时候很难管理，是否可以单独拎出来
+> 跟选择项设置、全局设置同级别 Tab」**。阶段 134 把分组快捷键放在全局设置底部，所有分组以卡片
+> 平铺；每组自带名称、两个热键、成员胶囊、手工添加、重启与应用，单组约 300+ DIP，十几个分组时
+> 全局设置页极长，找一组要滚很久，也没有搜索与排序。
+
+#### 一、改法：第三个同级别页签 + 列表/编辑两段
+
+```
+选中项设置 | 全局设置 | 分组设置
+┌ 分组设置 ────────────────────────────────────────────────┐
+│ 点选角色组成分组；分组快捷键只在这些角色之间切换             │
+│ ┌ 搜索分组名 ──────────────────────────┐ [+ 添加分组]      │
+│ │ 分组快捷键1                    F6  F7 │  ← 一行一个，最多 240 高，超出滚动 │
+│ │ 分组快捷键2                    F8  F9 │                    │
+│ └───────────────────────────────────────┘                    │
+│ ┌ 编辑当前分组 ───────────────────────────────────────────┐ │
+│ │ [分组名..................]        ↑  ↓  🗑              │ │
+│ │ [向前] [向后]                                           │ │
+│ │ 已选 3 / 13                             全选  清空      │ │
+│ │ ● QEDSD  ● QEDSD222  ● Haike ...（点选胶囊，自动换行）   │ │
+│ │ [输入不在列表中的角色名]                    [+ 添加]     │ │
+│ │ ☑ 切换分组后从头开始                            [应用]   │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+- **页签索引**：0 = 选中项设置、1 = 全局设置、2 = 分组设置；未选中进程时 0 归一化为 1，
+  分组页签（2）在无选中进程时仍可用。选中进程自动切回 0；取消选中时只有停在 0 才回 1，
+  停在分组页签不会被抢走。
+- **分组列表**：一行一个分组（名称 + 已设置的前/后快捷键胶囊），`MaxHeight=240` 超出滚动；
+  搜索框按分组名过滤；无分组显示「还没有分组」空态，过滤无结果显示「没有匹配的分组 + 清空搜索」。
+  列表选中项沿用客户端列表的选中口径（主题色 1px 描边 + 浅底）。
+- **编辑区**：只编辑当前分组。名称/前后快捷键仍 `LostFocus` 回写；成员点选胶囊、全选/清空、
+  手工添加、重启、应用与阶段 134 一致，但不再为每个分组重复渲染一整套控件。
+- **管理动作**：`↑ / ↓` 调整分组顺序（立即持久化），`🗑` 删除分组（先弹确认框，避免误删）；
+  新建分组会清空搜索、选中新分组，并把列表滚到新分组；默认分组名取一个尚未使用的序号，
+  删过中间分组后也不会撞名。
+- **全局设置页**移除底部分组段，页面明显变短。
+
+#### 二、代码改动
+
+- `ViewModels/GamePreview/GamePreviewViewModel.cs`：
+  - `SettingsTabIndex` 改为真实三态（`_settingsTabIndex` 0/1/2，`Math.Clamp`），
+    删除原来的 `IsGlobalSetting` 双态字段；
+  - 新增 `HotKeyGroupsView`（`CollectionViewSource` + 按分组名过滤）、`GroupFilter`、
+    `SelectedHotKeyGroup`、`HasSelectedHotKeyGroup` / `HasHotKeyGroups` / `VisibleHotKeyGroupCount` /
+    `HasGroupNoMatch`、`CanMoveGroupUp` / `CanMoveGroupDown`；
+  - `AddGroup` 清搜索 + 选中 + 唯一默认名；`RemoveGroup` 删除后选原位置之后的可见分组；
+    新增 `MoveGroup(delta)`；过滤刷新后若选中项仍在视图则补回，否则自动选第一个可见分组。
+- `Views/Pages/GamePreviewPage.xaml`：
+  - 新增第三个 `TabItem`（Header 用 `GroupSettingTab` =「分组设置」/ "Groups"）；
+  - 新增 `HotKeyGroupItemTemplate`（一行：名称 + 两个热键胶囊），删除旧的 `HotKeyGroupTemplate`
+    （整组卡片）；
+  - 编辑区内联在页签里，`DataContext` 绑 `SelectedHotKeyGroup`；成员胶囊 ItemsSource 仍指向
+    页面 VM 的 `CharacterCandidates`。
+- `Views/Pages/GamePreviewPage.xaml.cs`：
+  - 分组操作全部改成读 `_viewModel.SelectedHotKeyGroup`，删除
+    `FindGroupRoot` / `TryGetGroup` / `FindByName` 等"在每张卡片里找分组"的辅助方法；
+  - 分组选中变化 / 候选集合变化时用 `DispatcherPriority.Loaded` 延后同步胶囊选中态与
+    「已选 x / y」计数；选中项自动 `ScrollIntoView`；
+  - 删除分组前用 `MessageBox` 确认（带分组名）。
+- 语言键：中英各新增 **5** 个（`GroupSettingTab` / `FilterPlaceholder` / `Empty` / `NoMatch` /
+  `RemoveConfirm`），总数 **2329 / 2329**，0 重复、键集一致。
+
+#### 三、验证
+
+- 构建：**0 错误 / 39 警告**（与基线一致）。
+- 实机（真实 EVE 客户端 2 个：`QEDSD` / `QEDSD222`，真实 `GamePreviewSetting.json` 中已有 2 个空分组）：
+  - 多开页设置区显示 **3 个页签**，1156 窗口量级下完整可见；切到「分组设置」→
+    两行分组、搜索框、添加按钮、编辑区（名称/前后热键/已选 0 / 3/胶囊/手工添加/重启/应用）全部正常；
+  - 点第二个分组 → 编辑区标题与内容切到「分组快捷键2」；
+  - 搜索框输入 `2` → 列表只剩「分组快捷键2」，编辑区跟随；
+  - 点「添加分组」→ 新建「分组快捷键3」并自动选中（默认名避开已有序号），列表/编辑区同步；
+    再点删除 → 弹出「确定删除分组「分组快捷键3」吗？」（是/否），确认后列表回到 2 组；
+  - 点 `QEDSD` 胶囊 → 变为选中描边，计数 `已选 1 / 3`；切到分组 2 → 胶囊取消、计数 `0 / 3`；
+    切回分组 1 → 胶囊恢复选中、计数 `1 / 3`；再点一次取消 → 计数 `0 / 3`；
+  - 测试前备份、测后恢复 `GamePreviewSetting.json`，分组数据无残留；全程无崩溃。
+- 临时截图：`groups-tab.png`（分组设置页）、`groups-filter.png`（搜索 `2`）。
+
+#### 四、已知边界
+
+- 分组列表只显示名称与热键，成员数只在编辑区显示——`GameNames` 是 `HashSet`（没有变更通知），
+  若在列表里绑 `Count`，点选成员后列表计数不会刷新；不显示反而不会误导。
+- 搜索只按分组名，不按成员名（成员在编辑区点选，不需要靠搜索定位）。
+- 当前选中的页签不持久化：重启后回到全局设置（分组数据本身正常保存）。
+- 删除确认使用系统 `MessageBox`（与项目其它页的确认方式一致），非 WPF-UI 内容对话框。
+
+---
+
+### 阶段 137：切换顺序独立成第四个页签（可排序列表，替换多行文本框）
+
+> 起因（用户反馈）：**「切换顺序设置UI一样独立出来」**。阶段 136 把分组建模成
+> 「列表 + 编辑当前分组」；切换顺序仍留在全局设置底部，是一个每行一个窗口标题的多行文本框，
+> 几十个客户端时只能整段替换或手敲，看不到运行态，已关闭客户端的旧标题也藏在文本里。
+
+#### 一、改法
+
+- 设置区第四个同级别页签 **「切换顺序」**（英文用 `Order`，避免四个页签在窄设置区放不下）；
+  全局设置里的旧文本框段删除。
+- 页签内容：
+  - 顶部提示：全局快捷键按这里的顺序切换客户端，调整后立即生效并保存；
+  - 工具栏：**用当前列表填充 / 按角色名排序 / 刷新列表**；
+  - 顺序列表：每行 = 序号 + 角色名 / 窗口标题 + 运行绿点 + 上移 / 下移；
+    已关闭客户端的旧标题显示「未发现」徽标，并额外提供移除按钮。
+- 上移/下移、排序、填充都**立即写回 `ProcessOrder`、重排左侧客户端列表并保存**，
+  不再有“应用”这一步（顺序是高频调整项，草稿式 Apply 容易丢改动）。
+- 已关闭客户端的旧标题保留在原位（用户可能还会重开该客户端），可用「用当前列表填充」
+  一键丢弃所有旧标题；「按角色名排序」把未发现的旧标题排在最后。
+
+#### 二、代码改动
+
+- **新增** `ViewModels/GamePreview/SwitchOrderEntry.cs`：顺序行 VM（`WindowTitle` / `CharacterName` /
+  `Process` / `IsPresent` / `IsRunning` / `Index` / `CanMoveUp` / `CanMoveDown`）。
+- `GamePreviewViewModel`：
+  - `SwitchOrderEntries` + `HasSwitchOrderEntries`；
+  - `RebuildSwitchOrder()`：按 `ProcessOrder` 展开（含旧标题），再追加尚未写入顺序的进程，去重；
+  - `MoveSwitchOrderEntry(delta)`、`SortSwitchOrderByName()`、`FillSwitchOrderFromProcesses()`、
+    `RemoveSwitchOrderEntry()`（只允许移除未发现的旧标题）；
+  - `CommitSwitchOrder()`：写回 `ProcessOrder` → `ReorderProcessesBySetting()` → `Save()`；
+  - `SettingsTabIndex` 扩为 0..3；`SyncOrderFromProcesses()` 改为重建顺序列表；
+  - 角色切换（窗口标题变化）时把 `ProcessOrder` 里的旧标题**原位替换**成新标题，
+    避免顺序页签留下一条「未发现」旧标题、新标题被追加到末尾；
+  - 删除旧的 `OrderText` / `ApplyOrderText` / `FillOrderFromProcesses`。
+- `GamePreviewPage.xaml`：第四个 `TabItem`、`SwitchOrderItemTemplate`（序号/名称/标题/运行点/上下移/移除）；
+  移除全局设置里的顺序文本框段。
+- `GamePreviewPage.xaml.cs`：新增填充/排序/刷新/上移/下移/移除处理器；
+  切到顺序页签（`SettingsTabIndex == 3`）时重建列表；页面 `Loaded` 与刷新按钮也重建。
+- 语言键：中英各新增 **5** 个（`OrderTip` / `Order_Sort` / `Order_Missing` / `Order_Remove` /
+  `Order_Empty`），英文 `Order` 值由 "Switch order" 缩短为 "Order"；中英各 **2334** 键、0 重复、键集一致。
+
+#### 三、验证
+
+- 构建：**0 错误 / 39 警告**（与基线一致）。
+- 实机（真实 EVE 客户端；当时配置里 `ProcessOrder` 有 3 项：`QEDSD`、已关闭的 `EVE`、`QEDSD222`；
+  另有用户已有的 4 个分组）：
+  - 设置区出现 **4 个页签**，顺序页签内容为 1 QEDSD / 2 EVE（**未发现**）/ 3 QEDSD222，
+    运行态绿点、上下移按钮、工具栏均正常；
+  - 把第 2 行（未发现的 EVE）上移 → 列表变为 1 EVE / 2 QEDSD / 3 QEDSD222，左侧客户端列表同步重排；
+  - 点「用当前列表填充」→ 未发现的旧标题被丢弃，列表回到 2 项（QEDSD / QEDSD222）；
+  - 测试前备份、测后恢复 `GamePreviewSetting.json`（保留用户已有的 4 个分组与原始顺序），无残留。
+- 临时截图：`order-tab.png`（顺序页签，含「未发现」行）、`order-filled.png`（填充后）。
+
+#### 四、已知边界
+
+- 顺序页签不是每秒自动重建的（重建会打断用户正在看的列表）；进程启停/新客户端出现后，
+  点「刷新列表」或切走再切回即可。1 秒定时刷新本身照常工作，只是不强行重建这个编辑列表。
+- 仍存在的客户端只能调整位置，不能从顺序里移除（移除会在下次重建时被重新追加）；「移除」只对未发现的旧标题开放。
+- 未实现拖拽排序，使用上/下移按钮；如后续需要可再加拖放。
+- 顺序页签的选择不持久化（重启回全局设置），与分组页签一致。
+
+---
+
+### 阶段 138：分组支持独立排序（跟随全局 / 单独排序）
+
+> 起因（用户要求）：**「给分组增加一份顺序列表，可以设置按照单独排序也可以设置跟随全局排序」**。
+> 阶段 137 的切换顺序是全局唯一的一份；分组热键只按角色名过滤，组内顺序仍然跟着全局走。
+
+#### 一、模型与行为
+
+- `PreviewHotKeyGroup`（Core）新增两个可序列化字段：
+  - `UseGlobalOrder`：默认 **true** = 跟随「切换顺序」的全局排序（旧配置无此字段，反序列化即默认，
+    行为与阶段 137 完全一致）；
+  - `Order`：`List<string>`，**单独排序时的角色名顺序**；仅在 `UseGlobalOrder=false` 时参与分组切换。
+- `SwitchGroup` 的取数逻辑：
+  1. 先按原有条件过滤：运行中 + 响应全局切换 + 角色名属于该分组；
+  2. `UseGlobalOrder=true` → 保持全局切换顺序（原行为）；
+  3. `UseGlobalOrder=false` → 再按 `group.Order` 里的角色名位置排序；不在 `Order` 里的成员保留全局顺序、
+    排在已列出的成员之后。
+- 分组顺序按**角色名**而不是窗口标题保存：游戏内切换角色、窗口标题变化不会让分组顺序失效。
+- `Restart`、`LastActiveProcessGUID` 的语义不变；顺序只改变“下一跳是谁”。
+
+#### 二、界面
+
+分组设置 → 编辑当前分组里新增：
+
+```
+排序方式                                  单独排序 [开关]
+关闭：跟随「切换顺序」的全局排序；开启：本分组按下方列表的顺序循环
+[按全局顺序填充] [按角色名排序]
+1  ● QEDSD222        ↑ ↓
+2  ● QEDSD           ↑ ↓
+3    Haike           ↑ ↓
+☑ 切换分组后从头开始                         [应用]
+```
+
+- **默认关闭“单独排序”**（跟随全局）；打开后才显示下方的分组顺序列表。
+- 关闭时只保存模式，**保留之前编辑过的自定义顺序**；再次打开会恢复。
+- 第一次打开时，分组顺序从当前生效的全局顺序初始化（不是空列表），用户再上下移调整。
+- 工具栏：
+  - **按全局顺序填充**：清空自定义顺序并按全局顺序重建（仍保持单独排序模式）；
+  - **按角色名排序**：按角色名字母序重排当前分组顺序。
+- 上/下移、填充、排序都**立即写回 `Order` 并保存**；成员增删时列表自动补/删成员。
+- 列表只显示角色名（成员关系仍由上方胶囊维护），运行中的显示绿点。
+
+#### 三、顺手修掉的一个真实缺陷
+
+验证分组循环时发现：**分组快捷键自己激活游戏窗口**会触发前台变化，而
+`OnForegroundChanged` 原来无条件把 `_lastActiveGroup` 清空。`Restart=true`（默认）的分组因此
+每次按分组键都被判定为“从别的分组切回来”，于是**永远从第一个成员重新开始**，切换不动。
+
+修复（`GamePreviewViewModel.OnForegroundChanged`）：
+
+- 只有当前台换成**另一个**客户端（`process.GUID != _lastActiveGuid`）时才清 `_lastActiveGroup`；
+- 分组/全局快捷键刚激活的目标本身就是 `_lastActiveGuid`，前台变化不再误清分组游标。
+
+这样“手动切到别的客户端 → 分组从头开始”的语义保留，同时分组键可以正常连续循环。
+
+#### 四、代码改动
+
+- `Core/Models/GamePreviews/PreviewSetting.cs`：`PreviewHotKeyGroup.UseGlobalOrder` + `Order`。
+- **新增** `ViewModels/GamePreview/GroupOrderEntry.cs`：分组顺序行 VM（角色名 / 运行态 / 序号 / 上下移）。
+- `GamePreviewViewModel`：
+  - `GroupOrderEntries` / `HasGroupOrderEntries`；
+  - `RebuildGroupOrder()`：保留仍是成员的自定义顺序 → 其余成员按全局顺序追加 → 在自定义模式下写回 `Order`；
+  - `MoveGroupOrderEntry()` / `SortGroupOrderByName()` / `FillGroupOrderFromGlobal()` / `CommitGroupOrder()`；
+  - `SwitchGroup` 在 `UseGlobalOrder=false` 时按 `GroupOrderIndex` 重排目标；
+  - 修复 `OnForegroundChanged` 对 `_lastActiveGroup` 的误清。
+- `GamePreviewPage.xaml`：分组编辑器新增“排序方式”行、单独排序开关、提示、工具栏、`GroupOrderItemTemplate` 列表。
+- `GamePreviewPage.xaml.cs`：模式切换（等绑定落定后重建并保存）、上下移、按全局填充、按名字排序；
+  成员增删 / 分组选中时重建顺序列表。
+- 语言键：中英各新增 **5** 个（`GroupOrder` / `GroupOrder_Custom` / `GroupOrder_Tip` /
+  `GroupOrder_FromGlobal` / `GroupOrder_Empty`），总数 **2339 / 2339**，0 重复、键集一致。
+
+#### 五、验证
+
+- 构建：**0 错误 / 39 警告**（与基线一致）。
+- 实机（真实 2 个 EVE 客户端；分组 1 成员 `QEDSD / QEDSD222 / Haike`）：
+  - 打开“单独排序”→ 列表按全局顺序初始化为 1 QEDSD / 2 QEDSD222 / 3 Haike，运行绿点正确；
+  - 把 QEDSD222 上移 → 1 QEDSD222 / 2 QEDSD / 3 Haike；配置落盘 `UseGlobalOrder=false`、
+    `Order=["QEDSD222","QEDSD","Haike"]`；
+  - 关闭开关 → 列表隐藏，再打开 → 顺序原样恢复（自定义顺序没有被“跟随全局”覆盖）；
+  - 给分组 1 设置向前 `F6` / 向后 `F7` 并应用：
+    - 从 QEDSD222 按 F6 → QEDSD，再按 F6 → QEDSD222（自定义顺序循环）；
+    - 按 F7 → QEDSD（反向）；
+    - 先按全局 F5（QEDSD→QEDSD222），再按分组 F6 → **QEDSD222**（自定义顺序的第一个，
+      而不是全局顺序的第一个 QEDSD）→ 证明 `UseGlobalOrder=false` 生效，且 `Restart` 游标修复有效。
+  - 测试前备份、测后恢复 `GamePreviewSetting.json`（用户已有的 4 个分组、空热键、原始顺序全部保留）。
+- 临时截图：`group-order-custom.png`（单独排序列表）、`group-order-follow.png`（跟随全局，列表隐藏）。
+
+#### 六、已知边界
+
+- 自定义顺序按角色名保存；分组里手工加进来的“未登录角色名”可以参与排序，但只有真正发现且运行中、
+  响应全局切换的客户端才会进入切换目标。
+- 不在 `Order` 里的成员按全局顺序追加，不会自动出现在用户没指定的位置；可在列表里继续上下移。
+- 分组顺序列表只显示角色名；窗口标题 / 位置仍以上方成员胶囊和左侧客户端列表为准。
+- 跟随全局模式下，改变「切换顺序」会立即影响该分组；单独排序模式下不受全局变化影响，
+  需要时点“按全局顺序填充”重新同步。
+- `Order` / `UseGlobalOrder` 是新增的 JSON 字段；旧配置（含 WinUI 侧保存的配置）没有这两个字段时
+  默认“跟随全局”，不会改变原有行为。
+
+---
+
+### 阶段 139：分组设置改为「固定选择器 + 独立滚动编辑区」（解决多分组/多客户端/单独排序时滚动过长）
+
+> 起因（用户反馈）：**「分组设置当分组多、客户端多又开启单独排序时要垂直滚动太久」**。
+> 阶段 136/138 的分组页签结构是：分组列表（最高 240）+ 编辑区（成员胶囊不限高 + 分组顺序列表 200 +
+> 名称/热键/添加/重启等行）全部放在同一个纵向 ScrollViewer 里。分组一多、成员一多、再开单独排序，
+> 整页会很长；想换一个分组，还要先滚回顶部。
+
+#### 一、改法
+
+- **分组列表 → 顶部固定选择器**（`Grid.Row=1`，不参与编辑区滚动）：
+  - 搜索框（保留 `GroupFilter` / `HotKeyGroupsView` 过滤、空态、无匹配提示）；
+  - `ComboBox` 选择分组（`ItemsSource=HotKeyGroupsView`、`SelectedItem=SelectedHotKeyGroup`、
+    保留分组名 + 快捷键胶囊的 `HotKeyGroupItemTemplate`、支持输入首字母定位、`MaxDropDownHeight=320`）；
+  - `添加分组 / 上移 / 下移 / 删除` 按钮紧挨下拉框（上/下/删除从编辑区标题行搬过来）。
+  - 选择器在页签顶部固定，**切组不再需要滚动**；原来的 240 高列表被下拉替代，省约 200 DIP。
+- **编辑区独立滚动**（`Grid.Row=*`）：只有当前分组的编辑内容放在自己的 `ScrollViewer` 里；
+  顶部选择器始终可见。
+- **成员胶囊限高**：胶囊区包一层 `ScrollViewer MaxHeight=180`，客户端几十个时内部滚动，
+  不再把整页撑长。
+- **分组顺序列表**：`MaxHeight` 200 → 180；同样内部滚动。
+- 成员与顺序两个列表仍**同时可见**（没有做子页签）；通过“各自限高 + 编辑区独立滚动”控制总高度。
+- 分组切换改由 ComboBox 的 `SelectedItem` 双向绑定 + VM 属性变化驱动；
+  删除原 `ListBox SelectionChanged / ScrollIntoView` 与“清空搜索”按钮（搜索框自带清除 X）。
+
+#### 二、代码改动
+
+- `GamePreviewPage.xaml`：
+  - 分组页签根节点由“外层 ScrollViewer + StackPanel”改为“Grid：提示 / 固定选择器 / 编辑区 ScrollViewer”；
+  - 原 `ListBox HotKeyGroupList` 删除，改用 `ComboBox`（复用 `HotKeyGroupItemTemplate`）；
+  - 编辑区标题行的上/下/删除按钮移到选择器行；
+  - 成员胶囊 `ItemsControl` 外包 `ScrollViewer MaxHeight=180`；
+  - 分组顺序列表 `MaxHeight=180`。
+- `GamePreviewPage.xaml.cs`：删除 `OnHotKeyGroupSelectionChanged`（含 `HotKeyGroupList.ScrollIntoView`）
+  与 `OnClearGroupFilterClick`；`OnMoveGroupUp/Down/RemoveSelectedGroup` 继续由选择器按钮使用。
+- 语言键无新增（复用 `GroupHotkey_*` / `MoveUp/Down` / `GroupHotkey_Remove`），总数仍 **2339**。
+
+#### 三、验证
+
+- 构建：**0 错误 / 39 警告**（与基线一致）。
+- 实机（当时配置里有 **7 个分组**，其中 2 个已开“单独排序”；成员最多 3 个）：
+  - 分组页签顶部固定显示搜索 + 分组下拉 + 添加/上移/下移/删除；
+  - 下拉选择第 2 组 → 编辑区切到该组（`已选 0 / 3`），选择器位置不动；
+  - 第 1 组（单独排序）的成员胶囊 + 自定义顺序列表都完整显示，编辑区整体仍在一屏内；
+  - 分组选择器在编辑区滚动时保持固定，切组不需要滚回顶部。
+- 临时截图：`group-selector-tab.png`。
+- 说明：实机测试只做了分组切换与页面查看，没有修改用户已有的 7 个分组/自定义顺序。
+
+#### 四、已知边界
+
+- 分组不再“一屏全部列出”，而是下拉 + 搜索；分组很多时靠搜索/输入首字母定位，
+  换来的是编辑区不被 240 高的列表长期占用。
+- 成员胶囊区与分组顺序列表各自带内部滚动条；鼠标在它们上面滚动时滚的是这两个区域，
+  不在它们上面时滚的是编辑区。
+- 下拉项的模板仍显示“分组名 + 两个快捷键胶囊”；成员数量在编辑区的「已选 x / y」里看。
+- 搜索无匹配时 `SelectedHotKeyGroup` 为 null，编辑区隐藏，显示“没有匹配的分组”提示。
+
+---
+
+### 阶段 140：新客户端候选刷新修复 + 分组上下移移除
+
+> 反馈：**「新打开的客户端不能自动刷新在分组设置的列表里面」**；
+> **「分组列表的上下移动意义何在」**。
+
+#### 一、候选不刷新的四个原因与修法
+
+1. **标题变化没有立即刷新候选**：候选原来只在 `Processes` 集合变化、`Running` 变化或
+   `RefreshAsync` 末尾刷新；新客户端从 `EVE` 变成 `EVE - 角色名` 时，`WindowTitle` 变化不在上述
+   即时路径里（只等下一轮 1 秒定时器）。现在 `OnProcessPropertyChanged` 同时处理
+   `Running` 与 `WindowTitle`，标题一变立即 `RefreshCharacterCandidates()`。
+2. **候选在 180 高胶囊区下面**：新客户端追加在已发现客户端之后，客户端多时位于内部滚动区下方，
+   看起来像“没刷新”。页面记录已出现过的候选名，只在**真正新增**且分组页签可见时把对应胶囊
+   `BringIntoView()`；整表重建（Running 状态变化等）不会反复滚动。
+3. **客户端还在登录/选人界面**：`GetCharacterName()` 为空，本来就不能加入按角色名匹配的分组。
+   新增提示：“N 个客户端还没进入角色，选择角色后会自动出现在候选里”
+   （`UnnamedClientCount` / `UnnamedClientHint`）。
+4. **同名客户端**：分组候选按角色名去重（例如两个 `QEDSD222` 窗口只显示一个胶囊）。
+   新增提示：“N 组同名客户端；分组候选按角色名去重，同名窗口只会显示一个候选”
+   （`DuplicateCharacterNameCount` / `DuplicateCharacterNameHint`）。
+   这是当前“分组按角色名匹配”的固有限制；如果要按窗口粒度分组，需要把 `GameNames` 模型改成窗口标识。
+
+#### 二、分组列表的上下移动：删除
+
+- 结论：**它没有实际切换意义**。分组顺序只影响：
+  - ComboBox / JSON 里的展示顺序；
+  - 没选中分组时的默认第一个；
+  - 两个分组用了同一个全局热键时，谁先注册（先注册的成功，后一个提示失败）。
+- 这些都不值得占用两个按钮，且容易让人误以为会影响切换。已删除：
+  - 分组选择器旁的 ↑ / ↓；
+  - `MoveGroup` / `CanMoveGroupUp` / `CanMoveGroupDown` 及对应处理器。
+- 分组顺序现在就是创建/配置顺序，新分组追加到末尾；“添加 / 删除 / 搜索 / 下拉选择”保留。
+
+#### 三、验证
+
+- 构建：**0 错误 / 39 警告**（与基线一致）。
+- 一次性探针（已删除）：
+  - 加入一个标题为 `EVE` 的假客户端 → `UnnamedClientCount=1`，候选里没有它；
+  - 把标题改成 `EVE - TestNew` → 候选立刻出现 `TestNew`、未命名计数归 0。**PASS**。
+- 实机（当时 3 个 exefile 进程，其中两个同名 `QEDSD222`；7 个分组）：
+  - 分组选择器只剩搜索、下拉、添加、删除，↑/↓ 已移除；
+  - 左侧 3 个客户端、候选 3 个名字（同名去重）——与提示逻辑一致；
+  - 用户已有的 7 个分组与自定义顺序未改动。
+- 临时截图：`group-tab-final.png`（选择器已无上下移）。
+
+#### 四、已知边界
+
+- 分组候选按**角色名**去重；两个同名窗口共享一个胶囊、也会同时命中同一个分组（切换目标会有两个同名进程）。
+  如需按窗口分组，需要改 Core 的分组成员模型。
+- 未进入角色的客户端不会出现在候选里；提示会说明“选择角色后出现”。
+- 自动滚动只在分组页签当前可见时触发；如果新客户端在别的页签出现，切回来时它已经在列表里，
+  但不会主动滚动（避免打断用户）。
+- 分组顺序不再支持 UI 调整；需要调整可直接改配置或后续加有语义的排序（按名称/快捷键）。
+
+---
+
+### 阶段 141：快捷键输入接入模拟键盘（按键列表 + 可视化键盘）
+
+> 用户要求：**「将快捷键输入添加按键列表添加，最好是模拟一个键盘UI」**。
+> 阶段 140 的快捷键仍只有 `TextBox`，用户要记 `Ctrl+Alt+A` 的写法以及 `VK_OEM_MINUS` 这类内部名。
+
+#### 一、新控件 `HotkeyInput`
+
+`Views/UserControls/HotkeyInput.xaml(.cs)`：
+
+```
+[ 可输入快捷键的 TextBox              ] [⌨]
+```
+
+- TextBox 仍可自由输入；右侧键盘按钮打开 `Popup`。
+- 弹层是一块**模拟键盘**：
+  - 修饰键：Ctrl / Alt / Shift / Win。物理键盘上左右各一个，状态同步；多选可组合。
+  - 功能键：F1–F12。
+  - 主键盘：Esc、数字/符号、QWERTY、ASDF、ZXCV、Enter、Backspace、Space。
+  - 特殊键：Insert / Delete / Home / End / PageUp / PageDown / 方向键。
+  - **其他按键**下拉：F13–F24、小键盘、媒体/浏览器键、OEM 符号等；从 `Keyboardlist.csv` 自动补全，
+    列表支持输入首字母定位。
+  - 预览行：`当前：Ctrl + A`；按钮：清除 / 取消 / 确定。
+- 打开时解析当前 `Hotkey`，反选修饰键和主键（F5 → F5；Ctrl+A → Ctrl + A）。
+- 确定输出 `Ctrl+Alt+A` / `F5`（单键允许）；清除写入空字符串。
+- 弹层**右对齐到输入框**（`HorizontalOffset = InputBox.ActualWidth - 570`），避免右侧设置栏
+  的弹层伸出屏幕；内容宽 540 DIP。
+- 修饰键用 `Checked/Unchecked` 同步而不是 `Click`：鼠标、键盘空格、UIA `TogglePattern` 都能生效。
+  主键是同一 `GroupName` 的 `RadioButton`，天然单选。
+- 控件公开 `Hotkey` DP（TwoWay）与 `HotkeyApplied` 事件；TextBox 失焦 / 弹层确定 / 清除都会触发事件。
+
+#### 二、接入位置
+
+- **单客户端激活快捷键**（选中项设置）：`Hotkey="{Binding SelectedSetting.HotKey}"`，
+  `HotkeyApplied` → `NotifySettingChanged(true)`。
+- **全局向前 / 向后**：`Hotkey="{Binding ForwardHotkey/BackwardHotkey}"`，输入宽度 154。
+- **分组向前 / 向后**：`Hotkey="{Binding SwitchHotkey_Forward/Backward}"`，两列各一个。
+- 输出格式不变，仍由 `GlobalHotkeyService.TryParse` 解析和注册。
+- `GlobalHotkeyService.BuildKeyCodes` 补充**友好符号别名**：
+  `- = [ ] \ ; ' , . / \`` → 对应 `VK_OEM_*`。这样键盘上点 `-` 输出 `Ctrl+-`，
+  既可读又能直接注册；CSV 里的 `VK_OEM_*` 旧写法仍可用。
+- AI 助手的快捷键是另一套设置/服务，本轮未改；`HotkeyInput` 可直接复用。
+
+#### 三、验证
+
+- 一次性 WPF 探针（已删除）：
+  - 打开弹层 → 点 Ctrl（ToggleButton）→ 点 A（RadioButton）→ 确定；
+  - `Hotkey == "Ctrl+A"`，**PASS**；同时验证 `Popup` 能打开、F5 能反选。
+- 实机：
+  - 全局设置里点 F5 输入框的键盘按钮 → 弹层打开，F5 高亮，其他按键下拉显示 F5，
+    预览「当前：F5」；弹层完整落在窗口内；
+  - 分组设置里向前/向后两个输入各带键盘按钮，宽度与两列布局正常；
+  - 未命名的 EVE 客户端在分组页显示上一阶段的中文提示。
+- 构建：**0 错误 / 39 警告**；语言键中英各 **2349**，0 重复、键集一致。
+- 截图：`hotkey-keyboard-app.png`（实机全局输入）、`hotkey-keyboard-probe.png`（Ctrl+A 选中态）。
+- 测试后已恢复用户配置（7 个分组、F5/F4）。
+
+#### 四、已知边界
+
+- 弹层右对齐输入框；如果输入框贴在屏幕最左缘，弹层仍可能超出，后续可加
+  `CustomPopupPlacement` 做屏幕夹紧（当前多开页的输入都在右侧，够用）。
+- 键盘主区只画到 F12；F13–F24、小键盘、媒体键通过「其他按键」下拉选择。
+- 「其他按键」列表较长，靠输入首字母定位；后续可加分组标题。
+- 输出顺序固定为 `Ctrl+Alt+Shift+Win+主键`；旧配置里其它顺序仍能解析。
+- 分组快捷键仍要在分组编辑器点「应用」保存；全局/单客户端按既有逻辑即时生效。
+
+---
+
+### 阶段 142：快捷键选择改为弹窗（左按键列表 + 右模拟键盘 + 直接按键录制）
+
+> 用户要求：**「改成弹窗显示键盘UI，左侧列表列出所有按键，右侧才是现在的键盘UI」**；
+> **「增加一个模式，直接检测用户按下的按键就当作快捷键」**。
+
+#### 一、弹窗
+
+阶段 141 的 `Popup` 换成模态 `FluentWindow`：`Views/Windows/HotkeyPickerWindow.xaml(.cs)`。
+
+```
+┌ 选择快捷键 ─────────────────────────────────────────────┐
+│ 点修饰键 + 主键，或点「录制按键」直接按下组合键               │
+│ ┌ 按键列表 ─────┐  ┌ F1 F2 ... F12                       │
+│ │ [搜索按键]     │  │ Esc 1 2 ... Backspace                │
+│ │ F1             │  │ Tab Q W ... \                       │
+│ │ F2             │  │ Caps A S ... Enter                  │
+│ │ ...            │  │ Shift Z X ... Shift                 │
+│ │ (F1-F24/字母/  │  │ Ctrl Win Alt Space Alt Win Ctrl     │
+│ │  数字/符号/小键盘│  └────────────────────────────────────┘
+│ │  媒体键/OEM)   │  当前：Ctrl + A
+│ └────────────────┘  已捕获：Ctrl + A
+│ [清除]                          [录制按键] [取消] [确定]   │
+└──────────────────────────────────────────────────────────┘
+```
+
+- 左侧 240 DIP：`搜索按键` + `ListBox` 列出**全部可作主键的按键**：
+  F1–F24、A–Z、0–9、Esc/Tab/Caps/Enter/Space/Backspace、Insert/Delete/Home/End/PageUp/PageDown/方向键、
+  符号、小键盘、媒体/浏览器/OEM（从 `Keyboardlist.csv` 补全）。
+- 右侧是原模拟键盘（修饰键 + F1–F12 + 主键盘 + Space），点键盘会同步左侧列表选中；点左侧列表会同步键盘高亮。
+- 底部：清除 / 录制按键 / 取消 / 确定。
+- `HotkeyInput` 不再包含 Popup/键盘代码，只负责：
+  - 打开 `HotkeyPickerWindow`（Owner = 当前窗口，`ShowDialog`）；
+  - `SelectedHotkey` 回写 `Hotkey` DP，并 `UpdateSource` + `HotkeyApplied`。
+
+#### 二、直接按键录制
+
+复用了 WPF 侧已有的 `Helpers/KeyboardHook`（`WH_KEYBOARD_LL`，从 WinUI 版移植，支持扩展键/Sys 键），
+通过 `Services/Tools/KeyboardHookService` 的引用计数共享钩子。Core 里只有 `KeyboardItem` 键表，
+没有检测逻辑；检测在 WPF Helpers 里，本轮对它做了两处增强：
+
+- **`SuppressAll`**：录制时事件照常派发，但把按键消息吞掉（返回 1）。
+  这样 Win 不会弹开始菜单、Alt+Tab 不会切窗口、Esc 不会把弹窗关掉；结束录制立即复位。
+- **`IsPressed(vk)`**：暴露钩子维护的"当前按住键"集合。
+  **实测踩到的坑**：`SuppressAll` 下 `GetAsyncKeyState` 可能看不到刚按下的修饰键，
+  导致录制 Ctrl+A 只得到 A；改用钩子按住集合后修复。现在修饰键取
+  `GetAsyncKeyState` 与钩子集合的并集，兼容"先按住 Ctrl 再点录制"。
+
+录制流程：
+
+1. 点「录制按键」→ 清空当前选择，禁用列表/键盘/清除/确定；
+2. 安装钩子、`SuppressAll=true`，状态显示「正在录制…请按下快捷键（Esc 取消）」；
+3. 修饰键（Ctrl/Alt/Shift/Win）只更新按住状态；第一个非修饰键作为主键；
+4. 组合 = 当前修饰键 + 主键；同步键盘高亮、左侧列表、预览；
+5. 停止录制、恢复 `SuppressAll=false`，状态「已捕获：Ctrl + A」，确定可用；
+6. Esc 取消录制；窗口失焦/关闭自动停止；不支持的键只提示、继续等下一个。
+
+#### 三、验证
+
+- 一次性 WPF 探针（已删除）：
+  - 打开 `HotkeyPickerWindow`，当前 F5 → F5 在左侧列表与键盘同时高亮；
+  - 左侧列表选 F6 → 选中同步；
+  - 点「录制按键」→ 注入 Ctrl+A → 状态「已捕获：Ctrl + A」→ 确定；
+  - 返回 `SelectedHotkey == "Ctrl+A"`，**PASS**。
+- 构建：**0 错误 / 39 警告**；语言键中英各 **2359**，0 重复、键集一致。
+- 截图：`hotkey-picker-window.png`（F5 初始态）、`hotkey-picker-captured.png`（Ctrl+A 捕获态）。
+- 测试后恢复用户配置（7 个分组、F5/F4）。
+
+#### 四、已知边界
+
+- 录制时按 Esc 永远是"取消录制"；如果就是想要 Esc，请从左侧列表或键盘选择。
+- `SuppressAll` 会吞掉录制期间的所有键盘输入（鼠标不受影响）；这是为了避免 Win/Alt+Tab/Esc
+  触发系统动作，录制结束立即恢复。
+- 左侧列表只列**可作主键**的键；Ctrl/Alt/Shift/Win 作为修饰键放在右侧键盘上。
+- 主键在 F1–F12 之外的（F13–F24、小键盘、媒体键等）只能从左侧列表选，键盘上不画。
+- 弹窗是模态的；录制期间全局快捷键（包括本应用的切换热键）也会被吞掉，避免误触发。
+- AI 助手设置页的快捷键仍是另一套服务，未接入本弹窗。
+
+---
+
+### 阶段 143：小键盘 / 其他按键用小按钮补在键盘上方（先水平再垂直）
+
+> 用户要求：**「把小键盘、其他目前没有在键盘UI表示出来的按键使用一些按钮列表单独表示在UI键盘上方，先水平再垂直排列」**。
+
+#### 一、改法
+
+`HotkeyPickerWindow` 右侧结构改为：
+
+```
+小键盘
+[Num0] [Num1] ... [Num/]            ← WrapPanel：先水平排满，再换行
+其他按键
+[F13] ... [F24] [Insert] ... [↓] [媒体键/OEM] ...
+┌ 原来的模拟键盘（F1-F12/主键盘/修饰键） ┐
+│ ...                                      │
+└──────────────────────────────────────────┘
+当前：F5
+```
+
+- 从 `HotkeyKeyCatalog.CreateOptions()` 里取**所有未出现在模拟键盘布局中的键**；
+- 分成两组：
+  - **小键盘**：`Num0`–`Num9`、`Multiply/Add/Subtract/Decimal/Divide`；
+  - **其他按键**：F13–F24、Insert/Delete/Home/End/PageUp/PageDown、方向键、Clear/Pause/Select/Print/Execute/PrtSc/Help/Separator/NUMLOCK/SCROLL、浏览器/媒体/启动键、OEM 等。
+- 两组都用 `WrapPanel`，子项是 `RadioButton`，和主键盘共用同一 `GroupName` 与 `KeyboardKey` 样式：
+  - 点小按钮 = 选主键，会同步左侧列表与主键盘高亮；
+  - 左侧列表/主键盘选中某个键时，如果它在这些按钮里，也会同步高亮。
+- 按钮高度 26、`MinWidth=36`、`MaxWidth=120`，长名字用 `TextTrimming.CharacterEllipsis` 截断，`ToolTip` 显示完整名称/说明。
+- 弹窗高度 650 → **720**（MinHeight 640），给两排按钮留空间；没有加滚动条，仍是一屏。
+- 左侧“全部按键列表 + 搜索”保持不变。
+
+#### 二、验证
+
+- 一次性 WPF 探针（已删除）打开弹窗，F5 选中；截图确认：
+  - 小键盘 15 个按钮两行排完；
+  - 其他按键 F13–F24、导航键、媒体/浏览器/OEM 自动换行；
+  - 主键盘、预览、底部按钮均完整显示，无裁切。
+- 构建：**0 错误 / 39 警告**；语言键中英各 **2361**，0 重复、键集一致。
+- 截图：`hotkey-picker-extra-keys.png`。
+
+#### 三、已知边界
+
+- 长按键名（尤其 `VK_BROWSER_*`）在按钮上会被截断成省略号，悬浮 ToolTip 显示完整名称；左侧列表仍是完整名称。
+- 两组按钮按 `HotkeyKeyCatalog` 的选项顺序排列；没有拖拽/分组折叠。
+- 弹窗最小高度 640 DIP；如果系统缩放很大/屏幕很矮，可能需要再调高度或加滚动。
+- 这些按钮只是“选主键”的另一种入口，不改变录制、解析和保存逻辑。
+
+---
+
+### 阶段 144：修正为完整键盘（功能行 + 导航区 + 小键盘），剩余键才放上方按钮
+
+> 用户反馈：**「不对，应该先在全键盘UI基础上再显示剩余键盘按钮，现在的键盘UI不是全键键盘」**。
+> 阶段 143 把导航区/小键盘也当成"剩余键"放到了键盘上方，方向错了。
+
+#### 一、改法
+
+弹窗右侧现在是一块**完整键盘**：
+
+```
+Esc F1 F2 ... F12 PrtSc Scroll Pause
+` 1 2 3 4 5 6 7 8 9 0 - = Backspace │ Insert Home PgUp │ NumLock / * -
+Tab Q W E R T Y U I O P [ ] \       │ Delete End  PgDn │ 7 8 9 +
+Caps A S D F G H J K L ; ' Enter    │        ↑        │ 4 5 6
+Shift Z X C V B N M , . / Shift     │ ←      ↓      →  │ 1 2 3 Enter
+Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Enter
+```
+
+- **功能行**：Esc、F1–F12、PrtSc、Scroll、Pause。
+- **主键区**：`` ` ``、数字、符号、字母、Backspace/Tab/Caps/Enter/Shift/Space，以及 **Menu** 键。
+- **导航区**：Insert/Home/PgUp、Delete/End/PgDn、方向键。
+- **小键盘**：NumLock、`/ * -`、Num7–Num9、`+`、Num4–Num6、Num1–Num3、Enter、Num0（跨两列）、`.`；
+  `+` 和 Enter 是真正的跨行大键。
+- 上方只保留 **「其他按键」** 一组按钮：F13–F24、Clear/Select/Print/Execute/Help/Separator、
+  浏览器/媒体/启动/OEM 等——这些是完整键盘上仍然画不出来的键。
+- 移除了阶段 143 的「小键盘」按钮组；小键盘已经在键盘本体里。
+- 弹窗宽度 1160 → **1220 DIP**（MinWidth 1180），给完整键盘留空间；高度 720。
+- `Menu` 键补进 `HotkeyKeyCatalog`，`GlobalHotkeyService` 增加 `menu`/`apps` → `VK_APPS (0x5D)` 别名。
+- 因为主键盘和数字键盘各有一个 Enter，`_keyButtons` 从"一键一按钮"改成"一键多按钮"，
+  选中/高亮会同时同步两个 Enter。
+- 删除了不再使用的紧凑布局 `HotkeyKeyCatalog.CreateKeyboardRows` 和 `HotkeyKeySpec`；
+  完整布局在 `HotkeyPickerWindow.BuildKeyboard` 里定义。
+
+#### 二、验证
+
+- 构建：**0 错误 / 39 警告**；语言键中英各 **2360**，0 重复、键集一致。
+- 一次性 WPF 探针（已删除）打开弹窗确认：
+  - 功能行、主键区、导航区、小键盘全部完整显示，右侧无裁切；
+  - 小键盘 `+`/Enter 跨行、Num0 跨两列；
+  - 上方「其他按键」只剩 F13–F24、媒体/浏览器/OEM 等剩余键；
+  - F5 在左侧列表、主键盘、预览中同步高亮。
+- 截图：`hotkey-picker-full-keyboard.png`。
+- 用户配置：7 个分组、F5/F4 已恢复。
+
+#### 三、已知边界
+
+- 完整键盘需要较宽窗口（1220 DIP）；125% 缩放下约 1525 物理像素，建议 1600 以上宽的屏幕。
+  更窄的屏幕后续可考虑缩放键盘或加横向滚动。
+- 左侧列表仍是完整键表；上方「其他按键」只放键盘上画不出的键。
+- 长按键名（`VK_BROWSER_*` 等）按钮截断为省略号，ToolTip/左侧列表看全名。
+- 主键盘和数字键盘的 Enter 共用同一个 `Enter` 热键，高亮会同时亮起；这是预期行为。
+- 小键盘 `+`/Enter 的点击区域是跨行大键，和普通键一样只选主键，不改变解析/保存逻辑。
+
+---
+
+### 阶段 145：完整键盘 F 行与数字行对齐修正
+
+> 用户反馈：**「ESC、FX键一行和1234行错位了」**。
+
+#### 原因
+
+阶段 144 把功能行作为独立 `StackPanel` 居中在“主键区 + 导航区 + 小键盘”的整个宽度上；
+主键区/数字行却从键盘最左边开始，于是 Esc/F1 整体向右偏移约一个导航区的宽度。
+
+#### 修正
+
+- 把功能行和主键/导航/小键盘放进**同一个 Grid**：
+  - 功能行在第 0 行，`HorizontalAlignment=Left`，与主键区左边缘对齐；
+  - 主键/导航/小键盘在第 1 行，主键区在第 0 列。
+- Esc/F1–F12 的宽度从 40/36 改为 **30**，与数字行 `` ` ``/1–0/-/= 的 30 完全一致：
+  - Esc 正对 `` ` ``；
+  - F1 正对 1，F2 正对 2……F10 正对 0，F11 正对 `-`，F12 正对 `=`。
+- PrtSc/Scroll/Pause 从 F 行末尾移到**导航区上方**（第 0 行第 2 列，跨导航+小键盘），
+  更接近真实全键盘的右上角布局。
+- 完整键盘、上方“其他按键”、录制逻辑均不变。
+
+#### 验证
+
+- 构建（输出到临时目录，避免打断用户正在运行的程序）：**0 错误 / 39 警告**。
+- 语言键中英各 **2360**，0 重复、键集一致。
+- 一次性 WPF 探针（已删除）截图确认：
+  - Esc 与 `` ` ``、F1 与 1、F12 与 `=` 左对齐；
+  - PrtSc/Scroll/Pause 位于 Insert/Home/PgUp 上方；
+  - 主键盘、导航、小键盘、上方剩余键按钮均完整显示。
+- 截图：`hotkey-picker-aligned.png`。
+- 用户配置未改动（7 个分组、F5/F4）。
+
+#### 已知边界
+
+- F 行键宽 30、右上角 PrtSc/Scroll/Pause 宽 40，因此 F 行和右上角之间会有自然空隙；
+  这是为了和数字行严格对齐。
+- 其余边界同阶段 144（宽窗口、长名称截断、Enter 共用等）。
+
+---
+
+### 阶段 146：消除键盘下方大块空白（自动高度 + 底部按钮移到预览下方）
+
+> 用户反馈：**「键盘UI下方留着大量空白」**。
+
+#### 原因
+
+- 阶段 144/145 的窗口固定 `Height=720`（后来 540），内容 Grid 的主行用 `*` 撑满剩余高度；
+- 右侧 Grid 最后还有一行 `*` 空行；
+- 底部按钮又固定在窗口最底部；
+- 结果键盘/预览下面出现一大块空白，按钮被推到底部。
+
+#### 修正
+
+- 窗口改成 **`SizeToContent="Height"`**，去掉固定 `Height`，只保留 `MinHeight=520`；
+- 内容 Grid 主行从 `*` 改为 **`Auto`**；
+- 左侧按键列表卡片固定 `Height=340`（内部 ListBox 自带滚动），右侧内容自然高度；
+- 底部按钮从“跨整个窗口的最底部”移到**右列预览/状态下方**（第 4 行 Auto）：
+  - 清除 / 录制按键 / 取消 / 确定现在紧跟在预览下面；
+  - 不再被窗口底部拉出空白。
+- 窗口最终高度约 **534 DIP**（125% 下 668 物理像素），比之前的 720 明显收紧。
+
+#### 验证
+
+- 构建（输出到临时目录，避免占用用户正在运行的实例）：**0 错误 / 39 警告**。
+- 语言键中英各 **2360**，0 重复、键集一致。
+- 一次性 WPF 探针（已删除）截图确认：
+  - 完整键盘、预览、底部按钮连续排列，下方没有大块空白；
+  - 左侧列表固定高度、可滚动；
+  - 窗口高度随内容自动收缩。
+- 截图：`hotkey-picker-height.png`。
+- 用户配置未改动（7 个分组、F5/F4）。
+
+#### 已知边界
+
+- 左侧列表固定 340 DIP 高；键表很长时靠列表自身滚动，不跟随窗口高度拉伸。
+- 窗口高度由内容决定；如果“其他按键”换行更多，窗口会变高（不会出现内部空白）。
+- 底部按钮现在在右列下方（清除按钮也在这里），不再横跨整个窗口。
+- 其余边界同阶段 144/145。
+
+---
+
+### 阶段 147：修复“窗口超级高” —— 去掉自动高度，固定 560 DIP
+
+> 用户反馈：**「为什么窗口超级高」**。
+
+#### 原因
+
+- 阶段 146 用了 `SizeToContent="Height"`，并把外层/内容 Grid 的行改成 `Auto`；
+- 左侧 `ListBox` 在“无限高度”测量时会请求**全部按键的完整高度**，把窗口撑到
+  约 **1462 物理像素（约 1170 DIP）**，反而变成“超级高”；
+- 另外，用户运行中的实例可能还是更早 `Height=720` 的默认 `bin` 构建，
+  没有重启就会看到旧高度。
+
+#### 修正
+
+- 去掉 `SizeToContent="Height"`，改回固定 **`Height="560"`**、`MinHeight="520"`；
+- 外层和内容 Grid 的行恢复为 `Auto + *`（固定窗口内正常分配）；
+- 保留阶段 146 的有效部分：
+  - 左侧列表固定 **340 DIP**、内部滚动；
+  - 底部按钮在右列预览下方，不再被窗口底部拉出空白；
+- 实际窗口：**125% 缩放下 1525×700 物理像素 ≈ 1220×560 DIP**，不再异常高；
+- 这次已 **Rebuild 默认 `bin`**（不再只写临时目录），并确认没有运行中的实例锁定。
+
+#### 验证
+
+- 构建：**0 错误 / 39 警告**；默认 `bin` 的 dll 已更新。
+- 语言键中英各 **2360**，0 重复、键集一致。
+- 一次性 WPF 探针（已删除）截图确认窗口尺寸 **1525×700**，键盘/预览/底部按钮连续排列。
+- 截图：`hotkey-picker-final.png`。
+- 用户配置未改动（7 个分组、F5/F4）。
+
+#### 已知边界
+
+- 固定 560 DIP；如果“其他按键”因字体/语言换行更多，可能需要临时调高窗口或加滚动。
+- 左侧列表固定 340 DIP，键表长时靠内部滚动。
+- 底部按钮在右列预览下方（清除按钮也在这里）。
+- 如果仍看到旧高度，请完全退出托盘/进程后重新启动，确认运行的是最新 `bin`。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -7800,9 +8645,9 @@ Services/Navigation.cs                                 主窗口 NavigationView 
 ### 工具模块（阶段 80：任务栏 / 服务器测速 / 键盘跨度 / 输入助手）
 ```
 Helpers/TaskbarHelper.cs            任务栏分组：设置/读取窗口的 System.AppUserModel.ID（SHGetPropertyStoreForWindow + IPropertyStore，PROPVARIANT 按 24 字节）
-Helpers/KeyboardHook.cs             全局低级键盘钩子 WH_KEYBOARD_LL（扩展键带扩展位取名字、Sys 键也计数、卸载后不再派发）
+Helpers/KeyboardHook.cs             全局低级键盘钩子 WH_KEYBOARD_LL（扩展键带扩展位取名字、Sys 键也计数、卸载后不再派发；SuppressAll/IsPressed 供快捷键录制）
 Helpers/InputTextHelper.cs          输入框取词规则（英文/中文分隔符、纯数字排除；修掉 WinUI 光标在第 0 位时的越界崩溃）
-Services/Tools/KeyboardHookService.cs  钩子的引用计数式启停 + 实例事件（原版静态事件会互相干扰、Clear 会 NRE）
+Services/Tools/KeyboardHookService.cs  钩子的引用计数式启停 + 实例事件（原版静态事件会互相干扰、Clear 会 NRE；SuppressAll/IsPressed 转发）
 Services/Tools/GameNameSearchService.cs 合并搜索：IdName(角色/军团/联盟) + 物品 + 分组 + 星系 + 星域，按 Id 去重、名称长度升序，逐类容错
 ViewModels/TaskbarPageViewModel.cs   拆分/合并任务栏按钮 + 状态行（找到几个/更新几个）
 ViewModels/ServerPingPageViewModel.cs 每秒一次 TCP 测速：当前/平均延迟、丢包率、档位、总次数/成功/失败/时长（修掉 NaN 与 +10 小时）
@@ -7924,11 +8769,25 @@ Services/GamePreview/HeadlessPreviewWindow.cs    不显示窗口时的空实现�
 Helpers/Interop/DwmThumbnail.cs                  DWM 缩略图（注册/目标矩形/不透明度/可见性/源尺寸/换绑）
 Helpers/Interop/NativeMethods.cs                 Win32 互操作（窗口位置尺寸、扩展样式、可透明客户区，阶段 54）
 Services/Settings/GamePreviewSettingService.cs   Configs/GamePreviewSetting.json
-ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发
+ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发 + 客户端搜索过滤 + 画面侧栏展开状态 + 分组列表/搜索/选中 + 切换顺序列表 + 分组单独排序
+ViewModels/GamePreview/SwitchOrderEntry.cs       切换顺序行 VM（标题/角色名/是否发现/运行态/序号/上下移）
+ViewModels/GamePreview/GroupOrderEntry.cs        分组单独排序行 VM（角色名/运行态/序号/上下移）
 Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（两种样式共用一个窗口类；尺寸锁定游戏客户区比例，阶段 44；
                                                  客户区"可透明"、画面为洞、边框/标题栏实色，阶段 54）
 Views/Windows/PreviewNameOverlayWindow.xaml(.cs) 无标题栏样式下左上角的角色名叠加窗（独立窗口，DWM 缩略图盖不住它）
-Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / 设置 / 预览）
+Views/Pages/GamePreviewPage.xaml(.cs)            多开页（阶段 135：客户端列表 + 设置主列 * + 画面侧栏 260/40 可折叠；
+                                                 阶段 136：三页签 选中项设置 / 全局设置 / 分组设置；
+                                                 阶段 137：第四页签 切换顺序 = 可排序列表；
+                                                 阶段 138：分组设置内支持 跟随全局 / 单独排序；
+                                                 阶段 139：分组选择器固定 + 编辑区独立滚动 + 胶囊/顺序列表限高；
+                                                 阶段 140：候选即时刷新/自动滚动 + 未命名/同名提示 + 删除分组上下移；
+                                                 阶段 141：快捷键输入 HotkeyInput（模拟键盘弹层）；
+                                                 阶段 142：快捷键选择改弹窗（左列表 + 右键盘 + 直接按键录制）；
+                                                 阶段 143：小键盘/其他按键按钮补在键盘上方；
+                                                 阶段 144：修正为完整键盘（功能行/导航/小键盘），剩余键才放上方；
+                                                 阶段 145：F 行与数字行左对齐，PrtSc/Scroll/Pause 移到导航区上方；
+                                                 阶段 146：自动高度 + 底部按钮移到预览下方，消除键盘下方空白；
+                                                 阶段 147：修复自动高度导致的异常窗口高度，固定 560 + 底部按钮在预览下方）
 Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多开用转换器
 ```
 
@@ -7956,6 +8815,10 @@ Views/UserControls/Map/PlanetResourceListView.xaml(.cs) 行星资源清单窗（
 Views/UserControls/Map/SovGroupSettingView.xaml(.cs)   主权分组编辑窗（三列：全部联盟/分组管理/分组详细；命名分组+多联盟+任意颜色，弃用分组号）
 Views/UserControls/Map/MapDisplaySettingsView.xaml(.cs) 显示参数实时调参弹窗（42 参数分组滑杆 + 恢复默认；MapDisplayConfig 持久化）
 Views/UserControls/ColorPickerView.xaml(.cs)  通用颜色选择器（ARGB 滑杆/数值双向联动 + HEX 输入，软件级复用）
+Views/UserControls/ColorPickerButton.xaml(.cs) 颜色按钮（色块 + #AARRGGBB + Popup 内复用 ColorPickerView；Color DP 双向，阶段 135）
+Views/UserControls/HotkeyInput.xaml(.cs) 快捷键输入（TextBox + 键盘按钮，打开 HotkeyPickerWindow；Hotkey DP 双向 + HotkeyApplied，阶段 142）
+Views/UserControls/HotkeyKeyCatalog.cs 快捷键键表 + GetAsyncKeyState 修饰键检测（布局在 HotkeyPickerWindow，阶段 144）
+Views/Windows/HotkeyPickerWindow.xaml(.cs) 快捷键选择弹窗（左按键列表/搜索 + 右完整键盘（功能行/主键/导航/小键盘）+ 上方剩余键按钮 + 录制；阶段 144）
 Converters/NullToVisibilityConverter.cs   null → Collapsed（信息卡显隐）
 Views/UserControls/Map/JumpBridgeSettingView.xaml(.cs) 跳桥设置窗（星系名或 ID 增删 + 显示开关）
 ```

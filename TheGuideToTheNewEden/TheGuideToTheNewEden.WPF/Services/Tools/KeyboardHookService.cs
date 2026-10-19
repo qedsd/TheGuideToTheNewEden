@@ -26,6 +26,13 @@ public sealed class KeyboardHookService : IDisposable
 
     public bool IsRunning => _hook.IsRunning;
 
+    /// <summary>录制快捷键时临时吞掉系统按键（事件仍派发）；结束录制必须复位。</summary>
+    public bool SuppressAll
+    {
+        get => _hook.SuppressAll;
+        set => _hook.SuppressAll = value;
+    }
+
     /// <summary>开始监听（引用计数 +1；第一个调用者安装钩子）。</summary>
     public void Start()
     {
@@ -41,6 +48,7 @@ public sealed class KeyboardHookService : IDisposable
             if (!_hook.Start())
             {
                 _hook.KeyPressed -= OnHookKeyPressed;
+                _hook.SuppressAll = false;
                 _refCount = 0;
             }
         }
@@ -62,6 +70,7 @@ public sealed class KeyboardHookService : IDisposable
             }
 
             _hook.KeyPressed -= OnHookKeyPressed;
+            _hook.SuppressAll = false;
             _hook.Stop();
         }
     }
@@ -69,12 +78,16 @@ public sealed class KeyboardHookService : IDisposable
     /// <summary>清空"当前按住的键"。</summary>
     public void Clear() => _hook.Clear();
 
+    /// <summary>查询某个虚拟键当前是否被钩子记为按住（录制修饰键用）。</summary>
+    public bool IsPressed(int virtualKey) => _hook.IsPressed(virtualKey);
+
     public void Dispose()
     {
         lock (_locker)
         {
             _refCount = 0;
             _hook.KeyPressed -= OnHookKeyPressed;
+            _hook.SuppressAll = false;
             _hook.Dispose();
         }
     }

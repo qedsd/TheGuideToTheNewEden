@@ -1,0 +1,299 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.HotkeyPickerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource HotkeyPicker_Title}"
+    Width="1220"
+    Height="560"
+    MinWidth="1180"
+    MinHeight="520"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
+    ShowInTaskbar="False"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style x:Key="KeyboardKey" TargetType="RadioButton">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Padding" Value="2,0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="KeyboardModifier" TargetType="ToggleButton">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="KeyListItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            x:Name="Bd"
+                            Padding="{TemplateBinding Padding}"
+                            Background="Transparent"
+                            CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            Title="{DynamicResource HotkeyPicker_Title}"
+            Grid.Row="0"
+            Height="34" />
+
+        <Grid
+            x:Name="CaptureSink"
+            Grid.Row="1"
+            Margin="16,4,16,16"
+            FocusVisualStyle="{x:Null}"
+            Focusable="True">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Margin="2,0,0,10"
+                FontSize="11"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource HotkeyPicker_KeyboardHint}"
+                TextWrapping="Wrap" />
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  左侧：全部可设置为主键的按键列表（可搜索）  -->
+                <Border
+                    Grid.Column="0"
+                    Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="2,0,0,6"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Text="{DynamicResource HotkeyPicker_KeyList}" />
+                        <ui:TextBox
+                            x:Name="SearchBox"
+                            Grid.Row="1"
+                            PlaceholderText="{DynamicResource HotkeyPicker_Search}"
+                            TextChanged="OnSearchTextChanged">
+                            <ui:TextBox.Icon>
+                                <ui:SymbolIcon Symbol="Search24" />
+                            </ui:TextBox.Icon>
+                        </ui:TextBox>
+                        <ListBox
+                            x:Name="KeyList"
+                            Grid.Row="2"
+                            Margin="0,8,0,0"
+                            Padding="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            DisplayMemberPath="Display"
+                            ItemContainerStyle="{StaticResource KeyListItem}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectionChanged="OnKeySelectionChanged" />
+                    </Grid>
+                </Border>
+
+                <!--  右侧：模拟键盘 + 预览 + 录制状态  -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!--  先全键盘；全键盘上画不出来的键再用按钮列表补在上方  -->
+                    <StackPanel Grid.Row="0">
+                        <TextBlock
+                            Margin="2,0,0,2"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource HotkeyPicker_OtherKeys}" />
+                        <WrapPanel x:Name="OtherPanel" />
+                        <StackPanel
+                            x:Name="KeyboardRows"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center" />
+                    </StackPanel>
+
+                    <Border
+                        Grid.Row="1"
+                        Margin="0,12,0,0"
+                        Padding="8,6"
+                        Background="{DynamicResource ControlFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource HotkeyPicker_Preview}" />
+                            <TextBlock
+                                x:Name="PreviewText"
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                FontFamily="Consolas"
+                                FontSize="14"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock
+                        x:Name="CaptureStatus"
+                        Grid.Row="2"
+                        Margin="2,8,0,0"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+
+                    <Grid Grid.Row="3" Margin="0,12,0,0">
+                        <ui:Button
+                            x:Name="ClearButton"
+                            HorizontalAlignment="Left"
+                            Appearance="Transparent"
+                            Click="OnClearClick"
+                            Content="{DynamicResource HotkeyPicker_Clear}" />
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <ui:Button
+                                x:Name="CaptureButton"
+                                Click="OnCaptureClick"
+                                Content="{DynamicResource HotkeyPicker_Capture}"
+                                Icon="{ui:SymbolIcon Keyboard24}" />
+                            <ui:Button
+                                x:Name="CancelButton"
+                                Margin="8,0,0,0"
+                                Click="OnCancelClick"
+                                Content="{DynamicResource HotkeyPicker_Cancel}"
+                                IsCancel="True" />
+                            <ui:Button
+                                x:Name="OkButton"
+                                Margin="8,0,0,0"
+                                Appearance="Primary"
+                                Click="OnConfirmClick"
+                                Content="{DynamicResource HotkeyPicker_Confirm}" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

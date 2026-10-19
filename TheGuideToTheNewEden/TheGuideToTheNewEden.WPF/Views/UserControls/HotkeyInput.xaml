@@ -1,0 +1,32 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.HotkeyInput"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Focusable="False">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <ui:TextBox
+            x:Name="InputBox"
+            LostFocus="OnInputLostFocus"
+            PlaceholderText="{Binding PlaceholderText, ElementName=Root}"
+            Text="{Binding Hotkey, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+        <ui:Button
+            Grid.Column="1"
+            Width="32"
+            Height="32"
+            Margin="4,0,0,0"
+            Padding="0"
+            Appearance="Secondary"
+            AutomationProperties.Name="{DynamicResource HotkeyPicker_Open}"
+            Click="OnOpenKeyboardClick"
+            Icon="{ui:SymbolIcon Keyboard24}"
+            ToolTip="{DynamicResource HotkeyPicker_Open}" />
+    </Grid>
+</UserControl>

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -219,6 +219,23 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         }
 
         public HashSet<string> GameNames { get; set; } = new HashSet<string>();
+
+        private bool _useGlobalOrder = true;
+        /// <summary>
+        /// 分组热键的排序方式：true = 跟随「切换顺序」里的全局顺序；
+        /// false = 使用 <see cref="Order"/> 里的单独排序。
+        /// </summary>
+        public bool UseGlobalOrder
+        {
+            get => _useGlobalOrder;
+            set => SetProperty(ref _useGlobalOrder, value);
+        }
+
+        /// <summary>
+        /// 单独排序时的角色名顺序（仅 <see cref="UseGlobalOrder"/> 为 false 时生效）。
+        /// 名单里没有的成员会由 UI 自动追加到末尾；移出分组的名字在下次重建时清理。
+        /// </summary>
+        public List<string> Order { get; set; } = new List<string>();
 
         [JsonIgnore]
 
