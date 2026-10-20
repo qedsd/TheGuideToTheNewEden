@@ -109,7 +109,8 @@
                             <CheckBox
                                 x:Name="AutoSimuChatlog"
                                 VerticalAlignment="Center"
-                                Click="AutoSimuChatlog_Click" />
+                                Checked="AutoSimuChatlog_Checked"
+                                Unchecked="AutoSimuChatlog_Unchecked" />
                             <Label Margin="16,0,0,0" Content="间隔时间：" />
                             <TextBox
                                 x:Name="AutoSimuChatlogSpan"
@@ -163,12 +164,22 @@
                                             IsEditable="True" />
                                     </Grid>
                                 </Grid>
-                                <Button
-                                    Grid.Column="2"
-                                    Width="80"
+                                <StackPanel
+                                    Grid.Column="1"
                                     Margin="8,0,0,0"
-                                    Click="Button_ChatSpeak_Click"
-                                    Content="发言" />
+                                    VerticalAlignment="Center">
+                                    <Button
+                                        x:Name="ChatSpeakButton"
+                                        Width="80"
+                                        Click="Button_ChatSpeak_Click"
+                                        Content="发言" />
+                                    <Button
+                                        x:Name="ChatOpenLogButton"
+                                        Width="80"
+                                        Margin="0,8,0,0"
+                                        Click="Button_ChatOpenLog_Click"
+                                        Content="打开日志" />
+                                </StackPanel>
                             </Grid>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
@@ -178,7 +189,6 @@
                                 <Label Content="内容：" />
                                 <TextBox
                                     x:Name="SpeakContent"
-                                    Grid.Row="2"
                                     Grid.Column="1"
                                     Height="100"
                                     Margin="8"
@@ -208,11 +218,22 @@
                             Height="100"
                             Margin="8"
                             TextWrapping="Wrap" />
-                        <Button
+                        <StackPanel
                             Grid.Row="2"
-                            Width="80"
-                            Click="Button_Gamelog_Click"
-                            Content="发言" />
+                            HorizontalAlignment="Center"
+                            Orientation="Horizontal">
+                            <Button
+                                x:Name="GamelogSpeakButton"
+                                Width="80"
+                                Click="Button_Gamelog_Click"
+                                Content="发言" />
+                            <Button
+                                x:Name="GamelogOpenLogButton"
+                                Width="80"
+                                Margin="8,0,0,0"
+                                Click="Button_GamelogOpenLog_Click"
+                                Content="打开日志" />
+                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>

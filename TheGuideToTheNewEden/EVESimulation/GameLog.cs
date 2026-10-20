@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace EVESimulation
 {
@@ -14,11 +12,32 @@ namespace EVESimulation
         public DateTime SessionStarted { get; set; }
 
         private string _filePath;
-        private StreamWriter _streamWriter;
+
+        [JsonIgnore]
+        public bool IsInitialized => !string.IsNullOrEmpty(_filePath);
+
+        [JsonIgnore]
+        public string FilePath => _filePath;
+
         public void Init(string rootPath)
         {
-            _filePath = Path.Combine(rootPath, "gamelogs", $"{SessionStarted.ToString("yyyyMMdd")}_{SessionStarted.ToString("HHmmss")}_{ListenerID}.txt");
-            File.Create(_filePath).Close();
+            var folder = Path.Combine(rootPath, "gamelogs");
+            Directory.CreateDirectory(folder);
+
+            var sessionStarted = SessionStarted == DateTime.MinValue ? DateTime.Now : SessionStarted;
+            string filePath;
+            while (true)
+            {
+                filePath = Path.Combine(folder, $"{sessionStarted:yyyyMMdd}_{sessionStarted:HHmmss}_{ListenerID}.txt");
+                if (!File.Exists(filePath))
+                {
+                    break;
+                }
+                sessionStarted = sessionStarted.AddSeconds(1);
+            }
+            SessionStarted = sessionStarted;
+            _filePath = filePath;
+
             using (var streamWriter = new StreamWriter(_filePath, true, Encoding.Default))
             {
                 streamWriter.WriteLine("------------------------------------------------------------");
@@ -29,13 +48,20 @@ namespace EVESimulation
                 streamWriter.Flush();
             }
         }
+
         public void Dispose()
         {
-            //_streamWriter.Close();
+            _filePath = null;
         }
+
         public void Write(string time, string content)
         {
-            using (var streamWriter = new StreamWriter(_filePath, true, Encoding.Default))
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("游戏日志未初始化，请先点击“开始”。");
+            }
+            using (var fileStream = new FileStream(_filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+            using (var streamWriter = new StreamWriter(fileStream, Encoding.Default))
             {
                 streamWriter.WriteLine($"[ {time} ] {content}");
             }

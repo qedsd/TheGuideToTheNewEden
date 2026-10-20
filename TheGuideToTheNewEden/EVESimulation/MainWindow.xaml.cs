@@ -1,18 +1,14 @@
 ﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Timers;
 
 namespace EVESimulation
 {
@@ -21,11 +17,13 @@ namespace EVESimulation
         private Config _config;
         private CharacterConfig _characterConfig;
         private System.Timers.Timer _simuChatlogTimer;
-        private Dictionary<string, int> _speakerIds = new Dictionary<string, int>();
-        private readonly string _configPath = "Configs.json";
-        private List<MapRegion> _mapRegions;
-        private List<MapSystem> _mapSystems;
-        private List<MapSystem> _simuSystems = new List<MapSystem> ();
+        private readonly string _configPath = Path.Combine(AppContext.BaseDirectory, "Configs.json");
+        private List<MapRegion> _mapRegions = new List<MapRegion>();
+        private List<MapSystem> _mapSystems = new List<MapSystem>();
+        private readonly List<MapSystem> _simuSystems = new List<MapSystem>();
+        private readonly Random _random = new Random();
+        private bool _isRunning;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -39,43 +37,83 @@ namespace EVESimulation
 
         private void InitConfig()
         {
-            if (File.Exists(_configPath))
+            try
             {
-                string content = File.ReadAllText(_configPath);
-                _config = JsonConvert.DeserializeObject<Config>(content);
+                if (File.Exists(_configPath))
+                {
+                    _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(_configPath));
+                }
             }
-            else
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"读取配置失败，将使用默认配置：\n{ex.Message}", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _config = null;
+            }
+            NormalizeConfig();
+        }
+
+        private void NormalizeConfig()
+        {
+            if (_config == null)
             {
                 _config = new Config();
-                _config.RootPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs");
-                _config.CharacterConfigs = new List<CharacterConfig>()
+            }
+            if (string.IsNullOrWhiteSpace(_config.RootPath))
+            {
+                _config.RootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs");
+            }
+            if (_config.CharacterConfigs == null)
+            {
+                _config.CharacterConfigs = new List<CharacterConfig>();
+            }
+            if (_config.CharacterConfigs.Count == 0)
+            {
+                _config.CharacterConfigs.Add(new CharacterConfig()
                 {
-                    new CharacterConfig()
+                    Listener = "QEDSD",
+                    ListenerID = 1234567890,
+                    ChatChanels = new List<ChatChanel>
                     {
-                        Listener = "QEDSD",
-                        ListenerID = 1234567890,
-                        ChatChanels = new List<ChatChanel>
+                        new ChatChanel()
                         {
-                            new ChatChanel()
-                            {
-                                ChannelID = "local",
-                                ChannelName = "本地",
-                                Listener = "QEDSD",
-                                ListenerID = 1234567890,
-                                SessionStarted = DateTime.Now,
-                            }
-                        },
-                        GameLog = new GameLog()
-                        {
+                            ChannelID = "local",
+                            ChannelName = "本地",
                             Listener = "QEDSD",
                             ListenerID = 1234567890,
                             SessionStarted = DateTime.Now,
-                        },
-                        Speakers = new List<string>(){ "QEDSD", "Arya", "Jon" }
-                    }
-                };
+                        }
+                    },
+                    GameLog = new GameLog()
+                    {
+                        Listener = "QEDSD",
+                        ListenerID = 1234567890,
+                        SessionStarted = DateTime.Now,
+                    },
+                    Speakers = new List<string>() { "QEDSD", "Arya", "Jon" }
+                });
+            }
+            foreach (var character in _config.CharacterConfigs)
+            {
+                if (character.ChatChanels == null)
+                {
+                    character.ChatChanels = new List<ChatChanel>();
+                }
+                if (character.Speakers == null)
+                {
+                    character.Speakers = new List<string>();
+                }
+                if (character.GameLog == null)
+                {
+                    character.GameLog = new GameLog()
+                    {
+                        Listener = character.Listener,
+                        ListenerID = character.ListenerID,
+                        SessionStarted = DateTime.Now,
+                    };
+                }
             }
         }
+
         private void InitUI()
         {
             LogRootPath.Text = _config.RootPath;
@@ -85,194 +123,398 @@ namespace EVESimulation
             RegionListBox.ItemsSource = _mapRegions;
             InitCharacterUI();
         }
+
         private void InitCharacterUI()
         {
+            if (_characterConfig == null)
+            {
+                return;
+            }
             CharacterID.Text = _characterConfig.ListenerID.ToString();
-            SimuGamelog.IsChecked = _characterConfig.SimuChatlog;
-            SimuChatlog.IsChecked = _characterConfig.SimuGamelog;
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach(var p in _characterConfig.ChatChanels)
+            SimuChatlog.IsChecked = _characterConfig.SimuChatlog;
+            SimuGamelog.IsChecked = _characterConfig.SimuGamelog;
+
+            var stringBuilder = new StringBuilder();
+            foreach (var p in _characterConfig.ChatChanels)
             {
                 stringBuilder.AppendLine($"{p.ChannelID},{p.ChannelName},{p.SessionStarted.ToString("yyyy.MM.dd HH:mm:ss")}");
             }
             ChatChanelList.Text = stringBuilder.ToString();
-            stringBuilder.Clear();
-            foreach (var p in _characterConfig.Speakers)
-            {
-                stringBuilder.Append(p);
-                stringBuilder.Append(',');
-            }
-            stringBuilder.Remove(stringBuilder.Length - 1, 1);
-            SpeakerList.Text = stringBuilder.ToString();
+            SpeakerList.Text = string.Join(",", _characterConfig.Speakers);
         }
+
         private void InitMap()
         {
-            _mapRegions = new List<MapRegion>();
-            var regionLines = File.ReadLines("regions.csv");
-            foreach (var line in regionLines)
+            try
             {
-                var array = line.Split(',');
-                _mapRegions.Add(new MapRegion()
+                _mapRegions = new List<MapRegion>();
+                foreach (var line in File.ReadLines(Path.Combine(AppContext.BaseDirectory, "regions.csv")))
                 {
-                    Id = int.Parse(array[0]),
-                    Name = array[1]
-                });
-            }
-            _mapSystems = new List<MapSystem>();
-            var systemLines = File.ReadLines("systems.csv");
-            foreach (var line in systemLines)
-            {
-                var array = line.Split(",");
-                _mapSystems.Add(new MapSystem()
+                    var array = line.Split(',');
+                    if (array.Length < 2 || !int.TryParse(array[0], out var id))
+                    {
+                        continue;
+                    }
+                    _mapRegions.Add(new MapRegion()
+                    {
+                        Id = id,
+                        Name = array[1]
+                    });
+                }
+                _mapSystems = new List<MapSystem>();
+                foreach (var line in File.ReadLines(Path.Combine(AppContext.BaseDirectory, "systems.csv")))
                 {
-                    Id = int.Parse(array[0]),
-                    Name = array[1],
-                    RegionId = int.Parse(array[2])
-                });
+                    var array = line.Split(',');
+                    if (array.Length < 3
+                        || !int.TryParse(array[0], out var id)
+                        || !int.TryParse(array[2], out var regionId))
+                    {
+                        continue;
+                    }
+                    _mapSystems.Add(new MapSystem()
+                    {
+                        Id = id,
+                        Name = array[1],
+                        RegionId = regionId
+                    });
+                }
             }
-        }
-        private void Characters_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if(Characters.SelectedItem != null)
+            catch (Exception ex)
             {
-                _characterConfig = _config.CharacterConfigs.FirstOrDefault(p=>p.Listener ==  Characters.SelectedItem.ToString());
-                InitCharacterUI();
+                MessageBox.Show(this, $"读取星系数据失败：\n{ex.Message}", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
-        private void AutoSimuChatlog_Click(object sender, RoutedEventArgs e)
+        private void Characters_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _simuChatlogTimer.Stop();
-            if ((sender as CheckBox).IsChecked == true)
+            if (Characters.SelectedItem != null)
             {
-                _simuSystems.Clear();
-                foreach (var item in RegionListBox.SelectedItems)
+                var character = _config.CharacterConfigs.FirstOrDefault(p => p.Listener == Characters.SelectedItem.ToString());
+                if (character != null)
                 {
-                    var region = item as MapRegion;
+                    _characterConfig = character;
+                    InitCharacterUI();
+                }
+            }
+        }
+
+        private void AutoSimuChatlog_Checked(object sender, RoutedEventArgs e)
+        {
+            StartAutoSimulation();
+        }
+
+        private void AutoSimuChatlog_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _simuChatlogTimer?.Stop();
+        }
+
+        private void StartAutoSimulation()
+        {
+            _simuChatlogTimer?.Stop();
+            if (!_isRunning)
+            {
+                return;
+            }
+
+            _simuSystems.Clear();
+            foreach (var item in RegionListBox.SelectedItems)
+            {
+                if (item is MapRegion region)
+                {
                     _simuSystems.AddRange(_mapSystems.Where(p => p.RegionId == region.Id));
                 }
-                _simuChatlogTimer.Interval = double.Parse(AutoSimuChatlogSpan.Text) * 1000;
-                _simuChatlogTimer.Start();
             }
+            if (_simuSystems.Count == 0)
+            {
+                AutoSimuChatlog.IsChecked = false;
+                MessageBox.Show(this, "请至少选择一个星域。", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!double.TryParse(AutoSimuChatlogSpan.Text, out var span) || span <= 0)
+            {
+                AutoSimuChatlog.IsChecked = false;
+                MessageBox.Show(this, "自动模拟间隔时间必须大于0。", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            _simuChatlogTimer.Interval = span * 1000;
+            _simuChatlogTimer.Start();
         }
 
         /// <summary>
         /// 自动聊天频道输出
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void SimuChatlogTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            Random random = new Random();
-            int speaker = random.Next(0, _characterConfig.Speakers.Count);
-            int chanel = random.Next(0, _characterConfig.ChatChanels.Count);
-            int system = random.Next(0, _simuSystems.Count);
-            int mark = random.Next(0, 4);
-            StringBuilder stringBuilder = new StringBuilder();
-            if (mark == 0)
+            try
             {
-                stringBuilder.Append('*');
+                if (!_isRunning)
+                {
+                    return;
+                }
+                var character = _characterConfig;
+                if (character == null || character.ChatChanels == null || character.ChatChanels.Count == 0
+                    || character.Speakers == null || character.Speakers.Count == 0 || _simuSystems.Count == 0)
+                {
+                    return;
+                }
+
+                var speaker = character.Speakers[_random.Next(0, character.Speakers.Count)];
+                var chanel = character.ChatChanels[_random.Next(0, character.ChatChanels.Count)];
+                var system = _simuSystems[_random.Next(0, _simuSystems.Count)];
+                var stringBuilder = new StringBuilder();
+                if (_random.Next(0, 4) == 0)
+                {
+                    stringBuilder.Append('*');
+                }
+                stringBuilder.Append(system.Name);
+                stringBuilder.Append(' ');
+                stringBuilder.Append(_random.Next(0, 100).ToString());
+
+                chanel.Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), speaker, stringBuilder.ToString());
             }
-            stringBuilder.Append(_simuSystems[system].Name);
-            stringBuilder.Append(' '); 
-            stringBuilder.Append(random.Next(0, 100).ToString());
-            
-            _characterConfig.ChatChanels[chanel].Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), _characterConfig.Speakers[speaker], stringBuilder.ToString());
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                StartSimulation();
+            }
+            catch (Exception ex)
+            {
+                StopSimulation();
+                MessageBox.Show(this, $"启动模拟失败：\n{ex.Message}", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void StartSimulation()
+        {
+            var listener = (Characters.Text ?? string.Empty).Trim();
+            if (listener.Length == 0)
+            {
+                throw new InvalidOperationException("角色名称不能为空。");
+            }
+            if (!int.TryParse((CharacterID.Text ?? string.Empty).Trim(), out var listenerId))
+            {
+                throw new FormatException("角色ID必须是整数。");
+            }
+            var rootPath = (LogRootPath.Text ?? string.Empty).Trim();
+            if (rootPath.Length == 0)
+            {
+                throw new InvalidOperationException("日志路径不能为空。");
+            }
+
+            var simulateChatlog = SimuChatlog.IsChecked == true;
+            var simulateGamelog = SimuGamelog.IsChecked == true;
+
+            var chatChanels = new List<ChatChanel>();
+            var sessionStarted = DateTime.Now;
+            foreach (var rawLine in (ChatChanelList.Text ?? string.Empty).Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var array = rawLine.Trim().Split(',');
+                if (array.Length != 3)
+                {
+                    continue;
+                }
+                var channelID = array[0].Trim();
+                var channelName = array[1].Trim();
+                if (channelID.Length == 0 || channelName.Length == 0)
+                {
+                    continue;
+                }
+                chatChanels.Add(new ChatChanel()
+                {
+                    ChannelID = channelID,
+                    ChannelName = channelName,
+                    SessionStarted = sessionStarted,
+                    Listener = listener,
+                    ListenerID = listenerId,
+                });
+            }
+            if (simulateChatlog && chatChanels.Count == 0)
+            {
+                throw new InvalidOperationException("没有有效的聊天频道，格式应为：频道ID,频道名称,会话开始时间");
+            }
+
+            var speakers = new List<string>();
+            foreach (var speaker in (SpeakerList.Text ?? string.Empty).Split(','))
+            {
+                var value = speaker.Trim();
+                if (value.Length > 0 && !speakers.Contains(value))
+                {
+                    speakers.Add(value);
+                }
+            }
+            if (simulateChatlog && speakers.Count == 0)
+            {
+                throw new InvalidOperationException("请至少配置一个发言人。");
+            }
+
+            var character = _config.CharacterConfigs.FirstOrDefault(p => p.Listener == listener);
+            if (character == null)
+            {
+                character = (_characterConfig == null ? new CharacterConfig() : _characterConfig.DepthClone<CharacterConfig>()) ?? new CharacterConfig();
+                _config.CharacterConfigs.Add(character);
+                if (Characters.ItemsSource is ObservableCollection<string> listeners)
+                {
+                    listeners.Add(listener);
+                }
+            }
+            _characterConfig = character;
+            character.Listener = listener;
+            character.ListenerID = listenerId;
+            character.SimuChatlog = simulateChatlog;
+            character.SimuGamelog = simulateGamelog;
+            character.ChatChanels = chatChanels;
+            character.Speakers = speakers;
+            character.GameLog = new GameLog()
+            {
+                Listener = listener,
+                ListenerID = listenerId,
+                SessionStarted = DateTime.Now,
+            };
+            _config.RootPath = rootPath;
+
+            if (simulateChatlog)
+            {
+                foreach (var chanel in chatChanels)
+                {
+                    chanel.Init(rootPath);
+                }
+            }
+            if (simulateGamelog)
+            {
+                character.GameLog.Init(rootPath);
+            }
+
+            ChatChanelList.Text = string.Join("\r\n", chatChanels.Select(p => $"{p.ChannelID},{p.ChannelName},{p.SessionStarted.ToString("yyyy.MM.dd HH:mm:ss")}"));
+            SpeakerList.Text = string.Join(",", speakers);
+            File.WriteAllText(_configPath, JsonConvert.SerializeObject(_config));
+
+            ChatChanels.ItemsSource = null;
+            ChatChanels.ItemsSource = character.ChatChanels;
+            ChatChanels.SelectedIndex = character.ChatChanels.Count > 0 ? 0 : -1;
+            Speakers.ItemsSource = null;
+            Speakers.ItemsSource = character.Speakers;
+            Speakers.SelectedIndex = character.Speakers.Count > 0 ? 0 : -1;
+
+            _isRunning = true;
+            Title = $"EVE - {listener}";
+            ChatSpeakButton.IsEnabled = simulateChatlog;
+            ChatOpenLogButton.IsEnabled = simulateChatlog;
+            GamelogSpeakButton.IsEnabled = simulateGamelog;
+            GamelogOpenLogButton.IsEnabled = simulateGamelog;
             StartButton.Visibility = Visibility.Collapsed;
             StopButton.Visibility = Visibility.Visible;
             SettingPanel.IsEnabled = false;
             AutoSimuChatlog.IsChecked = false;
             RunningGrid.IsEnabled = true;
-            if(_config.CharacterConfigs.FirstOrDefault(p=>p.Listener == Characters.Text) == null)
-            {
-                _characterConfig = _characterConfig.DepthClone<CharacterConfig>();
-                _config.CharacterConfigs.Add(_characterConfig);
-                (Characters.ItemsSource as ObservableCollection<string>).Add(Characters.Text);
-            }
-
-            _characterConfig.Listener = Characters.Text;
-            _characterConfig.ListenerID = int.Parse(CharacterID.Text);
-            var lines = ChatChanelList.Text.Split("\r\n");
-            _characterConfig.ChatChanels.Clear();
-            foreach (var line in lines)
-            {
-                var array = line.Trim().Split(',');
-                if(array.Length == 3)
-                {
-                    ChatChanel chatChanel = new ChatChanel()
-                    {
-                        ChannelID = array[0],
-                        ChannelName = array[1],
-                        SessionStarted = DateTime.Parse(array[2]),
-                        Listener = _characterConfig.Listener,
-                        ListenerID = _characterConfig.ListenerID,
-                    };
-                    _characterConfig.ChatChanels.Add(chatChanel);
-                }
-            }
-            _characterConfig.GameLog = new GameLog()
-            {
-                Listener = _characterConfig.Listener,
-                ListenerID = _characterConfig.ListenerID,
-                SessionStarted = DateTime.Now,
-            };
-            _characterConfig.Speakers.Clear();
-            foreach(var speaker in SpeakerList.Text.Split(','))
-            {
-                if(!string.IsNullOrEmpty(speaker))
-                {
-                    _characterConfig.Speakers.Add(speaker);
-                }
-            }
-            _config.RootPath = LogRootPath.Text;
-
-            foreach(var chanel in _characterConfig.ChatChanels)
-            {
-                chanel.Init(_config.RootPath);
-            }
-            _characterConfig.GameLog.Init(_config.RootPath);
-
-            Title = $"EVE - {_characterConfig.Listener}";
-            ChatChanels.ItemsSource = _characterConfig.ChatChanels;
-            ChatChanels.SelectedIndex = 0;
-            Speakers.ItemsSource = _characterConfig.Speakers;
-            Speakers.SelectedIndex = 0;
-
-            File.WriteAllText(_configPath, JsonConvert.SerializeObject(_config));
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
+            StopSimulation();
+        }
+
+        private void StopSimulation()
+        {
+            _isRunning = false;
+            _simuChatlogTimer?.Stop();
+            AutoSimuChatlog.IsChecked = false;
+            ChatSpeakButton.IsEnabled = true;
+            ChatOpenLogButton.IsEnabled = true;
+            GamelogSpeakButton.IsEnabled = true;
+            GamelogOpenLogButton.IsEnabled = true;
+
+            if (_characterConfig != null)
+            {
+                if (_characterConfig.ChatChanels != null)
+                {
+                    foreach (var chanel in _characterConfig.ChatChanels)
+                    {
+                        chanel.Dispose();
+                    }
+                }
+                _characterConfig.GameLog?.Dispose();
+            }
+
             StartButton.Visibility = Visibility.Visible;
             StopButton.Visibility = Visibility.Collapsed;
             SettingPanel.IsEnabled = true;
-            _simuChatlogTimer.Stop();
             RunningGrid.IsEnabled = false;
-            foreach (var chanel in _characterConfig.ChatChanels)
-            {
-                chanel.Dispose();
-            }
-            _characterConfig.GameLog.Dispose();
             Title = "EVE";
         }
 
         private void Button_ChatSpeak_Click(object sender, RoutedEventArgs e)
         {
-            var chanel = ChatChanels.SelectedItem as ChatChanel;
-            string speaker = Speakers.Text;
-            if( chanel != null && !string.IsNullOrEmpty(speaker))
+            try
             {
-                chanel.Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), speaker, SpeakContent.Text);
+                var chanel = ChatChanels.SelectedItem as ChatChanel;
+                if (chanel == null)
+                {
+                    MessageBox.Show(this, "请先选择要发言的聊天频道。", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                var speaker = (Speakers.SelectedItem as string) ?? (Speakers.Text ?? string.Empty).Trim();
+                if (speaker.Length == 0)
+                {
+                    MessageBox.Show(this, "请先选择或输入发言人。", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                chanel.Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), speaker, SpeakContent.Text ?? string.Empty);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"发言失败：\n{ex.Message}", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void Button_Gamelog_Click(object sender, RoutedEventArgs e)
         {
-            _characterConfig.GameLog.Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), GamelogContent.Text);
+            try
+            {
+                if (_characterConfig?.GameLog == null)
+                {
+                    MessageBox.Show(this, "游戏日志未初始化，请先点击“开始”。", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                _characterConfig.GameLog.Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), GamelogContent.Text ?? string.Empty);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"写入游戏日志失败：\n{ex.Message}", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Button_ChatOpenLog_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLogFile((ChatChanels.SelectedItem as ChatChanel)?.FilePath, "聊天频道日志");
+        }
+
+        private void Button_GamelogOpenLog_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLogFile(_characterConfig?.GameLog?.FilePath, "游戏日志");
+        }
+
+        private void OpenLogFile(string filePath, string name)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                {
+                    MessageBox.Show(this, $"{name}文件不存在，请先点击“开始”。", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"打开{name}失败：\n{ex.Message}", "EVE Simulation", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
