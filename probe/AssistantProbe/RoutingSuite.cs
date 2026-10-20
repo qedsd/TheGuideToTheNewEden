@@ -129,5 +129,14 @@ internal static class RoutingSuite
         var twoPinnedRoute = ToolRouter.Resolve("巨神兵级多少钱", null, disabled, pinnedBundles: twoPinned);
         c.That(twoPinnedRoute.ToolNames.Contains("map_route") && twoPinnedRoute.ToolNames.Contains("links_search"),
             "钉选不受 MaxBundles 限制（两组钉选 + 命中的商业组同时生效）");
+
+        // ---------- ⑪ 阶段 154：功能名也要能选中 config 工具 ----------
+        var previewRoute = ToolRouter.Resolve("多开预览功能怎么设置", null, disabled);
+        c.That(previewRoute.ToolNames.Contains("config_read") && previewRoute.ToolNames.Contains("config_write"),
+            "「多开/预览」会声明 config 工具（能读 GamePreviewSetting）");
+
+        var correctedRoute = ToolRouter.Resolve("我说的是多开预览功能，不是角色管理", null, disabled);
+        c.That(correctedRoute.ToolNames.Contains("config_read"),
+            "带「角色」的纠正句仍会声明 config 工具（通用组与角色组可同时选中）");
     }
 }

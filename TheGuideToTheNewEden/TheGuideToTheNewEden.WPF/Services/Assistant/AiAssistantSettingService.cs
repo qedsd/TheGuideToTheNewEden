@@ -26,6 +26,9 @@ public static class AiAssistantSettingService
     private const string DisabledToolsKey = "Assistant.Tools.Disabled";
     private const string AutoRouteKey = "Assistant.Tools.AutoRoute";
     private const string PinnedBundlesKey = "Assistant.Tools.PinnedBundles";
+    private const string ConfigEnabledKey = "Assistant.Config.Enabled";
+    private const string ConfigWritesKey = "Assistant.Config.Writes";
+    private const string ConfigDeniedFilesKey = "Assistant.Config.DeniedFiles";
     private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
     private const string SidebarCollapsedKey = "Assistant.SidebarCollapsed";
     private const string ContextWindowTokensKey = "Assistant.ContextWindowTokens";
@@ -193,6 +196,16 @@ public static class AiAssistantSettingService
     /// </summary>
     public static IReadOnlySet<string> PinnedBundles { get; private set; } = new HashSet<string>(StringComparer.Ordinal);
 
+    /// <summary>是否开放配置文件工具（config_list / config_read / config_write，阶段 152）。</summary>
+    public static bool ConfigToolsEnabled { get; private set; } = true;
+
+    /// <summary>是否允许写配置（即使允许，每次写入仍需用户在确认卡片上点「应用」）。</summary>
+    public static bool ConfigWritesAllowed { get; private set; } = true;
+
+    /// <summary>用户额外拒绝的配置逻辑名（命中即只读；白名单之外的本来就不存在）。</summary>
+    public static IReadOnlySet<string> ConfigDeniedFiles { get; private set; } =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>保存"按需声明"开关。</summary>
     public static void SaveRouting(bool autoRoute)
     {
@@ -217,6 +230,23 @@ public static class AiAssistantSettingService
 
         PinnedBundles = set;
         SettingsService.SetValue(PinnedBundlesKey, string.Join(",", set.OrderBy(n => n, StringComparer.Ordinal)));
+        SettingsService.Save();
+    }
+
+    /// <summary>保存配置工具访问设置（阶段 152；默认全开，写入仍需逐次确认）。</summary>
+    public static void SaveConfigAccess(bool enabled, bool allowWrites, IEnumerable<string>? deniedFiles)
+    {
+        ConfigToolsEnabled = enabled;
+        ConfigWritesAllowed = allowWrites;
+
+        var denied = new HashSet<string>(
+            (deniedFiles ?? []).Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name.Trim()),
+            StringComparer.OrdinalIgnoreCase);
+        ConfigDeniedFiles = denied;
+
+        SettingsService.SetBool(ConfigEnabledKey, ConfigToolsEnabled);
+        SettingsService.SetBool(ConfigWritesKey, ConfigWritesAllowed);
+        SettingsService.SetValue(ConfigDeniedFilesKey, string.Join(",", denied.OrderBy(name => name, StringComparer.OrdinalIgnoreCase)));
         SettingsService.Save();
     }
 
@@ -327,6 +357,18 @@ public static class AiAssistantSettingService
         }
 
         PinnedBundles = pinned;
+
+        ConfigToolsEnabled = SettingsService.GetBool(ConfigEnabledKey, true);
+        ConfigWritesAllowed = SettingsService.GetBool(ConfigWritesKey, true);
+        var deniedConfig = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in (SettingsService.GetValue(ConfigDeniedFilesKey) ?? string.Empty)
+                 .Split([',', ';', '\n', '\r', ' ', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            deniedConfig.Add(name);
+        }
+
+        ConfigDeniedFiles = deniedConfig;
+
         ShowInMainWindow = SettingsService.GetBool(ShowInMainWindowKey, DefaultShowInMainWindow);
         SidebarCollapsed = SettingsService.GetBool(SidebarCollapsedKey, DefaultSidebarCollapsed);
 
@@ -424,6 +466,7 @@ public static class AiAssistantSettingService
         SaveDisabledTools([]);
         SaveRouting(true);
         SavePinnedBundles([]);
+        SaveConfigAccess(true, true, []);
         SaveShowInMainWindow(DefaultShowInMainWindow);
         SaveSidebarCollapsed(DefaultSidebarCollapsed);
         AssistantUsageCalibration.Reset();

@@ -2470,6 +2470,10 @@
     <sys:String x:Key="AssistantTool_server_ping">服务器测速</sys:String>
     <sys:String x:Key="AssistantTool_manual_search">说明书检索</sys:String>
     <sys:String x:Key="AssistantTool_manual_read">说明书阅读</sys:String>
+    <sys:String x:Key="AssistantTool_config_list">列出配置文件</sys:String>
+    <sys:String x:Key="AssistantTool_config_read">读取配置</sys:String>
+    <sys:String x:Key="AssistantTool_config_write">修改配置</sys:String>
+    <sys:String x:Key="AssistantTool_config_restore">回滚配置</sys:String>
     <sys:String x:Key="Manual.Window.Title">使用手册</sys:String>
     <sys:String x:Key="Manual.Search.Placeholder">搜索说明书</sys:String>
     <sys:String x:Key="Manual.Search.Empty">没有匹配的说明书</sys:String>

@@ -2109,6 +2109,37 @@ assistant(最终回答)
   会话累计 `TotalInputTokens`，meta 与底栏工具提示显示「缓存命中 / 输入 / 命中率」，
   用于判断前缀优化长期是否有效。
 
+### 21.10 阶段 152 追加：功能配置文件读写（白名单 + 读脱敏 + 写入必确认）
+
+- **白名单注册表**（`Services/Assistant/Config/AssistantConfigRegistry.cs`）：只认逻辑名，不接受路径；
+  17 个功能配置（settings / 倒货 / 估价 / 多开 / 星图 / 跳桥 / 预警 / 监控 / 统计 / 查价 / 频道翻译 /
+  日志监控 / 术语表 / 市场收藏 / 链接 / 主页快捷方式 / 配置同步）。历史、缓存、`ESILicense.txt`、`Auth*.json`
+  不在白名单，天然不可达。
+- **三个工具**：`config_list`（列白名单）、`config_read`（读，密钥键省略、超大文件只给结构摘要）、
+  `config_write`（**RequiresConfirmation**，确认卡片显示文件/键/原因）。
+- **安全规则**：密钥类键读取省略、写入拒绝；`settings.json` 只允许 patch 且只能改**已存在且非密钥**的键
+  （经 `SettingsService` 写，内存磁盘一致）；功能文件允许 patch/整体替换；写入做 JSON 校验、顶层类型一致、
+  ≤256 KB、备份 `.bak`、临时文件原子替换。
+- **开关**：`Assistant.Config.Enabled` / `.Writes` / `.DeniedFiles`；写入即使允许也永远逐次确认。
+- 系统提示词规则 19–21 规定"先 list → read → write、不得写密钥、一次只改要求的键、改完说明旧值→新值"。
+
+### 21.11 阶段 153 追加：自动备份与一键回滚
+
+- 每次 `config_write`（含 `settings.json`）写前自动备份到 `Configs/.backups/`：
+  `<文件>.<时间戳>-<随机>.bak`，每份配置保留最近 20 份；同时更新同名 `.bak` 便于人工查看。
+- `config_read(name, backups=true)` 列出备份；新增 `config_restore`（写操作、需确认）回滚到指定备份
+  （省略 = 最新一份）。`settings.json` 回滚后会重新载入键值字典；启动期缓存的设置需重启。
+- 备份目录不在白名单里，读不到备份内容；只接受本配置自己的备份文件名（拒绝路径）。
+- 顺带修正：`settings.json` 的 patch 改为"先全部校验、再统一落盘"，避免半套改动。
+
+### 21.12 阶段 154：让功能名也能选中配置工具（多开预览的修复）
+
+- 用户问"多开预览"时，AI 曾回答"没有可供 AI 读取的数据接口"：① General 关键词没有"多开/预览"，
+  这条问题没声明 `config_*`；② `game-preview` 手册仍写着 `tools: []`。
+- 修复：General 关键词补 **多开 / 预览 / 浮窗 / 进程**；`game-preview.md` 的 `tools` 改为四个配置工具，
+  `#ai` 段改为"可以读/改多开设置，做不到实时进程列表/画面/开始停止预览"；系统规则 19 明确
+  "查看或修改功能配置都先 config_list/config_read，说明书没列工具不代表配置不可读"。
+
 ---
 
 ## 22. 界面重排（阶段 133 实施记录）

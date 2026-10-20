@@ -75,6 +75,11 @@ public static class ToolRegistry
         // 不进系统提示词/固定前缀，见 MANUAL_DESIGN.md 的 token 契约）
         Register(new Tools.ManualSearchTool());
         Register(new Tools.ManualReadTool());
+        // 阶段 152：功能配置文件读写（白名单 + 读脱敏 + 写入必确认）
+        Register(new Tools.ConfigListTool());
+        Register(new Tools.ConfigReadTool());
+        Register(new Tools.ConfigWriteTool());
+        Register(new Tools.ConfigRestoreTool());
     }
 
     public static void Register(ITool tool)

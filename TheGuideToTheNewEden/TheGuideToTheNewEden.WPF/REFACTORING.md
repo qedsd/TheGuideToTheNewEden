@@ -7927,6 +7927,102 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 
 ---
 
+### 阶段 152：向 AI 开放功能配置文件读写（白名单 + 读脱敏 + 写入必确认）
+
+> 用户要求：让 AI 能按用户想法直接改功能配置。**不做任意文件读写**——只开放一份**功能配置白名单**，
+> 读取时省略密钥，写入前校验、备份、原子替换，并且每次写入都走既有的"确认卡片"。
+
+#### 一、白名单与安全边界（`Services/Assistant/Config/AssistantConfigRegistry.cs` 新增）
+
+- **只认逻辑名、不接受路径**：17 个条目（settings / scalper / appraisal / gamepreview / map / jumpbridge /
+  intel / channelmonitor / channelscan / channelmarket / channeltranslation / gamelog / glossary /
+  marketfavorites / links / homeshortcuts / evesettings），全部解析到 `Configs` 目录内并做越界校验。
+- **天然不可达**：历史（`AiAssistantHistory.json`）、缓存目录、`ESILicense.txt`、`Auth*.json` 等不在白名单里。
+- **密钥保护**：键名命中 `api_key|secret|token|password|credential` 时——**读取时省略**、**写入时拒绝**（含嵌套对象）。
+- **`settings.json` 特殊处理**：只允许 `patch`，键必须**已存在**且非密钥，经 `SettingsService.SetValue`
+  写入（内存与磁盘一致，不会被下一次 `Save()` 覆盖）。功能文件允许顶层 patch 或整体 JSON 替换。
+- **写入校验**：JSON 合法性、顶层类型一致（对象/数组不能混写）、≤256 KB、
+  `patch`/`content` 二选一；成功前把旧内容备份为同名 `.bak`，再写临时文件并原子 `Move` 覆盖。
+- **过大文件**：读取超过 24,000 字符时只返回顶层结构摘要（键 + 类型 / 数组长度），避免把整份大文件塞进上下文。
+- **开关**：`Assistant.Config.Enabled`（总开关，默认开）/ `.Writes`（允许写，默认开，但**仍逐次确认**）/
+  `.DeniedFiles`（用户额外拒绝的逻辑名）；`RestoreDefaults` 一并复位。
+
+#### 二、三个工具（`ToolRegistry` 注册，归入 General 套餐）
+
+- `config_list`：列出白名单（逻辑名、文件、是否可写、用途）。
+- `config_read`：读取一个配置（密钥省略、大文件只给结构摘要）。
+- `config_write`：`RequiresConfirmation = true` + `IPendingSummary`（确认卡片显示"写哪个文件、改哪些键、原因"）。
+- 路由：General 套餐新增"配置/设置项/改设置/改成/设为/调整为/启用/禁用/开关/config/setting"等意图词。
+
+#### 三、提示词与探针
+
+- 系统提示词新增规则 19–21：先 `config_list` → `config_read` → `config_write`；不得写密钥/白名单外文件；
+  一次只改用户要求的键；改完说明文件、键、旧值→新值以及是否需要刷新/重启。
+- 提示词预算由 1,600 上调到 **1,800**（实测 1,763）；`tokens` 套件继续守住不膨胀。
+- 探针 `writes` 新增配置读写段：白名单列出、settings 读取不含密钥、未知配置拒绝、
+  密钥键拒绝（**断言不打印密钥值**）、settings 不许新增键、非法 JSON 拒绝、真实 patch 写入并按字节还原。
+
+#### 四、验证（实跑）
+
+- `dotnet build`（WPF + 探针）**0 错误**。
+- 探针：`tokens` **19/0**（声明总字符 25,506 ≤ 26,000、提示词 1,763 ≤ 1,800）；
+  `writes` **91/0**（含配置读写段与还原）；`routing` **32/0**；`ui` **120/0**（语言键 2,386 / 2,386、键集一致）。
+
+---
+
+### 阶段 153：配置自动备份与一键回滚（多份 + 时间戳 + config_restore）
+
+> 用户追问："会自动备份配置吗？万一改错可以回滚"。阶段 152 原来只有：
+> 功能文件写前复制同名 `.bak`（**单份、每次覆盖**）、`settings.json` **完全没有备份**、也没有回滚入口。
+> 本轮补齐为"每次写入自动多份备份 + 一个可确认的回滚工具"。
+
+#### 一、自动备份（`AssistantConfigRegistry`）
+
+- 新增 `Configs/.backups/`：每次写前把现有内容复制为
+  `<相对文件名>.<yyyyMMdd-HHmmss-fff>-<6位随机>.bak`（同毫秒连续写也不撞名），
+  每份配置保留最近 **20 份**（超出删最旧）；同时仍更新同名 `.bak` 便于人工查看。
+- **`settings.json` 也备份**：写入前先快照磁盘上的完整文件（其中含明文 Key，和原文件同等坦诚）。
+- 顺带修正阶段 152 的一个隐患：`settings.json` 的 patch 现在**先全部校验、再统一落盘**，
+  不会因为"一个键合法、另一个非法"而写出半套改动。
+- 备份目录**不在白名单**里，`config_read` 只能列出备份的文件名与大小，读不到备份内容。
+
+#### 二、回滚入口
+
+- `config_read(name, backups=true)`：列出该配置的自动备份（新的在前）。
+- 新增 `config_restore`（`RequiresConfirmation = true` + `IPendingSummary`）：
+  带备份标识则回滚到指定一份，省略则用**最新一份**；只接受本配置自己的备份文件名（拒绝路径）。
+  `settings.json` 回滚后会重新载入 `SettingsService.Values`（启动期缓存的设置仍需重启）。
+- 系统提示词规则 21 补一句"改错可用 config_restore 从自动备份回滚"。
+
+#### 三、验证（实跑）
+
+- `dotnet build`（WPF + 探针）**0 错误**。
+- 探针 `writes` **99/0**（+8）：两次写入产生备份 → `config_read backups=true` 列出 →
+  `config_restore` 回滚到上一份（文件恢复为 77、不再含 88）→ 按快照清理测试新增的备份与 `.bak`。
+- `tokens` **19/0**：新增第 4 个配置工具后声明总字符 **25,903 ≤ 26,000**；提示词 **1,791 ≤ 1,800**。
+- `ui` **120/0**：语言键 **2,387 / 2,387**、键集一致、无重复。
+
+---
+
+### 阶段 154：修复"多开预览说 AI 读不到配置"（路由 + 说明书订正）
+
+> 用户实机截图：问多开预览时，AI 回答"查不到——多开预览没有可供 AI 读取的数据接口"，并引用
+> `manual://game-preview#ai` 的 `tools: []`。实际上阶段 152 的 `config_read` 能读 `GamePreviewSetting.json`。
+> 两处原因：① 配置工具属 General 套餐，而 General 关键词里没有"多开/预览"，这条问题根本没声明 config 工具；
+> ② 说明书还写着"工具：无、AI 帮不上忙"，把模型直接引向错误结论。
+
+- **路由**：General 套餐补"多开 / 预览 / 浮窗 / 进程"——功能名本身也要能选中 config 工具；
+  "我说的是多开预览功能，不是角色管理"这类同时含"角色"的纠正句会同时选中 General + Character（配置工具仍在）。
+- **说明书 `game-preview.md`**：front matter `tools: []` → `[config_list, config_read, config_write, config_restore]`；
+  `## AI 能替你做什么` 改为：**可以读/改多开设置**（`gamepreview` → `GamePreviewSetting.json`，写需确认、可回滚），
+  **做不到**的是实时进程列表、浮窗位置与画面、开始/停止预览等窗口交互。
+- **系统提示词规则 19**：明确"要**查看或修改**功能配置时都先 config_list/config_read"，
+  并补一句"**说明书没列工具不代表配置不可读**"；提示词预算 1,800 → **1,850**（实测 1,792）。
+- **验证（实跑）**：`tokens` **19/0**（声明 25,903 ≤ 26,000；提示词 1,792 ≤ 1,850）、
+  `routing` **34/0**（+2：多开/预览与纠正句都声明 config 工具）、`manuals` **58/0**（手册工具名存在、体量预算内）。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

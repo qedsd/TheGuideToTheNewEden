@@ -2448,6 +2448,10 @@
     <sys:String x:Key="AssistantTool_server_ping">Server ping</sys:String>
     <sys:String x:Key="AssistantTool_manual_search">Manual search</sys:String>
     <sys:String x:Key="AssistantTool_manual_read">Manual read</sys:String>
+    <sys:String x:Key="AssistantTool_config_list">List config files</sys:String>
+    <sys:String x:Key="AssistantTool_config_read">Read config</sys:String>
+    <sys:String x:Key="AssistantTool_config_write">Write config</sys:String>
+    <sys:String x:Key="AssistantTool_config_restore">Restore config</sys:String>
     <sys:String x:Key="Manual.Window.Title">Manual</sys:String>
     <sys:String x:Key="Manual.Search.Placeholder">Search manuals</sys:String>
     <sys:String x:Key="Manual.Search.Empty">No matching manuals</sys:String>

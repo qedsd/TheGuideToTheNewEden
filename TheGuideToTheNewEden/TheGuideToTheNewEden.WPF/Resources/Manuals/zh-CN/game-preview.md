@@ -3,7 +3,7 @@ id: game-preview
 title: 多开
 group: Nav.GamePreview
 page: Views/Pages/GamePreviewPage.xaml + Views/Windows/GamePreviewWindow.xaml + Views/Windows/PreviewNameOverlayWindow.xaml
-tools: []
+tools: [config_list, config_read, config_write, config_restore]
 aliases: [多开, 多开预览, 进程, 缩略图, 浮窗, 透明度, 缩放, game preview, multibox, thumbnail]
 updated: 2026-10-16
 ---
@@ -62,9 +62,9 @@ updated: 2026-10-16
 | 切换顺序 | 全局快捷键的轮切顺序 | 与列表顺序分开维护，可用「用当前列表填充」同步 |
 
 ## AI 能替你做什么 {#ai}
-- 工具：**无**（`tools: []`）。多开属于交互密集的进程 / 窗口控制，AI 设计里明确列为**不建议开放为 AI 工具**的一类。
-- **做不到**：AI 不能替你开始 / 停止预览、开关浮窗、调整不透明度 / 样式 / 快捷键 / 排列，读不到进程列表、浮窗位置与预览画面，也不能替你激活或切换游戏窗口。
-- 这部分是纯窗口操作、没有数据面可查，AI 帮不上忙，只能你在页面上完成。
+- **可以读 / 改多开设置**：用 `config_list` 找到 `gamepreview`，`config_read` 读取 `GamePreviewSetting.json`（显示样式、不透明度、高亮、快捷键、角色名叠加、统一尺寸 / 排列、进程关键词等都在里面）；`config_write` 修改（会先弹确认，旧内容自动备份），改错可用 `config_restore` 回滚。
+- **做不到**：AI 不能替你开始 / 停止预览、开关浮窗，也读不到**实时进程列表**、浮窗当前位置与预览画面，不能替你激活或切换游戏窗口。
+- 区别在于：**"设置是什么 / 把不透明度改成 60"这类配置问题可以让 AI 做**；"现在有哪些角色在预览 / 浮窗在哪"属于运行中的窗口交互，只能看页面。
 
 ## 常见失败与处置 {#errors}
 

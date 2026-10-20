@@ -59,6 +59,9 @@ internal static class WriteToolSuite
 
             c.Section("WriteToolSuite · 倒货购物车（共享内存集合）");
             ShoppingCart(c);
+
+            c.Section("WriteToolSuite · 配置文件读写（阶段 152）");
+            ConfigFiles(c, canWriteConfigs);
         }
         finally
         {
@@ -288,6 +291,128 @@ internal static class WriteToolSuite
         }
 
         c.Equal(cart.Count, beforeCount, "购物车行数回到测试前");
+    }
+
+    // ============================ 配置文件读写 ============================
+
+    private static string AppraisalFile => Path.Combine(SettingsService.DataPath, "Configs", "AppraisalSetting.json");
+
+    private static void ConfigFiles(Check c, bool canWriteConfigs)
+    {
+        var ctx = Context();
+        var writeTool = ToolRegistry.Find("config_write");
+        c.That(writeTool?.RequiresConfirmation == true, "config_write 标记为写操作（引擎会先挂起等用户确认）");
+
+        // 列表 + 读取
+        var list = Exec(c, ctx, "config_list", "{}", "config_list：列出白名单");
+        c.That(list?.Contains("settings", StringComparison.Ordinal) == true
+                 && list.Contains("appraisal", StringComparison.Ordinal),
+            "列表包含 settings 与 appraisal");
+
+        var settingsRead = Exec(c, ctx, "config_read", """{"name":"settings"}""", "config_read：读取 settings");
+        c.That(settingsRead?.Contains("ApiKey", StringComparison.Ordinal) != true,
+            "settings 读取结果省略密钥类键（不含 ApiKey）");
+
+        var unknownRead = Exec(c, ctx, "config_read", """{"name":"no_such_config"}""",
+            "config_read：未知配置 → 明确拒绝");
+        c.That(unknownRead?.Contains("未知配置", StringComparison.Ordinal) == true, "未知配置给出 config_list 提示");
+
+        var unknownWrite = Exec(c, ctx, "config_write", """{"name":"no_such_config","patch":{}}""",
+            "config_write：未知配置 → 明确拒绝");
+        c.That(unknownWrite?.Contains("未知配置", StringComparison.Ordinal) == true, "未知配置写入被拒绝");
+
+        // 密钥与设置键保护（不产生写入）
+        var apiKeyBefore = SettingsService.GetValue("Ai.ApiKey");
+        var secretWrite = Exec(c, ctx, "config_write",
+            """{"name":"settings","patch":{"Ai.ApiKey":"probe-should-not-write"}}""",
+            "config_write：密钥类键 → 拒绝");
+        c.That(secretWrite?.Contains("密钥", StringComparison.Ordinal) == true, "密钥类键被拒绝");
+        // 不要用 c.Equal 打印值：那会把用户的 API Key 原样写进探针日志
+        c.That(string.Equals(SettingsService.GetValue("Ai.ApiKey"), apiKeyBefore, StringComparison.Ordinal),
+            "密钥值未被改动（只比较相等，不输出值）");
+
+        var unknownKey = Exec(c, ctx, "config_write",
+            """{"name":"settings","patch":{"Probe.No.Such.Key":"x"}}""",
+            "config_write：settings 不允许新增键");
+        c.That(unknownKey?.Contains("不存在", StringComparison.Ordinal) == true, "未存在的设置键被拒绝");
+
+        // 非法 JSON（不产生写入）
+        var badJson = Exec(c, ctx, "config_write", """{"name":"appraisal","content":"{bad json"}""",
+            "config_write：content 非法 JSON → 拒绝");
+        c.That(badJson?.Contains("不是有效 JSON", StringComparison.Ordinal) == true, "非法 JSON 被拒绝");
+
+        // 真实写入（仅在本进程可写配置目录时）
+        if (!canWriteConfigs)
+        {
+            c.That(true, "跳过 appraisal 的真实写入（进程不可写配置目录）");
+            return;
+        }
+
+        var backup = File.Exists(AppraisalFile) ? File.ReadAllBytes(AppraisalFile) : null;
+        var bakFile = AppraisalFile + ".bak";
+        var bakBefore = File.Exists(bakFile) ? File.ReadAllBytes(bakFile) : null;
+        var backupFolder = Path.Combine(SettingsService.DataPath, "Configs", ".backups");
+        var backupsBefore = Directory.Exists(backupFolder)
+            ? Directory.GetFiles(backupFolder, "AppraisalSetting.json.*").ToHashSet(StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            var write = Exec(c, ctx, "config_write",
+                """{"name":"appraisal","patch":{"SellPercent":77},"reason":"probe"}""",
+                "config_write：patch 修改 appraisal.SellPercent");
+            c.That(write?.Contains("已写入", StringComparison.Ordinal) == true, "写入回执明确");
+            FileContains(c, AppraisalFile, "\"SellPercent\": 77", "patch 已落到 AppraisalSetting.json");
+
+            // 第二次写入：现有文件存在 → 写入前会自动备份上一份（77）
+            var writeAgain = Exec(c, ctx, "config_write",
+                """{"name":"appraisal","patch":{"SellPercent":88},"reason":"probe"}""",
+                "config_write：再次写入（产生自动备份）");
+            c.That(writeAgain?.Contains("已写入", StringComparison.Ordinal) == true, "第二次写入成功");
+
+            var listBackups = Exec(c, ctx, "config_read", """{"name":"appraisal","backups":true}""",
+                "config_read：列出自动备份");
+            c.That(listBackups?.Contains("AppraisalSetting.json.", StringComparison.Ordinal) == true,
+                "自动备份已生成（.backups/AppraisalSetting.json.<时间戳>.bak）");
+
+            var restore = Exec(c, ctx, "config_restore", """{"name":"appraisal"}""",
+                "config_restore：回滚到最新备份");
+            c.That(restore?.Contains("回滚", StringComparison.Ordinal) == true, "回滚回执明确");
+            FileContains(c, AppraisalFile, "\"SellPercent\": 77", "回滚后恢复为上一份内容（77）");
+            c.That(!File.ReadAllText(AppraisalFile).Contains("\"SellPercent\": 88", StringComparison.Ordinal),
+                "回滚后不再包含被撤销的 88");
+        }
+        finally
+        {
+            Restore(AppraisalFile, backup);
+            Restore(bakFile, bakBefore);
+            CleanNewBackups(backupFolder, "AppraisalSetting.json.*", backupsBefore);
+            c.That(true, $"还原 appraisal：{Describe(AppraisalFile, backup)}（并清理测试产生的备份）");
+        }
+    }
+
+    /// <summary>只删除本次测试新产生的备份，用户的旧备份原样保留。</summary>
+    private static void CleanNewBackups(string folder, string pattern, HashSet<string> before)
+    {
+        try
+        {
+            if (!Directory.Exists(folder))
+            {
+                return;
+            }
+
+            foreach (var file in Directory.GetFiles(folder, pattern))
+            {
+                if (!before.Contains(file))
+                {
+                    TryDelete(file);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Warn($"探针清理备份失败：{ex.Message}");
+        }
     }
 
     // ============================ 基础设施 ============================
