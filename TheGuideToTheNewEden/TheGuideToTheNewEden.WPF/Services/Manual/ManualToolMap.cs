@@ -34,6 +34,9 @@ public static class ManualToolMap
         [typeof(Views.Pages.ScalperPage)] = "scalper",
         [typeof(Views.Pages.CompareMarketPage)] = "compare-market",
         [typeof(Views.Pages.AppraisalPage)] = "appraisal",
+        // 工业
+        [typeof(Views.Pages.IndustryPlanPage)] = "industry/plan",
+        [typeof(Views.Pages.IndustryBlueprintPage)] = "industry/blueprints",
         // 角色（壳页/卡片页/工作区共用 characters，工作区子页各归各）
         [typeof(Views.Pages.Characters.CharactersShellPage)] = "characters",
         [typeof(Views.Pages.Characters.CharacterCardsPage)] = "characters",

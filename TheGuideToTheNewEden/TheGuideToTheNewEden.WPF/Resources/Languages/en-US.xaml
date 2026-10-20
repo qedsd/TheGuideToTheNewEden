@@ -2497,4 +2497,65 @@
     <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Tip">One pattern per line, * supported; e.g. /characters/*/mail</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Desc">Matching endpoints are never called (not even after confirmation). Empty = nothing denied. Consider adding sensitive writes such as /characters/*/mail or /fleets/.</sys:String>
 
+    <!--  Industry  -->
+    <sys:String x:Key="Nav.Industry">Industry</sys:String>
+    <sys:String x:Key="Nav.IndustryPlan">Build Plan</sys:String>
+    <sys:String x:Key="IndustryPage_Target">Target product</sys:String>
+    <sys:String x:Key="IndustryPage_SearchPlaceholder">Search an item by name</sys:String>
+    <sys:String x:Key="IndustryPage_Search">Search</sys:String>
+    <sys:String x:Key="IndustryPage_NoSearchResult">No matching items found.</sys:String>
+    <sys:String x:Key="IndustryPage_SearchFailed">Item search failed.</sys:String>
+    <sys:String x:Key="IndustryPage_Quantity">Quantity</sys:String>
+    <sys:String x:Key="IndustryPage_ME">Material efficiency ME (0-10)</sys:String>
+    <sys:String x:Key="IndustryPage_TE">Time efficiency TE (0-20)</sys:String>
+    <sys:String x:Key="IndustryPage_SolarSystem">Solar system ID (cost index)</sys:String>
+    <sys:String x:Key="IndustryPage_FacilityTax">Facility tax %</sys:String>
+    <sys:String x:Key="IndustryPage_Character">Character (stock / blueprints)</sys:String>
+    <sys:String x:Key="IndustryPage_UseAssets">Deduct character assets</sys:String>
+    <sys:String x:Key="IndustryPage_UseJobs">Deduct in-progress jobs</sys:String>
+    <sys:String x:Key="IndustryPage_UseBlueprints">Use owned blueprint ME/TE</sys:String>
+    <sys:String x:Key="IndustryPage_Calculate">Calculate bill of materials</sys:String>
+    <sys:String x:Key="IndustryPage_Copy">Copy shopping list</sys:String>
+    <sys:String x:Key="IndustryPage_Summary">Summary</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_Target">Target</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_Runs">Manufacturing runs</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_JobCost">Total job cost</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_BuyTypes">Types to buy</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Item">Item</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Decision">Decision</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Needed">Needed</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Produced">Produced</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Runs">Runs</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Buy">Buy</sys:String>
+    <sys:String x:Key="IndustryPage_Col_JobCost">Job cost</sys:String>
+    <sys:String x:Key="IndustryPage_Decision_Build">Build</sys:String>
+    <sys:String x:Key="IndustryPage_Decision_Buy">Buy</sys:String>
+    <sys:String x:Key="IndustryPage_Decision_Invention">Invention</sys:String>
+    <sys:String x:Key="IndustryPage_NoTarget">Search and select a target product first.</sys:String>
+    <sys:String x:Key="IndustryPage_Prepare">Preparing industry data…</sys:String>
+    <sys:String x:Key="IndustryPage_Expanding">Expanding bill of materials…</sys:String>
+    <sys:String x:Key="IndustryPage_CalcDone">Done: {0} manufacturing runs.</sys:String>
+    <sys:String x:Key="IndustryPage_CalcFailed">Industry calculation failed: {0}</sys:String>
+    <sys:String x:Key="IndustryPage_Copied">Shopping list copied to clipboard.</sys:String>
+    <sys:String x:Key="IndustryPage_CopyFailed">Copy failed.</sys:String>
+    <sys:String x:Key="IndustryPage_NothingToCopy">Nothing to copy yet — calculate first.</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryPlanDesc">Expand the production chain: what to build, what to buy, materials and job cost.</sys:String>
+
+    <sys:String x:Key="Nav.IndustryBlueprints">Blueprint Browser</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryBlueprintsDesc">Search manufacturable items by product name and inspect materials, products and skills.</sys:String>
+    <sys:String x:Key="IndustryPage_SpaceModifier">Space modifier</sys:String>
+    <sys:String x:Key="IndustryPage_RigMe">Structure rig material bonus %</sys:String>
+    <sys:String x:Key="IndustryPage_RigTe">Structure rig time bonus %</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_DirectBuy">Buy (ref.)</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_SelfBuild">Build (ref.)</sys:String>
+    <sys:String x:Key="IndustryBp_SearchLabel">Search manufacturable items</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Kind">Kind</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Name">Name</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Amount">Amount</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Note">Note</sys:String>
+    <sys:String x:Key="IndustryBp_Kind_Material">Material</sys:String>
+    <sys:String x:Key="IndustryBp_Kind_Product">Product</sys:String>
+    <sys:String x:Key="IndustryBp_Kind_Skill">Skill</sys:String>
+    <sys:String x:Key="IndustryBp_Subtitle">Blueprint: {0}  |  Group: {1}  |  Max runs: {2}  |  Base time: {3}s</sys:String>
+
 </ResourceDictionary>

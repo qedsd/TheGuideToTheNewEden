@@ -127,6 +127,40 @@
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
+                <!--  工业：制造计划（BOM）  -->
+                <ui:NavigationViewItem Content="{DynamicResource Nav.Industry}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:ImageIcon
+                            Width="20"
+                            Height="20"
+                            Source="{StaticResource NavIcon.industry}" />
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.IndustryPlan}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:IndustryPlanPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.industry}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.IndustryBlueprints}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:IndustryBlueprintPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.industry}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+
                 <ui:NavigationViewItem
                     Content="{DynamicResource Nav.GamePreview}"
                     NavigationCacheMode="Required"

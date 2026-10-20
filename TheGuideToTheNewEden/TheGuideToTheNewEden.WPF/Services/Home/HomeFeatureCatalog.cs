@@ -103,6 +103,12 @@ public static class HomeFeatureCatalog
         new("appraisal", SymbolRegular.Calculator24, "appraisal", "Nav.Appraisal", "Nav.Business",
             "Home.Feature.AppraisalDesc", HomeFeatureKind.Page, typeof(Views.Pages.AppraisalPage)),
 
+        // ---------- 工业 ----------
+        new("industry-plan", SymbolRegular.Building24, "industry", "Nav.IndustryPlan", "Nav.Industry",
+            "Home.Feature.IndustryPlanDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryPlanPage)),
+        new("industry-blueprints", SymbolRegular.DocumentText24, "industry", "Nav.IndustryBlueprints", "Nav.Industry",
+            "Home.Feature.IndustryBlueprintsDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryBlueprintPage)),
+
         // ---------- 多开 ----------
         new("game-preview", SymbolRegular.SquareMultiple24, "gamePreview", "Nav.GamePreview", "Nav.GamePreview",
             "Home.Feature.GamePreviewDesc", HomeFeatureKind.Page, typeof(Views.Pages.GamePreviewPage)),

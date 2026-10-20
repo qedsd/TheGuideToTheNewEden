@@ -2519,4 +2519,65 @@
     <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Tip">每行一条，支持 * 通配；例如 /characters/*/mail</sys:String>
     <sys:String x:Key="AssistantSettingPage_EsiDeniedPaths_Desc">命中的端点永远不会被调用（用户确认也绕不过）。留空 = 不禁止任何端点。建议按需加入敏感写操作，例如 /characters/*/mail、/fleets/。</sys:String>
 
+    <!--  工业  -->
+    <sys:String x:Key="Nav.Industry">工业</sys:String>
+    <sys:String x:Key="Nav.IndustryPlan">制造计划</sys:String>
+    <sys:String x:Key="IndustryPage_Target">目标产物</sys:String>
+    <sys:String x:Key="IndustryPage_SearchPlaceholder">输入物品名称搜索</sys:String>
+    <sys:String x:Key="IndustryPage_Search">搜索</sys:String>
+    <sys:String x:Key="IndustryPage_NoSearchResult">没有找到匹配的物品。</sys:String>
+    <sys:String x:Key="IndustryPage_SearchFailed">物品搜索失败。</sys:String>
+    <sys:String x:Key="IndustryPage_Quantity">数量</sys:String>
+    <sys:String x:Key="IndustryPage_ME">材料效率 ME（0-10）</sys:String>
+    <sys:String x:Key="IndustryPage_TE">时间效率 TE（0-20）</sys:String>
+    <sys:String x:Key="IndustryPage_SolarSystem">星系 ID（成本指数）</sys:String>
+    <sys:String x:Key="IndustryPage_FacilityTax">设施税 %</sys:String>
+    <sys:String x:Key="IndustryPage_Character">角色（库存 / 蓝图）</sys:String>
+    <sys:String x:Key="IndustryPage_UseAssets">用角色资产抵扣</sys:String>
+    <sys:String x:Key="IndustryPage_UseJobs">用在制任务抵扣</sys:String>
+    <sys:String x:Key="IndustryPage_UseBlueprints">用自有蓝图 ME/TE</sys:String>
+    <sys:String x:Key="IndustryPage_Calculate">计算物料清单</sys:String>
+    <sys:String x:Key="IndustryPage_Copy">复制采购清单</sys:String>
+    <sys:String x:Key="IndustryPage_Summary">汇总</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_Target">目标</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_Runs">制造流程</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_JobCost">安装费合计</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_BuyTypes">采购种类</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Item">物品</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Decision">决策</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Needed">需要</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Produced">产出</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Runs">流程</sys:String>
+    <sys:String x:Key="IndustryPage_Col_Buy">采购</sys:String>
+    <sys:String x:Key="IndustryPage_Col_JobCost">安装费</sys:String>
+    <sys:String x:Key="IndustryPage_Decision_Build">制造</sys:String>
+    <sys:String x:Key="IndustryPage_Decision_Buy">采购</sys:String>
+    <sys:String x:Key="IndustryPage_Decision_Invention">发明</sys:String>
+    <sys:String x:Key="IndustryPage_NoTarget">请先搜索并选择一个目标产物。</sys:String>
+    <sys:String x:Key="IndustryPage_Prepare">正在准备工业数据…</sys:String>
+    <sys:String x:Key="IndustryPage_Expanding">正在展开物料清单…</sys:String>
+    <sys:String x:Key="IndustryPage_CalcDone">计算完成：{0} 个制造流程。</sys:String>
+    <sys:String x:Key="IndustryPage_CalcFailed">工业计算失败：{0}</sys:String>
+    <sys:String x:Key="IndustryPage_Copied">采购清单已复制到剪贴板。</sys:String>
+    <sys:String x:Key="IndustryPage_CopyFailed">复制失败。</sys:String>
+    <sys:String x:Key="IndustryPage_NothingToCopy">还没有可复制的清单，请先计算。</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryPlanDesc">递归展开生产链：需要造什么、买什么、材料与安装费。</sys:String>
+
+    <sys:String x:Key="Nav.IndustryBlueprints">蓝图浏览器</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryBlueprintsDesc">按产品名搜索可制造物品，查看材料、产物与技能需求。</sys:String>
+    <sys:String x:Key="IndustryPage_SpaceModifier">空间加成</sys:String>
+    <sys:String x:Key="IndustryPage_RigMe">结构 rig 材料加成 %</sys:String>
+    <sys:String x:Key="IndustryPage_RigTe">结构 rig 时间加成 %</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_DirectBuy">直接买（参考）</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_SelfBuild">自建（参考）</sys:String>
+    <sys:String x:Key="IndustryBp_SearchLabel">搜索可制造物品</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Kind">类别</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Name">名称</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Amount">数量</sys:String>
+    <sys:String x:Key="IndustryBp_Col_Note">备注</sys:String>
+    <sys:String x:Key="IndustryBp_Kind_Material">材料</sys:String>
+    <sys:String x:Key="IndustryBp_Kind_Product">产物</sys:String>
+    <sys:String x:Key="IndustryBp_Kind_Skill">技能</sys:String>
+    <sys:String x:Key="IndustryBp_Subtitle">蓝图：{0} ｜ 分组：{1} ｜ 最大流程：{2} ｜ 基础耗时：{3} 秒</sys:String>
+
 </ResourceDictionary>

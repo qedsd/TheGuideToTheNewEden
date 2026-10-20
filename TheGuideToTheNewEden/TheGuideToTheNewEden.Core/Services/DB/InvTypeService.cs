@@ -246,28 +246,28 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
 
         /// <summary>
-        /// 蓝图 TypeID → 产物 TypeID（静态库 <c>industryActivityProducts</c> 的制造活动 1）。
-        /// 一个蓝图可能有多个产物行，取第一行；查不到/静态库未载入返回空字典。
+        /// 蓝图 TypeID → 产物 TypeID（主库 <c>blueprintProducts</c> 的制造活动 1）。
+        /// 一个蓝图可能有多个产物行，取第一行；查不到/主库未载入返回空字典。
         /// </summary>
         public static Dictionary<int, int> QueryBlueprintProducts(IEnumerable<int> blueprintTypeIds)
         {
             var result = new Dictionary<int, int>();
             var ids = blueprintTypeIds?.Where(p => p > 0).Distinct().ToList();
-            if (ids == null || ids.Count == 0 || DBService.StaticDb == null)
+            if (ids == null || ids.Count == 0 || DBService.MainDb == null)
             {
                 return result;
             }
 
             try
             {
-                var rows = DBService.StaticDb.Queryable<IndustryActivityProduct>()
-                    .Where(p => ids.Contains(p.TypeID) && p.ActivityID == 1)
+                var rows = DBService.MainDb.Queryable<BlueprintProduct>()
+                    .Where(p => ids.Contains(p.BlueprintTypeID) && p.ActivityID == IndustryActivity.Manufacturing)
                     .ToList();
                 foreach (var row in rows)
                 {
-                    if (row.ProductTypeID > 0 && !result.ContainsKey(row.TypeID))
+                    if (row.ProductTypeID > 0 && !result.ContainsKey(row.BlueprintTypeID))
                     {
-                        result[row.TypeID] = row.ProductTypeID;
+                        result[row.BlueprintTypeID] = row.ProductTypeID;
                     }
                 }
             }

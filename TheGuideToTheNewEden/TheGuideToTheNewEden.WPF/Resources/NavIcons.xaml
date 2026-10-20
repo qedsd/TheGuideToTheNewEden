@@ -1431,4 +1431,39 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
+    <!--  工业  -->
+    <DrawingImage x:Key="NavIcon.industry">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.Transform>
+                    <ScaleTransform ScaleX="0.15625" ScaleY="0.15625" />
+                </DrawingGroup.Transform>
+                <!--  透明占位：统一固有尺寸，勿删  -->
+                <GeometryDrawing Brush="Transparent" Geometry="M0 0 H128 V128 H0 Z" />
+                <GeometryDrawing Geometry="M32 46 L64 30 L96 46 V84 L64 100 L32 84 Z">
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            Brush="#FFF59E0B"
+                            EndLineCap="Round"
+                            LineJoin="Round"
+                            StartLineCap="Round"
+                            Thickness="11.2" />
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M32 46 L64 62 L96 46 M64 62 V100">
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            Brush="#FFF59E0B"
+                            EndLineCap="Round"
+                            LineJoin="Round"
+                            StartLineCap="Round"
+                            Thickness="10" />
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FF38BDF8" Geometry="M56.0,62.0 A8.0,8.0 0 1 0 72.0,62.0 A8.0,8.0 0 1 0 56.0,62.0 Z" />
+                <GeometryDrawing Brush="#FF5EEAD4" Geometry="M96.0,64.0 A6.0,6.0 0 1 0 108.0,64.0 A6.0,6.0 0 1 0 96.0,64.0 Z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
 </ResourceDictionary>
