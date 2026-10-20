@@ -25,9 +25,14 @@ public static class AiAssistantSettingService
     private const string EsiDeniedPathsKey = "Assistant.Esi.DeniedPaths";
     private const string DisabledToolsKey = "Assistant.Tools.Disabled";
     private const string AutoRouteKey = "Assistant.Tools.AutoRoute";
+    private const string PinnedBundlesKey = "Assistant.Tools.PinnedBundles";
     private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
     private const string SidebarCollapsedKey = "Assistant.SidebarCollapsed";
-    private const string MaxContextCharsKey = "Assistant.MaxContextChars";
+    private const string ContextWindowTokensKey = "Assistant.ContextWindowTokens";
+    private const string OutputReserveTokensKey = "Assistant.OutputReserveTokens";
+    private const string MaxToolCallsPerRoundKey = "Assistant.MaxToolCallsPerRound";
+    private const string MaxTurnToolTokensKey = "Assistant.MaxTurnToolTokens";
+    private const string SummarizeContextKey = "Assistant.SummarizeContext";
 
     /// <summary>单次请求的最大工具轮数（防模型连环调工具烧 token）。</summary>
     public const int DefaultMaxToolRounds = 8;
@@ -64,18 +69,38 @@ public static class AiAssistantSettingService
     public const bool DefaultSidebarCollapsed = false;
 
     /// <summary>
-    /// 对话上下文的默认字符预算（阶段 132）：同一个对话每次请求都带上此前的完整历史（含工具往返），
-    /// 超出预算时**从中间最旧的轮次开始整轮省略**（最早一轮与最新一轮优先保留）。
+    /// 模型上下文窗口（token，阶段 134）：上下文预算从它里面扣掉系统提示词、工具声明、输出预留、
+    /// 安全余量与本轮工具预留，剩下的才给历史记录。
     /// <para>
-    /// 200,000 字符 ≈ 5–8 万 token（按本项目一贯的 2.5–4 字符/token 口径）：对 1M 窗口的云端模型只占 5–8%，
-    /// 而 DeepSeek 的前缀缓存命中价是未命中的 1/50，历史带全通常比"让模型重查一次"更便宜。
-    /// 本地小窗口模型请按窗口自行调小（0 = 不限制）。
+    /// 默认 1,000,000（与本项目主用的 DeepSeek 1M 窗口一致）；换 128k/200k 窗口的模型时**必须调小**，
+    /// 否则 budget 算出来仍按 1M 走，到 provider 才报超窗。0 = 不限制（老行为，风险自负）。
     /// </para>
     /// </summary>
-    public const int DefaultMaxContextChars = 200000;
+    public const int DefaultContextWindowTokens = 1_000_000;
 
-    /// <summary>上下文预算的上限（设置页 NumberBox 同值；0 = 不限制）。</summary>
-    public const int MaxContextCharsLimit = 400000;
+    /// <summary>模型窗口的上限（防止手滑多打一个 0 把预算算成天文数字）。</summary>
+    public const int MaxContextWindowTokensLimit = 4_000_000;
+
+    /// <summary>输出预留（token）：给模型的回答留的空间；实际取它和 <c>Ai.MaxTokens</c> 的较大者。</summary>
+    public const int DefaultOutputReserveTokens = 4096;
+
+    /// <summary>输出预留的上限。</summary>
+    public const int MaxOutputReserveTokensLimit = 200_000;
+
+    /// <summary>单轮最多执行几个并行工具调用（多出来的回填"请拆分为后续轮次"，不执行）。</summary>
+    public const int DefaultMaxToolCallsPerRound = 4;
+
+    /// <summary>单轮并行工具调用上限的上限。</summary>
+    public const int MaxToolCallsPerRoundLimit = 16;
+
+    /// <summary>单轮工具结果累计的 token 上限（超出时从最旧的开始压到 300 字符）。</summary>
+    public const int DefaultMaxTurnToolTokens = 12_000;
+
+    /// <summary>单轮工具结果上限的上限。</summary>
+    public const int MaxTurnToolTokensLimit = 200_000;
+
+    /// <summary>是否启用摘要式压缩（阶段 134）：历史超预算时把较早轮次压成事实摘要，而不是整轮丢弃。</summary>
+    public const bool DefaultSummarizeContext = true;
 
     /// <summary>单次请求的最大工具轮数（1–30）。</summary>
     public static int MaxToolRounds { get; private set; } = DefaultMaxToolRounds;
@@ -96,10 +121,21 @@ public static class AiAssistantSettingService
     public static string DefaultCharacter { get; private set; } = string.Empty;
 
     /// <summary>
-    /// 对话上下文的字符预算（阶段 132；0 = 不限制）。
-    /// <para>预算按"重建出来的消息内容 + 工具参数"估算，超出时最旧的轮次整轮省略（见 <see cref="AssistantContextBuilder"/>）。</para>
+    /// 模型上下文窗口（token；0 = 不限制）。预算与窗口护栏都从它推导，见 <see cref="AssistantContextBudget"/>。
     /// </summary>
-    public static int MaxContextChars { get; private set; } = DefaultMaxContextChars;
+    public static int ContextWindowTokens { get; private set; } = DefaultContextWindowTokens;
+
+    /// <summary>输出预留（token；实际取它和 <c>Ai.MaxTokens</c> 的较大者）。</summary>
+    public static int OutputReserveTokens { get; private set; } = DefaultOutputReserveTokens;
+
+    /// <summary>单轮最多执行几个并行工具调用。</summary>
+    public static int MaxToolCallsPerRound { get; private set; } = DefaultMaxToolCallsPerRound;
+
+    /// <summary>单轮工具结果累计的 token 上限（0 = 不限制）。</summary>
+    public static int MaxTurnToolTokens { get; private set; } = DefaultMaxTurnToolTokens;
+
+    /// <summary>是否启用摘要式压缩（阶段 134；关掉就退回"整轮省略"的滑窗）。</summary>
+    public static bool SummarizeContext { get; private set; } = DefaultSummarizeContext;
 
     // ------------------------------------------------------------------
     //  ESI 通用网关（esi_search / esi_describe / esi_read / esi_write，阶段 118）
@@ -151,11 +187,36 @@ public static class AiAssistantSettingService
     /// </summary>
     public static bool AutoRouteTools { get; private set; } = true;
 
+    /// <summary>
+    /// 用户**手动钉选**的套餐（阶段 150）：无论关键词路由选出什么，这些套餐的工具都会声明。
+    /// 用来纠正关键词表的偏差（"我主要在弄星图，别把它挤掉"）；空集合 = 不钉选。
+    /// </summary>
+    public static IReadOnlySet<string> PinnedBundles { get; private set; } = new HashSet<string>(StringComparer.Ordinal);
+
     /// <summary>保存"按需声明"开关。</summary>
     public static void SaveRouting(bool autoRoute)
     {
         AutoRouteTools = autoRoute;
         SettingsService.SetBool(AutoRouteKey, AutoRouteTools);
+        SettingsService.Save();
+    }
+
+    /// <summary>保存手动钉选的套餐（只接受真实套餐名；Esi 是核心常驻，不计入）。</summary>
+    public static void SavePinnedBundles(IEnumerable<string>? bundles)
+    {
+        var set = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var category in bundles ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(category)
+                && category != "Esi"
+                && Array.IndexOf(ToolRegistry.Categories, category) >= 0)
+            {
+                set.Add(category.Trim());
+            }
+        }
+
+        PinnedBundles = set;
+        SettingsService.SetValue(PinnedBundlesKey, string.Join(",", set.OrderBy(n => n, StringComparer.Ordinal)));
         SettingsService.Save();
     }
 
@@ -217,8 +278,23 @@ public static class AiAssistantSettingService
 
         DefaultCharacter = SettingsService.GetValue(DefaultCharacterKey) ?? string.Empty;
 
-        MaxContextChars = Math.Clamp(
-            SettingsService.GetInt(MaxContextCharsKey, DefaultMaxContextChars), 0, MaxContextCharsLimit);
+        ContextWindowTokens = Math.Clamp(
+            SettingsService.GetInt(ContextWindowTokensKey, DefaultContextWindowTokens),
+            0,
+            MaxContextWindowTokensLimit);
+        OutputReserveTokens = Math.Clamp(
+            SettingsService.GetInt(OutputReserveTokensKey, DefaultOutputReserveTokens),
+            0,
+            MaxOutputReserveTokensLimit);
+        MaxToolCallsPerRound = Math.Clamp(
+            SettingsService.GetInt(MaxToolCallsPerRoundKey, DefaultMaxToolCallsPerRound),
+            1,
+            MaxToolCallsPerRoundLimit);
+        MaxTurnToolTokens = Math.Clamp(
+            SettingsService.GetInt(MaxTurnToolTokensKey, DefaultMaxTurnToolTokens),
+            0,
+            MaxTurnToolTokensLimit);
+        SummarizeContext = SettingsService.GetBool(SummarizeContextKey, DefaultSummarizeContext);
 
         EsiEnabled = SettingsService.GetBool(EsiEnabledKey, true);
         EsiAllowWrites = SettingsService.GetBool(EsiWritesKey, true);
@@ -239,8 +315,23 @@ public static class AiAssistantSettingService
 
         DisabledTools = disabled;
         AutoRouteTools = SettingsService.GetBool(AutoRouteKey, true);
+
+        var pinned = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var category in (SettingsService.GetValue(PinnedBundlesKey) ?? string.Empty)
+                 .Split([',', ';', '\n', '\r', ' ', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (category != "Esi" && Array.IndexOf(ToolRegistry.Categories, category) >= 0)
+            {
+                pinned.Add(category);
+            }
+        }
+
+        PinnedBundles = pinned;
         ShowInMainWindow = SettingsService.GetBool(ShowInMainWindowKey, DefaultShowInMainWindow);
         SidebarCollapsed = SettingsService.GetBool(SidebarCollapsedKey, DefaultSidebarCollapsed);
+
+        // 阶段 151：载入按模型记录的估算校准系数（没有就保持 1.0）
+        AssistantUsageCalibration.Load();
     }
 
     /// <summary>保存 ESI 网关设置（设置页与主保存同一处提交）。</summary>
@@ -278,26 +369,38 @@ public static class AiAssistantSettingService
         bool confirmExpensive,
         string? hotkey,
         string? defaultCharacter,
-        int maxContextChars = DefaultMaxContextChars)
+        int contextWindowTokens = DefaultContextWindowTokens,
+        int outputReserveTokens = DefaultOutputReserveTokens,
+        int maxToolCallsPerRound = DefaultMaxToolCallsPerRound,
+        int maxTurnToolTokens = DefaultMaxTurnToolTokens,
+        bool summarizeContext = DefaultSummarizeContext)
     {
         MaxToolRounds = Math.Clamp(maxToolRounds, 1, 30);
         SystemPrompt = (systemPrompt ?? string.Empty).Trim();
         ConfirmExpensive = confirmExpensive;
         Hotkey = (hotkey ?? string.Empty).Trim();
         DefaultCharacter = (defaultCharacter ?? string.Empty).Trim();
-        MaxContextChars = Math.Clamp(maxContextChars, 0, MaxContextCharsLimit);
+        ContextWindowTokens = Math.Clamp(contextWindowTokens, 0, MaxContextWindowTokensLimit);
+        OutputReserveTokens = Math.Clamp(outputReserveTokens, 0, MaxOutputReserveTokensLimit);
+        MaxToolCallsPerRound = Math.Clamp(maxToolCallsPerRound, 1, MaxToolCallsPerRoundLimit);
+        MaxTurnToolTokens = Math.Clamp(maxTurnToolTokens, 0, MaxTurnToolTokensLimit);
+        SummarizeContext = summarizeContext;
 
         SettingsService.SetInt(MaxToolRoundsKey, MaxToolRounds);
         SettingsService.SetValue(SystemPromptKey, SystemPrompt);
         SettingsService.SetBool(ConfirmExpensiveKey, ConfirmExpensive);
         SettingsService.SetValue(HotkeyKey, Hotkey);
         SettingsService.SetValue(DefaultCharacterKey, DefaultCharacter);
-        SettingsService.SetInt(MaxContextCharsKey, MaxContextChars);
+        SettingsService.SetInt(ContextWindowTokensKey, ContextWindowTokens);
+        SettingsService.SetInt(OutputReserveTokensKey, OutputReserveTokens);
+        SettingsService.SetInt(MaxToolCallsPerRoundKey, MaxToolCallsPerRound);
+        SettingsService.SetInt(MaxTurnToolTokensKey, MaxTurnToolTokens);
+        SettingsService.SetBool(SummarizeContextKey, SummarizeContext);
         SettingsService.Save();
     }
 
     /// <summary>
-    /// 恢复默认值（提示词 / 工具轮数 / 确认开关 / 默认角色 / 快捷键 / 上下文预算 / ESI 网关 / 工具开关 /
+    /// 恢复默认值（提示词 / 工具轮数 / 确认开关 / 默认角色 / 快捷键 / 上下文窗口与摘要 / ESI 网关 / 工具开关 /
     /// 按需声明 / 显示位置）。
     /// <para>
     /// 阶段 130 起**快捷键也一并复位**（回到 <see cref="DefaultHotkey"/> = 空 = 不启用）——
@@ -306,11 +409,23 @@ public static class AiAssistantSettingService
     /// </summary>
     public static void RestoreDefaults()
     {
-        Save(DefaultMaxToolRounds, string.Empty, true, DefaultHotkey, string.Empty, DefaultMaxContextChars);
+        Save(
+            DefaultMaxToolRounds,
+            string.Empty,
+            true,
+            DefaultHotkey,
+            string.Empty,
+            DefaultContextWindowTokens,
+            DefaultOutputReserveTokens,
+            DefaultMaxToolCallsPerRound,
+            DefaultMaxTurnToolTokens,
+            DefaultSummarizeContext);
         SaveEsi(true, true, true, DefaultEsiMaxPages, DefaultEsiMaxResultChars, DefaultEsiErrorLimitFloor, string.Empty);
         SaveDisabledTools([]);
         SaveRouting(true);
+        SavePinnedBundles([]);
         SaveShowInMainWindow(DefaultShowInMainWindow);
         SaveSidebarCollapsed(DefaultSidebarCollapsed);
+        AssistantUsageCalibration.Reset();
     }
 }

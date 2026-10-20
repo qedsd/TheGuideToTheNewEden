@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent">
 
@@ -19,6 +20,7 @@
     -->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:ArcToGeometryConverter x:Key="ArcToGeometry" />
 
         <!--  气泡文字用只读富文本（RichTextPresenter = RichTextBox）：可任意拖选复制  -->
         <Style x:Key="ChatRichText" TargetType="{x:Type controls:RichTextPresenter}">
@@ -601,6 +603,50 @@
                                     IsChecked="{Binding SelectedSession.UseContext, Mode=TwoWay}"
                                     IsEnabled="{Binding HasSession}"
                                     ToolTip="{Binding SelectedSession.ContextTooltip}" />
+
+                                <!--  环形用量盘（阶段 149）：已用历史 / 可用预算，绿 → 橙 → 红  -->
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <Grid
+                                        Width="26"
+                                        Height="26"
+                                        Background="Transparent"
+                                        ToolTip="{Binding SelectedSession.ContextInfoText}">
+                                        <Ellipse
+                                            Stroke="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                            StrokeThickness="2.5" />
+                                        <Path
+                                            Width="26"
+                                            Height="26"
+                                            Data="{Binding SelectedSession.ContextGaugeFraction, Converter={StaticResource ArcToGeometry}}"
+                                            StrokeEndLineCap="Round"
+                                            StrokeStartLineCap="Round"
+                                            StrokeThickness="2.5">
+                                            <Path.Style>
+                                                <Style TargetType="Path">
+                                                    <Setter Property="Stroke" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedSession.ContextGaugeSeverity}" Value="1">
+                                                            <Setter Property="Stroke" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedSession.ContextGaugeSeverity}" Value="2">
+                                                            <Setter Property="Stroke" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Path.Style>
+                                        </Path>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="9"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding SelectedSession.ContextGaugeText}" />
+                                    </Grid>
+                                </StackPanel>
 
                                 <StackPanel
                                     Grid.Column="2"

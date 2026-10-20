@@ -41,6 +41,7 @@ public static class TranslationSettingService
     private const string CacheKey = "Ai.Translation.Cache";
     private const string CollectCandidatesKey = "Ai.Translation.CollectCandidates";
     private const string MaxChunkCharsKey = "Ai.Translation.MaxChunkChars";
+    private const string ContextMaxTokensKey = "Ai.Translation.ContextMaxTokens";
     private const string SystemPromptKey = "Ai.Translation.SystemPrompt";
 
     private static readonly object Sync = new();
@@ -86,6 +87,9 @@ public static class TranslationSettingService
 
     /// <summary>单次请求最多带多少字符（0 = 不分片）。</summary>
     public static int AiMaxChunkChars => Ai.MaxChunkChars;
+
+    /// <summary>每次翻译带上的上下文预算（token；0 = 不限）。</summary>
+    public static int AiContextMaxTokens => Ai.ContextMaxTokens;
 
     /// <summary>思考模式（见 <see cref="ThinkingModes"/>；实体在模型设置里）。</summary>
     public static string AiThinkingMode => AiModelSettingService.Model.ThinkingMode;
@@ -192,6 +196,7 @@ public static class TranslationSettingService
 
         value.GlossaryLimit = Math.Clamp(value.GlossaryLimit, 0, 200);
         value.MaxChunkChars = Math.Clamp(value.MaxChunkChars, 0, 200_000);
+        value.ContextMaxTokens = Math.Clamp(value.ContextMaxTokens, 0, 200_000);
 
         lock (Sync)
         {
@@ -202,6 +207,7 @@ public static class TranslationSettingService
             SettingsService.SetBool(CacheKey, value.Cache);
             SettingsService.SetBool(CollectCandidatesKey, value.CollectCandidates);
             SettingsService.SetInt(MaxChunkCharsKey, value.MaxChunkChars);
+            SettingsService.SetInt(ContextMaxTokensKey, value.ContextMaxTokens);
             SettingsService.SetValue(SystemPromptKey, value.SystemPrompt);
             SettingsService.Save();
         }
@@ -218,11 +224,13 @@ public static class TranslationSettingService
             Cache = SettingsService.GetBool(CacheKey, true),
             CollectCandidates = SettingsService.GetBool(CollectCandidatesKey, true),
             MaxChunkChars = SettingsService.GetInt(MaxChunkCharsKey, 12000),
+            ContextMaxTokens = SettingsService.GetInt(ContextMaxTokensKey, 4000),
             SystemPrompt = SettingsService.GetValue(SystemPromptKey) ?? string.Empty,
         };
 
         settings.GlossaryLimit = Math.Clamp(settings.GlossaryLimit, 0, 200);
         settings.MaxChunkChars = Math.Clamp(settings.MaxChunkChars, 0, 200_000);
+        settings.ContextMaxTokens = Math.Clamp(settings.ContextMaxTokens, 0, 200_000);
 
         lock (Sync)
         {

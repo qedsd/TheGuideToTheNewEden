@@ -44,6 +44,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(ContextInfoText));
             OnPropertyChanged(nameof(ContextTooltip));
+            RefreshContextGauge();
             _onChanged?.Invoke();
         }
     }
@@ -68,13 +69,16 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
     public int ContextCandidateCount => Turns.Count(t => t.CanBeContext);
 
     private AssistantContextResult? _lastContext;
+    private AssistantContextBudget? _lastBudget;
 
     /// <summary>记下"最近一次请求实际带了什么"（由 VM 在发送前调用），供底栏提示显示。</summary>
-    public void ReportContextUsage(AssistantContextResult result)
+    public void ReportContextUsage(AssistantContextResult result, AssistantContextBudget? budget = null)
     {
         _lastContext = result;
+        _lastBudget = budget;
         OnPropertyChanged(nameof(ContextInfoText));
         OnPropertyChanged(nameof(ContextTooltip));
+        RefreshContextGauge();
     }
 
     public string ContextInfoText
@@ -94,28 +98,111 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
                 return FindString("Assistant_Chat_ContextOn");
             }
 
-            var budget = AiAssistantSettingService.MaxContextChars;
-            if (budget <= 0)
-            {
-                return string.Format(
+            // 阶段 134：预算与用量都按 **token** 显示（字符口径已不再用于预算）；
+            // 0/未给预算 = 不限制（与设置里的 0 一致）。
+            var budget = _lastBudget is { Unlimited: false } plan ? plan.AvailableHistoryTokens : 0;
+            var text = budget <= 0
+                ? string.Format(
                     FindString("Assistant_Chat_ContextUsageUnlimited"),
                     last.TurnsIncluded,
-                    Compact(last.Chars));
+                    Compact(last.Tokens))
+                : last.TurnsDropped > 0
+                    ? string.Format(
+                        FindString("Assistant_Chat_ContextUsageTrimmed"),
+                        last.TurnsIncluded,
+                        Compact(last.Tokens),
+                        Compact(budget),
+                        last.TurnsDropped)
+                    : string.Format(
+                        FindString("Assistant_Chat_ContextUsage"),
+                        last.TurnsIncluded,
+                        Compact(last.Tokens),
+                        Compact(budget));
+
+            if (last.SummaryApplied)
+            {
+                text += string.Format(FindString("Assistant_Chat_ContextSummary"), Compact(last.SummaryChars));
             }
 
-            return last.TurnsDropped > 0
-                ? string.Format(
-                    FindString("Assistant_Chat_ContextUsageTrimmed"),
-                    last.TurnsIncluded,
-                    Compact(last.Chars),
-                    Compact(budget),
-                    last.TurnsDropped)
-                : string.Format(
-                    FindString("Assistant_Chat_ContextUsage"),
-                    last.TurnsIncluded,
-                    Compact(last.Chars),
-                    Compact(budget));
+            if (Model.CacheHitTokens > 0)
+            {
+                var input = (int)Math.Min(int.MaxValue, Model.TotalInputTokens);
+                var percent = Model.TotalInputTokens > 0 ? Model.CacheHitTokens * 100.0 / Model.TotalInputTokens : 0;
+                text += string.Format(
+                    FindString("Assistant_Chat_CacheHit"),
+                    Compact((int)Math.Min(int.MaxValue, Model.CacheHitTokens)),
+                    Compact(input),
+                    percent.ToString("0.#"));
+            }
+
+            // 阶段 151：估算校准系数偏离 1.0 时一并显示（用户能看到"预算为什么变宽/变紧"）
+            if (Math.Abs(AssistantTokenEstimator.CalibrationFactor - 1.0) >= 0.005)
+            {
+                text += string.Format(FindString("Assistant_Chat_Calibration"), AssistantTokenEstimator.CalibrationFactor);
+            }
+
+            return text;
         }
+    }
+
+    // ---------- 底栏的环形用量盘（阶段 149，像 Cursor/Continue 那种圆圈） ----------
+
+    /// <summary>到达这档就上橙色（警告）。</summary>
+    public const double WarnFraction = 0.75;
+
+    /// <summary>到达这档就上红色（快要超窗）。</summary>
+    public const double CriticalFraction = 0.90;
+
+    /// <summary>"已用历史 token / 可用历史预算"的占比（0..1；不限或没数据为 0）。</summary>
+    public double ContextGaugeFraction { get; private set; }
+
+    /// <summary>上下文不限（设置里窗口 = 0）；环显示"∞"。</summary>
+    public bool ContextGaugeUnlimited { get; private set; }
+
+    /// <summary>0 = 正常（绿），1 = 接近上限（橙），2 = 即将超窗（红）。</summary>
+    public int ContextGaugeSeverity { get; private set; }
+
+    /// <summary>环中心的紧凑文本（已用 token 或 "∞"/空）。</summary>
+    public string ContextGaugeText { get; private set; } = string.Empty;
+
+    private void RefreshContextGauge()
+    {
+        if (!Model.UseContext || _lastContext is null)
+        {
+            ContextGaugeFraction = 0;
+            ContextGaugeUnlimited = false;
+            ContextGaugeSeverity = 0;
+            ContextGaugeText = string.Empty;
+            NotifyGauge();
+            return;
+        }
+
+        var budget = _lastBudget is { Unlimited: false } plan ? plan.AvailableHistoryTokens : 0;
+        var last = _lastContext;
+        if (budget <= 0)
+        {
+            ContextGaugeFraction = 0;
+            ContextGaugeUnlimited = true;
+            ContextGaugeSeverity = 0;
+            ContextGaugeText = "∞";
+            NotifyGauge();
+            return;
+        }
+
+        var fraction = Math.Clamp((double)last.Tokens / budget, 0, 1);
+        ContextGaugeFraction = fraction;
+        ContextGaugeUnlimited = false;
+        ContextGaugeSeverity = fraction >= CriticalFraction ? 2 : fraction >= WarnFraction ? 1 : 0;
+        ContextGaugeText = Compact(last.Tokens);
+        NotifyGauge();
+    }
+
+    private void NotifyGauge()
+    {
+        OnPropertyChanged(nameof(ContextGaugeFraction));
+        OnPropertyChanged(nameof(ContextGaugeUnlimited));
+        OnPropertyChanged(nameof(ContextGaugeSeverity));
+        OnPropertyChanged(nameof(ContextGaugeText));
     }
 
     /// <summary>字符数的紧凑写法（86,000 → 86k），底栏一行放得下。</summary>
@@ -237,6 +324,9 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
     {
         Turns.Clear();
         Model.Turns.Clear();
+        // 阶段 134：记录清空了，摘要覆盖的轮次也不存在了——一并丢掉，避免下次带上"幽灵摘要"
+        Model.ContextSummary = null;
+        Model.SummaryUpToTurnId = null;
         Model.UpdatedAt = DateTime.Now;
         RefreshSummary();
     }
@@ -267,6 +357,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ContextCandidateCount));
         OnPropertyChanged(nameof(ContextInfoText));
         OnPropertyChanged(nameof(ContextTooltip));
+        RefreshContextGauge();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

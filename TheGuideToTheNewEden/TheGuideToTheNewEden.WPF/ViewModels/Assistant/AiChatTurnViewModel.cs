@@ -256,6 +256,7 @@ public sealed class AiChatTurnViewModel : INotifyPropertyChanged
             ResultSummary = step.ResultSummary,
             ResultText = Truncate(step.ResultText, AssistantContextBuilder.MaxStoredResultChars),
             Success = step.Success,
+            IsWrite = step.IsWrite,
         });
 
         ProgressText = string.Empty;

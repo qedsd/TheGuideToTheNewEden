@@ -1459,9 +1459,12 @@
     <sys:String x:Key="AiTranslation_Chat_Generating">正在翻译…</sys:String>
     <sys:String x:Key="AiTranslation_Chat_PendingCount">正在翻译 {0} 条…</sys:String>
     <sys:String x:Key="AiTranslation_Chat_UseContext">带上上下文（本对话）</sys:String>
-    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">打开后，本对话每次提问都会带上此前成功的问答（不限条数）</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">打开后，本对话每次提问都会带上此前成功的问答（按 token 预算，最近优先）</sys:String>
     <sys:String x:Key="AiTranslation_Chat_ContextOn">已开启：每次带上此前 {0} 条记录</sys:String>
     <sys:String x:Key="AiTranslation_Chat_ContextOff">未开启：每次只翻当前这一条</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextUsage">已带 {0} 条 · 约 {1} token / 可用 {2}</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextUsageTrimmed">已带 {0} 条 · 约 {1} token / 可用 {2} · 省略 {3} 条</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextUsageUnlimited">已带 {0} 条 · 约 {1} token（不限）</sys:String>
     <sys:String x:Key="AiTranslation_Chat_Expand">展开</sys:String>
     <sys:String x:Key="AiTranslation_Chat_Collapse">收起</sys:String>
 
@@ -1492,6 +1495,8 @@
     <sys:String x:Key="AiSettingPage_GlossaryLimit_Desc">只注入与当前句子相关的术语；30 条约等于 300–600 token。设 0 表示不注入。</sys:String>
     <sys:String x:Key="AiSettingPage_ChunkSize">单次请求最大字符数</sys:String>
     <sys:String x:Key="AiSettingPage_ChunkSize_Desc">超过这个长度就切成多片分别翻译再拼回（在段落/句末断开）。设 0 = 不分片、整段一次发。默认 12000 字符对现代模型（上下文动辄 128K–1M token）很小；调小可以让首段结果更快出现、单次失败损失更小，调大则请求数更少。</sys:String>
+    <sys:String x:Key="AiSettingPage_ContextTokens">上下文预算（token）</sys:String>
+    <sys:String x:Key="AiSettingPage_ContextTokens_Desc">每次翻译带上此前多少条记录当上下文，按 token 估算（最近优先）。超出预算时更早的记录会被省略，避免长对话无限膨胀。默认 4000，0 = 不限制。该预算只影响 AI 翻译页；频道翻译另有自己的条数上限。</sys:String>
     <sys:String x:Key="AiSettingPage_Thinking">思考模式</sys:String>
     <sys:String x:Key="AiSettingPage_Thinking_Desc">仅对 DeepSeek 系端点生效（其它服务商不认识该参数，会自动不下发）。DeepSeek 默认"开启 + high"，翻一句话也要先写一大段思维链，又慢又贵、还会让温度失效；翻译场景建议保持关闭。</sys:String>
     <sys:String x:Key="AiSettingPage_Thinking_auto">跟随服务端默认</sys:String>
@@ -2339,11 +2344,17 @@
     <sys:String x:Key="Assistant_Chat_Untitled">新对话</sys:String>
     <sys:String x:Key="Assistant_Chat_EmptySession">（空对话）</sys:String>
     <sys:String x:Key="Assistant_Chat_NewSession">新对话</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextOn">已开启：带上全部记录（含工具调用）</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOn">已开启：带上此前的完整记录（含工具调用），超出预算时优先压缩较早内容</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextOff">未开启：每次只回答当前这一条</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextUsage">已带 {0} 轮 · {1} / {2} 字符</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">已带 {0} 轮 · {1} / {2} 字符 · 省略 {3} 轮</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">已带 {0} 轮 · {1} 字符（不限）</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsage">已带 {0} 轮 · 约 {1} token / 可用 {2} token</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">已带 {0} 轮 · 约 {1} token / 可用 {2} token · 省略 {3} 轮</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">已带 {0} 轮 · 约 {1} token（不限）</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextSummary"> · 摘要 {0} 字</sys:String>
+    <sys:String x:Key="Assistant_Chat_CacheHit"> · 本对话缓存命中 {0} / 输入 {1}（{2}%）</sys:String>
+    <sys:String x:Key="Assistant_Chat_Calibration"> · 估算校准 ×{0:0.00}</sys:String>
+    <sys:String x:Key="Assistant_Chat_Compacting">正在压缩较早的上下文…</sys:String>
+    <sys:String x:Key="Assistant_Chat_CompactingBatch">正在压缩较早的上下文（{0}/{1}）…</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOverflow">本次请求预计 {0} token，超过可用输入 {1} token；请新建对话，或在 设置 → AI → 行为 调小上下文窗口/单轮工具结果上限。</sys:String>
     <sys:String x:Key="Assistant_Chat_PendingCount">正在处理 {0} 条…</sys:String>
     <sys:String x:Key="Assistant_Chat_NoInput">请输入内容</sys:String>
     <sys:String x:Key="Assistant_Chat_AnswerEmpty">没有返回内容</sys:String>
@@ -2403,6 +2414,8 @@
     <sys:String x:Key="AssistantSettingPage_Tools_Desc">逐个启用或停用助手可用的工具。关掉的既不下发给模型（省输入 token），模型硬报它的名字时执行侧也会拒绝；新增工具默认开启。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">按需声明（省 token）</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">只把与本次提问相关的工具组发给模型（最多两组），再叠加常驻的 ESI 网关等入口；看不出意图时自动声明全部。关掉则每次都声明全部已启用工具。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Pinned">固定套餐（手动钉选）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Pinned_Desc">无论问题是什么，勾选的套餐都会一并声明。用于纠正关键词判断的偏差（例如你主要在弄星图，不希望它被别的意图挤掉）。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">全部启用</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_DisableAll">全部禁用</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Count">已关闭 {0} / {1} 个工具</sys:String>
@@ -2423,6 +2436,16 @@
     <sys:String x:Key="AssistantSettingPage_ShowInMainWindow_Desc">不勾（默认）时，AI 的所有入口都用独立窗口打开，主窗口保持你正在看的页面；勾上则把助手页放在主窗口里。快捷键 Alt+Q 始终弹独立窗口。</sys:String>
     <sys:String x:Key="AssistantSettingPage_ContextChars">上下文预算（字符）</sys:String>
     <sys:String x:Key="AssistantSettingPage_ContextChars_Desc">同一个对话每次请求都会带上此前的完整记录（含工具调用与结果）；超出预算时从中间最早的轮次开始省略，最早一轮与最新一轮优先保留（最新一轮即使超预算也会压缩工具结果后保留）。默认 200000 字符，0 = 不限制。记忆只存在于单个对话，不同对话之间不共享。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextWindow">模型上下文窗口（token）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextWindow_Desc">填你所选模型的真实上下文窗口。助手会从这里扣掉系统提示词、工具声明、输出预留、5% 安全余量与单轮工具预留，剩下的才给历史记录；0 = 不限制（不建议）。默认 1000000（DeepSeek 1M）；用 128k/200k 窗口的模型时必须调小，否则会到服务端才报超窗。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Summarize">摘要式压缩</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Summarize_Desc">历史超出预算时，先把较早的轮次交给模型压成一份事实摘要（保留目标、数字、ID、未完成动作），只带"摘要 + 最近几轮"，而不是整轮丢弃。会多一次小请求；失败自动退回滑窗，不影响本次提问。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_OutputReserve">输出预留（token）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_OutputReserve_Desc">给模型回答留出的空间，预算会先扣掉它。实际取这里与「设置 → AI → 模型」里「最大输出 token」的较大者；默认 4096。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_MaxCalls">单轮最多并行工具数</sys:String>
+    <sys:String x:Key="AssistantSettingPage_MaxCalls_Desc">模型一次回复里可能要求并行调用多个工具；超过这个数量的调用不执行，会回填"请拆到后续轮次"。默认 4，范围 1–16。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_TurnToolTokens">单轮工具结果上限（token）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_TurnToolTokens_Desc">本轮所有工具结果累计的 token 上限；超出时从较早的结果开始压到 300 字符（最新的尽量保留）。默认 12000，0 = 不限制。它同时作为"本轮预留"从上下文预算里扣掉。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Confirm_Desc">关闭后不是免确认：助手会直接拒绝写操作并说明原因。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey">全局快捷键</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">在任意程序里按下即可弹出助手窗口（再按一次收起）。默认留空 = 不启用；想开启就填一个组合键，格式如 Alt+Q / Ctrl+Alt+A。</sys:String>

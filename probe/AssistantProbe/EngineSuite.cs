@@ -1,5 +1,6 @@
 using System.Text;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
+using TheGuideToTheNewEden.WPF.Services.Translation;
 using TheGuideToTheNewEden.WPF.Services.Translation.Llm;
 
 namespace TheGuideToTheNewEden.Probe;
@@ -39,6 +40,21 @@ internal static class EngineSuite
         c.Section("EngineSuite · 上下文与提示词");
         await ContextAsync(c);
         await CustomPromptAsync(c);
+
+        c.Section("EngineSuite · 上下文治理（阶段 134：token 预算 / 摘要 / 省略说明）");
+        ContextGovernance(c);
+
+        c.Section("EngineSuite · 单轮并行工具上限");
+        await ParallelCapAsync(c);
+
+        c.Section("EngineSuite · 单轮工具结果上限");
+        await TurnToolCapAsync(c);
+
+        c.Section("EngineSuite · 翻译页上下文预算（阶段 148）");
+        TranslationContextBudget(c);
+
+        c.Section("EngineSuite · 摘要式压缩（阶段 148，mock 模型）");
+        await CompactionAsync(c);
 
         c.Section("EngineSuite · 取消传播");
         await CancelAsync(c);
@@ -85,6 +101,7 @@ internal static class EngineSuite
         var messageCount = ProbeJson.ArrayLength(second, "messages");
         c.Equal(ProbeJson.RoleAt(second, "messages", messageCount - 1), "tool", "第二次请求的最后一条消息是 tool 结果");
         c.That(ProbeJson.Contains(second, "echo: hello"), "tool 消息带工具结果文本");
+        c.That(ProbeJson.Contains(second, "【数据时间"), "工具结果带取数时间（阶段 134，模型据此判断数据新旧）");
         c.That(ProbeJson.HasProperty(second, "tool_calls"), "第二次请求回传了 assistant 的 tool_calls（协议要求）");
         c.That(ProbeJson.Contains(second, "call_1"), "tool 消息带对应的 tool_call_id");
 
@@ -183,6 +200,8 @@ internal static class EngineSuite
         c.That(!ProbeJson.Contains(server.RequestBodies[1], ProbeTools.LongTailMarker),
             $"回填给模型的工具结果被截断（尾部标记 {ProbeTools.LongTailMarker} 不应出现在请求体里）");
         c.That(ProbeJson.Contains(server.RequestBodies[1], "…"), "截断处有省略号标记");
+        c.That(ProbeJson.Contains(server.RequestBodies[1], "已截断"), "截断带可诊断标记（阶段 134：不再只留一个省略号）");
+        c.That(ProbeJson.Contains(server.RequestBodies[1], "原文"), "截断标记写明原文长度与处置建议");
     }
 
     private static async Task ConfirmApplyAsync(Check c)
@@ -347,7 +366,9 @@ internal static class EngineSuite
         c.Equal(squeezed.Messages[0].Content, "压我", "压缩时提问保留");
         c.Equal(squeezed.Messages[^1].Content, "结论", "压缩时回答保留");
         var toolLength = squeezed.Messages.First(m => m.Role == ChatRole.Tool).Content?.Length ?? 0;
-        c.That(toolLength is > 0 and <= 300, $"工具结果被逐级压缩到 {toolLength} 字符（≤300）");
+        c.That(toolLength is > 0 and <= 380, $"工具结果被逐级压缩到 {toolLength} 字符（≤300 + 截断标记）");
+        c.That((squeezed.Messages.First(m => m.Role == ChatRole.Tool).Content ?? string.Empty).Contains("已截断", StringComparison.Ordinal),
+            "被压缩的工具结果同样带「已截断」标记");
 
         // ⑥ 当前这条不算自己的上文
         var first = Turn("甲", "A");
@@ -376,6 +397,204 @@ internal static class EngineSuite
         c.Equal(legacyReplay.Messages.Count, 2, "旧数据（步骤缺 CallId）只重放问答");
         c.That(legacyReplay.Messages.All(m => m.Role is ChatRole.User or ChatRole.Assistant),
             "没有 CallId 的步骤不会生成悬空的 tool 消息");
+
+        // ⑨ 阶段 150：钉住"含已确认写操作"的关键轮（预算不够时先让位给关键轮）
+        var writeStep = Step("w1", 1, "map_jumpbridge_add", "{}", "已添加 A ↔ B");
+        writeStep.IsWrite = true;
+        var keyTurns = new[]
+        {
+            Turn("最初的用途", new string('a', 400)),
+            Turn("加一座跳桥", new string('b', 400), writeStep),
+            Turn("中间那轮", new string('c', 400)),
+            Turn("最新问题", new string('d', 400)),
+        };
+        var keyReplay = AssistantContextBuilder.Build(keyTurns, null, 1300);
+        c.That(keyReplay.Messages.Any(m => m.Content == "加一座跳桥"),
+            "含已确认写操作的轮次被钉住（中间被滑窗丢掉时不会重复提议同一动作）");
+        c.That(keyReplay.Messages.Any(m => m.Content == "最新问题"), "最新一轮仍然优先保留");
+        c.That(keyReplay.Messages.All(m => m.Content != "中间那轮"), "普通中间轮次被省略（关键轮优先于它）");
+    }
+
+    /// <summary>
+    /// 阶段 134：token 估算、token 预算（0 = 不带历史，负数 = 不限）、摘要覆盖、省略说明。
+    /// 全部是纯函数，不联网。
+    /// </summary>
+    private static void ContextGovernance(Check c)
+    {
+        // ① 估算器：中文比英文贵，空文本为 0
+        var ascii = AssistantTokenEstimator.Estimate(new string('a', 1000));
+        var cjk = AssistantTokenEstimator.Estimate(new string('你', 1000));
+        c.Equal(AssistantTokenEstimator.Estimate(string.Empty), 0, "空文本估算 0 token");
+        c.That(cjk > ascii * 2, $"中文 token 明显多于英文（1000 字：中文 {cjk} / 英文 {ascii}）");
+
+        // ② 预算：从窗口里扣掉固定前缀/输出/余量/本轮预留
+        var plan = AssistantContextBudget.Create(128_000, new string('a', 4000), null, 4096, 8000);
+        c.That(plan.AvailableHistoryTokens is > 0 and < 128_000,
+            $"128k 窗口推导出可用历史 {plan.AvailableHistoryTokens} token");
+        c.Equal(plan.SafetyMarginTokens, 6400, "安全余量 = 窗口的 5%");
+        c.That(AssistantContextBudget.Create(0, "x", null, 4096, 8000).Unlimited, "窗口 0 = 不限制");
+
+        // ③ token 预算裁剪：400 token 装不下 3 轮约 400 字符的回答
+        var turns = new List<AiAssistantTurn>
+        {
+            Turn("第一条", new string('a', 400)),
+            Turn("第二条", new string('b', 400)),
+            Turn("第三条", new string('c', 400)),
+        };
+        var unlimited = AssistantContextBuilder.BuildWithBudget(turns, null, -1);
+        c.Equal(unlimited.TurnsIncluded, 3, "负预算 = 不限制，三轮全带");
+        var trimmed = AssistantContextBuilder.BuildWithBudget(turns, null, 400);
+        c.That(trimmed.TurnsIncluded < 3, $"400 token 预算只带 {trimmed.TurnsIncluded} 轮");
+        c.That(trimmed.OmissionNote is { Length: > 0 }, "发生省略时返回「省略说明」");
+        c.That((AssistantContextBuilder.BuildSystemSuffix(null, trimmed.OmissionNote) ?? string.Empty)
+                .Contains("省略", StringComparison.Ordinal),
+            "省略说明进入系统提示后缀（模型知道中间少了内容）");
+
+        // ④ 0 = 一点历史都不带（不是"不限"——预算真的用光了）
+        var zero = AssistantContextBuilder.BuildWithBudget(turns, null, 0);
+        c.Equal(zero.Messages.Count, 0, "token 接口里 0 = 不带历史（与旧字符接口的 0 = 不限相反）");
+        c.Equal(zero.TurnsDropped, 3, "三轮都记为省略");
+
+        // ⑤ 摘要：覆盖到的轮次不再原样重放，摘要计入 token
+        var summary = "用户的目标是查巨神兵级价格；已确认最低卖价 5.2 亿 ISK，TypeId 24692。";
+        var coveredId = turns[1].Id;
+        var withSummary = AssistantContextBuilder.BuildWithBudget(turns, null, 2000, summary, coveredId);
+        c.That(withSummary.SummaryApplied, "摘要被采用");
+        c.That(withSummary.Messages.All(m => m.Content is not ("第一条" or "第二条")),
+            "摘要覆盖的两轮不再原样重放（避免摘要 + 原文重复）");
+        c.That(withSummary.Messages.Any(m => m.Content == "第三条"), "摘要之后的轮次仍然带上");
+        c.That(withSummary.Tokens >= AssistantTokenEstimator.Estimate(summary), "摘要占用计入 token");
+
+        // ⑥ 摘要覆盖的轮次已不在（被裁掉/清空）→ 丢弃摘要，而不是与原文重复
+        var missing = AssistantContextBuilder.BuildWithBudget(turns, null, 2000, summary, Guid.NewGuid());
+        c.That(!missing.SummaryApplied, "摘要覆盖 Id 找不到时丢弃摘要");
+        c.That(missing.Messages.Any(m => m.Content == "第一条"), "此时从第一轮开始重放");
+    }
+
+    /// <summary>模型一轮报 4 个调用，上限 2：只执行 2 个，其余回填"请拆到后续轮次"（每个调用都有 tool 消息）。</summary>
+    private static async Task ParallelCapAsync(Check c)
+    {
+        using var server = new MockLlmServer((index, body) => IsStreaming(body)
+            ? MockLlmServer.Stream("好的")
+            : index == 0
+                ? MockLlmServer.ToolCalls(
+                    ("p1", "probe_echo", """{"value":"1"}"""),
+                    ("p2", "probe_echo", """{"value":"2"}"""),
+                    ("p3", "probe_echo", """{"value":"3"}"""),
+                    ("p4", "probe_echo", """{"value":"4"}"""))
+                : MockLlmServer.Text("继续"));
+
+        ProbeTools.ResetCounters();
+        var turn = await new AiAssistantEngine(maxToolCallsPerRound: 2)
+            .SendAsync("并行调用", Ctx(server), CancellationToken.None);
+        var final = await ReadFinalAsync(turn);
+
+        c.Equal(ProbeTools.EchoCalls, 2, "只执行上限内的 2 个调用");
+        c.Equal(turn.Steps.Count, 4, "4 个调用都有步骤（超限的也记，保证消息序列合法）");
+        c.Equal(turn.Steps.Count(step => !step.Success), 2, "超限的 2 条标记失败");
+        c.That(ProbeJson.Contains(server.RequestBodies[1], "超过上限"), "超限的调用回填了「超过上限」提示");
+        c.That(final.Length > 0, "对话继续到最终回答");
+    }
+
+    /// <summary>单轮工具结果累计超过 token 上限：从较早的开始压缩，并保留可诊断的截断标记。</summary>
+    private static async Task TurnToolCapAsync(Check c)
+    {
+        using var server = new MockLlmServer((index, body) => IsStreaming(body)
+            ? MockLlmServer.Stream("知道了")
+            : index == 0
+                ? MockLlmServer.ToolCall("c1", "probe_long", "{}")
+                : MockLlmServer.Text("继续"));
+
+        ProbeTools.ResetCounters();
+        var turn = await new AiAssistantEngine(maxTurnToolTokens: 60)
+            .SendAsync("超长结果", Ctx(server), CancellationToken.None);
+        _ = await ReadFinalAsync(turn);
+
+        c.Equal(ProbeTools.LongCalls, 1, "超长工具被执行");
+        c.That(!ProbeJson.Contains(server.RequestBodies[1], ProbeTools.LongTailMarker),
+            "单轮上限触发后，尾部标记被截掉");
+        c.That(ProbeJson.Contains(server.RequestBodies[1], "已截断"), "压缩后的结果带「已截断」标记");
+    }
+
+    /// <summary>翻译页的上下文预算（纯函数）：最近优先、装不下的更早记录省略、0 = 不限。</summary>
+    private static void TranslationContextBudget(Check c)
+    {
+        var entries = new List<string>
+        {
+            "原文：" + new string('a', 400) + "\n译文：" + new string('b', 400),
+            "原文：" + new string('c', 400) + "\n译文：" + new string('d', 400),
+            "原文：" + new string('e', 400) + "\n译文：" + new string('f', 400),
+        };
+
+        var unlimited = AiTranslationContextBuilder.Build(entries, 0);
+        c.Equal(unlimited.Context.Count, 3, "预算 0 = 不限，三条全带");
+        c.Equal(unlimited.Omitted, 0, "不限时没有省略");
+
+        var trimmed = AiTranslationContextBuilder.Build(entries, 400);
+        c.That(trimmed.Context.Count < 3, $"400 token 只带 {trimmed.Context.Count} 条");
+        c.That(trimmed.Context[^1] == entries[^1], "最新一条一定保留");
+        c.That(!trimmed.Context.Contains(entries[0]), "更早的记录被省略");
+        c.Equal(trimmed.Omitted, 3 - trimmed.Context.Count, "省略条数 = 总数 − 带上数");
+        c.That(trimmed.UsedTokens <= 400, $"带上内容 {trimmed.UsedTokens} token ≤ 预算 400");
+    }
+
+    /// <summary>摘要压缩：超预算时压缩较早轮次、落盘覆盖范围、失败返回 null（调用方退回滑窗）。</summary>
+    private static async Task CompactionAsync(Check c)
+    {
+        var turns = new List<AiAssistantTurn>();
+        for (var i = 0; i < 5; i++)
+        {
+            turns.Add(Turn($"第{i}问", new string((char)('a' + i), 2000)));
+        }
+
+        // ① 成功压缩：mock 返回一段事实摘要
+        using (var server = new MockLlmServer((_, _) => MockLlmServer.Text("摘要：用户要查价格；已确认最低卖价 5.2 亿 ISK，TypeId 24692。")))
+        {
+            var endpoint = Ctx(server).Endpoint!;
+            var result = await AssistantContextCompactor.CompactAsync(
+                turns, null, null, null,
+                availableTokens: 800,
+                endpoint: endpoint,
+                ct: CancellationToken.None);
+
+            c.That(result is not null, "超预算时触发摘要压缩");
+            c.That(result!.Summary.Contains("5.2 亿", StringComparison.Ordinal), "摘要来自模型返回");
+            c.That(ProbeJson.Contains(server.RequestBodies[0], "新片段优先于旧摘要"),
+                "摘要提示词要求新片段覆盖旧摘要（用户纠正优先）");
+            c.That(result.SummarizedTurns >= 1, $"本次压入 {result.SummarizedTurns} 轮");
+            c.That(result.UpToTurnId == turns[result.SummarizedTurns - 1].Id,
+                "覆盖范围指向最后一条被压缩的轮次");
+            c.That(result.Usage.InputTokens > 0, "压缩调用累计了 token 用量");
+
+            var rebuilt = AssistantContextBuilder.BuildWithBudget(
+                turns, null, 800, result.Summary, result.UpToTurnId);
+            c.That(rebuilt.SummaryApplied, "压缩后用摘要 + 剩余轮次重建上下文");
+            c.That(rebuilt.Messages.All(m => m.Content != turns[0].UserText),
+                "已被摘要覆盖的轮次不再原样重放");
+        }
+
+        // ② 不超预算：不调用模型
+        using (var server = new MockLlmServer((_, _) => MockLlmServer.Text("不该被调用")))
+        {
+            var result = await AssistantContextCompactor.CompactAsync(
+                turns, null, null, null,
+                availableTokens: 100_000,
+                endpoint: Ctx(server).Endpoint!,
+                ct: CancellationToken.None);
+            c.That(result is null, "历史在预算内时不做压缩（不花额外调用）");
+            c.Equal(server.RequestBodies.Count, 0, "预算内没有发出压缩请求");
+        }
+
+        // ③ 模型返回空摘要：返回 null，调用方退回滑窗
+        using (var server = new MockLlmServer((_, _) => MockLlmServer.Text(string.Empty)))
+        {
+            var result = await AssistantContextCompactor.CompactAsync(
+                turns, null, null, null,
+                availableTokens: 800,
+                endpoint: Ctx(server).Endpoint!,
+                ct: CancellationToken.None);
+            c.That(result is null, "空摘要视为失败，返回 null（不阻塞本次提问）");
+        }
     }
 
     /// <summary>消息序列合法性：每条 assistant(tool_calls) 后面必须紧跟它全部调用的 tool 结果。</summary>

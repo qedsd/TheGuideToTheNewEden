@@ -32,6 +32,7 @@ public partial class AiTranslationSettingView : UserControl
         UseGlossaryToggle.IsChecked = setting.UseGlossary;
         GlossaryLimitBox.Value = setting.GlossaryLimit;
         ChunkSizeBox.Value = setting.MaxChunkChars;
+        ContextTokensBox.Value = setting.ContextMaxTokens;
         CacheToggle.IsChecked = setting.Cache;
         SystemPromptBox.Text = setting.SystemPrompt;
     }
@@ -46,6 +47,7 @@ public partial class AiTranslationSettingView : UserControl
             current.UseGlossary = UseGlossaryToggle.IsChecked == true;
             current.GlossaryLimit = (int)(GlossaryLimitBox.Value ?? current.GlossaryLimit);
             current.MaxChunkChars = (int)(ChunkSizeBox.Value ?? current.MaxChunkChars);
+            current.ContextMaxTokens = (int)(ContextTokensBox.Value ?? current.ContextMaxTokens);
             current.Cache = CacheToggle.IsChecked == true;
             current.SystemPrompt = SystemPromptBox.Text;
 

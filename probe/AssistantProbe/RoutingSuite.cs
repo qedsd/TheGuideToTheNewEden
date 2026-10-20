@@ -105,5 +105,29 @@ internal static class RoutingSuite
             .Distinct(StringComparer.Ordinal)
             .Count();
         c.That(sets <= 6, $"7 个典型问题只产生 {sets} 种不同声明集合（前缀数量有限 = 缓存能反复命中）");
+
+        // ---------- ⑩ 阶段 150：核心-only / 通用组归位 / 手动钉选 ----------
+        var translateRoute = ToolRouter.Resolve("帮我翻译这段英文", null, disabled);
+        c.That(!translateRoute.FallbackToAll, "「翻译」不再回退全量");
+        c.That(!translateRoute.Bundles.Contains("Channel"), "「翻译」不再把 Channel（channel_scan）带进来");
+        c.That(translateRoute.ToolNames.Contains("translate"), "「翻译」仍声明核心常驻的 translate");
+
+        var linkRoute = ToolRouter.Resolve("找个好用的 EVE 工具站", null, disabled);
+        c.That(linkRoute.Bundles.Contains("General"), "「工具站 / 链接」命中通用组");
+        c.That(linkRoute.ToolNames.Contains("links_search"), "通用组带上了 links_search");
+
+        c.That(ToolRouter.Resolve("频道预警怎么配", null, disabled).Bundles.Contains("Channel"),
+            "「频道」仍然命中 Channel");
+
+        var pinned = new HashSet<string>(StringComparer.Ordinal) { "Map" };
+        var pinnedRoute = ToolRouter.Resolve("我的钱包余额", null, disabled, pinnedBundles: pinned);
+        c.That(pinnedRoute.ToolNames.Contains("map_route"), "手动钉选的 Map 套餐始终声明（与本次意图无关）");
+        c.That(pinnedRoute.Bundles.Contains("Map") && pinnedRoute.Bundles.Contains("Character"),
+            "钉选套餐与命中的套餐一起出现在路由结果里");
+
+        var twoPinned = new HashSet<string>(StringComparer.Ordinal) { "Map", "General" };
+        var twoPinnedRoute = ToolRouter.Resolve("巨神兵级多少钱", null, disabled, pinnedBundles: twoPinned);
+        c.That(twoPinnedRoute.ToolNames.Contains("map_route") && twoPinnedRoute.ToolNames.Contains("links_search"),
+            "钉选不受 MaxBundles 限制（两组钉选 + 命中的商业组同时生效）");
     }
 }

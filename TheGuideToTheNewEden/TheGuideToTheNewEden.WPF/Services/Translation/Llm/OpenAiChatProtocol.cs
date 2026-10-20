@@ -323,7 +323,20 @@ public class OpenAiChatProtocol : IChatProtocol
             return ChatUsage.Empty;
         }
 
-        return new ChatUsage(GetInt(usage, "prompt_tokens"), GetInt(usage, "completion_tokens"));
+        // 缓存命中（阶段 149）：DeepSeek 返回 usage.prompt_cache_hit_tokens；OpenAI 系在
+        // usage.prompt_tokens_details.cached_tokens。两者都读，取非零那个。
+        var cacheHit = GetInt(usage, "prompt_cache_hit_tokens");
+        if (cacheHit == 0
+            && usage.TryGetProperty("prompt_tokens_details", out var details)
+            && details.ValueKind == JsonValueKind.Object)
+        {
+            cacheHit = GetInt(details, "cached_tokens");
+        }
+
+        return new ChatUsage(GetInt(usage, "prompt_tokens"), GetInt(usage, "completion_tokens"))
+        {
+            PromptCacheHitTokens = cacheHit,
+        };
     }
 
     protected static int GetInt(JsonElement element, string name)

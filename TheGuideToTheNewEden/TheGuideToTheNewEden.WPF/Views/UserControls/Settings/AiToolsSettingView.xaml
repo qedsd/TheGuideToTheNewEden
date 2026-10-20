@@ -16,12 +16,27 @@
             TextWrapping="Wrap" />
 
         <Border Style="{StaticResource SettingsGroupBorder}">
-            <controls:SettingCard
-                Description="{DynamicResource AssistantSettingPage_Tools_AutoRoute_Desc}"
-                Icon="Sparkle24"
-                Title="{DynamicResource AssistantSettingPage_Tools_AutoRoute}">
-                <ui:ToggleSwitch x:Name="ToolRouteToggle" />
-            </controls:SettingCard>
+            <StackPanel>
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_Tools_AutoRoute_Desc}"
+                    Icon="Sparkle24"
+                    Title="{DynamicResource AssistantSettingPage_Tools_AutoRoute}">
+                    <ui:ToggleSwitch x:Name="ToolRouteToggle" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <!--  阶段 150：手动钉选套餐（关键词判断之外的确定性覆盖）  -->
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_Tools_Pinned_Desc}"
+                    Icon="Pin24"
+                    Title="{DynamicResource AssistantSettingPage_Tools_Pinned}">
+                    <WrapPanel
+                        x:Name="PinnedBundlesPanel"
+                        MaxWidth="380"
+                        HorizontalAlignment="Right" />
+                </controls:SettingCard>
+            </StackPanel>
         </Border>
 
         <StackPanel

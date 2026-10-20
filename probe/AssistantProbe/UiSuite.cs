@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using TheGuideToTheNewEden.WPF;
 using TheGuideToTheNewEden.WPF.Controls;
+using TheGuideToTheNewEden.WPF.Converters;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.ViewModels.Assistant;
 using TheGuideToTheNewEden.WPF.Views;
@@ -48,6 +49,34 @@ internal static class UiSuite
 
         c.Section("UiSuite · 页面 / 视图构造与绑定");
         ConstructionAndBinding(c);
+
+        c.Section("UiSuite · 环形用量盘几何（阶段 149）");
+        GaugeArcGeometry(c);
+    }
+
+    /// <summary>
+    /// 阶段 149：底栏"环形用量盘"（<see cref="ArcToGeometryConverter"/>）的几何边界。
+    /// 纯几何断言，不依赖真实请求：占比 ≤0 不画、介于之间是顺时针圆弧、≥1 是整圆。
+    /// </summary>
+    private static void GaugeArcGeometry(Check c)
+    {
+        // ≤ 0：不画（几何为 null，Path 不可见）
+        c.That(ArcToGeometryConverter.ToGeometry(0) is null, "占比 0 → 无几何（不画）");
+        c.That(ArcToGeometryConverter.ToGeometry(-0.2) is null, "占比负数 → 无几何");
+
+        // 0 < f < 1：一段带一个 ArcSegment 的 PathGeometry（顶部起点、顺时针）
+        var arc = ArcToGeometryConverter.ToGeometry(0.25) as PathGeometry;
+        c.That(arc is { Figures.Count: 1 } && arc.Figures[0].Segments[0] is ArcSegment,
+            "占比 0.25 → 单图元的 PathGeometry，首段为圆弧");
+        var arc04 = (ArcToGeometryConverter.ToGeometry(0.4) as PathGeometry)!.Figures[0].Segments[0] as ArcSegment;
+        var arc06 = (ArcToGeometryConverter.ToGeometry(0.6) as PathGeometry)!.Figures[0].Segments[0] as ArcSegment;
+        c.That(arc04 is { IsLargeArc: false }, "占比 0.4 → 非大弧（没超过半圈）");
+        c.That(arc06 is { IsLargeArc: true }, "占比 0.6 → 大弧（超过半圈）");
+        c.That(arc04 is { SweepDirection: SweepDirection.Clockwise }, "圆弧是顺时针（顶部起、向右下扫）");
+
+        // ≥ 1：整圆用 EllipseGeometry（ArcSegment 扫 360° 会退化成一条线）
+        c.That(ArcToGeometryConverter.ToGeometry(1) is EllipseGeometry, "占比 1 → 整圆几何");
+        c.That(ArcToGeometryConverter.ToGeometry(1.5) is EllipseGeometry, "占比超过 1 → 按整圆处理");
     }
 
     /// <summary>
@@ -157,6 +186,17 @@ internal static class UiSuite
             "AssistantSettingPage_Model", "AssistantSettingPage_Translate",
             // 阶段 132：上下文预算（设置卡片 + 底栏提示）
             "AssistantSettingPage_ContextChars", "AssistantSettingPage_ContextChars_Desc",
+            // 阶段 134：token 预算 / 摘要压缩 / 单轮上限 / 超限提示
+            "AssistantSettingPage_ContextWindow", "AssistantSettingPage_ContextWindow_Desc",
+            "AssistantSettingPage_Summarize", "AssistantSettingPage_Summarize_Desc",
+            "AssistantSettingPage_OutputReserve", "AssistantSettingPage_OutputReserve_Desc",
+            "AssistantSettingPage_MaxCalls", "AssistantSettingPage_MaxCalls_Desc",
+            "AssistantSettingPage_TurnToolTokens", "AssistantSettingPage_TurnToolTokens_Desc",
+            "Assistant_Chat_ContextSummary", "Assistant_Chat_Compacting", "Assistant_Chat_CompactingBatch",
+            "Assistant_Chat_ContextOverflow",
+            "AiSettingPage_ContextTokens", "AiSettingPage_ContextTokens_Desc",
+            "AiTranslation_Chat_ContextUsage", "AiTranslation_Chat_ContextUsageTrimmed",
+            "AiTranslation_Chat_ContextUsageUnlimited",
             // 工具分组标题是运行时拼出来的键（$"AssistantSettingPage_ToolsGroup_{category}"），这里显式列出来防拼错
             "AssistantSettingPage_ToolsGroup_Esi", "AssistantSettingPage_ToolsGroup_Character",
             "AssistantSettingPage_ToolsGroup_Business", "AssistantSettingPage_ToolsGroup_Map",
@@ -364,15 +404,24 @@ internal static class UiSuite
             // 阶段 129：逐项用 SettingCard 行 + 分隔线（不再标签+控件堆叠）
             var behaviorCards = FindVisuals<TheGuideToTheNewEden.WPF.Controls.SettingCard>(settingsPage).Count();
             var behaviorDividers = FindVisuals<Border>(settingsPage).Count(border => border.Height == 1);
-            c.That(behaviorCards >= 6 && behaviorDividers >= 4,
-                $"「行为」节是 6 个 SettingCard 行 + 分隔线（实际卡片 {behaviorCards}、分隔线 {behaviorDividers}）");
+            c.That(behaviorCards >= 10 && behaviorDividers >= 9,
+                $"「行为」节是 10+ 个 SettingCard 行 + 分隔线（实际卡片 {behaviorCards}、分隔线 {behaviorDividers}）");
 
-            // 阶段 132：行为节多了一张「上下文预算」卡片
+            // 阶段 134：行为节多了「模型窗口 / 摘要压缩 / 输出预留 / 单轮并行数 / 单轮工具上限」五张卡
             var contextBox = FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage)
-                .FirstOrDefault(box => box is FrameworkElement { Name: "ContextCharsBox" });
-            c.That(contextBox is not null, "「行为」节有「上下文预算（字符）」数字框");
-            c.That(contextBox is null || Math.Abs((contextBox.Value ?? -1) - AiAssistantSettingService.MaxContextChars) < 0.5,
-                "上下文预算框回填了当前设置值");
+                .FirstOrDefault(box => box is FrameworkElement { Name: "ContextWindowBox" });
+            c.That(contextBox is not null, "「行为」节有「模型上下文窗口（token）」数字框");
+            c.That(contextBox is null || Math.Abs((contextBox.Value ?? -1) - AiAssistantSettingService.ContextWindowTokens) < 0.5,
+                "上下文窗口框回填了当前设置值");
+            var summarizeToggle = FindVisuals<Wpf.Ui.Controls.ToggleSwitch>(settingsPage)
+                .FirstOrDefault(toggle => toggle is FrameworkElement { Name: "SummarizeToggle" });
+            c.That(summarizeToggle is not null, "「行为」节有「摘要式压缩」开关");
+            foreach (var name in new[] { "OutputReserveBox", "MaxCallsBox", "TurnToolTokensBox" })
+            {
+                c.That(FindVisuals<Wpf.Ui.Controls.NumberBox>(settingsPage)
+                        .Any(box => (box as FrameworkElement)?.Name == name),
+                    $"「行为」节有 {name} 数字框");
+            }
 
             // 阶段 130：快捷键**默认不启用**（默认值为空），但输入框提示保留（示例 Alt+Q）
             c.That(AiAssistantSettingService.DefaultHotkey.Length == 0,
@@ -739,7 +788,11 @@ internal static class UiSuite
 
         // 阶段 132：同一对话默认带上完整历史（含工具往返）；记忆只存在于单个对话
         c.That(new AiAssistantSession().UseContext, "新建对话默认带上下文（UseContext 默认 true）");
-        c.Equal(AiAssistantSettingService.DefaultMaxContextChars, 200000, "上下文预算默认 200000 字符");
+        c.Equal(AiAssistantSettingService.DefaultContextWindowTokens, 1_000_000, "模型窗口默认 1000000 token");
+        c.Equal(AiAssistantSettingService.DefaultOutputReserveTokens, 4096, "输出预留默认 4096 token");
+        c.Equal(AiAssistantSettingService.DefaultMaxToolCallsPerRound, 4, "单轮并行工具默认 4");
+        c.Equal(AiAssistantSettingService.DefaultMaxTurnToolTokens, 12_000, "单轮工具结果默认 12000 token");
+        c.That(AiAssistantSettingService.DefaultSummarizeContext, "摘要式压缩默认开启");
 
         // 「弹窗」按钮在主窗口的对话页里必须可见（只在独立窗口里才隐藏，见下面的窗口核验）
         var pagePopButton = FindVisuals<System.Windows.Controls.Primitives.ButtonBase>(view)

@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Services.Translation.Llm;
 using TheGuideToTheNewEden.WPF.Views.Pages;
 using TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -312,25 +313,101 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
             // 每次发送按当前设置建引擎（工具轮数改了不必重启）
             var engine = new AiAssistantEngine(AiAssistantSettingService.MaxToolRounds);
 
-            // 同一对话的历史（含此前的工具往返）按预算重建；预算见 设置 → AI → 行为 →「上下文预算」
-            var contextResult = AssistantContextBuilder.Build(
-                session.Model.Turns,
-                turn.Model,
-                AiAssistantSettingService.MaxContextChars);
-            session.ReportContextUsage(contextResult);
+            // ---------- 阶段 134：token 预算 + 摘要压缩 + 窗口护栏 ----------
+            // 预算从模型窗口里扣掉系统提示词、工具声明、输出预留、安全余量与"本轮工具预留"，
+            // 剩下的才给历史；工具声明按"全部已启用"估算（按需声明只会更少，估上限才安全）。
+            // 阶段 151：按当前模型套用"估算校准系数"（真实 usage 学出来的，没学过就是 1.0）
+            AssistantUsageCalibration.ApplyToEstimator(TranslationSettingService.AiEndpoint.Model);
+            var systemBase = string.IsNullOrWhiteSpace(AiAssistantSettingService.SystemPrompt)
+                ? AiAssistantEngine.DefaultSystemPrompt
+                : AiAssistantSettingService.SystemPrompt;
+            var enabledSchemas = ToolRegistry.EnabledSchemas;
+            var budget = AssistantContextBudget.Create(
+                AiAssistantSettingService.ContextWindowTokens,
+                systemBase,
+                enabledSchemas,
+                Math.Max(AiAssistantSettingService.OutputReserveTokens, TranslationSettingService.AiEndpoint.MaxTokens),
+                AiAssistantSettingService.MaxTurnToolTokens);
+
+            var summary = session.Model.UseContext ? session.Model.ContextSummary : null;
+            var summaryUpTo = session.Model.UseContext ? session.Model.SummaryUpToTurnId : null;
+
+            // 摘要式压缩（P2）：超预算时把较早轮次压成事实摘要；失败/不需要时返回 null，退回滑窗。
+            // 压缩本身也是模型调用，所以放在"本轮等待"里显示进度，不另开全局遮罩。
+            if (session.Model.UseContext
+                && AiAssistantSettingService.SummarizeContext
+                && !budget.Unlimited
+                && session.Model.Turns.Count > AssistantContextCompactor.MinRecentTurns + 1)
+            {
+                turn.ProgressText = FindString("Assistant_Chat_Compacting");
+                try
+                {
+                    var compaction = await AssistantContextCompactor.CompactAsync(
+                        session.Model.Turns,
+                        turn.Model,
+                        summary,
+                        summaryUpTo,
+                        budget.AvailableHistoryTokens,
+                        TranslationSettingService.AiEndpoint,
+                        cancellationTokenSource.Token,
+                        (done, total) => turn.ProgressText = string.Format(
+                            FindString("Assistant_Chat_CompactingBatch"), done, total));
+
+                    if (compaction is not null)
+                    {
+                        summary = compaction.Summary;
+                        summaryUpTo = compaction.UpToTurnId;
+                        session.Model.ContextSummary = summary;
+                        session.Model.SummaryUpToTurnId = summaryUpTo;
+                        SaveSession(session);
+                    }
+                }
+                finally
+                {
+                    turn.ProgressText = string.Empty;
+                }
+            }
+
+            // 同一对话的历史（含此前的工具往返）按 token 预算重建；摘要覆盖过的轮次不再原样发送。
+            var contextResult = session.Model.UseContext
+                ? AssistantContextBuilder.BuildWithBudget(
+                    session.Model.Turns,
+                    turn.Model,
+                    budget.Unlimited ? -1 : budget.AvailableHistoryTokens,
+                    summary,
+                    summaryUpTo)
+                : AssistantContextResult.Empty;
+            session.ReportContextUsage(contextResult, budget);
+
+            var systemSuffix = AssistantContextBuilder.BuildSystemSuffix(summary, contextResult.OmissionNote);
+
+            // 发送前的最后一道闸：把"系统提示词 + 后缀 + 上下文 + 本次提问 + 工具声明"整体估一遍。
+            // 正常情况下预算已经把历史压到窗口内；这里兜住"工具声明变大/提问本身很长"这类意外。
+            var probeMessages = new List<ChatMessage>(contextResult.Messages) { ChatMessage.User(text) };
+            var estimatedInput = AssistantTokenEstimator.EstimateRequest(
+                systemBase + (systemSuffix ?? string.Empty), probeMessages, enabledSchemas);
+            if (!budget.Unlimited && estimatedInput > budget.AllowedInputTokens)
+            {
+                turn.Error = string.Format(
+                    FindString("Assistant_Chat_ContextOverflow"),
+                    AssistantTokenEstimator.Format(estimatedInput),
+                    AssistantTokenEstimator.Format(budget.AllowedInputTokens));
+                Core.Log.Info(
+                    $"AI 助手 · 发送前估算 {estimatedInput} token > 允许 {budget.AllowedInputTokens}，已拦截"
+                    + $"（窗口 {budget.WindowTokens}；{budget.Describe()}）");
+                return;
+            }
 
             var context = new AssistantContext
             {
                 Context = contextResult.Messages,
-                // 按需声明的"会话粘性"（阶段 123）：本对话此前用过的工具始终保留声明
-                StickyTools = session.Turns
-                    .SelectMany(t => t.Steps)
-                    .Select(s => s.ToolName)
-                    .Where(name => !string.IsNullOrWhiteSpace(name))
-                    .ToHashSet(StringComparer.Ordinal),
+                // 按需声明的"会话粘性"（阶段 123）：只取**最近几轮**用过的工具（阶段 134）。
+                // 之前取整个对话的全部步骤，长对话里粘性集合只增不减，最终会逼近全量声明。
+                StickyTools = BuildStickyTools(session),
                 SystemPrompt = string.IsNullOrWhiteSpace(AiAssistantSettingService.SystemPrompt)
                     ? null
                     : AiAssistantSettingService.SystemPrompt,
+                SystemSuffix = systemSuffix,
                 Tools = new ToolContext
                 {
                     Character = ResolveDefaultCharacter(),
@@ -443,6 +520,25 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
             if (engineTurn is not null)
             {
                 turn.Meta = BuildMeta(engineTurn, started);
+                // 缓存命中统计（阶段 149/151）：累计进会话并落盘，底栏提示会显示命中率
+                var usage = engineTurn.TotalUsage;
+                if (usage.PromptCacheHitTokens > 0)
+                {
+                    session.Model.CacheHitTokens += usage.PromptCacheHitTokens;
+                }
+
+                if (usage.InputTokens > 0)
+                {
+                    session.Model.TotalInputTokens += usage.InputTokens;
+                }
+
+                if (usage.InputTokens > 0 && usage.PromptCacheHitTokens > 0)
+                {
+                    Core.Log.Info(
+                        $"AI 助手 · 本轮缓存命中 {usage.PromptCacheHitTokens} / 输入 {usage.InputTokens}"
+                        + $"（{usage.PromptCacheHitTokens * 100.0 / usage.InputTokens:0.#}%）"
+                        + $" · 估算校准 ×{AssistantTokenEstimator.CalibrationFactor:0.00}");
+                }
             }
 
             SaveSession(session);
@@ -552,9 +648,29 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
         return session;
     }
 
-    /// <summary>按设置解析默认角色：设置里指定了角色名就用它，否则用第一个角色。</summary>
-    private static AuthorizedCharacterData? ResolveDefaultCharacter()
+    /// <summary>按需声明的粘性工具只看最近几轮（阶段 134）：长对话里"用过就永远声明"会退化成全量。</summary>
+    private const int StickyToolTurns = 5;
+
+    /// <summary>取最近 <see cref="StickyToolTurns"/> 轮里用过的工具名（本轮用过的由引擎另行追加）。</summary>
+    private static HashSet<string> BuildStickyTools(AiChatSessionViewModel session)
     {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var turn in session.Model.Turns.TakeLast(StickyToolTurns))
+        {
+            foreach (var step in turn.Steps ?? [])
+            {
+                if (!string.IsNullOrWhiteSpace(step.ToolName))
+                {
+                    names.Add(step.ToolName);
+                }
+            }
+        }
+
+        return names;
+    }
+
+    /// <summary>按设置解析默认角色：设置里指定了角色名就用它，否则用第一个角色。</summary>
+    private static AuthorizedCharacterData? ResolveDefaultCharacter()    {
         var configured = AiAssistantSettingService.DefaultCharacter;
         if (!string.IsNullOrWhiteSpace(configured)
             && ToolNameResolver.ResolveCharacter(configured) is { } matched)
@@ -569,9 +685,17 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
     private static string BuildMeta(AiAssistantEngine.Turn turn, DateTime started)
     {
         var elapsed = (DateTime.UtcNow - started).TotalSeconds;
-        var usage = turn.TotalUsage.IsEmpty
+        var total = turn.TotalUsage;
+        var usage = total.IsEmpty
             ? "未返回用量"
-            : $"输入 {turn.TotalUsage.InputTokens} / 输出 {turn.TotalUsage.OutputTokens} token";
+            : $"输入 {total.InputTokens} / 输出 {total.OutputTokens} token";
+        if (!total.IsEmpty && total.PromptCacheHitTokens > 0)
+        {
+            var percent = total.InputTokens > 0 ? total.PromptCacheHitTokens * 100.0 / total.InputTokens : 0;
+            usage += $"（缓存命中 {AssistantTokenEstimator.Format(total.PromptCacheHitTokens)}"
+                     + $" / 输入 {AssistantTokenEstimator.Format(total.InputTokens)}，{percent:0.#}%）";
+        }
+
         return $"{TranslationSettingService.AiEndpoint.Model} · {elapsed:F1}s · {usage} · 工具 {turn.Steps.Count} 次";
     }
 

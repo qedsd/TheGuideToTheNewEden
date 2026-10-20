@@ -145,6 +145,13 @@ public sealed record ChatUsage(int InputTokens, int OutputTokens)
 {
     public static readonly ChatUsage Empty = new(0, 0);
 
+    /// <summary>
+    /// 命中了**前缀缓存**的输入 token（OpenAI 兼容：<c>usage.prompt_cache_hit_tokens</c>，
+    /// DeepSeek 系会返回这个字段；部分实现放 <c>prompt_tokens_details.cached_tokens</c>）。
+    /// 只读的宿主（翻译 / 助手引擎合并不写缓存）用它估"这次省了多少"。
+    /// </summary>
+    public int PromptCacheHitTokens { get; init; }
+
     public int TotalTokens => InputTokens + OutputTokens;
 
     public bool IsEmpty => InputTokens == 0 && OutputTokens == 0;

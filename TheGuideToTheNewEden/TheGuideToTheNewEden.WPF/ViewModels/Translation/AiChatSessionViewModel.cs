@@ -46,6 +46,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
 
             Model.UseContext = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ContextInfoText));
             _onChanged?.Invoke();
         }
     }
@@ -53,10 +54,64 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
     /// <summary>可当上下文的记录数（成功的、有译文的）。</summary>
     public int ContextCandidateCount => Turns.Count(t => t.CanBeContext);
 
-    /// <summary>上下文开关的状态说明（"每次都带上此前 N 条" / "未开启"）。</summary>
-    public string ContextInfoText => Model.UseContext
-        ? string.Format(FindString("AiTranslation_Chat_ContextOn"), ContextCandidateCount)
-        : FindString("AiTranslation_Chat_ContextOff");
+    private (int Used, int Omitted, int Budget)? _lastContext;
+
+    /// <summary>
+    /// 记下最近一次翻译实际带上的上下文（阶段 134）：token 用量、被省略的条数与预算。
+    /// 由页面 VM 在组装上下文后调用（同一对话的底栏提示会立即刷新）。
+    /// </summary>
+    public void ReportContextUsage(int usedTokens, int omittedCount, int budgetTokens)
+    {
+        _lastContext = (usedTokens, omittedCount, budgetTokens);
+        OnPropertyChanged(nameof(ContextInfoText));
+    }
+
+    /// <summary>
+    /// 上下文开关的状态说明：没发过请求时只说"带上此前记录"；发过之后显示
+    /// "已带 N 条 · 约 X token / 可用 Y token（省略 Z 条）"——阶段 134 起按 token 而不是"不限条数"。
+    /// </summary>
+    public string ContextInfoText
+    {
+        get
+        {
+            if (!Model.UseContext)
+            {
+                return FindString("AiTranslation_Chat_ContextOff");
+            }
+
+            var last = _lastContext;
+            if (last is null)
+            {
+                return string.Format(FindString("AiTranslation_Chat_ContextOn"), ContextCandidateCount);
+            }
+
+            var (used, omitted, budget) = last.Value;
+            var carried = Math.Max(0, ContextCandidateCount - omitted);
+            return budget <= 0
+                ? string.Format(
+                    FindString("AiTranslation_Chat_ContextUsageUnlimited"),
+                    carried,
+                    Compact(used))
+                : omitted > 0
+                    ? string.Format(
+                        FindString("AiTranslation_Chat_ContextUsageTrimmed"),
+                        carried,
+                        Compact(used),
+                        Compact(budget),
+                        omitted)
+                    : string.Format(
+                        FindString("AiTranslation_Chat_ContextUsage"),
+                        carried,
+                        Compact(used),
+                        Compact(budget));
+        }
+    }
+
+    private static string Compact(int tokens) => tokens switch
+    {
+        >= 1_000 => $"{tokens / 1000.0:0.#}k",
+        _ => tokens.ToString(),
+    };
 
     /// <summary>
     /// 对话标题：用户改过就用用户的（<see cref="Model"/> 里的 <c>Title</c>），否则取第一条原文的首行。
@@ -187,6 +242,7 @@ public sealed class AiChatSessionViewModel : INotifyPropertyChanged
     {
         Turns.Clear();
         Model.Turns.Clear();
+        _lastContext = null;
         Model.UpdatedAt = DateTime.Now;
         RefreshSummary();
     }

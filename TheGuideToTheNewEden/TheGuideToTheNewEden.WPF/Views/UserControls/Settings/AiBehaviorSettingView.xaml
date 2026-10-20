@@ -61,15 +61,83 @@
                 <Border Style="{StaticResource SettingsDivider}" />
 
                 <controls:SettingCard
-                    Description="{DynamicResource AssistantSettingPage_ContextChars_Desc}"
-                    Icon="Document24"
-                    Title="{DynamicResource AssistantSettingPage_ContextChars}">
-                    <!--  0 = 不限制；单位是字符（重建出来的历史内容 + 工具参数）  -->
+                    Description="{DynamicResource AssistantSettingPage_ContextWindow_Desc}"
+                    Icon="WindowNew24"
+                    Title="{DynamicResource AssistantSettingPage_ContextWindow}">
+                    <!--  token；0 = 不限制。预算会从这里扣掉提示词/工具声明/输出预留/余量/本轮预留。
+                          上面那个下拉是"按常用模型自动填入"（阶段 149）：选一个模型就把它的窗口写进下面的输入框，
+                          可以再手改。  -->
+                    <StackPanel HorizontalAlignment="Right">
+                        <ComboBox
+                            x:Name="KnownModelBox"
+                            Width="260"
+                            DisplayMemberPath="Label"
+                            SelectionChanged="OnKnownModelSelectionChanged"
+                            ToolTip="{DynamicResource AssistantSettingPage_ContextWindow_Desc}" />
+                        <ui:NumberBox
+                            x:Name="ContextWindowBox"
+                            Width="180"
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Right"
+                            Maximum="4000000"
+                            Minimum="0"
+                            SmallChange="10000"
+                            SpinButtonPlacementMode="Inline" />
+                    </StackPanel>
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_Summarize_Desc}"
+                    Icon="DocumentText24"
+                    Title="{DynamicResource AssistantSettingPage_Summarize}">
+                    <ui:ToggleSwitch x:Name="SummarizeToggle" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_OutputReserve_Desc}"
+                    Icon="Timer24"
+                    Title="{DynamicResource AssistantSettingPage_OutputReserve}">
                     <ui:NumberBox
-                        x:Name="ContextCharsBox"
+                        x:Name="OutputReserveBox"
                         Width="160"
                         HorizontalAlignment="Right"
-                        Maximum="400000"
+                        Maximum="200000"
+                        Minimum="0"
+                        SmallChange="512"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_MaxCalls_Desc}"
+                    Icon="Settings24"
+                    Title="{DynamicResource AssistantSettingPage_MaxCalls}">
+                    <ui:NumberBox
+                        x:Name="MaxCallsBox"
+                        Width="160"
+                        HorizontalAlignment="Right"
+                        Maximum="16"
+                        Minimum="1"
+                        SmallChange="1"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_TurnToolTokens_Desc}"
+                    Icon="DataTrending24"
+                    Title="{DynamicResource AssistantSettingPage_TurnToolTokens}">
+                    <ui:NumberBox
+                        x:Name="TurnToolTokensBox"
+                        Width="160"
+                        HorizontalAlignment="Right"
+                        Maximum="200000"
                         Minimum="0"
                         SmallChange="1000"
                         SpinButtonPlacementMode="Inline" />

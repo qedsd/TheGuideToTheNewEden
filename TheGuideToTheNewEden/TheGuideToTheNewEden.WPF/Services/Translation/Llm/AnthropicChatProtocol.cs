@@ -280,7 +280,12 @@ public sealed class AnthropicChatProtocol : IChatProtocol
             return ChatUsage.Empty;
         }
 
-        return new ChatUsage(GetInt(usage, "input_tokens"), GetInt(usage, "output_tokens"));
+        // 阶段 151：Anthropic 的前缀缓存命中量在 cache_read_input_tokens（写入量在 cache_creation_input_tokens，
+        // 不计入"命中"）。只有开启了 cache_control 的请求才会返回非零。
+        return new ChatUsage(GetInt(usage, "input_tokens"), GetInt(usage, "output_tokens"))
+        {
+            PromptCacheHitTokens = GetInt(usage, "cache_read_input_tokens"),
+        };
     }
 
     private static int GetInt(JsonElement element, string name)
@@ -393,7 +398,10 @@ public sealed class AnthropicChatProtocol : IChatProtocol
                         && message.TryGetProperty("usage", out var startUsage)
                         && startUsage.ValueKind == JsonValueKind.Object)
                     {
-                        state.Usage = new ChatUsage(GetInt(startUsage, "input_tokens"), state.Usage.OutputTokens);
+                        state.Usage = new ChatUsage(GetInt(startUsage, "input_tokens"), state.Usage.OutputTokens)
+                        {
+                            PromptCacheHitTokens = GetInt(startUsage, "cache_read_input_tokens"),
+                        };
                     }
 
                     return null;

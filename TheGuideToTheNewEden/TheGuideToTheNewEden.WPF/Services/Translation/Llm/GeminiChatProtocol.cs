@@ -281,7 +281,11 @@ public sealed class GeminiChatProtocol : IChatProtocol
             return ChatUsage.Empty;
         }
 
-        return new ChatUsage(GetInt(usage, "promptTokenCount"), GetInt(usage, "candidatesTokenCount"));
+        // 阶段 151：Gemini 的隐式/显式缓存命中量在 usageMetadata.cachedContentTokenCount。
+        return new ChatUsage(GetInt(usage, "promptTokenCount"), GetInt(usage, "candidatesTokenCount"))
+        {
+            PromptCacheHitTokens = GetInt(usage, "cachedContentTokenCount"),
+        };
     }
 
     private static string? ReadFinishReason(JsonElement root)

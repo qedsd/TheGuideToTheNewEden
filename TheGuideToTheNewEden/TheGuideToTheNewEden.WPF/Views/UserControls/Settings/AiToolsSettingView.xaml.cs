@@ -63,6 +63,7 @@ public partial class AiToolsSettingView : UserControl
 
     private readonly ObservableCollection<ToolGroupItem> _toolGroups = [];
     private readonly List<ToolToggleItem> _allToolItems = [];
+    private readonly Dictionary<string, CheckBox> _pinnedChecks = new(StringComparer.Ordinal);
 
     public AiToolsSettingView()
     {
@@ -77,6 +78,29 @@ public partial class AiToolsSettingView : UserControl
     {
         ToolRouteToggle.IsChecked = AiAssistantSettingService.AutoRouteTools;
         BuildToolGroups();
+        BuildPinnedBundles();
+    }
+
+    /// <summary>重建"手动钉选套餐"复选框（阶段 150；Esi 是核心常驻，不作为套餐出现）。</summary>
+    private void BuildPinnedBundles()
+    {
+        PinnedBundlesPanel.Children.Clear();
+        _pinnedChecks.Clear();
+
+        foreach (var category in ToolRegistry.Categories.Where(category => category != "Esi"))
+        {
+            var check = new CheckBox
+            {
+                Content = FindString($"AssistantSettingPage_ToolsGroup_{category}"),
+                Tag = category,
+                Margin = new Thickness(0, 0, 14, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                IsChecked = AiAssistantSettingService.PinnedBundles.Contains(category),
+            };
+
+            _pinnedChecks[category] = check;
+            PinnedBundlesPanel.Children.Add(check);
+        }
     }
 
     /// <summary>按分组重建工具清单（反映最新注册表与开关状态）。</summary>
@@ -112,6 +136,8 @@ public partial class AiToolsSettingView : UserControl
     {
         AiAssistantSettingService.SaveDisabledTools(_allToolItems.Where(i => !i.IsEnabled).Select(i => i.Name));
         AiAssistantSettingService.SaveRouting(ToolRouteToggle.IsChecked == true);
+        AiAssistantSettingService.SavePinnedBundles(
+            _pinnedChecks.Where(pair => pair.Value.IsChecked == true).Select(pair => pair.Key));
 
         UpdateToolCount();
         PageNotifyService.Success(FindString("AssistantSettingPage_Saved"));

@@ -33,7 +33,14 @@ public sealed record ToolStep(
     int Round = 0,
     string? CallId = null,
     string? ArgumentsJson = null,
-    string? ResultText = null);
+    string? ResultText = null)
+{
+    /// <summary>
+    /// 是否为"已确认执行的写操作"（阶段 150）。用于在上下文预算不足时**钉住关键轮**：
+    /// 确认过的写操作是既成事实，被滑窗丢掉后模型容易重复提议同一动作。
+    /// </summary>
+    public bool IsWrite { get; init; }
+}
 
 /// <summary>
 /// 挂起的待确认动作（引擎命中 <see cref="ITool.RequiresConfirmation"/> 工具时生成；

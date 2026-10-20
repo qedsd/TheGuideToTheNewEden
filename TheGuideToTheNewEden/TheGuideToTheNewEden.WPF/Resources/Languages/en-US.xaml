@@ -1443,9 +1443,12 @@
     <sys:String x:Key="AiTranslation_Chat_Generating">Translating…</sys:String>
     <sys:String x:Key="AiTranslation_Chat_PendingCount">Translating {0}…</sys:String>
     <sys:String x:Key="AiTranslation_Chat_UseContext">Use context (this conversation)</sys:String>
-    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">When checked, every translation in this conversation is sent together with all earlier successful source/translation pairs (no count limit); when unchecked, each request only contains the current text.</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">When checked, every translation in this conversation is sent together with earlier successful source/translation pairs (token budget, newest first); when unchecked, each request only contains the current text.</sys:String>
     <sys:String x:Key="AiTranslation_Chat_ContextOn">On: each request carries the previous {0} entries</sys:String>
     <sys:String x:Key="AiTranslation_Chat_ContextOff">Off: each request only translates the current text</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextUsage">Carrying {0} entries · ~{1} tokens / {2} available</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextUsageTrimmed">Carrying {0} entries · ~{1} tokens / {2} available · dropped {3}</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextUsageUnlimited">Carrying {0} entries · ~{1} tokens (unlimited)</sys:String>
     <sys:String x:Key="AiTranslation_Chat_Expand">Expand</sys:String>
     <sys:String x:Key="AiTranslation_Chat_Collapse">Collapse</sys:String>
 
@@ -1475,6 +1478,8 @@
     <sys:String x:Key="AiSettingPage_GlossaryLimit">Max terms per request</sys:String>
     <sys:String x:Key="AiSettingPage_GlossaryLimit_Desc">Only terms related to the current sentence are injected; 30 terms is roughly 300–600 tokens. 0 disables injection.</sys:String>
     <sys:String x:Key="AiSettingPage_ChunkSize">Max characters per request</sys:String>
+    <sys:String x:Key="AiSettingPage_ContextTokens">Context budget (tokens)</sys:String>
+    <sys:String x:Key="AiSettingPage_ContextTokens_Desc">How much earlier conversation is carried into each translation, measured in estimated tokens (newest first). Once over budget, older entries are dropped so long chats cannot grow without bound. Default 4000, 0 = unlimited. Only the AI translation page uses this; channel translation has its own entry limit.</sys:String>
     <sys:String x:Key="AiSettingPage_ChunkSize_Desc">Longer text is split into several chunks (cut at paragraph/sentence ends) and merged back. 0 = never split, send everything in one request. The default 12000 is tiny for modern models (128K–1M token context); smaller chunks surface the first result sooner and lose less on a failure, larger chunks mean fewer requests.</sys:String>
     <sys:String x:Key="AiSettingPage_Thinking">Thinking mode</sys:String>
     <sys:String x:Key="AiSettingPage_Thinking_Desc">Only sent to DeepSeek endpoints (other providers do not know the parameter, so it is skipped automatically). DeepSeek defaults to "enabled + high", which writes a long chain of thought before every translation — slow, expensive and it also disables temperature. Keep it off for translation.</sys:String>
@@ -2317,11 +2322,17 @@
     <sys:String x:Key="Assistant_Chat_Untitled">New chat</sys:String>
     <sys:String x:Key="Assistant_Chat_EmptySession">(empty chat)</sys:String>
     <sys:String x:Key="Assistant_Chat_NewSession">New chat</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextOn">On: carries the whole record (tool calls included)</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOn">On: carries the previous full record (tool calls included); older content is compressed first when over budget</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextOff">Off: answers only the current question</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextUsage">Carrying {0} turn(s) · {1} / {2} chars</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">Carrying {0} turn(s) · {1} / {2} chars · dropped {3}</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">Carrying {0} turn(s) · {1} chars (unlimited)</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsage">Carrying {0} turn(s) · ~{1} tokens / {2} available</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">Carrying {0} turn(s) · ~{1} tokens / {2} available · dropped {3}</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">Carrying {0} turn(s) · ~{1} tokens (unlimited)</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextSummary"> · summary {0} chars</sys:String>
+    <sys:String x:Key="Assistant_Chat_CacheHit"> · cache hit {0} / input {1} ({2}%)</sys:String>
+    <sys:String x:Key="Assistant_Chat_Calibration"> · estimate calibration ×{0:0.00}</sys:String>
+    <sys:String x:Key="Assistant_Chat_Compacting">Compacting earlier context…</sys:String>
+    <sys:String x:Key="Assistant_Chat_CompactingBatch">Compacting earlier context ({0}/{1})…</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextOverflow">This request needs ~{0} tokens but only {1} input tokens are available; start a new chat, or lower the context window / per-turn tool budget in Settings → AI → Behavior.</sys:String>
     <sys:String x:Key="Assistant_Chat_PendingCount">{0} request(s) in progress…</sys:String>
     <sys:String x:Key="Assistant_Chat_NoInput">Please enter something</sys:String>
     <sys:String x:Key="Assistant_Chat_AnswerEmpty">No content returned</sys:String>
@@ -2381,6 +2392,8 @@
     <sys:String x:Key="AssistantSettingPage_Tools_Desc">Enable or disable each tool the assistant may use. Disabled tools are neither declared to the model (saving input tokens) nor executed; new tools start enabled.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">Declare on demand (saves tokens)</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">Only the bundles relevant to the current question are sent (at most two), plus the always-on ESI gateway and similar entries; unclear intent falls back to declaring everything. Turn it off to always declare every enabled tool.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Pinned">Pinned bundles (manual)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_Pinned_Desc">Checked bundles are always declared regardless of the question. Use this to correct keyword routing (for example, if you mostly work with the map and don't want it crowded out).</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">Enable all</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_DisableAll">Disable all</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Count">{0} of {1} tools disabled</sys:String>
@@ -2401,6 +2414,16 @@
     <sys:String x:Key="AssistantSettingPage_ShowInMainWindow_Desc">Unchecked (default): every AI entry opens in a separate window, leaving the page you are reading in place. Checked: the assistant page is hosted in the main window. Alt+Q always uses the separate window.</sys:String>
     <sys:String x:Key="AssistantSettingPage_ContextChars">Context budget (characters)</sys:String>
     <sys:String x:Key="AssistantSettingPage_ContextChars_Desc">Every request in a chat carries the full previous record (including tool calls and results); once it passes the budget the earliest middle turns are dropped first, keeping the very first and the newest turn (the newest keeps its question and answer even if its tool results must be compressed). Default 200000 chars, 0 = unlimited. Memory lives inside a single chat; chats never share it.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextWindow">Model context window (tokens)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_ContextWindow_Desc">Enter the real context window of your model. The assistant subtracts the system prompt, tool declarations, output reserve, a 5% safety margin and the per-turn tool reserve; the rest goes to history. 0 = unlimited (not recommended). Default 1000000 (DeepSeek 1M); for 128k/200k models you must lower it, otherwise the provider only reports overflow after the request.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Summarize">Summarizing compaction</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Summarize_Desc">When history exceeds the budget, older turns are first summarized by the model into a factual digest (goal, numbers, IDs, unfinished actions), and only "summary + recent turns" is carried instead of dropping whole turns. Costs one small extra request; on failure it falls back to the sliding window without blocking the question.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_OutputReserve">Output reserve (tokens)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_OutputReserve_Desc">Space reserved for the model's answer and subtracted from the budget. The effective value is the larger of this and "Max output tokens" in Settings → AI → Model. Default 4096.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_MaxCalls">Max parallel tools per round</sys:String>
+    <sys:String x:Key="AssistantSettingPage_MaxCalls_Desc">A single model reply may ask for several tool calls in parallel; calls beyond this limit are not executed and get a "split them into later rounds" answer instead. Default 4, range 1–16.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_TurnToolTokens">Per-turn tool result cap (tokens)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_TurnToolTokens_Desc">Cumulative token cap for all tool results in the current turn; when exceeded, older results are compressed to 300 chars (the newest are kept as long as possible). Default 12000, 0 = unlimited. It is also reserved out of the context budget.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Confirm_Desc">Switching this off is not "no confirmation": the assistant then refuses writes outright and explains why.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey">Global hotkey</sys:String>
     <sys:String x:Key="AssistantSettingPage_Hotkey_Desc">Press anywhere to pop up the assistant window (press again to hide). Empty by default, i.e. no shortcut; fill in a combination such as Alt+Q / Ctrl+Alt+A to enable it.</sys:String>

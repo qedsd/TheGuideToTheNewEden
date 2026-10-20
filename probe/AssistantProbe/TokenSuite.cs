@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
+using TheGuideToTheNewEden.WPF.Services.Translation.Llm;
 
 namespace TheGuideToTheNewEden.Probe;
 
@@ -29,10 +30,10 @@ internal static class TokenSuite
     /// <summary>
     /// 系统提示词字符上限（它是同一份前缀的一部分）。
     /// 阶段 122 定的是 1,100（当时实测 1,040）；阶段 118 加了 esi_* 三步用法、阶段 131 加了
-    /// 说明书三条规则（14–16）后实测 **1,317**，故预算上调到 1,400 并留一点余量——
-    /// 上调不是"放开"，而是让这条断言继续守住"提示词别无限膨胀"（再加规则就会顶到上限）。
+    /// 说明书三条规则（14–16）、阶段 134 加了「数据时间 / 历史数据可能过期」规则 17 后实测 **1,417**，
+    /// 故预算上调到 1,600 并留一点余量——上调不是"放开"，而是让这条断言继续守住"提示词别无限膨胀"。
     /// </summary>
-    public const int MaxSystemPromptChars = 1400;
+    public const int MaxSystemPromptChars = 1600;
 
     /// <summary>
     /// 易变内容：**嵌进描述里的会变的值**（日期 / 年份 / "最新版本"之类）。
@@ -102,6 +103,8 @@ internal static class TokenSuite
         c.That(!Volatile.IsMatch(prompt), "系统提示词里没有易变内容");
         c.That(prompt.Length <= MaxSystemPromptChars,
             $"系统提示词 {prompt.Length} ≤ {MaxSystemPromptChars} 字符");
+        c.That(prompt.Contains("不是指令", StringComparison.Ordinal),
+            "系统提示词声明工具结果是数据、不是指令（阶段 151 注入防护）");
 
         c.Section("TokenSuite · 描述文体（不复述参数表：参数就在 schema 里）");
 
@@ -139,6 +142,37 @@ internal static class TokenSuite
         }
 
         c.That(offenders.Count == 0, $"没有被点名的文体问题（实际 {offenders.Count} 条，见上方诊断）");
+
+        c.Section("TokenSuite · 估算校准（阶段 151）");
+
+        // 纯函数：实际 < 估算 → 系数下降；实际 > 估算 → 上升；异常输入保持当前值
+        c.Between(AssistantUsageCalibration.ComputeFactor(1.0, 1000, 600), 0.87, 0.89,
+            "实际/估算 = 0.6 → EMA 后系数约 0.88");
+        c.Between(AssistantUsageCalibration.ComputeFactor(1.0, 1000, 2000), 1.14, 1.16,
+            "实际/估算 = 2（比值夹到 1.5）→ 系数约 1.15");
+        c.Equal(AssistantUsageCalibration.ComputeFactor(0.9, 0, 100), 0.9, "估算为 0 时不学习");
+        c.Equal(AssistantUsageCalibration.ComputeFactor(0.9, 1000, 0), 0.9, "实际为 0 时不学习");
+
+        // 估算器应用系数后按比例变化；复位后恢复（复位避免污染其它断言）
+        var baseline = AssistantTokenEstimator.Estimate(new string('a', 1000));
+        AssistantTokenEstimator.SetCalibrationFactor(0.8);
+        var scaled = AssistantTokenEstimator.Estimate(new string('a', 1000));
+        AssistantTokenEstimator.ResetCalibration();
+        c.That(scaled < baseline, $"校准 0.8 时估算更小（{scaled} < {baseline}）");
+        c.Equal(AssistantTokenEstimator.Estimate(new string('a', 1000)), baseline, "复位后估算恢复原值");
+
+        c.Section("TokenSuite · 前缀缓存用量解析（阶段 151）");
+        var openAi = new OpenAiChatProtocol().ParseResponse(
+            """{"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}],"usage":{"prompt_tokens":100,"completion_tokens":5,"prompt_cache_hit_tokens":80}}""");
+        c.Equal(openAi.Usage.PromptCacheHitTokens, 80, "OpenAI 兼容解析 prompt_cache_hit_tokens");
+
+        var anthropic = new AnthropicChatProtocol().ParseResponse(
+            """{"content":[{"type":"text","text":"ok"}],"stop_reason":"end_turn","usage":{"input_tokens":100,"output_tokens":5,"cache_read_input_tokens":80}}""");
+        c.Equal(anthropic.Usage.PromptCacheHitTokens, 80, "Anthropic 解析 cache_read_input_tokens");
+
+        var gemini = new GeminiChatProtocol().ParseResponse(
+            """{"candidates":[{"content":{"parts":[{"text":"ok"}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":100,"candidatesTokenCount":5,"cachedContentTokenCount":80}}""");
+        c.Equal(gemini.Usage.PromptCacheHitTokens, 80, "Gemini 解析 cachedContentTokenCount");
     }
 
     private static IEnumerable<string> ParameterNames(JsonObject? parameters)

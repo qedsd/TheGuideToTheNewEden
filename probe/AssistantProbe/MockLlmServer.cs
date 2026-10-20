@@ -201,7 +201,22 @@ internal sealed class MockLlmServer : IDisposable
 
     /// <summary>OpenAI 兼容：要求调用工具（非流式）。</summary>
     public static MockResponse ToolCall(string id, string name, string argumentsJson)
+        => ToolCalls([(id, name, argumentsJson)]);
+
+    /// <summary>OpenAI 兼容：一次返回**多个**工具调用（阶段 134 的单轮并行上限用）。</summary>
+    public static MockResponse ToolCalls(params (string Id, string Name, string Arguments)[] calls)
     {
+        var array = new JsonArray();
+        foreach (var (id, name, arguments) in calls)
+        {
+            array.Add(new JsonObject
+            {
+                ["id"] = id,
+                ["type"] = "function",
+                ["function"] = new JsonObject { ["name"] = name, ["arguments"] = arguments },
+            });
+        }
+
         var body = new JsonObject
         {
             ["choices"] = new JsonArray
@@ -212,15 +227,7 @@ internal sealed class MockLlmServer : IDisposable
                     {
                         ["role"] = "assistant",
                         ["content"] = null,
-                        ["tool_calls"] = new JsonArray
-                        {
-                            new JsonObject
-                            {
-                                ["id"] = id,
-                                ["type"] = "function",
-                                ["function"] = new JsonObject { ["name"] = name, ["arguments"] = argumentsJson },
-                            },
-                        },
+                        ["tool_calls"] = array,
                     },
                     ["finish_reason"] = "tool_calls",
                 },

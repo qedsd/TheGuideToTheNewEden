@@ -490,7 +490,12 @@ public sealed class AiChatTranslationViewModel : INotifyPropertyChanged, IDispos
         NotifySessionList();
         ScrollToEndRequested?.Invoke(this, EventArgs.Empty);
 
-        var context = BuildContext(session, turn);
+        var contextResult = BuildContext(session, turn);
+        session.ReportContextUsage(
+            contextResult.UsedTokens,
+            contextResult.Omitted,
+            TranslationSettingService.AiContextMaxTokens);
+        var context = contextResult.Context;
         var cancellationTokenSource = new CancellationTokenSource();
         var pending = new PendingTranslation(turn, cancellationTokenSource);
         _pending.Add(pending);
@@ -605,20 +610,35 @@ public sealed class AiChatTranslationViewModel : INotifyPropertyChanged, IDispos
     }
 
     /// <summary>
-    /// 组装上下文：**对话级开关**打开时，把此前所有"翻译成功"的记录按顺序全部带上（不限条数）。
+    /// 组装上下文（阶段 134：按 **token 预算**装，最近优先）。
+    /// **对话级开关**打开时，把此前"翻译成功"的记录从最近往前装进
+    /// <see cref="TranslationSettingService.AiContextMaxTokens"/> 的预算里，装不下的更早记录省略；
     /// 参数里那条（正在翻的）以及还没出译文的（并发中的）都会被排除。
+    /// <para>之前是"不限条数、不截断"——一条整段 MOTD 就可能 5KB，长对话会无限膨胀。</para>
     /// </summary>
-    private static List<string> BuildContext(AiChatSessionViewModel session, AiChatTurnViewModel current)
+    private static (List<string> Context, int UsedTokens, int Omitted) BuildContext(
+        AiChatSessionViewModel session,
+        AiChatTurnViewModel current)
     {
         if (!session.UseContext)
         {
-            return [];
+            return ([], 0, 0);
         }
 
-        return session.Turns
+        var candidates = session.Turns
             .Where(t => !ReferenceEquals(t, current) && t.CanBeContext)
+            .ToList();
+        if (candidates.Count == 0)
+        {
+            return ([], 0, 0);
+        }
+
+        var texts = candidates
             .Select(t => $"原文：{t.OriginalPlain}\n译文：{t.TranslationPlain}")
             .ToList();
+
+        var result = AiTranslationContextBuilder.Build(texts, TranslationSettingService.AiContextMaxTokens);
+        return (result.Context.ToList(), result.UsedTokens, result.Omitted);
     }
 
     private void SaveSession(AiChatSessionViewModel session)

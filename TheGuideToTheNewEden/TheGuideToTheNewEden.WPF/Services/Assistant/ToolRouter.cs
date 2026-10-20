@@ -6,7 +6,14 @@ namespace TheGuideToTheNewEden.WPF.Services.Assistant;
 /// <param name="ToolNames">要声明给模型的工具名（**已按字典序排好**，保持缓存契约）。</param>
 /// <param name="Bundles">命中的固定套餐键（回退到全部时为空表）。</param>
 /// <param name="FallbackToAll">是否因为"看不出意图"而声明了全部工具。</param>
-public sealed record ToolRoute(IReadOnlyList<string> ToolNames, IReadOnlyList<string> Bundles, bool FallbackToAll);
+public sealed record ToolRoute(IReadOnlyList<string> ToolNames, IReadOnlyList<string> Bundles, bool FallbackToAll)
+{
+    /// <summary>
+    /// 是不是"追问没有关键词 → 沿用本对话最近用过的套餐"（阶段 134）。
+    /// 只影响日志文案；能力上是"核心常驻 + 粘性工具所在套餐"，比全量声明省一大截。
+    /// </summary>
+    public bool StickyFallback { get; init; }
+}
 
 /// <summary>
 /// 按需声明（阶段 123）：**本地确定性**地决定这一次请求要声明哪些工具。
@@ -60,22 +67,46 @@ public static class ToolRouter
         // 注意：这里只放**意图词**，不要把"吉他""巨神兵级"这类**实体名**放进来——
         // 实体名到处出现（"在吉他多少钱"既有星系又有价格），会把问题拉进无关套餐。
         // 实体名的解析交给核心常驻的 search_sde 与 ESI 网关。
+        // 阶段 150：这里只放**与 Channel 套餐里真实工具（channel_scan = 名单统计）相关**的词。
+        // 「翻译 / 术语 / 链接 / 网站」曾经也在这里，但它们对应的工具（translate 常驻、glossary_write / links_search
+        // 属通用组）并不在 Channel 套餐里——按旧表会把 channel_scan 无谓地声明出来。
         ["Channel"] =
         [
-            "频道", "预警", "监控", "本地频道", "名单", "统计", "查价", "翻译", "术语", "术语表", "链接", "网站",
-            "工具站", "channel", "translate", "glossary", "link",
+            "频道", "预警", "监控", "本地频道", "名单", "统计", "成员", "channel", "scan",
         ],
         ["General"] =
         [
             "测速", "延迟", "丢包", "服务器", "ping", "任务", "攻略", "怎么做", "mission", "任务攻略", "latency",
+            // 阶段 150：链接库 / 术语表的工具都在通用组，词也要跟着归位（否则会被 Channel 误吞）
+            "链接", "网站", "工具站", "link", "术语", "术语表", "glossary",
         ],
     };
+
+    /// <summary>
+    /// 只意味着"用核心常驻工具就够"的词（阶段 150）：`translate` 本身就是核心常驻，
+    /// 命中这些词时声明"核心 + 固定套餐 + 粘性"即可，既不拉 Channel，也不回退全量。
+    /// </summary>
+    private static readonly string[] CoreOnlyKeywords = ["翻译", "互译", "译成", "translate"];
 
     /// <summary>
     /// 路由：按 <paramref name="userText"/> 选套餐（最多 <see cref="MaxBundles"/> 组），加上核心常驻与
     /// <paramref name="sticky"/>（本对话/本轮用过的工具），最后剔除 <paramref name="disabled"/>（用户关掉的）。
     /// </summary>
-    public static ToolRoute Resolve(string? userText, IReadOnlySet<string>? sticky, IReadOnlySet<string>? disabled)
+    /// <param name="preferStickyWhenNoIntent">
+    /// 看不出意图时是否**沿用粘性工具所在的套餐**（阶段 134）：长对话的追问（"那第二条呢"）往往一个关键词都不命中，
+    /// 老行为是回退全量（46 个工具、2.4 万字符），既贵又稀释注意力；打开后最多选两组最近用过的套餐，
+    /// 没有粘性工具才回退全量。
+    /// </param>
+    /// <param name="pinnedBundles">
+    /// 用户在设置里**手动钉选**的套餐（阶段 150）：永远并入声明，不受 <see cref="MaxBundles"/> 限制。
+    /// 用于覆盖关键词表的判断（"我这段时间主要用星图，别老把它挤掉"）。
+    /// </param>
+    public static ToolRoute Resolve(
+        string? userText,
+        IReadOnlySet<string>? sticky,
+        IReadOnlySet<string>? disabled,
+        bool preferStickyWhenNoIntent = false,
+        IReadOnlySet<string>? pinnedBundles = null)
     {
         var text = (userText ?? string.Empty).ToLowerInvariant();
         var scored = new List<(string Category, int Score)>();
@@ -108,15 +139,70 @@ public static class ToolRouter
 
         var productNames = ToolRegistry.Product.Select(t => t.Name).ToList();
         var knownNames = ToolRegistry.All.Select(t => t.Name).ToList();
+
+        // 手动钉选的套餐（阶段 150）：只接受真实套餐名（Esi 是核心常驻，不算套餐），顺序固定。
+        var pinned = (pinnedBundles ?? new HashSet<string>(StringComparer.Ordinal))
+            .Where(category => category != "Esi" && Array.IndexOf(ToolRegistry.Categories, category) >= 0)
+            .OrderBy(category => Array.IndexOf(ToolRegistry.Categories, category))
+            .ToList();
+        var bundles = chosen
+            .Concat(pinned)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(category => Array.IndexOf(ToolRegistry.Categories, category))
+            .ToList();
+
         if (chosen.Count == 0)
         {
-            // 看不出意图 → 声明全部（只省有把握的地方）；粘性里的非产品工具（探针替身）也一并带上
+            // 兜底 1（阶段 150）：只命中"核心工具就够"的词（翻译）→ 核心 + 钉选 + 粘性，不拉套餐也不回退全量
+            if (CoreOnlyKeywords.Any(keyword => text.Contains(keyword, StringComparison.Ordinal)))
+            {
+                var coreNames = new HashSet<string>(ToolRegistry.CoreToolNames, StringComparer.Ordinal);
+                foreach (var category in pinned)
+                {
+                    coreNames.UnionWith(ToolRegistry.NamesInCategory(category));
+                }
+
+                if (sticky is not null)
+                {
+                    coreNames.UnionWith(sticky);
+                }
+
+                return new ToolRoute(Sort(coreNames, disabled, knownNames), bundles, false);
+            }
+
+            // 兜底 2（追问）：粘性工具所属的套餐（最多两组），没有则回退全量
+            var stickyBundles = preferStickyWhenNoIntent ? BundlesOf(sticky) : [];
+            if (stickyBundles.Count > 0)
+            {
+                var stickyNames = new HashSet<string>(ToolRegistry.CoreToolNames, StringComparer.Ordinal);
+                foreach (var category in stickyBundles.Concat(pinned))
+                {
+                    stickyNames.UnionWith(ToolRegistry.NamesInCategory(category));
+                }
+
+                if (sticky is not null)
+                {
+                    stickyNames.UnionWith(sticky);
+                }
+
+                return new ToolRoute(
+                    Sort(stickyNames, disabled, knownNames),
+                    stickyBundles.Concat(pinned).Distinct(StringComparer.Ordinal)
+                        .OrderBy(category => Array.IndexOf(ToolRegistry.Categories, category))
+                        .ToList(),
+                    false)
+                {
+                    StickyFallback = true,
+                };
+            }
+
+            // 兜底 3：看不出意图 → 声明全部（只省有把握的地方）；粘性里的非产品工具（探针替身）也一并带上
             var fallback = ToolRegistry.MergeNames(productNames, sticky);
             return new ToolRoute(Sort(fallback, disabled, knownNames), [], true);
         }
 
         var names = new HashSet<string>(ToolRegistry.CoreToolNames, StringComparer.Ordinal);
-        foreach (var category in chosen)
+        foreach (var category in chosen.Concat(pinned))
         {
             names.UnionWith(ToolRegistry.NamesInCategory(category));
         }
@@ -126,7 +212,26 @@ public static class ToolRouter
             names.UnionWith(sticky);
         }
 
-        return new ToolRoute(Sort(names, disabled, knownNames), chosen, false);
+        return new ToolRoute(Sort(names, disabled, knownNames), bundles, false);
+    }
+
+    /// <summary>粘性工具按套餐计数，取最多的 <see cref="MaxBundles"/> 组（同分按固定套餐顺序）。</summary>
+    private static List<string> BundlesOf(IReadOnlySet<string>? sticky)
+    {
+        if (sticky is not { Count: > 0 })
+        {
+            return [];
+        }
+
+        return sticky
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .GroupBy(ToolRegistry.CategoryOf, StringComparer.Ordinal)
+            .Where(group => group.Key != "Esi")   // 网关本来就常驻
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => Array.IndexOf(ToolRegistry.Categories, group.Key))
+            .Take(MaxBundles)
+            .Select(group => group.Key)
+            .ToList();
     }
 
     /// <summary>只保留注册表里真实存在的产品工具、剔除用户关闭的、并按字典序输出（缓存契约）。</summary>

@@ -36,6 +36,9 @@ public sealed class AiAssistantStep
     public string ResultText { get; set; } = string.Empty;
 
     public bool Success { get; set; } = true;
+
+    /// <summary>是否为已确认执行的写操作（阶段 150：上下文裁剪时钉住关键轮）。旧数据 = false。</summary>
+    public bool IsWrite { get; set; }
 }
 
 /// <summary>一条助手问答（用户请求 + 回答 + 工具执行摘要）。</summary>
@@ -79,10 +82,22 @@ public sealed class AiAssistantSession
     /// <para>
     /// 打开时带的是重建后的消息序列（含工具往返），不是"问 / 答"两段文本；
     /// **记忆只存在于单个对话**，不同对话之间不共享，也没有跨对话长期记忆。
-    /// 超出 <c>Assistant.MaxContextChars</c> 预算时最旧的轮次整轮省略。
+    /// 超出预算时优先把较早轮次压成 <see cref="ContextSummary"/>（阶段 134），压不动才整轮省略。
     /// </para>
     /// </summary>
     public bool UseContext { get; set; } = true;
+
+    /// <summary>
+    /// 会话摘要（阶段 134 / P2）：历史超预算时由 <see cref="AssistantContextCompactor"/> 把较早轮次压成的事实摘要。
+    /// <para>
+    /// 它会被拼进系统提示词（不占消息序列），并**增量更新**——下次只压缩"上次摘要之后新变旧"的轮次。
+    /// null/空 = 没有摘要（历史还在预算内，或用户关掉了摘要开关）。
+    /// </para>
+    /// </summary>
+    public string? ContextSummary { get; set; }
+
+    /// <summary>摘要已覆盖到的最后一条轮次 Id（该轮及更早的不再原样发送）。</summary>
+    public Guid? SummaryUpToTurnId { get; set; }
 
     /// <summary>
     /// 内部迁移标记（阶段 132）：<c>null</c> = 这份对话来自"默认不带上下文"的旧版本。
@@ -99,6 +114,15 @@ public sealed class AiAssistantSession
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     public List<AiAssistantTurn> Turns { get; set; } = [];
+
+    /// <summary>
+    /// 本对话累计**命中前缀缓存**的输入 token（阶段 149：缓存命中可观测性）。
+    /// 加到对话整体上，供底栏「缓存命中合计」提示使用；旧文件没有该字段 = 0。
+    /// </summary>
+    public long CacheHitTokens { get; set; }
+
+    /// <summary>本对话累计的**输入 token**（阶段 151：与缓存命中一起算命中率）。旧文件 = 0。</summary>
+    public long TotalInputTokens { get; set; }
 }
 
 /// <summary>

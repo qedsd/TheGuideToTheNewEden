@@ -84,6 +84,23 @@
                 <Border Style="{StaticResource SettingsDivider}" />
 
                 <controls:SettingCard
+                    Description="{DynamicResource AiSettingPage_ContextTokens_Desc}"
+                    Icon="DocumentText24"
+                    Title="{DynamicResource AiSettingPage_ContextTokens}">
+                    <!--  token；0 = 不限制。此前记录按"最近优先"装进预算，装不下的更早记录省略  -->
+                    <ui:NumberBox
+                        x:Name="ContextTokensBox"
+                        Width="180"
+                        HorizontalAlignment="Right"
+                        Maximum="200000"
+                        Minimum="0"
+                        SmallChange="500"
+                        SpinButtonPlacementMode="Inline" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
                     Description="{DynamicResource AiSettingPage_Cache_Desc}"
                     Icon="Scan24"
                     Title="{DynamicResource AiSettingPage_Cache}">

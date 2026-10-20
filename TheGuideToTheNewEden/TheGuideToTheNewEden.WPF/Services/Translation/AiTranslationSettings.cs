@@ -32,6 +32,17 @@ public sealed class AiTranslationSettings
     /// </summary>
     public int MaxChunkChars { get; set; } = 12000;
 
+    /// <summary>
+    /// 每次翻译带上多少**上下文**（token；阶段 134）：此前记录按"最近优先"装进这个预算，
+    /// 装不下的更早记录直接省略。**0 = 不限制**（老行为）。
+    /// <para>
+    /// 之前是不限条数、不截断——一条频道 MOTD 就可能 5KB，长对话会无限膨胀；
+    /// 这里用 token 预算（<c>AssistantTokenEstimator</c> 估算）而不是条数，
+    /// 因为每条长度差异极大。默认 4000 ≈ 10k 字符，足够覆盖最近几条整段 MOTD。
+    /// </para>
+    /// </summary>
+    public int ContextMaxTokens { get; set; } = 4000;
+
     /// <summary>翻译用的自定义系统提示词；留空使用 <c>AiTranslationProvider.DefaultSystemPrompt</c>。</summary>
     public string SystemPrompt { get; set; } = string.Empty;
 
@@ -42,6 +53,7 @@ public sealed class AiTranslationSettings
         Cache = Cache,
         CollectCandidates = CollectCandidates,
         MaxChunkChars = MaxChunkChars,
+        ContextMaxTokens = ContextMaxTokens,
         SystemPrompt = SystemPrompt,
     };
 }
