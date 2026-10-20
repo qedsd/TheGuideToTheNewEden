@@ -17,6 +17,8 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
         public int RaceID { get; set; }
         public int VariationParentTypeID { get; set; }
         public double Volume { get; set; }
+        /// <summary>打包体积（打包后的体积）。CCP SDE 4.0 起在 types.jsonl 中直接提供。</summary>
+        public double PackagedVolume { get; set; }
         public double Capacity { get; set; }
         public int FactionID { get; set; }
         public int GraphicID { get; set; }

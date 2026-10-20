@@ -46,7 +46,9 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
             MarketGroupID = types.MarketGroupID;
             Mass = types.Mass;
             Volume = types.Volume;
-            //PackagedVolume = Volume;
+            // 打包体积：CCP SDE 4.0 起 types.jsonl 直接带 packagedVolume；
+            // 少数没有该字段的类型（天体/抽象物品等）打包体积即等于体积，按 Volume 兜底。
+            PackagedVolume = types.PackagedVolume > 0 ? types.PackagedVolume : types.Volume;
             Description = types.Descriptions?.GetValue(language);
             MetaGroupID = types.MetaGroupID;
             PortionSize = types.PortionSize;

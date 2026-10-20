@@ -14,8 +14,6 @@ namespace TheGuideToTheNewEden.SDEBuilder
 {
     public static class Builder
     {
-        private static EVEStandard.EVEStandardAPI _esiClient;
-
         public static async Task StartBuilder(string[] sdeFiles, LanguageEnum language, string outputFile, bool getPackagedVolume)
         {
             var db = CreateDB(outputFile);
@@ -231,71 +229,50 @@ namespace TheGuideToTheNewEden.SDEBuilder
             return datas.Select(p => new DBModels.MarketGroups(p, language)).ToList();
         }
 
-        public static async Task<List<DBModels.Types>> GetTypes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language, bool getPackagedVolume)
+        public static Task<List<DBModels.Types>> GetTypes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language, bool getPackagedVolume)
         {
             if (!fileDatas.TryGetValue("types", out var datas))
             {
-                return null;
+                return Task.FromResult<List<DBModels.Types>>(null);
             }
             var types = datas.Select(p => new DBModels.Types(p, language)).ToList();
+
+            // 打包体积（packagedVolume）自 CCP SDE 4.0 起直接随 types.jsonl 提供，已在
+            // DBModels.Types 的构造函数里读取；这里的 ref.db 仅作兜底（本地库，不发网络）。
+            // **不再逐条调用 ESI /universe/types/{id} 补全**：新 SDE 下会有数万个类型进入该分支，
+            // 任一请求失败/超时都会抛异常并中断整个构建——连 types 表都写不出来，
+            // 其后的全部工业表（blueprints/blueprintMaterials/...）随之缺失，留下的只是一个残缺库。
             if (getPackagedVolume)
             {
-                RefDBHelper.Init();
-                var dict = RefDBHelper.QueryType().ToDictionary(p => p.TypeID);
-                List<DBModels.Types> noPackagedVolumeTypes = new List<DBModels.Types>();
-                foreach (var type in types)
+                try
                 {
-                    if (dict.TryGetValue(type.Id, out var invType))
+                    RefDBHelper.Init();
+                    var dict = RefDBHelper.QueryType().ToDictionary(p => p.TypeID);
+                    foreach (var type in types)
                     {
-                        type.PackagedVolume = invType.PackagedVolume;
-                    }
-                    else
-                    {
-                        noPackagedVolumeTypes.Add(type);
+                        if (type.PackagedVolume <= 0
+                            && dict.TryGetValue(type.Id, out var invType)
+                            && invType.PackagedVolume > 0)
+                        {
+                            type.PackagedVolume = invType.PackagedVolume;
+                        }
                     }
                 }
-                if (noPackagedVolumeTypes.Count > 0)
+                catch (Exception)
                 {
-                    if (_esiClient == null)
-                    {
-                        _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", DataSource.Tranquility, CompatibilityDate.v2025_12_16, TimeSpan.FromSeconds(30));
-                    }
-                    foreach (var type in noPackagedVolumeTypes)
-                    {
-                        EVEStandard.Models.API.ESIModelDTO<EVEStandard.Models.Type> result = null;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            try
-                            {
-                                result = await _esiClient.Universe.GetTypeInfoAsync(type.Id);
-                                break;
-                            }
-                            catch (Exception ex)
-                            {
-                                if (i == 2)
-                                {
-                                    throw new Exception($"Get {type.Name}({type.Id}) PackagedVolume failed after 3 retries", ex);
-                                }
-                                else
-                                {
-                                    Thread.Sleep(1000);
-                                }
-                            }
-                        }
-
-                        if (result.Model != null)
-                        {
-                            type.PackagedVolume = (double)result.Model.PackagedVolume;
-                        }
-                        else
-                        {
-                            throw new Exception($"Get {type.Name}({type.Id}) PackagedVolume failed");
-                        }
-                    }
-                    RefDBHelper.AddType(noPackagedVolumeTypes.Select(p => new InvType() { TypeID = p.Id, Volume = p.Volume, PackagedVolume = p.PackagedVolume }).ToList());
+                    // ref.db 缺失/损坏不影响主线构建，后续按 Volume 兜底。
                 }
             }
-            return types;
+
+            // 仍缺失者（天体/抽象物品等）打包体积即等于体积。
+            foreach (var type in types)
+            {
+                if (type.PackagedVolume <= 0)
+                {
+                    type.PackagedVolume = type.Volume;
+                }
+            }
+            return Task.FromResult(types);
         }
 
         public static (List<DBModels.Blueprints>, List<DBModels.BlueprintActivity>, List<DBModels.BlueprintMaterial>, List<DBModels.BlueprintProduct>, List<DBModels.BlueprintSkill>) GetBlueprints(Dictionary<string, List<BaseModel>> fileDatas)
