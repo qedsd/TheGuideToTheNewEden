@@ -27,6 +27,8 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     }
 
     [SugarTable("planetSchematicsTypeMap")]
+    [SugarIndex("index_planetSchematicsTypeMap_schematic", nameof(SchematicId), OrderByType.Asc)]
+    [SugarIndex("index_planetSchematicsTypeMap_type", nameof(TypeId), OrderByType.Asc)]
     public class PlanetSchematicTypeMap
     {
         [SugarColumn(ColumnName = "schematic_id")]

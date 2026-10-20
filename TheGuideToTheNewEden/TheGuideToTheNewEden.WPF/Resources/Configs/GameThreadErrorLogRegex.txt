@@ -1,0 +1,2 @@
+﻿接口被关闭了
+The transport has not yet been connected

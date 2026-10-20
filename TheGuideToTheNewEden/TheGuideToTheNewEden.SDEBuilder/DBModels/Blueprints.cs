@@ -17,6 +17,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     }
 
     [SugarTable("blueprintActivities")]
+    [SugarIndex("index_blueprintActivities_bp_activity", nameof(BlueprintTypeID), OrderByType.Asc, nameof(ActivityID), OrderByType.Asc)]
     public class BlueprintActivity
     {
         public int BlueprintTypeID { get; set; }
@@ -26,6 +27,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     }
 
     [SugarTable("blueprintMaterials")]
+    [SugarIndex("index_blueprintMaterials_bp_activity", nameof(BlueprintTypeID), OrderByType.Asc, nameof(ActivityID), OrderByType.Asc)]
     public class BlueprintMaterial
     {
         public int BlueprintTypeID { get; set; }
@@ -36,6 +38,8 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     }
 
     [SugarTable("blueprintProducts")]
+    [SugarIndex("index_blueprintProducts_bp_activity", nameof(BlueprintTypeID), OrderByType.Asc, nameof(ActivityID), OrderByType.Asc)]
+    [SugarIndex("index_blueprintProducts_product_activity", nameof(ProductTypeID), OrderByType.Asc, nameof(ActivityID), OrderByType.Asc)]
     public class BlueprintProduct
     {
         public int BlueprintTypeID { get; set; }
@@ -48,6 +52,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     }
 
     [SugarTable("blueprintSkills")]
+    [SugarIndex("index_blueprintSkills_bp_activity", nameof(BlueprintTypeID), OrderByType.Asc, nameof(ActivityID), OrderByType.Asc)]
     public class BlueprintSkill
     {
         public int BlueprintTypeID { get; set; }

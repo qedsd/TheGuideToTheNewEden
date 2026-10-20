@@ -67,28 +67,24 @@
 	</ItemGroup>
 
 	<!--
-	  运行时数据资源（配置与数据库）体积约 100MB，直接复制会在仓库中重复一份。
-	  这里以“链接”方式引用 WinUI 项目的资源文件：构建时仍各自拷贝到输出目录，
-	  运行时互不影响，仓库不重复存储。
+	  运行时数据资源（配置与数据库）：本项目自带一份（Resources\Configs、Resources\Database、
+	  Resources\default.mp3），不再链接 WinUI 项目；构建时各自拷贝到输出目录，运行时互不影响。
+	  log4net.config 不在其中 —— 本项目用工程根目录自己的那份（见下）。
 	-->
 	<ItemGroup>
-		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Configs\**\*.*" Exclude="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Configs\log4net.config">
-			<Link>Resources\Configs\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		<Content Include="Resources\Configs\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<!-- Core.Log.Init() 从程序根目录读取 log4net.config，需单独放到输出根。
 		     本项目用本地 log4net.config（2026-10-16 起写 %LocalAppData%\TheGuideToTheNewEden\Logs\，
-		     与 Configs 等其它用户数据统一到 AppData）；此前链接的 WinUI Resources\Configs 版
-		     （<file value="Log\" />，写相对 Log\）不再使用，WinUI 自用不受影响。 -->
+		     与 Configs 等其它用户数据统一到 AppData）。 -->
 		<Content Include="log4net.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Database\**\*.*">
-			<Link>Resources\Database\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		<Content Include="Resources\Database\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\default.mp3">
-			<Link>Resources\default.mp3</Link>
+		<Content Include="Resources\default.mp3">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<!--
