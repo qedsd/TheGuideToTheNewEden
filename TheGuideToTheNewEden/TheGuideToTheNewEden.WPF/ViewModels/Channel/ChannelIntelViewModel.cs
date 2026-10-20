@@ -265,6 +265,32 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedNotRunning));
     }
 
+    /// <summary>
+    /// AI 功能重启（阶段 156）：停止全部会话 → 重读 IntelSettings.json → 重建会话 →
+    /// 把原本在预警的角色按新配置重新开始。返回给模型/用户的结果说明。
+    /// </summary>
+    public async Task<string> RestartFromSettingsAsync()
+    {
+        var running = Characters.Where(p => p.Running).Select(p => p.Name).ToList();
+
+        StopAll();
+        IntelSettingService.Reload();
+        _sessions.Clear();
+        UpdateSelectedCharacter(SelectedCharacter?.Name);
+
+        var restarted = 0;
+        foreach (var name in running)
+        {
+            var character = Characters.FirstOrDefault(p => p.Name == name);
+            if (character is not null && await StartAsync(GetSession(name), character))
+            {
+                restarted++;
+            }
+        }
+
+        return $"频道预警已重启：停止 {running.Count} 个会话，重读 IntelSettings.json 后重新开始 {restarted} 个。";
+    }
+
     private void StopSession(ChannelIntelSession session)
     {
         UnsubscribeEvents(session);

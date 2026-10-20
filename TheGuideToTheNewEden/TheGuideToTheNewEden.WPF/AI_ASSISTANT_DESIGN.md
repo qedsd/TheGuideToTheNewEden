@@ -2140,6 +2140,27 @@ assistant(最终回答)
   `#ai` 段改为"可以读/改多开设置，做不到实时进程列表/画面/开始停止预览"；系统规则 19 明确
   "查看或修改功能配置都先 config_list/config_read，说明书没列工具不代表配置不可读"。
 
+### 21.13 阶段 155：功能重启接口（feature_list / feature_restart）
+
+- **协议**：页面/VM 实现 `IAssistantFeatureRuntime`（`FeatureKey` + `RestartAsync`），
+  在构造时注册、销毁时注销（弱引用）。`feature_restart` 优先调用它；没有运行态时退回"重读配置"的诚实回执。
+- **多开**：`GamePreviewPage` 注册运行态；重启 = 停止现有浮窗 → 取消待保存的旧内存数据 →
+  `GamePreviewSettingService.ReloadFromDisk()` 就地重载 → 刷新进程列表 → 原本在跑的预览按新配置重新开始。
+- **清单**：16 个功能（多开 / 共用设置 / 翻译 / 频道五件套 / 日志监控 / 星图 / 倒货 / 估价 / 市场 / 链接 /
+  主页 / 配置同步），标注运行态能力；未注册运行态的返回"下次进入/开始时生效"，不假装停了任务。
+- 工具 `feature_list`（读）/ `feature_restart`（写、需确认）；`Assistant.Features.Enabled` 总开关；
+  提示词规则 22；General 关键词补"重启/重载/重新开始/restart"。
+
+### 21.14 阶段 156：持续后台运行功能的真实重启
+
+- **接入运行态的 5 个功能**：频道预警 / 频道监控 / 频道查价 / 频道翻译 / 日志监控。
+  对应页面实现 `IAssistantFeatureRuntime` 并在构造时注册，`RestartAsync` 委托给各 VM。
+- **统一重启语义**：记录当前运行中的角色（日志监控还记录配置 GUID）→ `StopAll` → 重读该功能的
+  配置文件（设置服务新增 `Reload`：丢弃 `_values` 缓存 / 重新解析 `ChannelTranslationSettings.json` /
+  `GameLogInfoSettings.json`）→ 清空并按新设置重建会话 → 只重开**原本在跑**的角色/配置 → 返回摘要。
+- **页面未创建时**：没有运行态可停，`feature_restart` 退回"重读配置、下次进入/开始时生效"的诚实回执。
+- **边界**：仍不支持**单独**启动/停止某个角色，也不开放击杀流；`feature_restart` 是整体操作，需用户确认。
+
 ---
 
 ## 22. 界面重排（阶段 133 实施记录）

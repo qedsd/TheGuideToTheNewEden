@@ -10,6 +10,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
@@ -21,9 +22,13 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// "频道内容"用只读 RichTextBox 按预警类型着色（预警=危险色并加粗舰船名、解除=成功色）。
 /// 页面缓存常驻，切走后监控继续运行；应用退出时统一释放（App.OnExit）。
 /// </summary>
-public partial class ChannelIntelPage : Page
+public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 {
     private readonly ChannelIntelViewModel _viewModel = new();
+
+    public string FeatureKey => "channelintel";
+
+    public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
 
     private sealed class NameDbItem
     {
@@ -36,6 +41,7 @@ public partial class ChannelIntelPage : Page
     {
         InitializeComponent();
         DataContext = _viewModel;
+        AssistantFeatureRuntime.Register(this);
         _viewModel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(ChannelIntelViewModel.Session))

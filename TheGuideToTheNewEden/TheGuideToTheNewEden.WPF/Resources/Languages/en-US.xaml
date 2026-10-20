@@ -2452,6 +2452,8 @@
     <sys:String x:Key="AssistantTool_config_read">Read config</sys:String>
     <sys:String x:Key="AssistantTool_config_write">Write config</sys:String>
     <sys:String x:Key="AssistantTool_config_restore">Restore config</sys:String>
+    <sys:String x:Key="AssistantTool_feature_list">List restartable features</sys:String>
+    <sys:String x:Key="AssistantTool_feature_restart">Restart feature</sys:String>
     <sys:String x:Key="Manual.Window.Title">Manual</sys:String>
     <sys:String x:Key="Manual.Search.Placeholder">Search manuals</sys:String>
     <sys:String x:Key="Manual.Search.Empty">No matching manuals</sys:String>

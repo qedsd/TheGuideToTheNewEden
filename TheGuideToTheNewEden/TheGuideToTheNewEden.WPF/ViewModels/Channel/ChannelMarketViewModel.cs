@@ -255,6 +255,40 @@ public sealed class ChannelMarketViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// AI 功能重启（阶段 156）：停止全部会话 → 重读 ChannelMarketSettings.json → 重建会话 →
+    /// 把原本在查价的角色按新配置重新开始。
+    /// </summary>
+    public async Task<string> RestartFromSettingsAsync()
+    {
+        var running = Characters.Where(p => p.Running).Select(p => p.Name).ToList();
+
+        StopAll();
+        ChannelMarketSettingService.Reload();
+        _sessions.Clear();
+
+        var previous = SelectedCharacter;
+        var restarted = 0;
+        foreach (var name in running)
+        {
+            var character = Characters.FirstOrDefault(p => p.Name == name);
+            if (character is null)
+            {
+                continue;
+            }
+
+            SelectedCharacter = character;
+            await StartAsync();
+            if (character.Running)
+            {
+                restarted++;
+            }
+        }
+
+        SelectedCharacter = previous;
+        return $"频道查价已重启：停止 {running.Count} 个会话，重读 ChannelMarketSettings.json 后重新开始 {restarted} 个。";
+    }
+
     private void StopSession(ChannelMarketSession session, ChannelIntelListener? listener)
     {
         session.Stop();

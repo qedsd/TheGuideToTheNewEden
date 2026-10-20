@@ -45,6 +45,12 @@ public static class IntelSettingService
         }
     }
 
+    /// <summary>丢弃内存缓存，下次读取重新解析文件（阶段 156：AI 改完配置后重启用）。</summary>
+    public static void Reload()
+    {
+        _values = null;
+    }
+
     /// <summary>读取角色的预警配置；不存在返回 null（深拷贝，调用方可自由修改后再 SetValue 保存）。</summary>
     public static ChannelIntelSetting? GetValue(string characterName)
         => Values.TryGetValue(characterName, out var value) ? value.DepthClone<ChannelIntelSetting>() : null;

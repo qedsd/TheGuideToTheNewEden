@@ -44,7 +44,12 @@ public static class ChannelMonitorSettingService
         }
     }
 
-    /// <summary>读取角色的监控配置；不存在返回 null（深拷贝）。</summary>
+    /// <summary>丢弃内存缓存，下次读取重新解析文件（阶段 156）。</summary>
+    public static void Reload()
+    {
+        _values = null;
+    }
+
     public static ChannelMonitorSetting? GetValue(string characterName)
         => Values.TryGetValue(characterName, out var value) ? value.DepthClone<ChannelMonitorSetting>() : null;
 

@@ -29,6 +29,7 @@ public static class AiAssistantSettingService
     private const string ConfigEnabledKey = "Assistant.Config.Enabled";
     private const string ConfigWritesKey = "Assistant.Config.Writes";
     private const string ConfigDeniedFilesKey = "Assistant.Config.DeniedFiles";
+    private const string FeaturesEnabledKey = "Assistant.Features.Enabled";
     private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
     private const string SidebarCollapsedKey = "Assistant.SidebarCollapsed";
     private const string ContextWindowTokensKey = "Assistant.ContextWindowTokens";
@@ -206,6 +207,9 @@ public static class AiAssistantSettingService
     public static IReadOnlySet<string> ConfigDeniedFiles { get; private set; } =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>是否开放功能重启工具（feature_list / feature_restart，阶段 155）。</summary>
+    public static bool FeatureToolsEnabled { get; private set; } = true;
+
     /// <summary>保存"按需声明"开关。</summary>
     public static void SaveRouting(bool autoRoute)
     {
@@ -230,6 +234,14 @@ public static class AiAssistantSettingService
 
         PinnedBundles = set;
         SettingsService.SetValue(PinnedBundlesKey, string.Join(",", set.OrderBy(n => n, StringComparer.Ordinal)));
+        SettingsService.Save();
+    }
+
+    /// <summary>保存功能重启工具开关（阶段 155）。</summary>
+    public static void SaveFeatureAccess(bool enabled)
+    {
+        FeatureToolsEnabled = enabled;
+        SettingsService.SetBool(FeaturesEnabledKey, FeatureToolsEnabled);
         SettingsService.Save();
     }
 
@@ -368,6 +380,7 @@ public static class AiAssistantSettingService
         }
 
         ConfigDeniedFiles = deniedConfig;
+        FeatureToolsEnabled = SettingsService.GetBool(FeaturesEnabledKey, true);
 
         ShowInMainWindow = SettingsService.GetBool(ShowInMainWindowKey, DefaultShowInMainWindow);
         SidebarCollapsed = SettingsService.GetBool(SidebarCollapsedKey, DefaultSidebarCollapsed);
@@ -467,6 +480,7 @@ public static class AiAssistantSettingService
         SaveRouting(true);
         SavePinnedBundles([]);
         SaveConfigAccess(true, true, []);
+        SaveFeatureAccess(true);
         SaveShowInMainWindow(DefaultShowInMainWindow);
         SaveSidebarCollapsed(DefaultSidebarCollapsed);
         AssistantUsageCalibration.Reset();

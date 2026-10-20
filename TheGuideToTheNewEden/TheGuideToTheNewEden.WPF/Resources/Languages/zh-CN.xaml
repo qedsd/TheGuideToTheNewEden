@@ -2474,6 +2474,8 @@
     <sys:String x:Key="AssistantTool_config_read">读取配置</sys:String>
     <sys:String x:Key="AssistantTool_config_write">修改配置</sys:String>
     <sys:String x:Key="AssistantTool_config_restore">回滚配置</sys:String>
+    <sys:String x:Key="AssistantTool_feature_list">列出可重启功能</sys:String>
+    <sys:String x:Key="AssistantTool_feature_restart">重启功能</sys:String>
     <sys:String x:Key="Manual.Window.Title">使用手册</sys:String>
     <sys:String x:Key="Manual.Search.Placeholder">搜索说明书</sys:String>
     <sys:String x:Key="Manual.Search.Empty">没有匹配的说明书</sys:String>

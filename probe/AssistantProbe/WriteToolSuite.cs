@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Assistant;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.Services.Business;
 using TheGuideToTheNewEden.WPF.Services.Translation;
 
@@ -62,6 +63,9 @@ internal static class WriteToolSuite
 
             c.Section("WriteToolSuite · 配置文件读写（阶段 152）");
             ConfigFiles(c, canWriteConfigs);
+
+            c.Section("WriteToolSuite · 功能重启（阶段 155）");
+            FeatureRestart(c);
         }
         finally
         {
@@ -412,6 +416,51 @@ internal static class WriteToolSuite
         catch (Exception ex)
         {
             Core.Log.Warn($"探针清理备份失败：{ex.Message}");
+        }
+    }
+
+    // ============================ 功能重启 ============================
+
+    /// <summary>假运行态：验证 feature_restart 会优先调用已注册的页面/VM 重启器。</summary>
+    private sealed class FakeFeatureRuntime : IAssistantFeatureRuntime
+    {
+        public string FeatureKey => "gamepreview";
+
+        public int Calls { get; private set; }
+
+        public Task<string> RestartAsync()
+        {
+            Calls++;
+            return Task.FromResult("fake-gamepreview-restarted");
+        }
+    }
+
+    private static void FeatureRestart(Check c)
+    {
+        var ctx = Context();
+        var tool = ToolRegistry.Find("feature_restart");
+        c.That(tool?.RequiresConfirmation == true, "feature_restart 标记为写操作（引擎会先挂起等用户确认）");
+
+        var list = Exec(c, ctx, "feature_list", "{}", "feature_list：列出可重启功能");
+        c.That(list?.Contains("gamepreview", StringComparison.Ordinal) == true, "列表包含 gamepreview");
+
+        var unknown = Exec(c, ctx, "feature_restart", """{"name":"no_such_feature"}""",
+            "feature_restart：未知功能 → 明确拒绝");
+        c.That(unknown?.Contains("未知功能", StringComparison.Ordinal) == true, "未知功能给出 feature_list 提示");
+
+        var fake = new FakeFeatureRuntime();
+        AssistantFeatureRuntime.Register(fake);
+        try
+        {
+            var restart = Exec(c, ctx, "feature_restart", """{"name":"gamepreview","reason":"probe"}""",
+                "feature_restart：调用已注册运行态");
+            c.That(restart?.Contains("fake-gamepreview-restarted", StringComparison.Ordinal) == true,
+                "重启走已注册的运行态（而不是只重读配置）");
+            c.Equal(fake.Calls, 1, "运行态的 RestartAsync 被调用一次");
+        }
+        finally
+        {
+            AssistantFeatureRuntime.Unregister(fake);
         }
     }
 

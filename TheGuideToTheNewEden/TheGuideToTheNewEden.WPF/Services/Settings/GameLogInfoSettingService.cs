@@ -16,8 +16,14 @@ public sealed class GameLogInfoSettingService
 
     private readonly Dictionary<int, GameLogSetting> _values = new();
 
-    private GameLogInfoSettingService()
+    private GameLogInfoSettingService() => Load();
+
+    /// <summary>强制重新解析文件（阶段 156：AI 改完配置后重启用）。</summary>
+    public static void Reload() => Current.Load();
+
+    private void Load()
     {
+        _values.Clear();
         if (!File.Exists(Path))
         {
             return;
@@ -28,12 +34,15 @@ public sealed class GameLogInfoSettingService
             var values = JsonConvert.DeserializeObject<List<GameLogSetting>>(File.ReadAllText(Path));
             if (values is not null)
             {
-                _values = values.ToDictionary(p => p.ListenerID);
+                foreach (var value in values)
+                {
+                    _values[value.ListenerID] = value;
+                }
             }
         }
         catch
         {
-            _values = new Dictionary<int, GameLogSetting>();
+            _values.Clear();
         }
     }
 

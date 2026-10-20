@@ -211,6 +211,34 @@ public sealed class ChannelMonitorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// AI 功能重启（阶段 156）：停止全部监控 → 重读 ChannelMonitorSetting.json → 刷新每角色设置 →
+    /// 把原本在监控的角色按新配置重新开始。
+    /// </summary>
+    public async Task<string> RestartFromSettingsAsync()
+    {
+        var running = Characters.Where(p => p.Running).Select(p => p.Name).ToList();
+
+        StopAll();
+        ChannelMonitorSettingService.Reload();
+        foreach (var character in Characters)
+        {
+            character.Setting = GetSetting(character.Name);
+        }
+
+        var restarted = 0;
+        foreach (var name in running)
+        {
+            var item = Characters.FirstOrDefault(p => p.Name == name);
+            if (item is not null && await StartAsync(item))
+            {
+                restarted++;
+            }
+        }
+
+        return $"频道监控已重启：停止 {running.Count} 个会话，重读 ChannelMonitorSetting.json 后重新开始 {restarted} 个。";
+    }
+
     private void Stop(ChannelMonitorItem item)
     {
         ChannelMonitorNotifyService.Current.Stop(item.Name);

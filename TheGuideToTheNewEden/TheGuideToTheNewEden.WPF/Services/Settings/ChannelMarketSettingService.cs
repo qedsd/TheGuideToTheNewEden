@@ -44,6 +44,12 @@ public static class ChannelMarketSettingService
         }
     }
 
+    /// <summary>丢弃内存缓存，下次读取重新解析文件（阶段 156）。</summary>
+    public static void Reload()
+    {
+        _values = null;
+    }
+
     public static ChannelMarketSetting? GetValue(string characterName)
         => Values.TryGetValue(characterName, out var value) ? value.DepthClone<ChannelMarketSetting>() : null;
 

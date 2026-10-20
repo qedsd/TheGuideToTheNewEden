@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 using TheGuideToTheNewEden.WPF.Views.UserControls;
 using TheGuideToTheNewEden.WPF.Views.Windows;
@@ -12,15 +13,20 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// （AI 源 + 本地 SDE 术语约束，聊天标记先保护后还原），右侧实时显示原文与译文。
 /// 「弹窗」用 <see cref="ToolWindow"/> 承载同一份结果视图，与页面共享同一个 ViewModel。
 /// </summary>
-public partial class ChannelTranslationPage : Page
+public partial class ChannelTranslationPage : Page, IAssistantFeatureRuntime
 {
     private readonly ChannelTranslationViewModel _viewModel = new();
+
+    public string FeatureKey => "channeltranslation";
+
+    public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
     private ToolWindow? _window;
 
     public ChannelTranslationPage()
     {
         InitializeComponent();
         DataContext = _viewModel;
+        AssistantFeatureRuntime.Register(this);
         Unloaded += OnUnloaded;
     }
 

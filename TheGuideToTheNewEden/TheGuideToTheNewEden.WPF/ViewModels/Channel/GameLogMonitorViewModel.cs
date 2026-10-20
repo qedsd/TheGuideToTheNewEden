@@ -318,6 +318,47 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         RefreshRunningState();
     }
 
+    /// <summary>
+    /// AI 功能重启（阶段 156）：停止全部会话 → 重读 GameLogInfoSettings.json → 按原 GUID 找到配置 →
+    /// 把原本在监控的"角色 + 配置"按新设置重新开始。
+    /// </summary>
+    public Task<string> RestartFromSettingsAsync()
+    {
+        var running = _sessions
+            .Select(pair => (Guid: pair.Key, ListenerId: pair.Value.Info.ListenerID))
+            .ToList();
+
+        StopAll();
+        GameLogInfoSettingService.Reload();
+
+        var restarted = 0;
+        foreach (var (guid, listenerId) in running)
+        {
+            var info = GameLogInfos.FirstOrDefault(p => p.ListenerID == listenerId);
+            if (info is null)
+            {
+                continue;
+            }
+
+            // 先置空再赋值：同一个对象不会触发 Setter，也就不会重新 LoadSetting
+            SelectedGameLogInfo = null;
+            SelectedGameLogInfo = info;
+            SelectedItemConfig = ItemConfigs.FirstOrDefault(config => config.GUID == guid);
+            if (SelectedItemConfig is null)
+            {
+                continue;
+            }
+
+            if (Start())
+            {
+                restarted++;
+            }
+        }
+
+        return Task.FromResult(
+            $"日志监控已重启：停止 {running.Count} 个会话，重读 GameLogInfoSettings.json 后重新开始 {restarted} 个。");
+    }
+
     private void StopSession(string guid)
     {
         if (!_sessions.TryGetValue(guid, out var session))

@@ -8023,6 +8023,65 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 
 ---
 
+### 阶段 155：功能重启接口（`feature_list` / `feature_restart`，多开真实重启）
+
+> 用户要求："每个功能应该开放重启接口给 AI，比如改完多开配置让 AI 控制重启多开。"
+> 重启不是空泛的"刷新页面"：有运行态的功能必须**停掉正在跑的预览/会话 → 重读配置 → 按需重新开始**。
+
+- **运行态注册表**（`Services/Assistant/Features/AssistantFeatureRuntime.cs`）：
+  `IAssistantFeatureRuntime { FeatureKey; RestartAsync(); }`，页面/VM 构造时注册、销毁时注销；
+  用**弱引用**持有（页面回收后不阻止释放）。工具优先调用已注册的运行态，没有才退回"只重读配置"。
+- **功能清单**（`AssistantFeatureRegistry`）：16 个功能（多开 / 共用设置 / 翻译 / 频道五件套 / 日志监控 /
+  星图 / 倒货 / 估价 / 市场 / 链接 / 主页 / 配置同步），每个标注"有运行态 / 重读设置 / 无长驻任务"。
+  没有运行态时返回**诚实回执**（"配置会在下次进入/开始时生效"），不假装重启了正在跑的任务。
+- **多开真实重启**：
+  - `GamePreviewSettingService.CancelPendingSave()` + `ReloadFromDisk()`：**就地**重读 `GamePreviewSetting.json`
+    （反射复制可写属性到同一个 `Value` 对象，界面绑定只靠一次 `PropertyChanged` 重算）。
+  - `GamePreviewViewModel.RestartFromSettingsAsync()`：停止现有浮窗 → **先取消待保存的旧内存数据**（否则会把
+    AI 刚写的文件覆盖回去）→ 就地重载 → 刷新进程列表 → 原本在跑的预览按新配置重新开始。
+  - `GamePreviewPage` 实现 `IAssistantFeatureRuntime` 并注册。
+- **工具**：`feature_list`（读）、`feature_restart`（写，`RequiresConfirmation` + `IPendingSummary`）。
+  重启经 `ctx.OnUiThread` 发起；General 套餐补"重启/重载/重新开始/restart"意图词。
+- **设置**：`Assistant.Features.Enabled`（默认开；重启仍需逐次确认）。
+- **提示词**：规则 22（先 feature_list 再 feature_restart；会停止运行中的任务）。预算 1,850 → **1,950**。
+- **手册**：`assistant.md` 补配置/重启工具（并修正"不开放写设置/多开控制"的旧说法）；
+  `game-preview.md` 补"改完可 `feature_restart` 重启多开"。
+- **探针**：`writes` 新增功能重启段（+8：`feature_restart` 是写操作、`feature_list` 含 gamepreview、
+  未知功能拒绝、注册假运行态后确认**确实调用** `RestartAsync` 且只调一次）；`EsiSuite` 的产品工具数断言
+  由"等于 46"改为"不少于 46"（后续仍会新增工具）。
+- **验证（实跑）**：`tokens` **19/0**（声明 26,441 ≤ 28,000；提示词 1,882 ≤ 1,950）、
+  `writes` **107/0**、`manuals` **58/0**、`ui` **120/0**（语言键 2,389 / 2,389）、`esi` **163/0**。
+
+---
+
+### 阶段 156：为持续后台运行的功能补真实重启（频道预警/监控/查价/频道翻译/日志监控）
+
+> 阶段 155 只有多开注册了运行态；频道类功能仍返回"需页面运行态"。本轮把 5 个持续后台运行的功能
+> 全部接上同一个 `IAssistantFeatureRuntime`：**停止全部会话 → 重读配置文件 → 重建会话 → 只重开原本在跑的角色/配置**。
+
+- **设置服务加"丢弃缓存"入口**（这些服务原本只在首次读取时解析文件）：
+  `IntelSettingService.Reload` / `ChannelMonitorSettingService.Reload` / `ChannelMarketSettingService.Reload`
+  （`_values = null`）、`ChannelTranslationSettingService.Reload`（`_loaded = false` 再 `Load`）、
+  `GameLogInfoSettingService.Reload`（清空并重新解析 `GameLogInfoSettings.json`）。
+- **各 VM 的重启方法**（均在原 VM 内，保留原有启停/提示逻辑）：
+  - `ChannelIntelViewModel.RestartFromSettingsAsync`：记录运行中的角色 → `StopAll` → 重读 `IntelSettings.json`
+    → 清空 `_sessions` 并重建选中会话 → 逐个 `StartAsync` 原运行角色；
+  - `ChannelMonitorViewModel`：`StopAll` → 重读设置 → 刷新每角色 `Setting` → 重开原运行角色；
+  - `ChannelMarketViewModel` / `ChannelTranslationViewModel`：`StopAll` → 重读设置 → 清空 `_sessions`
+    → 切回原运行角色（触发新会话）→ `StartAsync`/`StartSelected`；
+  - `GameLogMonitorViewModel`：按会话 GUID 记录运行项 → `StopAll` → 重读设置 → 按"监听器 + 配置 GUID"
+    重新选中并 `Start`（同一对象先置空再赋值，确保重新 `LoadSetting`）。
+- **页面注册运行态**：`ChannelIntelPage` / `ChannelMonitorPage` / `ChannelMarketPage` /
+  `ChannelTranslationPage` / `GameLogMonitorPage` 各自实现 `IAssistantFeatureRuntime` 并在构造时注册；
+  功能清单里这 5 项的能力标注改为"有运行态"。
+- **手册**：`assistant.md` 更新"做不到"的旧说法——仍不支持**单独**启停某个角色/击杀流，
+  但 `feature_restart` 会整体停掉、重读设置并按原运行项重开。
+- **验证**：`dotnet build`（WPF + 探针）**0 错误**；`writes` **107/0**（运行态调度链路不变）、
+  `manuals` **58/0**（手册更新后仍全部覆盖）。真实频道会话的重启需要本机聊天日志与已创建页面，
+  未在探针里实跑（探针环境无游戏日志），由编译与既有探针回归覆盖。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

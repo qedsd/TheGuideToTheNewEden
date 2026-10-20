@@ -25,6 +25,16 @@ public static class ChannelTranslationSettingService
         }
     }
 
+    /// <summary>强制重新解析文件（阶段 156：AI 改完配置后重启用）。</summary>
+    public static void Reload()
+    {
+        lock (Sync)
+        {
+            _loaded = false;
+            Load();
+        }
+    }
+
     private static void Load()
     {
         if (_loaded)

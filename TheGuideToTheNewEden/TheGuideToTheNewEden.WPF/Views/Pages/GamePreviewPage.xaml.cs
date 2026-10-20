@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WPF.Converters;
 using TheGuideToTheNewEden.WPF.Services.GamePreview;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.ViewModels.GamePreview;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
@@ -22,7 +23,7 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 因此切到别的页面时预览窗口与全局快捷键继续工作。页面被导航缓存，实例只创建一次。
 /// </para>
 /// </summary>
-public partial class GamePreviewPage : Page
+public partial class GamePreviewPage : Page, IAssistantFeatureRuntime
 {
     /// <summary>源画面比例未知时（未选中进程）预览区的默认比例。</summary>
     private const double DefaultPreviewAspect = 16.0 / 9.0;
@@ -63,7 +64,16 @@ public partial class GamePreviewPage : Page
         // 候选角色每秒可能刷新：胶囊重建后要重新同步选中态、计数与顺序列表
         _viewModel.CharacterCandidates.CollectionChanged += OnCharacterCandidatesChanged;
         PreviewArea.SizeChanged += (_, _) => UpdatePreviewLayout();
+
+        // 阶段 155：把"有运行态的多开"注册给 AI 的 feature_restart
+        AssistantFeatureRuntime.Register(this);
     }
+
+    // ---------- AI 功能重启（阶段 155） ----------
+
+    public string FeatureKey => "gamepreview";
+
+    public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
 
     // ---------- 生命周期 ----------
 
@@ -190,6 +200,7 @@ public partial class GamePreviewPage : Page
 
     private void OnApplicationExit(object? sender, ExitEventArgs e)
     {
+        AssistantFeatureRuntime.Unregister(this);
         _selectionPreview.Dispose();
         _viewModel.Dispose();
     }

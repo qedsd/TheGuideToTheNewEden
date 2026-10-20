@@ -7,6 +7,7 @@ using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WPF.Helpers;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
@@ -18,9 +19,13 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 命中关键词的行标红、最新一条加粗，超出 <c>MaxShowItems</c> 裁剪并自动滚到底；
 /// 切换角色时用该角色已积累的内容重绘。页面缓存常驻，切走后监控继续运行。
 /// </summary>
-public partial class GameLogMonitorPage : Page
+public partial class GameLogMonitorPage : Page, IAssistantFeatureRuntime
 {
     private readonly GameLogMonitorViewModel _viewModel = new();
+
+    public string FeatureKey => "gamelog";
+
+    public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
 
     private Paragraph? _lastParagraph;
 
@@ -28,6 +33,7 @@ public partial class GameLogMonitorPage : Page
     {
         InitializeComponent();
         DataContext = _viewModel;
+        AssistantFeatureRuntime.Register(this);
         _viewModel.OnContentUpdate += OnContentUpdate;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Loaded += OnLoaded;

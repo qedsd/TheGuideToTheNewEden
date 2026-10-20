@@ -80,6 +80,9 @@ public static class ToolRegistry
         Register(new Tools.ConfigReadTool());
         Register(new Tools.ConfigWriteTool());
         Register(new Tools.ConfigRestoreTool());
+        // 阶段 155：功能重启（停运行态 → 重读配置 → 按需重新开始）
+        Register(new Tools.FeatureListTool());
+        Register(new Tools.FeatureRestartTool());
     }
 
     public static void Register(ITool tool)

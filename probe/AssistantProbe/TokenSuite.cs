@@ -24,8 +24,12 @@ internal static class TokenSuite
     /// <summary>单条参数描述字符上限。</summary>
     public const int MaxParamDescriptionChars = 24;
 
-    /// <summary>46 条声明的总字符预算（阶段 122 精简后 23,358；阶段 131 加两个说明书工具后实测 24,314）。</summary>
-    public const int MaxDeclarationChars = 26000;
+    /// <summary>
+    /// 全部声明的总字符预算。阶段 122 精简后 23,358；阶段 131 +2 说明书工具 24,314；
+    /// 阶段 152/153 加 4 个配置工具、阶段 155 加 2 个功能重启工具后上调到 28,000
+    /// （63 个工具；仍由本套件守住"别无限膨胀"）。
+    /// </summary>
+    public const int MaxDeclarationChars = 28000;
 
     /// <summary>
     /// 系统提示词字符上限（它是同一份前缀的一部分）。
@@ -33,9 +37,10 @@ internal static class TokenSuite
     /// 说明书三条规则（14–16）、阶段 134 加了「数据时间 / 历史数据可能过期」规则 17 后实测 **1,417**，
     /// 阶段 151 加注入防护规则 18 后 **1,521**，阶段 152 加配置读写三条规则（19–21）后约 **1,680**，
     /// 阶段 154 规则 19 补「查看配置」与「说明书没列工具≠不可读」后约 **1,806**，
-    /// 故预算上调到 1,850 并留一点余量——上调不是"放开"，而是让这条断言继续守住"提示词别无限膨胀"。
+    /// 阶段 155 加功能重启规则 22 后约 **1,900**，故预算上调到 1,950——
+    /// 上调不是"放开"，而是让这条断言继续守住"提示词别无限膨胀"。
     /// </summary>
-    public const int MaxSystemPromptChars = 1850;
+    public const int MaxSystemPromptChars = 1950;
 
     /// <summary>
     /// 易变内容：**嵌进描述里的会变的值**（日期 / 年份 / "最新版本"之类）。

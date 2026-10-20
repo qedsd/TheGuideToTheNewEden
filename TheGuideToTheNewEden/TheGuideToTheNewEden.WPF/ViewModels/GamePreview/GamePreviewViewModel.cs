@@ -1083,6 +1083,41 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         Save();
     }
 
+    /// <summary>
+    /// 按磁盘上的配置重启多开（阶段 155，供 AI 的 <c>feature_restart</c> 调用）：
+    /// 停止现有预览 → **取消待保存的旧内存数据** → 就地重读配置 → 刷新进程列表 → 原本在跑的预览按新设置重新开始。
+    /// </summary>
+    public async Task<string> RestartFromSettingsAsync()
+    {
+        var running = _manager.RunningCount;
+
+        // 不走 StopAll()：它会 Save() 把旧内存设置写回，正好覆盖掉刚被 AI 改好的文件
+        _manager.StopAll();
+        foreach (var process in Processes)
+        {
+            process.Running = false;
+            process.Setting = ResolveSetting(process);
+        }
+
+        GamePreviewSettingService.Current.CancelPendingSave();
+        GamePreviewSettingService.Current.ReloadFromDisk();
+
+        // Value 是同一个对象（就地重载），通知一次让 Setting.Xxx 的绑定重新求值
+        OnPropertyChanged(nameof(Setting));
+        OnPropertyChanged(nameof(SelectedSetting));
+        OnPropertyChanged(nameof(SelectedRunning));
+
+        await RefreshAsync();
+
+        if (running > 0)
+        {
+            StartAll();
+        }
+
+        return $"多开预览已重启：停止 {running} 个预览，已重新读取 GamePreviewSetting.json"
+               + (running > 0 ? "，并按新设置重新开始预览。" : "。");
+    }
+
     // ---------- 批量操作 ----------
 
     public void ApplyUniformSize()

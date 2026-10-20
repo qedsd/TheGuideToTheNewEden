@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
@@ -12,14 +13,19 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 命中查价请求后由 <see cref="Services.ChannelIntel.ChannelMarketService"/>
 /// 弹出置顶结果窗展示卖买 5%/最优价、总量与历史走势。
 /// </summary>
-public partial class ChannelMarketPage : Page
+public partial class ChannelMarketPage : Page, IAssistantFeatureRuntime
 {
     private readonly ChannelMarketViewModel _viewModel = new();
+
+    public string FeatureKey => "channelmarket";
+
+    public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
 
     public ChannelMarketPage()
     {
         InitializeComponent();
         DataContext = _viewModel;
+        AssistantFeatureRuntime.Register(this);
         _viewModel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(ChannelMarketViewModel.HasSession))

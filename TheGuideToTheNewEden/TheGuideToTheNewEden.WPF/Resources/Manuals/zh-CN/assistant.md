@@ -3,7 +3,7 @@ id: assistant
 title: AI 助手
 group: Nav.Assistant
 page: Views/Pages/AiAssistantPage.xaml + Views/UserControls/AiAssistantChatView.xaml
-tools: [esi_search, esi_describe, esi_read, esi_write, search_sde, translate, character_list]
+tools: [esi_search, esi_describe, esi_read, esi_write, search_sde, translate, character_list, config_list, config_read, config_write, config_restore, feature_list, feature_restart]
 aliases: [AI 助手, 助手, 提问, 对话, 上下文, 记忆, 工具调用, 写操作确认, assistant, ai chat, tool call]
 updated: 2026-10-18
 ---
@@ -67,8 +67,11 @@ updated: 2026-10-18
   - `esi_search` / `esi_describe` / `esi_read` / `esi_write`：ESI 通用网关四件套，覆盖 ESI 全部 197 个操作（检索端点 → 查参数说明 → 只读调用 → 写调用；写需确认，结果里的 ID 自动补成「名称 (id)」）；
   - `search_sde`（名称检索）、`translate`（翻译）、`character_list`（角色清单）。
 - **按需声明的专用工具**（与提问意图相关的组，最多再带两组）：商业（市场订单 / 历史 / 走势 / 收藏 / 估价 / 倒货分析与设置 / 比价 / 利差 / 订单 / 购买文本 / 购物车）、角色（概览 / 钱包 / 技能 / 邮件 / 合同 / 工业 / 位置 / ZKB）、星图（路径 / 星系详情 / 跳桥 / 图层）、频道（名单统计 / 术语 / 链接）、通用（测速 / 任务资料）；看不出意图时声明全部。可在「设置 → AI → 工具开关」逐个停用。
+- **配置与重启**（阶段 152–155）：
+  - `config_list` / `config_read` / `config_write` / `config_restore`：读写白名单内的功能配置（密钥类键不读不写；写入与回滚都要先确认，旧内容自动备份）。例如「读一下我的多开设置」「把倒货线程数改成 8」。
+  - `feature_list` / `feature_restart`：重启一个功能（停止它正在运行的任务 → 重读配置 → 按需重新开始，需确认）。例如改完多开配置后说「重启多开预览」；频道预警 / 监控 / 查价 / 频道翻译 / 日志监控在有运行会话时也会整体停掉、重读设置并重开原本在跑的角色/配置（页面需已创建）。
 - 推荐问法：「巨神兵级在吉他的价格」「吉他到多美怎么走」「帮我分析倒货」「我的资产汇总」（走 ESI）。
-- **做不到**：不开放订阅型功能（频道预警 / 监控 / 查价、日志监控、击杀流）与多开控制；不开放“写本软件设置”；**记忆只存在于单个对话内**（不跨对话、不跨角色，也没有长期记忆）；不支持截图（视觉输入）。
+- **做不到**：不开放订阅型功能的**单独启动/停止**（频道预警 / 监控 / 查价、日志监控仍由页面控制单个角色；击杀流不开放；`feature_restart` 是整体停掉再按原运行项重开）；不能读取多开的**实时进程列表/浮窗画面**，也不能替你开始/停止单个预览；**记忆只存在于单个对话内**（不跨对话、不跨角色，也没有长期记忆）；不支持截图（视觉输入）。
 - 回答里的数字一律来自工具结果（内置提示词要求“数字以工具为准、查不到就说查不到”），不要采信对话里的旧数字。
 
 ## 常见失败与处置 {#errors}

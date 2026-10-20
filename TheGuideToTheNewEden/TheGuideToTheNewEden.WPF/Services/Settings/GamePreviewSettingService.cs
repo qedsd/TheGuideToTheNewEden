@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Windows.Threading;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
@@ -68,6 +69,42 @@ public sealed class GamePreviewSettingService
         }
 
         return new PreviewSetting();
+    }
+
+    /// <summary>
+    /// 取消尚未落盘的脏数据（阶段 155）：AI 重启前先取消，避免把旧内存设置写回覆盖刚改好的文件。
+    /// </summary>
+    public void CancelPendingSave()
+    {
+        _dirty = false;
+        _saveTimer.Stop();
+    }
+
+    /// <summary>
+    /// 从磁盘重读并**就地**写入 <see cref="Value"/>（阶段 155）：保持对象引用不变，
+    /// 这样已绑定到 <c>Setting.Xxx</c> 的界面只需一次 PropertyChanged 就能读到新值。
+    /// </summary>
+    public void ReloadFromDisk()
+    {
+        var fresh = Load();
+        foreach (var property in typeof(PreviewSetting).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (!property.CanWrite || property.GetIndexParameters().Length > 0)
+            {
+                continue;
+            }
+
+            try
+            {
+                property.SetValue(Value, property.GetValue(fresh));
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Warn($"多开设置：重载字段 {property.Name} 失败：{ex.Message}");
+            }
+        }
+
+        CancelPendingSave();
     }
 
     /// <summary>节流保存（500ms 内的多次调用合并成一次落盘）。</summary>

@@ -4,6 +4,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
@@ -15,9 +16,13 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// "频道内容"只显示命中关键词的消息（Important），最后一条加粗，超出 MaxShowItems 裁剪。
 /// 页面缓存常驻，切走后监控继续运行。
 /// </summary>
-public partial class ChannelMonitorPage : Page
+public partial class ChannelMonitorPage : Page, IAssistantFeatureRuntime
 {
     private readonly ChannelMonitorViewModel _viewModel = new();
+
+    public string FeatureKey => "channelmonitor";
+
+    public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
 
     private Paragraph? _lastParagraph;
 
@@ -25,6 +30,7 @@ public partial class ChannelMonitorPage : Page
     {
         InitializeComponent();
         DataContext = _viewModel;
+        AssistantFeatureRuntime.Register(this);
         _viewModel.OnContentUpdate += OnContentUpdate;
     }
 

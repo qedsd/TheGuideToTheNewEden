@@ -51,6 +51,7 @@ public sealed class AiAssistantEngine
         19. 用户要查看或修改功能配置（多开/倒货/估价/星图/预警/监控/链接/主页等）时：先 config_list 找文件、config_read 看现状，再 config_write 写入；说明书没列工具不代表配置不可读。
         20. config_write 必须先经用户确认；不得写入 API Key / 令牌 / 密码等密钥，也不得访问白名单之外的文件；一次只改用户要求的键，保留其他设置。
         21. 改完要说明：改了哪个文件、哪些键、旧值→新值，以及是否需要刷新页面或重启；改错可用 config_restore 从自动备份回滚。
+        22. 改完配置要生效、或用户明确要求重启某功能时：先用 feature_list 查功能名，再用 feature_restart 重启（需确认；会停止该功能正在运行的任务）。
         """;
 
     private readonly int _maxToolRounds;
