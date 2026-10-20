@@ -37,10 +37,10 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
             Description = data.Descriptions ?? data.Description;
             DisplayName = data.DisplayName?.GetValue(language);
             IconID = data.IconID;
-            Published = data.Published == "True" || data.Published == "true" || data.Published == "1";
+            Published = data.Published;
             UnitID = data.UnitID;
-            Stackable = data.Stackable == "True" || data.Stackable == "true" || data.Stackable == "1";
-            HighIsGood = data.HighIsGood == "True" || data.HighIsGood == "true" || data.HighIsGood == "1";
+            Stackable = data.Stackable;
+            HighIsGood = data.HighIsGood;
         }
     }
 }

@@ -13,12 +13,12 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
         public new string Descriptions { get; set; }
         public string Description { get; set; }
         public Languages DisplayName { get; set; }
-        public string DisplayWhenZero { get; set; }
-        public string HighIsGood { get; set; }
+        public bool DisplayWhenZero { get; set; }
+        public bool HighIsGood { get; set; }
         public int IconID { get; set; }
         public string Name { get; set; }
-        public string Published { get; set; }
-        public string Stackable { get; set; }
+        public bool Published { get; set; }
+        public bool Stackable { get; set; }
         public Languages TooltipDescription { get; set; }
         public Languages TooltipTitle { get; set; }
         public int UnitID { get; set; }

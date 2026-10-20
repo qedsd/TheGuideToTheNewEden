@@ -58,6 +58,10 @@ namespace TheGuideToTheNewEden.SDEBuilder.Helpers
 
         public static void Init()
         {
+            if (_db != null)
+            {
+                return;
+            }
             _db = CreateDb("Resources\\ref.db");
         }
 
@@ -67,7 +71,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.Helpers
         }
         public static List<InvType> QueryType()
         {
-            return _db.Queryable<InvType>().ToList();
+            return _db == null ? new List<InvType>() : _db.Queryable<InvType>().ToList();
         }
 
         public static bool AddType(int id, double volume, double packagedVolume)

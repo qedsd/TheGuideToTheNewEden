@@ -16,7 +16,8 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
         public int Id { get; set; }
         public string Name { get; set; }
         public int GroupID { get; set; }
-        public int MarketGroupID { get; set; }
+        [SugarColumn(IsNullable = true)]
+        public int? MarketGroupID { get; set; }
         public double Mass { get; set; }
         public double Volume { get; set; }
         public double PackagedVolume { get; set; }
@@ -29,6 +30,12 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
         public double BasePrice { get; set; }
         public int IconID { get; set; }
         public bool Published { get; set; }
+        public double Capacity { get; set; }
+        public int FactionID { get; set; }
+        public int GraphicID { get; set; }
+        public int MetaLevel { get; set; }
+        public double Radius { get; set; }
+        public int SoundID { get; set; }
         public Types() { }
         public Types(DeserializeModels.BaseModel model, LanguageEnum language)
         {
@@ -48,6 +55,12 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
             BasePrice = types.BasePrice;
             IconID = types.IconID;
             Published = types.Published;
+            Capacity = types.Capacity;
+            FactionID = types.FactionID;
+            GraphicID = types.GraphicID;
+            MetaLevel = types.MetaLevel;
+            Radius = types.Radius;
+            SoundID = types.SoundID;
         }
     }
 }

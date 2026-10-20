@@ -34,6 +34,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\TheGuideToTheNewEden\TheGuideToTheNewEden.WPF\TheGuideToTheNewEden.WPF.csproj" />
+    <ProjectReference Include="..\..\TheGuideToTheNewEden\TheGuideToTheNewEden.SDEBuilder\TheGuideToTheNewEden.SDEBuilder.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2214,3 +2214,13 @@ assistant(最终回答)
 | 开关说明/用量别在界面上明文显示 | 删掉勾选框右侧的 `ContextInfoText` 行；悬停提示改成两行（说明 + 实时用量），界面上只留 `☑ 带上上下文` |
 | 需要能收起对话列表 | 顶栏最左加「收起/展开对话列表」按钮（`PanelLeftContract24` / `PanelLeftExpand24`）；收起 = 列宽归 0 + 侧栏隐藏；状态记在 `Assistant.SidebarCollapsed`（界面偏好，与"显示位置"同类） |
 | 标题重命名改为双击 | 顶栏的改名笔去掉（`OnRenameClick` 一并删除）；双击标题改名，可发现性靠标题的悬停提示；左栏右键「重命名对话」保留 |
+
+## 23. SDEBuilder 数据面（阶段 157）
+
+> 与 AI 助手无直接耦合，但属于同一套本地数据基础设施；详细变更见 `REFACTORING.md` 阶段 157。
+
+- **统一落库管线**：`Builder.WriteAllTablesAsync` 同时服务单库与 `NewEdenBuilder` main，主库不再漏 `typeMaterials/typeBonus/dogma*/typeDogma`。
+- **关键语义**：`types.MarketGroupID` 缺失写 NULL；`typeBonus` 的 `TypeID=船体 / SkillTypeID=技能`，roleBonus 技能为 0。
+- **mapDenormalizes** 扩展到星门/NPC 空间站/次级恒星（7 组），新增 `factions/races/metaGroups/.../sdeInfo` 等查找表；`types` 补 `Capacity/FactionID/GraphicID/MetaLevel/Radius/SoundID`。
+- **自检**：构建后写 `<db>.report.txt`，缺表/空表/行数不符直接失败。
+- **探针**：新增 `SdeSuite`，`AssistantProbe sde` 可离线用 fixture 复跑，当前 **48 PASS / 0 FAIL**；`AssistantProbe all` 也会自动带上该套件。

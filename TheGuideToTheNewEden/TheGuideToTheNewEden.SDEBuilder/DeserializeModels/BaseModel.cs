@@ -11,9 +11,11 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
         public int Id { get; set; }
 
         [JsonProperty("Name")]
+        [JsonConverter(typeof(LanguagesConverter))]
         public Languages Names { get; set; }
 
         [JsonProperty("Description")]
+        [JsonConverter(typeof(LanguagesConverter))]
         public Languages Descriptions { get; set; }
     }
 }

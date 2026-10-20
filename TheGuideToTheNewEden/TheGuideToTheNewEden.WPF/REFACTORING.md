@@ -8082,6 +8082,48 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 
 ---
 
+## 阶段 157：SDEBuilder 数据面补全与工业计算前置（2026-10-20）
+
+> 背景：`feature/Planet` 的 SDEBuilder 已同步到 4.0（蓝图/行星开发/dogma/typeBonus 等）。
+> 本轮把上一轮分析里剩余的语义缺陷、死代码、构建漂移和覆盖缺口一次性收口，并补了可离线复跑的 SDE 探针。
+
+### 157.1 语义修复
+
+- **`types.MarketGroupID` 改为 `int?`**：SDE 中 52,096 个 type 有 32,679 个没有 `marketGroupID`，旧实现写 0，Core 用 `MarketGroupID != null` 判断导致所有类型都被当成市场类型。现在缺失写 NULL，存在值原样保留；全量构建实测 `NULL=32,679 / 0=0`。
+- **`typeBonus` 方向修正**：`typeBonus` 的 `_key` 是船体，`types[]._key` 是提供加成的技能。旧实现把两者写反；现在 `TypeID=船体`、`SkillTypeID=技能`，roleBonus 的 `SkillTypeID=0`。全量构建实测 Bantam(582) 的 Caldari Frigate(3330) 加成为 `(582,3330,10)`，roleBonus 为 `(582,0,300)`。
+- **`SovereigntyUpgrades` / `StationOperations.StationTypes` / `DogmaAttributes` 映射修正**：
+  snake_case 字段补 `JsonProperty`；`_key/_value` 补映射；dogma 的 `Published/Stackable/HighIsGood/DisplayWhenZero` 从字符串改回 bool。
+- **`categories` 表名对齐**：Core `InvCategory` 从 `categorys` 改为 `categories`，与构建器一致。
+
+### 157.2 构建管线与自检
+
+- 新增 `Builder.WriteAllTablesAsync`：单库构建（`Builder.StartBuilder`）与 `NewEdenBuilder` 的 main 库共用同一条落库管线，主库不再漏掉 `typeMaterials/typeBonus/dogma*/typeDogma`。
+- 删除 `Builder.StartBuilder` 末尾没有 `BeginTran` 的 `db.Ado.CommitTran()`。
+- 新增 `Helpers/BuildVerifier`：构建后校验每张表的行数（与源文件行数或派生规则对账）、检查空表/缺表，并在 db 同目录写 `<db>.report.txt`；有失败直接抛异常。
+- 删除 `Models/` 下 12 个旧实现文件与重复的 `DeserializeModels/SDEInfo.cs`，只保留 WinUI 实际使用的 `Models/SDEInfo.cs`。
+- 新增 `LanguagesConverter`：`name/description` 兼容 `{de,en,...}` 对象与纯字符串两种形态（`npcCharacters.description` 就是字符串，旧实现会直接反序列化失败）。
+
+### 157.3 覆盖扩展
+
+- **`mapDenormalizes`** 在恒星(6)/行星(7)/月球(8)/小行星带(9)之外，新增 **星门(10)、NPC 空间站(15)、次级恒星(995)**；空间站名称复用 `Stations` 的 `父天体 - 军团 运营` 逻辑，并对缺失 ID 做回退，避免 `KeyNotFound` 中断构建。全量构建 **482,099** 行（原 461,881）。
+- **`types`** 补 `Capacity/FactionID/GraphicID/MetaLevel/Radius/SoundID`。
+- 新增落库表（14 张）：`factions/races/metaGroups/stationServices/npcCorporationDivisions/archetypes/compressibleTypes/typeLists/masteries/cloneGrades/npcCharacters/landmarks/mercenaryTacticalOperations/mapSecondarySuns`，以及 `sdeInfo`（buildNumber/releaseDate 溯源）。
+- 仍未解析（按需再补）：`dungeons/dynamicItemAttributes/freelanceJobSchemas/graphics/icons/skinLicenses/skinMaterials/skins/translationLanguages`。前三个结构复杂且当前无消费方；资产类（skins/graphics/icons）只是资源元数据。
+
+### 157.4 验证
+
+- **全量真实 SDE（build 3365090，59 个 jsonl）**：19.1s 完成，82.1MB，**40 张表全部通过自检**；关键行数：`types 52,096`、`mapDenormalizes 482,099`、`typeDogma 637,497`、`typeMaterials 46,826`、`typeBonus 3,487`、`blueprints 5,075`、`npcCharacters 11,324`、`mapSecondarySuns 1,038`、`sdeInfo 1`。
+- **新增 `probe/AssistantProbe/SdeSuite.cs`**：用最小 JSONL fixture 离线跑真实 `Builder.StartBuilder`，覆盖 NULL 语义、typeBonus 方向、mapDenormalizes 七组、新表、自检报告；`sde` 套件 **48 PASS / 0 FAIL**。
+- `SDEBuilder.WinUI` 编译 **0 错误**（2 条既有 nullable 警告）。
+
+### 157.5 已知限制
+
+- `PackagedVolume` 仍依赖 `Resources/ref.db` + ESI 逐 type 补全；关闭该选项时不做网络请求。
+- `mapDenormalizes` 的“主权设施”仍无来源：当前 SDE 只有 `sovereigntyUpgrades` 定义，没有地图实例；需要主权设施请走 ESI。
+- 新增表目前是“数据面先行”，Core/UI 的工业/行星/势力消费方尚未接线；工业计算缺口见本轮对 eve-nexus 的对照结论。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

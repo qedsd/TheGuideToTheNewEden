@@ -9,7 +9,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
         public double BasePrice { get; set; }
         public int GroupID { get; set; }
         public int IconID { get; set; }
-        public int MarketGroupID { get; set; }
+        public int? MarketGroupID { get; set; }
         public double Mass { get; set; }
         public int MetaGroupID { get; set; }
         public int PortionSize { get; set; }
@@ -17,5 +17,11 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
         public int RaceID { get; set; }
         public int VariationParentTypeID { get; set; }
         public double Volume { get; set; }
+        public double Capacity { get; set; }
+        public int FactionID { get; set; }
+        public int GraphicID { get; set; }
+        public int MetaLevel { get; set; }
+        public double Radius { get; set; }
+        public int SoundID { get; set; }
     }
 }

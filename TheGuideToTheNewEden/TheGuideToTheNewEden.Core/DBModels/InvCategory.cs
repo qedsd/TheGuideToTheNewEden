@@ -5,13 +5,13 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.DBModels
 {
-    [SugarTable("categorys")]
+    [SugarTable("categories")]
     public class InvCategory : InvCategoryBase
     {
         public bool Published { get; set; }
     }
 
-    [SugarTable("categorys")]
+    [SugarTable("categories")]
     public class InvCategoryBase
     {
         [SugarColumn(ColumnName = "Id")]

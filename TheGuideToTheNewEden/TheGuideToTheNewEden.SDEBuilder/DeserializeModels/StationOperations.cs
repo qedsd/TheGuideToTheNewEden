@@ -21,7 +21,9 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
 
     public class StationTypeItem
     {
+        [Newtonsoft.Json.JsonProperty("_key")]
         public long ValueKey { get; set; }
+        [Newtonsoft.Json.JsonProperty("_value")]
         public int Value { get; set; }
     }
 }
