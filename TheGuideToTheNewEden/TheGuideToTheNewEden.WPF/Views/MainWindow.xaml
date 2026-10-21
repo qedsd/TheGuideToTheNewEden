@@ -158,6 +158,17 @@
                                     Source="{StaticResource NavIcon.industry}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.IndustryInventory}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:IndustryInventoryPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.industry}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 

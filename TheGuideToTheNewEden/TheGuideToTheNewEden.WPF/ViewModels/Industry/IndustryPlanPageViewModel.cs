@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Enums;
@@ -123,15 +124,47 @@ public sealed class IndustryOverviewBuyLine
     public string TotalText => Total > 0 ? $"{Total:N0}" : "—";
 }
 
+/// <summary>「角色与市场」里可勾选的库存仓库。</summary>
+public sealed class IndustryWarehouseSelection : INotifyPropertyChanged
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Summary { get; set; } = string.Empty;
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected == value) return;
+            _isSelected = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+/// <summary>已保存计划列表项。</summary>
+public sealed class IndustrySavedPlanItem
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string UpdatedText { get; set; } = string.Empty;
+    public string TargetSummary { get; set; } = string.Empty;
+}
+
 /// <summary>「工业 → 制造计划」页：多目标、多角色、结构 rig、解密器、市场深度、可视化 BOM。</summary>
 public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 {
     private const int MaxTreeNodes = 6000;
 
-    private readonly IndustrySetting _setting;
+    private IndustrySetting _setting;
     private readonly Dictionary<int, int> _manualDecisions = new();
     private readonly HashSet<int> _blacklist = new();
     private IndustryBuildPlan? _lastPlan;
+    private DateTime? _resultSavedAt;
     private bool _loaded;
     private bool _forceRefresh;
 
@@ -176,11 +209,20 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             });
         }
 
+        var selectedCharacters = new HashSet<long>(_setting.SelectedCharacterIds ?? new List<long>());
         int index = 0;
         foreach (var character in CharacterStore.Characters)
         {
-            Characters.Add(new IndustryCharacterItem(character, index++ == 0));
+            bool selected = selectedCharacters.Count > 0
+                ? selectedCharacters.Contains(character.CharacterID)
+                : index == 0;
+            Characters.Add(new IndustryCharacterItem(character, selected));
+            index++;
         }
+
+        RefreshWarehouseSelections(preserveCurrent: false);
+        IndustryInventoryService.Changed += (_, _) => RefreshWarehouseSelections(preserveCurrent: true);
+        ReloadSavedPlans();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -314,6 +356,30 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private bool _useMarketDepth;
     public bool UseMarketDepth { get => _useMarketDepth; set => Set(ref _useMarketDepth, value); }
 
+    // ───────────── 库存仓库 / 已保存计划 ─────────────
+
+    public ObservableCollection<IndustryWarehouseSelection> Warehouses { get; } = new();
+
+    public ObservableCollection<IndustrySavedPlanItem> SavedPlans { get; } = new();
+
+    private IndustrySavedPlanItem? _selectedSavedPlan;
+    public IndustrySavedPlanItem? SelectedSavedPlan
+    {
+        get => _selectedSavedPlan;
+        set
+        {
+            if (Set(ref _selectedSavedPlan, value) && value is not null)
+            {
+                PlanName = value.Name;
+            }
+        }
+    }
+
+    private string _planName = string.Empty;
+    public string PlanName { get => _planName; set => Set(ref _planName, value); }
+
+    public bool HasWarehouses => Warehouses.Count > 0;
+
     private string _marketStatusText = string.Empty;
     public string MarketStatusText { get => _marketStatusText; set => Set(ref _marketStatusText, value); }
 
@@ -323,8 +389,17 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private bool _isBusy;
     public bool IsBusy { get => _isBusy; set => Set(ref _isBusy, value); }
 
-    private int _selectedTabIndex;
-    public int SelectedTabIndex { get => _selectedTabIndex; set => Set(ref _selectedTabIndex, value); }
+    /// <summary>外层分区：0 计划设置 / 1 计算结果 / 2 已保存计划。</summary>
+    private int _sectionTabIndex;
+    public int SectionTabIndex { get => _sectionTabIndex; set => Set(ref _sectionTabIndex, value); }
+
+    /// <summary>「计划设置」内的子页签：0 目标 / 1 工艺 / 2 建筑 / 3 角色与市场。</summary>
+    private int _settingsTabIndex;
+    public int SettingsTabIndex { get => _settingsTabIndex; set => Set(ref _settingsTabIndex, value); }
+
+    /// <summary>「计算结果」内的子页签：0 概况 / 1 生产链。</summary>
+    private int _resultTabIndex;
+    public int ResultTabIndex { get => _resultTabIndex; set => Set(ref _resultTabIndex, value); }
 
     private string _busyText = string.Empty;
     public string BusyText { get => _busyText; set => Set(ref _busyText, value); }
@@ -757,6 +832,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             options.Hangar = _setting.VirtualHangar is null
                 ? new Dictionary<int, long>()
                 : new Dictionary<int, long>(_setting.VirtualHangar);
+            ApplyWarehouseStock(options);
 
             BusyText = Resolve("IndustryPage_Expanding", "展开 BOM...");
 
@@ -781,9 +857,36 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
     }
 
-    private void FillPlan(IndustryBuildPlan plan, int characterCount)
+    private void ClearResult()
+    {
+        _lastPlan = null;
+        _resultSavedAt = null;
+        Roots.Clear();
+        FlatNodes.Clear();
+        CostSlices.Clear();
+        OverviewBuyItems.Clear();
+        SelectedNode = null;
+        SelectedOverviewTarget = null;
+        HasPlan = false;
+        HasProfit = false;
+        SummaryTargets = "—";
+        SummaryRuns = "0";
+        SummaryJobCost = "—";
+        SummaryDirectBuy = "—";
+        SummaryFullBuild = "—";
+        SummaryCash = "—";
+        SummaryStock = "—";
+        SummaryRevenue = "—";
+        SummaryProfit = "—";
+        SummaryBuyVolume = "—";
+        OnPropertyChanged(nameof(ProfitIsPositive));
+        OnPropertyChanged(nameof(TargetSummary));
+    }
+
+    private void FillPlan(IndustryBuildPlan plan, int characterCount, DateTime? resultSavedAt = null)
     {
         _lastPlan = plan;
+        _resultSavedAt = resultSavedAt ?? DateTime.Now;
         LocalizePlanNames(plan.Targets);
         OnPropertyChanged(nameof(TargetSummary));
         Roots.Clear();
@@ -828,7 +931,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         CharacterStatusText = characterCount > 0
             ? string.Format(Resolve("IndustryPage_CharacterStatus", "{0} 个角色参与"), characterCount)
             : Resolve("IndustryPage_NoCharacterStatus", "未选择角色");
-        SelectedTabIndex = 4;
+        SectionTabIndex = 1;
+        ResultTabIndex = 0;
     }
 
     private void AddCostSlice(string kind, string name, double value, double total)
@@ -1219,6 +1323,331 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         return "\"" + value.Replace("\"", "\"\"") + "\"";
     }
 
+    // ───────────── 库存仓库 ─────────────
+
+    private void RefreshWarehouseSelections(bool preserveCurrent)
+    {
+        var selected = new HashSet<string>(_setting.SelectedWarehouseIds ?? new List<string>());
+        if (preserveCurrent)
+        {
+            foreach (var item in Warehouses.Where(p => p.IsSelected))
+            {
+                selected.Add(item.Id);
+            }
+        }
+
+        Warehouses.Clear();
+        foreach (var warehouse in IndustryInventoryService.Warehouses.OrderBy(p => p.Name))
+        {
+            var selection = new IndustryWarehouseSelection
+            {
+                Id = warehouse.Id,
+                Name = warehouse.Name,
+                Summary = $"{warehouse.Items.Count:N0} 种 · {warehouse.Items.Values.Sum():N0} 件",
+                IsSelected = selected.Contains(warehouse.Id),
+            };
+            selection.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(IndustryWarehouseSelection.IsSelected))
+                {
+                    PersistWarehouseSelection();
+                }
+            };
+            Warehouses.Add(selection);
+        }
+        OnPropertyChanged(nameof(HasWarehouses));
+    }
+
+    private void PersistWarehouseSelection()
+    {
+        _setting.SelectedWarehouseIds = Warehouses.Where(p => p.IsSelected).Select(p => p.Id).ToList();
+        IndustrySettingService.Save(_setting);
+    }
+
+    private void ApplyWarehouseStock(IndustrySolverOptions options)
+    {
+        var stock = new Dictionary<int, long>();
+        foreach (var selection in Warehouses.Where(p => p.IsSelected))
+        {
+            var warehouse = IndustryInventoryService.Find(selection.Id);
+            if (warehouse?.Items is null) continue;
+            foreach (var pair in warehouse.Items)
+            {
+                if (pair.Value <= 0) continue;
+                stock[pair.Key] = stock.TryGetValue(pair.Key, out var existing) ? existing + pair.Value : pair.Value;
+            }
+        }
+
+        var merged = options.Assets is null
+            ? new Dictionary<int, long>()
+            : new Dictionary<int, long>(options.Assets);
+        foreach (var pair in stock)
+        {
+            merged[pair.Key] = merged.TryGetValue(pair.Key, out var existing) ? existing + pair.Value : pair.Value;
+        }
+        options.Assets = merged;
+    }
+
+    // ───────────── 已保存计划 ─────────────
+
+    private void ReloadSavedPlans()
+    {
+        SavedPlans.Clear();
+        foreach (var plan in IndustryPlanService.Load().OrderByDescending(p => p.Updated))
+        {
+            var names = plan.Targets.Take(3)
+                .Select(p => ResolveTypeName(p.TypeId))
+                .ToList();
+            var suffix = plan.Targets.Count > names.Count ? "…" : string.Empty;
+            var resultText = plan.Result is null
+                ? "未保存结果"
+                : $"含结果 {(plan.ResultSavedAt ?? plan.Updated):MM-dd HH:mm}";
+            SavedPlans.Add(new IndustrySavedPlanItem
+            {
+                Id = plan.Id,
+                Name = plan.Name,
+                UpdatedText = plan.Updated.ToString("yyyy-MM-dd HH:mm"),
+                TargetSummary = plan.Targets.Count == 0
+                    ? $"空计划 · {resultText}"
+                    : $"{plan.Targets.Count:N0} 个目标 · {string.Join("、", names)}{suffix} · {resultText}",
+            });
+        }
+    }
+
+    public void SaveCurrentPlan()
+    {
+        var name = PlanName?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            PageNotifyService.Warning("请先填写计划名称");
+            return;
+        }
+        if (Targets.Count == 0)
+        {
+            PageNotifyService.Warning("请先添加目标产物");
+            return;
+        }
+
+        SaveSetting();
+        var plans = IndustryPlanService.Load();
+        var plan = plans.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+        bool existed = plan is not null;
+        if (plan is null)
+        {
+            plan = new IndustrySavedPlan { Name = name };
+            plans.Add(plan);
+        }
+
+        FillPlanSnapshot(plan, name);
+        IndustryPlanService.Save(plans);
+        ReloadSavedPlans();
+        SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
+        PageNotifyService.Success(existed ? "已更新同名计划" : "计划已保存");
+    }
+
+    public void OverwriteSelectedPlan()
+    {
+        if (SelectedSavedPlan is null)
+        {
+            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            return;
+        }
+
+        var plans = IndustryPlanService.Load();
+        var plan = plans.FirstOrDefault(p => p.Id == SelectedSavedPlan.Id);
+        if (plan is null)
+        {
+            PageNotifyService.Warning("计划不存在，可能已被删除");
+            ReloadSavedPlans();
+            return;
+        }
+
+        SaveSetting();
+        FillPlanSnapshot(plan, string.IsNullOrWhiteSpace(PlanName) ? plan.Name : PlanName.Trim());
+        IndustryPlanService.Save(plans);
+        ReloadSavedPlans();
+        SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
+        PageNotifyService.Success("已覆盖保存");
+    }
+
+    public void LoadSelectedPlan()
+    {
+        if (SelectedSavedPlan is null)
+        {
+            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            return;
+        }
+
+        var plan = IndustryPlanService.Load().FirstOrDefault(p => p.Id == SelectedSavedPlan.Id);
+        if (plan is null)
+        {
+            PageNotifyService.Warning("计划不存在，可能已被删除");
+            ReloadSavedPlans();
+            return;
+        }
+
+        _setting = CloneSetting(plan.Settings);
+        ApplySettingToUi();
+        ClearResult();
+        ClearTargets();
+        AddTargets(plan.Targets.Select(p => new IndustryTargetDraft
+        {
+            TypeId = p.TypeId,
+            Name = ResolveTypeName(p.TypeId),
+            Quantity = p.Quantity,
+        }));
+        IndustrySettingService.Save(_setting);
+
+        PlanName = plan.Name;
+        OnPropertyChanged(nameof(TargetSummary));
+        if (plan.Result is not null)
+        {
+            FillPlan(plan.Result, plan.CharacterCount, plan.ResultSavedAt ?? plan.Updated);
+            MarketStatusText = $"保存时价格快照 · {(_resultSavedAt ?? plan.Updated):yyyy-MM-dd HH:mm}";
+            PageNotifyService.Success("已载入计划与保存时的结果；重新计算会刷新为当前价格");
+        }
+        else
+        {
+            SectionTabIndex = 0;
+            SettingsTabIndex = 0;
+            PageNotifyService.Success("计划已载入，请点击「计算制造计划」");
+        }
+    }
+
+    public void RenameSelectedPlan()
+    {
+        if (SelectedSavedPlan is null)
+        {
+            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            return;
+        }
+
+        var name = PlanName?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            PageNotifyService.Warning("请先填写计划名称");
+            return;
+        }
+
+        var plans = IndustryPlanService.Load();
+        var plan = plans.FirstOrDefault(p => p.Id == SelectedSavedPlan.Id);
+        if (plan is null) return;
+        plan.Name = name;
+        plan.Updated = DateTime.Now;
+        IndustryPlanService.Save(plans);
+        ReloadSavedPlans();
+        SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
+        PageNotifyService.Success("已重命名");
+    }
+
+    public void DeleteSelectedPlan()
+    {
+        if (SelectedSavedPlan is null)
+        {
+            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            return;
+        }
+
+        var plans = IndustryPlanService.Load();
+        plans.RemoveAll(p => p.Id == SelectedSavedPlan.Id);
+        IndustryPlanService.Save(plans);
+        ReloadSavedPlans();
+        SelectedSavedPlan = null;
+        PageNotifyService.Info("已删除计划");
+    }
+
+    private void FillPlanSnapshot(IndustrySavedPlan plan, string name)
+    {
+        plan.Name = name;
+        plan.Updated = DateTime.Now;
+        plan.Targets = Targets.Select(p => new IndustrySavedTarget
+        {
+            TypeId = p.TypeId,
+            Quantity = p.QuantityLong,
+        }).ToList();
+        plan.Settings = CloneSetting(_setting);
+        plan.Result = _lastPlan;
+        plan.ResultSavedAt = _lastPlan is null ? null : (_resultSavedAt ?? DateTime.Now);
+        plan.CharacterCount = Characters.Count(p => p.IsSelected);
+    }
+
+    private static IndustrySetting CloneSetting(IndustrySetting setting)
+        => JsonConvert.DeserializeObject<IndustrySetting>(JsonConvert.SerializeObject(setting)) ?? new IndustrySetting();
+
+    private static string ResolveTypeName(int typeId)
+    {
+        try
+        {
+            return InvTypeService.QueryType(typeId)?.TypeName ?? typeId.ToString();
+        }
+        catch
+        {
+            return typeId.ToString();
+        }
+    }
+
+    private void ApplySettingToUi()
+    {
+        MeLevel = _setting.DefaultME;
+        TeLevel = _setting.DefaultTE;
+        SelectedLocation = _setting.Location;
+        SelectedPriceLocation = _setting.PriceLocation ?? _setting.Location;
+        FacilityTaxPercent = _setting.FacilityTaxPercent;
+        SpaceModifier = _setting.SpaceModifier;
+        RigMeBonusPercent = _setting.RigMeBonusPercent;
+        RigTeBonusPercent = _setting.RigTeBonusPercent;
+        ApplyMeToReactions = _setting.ApplyMeToReactions;
+        ApplyRigToReactions = _setting.ApplyRigToReactions;
+        InventionAttemptsOverride = _setting.InventionAttemptsOverride ?? 0;
+        InventionProbabilityOverridePercent = _setting.InventionProbabilityOverridePercent ?? 0;
+        InventionBpcRunsOverride = _setting.InventionBpcRunsOverride ?? 0;
+        UseAssets = _setting.UseAssets;
+        UseInProgressJobs = _setting.UseInProgressJobs;
+        UseOwnedBlueprints = _setting.UseOwnedBlueprints;
+        UseCharacterSkills = _setting.UseCharacterSkills;
+        UseMarketDepth = _setting.UseMarketDepth;
+
+        RigBonuses.Clear();
+        foreach (var rig in _setting.RigBonuses ?? new List<IndustryRigSetting>())
+        {
+            RigBonuses.Add(new IndustryRigItem
+            {
+                CategoryId = rig.CategoryId,
+                CategoryName = rig.CategoryName,
+                MePercent = rig.MePercent,
+                TePercent = rig.TePercent,
+            });
+        }
+
+        _manualDecisions.Clear();
+        foreach (var pair in _setting.ManualDecisions ?? new Dictionary<int, int>())
+        {
+            _manualDecisions[pair.Key] = pair.Value;
+        }
+        _blacklist.Clear();
+        foreach (var id in _setting.Blacklist ?? new List<int>())
+        {
+            _blacklist.Add(id);
+        }
+
+        if (Decryptors.Count > 0)
+        {
+            SelectedDecryptor = Decryptors.FirstOrDefault(p => p.TypeId == _setting.DecryptorTypeId)
+                ?? Decryptors.FirstOrDefault();
+        }
+
+        var selectedCharacters = new HashSet<long>(_setting.SelectedCharacterIds ?? new List<long>());
+        for (int i = 0; i < Characters.Count; i++)
+        {
+            var character = Characters[i];
+            character.IsSelected = selectedCharacters.Count == 0
+                ? i == 0
+                : selectedCharacters.Contains(character.Character.CharacterID);
+        }
+
+        RefreshWarehouseSelections(preserveCurrent: false);
+    }
+
     // ───────────── 设置 ─────────────
 
     private void SaveSetting()
@@ -1252,6 +1681,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.UseMarketDepth = UseMarketDepth;
         _setting.ManualDecisions = new Dictionary<int, int>(_manualDecisions);
         _setting.Blacklist = _blacklist.ToList();
+        _setting.SelectedWarehouseIds = Warehouses.Where(p => p.IsSelected).Select(p => p.Id).ToList();
+        _setting.SelectedCharacterIds = Characters.Where(p => p.IsSelected)
+            .Select(p => p.Character.CharacterID)
+            .ToList();
         IndustrySettingService.Save(_setting);
     }
 

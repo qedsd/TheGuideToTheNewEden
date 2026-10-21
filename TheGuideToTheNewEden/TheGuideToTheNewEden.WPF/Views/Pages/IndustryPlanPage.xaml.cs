@@ -77,4 +77,26 @@ public partial class IndustryPlanPage : Page
     private void OnBlacklistClick(object sender, RoutedEventArgs e) => _viewModel.BlacklistSelected();
 
     private void OnClearDecisionsClick(object sender, RoutedEventArgs e) => _viewModel.ClearManualDecisions();
+
+    private void OnSavePlanClick(object sender, RoutedEventArgs e) => _viewModel.SaveCurrentPlan();
+
+    private void OnOverwritePlanClick(object sender, RoutedEventArgs e) => _viewModel.OverwriteSelectedPlan();
+
+    private void OnLoadPlanClick(object sender, RoutedEventArgs e) => _viewModel.LoadSelectedPlan();
+
+    private void OnRenamePlanClick(object sender, RoutedEventArgs e) => _viewModel.RenameSelectedPlan();
+
+    private void OnDeletePlanClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.SelectedSavedPlan is null)
+        {
+            _viewModel.DeleteSelectedPlan();
+            return;
+        }
+        if (MessageBox.Show($"确定删除计划「{_viewModel.SelectedSavedPlan.Name}」？", "删除计划",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        {
+            _viewModel.DeleteSelectedPlan();
+        }
+    }
 }

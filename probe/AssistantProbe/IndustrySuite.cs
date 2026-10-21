@@ -213,6 +213,19 @@ internal static class IndustrySuite
             .Solve(new[] { new IndustryBuildTarget(34, 1), new IndustryBuildTarget(35, 1) });
         c.Equal(multiPlan.Targets.Count, 2, "两个目标各自成树");
 
+        c.Section("IndustrySuite · 结果快照序列化");
+        var snapshotJson = Newtonsoft.Json.JsonConvert.SerializeObject(noStockPlan);
+        var snapshot = Newtonsoft.Json.JsonConvert.DeserializeObject<IndustryBuildPlan>(snapshotJson);
+        c.NotNull(snapshot, "结果树可序列化/反序列化");
+        if (snapshot is not null && snapshot.Targets.Count > 0 && noStockPlan.Targets.Count > 0)
+        {
+            c.Equal(snapshot.Targets.Count, noStockPlan.Targets.Count, "结果目标数往返一致");
+            c.Equal(snapshot.Targets[0].Inputs.Count, noStockPlan.Targets[0].Inputs.Count, "结果子节点往返一致");
+            c.Equal(snapshot.Summary.BuildRuns.Count, noStockPlan.Summary.BuildRuns.Count, "结果流程汇总往返一致");
+            c.Equal(snapshot.Summary.BuyQuantities.Count, noStockPlan.Summary.BuyQuantities.Count, "结果采购汇总往返一致");
+            c.That(snapshot.Targets[0].ReferenceUnitPrice >= 0, "结果价格字段可读");
+        }
+
         c.Section("IndustrySuite · 常驻物品树");
         var products = IndustryDbService.GetAllManufacturableProducts();
         c.That(products.Count > 0, $"可制造物品树有数据（{products.Count} 条）");
@@ -233,6 +246,8 @@ internal static class IndustrySuite
             c.That(planPage.DataContext is IndustryPlanPageViewModel, "制造计划页 DataContext");
             var blueprintPage = new IndustryBlueprintPage();
             c.That(blueprintPage.DataContext is IndustryBlueprintPageViewModel, "蓝图浏览器页 DataContext");
+            var inventoryPage = new IndustryInventoryPage();
+            c.That(inventoryPage.DataContext is IndustryInventoryPageViewModel, "库存页 DataContext");
         }
         catch (System.Exception ex)
         {

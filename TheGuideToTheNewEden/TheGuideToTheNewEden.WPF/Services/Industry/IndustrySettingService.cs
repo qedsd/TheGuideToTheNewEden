@@ -80,6 +80,12 @@ public sealed class IndustrySetting
 
     /// <summary>虚拟挂机库（TypeID → 数量）。</summary>
     public Dictionary<int, long> VirtualHangar { get; set; } = new();
+
+    /// <summary>参与计算的库存仓库 Id（在「角色与市场」中选择）。</summary>
+    public List<string> SelectedWarehouseIds { get; set; } = new();
+
+    /// <summary>参与计算的角色 Id（在「角色与市场」中勾选）。</summary>
+    public List<long> SelectedCharacterIds { get; set; } = new();
 }
 
 /// <summary>工业设置读写（WPF 版专有文件，与 WinUI 无共享）。</summary>

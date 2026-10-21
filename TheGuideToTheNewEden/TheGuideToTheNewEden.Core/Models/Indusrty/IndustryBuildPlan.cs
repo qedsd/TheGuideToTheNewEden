@@ -16,11 +16,11 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
     public class IndustryPlanSummary
     {
         /// <summary>需采购的物品 → 数量。</summary>
-        public Dictionary<int, long> BuyQuantities { get; } = new Dictionary<int, long>();
+        public Dictionary<int, long> BuyQuantities { get; set; } = new Dictionary<int, long>();
         /// <summary>需制造的产物 → 产出数量。</summary>
-        public Dictionary<int, long> BuildQuantities { get; } = new Dictionary<int, long>();
+        public Dictionary<int, long> BuildQuantities { get; set; } = new Dictionary<int, long>();
         /// <summary>需制造的产物 → 总流程数。</summary>
-        public Dictionary<int, int> BuildRuns { get; } = new Dictionary<int, int>();
+        public Dictionary<int, int> BuildRuns { get; set; } = new Dictionary<int, int>();
         /// <summary>作业安装费合计（仅对已知者求和）。</summary>
         public double TotalJobCost { get; set; }
         public bool JobCostKnown { get; set; }

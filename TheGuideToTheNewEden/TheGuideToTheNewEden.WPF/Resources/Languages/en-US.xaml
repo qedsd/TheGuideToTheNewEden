@@ -2543,6 +2543,8 @@
 
     <sys:String x:Key="Nav.IndustryBlueprints">Blueprint Browser</sys:String>
     <sys:String x:Key="Home.Feature.IndustryBlueprintsDesc">Search manufacturable items by product name and inspect materials, products and skills.</sys:String>
+    <sys:String x:Key="Nav.IndustryInventory">Inventory</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryInventoryDesc">Multi-warehouse inventory: import character assets, search and add items, import/export CSV, and deduct stock per warehouse in build plans.</sys:String>
     <sys:String x:Key="IndustryPage_SpaceModifier">Space modifier</sys:String>
     <sys:String x:Key="IndustryPage_RigMe">Structure rig material bonus %</sys:String>
     <sys:String x:Key="IndustryPage_RigTe">Structure rig time bonus %</sys:String>

@@ -8335,6 +8335,90 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 - 补 `CostShareText`（“占计划总成本 X%”）与 ToolTip，避免误解；节点详情里的三条彩色条仍是成本构成。
 - 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
 
+### 158.22 顶层页签分区：计划设置 / 计算结果 / 已保存计划（2026-10-21）
+
+- **问题**：此前「目标 / 工艺 / 建筑 / 角色与市场」与「概况 / 生产链」同处一个 `TabControl`，
+  参数与结果混在同一行，容易被误读为同一层；后续加入已保存计划后会更混乱。
+- **改法**：外层 `TabControl` 分三个顶层页签：
+  - **计划设置**（计算前）→ 内层子页签：目标 / 工艺 / 建筑与 rig / 角色与市场；
+  - **计算结果**（计算后）→ 内层子页签：概况 / 生产链；
+  - **已保存计划** → 当前为空态占位（保存 / 载入仍属后续能力）。
+- **状态绑定**：`IndustryPlanPageViewModel` 的 `SelectedTabIndex` 拆成
+  `SectionTabIndex`（外层 0/1/2）、`SettingsTabIndex`（内层 0-3）、`ResultTabIndex`（内层 0/1）；
+  计算完成由 `SectionTabIndex=1` + `ResultTabIndex=0` 自动切到「计算结果 → 概况」。
+- **手册**：`industry/plan` 的「在哪打开 / 操作步骤 / 前置条件」按新层级更新（如「计划设置 → 工艺」），
+  并注明「已保存计划」为空态。
+- **验证**：WPF `dotnet build`（重定向输出，应用运行中）**0 错误**；外层 3 个 `TabItem`、
+  内层 4 + 2 个子页签层级正确，全项目无残留 `SelectedTabIndex` 引用。
+
+## 阶段 159：保存计划与多仓库库存（2026-10-21）
+
+### 159.1 已保存计划（目标 + 参数快照）
+
+- **存储**：`Services/Industry/IndustryPlanService.cs` → `Configs/IndustryPlans.json`。
+  `IndustrySavedPlan { Id, Name, Updated, Targets[{TypeId,Quantity}], Settings: IndustrySetting, Result, ResultSavedAt, CharacterCount }`。
+- **快照内容**：目标 + 全部参数（位置、税、ME/TE、空间加成、rig、解密器、发明覆盖、反应规则、
+  角色勾选、仓库勾选、手动决策、黑名单、虚拟挂机库）；若保存时已有计算结果，同时保存结果树（见 159.4）。
+- **设置字段**：`IndustrySetting` 新增 `SelectedWarehouseIds`、`SelectedCharacterIds`，
+  当前设置与计划共用同一份结构；`SaveSetting()` 同步写入。
+- **VM**：`SaveCurrentPlan`（同名更新）/ `OverwriteSelectedPlan` / `LoadSelectedPlan` /
+  `RenameSelectedPlan` / `DeleteSelectedPlan`；`LoadSelectedPlan` 通过 `CloneSetting`
+  （JSON round-trip）替换 `_setting`，再用 `ApplySettingToUi()` 回填所有控件，目标走
+  `AddTargets` 重新解析名称。
+- **UI**：「已保存计划」不再是空态：左侧计划列表（名称/更新时间/目标摘要），右侧名称输入 +
+  保存/覆盖/载入/重命名/删除；删除有确认框。
+- **口径**：载入只恢复参数与目标，必须重新计算；同名保存覆盖同名计划。
+
+### 159.2 多仓库库存
+
+- **存储**：`Services/Industry/IndustryInventoryService.cs` → `Configs/IndustryInventory.json`。
+  `IndustryWarehouse { Id, Name, Updated, Items: Dictionary<int,long> }`；
+  `Warehouses` 懒加载，`Create/Delete/Rename/Save` 统一持久化并触发 `Changed`。
+- **新页面**：`Views/Pages/IndustryInventoryPage.xaml` + `ViewModels/Industry/IndustryInventoryPageViewModel.cs`。
+  - 左侧仓库列表 + 新建/重命名/删除（删除确认）；
+  - 「添加 / 导入」：物品搜索（`InvTypeService.Search`，中英文）+ 数量 → 加入当前仓库；
+    角色资产「合并导入 / 覆盖导入」（`CharacterIndustryDataService.GetAssetQuantitiesAsync`，快照）；
+    CSV 导入（`TypeId/名称, 数量`，逗号/制表符/分号，自动跳表头）与导出（`TypeId,Quantity,Name`，UTF-8 BOM）。
+  - 「库存明细」：`DataGrid`（物品/数量/打包体积），移除选中行；仓库摘要 = 种类 · 总件数。
+- **计划联动**：`IndustryPlanPageViewModel.ApplyWarehouseStock(options)` 把勾选仓库的
+  `TypeID → 数量` 合并进 `options.Assets`（与角色资产相加，不是替代）；
+  「角色与市场」新增「使用库存仓库（可多选）」清单，空态提示去「工业 → 库存」创建；
+  勾选变化立即写回 `IndustrySetting.SelectedWarehouseIds`。
+- **导航**：工业组新增「库存」；`HomeFeatureCatalog` 注册 `industry-inventory`；
+  `ManualToolMap` → `industry/inventory`；`zh-CN`/`en-US` 各新增 2 个键（2447 → 2449，0 重复）。
+
+### 159.3 验证
+
+- WPF `dotnet build` **0 错误**（警告均为既有）。
+- `AssistantProbe industry` **73 PASS / 0 FAIL**（新增「库存页 DataContext」与「结果快照 JSON 往返」检查）。
+- 启动冒烟：`bin\Debug\net8.0-windows10.0.19041\TheGuideToTheNewEden.exe` 正常驻留（12 s 后手动结束）。
+- 语言键重复检查：zh-CN / en-US 各 **2449 keys / 0 duplicates**。
+- **手册**：新增 `industry/inventory.md`；`industry/plan.md` 更新「在哪打开 / 操作步骤 /
+  已保存计划与库存仓库 / 限制 / 相关功能」。
+
+### 159.4 保存计算结果与价格快照
+
+- **问题**：初版只保存目标 + 参数，载入后必须重算；用户需要看到保存时每个物品的价格/成本。
+- **模型**：`IndustrySavedPlan` 增加 `Result: IndustryBuildPlan?`、`ResultSavedAt`、`CharacterCount`。
+- **序列化**：`IndustryPlanSummary` 的 `BuyQuantities/BuildQuantities/BuildRuns` 从只读改为可写，
+  保证 Json.NET 能回填；`IndustryPlanService` 统一 `MaxDepth=256`（BOM 求解深度上限 64），
+  并在 Load 时补齐 `Targets/Summary`，兼容旧计划（无 Result）。
+- **保存**：`FillPlanSnapshot` 写入当前 `_lastPlan` 与结果时间（`_resultSavedAt`，计算时记录；
+  载入旧快照时保留原时间）；未计算则 `Result=null`。
+- **载入**：有结果直接 `FillPlan(plan.Result, plan.CharacterCount, plan.ResultSavedAt)`，
+  切到「计算结果 → 概况」，价格/成本/利润/采购量全部来自快照；结果页状态文案标注
+  「保存时价格快照 · yyyy-MM-dd HH:mm」。无结果仍切「计划设置」并提示计算。
+- **计划列表**：每项显示「含结果 MM-dd HH:mm」或「未保存结果」。
+- **口径**：快照价格不随市场更新；需要最新价格时重新计算。
+- **验证**：新增结果树 JSON 往返探针（目标数/子节点/流程汇总/采购汇总/价格字段）。
+
+### 159.5 已知限制
+
+- 结果快照会显著增大计划 JSON（大型 BOM 可达数 MB）；快照价格不会自动刷新。
+- 仓库按 TypeID 汇总，不区分地点/容器；角色导入为一次性快照。
+- CSV 仅支持简单两列格式，不支持游戏内多级容器导出。
+- 库存页静态文案仍为中文硬编码（与工业页其他 Tab 一致），英文界面待补。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

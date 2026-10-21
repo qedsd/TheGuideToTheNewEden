@@ -108,6 +108,8 @@ public static class HomeFeatureCatalog
             "Home.Feature.IndustryPlanDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryPlanPage)),
         new("industry-blueprints", SymbolRegular.DocumentText24, "industry", "Nav.IndustryBlueprints", "Nav.Industry",
             "Home.Feature.IndustryBlueprintsDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryBlueprintPage)),
+        new("industry-inventory", SymbolRegular.Database24, "industry", "Nav.IndustryInventory", "Nav.Industry",
+            "Home.Feature.IndustryInventoryDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryInventoryPage)),
 
         // ---------- 多开 ----------
         new("game-preview", SymbolRegular.SquareMultiple24, "gamePreview", "Nav.GamePreview", "Nav.GamePreview",
