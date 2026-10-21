@@ -18,6 +18,41 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         }
     }
 
+    /// <summary>按物类生效的 rig 加成。</summary>
+    public class IndustryRigBonus
+    {
+        public int CategoryID { get; set; }
+        /// <summary>材料加成（0.02 = 2%）。</summary>
+        public double MeBonus { get; set; }
+        /// <summary>时间加成（0.20 = 20%）。</summary>
+        public double TeBonus { get; set; }
+    }
+
+    /// <summary>解密器对发明的影响（来自 typeDogma 1112/1113/1114/1124）。</summary>
+    public class IndustryDecryptorInfo
+    {
+        public int TypeID { get; set; }
+        public string Name { get; set; }
+        public double ProbabilityMultiplier { get; set; } = 1.0;
+        public int MeModifier { get; set; }
+        public int TeModifier { get; set; }
+        public int RunModifier { get; set; }
+    }
+
+    /// <summary>单物品的市场深度摘要。</summary>
+    public class IndustryMarketStat
+    {
+        public int TypeID { get; set; }
+        public double SellMin { get; set; }
+        public double BuyMax { get; set; }
+        public long SellVolume { get; set; }
+        public long BuyVolume { get; set; }
+        public double AveragePrice { get; set; }
+
+        public double ReferencePrice => SellMin > 0 ? SellMin : AveragePrice;
+        public double RevenuePrice => BuyMax > 0 ? BuyMax : ReferencePrice;
+    }
+
     /// <summary>
     /// BOM 求解参数。<para>
     /// 默认口径：有蓝图就制造、没有就采购；ME 默认 10、TE 默认 20（可按产物 TypeID 覆盖）。
@@ -48,6 +83,8 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
 
         /// <summary>CCP 调整价（TypeID → adjusted_price），用于计算 EIV。</summary>
         public Dictionary<int, double> AdjustedPrices { get; set; } = new Dictionary<int, double>();
+        /// <summary>市场深度摘要（TypeID → 最低卖价/最高买价/深度）；为空时回退平均价。</summary>
+        public Dictionary<int, IndustryMarketStat> MarketStats { get; set; } = new Dictionary<int, IndustryMarketStat>();
         public double CostIndexManufacturing { get; set; }
         public double CostIndexReaction { get; set; }
         public double CostIndexInvention { get; set; }
@@ -60,13 +97,33 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         /// <summary>结构空间加成（高安 1.0 / 低安·00 1.9 / 虫洞 2.1）。</summary>
         public double SpaceModifier { get; set; } = 1.0;
 
-        /// <summary>结构 rig 材料加成（0.02 = 2%）；实际生效值 = 本值 × <see cref="SpaceModifier"/>。</summary>
+        /// <summary>全局 rig 材料加成（0.02 = 2%）；按物类的 <see cref="RigBonuses"/> 优先。</summary>
         public double RigMeBonus { get; set; }
 
-        /// <summary>结构 rig 时间加成（0.20 = 20%）；实际生效值 = 本值 × <see cref="SpaceModifier"/>。</summary>
+        /// <summary>全局 rig 时间加成（0.20 = 20%）；按物类的 <see cref="RigBonuses"/> 优先。</summary>
         public double RigTeBonus { get; set; }
 
-        /// <summary>市场平均价（TypeID → average_price），用于买/建对比。</summary>
+        /// <summary>按物类生效的 rig 加成；未命中时回退全局值。</summary>
+        public List<IndustryRigBonus> RigBonuses { get; set; } = new List<IndustryRigBonus>();
+
+        /// <summary>反应是否套用 ME（默认否；反应没有 ME 研究）。</summary>
+        public bool ApplyMeToReactions { get; set; }
+        /// <summary>反应是否套用材料 rig（默认否；反应通常只有时间 rig）。</summary>
+        public bool ApplyRigToReactions { get; set; }
+
+        /// <summary>选中的发明解密器（TypeID）；null/0 表示不使用。</summary>
+        public int? DecryptorTypeId { get; set; }
+
+        /// <summary>手动指定发明尝试次数；null/<=0 表示按成功率自动估算。</summary>
+        public int? InventionAttemptsOverride { get; set; }
+
+        /// <summary>手动指定发明成功率（0-1）；null/<=0 表示按技能与解密器计算。</summary>
+        public double? InventionProbabilityOverride { get; set; }
+
+        /// <summary>手动指定每张发明 BPC 可支持的制造流程数；null/<=0 表示按 SDE + 解密器计算。</summary>
+        public int? InventionBpcRunsOverride { get; set; }
+
+        /// <summary>市场平均价（TypeID → average_price），用于买/建对比的回退值。</summary>
         public Dictionary<int, double> AveragePrices { get; set; } = new Dictionary<int, double>();
 
         /// <summary>递归深度上限（防坏数据无限递归）。</summary>

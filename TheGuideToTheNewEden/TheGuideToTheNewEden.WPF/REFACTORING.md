@@ -8124,6 +8124,217 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 
 ---
 
+## 阶段 158：工业计算正确性、计划能力与可视化 UI（2026-10-21）
+
+> 背景：阶段 157 把 SDE 数据面补齐后，工业页已有单目标 BOM MVP。本阶段把上一轮分析出的
+> 正确性缺陷一次修完，并把「表格 + 列表」的制造计划/蓝图浏览器重做成卡片式生产链与配方可视化。
+
+### 158.1 正确性修复（会让结果算错的）
+
+- **角色技能真正进入求解器**：`IndustryOptionsFactory.BuildAsync` 现在接收多角色上下文，
+  通过 `CharacterIndustryDataService.GetSkillLevelsAsync` 拉取技能并按最高等级合并到
+  `IndustrySolverOptions.CharacterSkills`。此前发明概率永远按 0 级技能计算。
+- **加密学技能按名称识别**：新 SDE 的 `blueprintSkills` 顺序不是"加密学在前"（实测 683 的顺序是
+  11442 Nanite Engineering / 11454 Caldari Starship Engineering / 21790 Caldari Encryption Methods）。
+  求解器改为按技能名包含 `Encryption` 识别加密学，其余作为数据核心技能；识别不到才回退首个技能并记警告。
+- **发明产出 run 数改用发明产物 `Quantity`**：此前统一用 T2 蓝图 `MaxProductionLimit`，
+  但新 SDE 两者并不总相等（rig 组 300 vs 1，子系统组 1 vs 3/10/20）。现在以发明产物数量为基准，
+  再叠加解密器 `inventionMaxRunModifier`。
+- **T2 制造 ME/TE 来自发明产出**：发明节点输出 `ME=2+解密器ME修正`、`TE=4+解密器TE修正`；
+  如果角色没有 T2 蓝图 ME/TE 覆盖，就把这组值回写给 T2 制造节点。此前 T2 默认套 ME10/TE20，严重高估效率。
+- **解密器完整接入**：`typeDogma` 1112（概率倍率）/1113（ME 修正）/1114（TE 修正）/1124（run 修正）；
+  解密器按尝试次数计入采购输入。UI 提供带属性的解密器下拉。
+- **买/建成本同口径**：新增 `ReferenceCostFull` / `FullBuildCost`（全量）与 `BuildCost`（现金支出）；
+  汇总新增 `SelfBuildCost`（全量）/`CashOutlay`（现金）/`StockValue`（库存抵扣）/`Revenue`/`Profit`/`Margin`。
+  此前"直接买"用目标全量、"自建"用扣库存后的现金，口径不一致。
+- **反应规则按活动区分**：反应默认不套 ME、不套材料 rig（可手动开关）；TE 仍生效。
+- **批量预取**：材料递归前批量预取 `types` 与"产物→蓝图"映射，减少大 BOM 的 N+1 查询。
+
+### 158.2 计划能力
+
+- **多目标**：UI 支持目标列表（增删/数量），`IndustrySolver` 一次展开多个目标并共享库存。
+- **多角色**：角色改为多选，资产/在制任务相加、蓝图 ME/TE 与技能取最高。
+- **按物类 rig**：新增 `IndustryRigBonus` 列表；未命中时回退全局 rig。
+- **市场深度 / 盈利**：新增 `IndustryMarketDataService.GetMarketStatsAsync(regionId)`，
+  从整星域订单聚合最低卖价/最高买价/买卖深度，缓存 10 分钟；买/建/利润优先使用深度价。
+- **手动决策**：节点详情支持「强制制造 / 强制采购 / 加入黑名单」，并持久化到 `IndustrySetting.json`。
+- **刷新与导出**：市场/角色数据可手动刷新；采购清单复制；逐层 BOM 导出 CSV。
+
+### 158.3 界面重做
+
+- **制造计划**：左侧卡片式编排（目标 / 工艺 / 按物类 rig / 角色与库存），右侧
+  「总览 Hero（目标/流程/安装费/全量/现金/库存/收入/利润）+ 成本构成条 + 生产链树 + 节点详情」。
+  生产链是带左侧决策色条、图标、决策徽章、成本占比条的卡片树，不再是 Excel 表格。
+- **蓝图浏览器**：左侧结果卡片，右侧「输入材料 → 蓝图核心（圆环/计算器图标）→ 输出产物」的配方视图，
+  活动页签切换制造/反应/发明/复制/研究；下方技能、精炼产出、压缩产物。
+- 全部沿用 WPF-UI 主题资源（`CardControl` / `RatioBar` / `DynamicResource` 刷子 / `SymbolIcon`），
+  总览区用低透明度网格与强调色叠加，保持与现有主页/市场页一致的观感。
+
+### 158.4 验证
+
+- `dotnet build TheGuideToTheNewEden.WPF` **0 错误**。
+- 新增 `probe/AssistantProbe/IndustrySuite.cs`：`AssistantProbe industry` **24 PASS / 0 FAIL**，
+  覆盖买/建成本口径、加密学识别、T2 ME/TE、解密器、反应规则、多目标、两个工业页构造。
+- 阶段 157 的 `AssistantProbe sde` 仍 **48 PASS / 0 FAIL**；SDE 全量构建 40 张表自检通过（阶段 157 记录）。
+
+### 158.5 已知限制 / 本阶段未做
+
+- BOM 仍只展开制造(1)/反应(11)/发明(8)；复制(5)、研究(2/3/4)、T3 逆向工程(7)、行星开发、
+  回收/压缩尚未进入 BOM（蓝图浏览器已能查看复制/研究配方、精炼与压缩信息）。
+- 设施税/空间加成仍是全局；rig 已按物类，但还没有多套建筑档案。
+- 成本指数仍取所选位置的一个星系，尚无"最便宜星系"对比。
+- BPO/BPC 未区分（自有 T1 蓝图按 BPO 简化）；军团资产未接入。
+- 新版工业页的部分文案是中文硬编码，英文界面待补语言键。
+- 计划保存/历史、市场补货、顾问、AI 工业工具仍未做。
+
+### 158.6 用户反馈迭代（UI 收口）
+
+- **参数与结果不再左右分栏**：改为顶部动作条 + 五个 Tab（目标 / 工艺 / 建筑与 rig / 角色与市场 / 结果）。
+  参数按主题拆到不同 Tab，不再用一个长滚动控件装下全部；结果获得整页宽度。
+- **常驻物品树 + 右侧目标列表**：目标 Tab 改为左侧常驻树（Category → Group → Product，可搜索），右侧目标列表；
+  不再使用独立搜索窗/弹窗。树里的产物行不显示数量，点行尾 `+` 加入（不再有底部「添加选中物品」按钮）；
+  默认全部收起，搜索时自动展开匹配的分类/组；目标数量使用 `ui:NumberBox`（`SpinButtonPlacementMode="Inline"`，显示上下箭头）。
+  常驻树一次 JOIN 读取 4,378 个可制造物品，过滤 TypeID<=0 / # 系统名。
+- **常驻树本地化修复**：本地库 `categories` 表只有 `Id/Name`，`TranInvCategories` 误用了带 `Published` 的 `InvCategory`，
+  查询抛错导致整棵树的本地化映射被跳过、回落英文；改用 `InvCategoryBase` 后类型/分组/分类均显示本地化名称。
+- **生产链全宽**：TreeView 改为 `ListBox + FlatNodes + IndentMargin` 的扁平可折叠树，避免 TreeView 缩进把卡片挤窄；
+  节点名不再被截成 "Co/Ti/M"；详情面板加宽到 440 并保持滚动，内容不再被裁掉。
+- **rig 中文化**：明确写成“建筑改装件（rig）材料效率（ME）/ 时间效率（TE）%”，并补口径说明
+  “实际值 = 输入百分比 × 空间加成”；按物类改为“按物品分类（Category）”，明确读 `categories` 而不是 `groups`。
+- **Id 0 / #System 过滤**：`GetCategories`、常驻物品树、蓝图浏览器结果都过滤 `Id<=0` 与 `#` 开头的名称。
+- **结果本地化**：制造计划树/节点详情用 `LocalDbService.TranInvTypes` 把求解结果的英文 `TypeName` 换成启用中的本地化库名称
+  （发明节点保留“（发明）”后缀）；蓝图浏览器的材料/产物/技能/回收名称也走同一套本地化映射，分组名走 `TranInvGroup`。
+- **Tab 用全局默认样式**：删除自定义 `IndustryTabItem` 模板，直接使用 WPF-UI 的全局 Tab 样式；
+  目标 Tab 删除重复的“当前目标”摘要卡和列表下方摘要文本，只保留左侧物品树与右侧目标列表。
+- 验证：`AssistantProbe industry` **30 PASS / 0 FAIL**（常驻树 4,378 条、过滤、本地化类型/分组/分类、工业页构造）；`AssistantProbe sde` **48 PASS / 0 FAIL**；
+  WPF `dotnet build` **0 错误**。
+
+### 158.7 结果页重新设计
+
+- **紧凑摘要条**：删除结果页顶部与动作条重复的目标/状态标题；8 个指标压成 4×2，成本构成移到摘要右侧。
+  摘要高度从约 290 降到约 110，生产链与节点详情获得全部剩余高度。
+- **成本百分比修正**：`IndustryCostSlice.Percent` 已是 0-100，`PercentText` 又用了 `P0`，导致 13% 显示成 1,313%；
+  改为 `0.#%` 后正常显示 13% / 87%。
+- **利润颜色**：新增 `ProfitIsPositive`，正利润绿色、负利润红色、无利润灰色；利润率与利润值同色。
+- **动作条压缩**：顶部只保留标题 +「计算制造计划」；复制采购/导出 CSV、目标摘要、市场/角色状态全部移入结果页摘要条。
+  摘要条第一行显示目标与状态，右侧竖排两个操作按钮；顶部条高度从约 100 降到约 48，净多出约 30px 给生产链/详情。
+- 验证：`AssistantProbe industry` **30 PASS / 0 FAIL**（含结果页 XAML 构造）；WPF `dotnet build` **0 错误**。
+
+### 158.8 目标数量改用 NumberBox
+
+- 目标列表数量从 `ui:TextBox` 换成 `ui:NumberBox`；`SpinButtonPlacementMode="Inline"` 显示上下箭头，
+  `Minimum=1 / Maximum=1000000 / MaxDecimalPlaces=0`，移除 `QuantityText`，直接绑定 `Quantity`。
+- 验证：`AssistantProbe industry` **30 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.9 Primary 按钮图标颜色
+
+- 用户确认根 Grid 的悬浮「计算制造计划」按钮是有意保留的，后续不再删除。
+- Primary 按钮显式设置 `Foreground=TextOnAccentFillColorPrimaryBrush`，并用 `Button.Icon` 给 `SymbolIcon`
+  同样的前景色，图标与文字颜色一致。
+- 验证：`AssistantProbe industry` **30 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.10 库存覆盖 / 共享半成品可视化
+
+- **根因**：共享半成品（如氧燃料块）或角色资产已覆盖需求时 `effectiveNeed=0`；旧逻辑仍递归展开数量 0 的材料，
+  于是出现“需要 11 · 产出 0 · 采购 0”以及一串全 0 子节点，看起来像缺配方。
+- **求解器**：`SolveNodeInternal` 跳过 `quantity<=0`；`BuildNode` 在 `effectiveNeed==0` 时保留节点但不排流程、不展开材料；
+  `强制制造` 现在忽略库存（库存仅展示），强制排流程；汇总跳过 0 流程构建。
+- **UI**：库存覆盖节点决策显示“库存”（绿色），数量行显示“需要 N · 库存抵扣 N · 采购 0”；
+  节点详情显示资产/在制/挂机库抵扣明细；活动与 ME/TE 徽标隐藏；无子节点。
+- 验证：`AssistantProbe industry` **45 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.11 库存来源区分（角色资产 / 上游剩余 / 在制）
+
+- `IndustryPlanNodeViewModel` 按 `QuantityFromAssets` / `QuantityFromJobs` / `QuantityFromHangar` 区分覆盖来源：
+  - 角色资产（真库存）→ 决策「库存」（绿色）
+  - 其他节点多产出的虚拟挂机库 → 决策「上游剩余」（黄色）
+  - 在制任务 → 决策「在制」（蓝色）
+  - 多来源混合 → 决策「混合覆盖」（蓝色）
+- 数量行与详情显示来源明细：`需要 N · 角色资产 X · 上游剩余 Y · 采购 0`；
+  详情 `库存抵扣 N（角色资产 X · 在制 Z · 上游剩余 Y）`。
+- 验证：`AssistantProbe industry` **51 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.12 采购节点完全库存覆盖
+
+- **根因**：`IsStockCovered` 只判断制造节点；纯采购节点（如火箭燃料）即使 `QuantityToBuy=0`、资产已覆盖，
+  仍显示「采购」。
+- 采购节点满足 `QuantityToBuy==0 && FromStock>=QuantityNeeded` 时也归入库存来源显示（库存/上游剩余/在制/混合覆盖），
+  不再显示「采购」。
+- 完全覆盖节点的详情「全量成本」改称「库存市值」；现金支出仍为 0，避免把库存市值误认为采购支出。
+- 验证：`AssistantProbe industry` **58 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.13 成本口径命名与公式提示
+
+- 统一命名：`全量成本` → **总成本**，`现金支出` → **现金支出（需购买）**，`安装费` → **安装费（已含）**，
+  `库存抵扣` → **库存抵扣（市值）**。
+- 结果摘要条与节点详情各增加一行公式提示：
+  `总成本 = 材料全量市值（含库存）+ 安装费；现金支出 = 需购买材料 + 安装费；库存抵扣 = 两者差额。`
+- 标签增加 ToolTip；成本构成注明以总成本为分母；成本构成的“材料”改名“采购材料”。
+- 库存完全覆盖节点的总成本列显示“库存市值”，避免误认为现金支出。
+- 验证：`AssistantProbe industry` **58 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.14 目标产出收入 / 利润格式 / 发明自定义
+
+- **目标收入按产出**：`ApplyMarketInfo` 对制造节点使用 `QuantityProduced`（导弹一次 5,000 发就按 5,000 计收入），
+  目标摘要显示 `×请求 → 产出`，参考收入带 `ISK`。
+- **利润格式**：合并为 `利润 ISK (利润率%)`，例如 `-15,420,087 ISK (-2,280%)`；移除独立利润率数值，
+  标签加 ToolTip；“目标”指标改名“目标项”。
+- **发明自定义**：新增 `InventionAttemptsOverride` / `InventionProbabilityOverride` / `InventionBpcRunsOverride`
+  （0/null = 自动），工艺页可编辑并持久化；节点详情显示尝试次数、BPC 需求 × 每张 run、期望成功数，
+  尝试不足时给出警告。失败尝试仍按次数消耗数据核心/解密器/T1 蓝图，BPC 可多次使用。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.15 术语：安装费 → 任务费用（Job Cost）
+
+- EVE 官方英文为 **Job Cost / Total job cost**；中文界面统一改为“任务费用”，ToolTip 标注 Job Cost。
+- 更新顶栏、节点详情、成本构成、公式提示、`zh-CN` 语言资源与工业手册；不再使用“安装费”。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.16 市场深度文案澄清
+
+- 节点卡片的“无深度”改为“无市场深度”，顶部状态改为“平均价（未启用市场深度）”，避免与 BOM 递归深度混淆。
+- 手册补充：未启用市场深度或所选星域没有买卖单时，市场参考只能按平均价估算；启用「市场深度 / 盈利」后显示最低卖价/最高买价。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.17 独立价格市场
+
+- 新增 `IndustrySetting.PriceLocation` 与「角色与市场 → 价格市场」选择器；默认沿用成本指数位置，旧配置无值时回退 `Location`。
+- 市场深度/参考价/收入使用 `PriceLocation.RegionId`；成本指数仍使用 `SelectedLocation.SolarSystemId`，两者互不影响。
+- 未启用市场深度时仍使用 CCP `/markets/prices/` 全局平均价；指定价格市场后需启用「市场深度 / 盈利」才会拉取该星域订单。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.18 市场深度分页进度与页面内等待
+
+- 工业页不再使用全局 `PageNotifyService.ShowWaiting`；计算、刷新市场、刷新角色改为页面右下角的非阻塞进度条
+  （`IsHitTestVisible=False`，可继续切 Tab / 操作其他功能）。
+- 市场深度复用 `MarketOrderService` 的 `pageCallback(page,total)`，`BusyText` 显示“拉取市场深度：第 X/Y 页”，
+  `RatioBar` 显示比例；回调通过 Dispatcher 回 UI 线程。缓存命中时没有分页回调，只显示阶段文案。
+- `IsBusy` 只阻止重复计算/刷新，不再锁住整个应用。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.19 结果页拆分：概况 + 生产链
+
+- 结果页拆成「概况」「生产链」两个 Tab；计算完成自动切到概况。
+- 概况顶部：全部产品总览（总成本/利润/收入/现金/库存抵扣/任务费用/直接购买/采购体积）+ 成本构成 + 全部复制/导出；
+  下方左侧产物列表、右侧选中产物详情；显示请求/产出、成本、利润、星系与采购清单。
+- 每个产物支持「复制本产物采购」「导出本产物 CSV（完整 BOM）」；顶部支持复制/导出全部。
+- 生产链 Tab 保留原链 + 节点详情，去掉摘要条后获得全高；摘要条已在概况中重建。
+- 明确一次计划只选一个成本指数位置和一个价格市场，不做每个产物独立星系/多星系；产物列表不再显示星系文本。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.21 概况精简与 DataGrid
+
+- 概况标题右侧的 `TargetSummary` 和产物列表/详情中的星系文本移除；一次计划只保留一个成本指数位置 + 一个价格市场。
+- 概况顶部的成本构成改为纯文本 `名称 / 百分比`（`IndustryCostSliceCompactTemplate`，无 RatioBar），右栏缩到 240px，全部复制/导出改为竖排，释放横向空间。
+- 概况的采购清单改为紧凑只读 `DataGrid`（物品/数量/单价/金额）；生产链节点详情的“直接输入”也改为 `DataGrid`（物品/需要产出采购），统一用 `IndustryDataGrid` 样式。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
+### 158.20 生产链成本占比条文案
+
+- 节点卡片底部的 `RatioBar` 绑定 `CostSharePercent`（节点全量成本 / 计划总成本），不是进度条/市场深度。
+- 补 `CostShareText`（“占计划总成本 X%”）与 ToolTip，避免误解；节点详情里的三条彩色条仍是成本构成。
+- 验证：`AssistantProbe industry` **66 PASS / 0 FAIL**；WPF `dotnet build` **0 错误**。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

@@ -2349,9 +2349,9 @@
     <sys:String x:Key="Assistant_Chat_ContextUsage">已带 {0} 轮 · 约 {1} token / 可用 {2} token</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">已带 {0} 轮 · 约 {1} token / 可用 {2} token · 省略 {3} 轮</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">已带 {0} 轮 · 约 {1} token（不限）</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextSummary"> · 摘要 {0} 字</sys:String>
-    <sys:String x:Key="Assistant_Chat_CacheHit"> · 本对话缓存命中 {0} / 输入 {1}（{2}%）</sys:String>
-    <sys:String x:Key="Assistant_Chat_Calibration"> · 估算校准 ×{0:0.00}</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextSummary">· 摘要 {0} 字</sys:String>
+    <sys:String x:Key="Assistant_Chat_CacheHit">· 本对话缓存命中 {0} / 输入 {1}（{2}%）</sys:String>
+    <sys:String x:Key="Assistant_Chat_Calibration">· 估算校准 ×{0:0.00}</sys:String>
     <sys:String x:Key="Assistant_Chat_Compacting">正在压缩较早的上下文…</sys:String>
     <sys:String x:Key="Assistant_Chat_CompactingBatch">正在压缩较早的上下文（{0}/{1}）…</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextOverflow">本次请求预计 {0} token，超过可用输入 {1} token；请新建对话，或在 设置 → AI → 行为 调小上下文窗口/单轮工具结果上限。</sys:String>
@@ -2541,7 +2541,7 @@
     <sys:String x:Key="IndustryPage_Summary">汇总</sys:String>
     <sys:String x:Key="IndustryPage_Summary_Target">目标</sys:String>
     <sys:String x:Key="IndustryPage_Summary_Runs">制造流程</sys:String>
-    <sys:String x:Key="IndustryPage_Summary_JobCost">安装费合计</sys:String>
+    <sys:String x:Key="IndustryPage_Summary_JobCost">任务费用合计</sys:String>
     <sys:String x:Key="IndustryPage_Summary_BuyTypes">采购种类</sys:String>
     <sys:String x:Key="IndustryPage_Col_Item">物品</sys:String>
     <sys:String x:Key="IndustryPage_Col_Decision">决策</sys:String>
@@ -2549,7 +2549,7 @@
     <sys:String x:Key="IndustryPage_Col_Produced">产出</sys:String>
     <sys:String x:Key="IndustryPage_Col_Runs">流程</sys:String>
     <sys:String x:Key="IndustryPage_Col_Buy">采购</sys:String>
-    <sys:String x:Key="IndustryPage_Col_JobCost">安装费</sys:String>
+    <sys:String x:Key="IndustryPage_Col_JobCost">任务费用</sys:String>
     <sys:String x:Key="IndustryPage_Decision_Build">制造</sys:String>
     <sys:String x:Key="IndustryPage_Decision_Buy">采购</sys:String>
     <sys:String x:Key="IndustryPage_Decision_Invention">发明</sys:String>
@@ -2561,7 +2561,7 @@
     <sys:String x:Key="IndustryPage_Copied">采购清单已复制到剪贴板。</sys:String>
     <sys:String x:Key="IndustryPage_CopyFailed">复制失败。</sys:String>
     <sys:String x:Key="IndustryPage_NothingToCopy">还没有可复制的清单，请先计算。</sys:String>
-    <sys:String x:Key="Home.Feature.IndustryPlanDesc">递归展开生产链：需要造什么、买什么、材料与安装费。</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryPlanDesc">递归展开生产链：需要造什么、买什么、材料与任务费用。</sys:String>
 
     <sys:String x:Key="Nav.IndustryBlueprints">蓝图浏览器</sys:String>
     <sys:String x:Key="Home.Feature.IndustryBlueprintsDesc">按产品名搜索可制造物品，查看材料、产物与技能需求。</sys:String>

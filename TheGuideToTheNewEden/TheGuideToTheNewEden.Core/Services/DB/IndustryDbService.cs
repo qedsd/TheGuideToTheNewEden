@@ -451,6 +451,167 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return result;
         }
 
+        // ───────────────────── 工业辅助数据 ─────────────────────
+
+        /// <summary>全部物品分类（用于按物类 rig 选择）。</summary>
+        public static List<InvCategory> GetCategories()
+        {
+            var db = Db;
+            if (db == null)
+            {
+                return new List<InvCategory>();
+            }
+            try
+            {
+                return db.Queryable<InvCategory>()
+                    .OrderBy(p => p.CategoryName)
+                    .ToList()
+                    .Where(p => p.CategoryID > 0
+                        && !string.IsNullOrWhiteSpace(p.CategoryName)
+                        && !p.CategoryName.StartsWith("#"))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<InvCategory>();
+            }
+        }
+
+        /// <summary>全部发明解密器（Decryptors / Generic / Salvage 组），带 1112/1113/1114/1124 属性。</summary>
+        public static List<IndustryDecryptorInfo> GetDecryptorTypes()
+        {
+            var result = new List<IndustryDecryptorInfo>();
+            var db = Db;
+            if (db == null)
+            {
+                return result;
+            }
+            try
+            {
+                var groups = db.Queryable<InvGroup>().ToList()
+                    .Where(p => p.GroupName != null
+                        && (p.GroupName.StartsWith("Decryptors", StringComparison.OrdinalIgnoreCase)
+                            || p.GroupName.Equals("Generic Decryptor", StringComparison.OrdinalIgnoreCase)
+                            || p.GroupName.Equals("Salvage Decryptors", StringComparison.OrdinalIgnoreCase)))
+                    .Select(p => p.GroupID)
+                    .Distinct()
+                    .ToList();
+                if (groups.Count == 0)
+                {
+                    return result;
+                }
+
+                var types = db.Queryable<InvType>()
+                    .Where(p => groups.Contains(p.GroupID))
+                    .OrderBy(p => p.TypeName)
+                    .ToList()
+                    .Where(p => p.TypeID > 0 && !string.IsNullOrWhiteSpace(p.TypeName) && !p.TypeName.StartsWith("#"))
+                    .ToList();
+                foreach (var type in types)
+                {
+                    result.Add(BuildDecryptorInfo(type.TypeID, type.TypeName));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+            return result;
+        }
+
+        /// <summary>读取单个解密器的工业属性；不存在返回 null。</summary>
+        public static IndustryDecryptorInfo GetDecryptorInfo(int typeId)
+        {
+            if (typeId <= 0)
+            {
+                return null;
+            }
+            var info = GetTypeInfo(typeId);
+            return info == null ? null : BuildDecryptorInfo(typeId, info.TypeName);
+        }
+
+        private static IndustryDecryptorInfo BuildDecryptorInfo(int typeId, string name)
+        {
+            return new IndustryDecryptorInfo
+            {
+                TypeID = typeId,
+                Name = name,
+                ProbabilityMultiplier = GetDogmaValue(typeId, 1112) ?? 1.0,
+                MeModifier = (int)Math.Round(GetDogmaValue(typeId, 1113) ?? 0),
+                TeModifier = (int)Math.Round(GetDogmaValue(typeId, 1114) ?? 0),
+                RunModifier = (int)Math.Round(GetDogmaValue(typeId, 1124) ?? 0),
+            };
+        }
+
+        /// <summary>可压缩物品 → 压缩后物品；不可压缩返回 null。</summary>
+        public static CompressibleType GetCompressibleType(int typeId)
+        {
+            var db = Db;
+            if (db == null || typeId <= 0)
+            {
+                return null;
+            }
+            try
+            {
+                return db.Queryable<CompressibleType>().First(p => p.Id == typeId);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 全部可制造/可反应产物（用于常驻物品树）。一次 JOIN 取回，避免逐物品反查。
+        /// </summary>
+        public static List<IndustryProductEntry> GetAllManufacturableProducts()
+        {
+            var db = Db;
+            if (db == null)
+            {
+                return new List<IndustryProductEntry>();
+            }
+            try
+            {
+                const string sql = @"
+WITH first_bp AS (
+    SELECT ProductTypeID, MIN(BlueprintTypeID) AS BlueprintTypeID
+    FROM blueprintProducts
+    WHERE ActivityID IN (1, 11)
+    GROUP BY ProductTypeID
+)
+SELECT bp.ProductTypeID AS ProductTypeId,
+       pt.Name AS ProductName,
+       bp.BlueprintTypeID AS BlueprintTypeId,
+       bt.Name AS BlueprintName,
+       bp.ActivityID AS ActivityId,
+       COALESCE(b.MaxProductionLimit, 0) AS MaxProductionLimit,
+       g.Id AS GroupId,
+       g.Name AS GroupName,
+       c.Id AS CategoryId,
+       c.Name AS CategoryName
+FROM first_bp f
+JOIN blueprintProducts bp ON bp.ProductTypeID = f.ProductTypeID AND bp.BlueprintTypeID = f.BlueprintTypeID
+JOIN types pt ON pt.Id = bp.ProductTypeID
+JOIN types bt ON bt.Id = bp.BlueprintTypeID
+JOIN groups g ON g.Id = pt.GroupID
+JOIN categories c ON c.Id = g.CategoryID
+LEFT JOIN blueprints b ON b.BlueprintTypeID = bp.BlueprintTypeID
+WHERE pt.Published = 1
+  AND pt.Id > 0
+  AND pt.Name NOT LIKE '#%'
+ORDER BY c.Name, g.Name, pt.Name";
+                return db.Ado.SqlQuery<IndustryProductEntry>(sql);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryProductEntry>();
+            }
+        }
+
         // ───────────────────── 蓝图浏览器 ─────────────────────
 
         /// <summary>
@@ -482,7 +643,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 var seen = new HashSet<int>();
                 foreach (var item in items)
                 {
-                    if (item.Type != TheGuideToTheNewEden.Core.Enums.DataBaseItemType.InvType || !seen.Add(item.ID))
+                    if (item.ID <= 0
+                        || string.IsNullOrWhiteSpace(item.Name)
+                        || item.Name.StartsWith("#")
+                        || item.Type != TheGuideToTheNewEden.Core.Enums.DataBaseItemType.InvType
+                        || !seen.Add(item.ID))
                     {
                         continue;
                     }
@@ -500,6 +665,16 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                     }
 
                     var info = GetTypeInfo(item.ID);
+                    string groupName = info?.GroupName;
+                    if (TheGuideToTheNewEden.Core.Config.NeedLocalization && DBService.LocalDbReady && info != null)
+                    {
+                        var localGroup = LocalDbService.TranInvGroup(info.GroupID);
+                        if (!string.IsNullOrWhiteSpace(localGroup?.GroupName))
+                        {
+                            groupName = localGroup.GroupName;
+                        }
+                    }
+
                     result.Add(new IndustryProductEntry
                     {
                         ProductTypeId = item.ID,
@@ -509,7 +684,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                         ActivityId = activityId,
                         MaxProductionLimit = GetBlueprint(blueprintTypeId.Value)?.MaxProductionLimit ?? 0,
                         GroupId = info?.GroupID ?? 0,
-                        GroupName = info?.GroupName,
+                        GroupName = groupName,
                         CategoryId = info?.CategoryID ?? 0,
                     });
 

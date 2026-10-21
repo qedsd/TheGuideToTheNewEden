@@ -5,6 +5,7 @@ namespace TheGuideToTheNewEden.Probe;
 /// <code>
 /// dotnet run --project probe/AssistantProbe --            # 全部套件
 /// dotnet run --project probe/AssistantProbe -- sde        # SDEBuilder 离线构建与字段/表断言（阶段 157）
+/// dotnet run --project probe/AssistantProbe -- industry   # 工业求解器：发明/解密器/成本口径/反应（阶段 158）
 /// dotnet run --project probe/AssistantProbe -- toolcall   # 协议层工具调用形状（离线）
 /// dotnet run --project probe/AssistantProbe -- engine     # 引擎循环（本地 mock 大模型）
 /// dotnet run --project probe/AssistantProbe -- tools      # 工具 Schema 与执行（真 SDE 库）
@@ -46,6 +47,11 @@ internal static class Program
             if (suite is "all" or "sde")
             {
                 SdeSuite.Run(check);
+            }
+
+            if (suite is "all" or "industry")
+            {
+                IndustrySuite.Run(check);
             }
 
             if (suite is "all" or "toolcall")

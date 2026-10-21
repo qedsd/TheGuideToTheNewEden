@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         private readonly Dictionary<long, List<BlueprintProduct>> _productCache = new Dictionary<long, List<BlueprintProduct>>();
         private readonly Dictionary<long, List<BlueprintSkill>> _skillCache = new Dictionary<long, List<BlueprintSkill>>();
         private readonly Dictionary<long, int> _activityTimeCache = new Dictionary<long, int>();
+        private readonly Dictionary<int, IndustryDecryptorInfo> _decryptorCache = new Dictionary<int, IndustryDecryptorInfo>();
 
         private readonly HashSet<int> _stack = new HashSet<int>();
         private readonly Dictionary<int, long> _assets;
@@ -79,6 +80,11 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
         private IndustryBuildNode SolveNodeInternal(int typeId, long quantityNeeded, int depth)
         {
+            if (typeId <= 0 || quantityNeeded <= 0)
+            {
+                return null;
+            }
+
             var info = GetTypeInfo(typeId);
             var node = new IndustryBuildNode
             {
@@ -123,13 +129,16 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             node.QuantityFromJobs = ConsumeStock(_jobs, node.TypeID, need - node.QuantityFromAssets);
             node.QuantityFromHangar = ConsumeStock(_hangar, node.TypeID, need - node.QuantityFromAssets - node.QuantityFromJobs);
             long covered = node.QuantityFromAssets + node.QuantityFromJobs + node.QuantityFromHangar;
-            node.QuantityToBuy = need - covered;
-            if (node.QuantityToBuy < 0) node.QuantityToBuy = 0;
+            node.QuantityToBuy = Math.Max(0, need - covered);
 
-            node.ReferenceUnitPrice = GetAveragePrice(node.TypeID);
-            node.ReferenceCost = node.ReferenceUnitPrice > 0 ? node.ReferenceUnitPrice * node.QuantityToBuy : 0;
+            double reference = GetReferencePrice(node.TypeID);
+            node.ReferenceUnitPrice = reference;
+            node.ReferenceCost = reference > 0 ? reference * node.QuantityToBuy : 0;
+            node.ReferenceCostFull = reference > 0 ? reference * node.QuantityNeeded : 0;
             node.BuildCost = node.ReferenceCost;
-            node.BuildCostKnown = node.ReferenceUnitPrice > 0;
+            node.FullBuildCost = node.ReferenceCostFull;
+            node.BuildCostKnown = reference > 0;
+            ApplyMarketInfo(node);
         }
 
         private void BuildNode(IndustryBuildNode node, int depth)
@@ -137,18 +146,25 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             var link = GetProducingBlueprint(node.TypeID).Value;
             int blueprintTypeId = link.BlueprintTypeID;
             int activityId = link.ActivityID;
+            bool isReaction = activityId == IndustryActivity.Reaction;
 
             node.Decision = IndustryDecision.Build;
             node.BlueprintTypeID = blueprintTypeId;
             node.ActivityID = activityId;
-            node.ME = GetME(node.TypeID);
-            node.TE = GetTE(node.TypeID);
 
+            PrimeBlueprint(blueprintTypeId);
+            var info = GetTypeInfo(node.TypeID);
+            int categoryId = info?.CategoryID ?? 0;
+
+            // ── 库存抵扣 / 有效需求 ─────────────────────────────────────────────
             long need = node.QuantityNeeded;
             long effectiveNeed;
-            if (depth == 0)
+            bool forcedBuild = _options.Decisions != null
+                && _options.Decisions.TryGetValue(node.TypeID, out var forcedDecision)
+                && forcedDecision == IndustryDecision.Build;
+            if (depth == 0 || forcedBuild)
             {
-                // 目标层：库存只做展示，不用来抵扣（用户明确要造这么多）。
+                // 目标层 / 强制制造：库存只做展示，不用来抵扣（用户明确要造这么多）。
                 node.QuantityFromAssets = Math.Min(GetStock(_assets, node.TypeID), need);
                 node.QuantityFromJobs = Math.Min(GetStock(_jobs, node.TypeID), need);
                 node.QuantityFromHangar = Math.Min(GetStock(_hangar, node.TypeID), need);
@@ -159,8 +175,29 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 node.QuantityFromAssets = ConsumeStock(_assets, node.TypeID, need);
                 node.QuantityFromJobs = ConsumeStock(_jobs, node.TypeID, need - node.QuantityFromAssets);
                 node.QuantityFromHangar = ConsumeStock(_hangar, node.TypeID, need - node.QuantityFromAssets - node.QuantityFromJobs);
-                effectiveNeed = need - node.QuantityFromAssets - node.QuantityFromJobs - node.QuantityFromHangar;
-                if (effectiveNeed < 0) effectiveNeed = 0;
+                effectiveNeed = Math.Max(0, need - node.QuantityFromAssets - node.QuantityFromJobs - node.QuantityFromHangar);
+            }
+
+            // 需求已被库存完全覆盖：保留节点用于展示库存抵扣，不再排流程/展开 0 数量材料。
+            if (effectiveNeed == 0)
+            {
+                node.Runs = 0;
+                node.QuantityProduced = 0;
+                node.QuantityToHangar = 0;
+                node.ME = 0;
+                node.TE = 0;
+                node.JobTimeSeconds = 0;
+                node.JobCost = 0;
+                node.JobCostKnown = false;
+                node.BuildCost = 0;
+                node.FullBuildCost = 0;
+                node.BuildCostKnown = true;
+                double coveredReference = GetReferencePrice(node.TypeID);
+                node.ReferenceUnitPrice = coveredReference;
+                node.ReferenceCost = 0;
+                node.ReferenceCostFull = coveredReference > 0 ? coveredReference * node.QuantityNeeded : 0;
+                ApplyMarketInfo(node);
+                return;
             }
 
             int outputQty = GetOutputQuantity(blueprintTypeId, activityId, node.TypeID);
@@ -172,17 +209,36 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 AddStock(_hangar, node.TypeID, node.QuantityToHangar);
             }
 
-            double rigMe = _options.RigMeBonus * _options.SpaceModifier;
-            double rigTe = _options.RigTeBonus * _options.SpaceModifier;
+            // ── 发明节点（先算，才能把发明产出的 ME/TE 传给 T2 制造）─────────────
+            IndustryBuildNode inventionNode = null;
+            if (_options.IncludeInvention && activityId == IndustryActivity.Manufacturing)
+            {
+                inventionNode = TryBuildInventionNode(node, blueprintTypeId);
+            }
+
+            // ── ME / TE / rig ──────────────────────────────────────────────────
+            bool hasOwnedMe = _options.MEOverrides != null && _options.MEOverrides.ContainsKey(node.TypeID);
+            bool hasOwnedTe = _options.TEOverrides != null && _options.TEOverrides.ContainsKey(node.TypeID);
+            node.ME = isReaction && !_options.ApplyMeToReactions ? 0 : GetME(node.TypeID);
+            node.TE = GetTE(node.TypeID);
+            if (inventionNode != null)
+            {
+                if (!hasOwnedMe) node.ME = inventionNode.InventionOutputME;
+                if (!hasOwnedTe) node.TE = inventionNode.InventionOutputTE;
+            }
+            double rigMe = GetRigMe(categoryId, isReaction);
+            double rigTe = GetRigTe(categoryId, isReaction);
 
             node.JobTimeSeconds = IndustryCalculator.JobTimeSeconds(
                 GetActivityTime(blueprintTypeId, activityId), node.Runs, node.TE, rigTe);
 
-            // 材料递归（用调用栈做环检测）。
+            // ── 材料递归（用调用栈做环检测）────────────────────────────────────
             if (!_stack.Contains(node.TypeID))
             {
                 _stack.Add(node.TypeID);
                 var materials = GetMaterials(blueprintTypeId, activityId);
+                PrimeTypeInfos(materials.Select(p => p.MaterialTypeID));
+                PrimeProducingLinks(materials.Select(p => p.MaterialTypeID));
                 foreach (var material in materials)
                 {
                     long quantity = IndustryCalculator.ApplyME(material.Quantity, node.Runs, node.ME, rigMe);
@@ -195,17 +251,12 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 _stack.Remove(node.TypeID);
             }
 
-            // 发明节点（T2 产物）。
-            if (_options.IncludeInvention && activityId == IndustryActivity.Manufacturing)
+            if (inventionNode != null)
             {
-                var invention = TryBuildInventionNode(node, blueprintTypeId);
-                if (invention != null)
-                {
-                    node.Inputs.Add(invention);
-                }
+                node.Inputs.Add(inventionNode);
             }
 
-            // 作业安装费：EIV 用"套了 ME 的材料总量"，并排除发明子节点。
+            // ── 作业安装费：EIV 用"套了 ME 的材料总量"，并排除发明子节点 ──────────
             var materialTotals = new List<KeyValuePair<int, long>>();
             foreach (var input in node.Inputs)
             {
@@ -213,29 +264,35 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 materialTotals.Add(new KeyValuePair<int, long>(input.TypeID, input.QuantityNeeded));
             }
             double eiv = IndustryCalculator.EstimatedItemValue(materialTotals, _options.AdjustedPrices);
-            double costIndex = activityId == IndustryActivity.Reaction
-                ? _options.CostIndexReaction
-                : _options.CostIndexManufacturing;
+            double costIndex = isReaction ? _options.CostIndexReaction : _options.CostIndexManufacturing;
             if (eiv > 0 && costIndex > 0)
             {
                 node.JobCost = IndustryCalculator.JobCost(eiv, costIndex, _options.FacilityTax);
                 node.JobCostKnown = true;
             }
 
-            // 买/建对比：参考价 = 直接买成品的平均价；自建成本 = 子材料 + 安装费。
-            node.ReferenceUnitPrice = GetAveragePrice(node.TypeID);
-            node.ReferenceCost = node.ReferenceUnitPrice > 0 ? node.ReferenceUnitPrice * node.QuantityNeeded : 0;
-            double buildCost = 0;
+            // ── 买/建成本：现金支出（扣库存） vs 全量成本（同口径对比）────────────
+            double cash = 0;
+            double full = 0;
             foreach (var input in node.Inputs)
             {
-                buildCost += input.BuildCost;
+                cash += input.BuildCost;
+                full += input.FullBuildCost;
             }
             if (node.JobCostKnown)
             {
-                buildCost += node.JobCost;
+                cash += node.JobCost;
+                full += node.JobCost;
             }
-            node.BuildCost = buildCost;
+            node.BuildCost = cash;
+            node.FullBuildCost = full;
             node.BuildCostKnown = true;
+
+            double reference = GetReferencePrice(node.TypeID);
+            node.ReferenceUnitPrice = reference;
+            node.ReferenceCostFull = reference > 0 ? reference * node.QuantityNeeded : 0;
+            node.ReferenceCost = node.ReferenceCostFull;
+            ApplyMarketInfo(node);
         }
 
         // ───────────────────────── 发明 ─────────────────────────
@@ -248,6 +305,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 return null;
             }
             int t1BlueprintTypeId = t1Blueprint.Value;
+            PrimeBlueprint(t1BlueprintTypeId);
 
             var inventionProducts = GetProducts(t1BlueprintTypeId, IndustryActivity.Invention);
             BlueprintProduct inventionProduct = null;
@@ -263,26 +321,61 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 return null;
             }
-            double baseProbability = inventionProduct.Probability.HasValue ? inventionProduct.Probability.Value : 0;
+            double baseProbability = inventionProduct.Probability ?? 0;
             if (baseProbability <= 0)
             {
                 return null;
             }
 
-            var t2Blueprint = GetBlueprintCached(t2BlueprintTypeId);
-            int outputRuns = t2Blueprint != null ? t2Blueprint.MaxProductionLimit : 0;
-            if (outputRuns <= 0) outputRuns = 1;
+            // 发明产物的 Quantity 是 BPC 可支持的制造流程数；比 T2 蓝图 MaxProductionLimit 更贴近新 SDE 语义。
+            int baseOutputRuns = inventionProduct.Quantity > 0 ? inventionProduct.Quantity : 1;
+
+            var decryptor = ResolveDecryptor();
+            int decryptorRunModifier = decryptor?.RunModifier ?? 0;
+            double decryptorMultiplier = decryptor?.ProbabilityMultiplier ?? 1.0;
+            int decryptorMe = decryptor?.MeModifier ?? 0;
+            int decryptorTe = decryptor?.TeModifier ?? 0;
+
+            int outputRuns = _options.InventionBpcRunsOverride.HasValue && _options.InventionBpcRunsOverride.Value > 0
+                ? _options.InventionBpcRunsOverride.Value
+                : Math.Max(1, baseOutputRuns + decryptorRunModifier);
+            int outputMe = IndustryCalculator.ClampME(2 + decryptorMe);
+            int outputTe = IndustryCalculator.ClampTE(4 + decryptorTe);
+
             int productRuns = productNode.Runs > 0 ? productNode.Runs : 1;
             int bpcsNeeded = IndustryCalculator.RunsNeeded(productRuns, outputRuns);
 
             var inventionSkills = GetSkills(t1BlueprintTypeId, IndustryActivity.Invention);
-            var skillIds = new List<int>();
+            int encryptionSkillId = 0;
+            var datacoreSkillIds = new List<int>();
             foreach (var skill in inventionSkills)
             {
-                skillIds.Add(skill.SkillTypeID);
+                var name = GetTypeInfo(skill.SkillTypeID)?.TypeName ?? string.Empty;
+                if (encryptionSkillId == 0 && name.IndexOf("Encryption", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    encryptionSkillId = skill.SkillTypeID;
+                }
+                else
+                {
+                    datacoreSkillIds.Add(skill.SkillTypeID);
+                }
             }
-            double probability = IndustryCalculator.InventionProbability(baseProbability, skillIds, _options.CharacterSkills);
-            int attempts = IndustryCalculator.InventionAttempts(bpcsNeeded, probability);
+            if (encryptionSkillId == 0 && inventionSkills.Count > 0)
+            {
+                // 兼容：技能名缺失时退回"第一个技能"，并记一次警告。
+                encryptionSkillId = inventionSkills[0].SkillTypeID;
+                datacoreSkillIds.Remove(encryptionSkillId);
+                Log.Warn($"发明蓝图 {t1BlueprintTypeId} 未识别到加密学技能，回退首个技能 {encryptionSkillId}");
+            }
+
+            double probability = _options.InventionProbabilityOverride.HasValue && _options.InventionProbabilityOverride.Value > 0
+                ? Math.Clamp(_options.InventionProbabilityOverride.Value, 0.0001, 1.0)
+                : IndustryCalculator.InventionProbability(
+                    baseProbability, encryptionSkillId, datacoreSkillIds, _options.CharacterSkills, decryptorMultiplier);
+            int attempts = _options.InventionAttemptsOverride.HasValue && _options.InventionAttemptsOverride.Value > 0
+                ? _options.InventionAttemptsOverride.Value
+                : IndustryCalculator.InventionAttempts(bpcsNeeded, probability);
+            if (attempts <= 0) attempts = 1;
 
             var node = new IndustryBuildNode
             {
@@ -296,23 +389,29 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 QuantityProduced = bpcsNeeded,
                 Runs = attempts,
                 InventionProbability = probability,
+                InventionOutputRuns = outputRuns,
+                InventionOutputME = outputMe,
+                InventionOutputTE = outputTe,
+                DecryptorTypeID = decryptor?.TypeID ?? 0,
+                DecryptorName = decryptor?.Name,
+                DecryptorProbabilityMultiplier = decryptorMultiplier,
                 UnitVolume = productNode.UnitVolume,
+                PackagedVolume = productNode.PackagedVolume,
                 JobTimeSeconds = IndustryCalculator.JobTimeSeconds(
                     GetActivityTime(t1BlueprintTypeId, IndustryActivity.Invention), attempts, 0),
             };
 
             // 数据核心（每次尝试按蓝图材料消耗）。
             var datacores = GetMaterials(t1BlueprintTypeId, IndustryActivity.Invention);
-            var eivMaterials = new List<KeyValuePair<int, long>>();
+            PrimeTypeInfos(datacores.Select(p => p.MaterialTypeID));
             foreach (var datacore in datacores)
             {
                 long quantity = (long)datacore.Quantity * attempts;
                 if (quantity <= 0) continue;
-                eivMaterials.Add(new KeyValuePair<int, long>(datacore.MaterialTypeID, quantity));
                 node.Inputs.Add(CreateBuyNode(datacore.MaterialTypeID, quantity));
             }
 
-            // T1 蓝图（BPC）：自有 BPO 时不计入采购。
+            // T1 蓝图（BPC）：自有 T1 蓝图时不计入采购（简化：按 BPO 处理）。
             long t1Owned = GetStock(_assets, t1BlueprintTypeId);
             long t1Need = t1Owned > 0 ? 0 : attempts;
             if (t1Need > 0)
@@ -320,6 +419,16 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 node.Inputs.Add(CreateBuyNode(t1BlueprintTypeId, t1Need));
             }
 
+            // 解密器：每次尝试消耗 1 个。
+            if (decryptor != null && decryptor.TypeID > 0 && attempts > 0)
+            {
+                node.Inputs.Add(CreateBuyNode(decryptor.TypeID, attempts));
+            }
+
+            var eivMaterials = node.Inputs
+                .Where(p => p.TypeID > 0 && p.QuantityNeeded > 0)
+                .Select(p => new KeyValuePair<int, long>(p.TypeID, p.QuantityNeeded))
+                .ToList();
             double eiv = IndustryCalculator.EstimatedItemValue(eivMaterials, _options.AdjustedPrices);
             if (eiv > 0 && _options.CostIndexInvention > 0)
             {
@@ -327,18 +436,38 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 node.JobCostKnown = true;
             }
 
-            double inventionCost = 0;
+            double cash = 0;
+            double full = 0;
             foreach (var input in node.Inputs)
             {
-                inventionCost += input.BuildCost;
+                cash += input.BuildCost;
+                full += input.FullBuildCost;
             }
             if (node.JobCostKnown)
             {
-                inventionCost += node.JobCost;
+                cash += node.JobCost;
+                full += node.JobCost;
             }
-            node.BuildCost = inventionCost;
+            node.BuildCost = cash;
+            node.FullBuildCost = full;
             node.BuildCostKnown = true;
             return node;
+        }
+
+        private IndustryDecryptorInfo ResolveDecryptor()
+        {
+            int? typeId = _options.DecryptorTypeId;
+            if (!typeId.HasValue || typeId.Value <= 0)
+            {
+                return null;
+            }
+            if (_decryptorCache.TryGetValue(typeId.Value, out var cached))
+            {
+                return cached;
+            }
+            var info = IndustryDbService.GetDecryptorInfo(typeId.Value);
+            _decryptorCache[typeId.Value] = info;
+            return info;
         }
 
         private IndustryBuildNode CreateBuyNode(int typeId, long quantity)
@@ -356,7 +485,59 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             return node;
         }
 
-        // ───────────────────────── 查询缓存 ─────────────────────────
+        // ───────────────────────── 市场信息 ─────────────────────────
+
+        private void ApplyMarketInfo(IndustryBuildNode node)
+        {
+            var stat = GetMarketStat(node.TypeID);
+            node.SellMinPrice = stat?.SellMin ?? 0;
+            node.BuyMaxPrice = stat?.BuyMax ?? 0;
+            node.SellVolume = stat?.SellVolume ?? 0;
+            node.BuyVolume = stat?.BuyVolume ?? 0;
+            node.RevenueUnitPrice = GetRevenuePrice(node.TypeID);
+            long revenueQuantity = node.Decision == IndustryDecision.Build && node.QuantityProduced > 0
+                ? node.QuantityProduced
+                : node.QuantityNeeded;
+            node.Revenue = node.RevenueUnitPrice > 0 ? node.RevenueUnitPrice * revenueQuantity : 0;
+            node.Profit = node.Revenue - node.FullBuildCost;
+            node.Margin = node.Revenue > 0 ? node.Profit / node.Revenue : 0;
+        }
+
+        private IndustryMarketStat GetMarketStat(int typeId)
+        {
+            return _options.MarketStats != null && _options.MarketStats.TryGetValue(typeId, out var stat) ? stat : null;
+        }
+
+        private double GetReferencePrice(int typeId)
+        {
+            var stat = GetMarketStat(typeId);
+            if (stat != null && stat.ReferencePrice > 0)
+            {
+                return stat.ReferencePrice;
+            }
+            return GetAveragePrice(typeId);
+        }
+
+        private double GetRevenuePrice(int typeId)
+        {
+            var stat = GetMarketStat(typeId);
+            if (stat != null && stat.RevenuePrice > 0)
+            {
+                return stat.RevenuePrice;
+            }
+            return GetReferencePrice(typeId);
+        }
+
+        private double GetAveragePrice(int typeId)
+        {
+            if (_options.AveragePrices != null && _options.AveragePrices.TryGetValue(typeId, out var price))
+            {
+                return price;
+            }
+            return 0;
+        }
+
+        // ───────────────────────── 查询缓存 / 批量预取 ─────────────────────────
 
         private static long Key(int blueprintTypeId, int activityId)
         {
@@ -369,6 +550,54 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             info = IndustryDbService.GetTypeInfo(typeId);
             _typeInfoCache[typeId] = info;
             return info;
+        }
+
+        private void PrimeTypeInfos(IEnumerable<int> typeIds)
+        {
+            if (typeIds == null) return;
+            var missing = typeIds.Where(p => p > 0 && !_typeInfoCache.ContainsKey(p)).Distinct().ToList();
+            if (missing.Count == 0) return;
+            foreach (var info in IndustryDbService.GetTypeInfos(missing))
+            {
+                _typeInfoCache[info.TypeID] = info;
+            }
+        }
+
+        private void PrimeProducingLinks(IEnumerable<int> typeIds)
+        {
+            if (typeIds == null) return;
+            var missing = typeIds.Where(p => p > 0 && !_producingCache.ContainsKey(p)).Distinct().ToList();
+            if (missing.Count == 0) return;
+            var manufacturing = IndustryDbService.GetBlueprintTypeIdByProducts(missing, IndustryActivity.Manufacturing);
+            var reaction = IndustryDbService.GetBlueprintTypeIdByProducts(missing, IndustryActivity.Reaction);
+            foreach (var id in missing)
+            {
+                if (manufacturing.TryGetValue(id, out var bp))
+                {
+                    _producingCache[id] = (bp, IndustryActivity.Manufacturing);
+                }
+                else if (reaction.TryGetValue(id, out var bp2))
+                {
+                    _producingCache[id] = (bp2, IndustryActivity.Reaction);
+                }
+                else
+                {
+                    _producingCache[id] = null;
+                }
+            }
+        }
+
+        private void PrimeBlueprint(int blueprintTypeId)
+        {
+            if (blueprintTypeId <= 0) return;
+            if (!_blueprintCache.ContainsKey(blueprintTypeId))
+            {
+                _blueprintCache[blueprintTypeId] = IndustryDbService.GetBlueprint(blueprintTypeId);
+            }
+            foreach (var activity in IndustryDbService.GetActivities(blueprintTypeId))
+            {
+                _activityTimeCache[Key(blueprintTypeId, activity.ActivityID)] = activity.Time;
+            }
         }
 
         private Blueprint GetBlueprintCached(int blueprintTypeId)
@@ -432,13 +661,12 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             long key = Key(blueprintTypeId, activityId);
             if (_activityTimeCache.TryGetValue(key, out var time)) return time;
             time = 0;
-            var activities = IndustryDbService.GetActivities(blueprintTypeId);
-            foreach (var activity in activities)
+            foreach (var activity in IndustryDbService.GetActivities(blueprintTypeId))
             {
+                _activityTimeCache[Key(blueprintTypeId, activity.ActivityID)] = activity.Time;
                 if (activity.ActivityID == activityId)
                 {
                     time = activity.Time;
-                    break;
                 }
             }
             _activityTimeCache[key] = time;
@@ -464,15 +692,6 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             return quantity > 0 ? quantity : 1;
         }
 
-        private double GetAveragePrice(int typeId)
-        {
-            if (_options.AveragePrices != null && _options.AveragePrices.TryGetValue(typeId, out var price))
-            {
-                return price;
-            }
-            return 0;
-        }
-
         private int GetME(int typeId)
         {
             if (_options.MEOverrides != null && _options.MEOverrides.TryGetValue(typeId, out var me))
@@ -489,6 +708,38 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 return IndustryCalculator.ClampTE(te);
             }
             return IndustryCalculator.ClampTE(_options.DefaultTE);
+        }
+
+        private double GetRigMe(int categoryId, bool isReaction)
+        {
+            if (isReaction && !_options.ApplyRigToReactions)
+            {
+                return 0;
+            }
+            double baseBonus = _options.RigMeBonus;
+            if (_options.RigBonuses != null)
+            {
+                var matched = _options.RigBonuses.FirstOrDefault(p => p.CategoryID == categoryId);
+                if (matched != null)
+                {
+                    baseBonus = matched.MeBonus;
+                }
+            }
+            return Math.Clamp(baseBonus, 0, 0.99) * Math.Max(0, _options.SpaceModifier);
+        }
+
+        private double GetRigTe(int categoryId, bool isReaction)
+        {
+            double baseBonus = _options.RigTeBonus;
+            if (_options.RigBonuses != null)
+            {
+                var matched = _options.RigBonuses.FirstOrDefault(p => p.CategoryID == categoryId);
+                if (matched != null)
+                {
+                    baseBonus = matched.TeBonus;
+                }
+            }
+            return Math.Clamp(baseBonus, 0, 0.99) * Math.Max(0, _options.SpaceModifier);
         }
 
         // ───────────────────────── 库存工具 ─────────────────────────

@@ -44,16 +44,38 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double JobCost { get; set; }
         public bool JobCostKnown { get; set; }
 
-        /// <summary>市场参考单价（average_price）。</summary>
+        /// <summary>市场参考单价（优先最低卖价，回退平均价）。</summary>
         public double ReferenceUnitPrice { get; set; }
-        /// <summary>直接购买本节点数量所需的参考花费。</summary>
+        /// <summary>按实际采购量计算的参考花费（扣库存后的现金支出）。</summary>
         public double ReferenceCost { get; set; }
-        /// <summary>自建本节点（材料递归 + 安装费）的估算成本；采购节点等于其市场参考价。</summary>
+        /// <summary>按目标全量计算的参考花费（含库存部分，按市场价估值）。</summary>
+        public double ReferenceCostFull { get; set; }
+        /// <summary>自建本节点的现金支出（材料按扣库存后的采购量 + 安装费）。</summary>
         public double BuildCost { get; set; }
+        /// <summary>自建本节点的全量成本（材料按全量市场价 + 安装费），用于买/建同口径对比。</summary>
+        public double FullBuildCost { get; set; }
         public bool BuildCostKnown { get; set; }
+
+        /// <summary>出售本节点数量的参考单价（优先最高买价，回退最低卖价/平均价）。</summary>
+        public double RevenueUnitPrice { get; set; }
+        public double Revenue { get; set; }
+        public double Profit { get; set; }
+        public double Margin { get; set; }
+
+        public double SellMinPrice { get; set; }
+        public double BuyMaxPrice { get; set; }
+        public long SellVolume { get; set; }
+        public long BuyVolume { get; set; }
 
         /// <summary>发明成功率（仅发明节点）。</summary>
         public double InventionProbability { get; set; }
+        /// <summary>发明产出的 BPC 可支持的制造流程数（仅发明节点）。</summary>
+        public int InventionOutputRuns { get; set; }
+        public int InventionOutputME { get; set; }
+        public int InventionOutputTE { get; set; }
+        public int DecryptorTypeID { get; set; }
+        public string DecryptorName { get; set; }
+        public double DecryptorProbabilityMultiplier { get; set; } = 1.0;
 
         public double UnitVolume { get; set; }
         public double PackagedVolume { get; set; }

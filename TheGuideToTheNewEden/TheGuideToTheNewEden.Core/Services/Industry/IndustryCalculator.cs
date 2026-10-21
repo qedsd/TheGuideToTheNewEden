@@ -110,8 +110,34 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         }
 
         /// <summary>
+        /// 发明成功率（按技能名识别加密学后调用）：<c>base × (1 + 0.01×加密学) × (1 + 0.1×Σ(数据核心技能/30)) × 解密器</c>。
+        /// </summary>
+        public static double InventionProbability(double baseProbability, int encryptionSkillId, IEnumerable<int> datacoreSkillIds, IDictionary<int, int> skills, double decryptorMultiplier = 1.0)
+        {
+            if (baseProbability <= 0)
+            {
+                return 0;
+            }
+            double enc = skills != null && skills.TryGetValue(encryptionSkillId, out var encLevel) ? encLevel : 0;
+            double dcSum = 0;
+            if (datacoreSkillIds != null)
+            {
+                foreach (var skillId in datacoreSkillIds)
+                {
+                    dcSum += skills != null && skills.TryGetValue(skillId, out var level) ? level : 0;
+                }
+            }
+            if (decryptorMultiplier <= 0) decryptorMultiplier = 1.0;
+            double probability = baseProbability * (1.0 + 0.01 * enc) * (1.0 + 0.1 * (dcSum / 30.0)) * decryptorMultiplier;
+            if (probability > 1.0) probability = 1.0;
+            if (probability < 0.0) probability = 0.0;
+            return probability;
+        }
+
+        /// <summary>
         /// 发明成功率：<c>base × (1 + 0.01×加密学) × (1 + 0.1×Σ(数据核心技能/30)) × 解密器</c>。
-        /// <paramref name="orderedSkillIds"/> 首个为加密学技能，其余为数据核心技能（与 SDE blueprintSkills 顺序一致）。
+        /// <paramref name="orderedSkillIds"/> 首个为加密学技能，其余为数据核心技能。
+        /// 新 SDE 的 <c>blueprintSkills</c> 顺序并不保证加密学在前，求解器请使用按名称识别的重载。
         /// </summary>
         public static double InventionProbability(double baseProbability, IEnumerable<int> orderedSkillIds, IDictionary<int, int> skills)
         {

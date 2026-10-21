@@ -22,6 +22,7 @@ public static class CharacterIndustryDataService
     private const string BlueprintsKey = "industry_blueprints";
     private const string JobOutputsKey = "industry_job_outputs";
     private const string AssetsKey = "industry_assets";
+    private const string SkillsKey = "industry_skills";
 
     private static readonly TimeSpan Ttl = TimeSpan.FromMinutes(30);
 
@@ -185,6 +186,50 @@ public static class CharacterIndustryDataService
             while (page <= maxPages);
 
             CharacterCache.Set(context.CharacterId, AssetsKey, result, Ttl);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 角色技能等级（TypeID → 等级），用于发明成功率。
+    /// 与角色页共用 ESI 端点，但缓存键独立，避免互相覆盖。
+    /// </summary>
+    public static async Task<Dictionary<int, int>?> GetSkillLevelsAsync(CharacterContext context, bool forceRefresh = false)
+    {
+        if (!forceRefresh && CharacterCache.TryGet<Dictionary<int, int>>(context.CharacterId, SkillsKey, out var cached) && cached is not null)
+        {
+            return cached;
+        }
+
+        if (!await context.EnsureTokenValidAsync())
+        {
+            return null;
+        }
+
+        try
+        {
+            var result = new Dictionary<int, int>();
+            var skills = (await context.Api.Skills.GetCharacterSkillsAsync(context.Auth)).Model;
+            if (skills?.Skills != null)
+            {
+                foreach (var skill in skills.Skills)
+                {
+                    if (skill.SkillId <= 0) continue;
+                    int typeId = (int)skill.SkillId;
+                    int level = (int)skill.TrainedSkillLevel;
+                    if (!result.TryGetValue(typeId, out var existing) || level > existing)
+                    {
+                        result[typeId] = level;
+                    }
+                }
+            }
+
+            CharacterCache.Set(context.CharacterId, SkillsKey, result, Ttl);
             return result;
         }
         catch (Exception ex)

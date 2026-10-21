@@ -26,12 +26,28 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public bool JobCostKnown { get; set; }
         /// <summary>采购物打包体积合计（m³）。</summary>
         public double TotalBuyVolume { get; set; }
-        /// <summary>直接购买全部目标产物的参考花费（按平均价）。</summary>
+        /// <summary>直接购买全部目标产物的参考花费（按全量、市场参考价）。</summary>
         public double DirectBuyCost { get; set; }
-        /// <summary>自建全部目标产物的估算成本（材料 + 安装费）。</summary>
+        /// <summary>自建全部目标产物的全量成本（材料按全量市场价 + 安装费）。</summary>
         public double SelfBuildCost { get; set; }
-        /// <summary>买/建对比是否可用（至少一个目标有平均价）。</summary>
+        /// <summary>自建全部目标产物的现金支出（材料按扣库存后的采购量 + 安装费）。</summary>
+        public double CashOutlay { get; set; }
+        /// <summary>库存抵扣掉的价值（全量成本 - 现金支出）。</summary>
+        public double StockValue { get; set; }
+        /// <summary>目标产物的参考收入（按全量、最高买价/参考价）。</summary>
+        public double Revenue { get; set; }
+        /// <summary>利润（收入 - 全量成本）。</summary>
+        public double Profit { get; set; }
+        /// <summary>利润率（利润 / 收入）。</summary>
+        public double Margin { get; set; }
+        /// <summary>现金利润（收入 - 现金支出）。</summary>
+        public double CashProfit { get; set; }
+        /// <summary>现金利润率（现金利润 / 收入）。</summary>
+        public double CashMargin { get; set; }
+        /// <summary>买/建对比是否可用（至少一个目标有市场参考价）。</summary>
         public bool ComparisonKnown { get; set; }
+        /// <summary>盈利分析是否可用（至少一个目标有收入参考价）。</summary>
+        public bool ProfitKnown { get; set; }
 
         internal void AddBuy(int typeId, long quantity, double packagedVolume)
         {
@@ -72,14 +88,26 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
             foreach (var target in targets)
             {
                 if (target == null) continue;
-                if (target.ReferenceCost > 0)
+                if (target.ReferenceCostFull > 0 || target.ReferenceUnitPrice > 0)
                 {
-                    summary.DirectBuyCost += target.ReferenceCost;
+                    summary.DirectBuyCost += target.ReferenceCostFull;
                     summary.ComparisonKnown = true;
                 }
-                summary.SelfBuildCost += target.BuildCost;
+                summary.SelfBuildCost += target.FullBuildCost;
+                summary.CashOutlay += target.BuildCost;
+                if (target.RevenueUnitPrice > 0)
+                {
+                    summary.Revenue += target.Revenue;
+                    summary.ProfitKnown = true;
+                }
                 Walk(target, summary);
             }
+
+            summary.StockValue = Math.Max(0, summary.SelfBuildCost - summary.CashOutlay);
+            summary.Profit = summary.Revenue - summary.SelfBuildCost;
+            summary.CashProfit = summary.Revenue - summary.CashOutlay;
+            summary.Margin = summary.Revenue > 0 ? summary.Profit / summary.Revenue : 0;
+            summary.CashMargin = summary.Revenue > 0 ? summary.CashProfit / summary.Revenue : 0;
             return summary;
         }
 
@@ -88,9 +116,12 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
             if (node == null) return;
             if (node.Decision == IndustryDecision.Buy)
             {
-                summary.AddBuy(node.TypeID, node.QuantityToBuy, node.PackagedVolume);
+                if (node.QuantityToBuy > 0)
+                {
+                    summary.AddBuy(node.TypeID, node.QuantityToBuy, node.PackagedVolume);
+                }
             }
-            else
+            else if (node.Runs > 0 && node.QuantityProduced > 0)
             {
                 summary.AddBuild(node.TypeID, node.QuantityProduced, node.Runs, node.JobCost, node.JobCostKnown);
             }

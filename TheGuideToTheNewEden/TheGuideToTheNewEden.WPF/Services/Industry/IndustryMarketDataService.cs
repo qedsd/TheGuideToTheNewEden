@@ -3,6 +3,8 @@ using EVEStandard.Enumerations;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Enums;
+using TheGuideToTheNewEden.Core.Models.Indusrty;
+using TheGuideToTheNewEden.WPF.Services.Business;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 
 namespace TheGuideToTheNewEden.WPF.Services.Industry;
@@ -49,6 +51,80 @@ public sealed class IndustryMarketDataService
     private static string Folder => Path.Combine(SettingsService.DataPath, "Configs", "IndustryCache");
     private static string PricesFile => Path.Combine(Folder, "prices.json");
     private static string CostIndexFile => Path.Combine(Folder, "costindices.json");
+    private static string MarketStatsFile(long regionId) => Path.Combine(Folder, $"marketstats_{regionId}.json");
+
+    private static readonly TimeSpan MarketStatsTtl = TimeSpan.FromMinutes(10);
+
+    /// <summary>
+    /// 某星域的市场深度（最低卖价 / 最高买价 / 买卖深度），用于盈利与买/建对比。
+    /// 数据来自整星域订单缓存；首次/过期时会拉取整星域订单，可能较慢。
+    /// </summary>
+    public async Task<Dictionary<int, IndustryMarketStat>> GetMarketStatsAsync(long regionId, bool forceRefresh = false, Action<int, int>? pageCallback = null)
+    {
+        if (regionId <= 0)
+        {
+            return new Dictionary<int, IndustryMarketStat>();
+        }
+
+        var cacheFile = MarketStatsFile(regionId);
+        var cache = forceRefresh ? null : ReadCache<MarketStatsCache>(cacheFile);
+        if (cache != null && cache.Stats is { Count: > 0 } && IsFresh(cache.UpdateTime, MarketStatsTtl))
+        {
+            return cache.Stats;
+        }
+
+        try
+        {
+            var orders = await MarketOrderService.Current.GetAllRegionOrdersAsync(regionId, true, default, pageCallback);
+            if (orders == null)
+            {
+                return cache?.Stats ?? new Dictionary<int, IndustryMarketStat>();
+            }
+
+            var result = new Dictionary<int, IndustryMarketStat>();
+            foreach (var order in orders)
+            {
+                if (order.Price <= 0 || order.VolumeRemain <= 0) continue;
+                int typeId = (int)order.TypeId;
+                if (!result.TryGetValue(typeId, out var stat))
+                {
+                    stat = new IndustryMarketStat { TypeID = typeId };
+                    result[typeId] = stat;
+                }
+
+                if (order.IsBuyOrder)
+                {
+                    if (order.Price > stat.BuyMax) stat.BuyMax = order.Price;
+                    stat.BuyVolume += order.VolumeRemain;
+                }
+                else
+                {
+                    if (stat.SellMin <= 0 || order.Price < stat.SellMin) stat.SellMin = order.Price;
+                    stat.SellVolume += order.VolumeRemain;
+                }
+            }
+
+            var average = await GetAveragePricesAsync(forceRefresh);
+            foreach (var pair in result)
+            {
+                if (average.TryGetValue(pair.Key, out var avg))
+                {
+                    pair.Value.AveragePrice = avg;
+                }
+            }
+
+            if (result.Count > 0)
+            {
+                WriteCache(cacheFile, new MarketStatsCache { UpdateTime = DateTime.UtcNow, Stats = result });
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex);
+            return cache?.Stats ?? new Dictionary<int, IndustryMarketStat>();
+        }
+    }
 
     /// <summary>CCP 调整价（TypeID → adjusted_price）。失败/无缓存返回空字典。</summary>
     public async Task<Dictionary<int, double>> GetAdjustedPricesAsync(bool forceRefresh = false)
@@ -164,6 +240,8 @@ public sealed class IndustryMarketDataService
 
     private static bool IsFresh(DateTime updateTime) => updateTime > DateTime.UtcNow - Ttl;
 
+    private static bool IsFresh(DateTime updateTime, TimeSpan ttl) => updateTime > DateTime.UtcNow - ttl;
+
     private static T? ReadCache<T>(string file) where T : class
     {
         try
@@ -203,5 +281,11 @@ public sealed class IndustryMarketDataService
     {
         public DateTime UpdateTime { get; set; }
         public Dictionary<long, IndustryCostIndex> Indices { get; set; } = new();
+    }
+
+    private sealed class MarketStatsCache
+    {
+        public DateTime UpdateTime { get; set; }
+        public Dictionary<int, IndustryMarketStat> Stats { get; set; } = new();
     }
 }

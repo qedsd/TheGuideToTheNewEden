@@ -101,6 +101,16 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         #endregion
 
         #region group
+        public static List<InvCategoryBase> TranInvCategories(List<int> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return new List<InvCategoryBase>();
+            }
+            // 本地库 categories 表只有 Id/Name，不能查带 Published 的 InvCategory。
+            return DBService.LocalDb.Queryable<InvCategoryBase>().Where(p => ids.Contains(p.CategoryID)).ToList();
+        }
+
         public static async Task<List<InvGroupBase>> TranInvGroupsAsync(List<int> invTypeIds)
         {
             return await DBService.LocalDb.Queryable<InvGroupBase>().Where(p => invTypeIds.Contains(p.GroupID)).ToListAsync();

@@ -6,47 +6,154 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vm="clr-namespace:TheGuideToTheNewEden.WPF.ViewModels.Industry"
     Background="Transparent"
     ScrollViewer.CanContentScroll="False"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <DrawingBrush
+            x:Key="IndustryGridBrush"
+            TileMode="Tile"
+            Viewport="0,0,26,26"
+            ViewportUnits="Absolute">
+            <DrawingBrush.Drawing>
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{DynamicResource TextFillColorTertiaryBrush}" Thickness="0.5" />
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <LineGeometry StartPoint="0,0" EndPoint="26,0" />
+                            <LineGeometry StartPoint="0,0" EndPoint="0,26" />
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+
         <Style x:Key="IndustryFieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontSize" Value="11.5" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
-            <Setter Property="Margin" Value="0,8,0,2" />
+            <Setter Property="Margin" Value="0,8,0,3" />
         </Style>
 
-        <Style x:Key="IndustryCellStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="12,0" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Style x:Key="RecipeRow" TargetType="Border">
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="Padding" Value="9,6" />
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+            <Setter Property="CornerRadius" Value="5" />
         </Style>
 
-        <Style
-            x:Key="IndustryNumberCellStyle"
-            BasedOn="{StaticResource IndustryCellStyle}"
-            TargetType="TextBlock">
-            <Setter Property="HorizontalAlignment" Value="Right" />
+        <DataTemplate x:Key="RecipeRowTemplate" DataType="{x:Type vm:IndustryRecipeRow}">
+            <Border Style="{StaticResource RecipeRow}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Name}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            FontSize="9.5"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            Text="{Binding Note}" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                        Text="{Binding Amount}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <Style x:Key="ActivityTabItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            x:Name="TabBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            CornerRadius="5">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                                <Setter TargetName="TabBorder" Property="BorderThickness" Value="1" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <DataTemplate x:Key="ActivityTabTemplate" DataType="{x:Type vm:IndustryActivityItem}">
+            <StackPanel>
+                <TextBlock
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Name}" />
+                <TextBlock
+                    FontSize="9"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                    Text="{Binding TimeText}" />
+            </StackPanel>
+        </DataTemplate>
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="340" />
+            <ColumnDefinition Width="12" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  左：搜索与结果  -->
-        <Grid Grid.Column="0" Margin="12,12,6,12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <!--  ================= 左：搜索与结果 =================  -->
+        <controls:CardControl
+            Grid.Column="0"
+            Padding="14,8"
+            CornerRadius="8">
+            <controls:CardControl.Header>
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon
+                        VerticalAlignment="Center"
+                        FontSize="15"
+                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                        Symbol="Search24" />
+                    <TextBlock
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="蓝图检索" />
+                </StackPanel>
+            </controls:CardControl.Header>
 
-            <StackPanel Grid.Row="0">
-                <TextBlock Style="{StaticResource IndustryFieldLabel}" Text="{DynamicResource IndustryBp_SearchLabel}" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -56,82 +163,309 @@
                     <ui:TextBox
                         Grid.Column="0"
                         KeyDown="OnSearchKeyDown"
-                        PlaceholderText="{DynamicResource IndustryPage_SearchPlaceholder}"
+                        PlaceholderText="搜索可制造/可反应产物"
                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
                     <ui:Button
                         Grid.Column="2"
                         Click="OnSearchClick"
-                        Content="{DynamicResource IndustryPage_Search}" />
+                        Icon="{ui:SymbolIcon Search24}" />
                 </Grid>
-            </StackPanel>
 
-            <ListBox
-                Grid.Row="1"
-                Margin="0,8,0,0"
-                DisplayMemberPath="ProductName"
-                ItemsSource="{Binding Results}"
-                SelectedItem="{Binding SelectedEntry, Mode=TwoWay}" />
-        </Grid>
+                <ListBox
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    HorizontalContentAlignment="Stretch"
+                    ItemsSource="{Binding Results}"
+                    SelectedItem="{Binding SelectedEntry, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Margin="0,2"
+                                Padding="9,6"
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                CornerRadius="5">
+                                <StackPanel>
+                                    <TextBlock
+                                        FontSize="12.5"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding ProductName}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Margin="0,2,0,0"
+                                        FontSize="10"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding BlueprintName}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        FontSize="9.5"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding GroupName}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </controls:CardControl>
 
-        <!--  右：蓝图详情  -->
-        <Grid Grid.Column="1" Margin="6,12,12,12">
+        <!--  ================= 右：配方可视化 =================  -->
+        <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="12" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:CardControl Grid.Row="0" Margin="0,0,0,10">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="20"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{Binding Title}"
-                        TextTrimming="CharacterEllipsis" />
-                    <TextBlock
-                        Margin="0,4,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{Binding Subtitle}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </controls:CardControl>
+            <!--  标题区  -->
+            <Border
+                Grid.Row="0"
+                Padding="18,14"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <Grid>
+                    <Border
+                        Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                        CornerRadius="8"
+                        Opacity="0.08" />
+                    <Border
+                        Background="{StaticResource IndustryGridBrush}"
+                        CornerRadius="8"
+                        Opacity="0.09" />
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="10.5"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            Text="INDUSTRY / BLUEPRINT" />
+                        <TextBlock
+                            Margin="0,3,0,0"
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Title}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Subtitle}"
+                            TextWrapping="Wrap" />
 
-            <ui:DataGrid
-                x:Name="DetailGrid"
-                Grid.Row="1"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                CanUserDeleteRows="False"
-                GridLinesVisibility="None"
-                HeadersVisibility="Column"
-                HorizontalScrollBarVisibility="Auto"
-                IsReadOnly="True"
-                ItemsSource="{Binding Details}"
-                SelectionUnit="FullRow"
+                        <ListBox
+                            Margin="0,10,0,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ItemContainerStyle="{StaticResource ActivityTabItem}"
+                            ItemTemplate="{StaticResource ActivityTabTemplate}"
+                            ItemsSource="{Binding Activities}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectedItem="{Binding SelectedActivity, Mode=TwoWay}">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  配方主体：输入 → 蓝图核心 → 输出  -->
+            <ScrollViewer
+                Grid.Row="2"
+                HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">
-                <ui:DataGrid.Columns>
-                    <DataGridTextColumn
-                        Width="100"
-                        Binding="{Binding Kind}"
-                        ElementStyle="{StaticResource IndustryCellStyle}"
-                        Header="{DynamicResource IndustryBp_Col_Kind}" />
-                    <DataGridTextColumn
-                        Width="360"
-                        Binding="{Binding Name}"
-                        ElementStyle="{StaticResource IndustryCellStyle}"
-                        Header="{DynamicResource IndustryBp_Col_Name}" />
-                    <DataGridTextColumn
-                        Width="120"
-                        Binding="{Binding Amount}"
-                        ElementStyle="{StaticResource IndustryNumberCellStyle}"
-                        Header="{DynamicResource IndustryBp_Col_Amount}" />
-                    <DataGridTextColumn
-                        Width="120"
-                        Binding="{Binding Note}"
-                        ElementStyle="{StaticResource IndustryCellStyle}"
-                        Header="{DynamicResource IndustryBp_Col_Note}" />
-                </ui:DataGrid.Columns>
-            </ui:DataGrid>
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <controls:CardControl
+                            Grid.Column="0"
+                            Padding="14,8"
+                            CornerRadius="8">
+                            <controls:CardControl.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                        Symbol="Wrench24" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="输入材料" />
+                                </StackPanel>
+                            </controls:CardControl.Header>
+                            <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding MaterialRows}" />
+                        </controls:CardControl>
+
+                        <Grid Grid.Column="1" Margin="10,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border
+                                Grid.Row="1"
+                                Padding="14,16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Grid Width="62" Height="62">
+                                        <Ellipse
+                                            Stroke="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                            StrokeThickness="1.4"
+                                            Opacity="0.8" />
+                                        <Ellipse
+                                            Width="48"
+                                            Height="48"
+                                            Stroke="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                            StrokeThickness="0.8"
+                                            Opacity="0.4" />
+                                        <ui:SymbolIcon
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="26"
+                                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                            Symbol="Calculator24" />
+                                    </Grid>
+                                    <TextBlock
+                                        Margin="0,10,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding BlueprintName}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Margin="0,3,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="10"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding TimeText}" />
+                                    <TextBlock
+                                        Margin="0,2,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="10"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding MaxRunsText, StringFormat=最大流程 {0}}" />
+                                </StackPanel>
+                            </Border>
+                            <ui:SymbolIcon
+                                Grid.Row="2"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                FontSize="18"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Symbol="ChevronDown24" />
+                        </Grid>
+
+                        <controls:CardControl
+                            Grid.Column="2"
+                            Padding="14,8"
+                            CornerRadius="8">
+                            <controls:CardControl.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                        Symbol="Target24" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="输出产物" />
+                                </StackPanel>
+                            </controls:CardControl.Header>
+                            <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding ProductRows}" />
+                        </controls:CardControl>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <controls:CardControl
+                            Grid.Column="0"
+                            Padding="14,8"
+                            CornerRadius="8">
+                            <controls:CardControl.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                        Symbol="Settings24" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="技能需求" />
+                                </StackPanel>
+                            </controls:CardControl.Header>
+                            <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding SkillRows}" />
+                        </controls:CardControl>
+
+                        <controls:CardControl
+                            Grid.Column="2"
+                            Padding="14,8"
+                            CornerRadius="8">
+                            <controls:CardControl.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                        Symbol="Database24" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="回收 / 压缩" />
+                                </StackPanel>
+                            </controls:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock
+                                    Style="{StaticResource IndustryFieldLabel}"
+                                    Text="精炼产出"
+                                    Visibility="{Binding HasReprocessing, Converter={StaticResource BoolToVisibility}}" />
+                                <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding ReprocessingRows}" />
+                                <StackPanel Visibility="{Binding HasCompression, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Style="{StaticResource IndustryFieldLabel}" Text="压缩产物" />
+                                    <TextBlock
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding CompressionText}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,6,0,0"
+                                    FontSize="10"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Text="材料数量为单流程基础值；ME/TE 与结构 rig 在制造计划页计算。"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </controls:CardControl>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Page>

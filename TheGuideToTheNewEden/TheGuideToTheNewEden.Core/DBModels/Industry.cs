@@ -93,4 +93,13 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public int AttributeID { get; set; }
         public double Value { get; set; }
     }
+
+    /// <summary>可压缩物品 → 压缩后物品（SDE <c>compressibleTypes</c>）。</summary>
+    [SugarTable("compressibleTypes")]
+    public class CompressibleType
+    {
+        [SugarColumn(IsPrimaryKey = true)]
+        public int Id { get; set; }
+        public int CompressedTypeID { get; set; }
+    }
 }

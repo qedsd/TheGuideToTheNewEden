@@ -17,5 +17,6 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int GroupId { get; set; }
         public string GroupName { get; set; }
         public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
     }
 }
