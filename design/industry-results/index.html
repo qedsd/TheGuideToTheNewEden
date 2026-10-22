@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工业结果视图重设计 · 四方案对比</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body { overflow: auto; }
+  .page { max-width: 1440px; margin: 0 auto; padding: 34px 30px 72px; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 12px;
+  }
+  .kicker::before { content: ''; width: 18px; height: 1px; background: var(--amber); }
+  h1 { font-size: clamp(28px, 3.2vw, 44px); line-height: 1.12; letter-spacing: -.015em; font-weight: 600; max-width: 900px; }
+  h1 em { font-style: normal; color: var(--amber); }
+  .lede { margin-top: 12px; max-width: 760px; font-size: 14px; line-height: 1.7; color: var(--muted); }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+  .hero-actions { display: flex; gap: 8px; margin-top: 20px; }
+
+  .brief {
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;
+    margin-top: 28px;
+  }
+  .brief-card {
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg1);
+    padding: 16px 18px;
+  }
+  .brief-card h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  .brief-card p { margin-top: 8px; font-size: 12.5px; line-height: 1.7; color: var(--text2); }
+  .brief-card .questions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 18px; margin-top: 12px; }
+  .q { display: flex; gap: 8px; font-size: 11.5px; color: var(--text2); }
+  .q b { color: var(--amber); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin: 40px 0 14px; }
+  .section-head h2 { font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+  .section-head span { font-size: 11px; color: var(--muted); }
+
+  .schemes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .scheme {
+    display: flex; flex-direction: column; border: 1px solid var(--line);
+    border-radius: 12px; background: var(--bg1); overflow: hidden;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .scheme:hover { border-color: rgba(240,161,58,.32); transform: translateY(-1px); }
+  .scheme.rec { border-color: rgba(240,161,58,.4); box-shadow: 0 0 0 1px rgba(240,161,58,.12); }
+  .preview {
+    height: 156px; position: relative; overflow: hidden;
+    background:
+      radial-gradient(rgba(158,188,220,.11) 1px, transparent 1px) 0 0 / 16px 16px,
+      #080f16;
+    border-bottom: 1px solid var(--line);
+  }
+  .preview .pv-label {
+    position: absolute; left: 12px; top: 10px; font-size: 8px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--faint);
+  }
+  .scheme-body { padding: 14px 16px 15px; display: flex; flex-direction: column; flex: 1; }
+  .scheme-title { display: flex; align-items: center; gap: 8px; }
+  .scheme-title h3 { font-size: 16px; font-weight: 600; }
+  .scheme-title .badge {
+    font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--amber); background: var(--amber-soft); border: 1px solid rgba(240,161,58,.28);
+    border-radius: 4px; padding: 2px 5px;
+  }
+  .scheme-promise { margin-top: 5px; font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+  .scheme-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .fact { font-size: 9px; color: var(--text2); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; }
+  .scheme-pros { margin-top: 11px; display: grid; gap: 3px; font-size: 10.5px; color: var(--text2); }
+  .scheme-pros span { display: flex; gap: 6px; }
+  .scheme-pros i { color: var(--green); font-style: normal; }
+  .scheme-pros .con i { color: var(--red); }
+  .scheme-link {
+    margin-top: 13px; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--amber); font-weight: 600;
+  }
+  .scheme-link:hover { text-decoration: underline; }
+
+  /* A preview */
+  .pa-row { position: absolute; left: 12px; right: 12px; height: 12px; border-radius: 3px; }
+  .pa-row .pl { position: absolute; left: 0; width: 26%; height: 12px; border-radius: 3px; background: rgba(158,188,220,.12); }
+  .pa-row .pb { position: absolute; height: 12px; border-radius: 3px; }
+  .pa-row .pb.mfg { background: rgba(91,200,214,.55); }
+  .pa-row .pb.inv { background: rgba(167,139,250,.65); }
+  .pa-row .pb.crit { box-shadow: inset 0 0 0 1px rgba(248,113,113,.8); }
+
+  /* B preview */
+  .pb-canvas { position: absolute; inset: 22px 14px 14px; }
+  .pb-node { position: absolute; border: 1px solid var(--line2); border-radius: 4px; background: var(--bg2); }
+  .pb-node.mfg { border-color: rgba(91,200,214,.5); }
+  .pb-node.inv { border-color: rgba(167,139,250,.55); }
+  .pb-node.tar { border-color: rgba(240,161,58,.6); background: rgba(240,161,58,.1); }
+
+  /* C preview */
+  .pc-row { position: absolute; left: 12px; right: 12px; height: 30px; display: flex; gap: 3px; align-items: flex-end; }
+  .pc-slot { flex: 1; height: 20px; border-radius: 2px; background: rgba(158,188,220,.08); border-top: 2px solid transparent; }
+  .pc-slot.mfg { background: rgba(91,200,214,.25); border-top-color: var(--teal); }
+  .pc-slot.inv { background: rgba(167,139,250,.25); border-top-color: var(--violet); }
+  .pc-slot.rea { background: rgba(240,161,58,.25); border-top-color: var(--amber); }
+
+  /* D preview */
+  .pd-main { position: absolute; left: 12px; top: 24px; width: 58%; bottom: 12px; border: 1px solid var(--line); border-radius: 4px; }
+  .pd-side { position: absolute; right: 12px; top: 24px; width: 34%; height: 52%; border: 1px solid var(--line); border-radius: 4px; }
+  .pd-bottom { position: absolute; right: 12px; bottom: 12px; width: 34%; height: 32%; border: 1px solid var(--line); border-radius: 4px; }
+  .pd-bar { position: absolute; height: 7px; border-radius: 2px; }
+  .pd-bar.mfg { background: rgba(91,200,214,.55); }
+  .pd-bar.inv { background: rgba(167,139,250,.65); }
+  .pd-bar.rea { background: rgba(240,161,58,.6); }
+  .pd-node { position: absolute; width: 18px; height: 10px; border: 1px solid rgba(158,188,220,.35); border-radius: 2px; }
+  .pd-node.hot { border-color: var(--amber); }
+
+  .compare-wrap { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  table.compare { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  table.compare th, table.compare td { padding: 11px 14px; border-bottom: 1px solid rgba(158,188,220,.07); text-align: left; }
+  table.compare th { font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); font-weight: 500; background: rgba(255,255,255,.018); }
+  table.compare td:first-child { color: var(--text2); font-weight: 500; }
+  table.compare tr:last-child td { border-bottom: none; }
+  table.compare .rec-cell { background: rgba(240,161,58,.045); }
+  .dots { letter-spacing: 2px; font-size: 11px; }
+  .dots .on { color: var(--teal); }
+  .dots .off { color: rgba(158,188,220,.34); }
+  .dots .half { color: rgba(91,200,214,.55); }
+  .cost { font-size: 10px; color: var(--muted); }
+
+  .recommend {
+    margin-top: 34px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px;
+  }
+  .rec-main {
+    border: 1px solid rgba(240,161,58,.35); border-radius: 12px;
+    background: linear-gradient(180deg, rgba(240,161,58,.06), transparent 65%), var(--bg1);
+    padding: 20px 22px;
+  }
+  .rec-main h2 { font-size: 21px; font-weight: 600; }
+  .rec-main h2 span { color: var(--amber); }
+  .rec-main p { margin-top: 8px; font-size: 12.5px; line-height: 1.7; color: var(--text2); }
+  .phases { margin-top: 14px; display: grid; gap: 7px; }
+  .phase { display: flex; gap: 10px; align-items: flex-start; font-size: 11px; color: var(--muted); }
+  .phase b { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--bg4); color: var(--text2); font-size: 9px; border: 1px solid var(--line2); }
+  .phase strong { color: var(--text2); font-weight: 500; }
+  .rec-side { border: 1px solid var(--line); border-radius: 12px; background: var(--bg1); padding: 18px 20px; }
+  .rec-side h3 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  .principles { display: grid; gap: 9px; margin-top: 12px; }
+  .principle { display: flex; gap: 9px; font-size: 11px; line-height: 1.55; color: var(--muted); }
+  .principle b { flex: none; color: var(--amber); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .footnote {
+    margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line);
+    font-size: 10.5px; line-height: 1.7; color: var(--faint);
+  }
+  .footnote a { color: var(--text2); }
+  .footnote a:hover { color: var(--amber); }
+
+  .scheme.solo { grid-column: 1 / -1; flex-direction: row; }
+  .scheme.solo .preview { width: 44%; height: auto; min-height: 190px; border-bottom: 0; border-right: 1px solid var(--line); }
+  .scheme.solo .scheme-body { width: 56%; }
+  .pe-gantt { position: absolute; left: 12px; top: 30px; right: 12px; bottom: 66px; display: flex; flex-direction: column; gap: 3px; }
+  .pe-row { flex: 1; position: relative; border-radius: 2px; background: rgba(158,188,220,.045); }
+  .pe-row i { position: absolute; top: 18%; height: 64%; border-radius: 2px; }
+  .pe-row i.mfg { background: rgba(91,200,214,.5); }
+  .pe-row i.inv { background: rgba(167,139,250,.62); }
+  .pe-row i.rea { background: rgba(240,161,58,.56); }
+  .pe-row i.crit { box-shadow: inset 0 0 0 1px rgba(248,113,113,.8); }
+  .pe-wall { position: absolute; left: 12px; right: 12px; bottom: 16px; height: 30px; display: flex; gap: 3px; }
+  .pe-wall span { flex: 1; border-radius: 2px; background: rgba(158,188,220,.08); border-top: 2px solid transparent; }
+  .pe-wall span.mfg { background: rgba(91,200,214,.24); border-top-color: var(--teal); }
+  .pe-wall span.inv { background: rgba(167,139,250,.24); border-top-color: var(--violet); }
+  .pe-wall span.rea { background: rgba(240,161,58,.24); border-top-color: var(--amber); }
+  .pe-wall span.empty { border: 1px dashed rgba(158,188,220,.18); background: transparent; }
+
+  @media (max-width: 980px) {
+    .schemes, .brief, .recommend { grid-template-columns: 1fr; }
+    .scheme.solo { flex-direction: column; }
+    .scheme.solo .preview { width: 100%; min-height: 156px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .scheme.solo .scheme-body { width: 100%; }
+    .page { padding: 24px 18px 54px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <div class="kicker">工业 · 结果视图重设计</div>
+  <h1>从「物料树」到<em>产线控制台</em></h1>
+  <p class="lede">
+    Kirin ×10 / 3 个角色 / 15 条制造线（技能决定）/ 发明与反应槽各 3。一个高级物品的难点不是算不出材料，
+    而是排得下、接得上、看得懂：谁在什么时候用哪条槽，上下游什么时候把料送到，最后什么时候能交付。
+  </p>
+  <div class="hero-chips">
+    <span class="chip mfg"><i class="dot"></i>制造 1–11 线 / 角色（技能）</span>
+    <span class="chip invention"><i class="dot"></i>发明 1–11 槽 / 角色</span>
+    <span class="chip reaction"><i class="dot"></i>反应 1–11 槽 / 角色</span>
+    <span class="chip ghost">示例：3 角色 · 15 制造槽</span>
+    <span class="chip ghost">目标：一眼看懂怎么排</span>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="scheme-d-hybrid.html">打开推荐方案 D</a>
+    <a class="btn ghost" href="scheme-e-solo.html">单角色看 E</a>
+    <a class="btn ghost" href="scheme-a-line-gantt.html">先看排程 A</a>
+  </div>
+
+  <section class="brief">
+    <div class="brief-card">
+      <h2>现在的问题</h2>
+      <p>
+        扁平缩进树把「材料层级」讲清楚了，但没有回答排产问题：节点多时要翻很久，节点之间只有缩进关系，
+        看不到谁占用哪条线、什么时候释放、哪个节点在等料，也无法判断每个角色的 1–11 条槽是否够用。
+      </p>
+      <p style="margin-top:8px;color:var(--muted)">
+        结果页真正要回答的是下面四个问题，而不是「BOM 有多深」。
+      </p>
+      <div class="questions">
+        <div class="q"><b>01</b><span>谁做？哪个角色、哪条产线？</span></div>
+        <div class="q"><b>02</b><span>什么时候开始 / 结束？能不能并行？</span></div>
+        <div class="q"><b>03</b><span>这个节点要什么投入、产出给谁？</span></div>
+        <div class="q"><b>04</b><span>瓶颈在哪？哪些料要买、哪些库存能抵？</span></div>
+      </div>
+    </div>
+    <div class="brief-card">
+      <h2>设计立场</h2>
+      <p>
+        把「产线」当一等资源，把「时间」当主轴，把「物料流」当关系，把「采购缺口」当常驻状态。
+        不是把树画得更漂亮，而是把计划变成一张可以操作的排产板。
+      </p>
+      <p style="margin-top:8px;color:var(--muted)">
+        产能来自技能：制造 / 发明 / 反应槽位各 1–11，总产能 = Σ 角色槽位；技能还改变同一任务的耗时，所以分工是优化结果，不是固定标签。
+      </p>
+      <div class="phase" style="margin-top:12px"><b>1</b><span><strong>产线 / 时间</strong>是第一信息，不能藏在节点详情里。</span></div>
+      <div class="phase"><b>2</b><span><strong>选中即聚焦</strong>：只保留直接上下游，其余淡出。</span></div>
+      <div class="phase"><b>3</b><span><strong>语义缩放</strong>：节点多时折叠成组，放大再展开细节。</span></div>
+      <div class="phase"><b>4</b><span><strong>可操作</strong>：拖拽改派、自动排产、瓶颈告警，而不是只读图表。</span></div>
+    </div>
+  </section>
+
+  <div class="section-head"><h2>五种方案</h2><span>同一份 Kirin 计划，五种信息组织方式</span></div>
+  <div class="schemes">
+
+    <article class="scheme">
+      <div class="preview">
+        <span class="pv-label">A · 产线甘特</span>
+        <div class="pa-row" style="top:38px"><span class="pl"></span><span class="pb mfg" style="left:28%;width:22%"></span><span class="pb mfg" style="left:52%;width:14%"></span></div>
+        <div class="pa-row" style="top:58px"><span class="pl"></span><span class="pb mfg" style="left:28%;width:10%"></span><span class="pb mfg" style="left:38%;width:10%"></span><span class="pb crit" style="left:62%;width:18%"></span></div>
+        <div class="pa-row" style="top:78px"><span class="pl"></span><span class="pb rea" style="left:28%;width:12%"></span><span class="pb rea" style="left:40%;width:12%"></span><span class="pb mfg" style="left:54%;width:18%"></span></div>
+        <div class="pa-row" style="top:98px"><span class="pl"></span><span class="pb inv" style="left:28%;width:34%"></span><span class="pb crit" style="left:62%;width:18%"></span></div>
+      </div>
+      <div class="scheme-body">
+        <div class="scheme-title"><h3>A · 产线甘特</h3></div>
+        <p class="scheme-promise">角色 × 11 条线为行，时间为列；每个任务是一条彩色块，依赖用连线表示。</p>
+        <div class="scheme-facts"><span class="fact">排产</span><span class="fact">交付时间</span><span class="fact">瓶颈</span><span class="fact">产线占用</span></div>
+        <div class="scheme-pros">
+          <span><i>+</i>时间和产能一眼可见，最容易回答「什么时候能做完」</span>
+          <span><i>+</i>关键路径、空闲线、任务衔接直接落位</span>
+          <span class="con"><i>−</i>节点多时依赖线会拥挤，需要筛选 / 聚焦</span>
+        </div>
+        <a class="scheme-link" href="scheme-a-line-gantt.html">打开方案 A →</a>
+      </div>
+    </article>
+
+    <article class="scheme">
+      <div class="preview">
+        <span class="pv-label">B · 蓝图关系</span>
+        <div class="pb-canvas">
+          <svg style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">
+            <path d="M64 34 C84 34, 88 72, 108 72" fill="none" stroke="rgba(158,188,220,.3)"/>
+            <path d="M64 104 C84 104, 88 72, 108 72" fill="none" stroke="rgba(158,188,220,.3)"/>
+            <path d="M64 64 C84 64, 88 34, 108 34" fill="none" stroke="rgba(167,139,250,.5)"/>
+            <path d="M168 34 C188 34, 192 64, 212 64" fill="none" stroke="rgba(248,113,113,.6)"/>
+            <path d="M168 72 C188 72, 192 64, 212 64" fill="none" stroke="rgba(158,188,220,.3)"/>
+            <path d="M272 64 C292 64, 296 64, 316 64" fill="none" stroke="rgba(240,161,58,.55)"/>
+          </svg>
+          <div class="pb-node" style="left:4px;top:22px;width:60px;height:24px"></div>
+          <div class="pb-node" style="left:4px;top:92px;width:60px;height:24px"></div>
+          <div class="pb-node inv" style="left:4px;top:52px;width:60px;height:24px"></div>
+          <div class="pb-node mfg" style="left:108px;top:22px;width:60px;height:24px"></div>
+          <div class="pb-node mfg" style="left:108px;top:60px;width:60px;height:24px"></div>
+          <div class="pb-node mfg" style="left:212px;top:52px;width:60px;height:24px"></div>
+          <div class="pb-node tar" style="left:316px;top:52px;width:42px;height:24px"></div>
+        </div>
+      </div>
+      <div class="scheme-body">
+        <div class="scheme-title"><h3>B · 蓝图关系</h3></div>
+        <p class="scheme-promise">UE Blueprint 式的节点画布：节点是任务，线是物料流；左到右就是原料到成品。</p>
+        <div class="scheme-facts"><span class="fact">依赖</span><span class="fact">物料流</span><span class="fact">上下游</span><span class="fact">语义缩放</span></div>
+        <div class="scheme-pros">
+          <span><i>+</i>关系最清楚，适合排查「这个料从哪来、给谁用」</span>
+          <span><i>+</i>可折叠组件、只保留关键路径，节点多也能读</span>
+          <span class="con"><i>−</i>时间和 11 线容量不直观，需要配合排程视图</span>
+        </div>
+        <a class="scheme-link" href="scheme-b-blueprint.html">打开方案 B →</a>
+      </div>
+    </article>
+
+    <article class="scheme">
+      <div class="preview">
+        <span class="pv-label">C · 产线墙</span>
+        <div class="pc-row" style="top:38px">
+          <span class="pc-slot"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span>
+        </div>
+        <div class="pc-row" style="top:68px">
+          <span class="pc-slot rea"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span>
+        </div>
+        <div class="pc-row" style="top:98px">
+          <span class="pc-slot inv"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot mfg"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span><span class="pc-slot"></span>
+        </div>
+      </div>
+      <div class="scheme-body">
+        <div class="scheme-title"><h3>C · 产线墙</h3></div>
+        <p class="scheme-promise">每个角色一面 11 格工位墙，点亮的就是占用；右侧待排任务直接拖进空槽。</p>
+        <div class="scheme-facts"><span class="fact">11 线容量</span><span class="fact">空槽</span><span class="fact">拖拽排产</span><span class="fact">多角色</span></div>
+        <div class="scheme-pros">
+          <span><i>+</i>11 条线的容量和空槽最直观，适合分工位</span>
+          <span><i>+</i>拖拽排产、自动排产、排队关系都能直接操作</span>
+          <span class="con"><i>−</i>时间与依赖需要底部时间带 / 交接列表辅助</span>
+        </div>
+        <a class="scheme-link" href="scheme-c-line-matrix.html">打开方案 C →</a>
+      </div>
+    </article>
+
+    <article class="scheme rec">
+      <div class="preview">
+        <span class="pv-label">D · 混合控制台</span>
+        <div class="pd-main">
+          <span class="pd-bar mfg" style="left:8%;top:18px;width:22%"></span>
+          <span class="pd-bar mfg" style="left:8%;top:34px;width:14%"></span>
+          <span class="pd-bar rea" style="left:8%;top:50px;width:26%"></span>
+          <span class="pd-bar inv" style="left:8%;top:66px;width:34%"></span>
+          <span class="pd-bar mfg" style="left:42%;top:18px;width:18%"></span>
+          <span class="pd-bar mfg" style="left:42%;top:34px;width:18%"></span>
+          <span class="pd-bar rea" style="left:42%;top:50px;width:18%"></span>
+          <span class="pd-bar inv" style="left:42%;top:66px;width:18%"></span>
+        </div>
+        <div class="pd-side">
+          <span class="pd-node hot" style="left:8px;top:14px"></span>
+          <span class="pd-node" style="left:8px;top:38px"></span>
+          <span class="pd-node" style="left:42px;top:26px"></span>
+          <span class="pd-node" style="left:76px;top:14px"></span>
+          <span class="pd-node" style="left:76px;top:48px"></span>
+        </div>
+        <div class="pd-bottom">
+          <span class="pd-bar mfg" style="left:8%;top:10px;width:64%"></span>
+          <span class="pd-bar rea" style="left:8%;top:22px;width:44%"></span>
+          <span class="pd-bar inv" style="left:8%;top:34px;width:30%"></span>
+        </div>
+      </div>
+      <div class="scheme-body">
+        <div class="scheme-title"><h3>D · 混合控制台</h3><span class="badge">推荐</span></div>
+        <p class="scheme-promise">左边排程，右边关系聚焦 + 任务详情，底部物料缺口与告警；选中任一侧，全部同步。</p>
+        <div class="scheme-facts"><span class="fact">排程 + 关系</span><span class="fact">同步选中</span><span class="fact">物料缺口</span><span class="fact">告警</span></div>
+        <div class="scheme-pros">
+          <span><i>+</i>一屏同时回答「怎么排 / 为什么 / 缺什么」</span>
+          <span><i>+</i>选中任务后，排程条、关系节点、详情、物料全部联动</span>
+          <span class="con"><i>−</i>实现复杂度最高，需要先有 A / B / C 的组件积累</span>
+        </div>
+        <a class="scheme-link" href="scheme-d-hybrid.html">打开方案 D →</a>
+      </div>
+    </article>
+
+    <article class="scheme rec solo">
+      <div class="preview">
+        <span class="pv-label">E · 单角色线控台</span>
+        <div class="pe-gantt">
+          <div class="pe-row"><i class="inv" style="left:4%;width:42%"></i></div>
+          <div class="pe-row"><i class="rea" style="left:4%;width:11%"></i><i class="rea" style="left:16%;width:11%"></i><i class="rea" style="left:28%;width:11%"></i></div>
+          <div class="pe-row"><i class="mfg crit" style="left:50%;width:34%"></i></div>
+          <div class="pe-row"><i class="mfg" style="left:4%;width:9%"></i><i class="mfg" style="left:20%;width:9%"></i></div>
+          <div class="pe-row"><i class="mfg" style="left:4%;width:9%"></i><i class="mfg" style="left:38%;width:9%"></i></div>
+          <div class="pe-row"><i class="mfg" style="left:4%;width:9%"></i><i class="mfg" style="left:44%;width:9%"></i></div>
+          <div class="pe-row"><i class="mfg" style="left:4%;width:9%"></i></div>
+        </div>
+        <div class="pe-wall">
+          <span class="mfg"></span><span class="mfg"></span><span class="mfg"></span><span class="mfg"></span><span class="mfg"></span><span class="mfg"></span><span class="mfg"></span><span class="mfg"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span>
+        </div>
+      </div>
+      <div class="scheme-body">
+        <div class="scheme-title"><h3>E · 单角色线控台</h3><span class="badge">单角色推荐</span></div>
+        <p class="scheme-promise">只有一名角色时，把技能给出的制造线直接铺开（示例满 11）：排程、步骤/物料、工位、关系四个视图共用一份调度和详情。</p>
+        <div class="scheme-facts"><span class="fact">11 行甘特（满技能）</span><span class="fact">步骤物料</span><span class="fact">11 格工位</span><span class="fact">拖拽排产</span><span class="fact">关系页签</span></div>
+        <div class="scheme-pros">
+          <span><i>+</i>每一步的产出 / 投入在「步骤」页签完整列出，不只看时间条</span>
+          <span><i>+</i>排程与工位共用数据；拖入空产线同步更新甘特和利用率</span>
+          <span class="con"><i>−</i>多角色协同时仍应使用 D；E 不画跨角色泳道</span>
+        </div>
+        <a class="scheme-link" href="scheme-e-solo.html">打开方案 E →</a>
+      </div>
+    </article>
+  </div>
+
+  <div class="section-head"><h2>横向对比</h2><span>按「日常最常问的问题」评分</span></div>
+  <div class="compare-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>方案</th><th>一眼看懂排产</th><th>依赖 / 物料流</th><th>实际槽位容量</th><th>多角色协同</th><th>大规模可读性</th><th>实现成本</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A · 产线甘特</td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●</span><span class="off">○○○</span></span></td>
+          <td><span class="dots"><span class="on">●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●</span><span class="off">○○</span></span></td>
+          <td class="cost">中</td>
+        </tr>
+        <tr>
+          <td>B · 蓝图关系</td>
+          <td><span class="dots"><span class="on">●</span><span class="off">○○○</span></span></td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●</span><span class="off">○○○</span></span></td>
+          <td><span class="dots"><span class="on">●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="cost">中高</td>
+        </tr>
+        <tr>
+          <td>C · 产线墙</td>
+          <td><span class="dots"><span class="on">●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●</span><span class="off">○○○</span></span></td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●</span><span class="off">○○</span></span></td>
+          <td class="cost">中</td>
+        </tr>
+        <tr>
+          <td class="rec-cell">D · 混合控制台</td>
+          <td class="rec-cell"><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="rec-cell"><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="rec-cell"><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="rec-cell"><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="rec-cell"><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="rec-cell cost">高</td>
+        </tr>
+        <tr>
+          <td>E · 单角色</td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td style="color:var(--faint)">—（单角色）</td>
+          <td><span class="dots"><span class="on">●●●</span><span class="off">○○</span></span></td>
+          <td class="cost">中</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="recommend">
+    <div class="rec-main">
+      <h2>多角色 → <span>D</span>，单角色 → <span>E</span></h2>
+      <p>
+        多角色时，D 的一屏同步能把角色、产线、关系、缺口绑在一起；只有一名角色时，D 的多角色列和常驻关系图会浪费空间，
+        E 把 11 条制造线直接铺开，排程 / 工位 / 关系三个视图共用一份调度和详情。
+      </p>
+      <div class="phases">
+        <div class="phase"><b>1</b><span><strong>单角色默认 E</strong>：11 行甘特 + 11 格工位 + 关系页签；拖拽排产与甘特同步。</span></div>
+        <div class="phase"><b>2</b><span><strong>多角色默认 D</strong>：在 E 的基础上加角色泳道、跨角色交接和同步关系图。</span></div>
+        <div class="phase"><b>3</b><span><strong>共用数据层</strong>：同一份 schedule 模型，角色数量变化时只改变分组，不重写视图。</span></div>
+      </div>
+    </div>
+    <div class="rec-side">
+      <h3>贯穿五种方案的原则</h3>
+      <div class="principles">
+        <div class="principle"><b>01</b><span>产线是一等资源：制造 / 发明 / 反应槽位各 1–11，由技能决定；总产能 = Σ 角色槽位，不再只是节点文本。</span></div>
+        <div class="principle"><b>02</b><span>时间是主轴：甘特条、时间带、完成时刻必须在第一屏。</span></div>
+        <div class="principle"><b>03</b><span>颜色表达活动：制造青 / 发明紫 / 反应橙 / 采购灰 / 关键红。</span></div>
+        <div class="principle"><b>04</b><span>焦点 + 上下文：选中只留直接上下游，其余淡出，避免全局线团。</span></div>
+        <div class="principle"><b>05</b><span>语义缩放：节点多时折叠成组，放大再展开，不要一次画完。</span></div>
+        <div class="principle"><b>06</b><span>物料平衡常驻：缺口、库存、采购金额和告警不藏进二级页。</span></div>
+        <div class="principle"><b>07</b><span>物料明细与排程同级：步骤页签列出每一步产出 / 投入，右栏只负责选中项详情。</span></div>
+        <div class="principle"><b>08</b><span>技能同时改变耗时：同一任务在不同角色上的 duration 不同，分配要比最早完成 / 成本，而不是只看谁空着。</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote">
+    示意数据：Kirin ×10 / Aria · Borealis · Cinder / 15 条制造线（A8 · B4 · C3）+ 特殊槽 3/3；E 为单角色 Aria / 满制造 11 + 发明/反应各 1。配方与价格已简化，用于展示信息层级和交互。
+    HTML 只表达视觉与交互方向，最终 WPF 会映射到现有 Fluent 主题（卡片、Mica、强调色、等宽数字），
+    颜色、密度和默认视图都可以按你的偏好调整。返回：<a href="scheme-a-line-gantt.html">A 排程</a> ·
+    <a href="scheme-b-blueprint.html">B 关系</a> · <a href="scheme-c-line-matrix.html">C 产线墙</a> ·
+    <a href="scheme-d-hybrid.html">D 混合</a> · <a href="scheme-e-solo.html">E 单角色</a>
+  </p>
+
+</main>
+</body>
+</html>

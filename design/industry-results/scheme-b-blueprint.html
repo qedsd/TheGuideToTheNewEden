@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案 B · 蓝图关系 · 工业控制台</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body { display: flex; flex-direction: column; height: 100vh; }
+  .workspace {
+    flex: 1; min-height: 0; display: grid;
+    grid-template-columns: minmax(0, 1fr) 342px;
+    gap: 12px; padding: 12px;
+  }
+  .canvas-panel { display: flex; flex-direction: column; position: relative; min-height: 0; }
+  .canvas-toolbar {
+    display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+    padding: 7px 11px; border-bottom: 1px solid var(--line); flex: none;
+  }
+  .canvas-viewport {
+    flex: 1; min-height: 0; overflow: auto;
+    background:
+      radial-gradient(rgba(158,188,220,.12) 1px, transparent 1px) 0 0 / 18px 18px,
+      #081018;
+    position: relative;
+  }
+  .canvas-scale { position: relative; }
+  .canvas-inner {
+    position: absolute; top: 0; left: 0;
+    width: 1580px; height: 860px;
+    transform-origin: 0 0;
+    background:
+      radial-gradient(rgba(158,188,220,.12) 1px, transparent 1px) 0 0 / 18px 18px;
+  }
+  .canvas-inner::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(520px 300px at 18% 30%, rgba(91,200,214,.045), transparent 65%),
+      radial-gradient(460px 280px at 78% 48%, rgba(240,161,58,.045), transparent 65%);
+    pointer-events: none;
+  }
+  .group {
+    position: absolute; z-index: 1; pointer-events: none;
+    border: 1px dashed rgba(158,188,220,.19); border-radius: 12px;
+    background: rgba(158,188,220,.012);
+  }
+  .group-label {
+    position: absolute; top: -9px; left: 10px; padding: 0 6px;
+    background: #081018; color: var(--muted);
+    font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+  }
+  .edge-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: visible; }
+  .edge {
+    fill: none; stroke: rgba(158,188,220,.28); stroke-width: 1.15;
+    pointer-events: stroke; transition: stroke .12s ease, opacity .12s ease;
+  }
+  .edge.critical { stroke: rgba(248,113,113,.72); stroke-width: 1.9; }
+  .edge.active { stroke: var(--amber); stroke-width: 2.1; }
+  .edge:hover { stroke: var(--amber); stroke-width: 2.6; }
+  .edge-layer.focus .edge:not(.active):not(.critical) { opacity: .22; }
+  .edge-label {
+    font-family: var(--sans); font-size: 8.5px; fill: var(--muted);
+    paint-order: stroke; stroke: #081018; stroke-width: 3px;
+  }
+  .node {
+    position: absolute; z-index: 3; overflow: hidden; cursor: pointer;
+    background: linear-gradient(180deg, rgba(255,255,255,.035), transparent 58%), var(--bg2);
+    border: 1px solid var(--line2); border-radius: 9px;
+    box-shadow: 0 9px 24px rgba(0,0,0,.28);
+    transition: border-color .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .node:hover { border-color: rgba(240,161,58,.48); }
+  .node.selected { border-color: var(--amber); box-shadow: 0 0 0 1px rgba(240,161,58,.62), 0 12px 30px rgba(0,0,0,.46); }
+  .node.related { border-color: rgba(240,161,58,.34); }
+  .canvas.focus .node:not(.selected):not(.related) { opacity: .42; }
+  .canvas.only-critical .node:not(.critical):not(.selected) { opacity: .22; }
+  .node .nhead {
+    height: 23px; display: flex; align-items: center; gap: 5px;
+    padding: 0 8px; border-bottom: 1px solid var(--line);
+    font-size: 8px; letter-spacing: .09em; text-transform: uppercase;
+  }
+  .node.mfg .nhead { background: rgba(91,200,214,.09); color: var(--teal); }
+  .node.reaction .nhead { background: rgba(240,161,58,.09); color: var(--amber); }
+  .node.invention .nhead { background: rgba(167,139,250,.10); color: var(--violet); }
+  .node.buy .nhead { background: rgba(127,142,163,.08); color: var(--gray); }
+  .node.target .nhead { background: rgba(240,161,58,.13); color: var(--amber); }
+  .n-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .n-line { margin-left: auto; font-family: var(--mono); font-size: 8px; color: var(--faint); letter-spacing: 0; text-transform: none; }
+  .nbody { padding: 5px 8px 4px; }
+  .nname { font-size: 11px; font-weight: 600; line-height: 1.24; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nmeta { margin-top: 1px; font-size: 8.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pins { display: flex; gap: 7px; margin-top: 4px; }
+  .pin-list { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; font-size: 8px; color: var(--text2); }
+  .pin { display: flex; align-items: center; gap: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pin::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--muted); flex: none; }
+  .pin.out::before { background: var(--amber); }
+  .pin.more { color: var(--faint); }
+  .nfoot {
+    height: 19px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 8px; border-top: 1px solid var(--line);
+    font-size: 8px; color: var(--faint); font-variant-numeric: tabular-nums;
+  }
+  .canvas.hide-price .nfoot { display: none; }
+  .node.target {
+    border-style: dashed; border-color: rgba(240,161,58,.5);
+    background: linear-gradient(180deg, rgba(240,161,58,.09), rgba(240,161,58,.02)), var(--bg2);
+  }
+  .node.summary { border-style: dashed; border-color: rgba(91,200,214,.4); background: rgba(91,200,214,.06); }
+
+  .minimap {
+    position: absolute; right: 12px; bottom: 12px; width: 178px; height: 98px;
+    background: rgba(7,12,18,.92); border: 1px solid var(--line2);
+    border-radius: 7px; overflow: hidden; z-index: 9;
+  }
+  .mm-node { position: absolute; border-radius: 2px; background: rgba(158,188,220,.25); }
+  .mm-node.mfg { background: rgba(91,200,214,.5); }
+  .mm-node.reaction { background: rgba(240,161,58,.5); }
+  .mm-node.invention { background: rgba(167,139,250,.5); }
+  .mm-node.target { background: rgba(240,161,58,.7); }
+  .mm-view { position: absolute; z-index: 2; border: 1px solid var(--amber); background: rgba(240,161,58,.05); }
+  .minimap .mm-label {
+    position: absolute; left: 6px; top: 4px; z-index: 3; font-size: 6.5px;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--faint);
+  }
+  .edge-tip {
+    position: absolute; z-index: 30; pointer-events: none;
+    background: #1b2837; border: 1px solid var(--line2); border-radius: 6px;
+    padding: 4px 7px; font-size: 9.5px; color: var(--text2);
+    opacity: 0; transition: opacity .1s ease; white-space: nowrap;
+  }
+  .edge-tip.show { opacity: 1; }
+  .statusbar {
+    flex: none; height: 33px; display: flex; align-items: center; gap: 11px;
+    padding: 0 14px; border-top: 1px solid var(--line);
+    background: var(--bg1); font-size: 10px; color: var(--muted);
+    white-space: nowrap; overflow: hidden;
+  }
+  .statusbar .spacer { margin-left: auto; }
+  .zoom-label { font-size: 9.5px; color: var(--faint); font-family: var(--mono); min-width: 34px; text-align: center; }
+  .inspector-scroll { padding: 11px 12px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">◈</span><span class="full">新伊甸 · 工业控制台</span></div>
+  <div class="plan-title">Kirin ×10 <span>三角色协同 · T2 后勤舰</span></div>
+  <nav class="view-tabs" aria-label="方案切换">
+    <a class="tab" href="scheme-a-line-gantt.html">A · 产线甘特</a>
+    <a class="tab active" href="scheme-b-blueprint.html">B · 蓝图关系</a>
+    <a class="tab" href="scheme-c-line-matrix.html">C · 产线墙</a>
+    <a class="tab" href="scheme-d-hybrid.html">D · 混合控制台</a>
+    <a class="tab" href="scheme-e-solo.html">E · 单角色</a>
+    <a class="tab" href="index.html">方案总览</a>
+  </nav>
+  <div class="top-actions">
+    <span class="chip ghost">示意数据 · 配方已简化</span>
+    <button class="btn primary">重新计算</button>
+  </div>
+</header>
+
+<section class="kpis" aria-label="计划指标">
+  <div class="kpi"><div class="label">全部完成</div><div class="value">10h <small>00m</small></div><div class="delta good">关键路径 发明 → 总装</div></div>
+  <div class="kpi"><div class="label">节点 / 边</div><div class="value">13 <small>/ 14</small></div><div class="delta">6 类组件 · 3 段反应</div></div>
+  <div class="kpi"><div class="label">产线占用</div><div class="value">15 <small>/ 33</small></div><div class="delta">45% · 3 角色</div></div>
+  <div class="kpi"><div class="label">瓶颈</div><div class="value warn">发明槽</div><div class="delta">C-I1 · 0–6h 独占</div></div>
+  <div class="kpi"><div class="label">预计成本</div><div class="value">1.42B <small>ISK</small></div><div class="delta">含任务费 96M</div></div>
+  <div class="kpi"><div class="label">参考利润</div><div class="value good">+358M</div><div class="delta good">20.1% · 现金 +402M</div></div>
+</section>
+
+<main class="workspace">
+  <section class="panel canvas-panel" aria-label="生产链蓝图">
+    <div class="canvas-toolbar">
+      <span class="panel-title">生产链关系图</span>
+      <span class="panel-sub">左 → 右 = 原料 → 成品 · 滚轮/按钮缩放</span>
+      <span class="spacer"></span>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--gray)"></i>采购</span>
+        <span><i class="dot" style="background:var(--amber)"></i>反应</span>
+        <span><i class="dot" style="background:var(--teal)"></i>制造</span>
+        <span><i class="dot" style="background:var(--violet)"></i>发明</span>
+        <span><i class="dot" style="background:var(--red)"></i>关键</span>
+      </div>
+      <button class="btn small ghost" id="collapseBtn">折叠组件</button>
+      <button class="btn small ghost" id="criticalBtn">仅关键路径</button>
+      <button class="btn small ghost" id="priceBtn">隐藏价格</button>
+      <button class="icon-btn" id="zoomOut" aria-label="缩小">−</button>
+      <span class="zoom-label" id="zoomLabel">68%</span>
+      <button class="icon-btn" id="zoomIn" aria-label="放大">+</button>
+      <button class="btn small ghost" id="fitBtn">适应</button>
+    </div>
+    <div class="canvas-viewport" id="viewport">
+      <div class="canvas-scale" id="canvasScale">
+        <div class="canvas-inner" id="canvasInner">
+          <div class="group" style="left:20px;top:258px;width:220px;height:196px"><span class="group-label">采购 / 原料</span></div>
+          <div class="group" style="left:270px;top:52px;width:240px;height:492px"><span class="group-label">Borealis · 反应线 R1</span></div>
+          <div class="group" id="group-components" style="left:540px;top:22px;width:240px;height:806px"><span class="group-label">组件产线 · 3 角色</span></div>
+          <div class="group" style="left:805px;top:32px;width:250px;height:182px"><span class="group-label">Cinder · 发明槽 I1</span></div>
+          <div class="group" style="left:1065px;top:282px;width:260px;height:212px"><span class="group-label">Aria · 总装线 M1</span></div>
+
+          <svg class="edge-layer" id="edgeSvg" viewBox="0 0 1580 860" aria-hidden="true"></svg>
+          <div id="nodes"></div>
+
+          <div class="node summary" id="node-summary" style="left:560px;top:320px;width:200px;height:110px;display:none">
+            <div class="nhead"><i class="n-dot"></i>组件 · 已折叠<span class="n-line">×6</span></div>
+            <div class="nbody">
+              <div class="nname">6 类组件 · 3 角色</div>
+              <div class="nmeta">5 条产线 · 06:00 前齐套</div>
+              <div class="pins">
+                <div class="pin-list"><span class="pin">反应产物 3 类</span><span class="pin">原料 / 采购</span></div>
+                <div class="pin-list"><span class="pin out">组件 ×6</span></div>
+              </div>
+            </div>
+            <div class="nfoot"><span>任务费 6.9M</span><span>材料 436M</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="minimap" id="minimap"><span class="mm-label">MINIMAP</span><div class="mm-view" id="mmView" style="left:6px;top:16px;width:118px;height:60px"></div></div>
+    <div class="edge-tip" id="edgeTip"></div>
+  </section>
+
+  <aside class="panel inspector" aria-label="节点详情">
+    <div class="panel-head">
+      <span class="panel-title">节点详情</span>
+      <span class="panel-sub">关系图选中节点</span>
+      <span class="spacer"></span>
+      <span class="chip ghost" id="inspTimeChip">06:00–10:00</span>
+    </div>
+    <div class="inspector-scroll">
+      <div class="insp-head">
+        <span class="chip mfg" id="inspActivity"><i class="dot"></i>制造</span>
+        <div style="min-width:0">
+          <div class="insp-title" id="inspName">Kirin 总装</div>
+          <div class="insp-meta" id="inspMeta">×10 · 4h · Aria · M1</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn small primary" id="focusBtn">聚焦上游</button>
+        <button class="btn small ghost" id="traceBtn">高亮关键路径</button>
+      </div>
+
+      <div class="section-label">节点</div>
+      <div class="kv"><span class="k">产线 / 活动</span><span class="v" id="inspLine">Aria · M1 · 制造</span></div>
+      <div class="kv"><span class="k">开始 / 结束</span><span class="v" id="inspWindow">06:00 – 10:00</span></div>
+      <div class="kv"><span class="k">流程数</span><span class="v" id="inspRuns">10 runs</span></div>
+      <div class="kv"><span class="k">状态</span><span class="v" id="inspStatus">等待发明 / 组件</span></div>
+
+      <div class="section-label">投入</div>
+      <div id="inspInputs"></div>
+      <div class="section-label">产出</div>
+      <div id="inspOutputs"></div>
+
+      <div class="section-label">成本 / 收益</div>
+      <div class="kv"><span class="k">任务费</span><span class="v" id="inspJobCost">48.0M</span></div>
+      <div class="kv"><span class="k">材料成本</span><span class="v" id="inspMaterial">1.32B</span></div>
+      <div class="kv"><span class="k">参考单价</span><span class="v" id="inspUnit">178.0M</span></div>
+      <div class="kv"><span class="k">参考收入</span><span class="v" id="inspRevenue">1.78B</span></div>
+      <div class="kv"><span class="k">参考利润</span><span class="v good" id="inspProfit">+358M</span></div>
+
+      <div class="section-label">提示</div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.6" id="inspNote">
+        点击任意节点查看投入产出；选择节点后只保留直接上下游，其余淡出。
+      </p>
+    </div>
+  </aside>
+</main>
+
+<footer class="statusbar">
+  <span class="chip danger"><i class="dot"></i>6 项物料缺口</span>
+  <span>采购 <b style="color:var(--text2)">1.36B ISK</b></span>
+  <span>库存抵扣 <b style="color:var(--green)">84M</b></span>
+  <span class="spacer"></span>
+  <span>提示：折叠组件后，6 个组件节点合并为 1 个组节点，关系图仍可读</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const NODES = {
+  raw: { x:40, y:300, w:180, h:120, kind:'buy', label:'采购', title:'原料采购', meta:'7 种 · 1.36B ISK', line:'市场', time:'随时', runs:'—',
+    pins:{ in:[], out:['矿物 / 材料 ×7'] }, inputs:[{name:'Tritanium',qty:'1.8M',state:'buy'},{name:'Pyerite',qty:'920k',state:'buy'},{name:'Mexallon',qty:'310k',state:'buy'},{name:'Isogen',qty:'86k',state:'buy'}],
+    outputs:[{name:'矿物 / 材料',qty:'7 类',state:'upstream'}], jobCost:'—', material:'1.36B', unit:'—', revenue:'—', profit:'—', status:'采购清单', note:'原料按当前市场最低卖价估算；启用市场深度后会替换为实际挂单。' },
+  'reaction-fullerene': { x:290, y:100, w:200, h:105, kind:'reaction', label:'反应', title:'Fullerene Intercalated Sheets', meta:'×400 · 1.5h · 2 runs', line:'B-R1', time:'00:00–01:30', runs:'2 runs',
+    pins:{ in:['烃类 2,000','硅酸盐 1,200'], out:['Fullerene ×400'] }, inputs:[{name:'Hydrocarbons',qty:'2,000',state:'buy'},{name:'Silicates',qty:'1,200',state:'buy'}],
+    outputs:[{name:'Fullerene',qty:'×400',state:'upstream'}], jobCost:'6.0M', material:'420M', unit:'—', revenue:'—', profit:'—', status:'反应槽 R1', note:'B-R1 第一段；01:30 释放后接 Fernite Carbide。' },
+  'reaction-fernite': { x:290, y:250, w:200, h:105, kind:'reaction', label:'反应', title:'Fernite Carbide', meta:'×200 · 1.5h · 1 run', line:'B-R1', time:'01:30–03:00', runs:'1 run',
+    pins:{ in:['Fernite 1,000','碳 800'], out:['Fernite Carbide ×200'] }, inputs:[{name:'Fernite',qty:'1,000',state:'buy'},{name:'Carbon',qty:'800',state:'buy'}],
+    outputs:[{name:'Fernite Carbide',qty:'×200',state:'upstream'}], jobCost:'4.2M', material:'260M', unit:'—', revenue:'—', profit:'—', status:'反应槽 R1', note:'03:00 释放后接 Magpulse Thruster。' },
+  'reaction-tungsten': { x:290, y:400, w:200, h:105, kind:'reaction', label:'反应', title:'Tungsten Carbide', meta:'×200 · 1.5h · 1 run', line:'B-R1', time:'03:00–04:30', runs:'1 run',
+    pins:{ in:['Tungsten 1,200','碳 900'], out:['Tungsten Carbide ×200'] }, inputs:[{name:'Tungsten',qty:'1,200',state:'buy'},{name:'Carbon',qty:'900',state:'buy'}],
+    outputs:[{name:'Tungsten Carbide',qty:'×200',state:'upstream'}], jobCost:'4.5M', material:'310M', unit:'—', revenue:'—', profit:'—', status:'反应槽 R1', note:'04:30 释放后接 Gravimetric Sensor Cluster。' },
+
+  'component-construction': { x:560, y:50, w:200, h:105, kind:'mfg', label:'制造', title:'Construction Blocks', meta:'×200 · 1h · 4 runs', line:'A-M2', time:'00:00–01:00', runs:'4 runs',
+    pins:{ in:['Tritanium 12k','Pyerite 6k'], out:['×200'] }, inputs:[{name:'Tritanium',qty:'12,000',state:'buy'},{name:'Pyerite',qty:'6,000',state:'buy'}],
+    outputs:[{name:'Construction Blocks',qty:'×200',state:'upstream'}], jobCost:'0.8M', material:'14.2M', unit:'—', revenue:'—', profit:'—', status:'可按计划开始', note:'产出供 A-M1 总装。' },
+  'component-magpulse': { x:560, y:180, w:200, h:105, kind:'mfg', label:'制造', title:'Magpulse Thruster', meta:'×50 · 1h · 2 runs', line:'A-M3', time:'00:00–01:00', runs:'2 runs',
+    pins:{ in:['Isogen 2.4k','Nocxium 380'], out:['×50'] }, inputs:[{name:'Isogen',qty:'2,400',state:'buy'},{name:'Nocxium',qty:'380',state:'buy'}],
+    outputs:[{name:'Magpulse Thruster',qty:'×50',state:'upstream'}], jobCost:'0.6M', material:'9.8M', unit:'—', revenue:'—', profit:'—', status:'等待反应', note:'依赖 B-R1 的 Fernite Carbide（03:00）。' },
+  'component-gravimetric': { x:560, y:310, w:200, h:105, kind:'mfg', label:'制造', title:'Gravimetric Sensor Cluster', meta:'×50 · 1h · 2 runs', line:'A-M4', time:'01:00–02:00', runs:'2 runs',
+    pins:{ in:['Pyerite 1.8k','Mexallon 900'], out:['×50'] }, inputs:[{name:'Pyerite',qty:'1,800',state:'buy'},{name:'Mexallon',qty:'900',state:'buy'}],
+    outputs:[{name:'Gravimetric Sensor Cluster',qty:'×50',state:'upstream'}], jobCost:'0.5M', material:'7.1M', unit:'—', revenue:'—', profit:'—', status:'等待反应', note:'依赖 B-R1 的 Tungsten Carbide（04:30）。' },
+  'component-quantum': { x:560, y:440, w:200, h:105, kind:'mfg', label:'制造', title:'Quantum Microprocessor', meta:'×100 · 1h · 3 runs', line:'A-M5', time:'02:00–03:00', runs:'3 runs',
+    pins:{ in:['Mexallon 2.1k','Isogen 1.1k'], out:['×100'] }, inputs:[{name:'Mexallon',qty:'2,100',state:'buy'},{name:'Isogen',qty:'1,100',state:'buy'}],
+    outputs:[{name:'Quantum Microprocessor',qty:'×100',state:'upstream'}], jobCost:'0.9M', material:'18.6M', unit:'—', revenue:'—', profit:'—', status:'可按计划开始', note:'05:00 前齐套。' },
+  'component-thermo': { x:560, y:570, w:200, h:105, kind:'mfg', label:'制造', title:'Thermonuclear Trigger Unit', meta:'×50 · 1h · 2 runs', line:'B-M3', time:'04:30–05:30', runs:'2 runs',
+    pins:{ in:['Fullerene 120','Isogen 600'], out:['×50'] }, inputs:[{name:'Fullerene',qty:'120',state:'upstream'},{name:'Isogen',qty:'600',state:'buy'}],
+    outputs:[{name:'Thermonuclear Trigger Unit',qty:'×50',state:'upstream'}], jobCost:'1.1M', material:'54M', unit:'—', revenue:'—', profit:'—', status:'等待反应', note:'Fullerene 由 B-R1 0–1.5h 产出。' },
+  'component-shield': { x:560, y:700, w:200, h:105, kind:'mfg', label:'制造', title:'Sustained Shield Emitter', meta:'×50 · 1h · 2 runs', line:'B-M4', time:'05:00–06:00', runs:'2 runs',
+    pins:{ in:['Fullerene 180','Mexallon 400'], out:['×50'] }, inputs:[{name:'Fullerene',qty:'180',state:'upstream'},{name:'Mexallon',qty:'400',state:'buy'}],
+    outputs:[{name:'Sustained Shield Emitter',qty:'×50',state:'upstream'}], jobCost:'1.0M', material:'62M', unit:'—', revenue:'—', profit:'—', status:'等待反应', note:'06:00 前完成，赶在总装开始前入库存。' },
+
+  invention: { x:830, y:70, w:200, h:110, kind:'invention', label:'发明', title:'Kirin 发明', meta:'×2 · 6h · 2 attempts', line:'C-I1', time:'00:00–06:00', runs:'2 attempts', critical:true,
+    pins:{ in:['T1 BPC 2','Datacore 8','Decryptor 2'], out:['Kirin BPC 2'] }, inputs:[{name:'Kirin BPC (T1)',qty:'2 张',state:'buy'},{name:'Datacore ×2',qty:'8',state:'buy'},{name:'Decryptor',qty:'2',state:'stock'}],
+    outputs:[{name:'Kirin BPC',qty:'2 张',state:'target'}], jobCost:'12.0M', material:'86M', unit:'—', revenue:'—', profit:'—', status:'关键路径', note:'C-I1 0–6h 独占；成功概率 38.4%。' },
+  ship: { x:1090, y:330, w:210, h:130, kind:'mfg', label:'制造', title:'Kirin 总装', meta:'×10 · 4h · 10 runs', line:'A-M1', time:'06:00–10:00', runs:'10 runs', critical:true,
+    pins:{ in:['BPC 2','组件 ×8'], out:['Kirin ×10'] }, inputs:[{name:'Kirin BPC',qty:'2 张',state:'ready'},{name:'Construction Blocks',qty:'200',state:'upstream'},{name:'Quantum Microprocessor',qty:'100',state:'stock'},{name:'其余 6 项组件',qty:'—',state:'upstream'}],
+    outputs:[{name:'Kirin',qty:'×10',state:'target'}], jobCost:'48.0M', material:'1.32B', unit:'178.0M', revenue:'1.78B', profit:'+358M', status:'等待发明 / 组件', note:'A-M1 是全计划唯一总装线；06:00 前保持空闲。' },
+  target: { x:1350, y:355, w:170, h:90, kind:'target', label:'目标', title:'Kirin ×10', meta:'T2 后勤舰 · 参考利润 +358M', line:'目标', time:'10:00', runs:'—', critical:true,
+    pins:{ in:['Kirin ×10'], out:[] }, inputs:[{name:'Kirin',qty:'×10',state:'target'}], outputs:[], jobCost:'—', material:'1.42B', unit:'178.0M', revenue:'1.78B', profit:'+358M', status:'目标产物', note:'全部流程完成后交付；收入按当前最高买价估算。' },
+  summary: { x:560, y:320, w:200, h:110, kind:'mfg', label:'组件', title:'组件 ×6', meta:'3 角色 · 5 条产线 · 06:00 前', line:'A/B/C', time:'00:00–06:00', runs:'—',
+    pins:{ in:['反应产物 3 类','原料 / 采购'], out:['组件 ×6'] }, inputs:[{name:'反应产物',qty:'3 类',state:'upstream'},{name:'原料 / 采购',qty:'7 类',state:'buy'}],
+    outputs:[{name:'组件',qty:'×6 类',state:'upstream'}], jobCost:'6.9M', material:'436M', unit:'—', revenue:'—', profit:'—', status:'已折叠', note:'展开后可见 6 个组件节点与各自的产线、投入产出。' },
+};
+
+const EDGES = [
+  {from:'raw', to:'reaction-fullerene', label:'烃类 / 硅酸盐'},
+  {from:'raw', to:'reaction-fernite', label:'Fernite / 碳'},
+  {from:'raw', to:'reaction-tungsten', label:'Tungsten / 碳'},
+  {from:'reaction-fullerene', to:'component-shield', label:'Fullerene 180'},
+  {from:'reaction-fernite', to:'component-magpulse', label:'Carbide 200'},
+  {from:'reaction-tungsten', to:'component-gravimetric', label:'Carbide 200'},
+  {from:'component-construction', to:'ship', label:'Blocks 200'},
+  {from:'component-magpulse', to:'ship', label:'Thruster 50'},
+  {from:'component-gravimetric', to:'ship', label:'Sensor 50'},
+  {from:'component-quantum', to:'ship', label:'Quantum 100'},
+  {from:'component-thermo', to:'ship', label:'Trigger 50'},
+  {from:'component-shield', to:'ship', label:'Emitter 50'},
+  {from:'invention', to:'ship', label:'BPC 2', critical:true},
+  {from:'ship', to:'target', label:'Kirin ×10', critical:true},
+];
+
+const AGG_EDGES = [
+  {from:'reaction-fullerene', to:'summary', label:'反应产物'},
+  {from:'reaction-fernite', to:'summary', label:'反应产物'},
+  {from:'reaction-tungsten', to:'summary', label:'反应产物'},
+  {from:'summary', to:'ship', label:'组件 ×6'},
+  {from:'invention', to:'ship', label:'BPC 2', critical:true},
+  {from:'ship', to:'target', label:'Kirin ×10', critical:true},
+];
+
+const COMPONENT_IDS = ['component-construction','component-magpulse','component-gravimetric','component-quantum','component-thermo','component-shield'];
+let collapsed = false;
+let criticalOnly = false;
+let showPrices = true;
+let zoom = 0.68;
+let selectedId = 'ship';
+
+const $ = (s) => document.querySelector(s);
+const activityLabel = { mfg:'制造', invention:'发明', reaction:'反应', buy:'采购', target:'目标' };
+
+function renderNodes() {
+  const host = $('#nodes');
+  host.innerHTML = '';
+  Object.entries(NODES).forEach(([id, n]) => {
+    if (id === 'summary') return;
+    const el = document.createElement('div');
+    el.className = `node ${n.kind} ${n.critical ? 'critical' : ''}` + (COMPONENT_IDS.includes(id) ? ' component' : '');
+    el.id = 'node-' + id;
+    el.dataset.node = id;
+    el.style.left = n.x + 'px';
+    el.style.top = n.y + 'px';
+    el.style.width = n.w + 'px';
+    el.style.height = n.h + 'px';
+    const pinHtml = (arr, cls) => (arr || []).slice(0, 2).map(p => `<span class="pin ${cls}">${p}</span>`).join('') +
+      ((arr || []).length > 2 ? `<span class="pin more ${cls}">+${arr.length - 2}</span>` : '');
+    el.innerHTML = `
+      <div class="nhead"><i class="n-dot"></i>${n.label}<span class="n-line">${n.line}</span></div>
+      <div class="nbody">
+        <div class="nname" title="${n.title}">${n.title}</div>
+        <div class="nmeta">${n.meta}</div>
+        <div class="pins">
+          <div class="pin-list">${pinHtml(n.pins.in, '')}</div>
+          <div class="pin-list">${pinHtml(n.pins.out, 'out')}</div>
+        </div>
+      </div>
+      <div class="nfoot"><span>费 ${n.jobCost}</span><span>${n.material}</span></div>`;
+    el.addEventListener('click', () => selectNode(id));
+    host.appendChild(el);
+  });
+
+  const summary = $('#node-summary');
+  summary.querySelector('.nhead').innerHTML = `<i class="n-dot"></i>组件 · 已折叠<span class="n-line">×6</span>`;
+  summary.addEventListener('click', () => selectNode('summary'));
+}
+
+function visibleEdges() {
+  let list = EDGES;
+  if (collapsed) {
+    list = EDGES.filter(e => !COMPONENT_IDS.includes(e.from) && !COMPONENT_IDS.includes(e.to));
+    list = list.filter(e => !(e.from === 'invention' && e.to === 'ship') && !(e.from === 'ship' && e.to === 'target'));
+    list = list.concat(AGG_EDGES);
+  }
+  if (criticalOnly) list = list.filter(e => e.critical);
+  return list;
+}
+
+function renderEdges() {
+  const svg = $('#edgeSvg');
+  svg.innerHTML = '';
+  for (const e of visibleEdges()) {
+    const s = NODES[e.from];
+    const t = NODES[e.to];
+    if (!s || !t) continue;
+    if (collapsed && (COMPONENT_IDS.includes(e.from) || COMPONENT_IDS.includes(e.to)) && !AGG_EDGES.includes(e)) continue;
+    const x1 = s.x + s.w;
+    const y1 = s.y + s.h / 2;
+    const x2 = t.x;
+    const y2 = t.y + t.h / 2;
+    const dx = Math.max(28, Math.abs(x2 - x1) * 0.42);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`);
+    const active = selectedId && (e.from === selectedId || e.to === selectedId);
+    path.setAttribute('class', 'edge' + (e.critical ? ' critical' : '') + (active ? ' active' : ''));
+    path.dataset.from = e.from;
+    path.dataset.to = e.to;
+    path.dataset.label = e.label;
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${s.title} → ${t.title} · ${e.label}`;
+    path.appendChild(title);
+    svg.appendChild(path);
+
+    if (e.label && (e.critical || active)) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('class', 'edge-label');
+      text.setAttribute('x', (x1 + x2) / 2);
+      text.setAttribute('y', (y1 + y2) / 2 - 4);
+      text.setAttribute('text-anchor', 'middle');
+      text.textContent = e.label;
+      svg.appendChild(text);
+    }
+  }
+  svg.classList.toggle('focus', !!selectedId);
+}
+
+function selectNode(id) {
+  const n = NODES[id];
+  if (!n) return;
+  selectedId = id;
+  document.querySelectorAll('.node.selected').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.node.related').forEach(el => el.classList.remove('related'));
+  const el = id === 'summary' ? $('#node-summary') : document.getElementById('node-' + id);
+  if (el) el.classList.add('selected');
+
+  const related = new Set([id]);
+  EDGES.forEach(e => {
+    if (e.from === id) related.add(e.to);
+    if (e.to === id) related.add(e.from);
+  });
+  related.forEach(rid => {
+    if (rid === id) return;
+    const r = document.getElementById('node-' + rid);
+    if (r) r.classList.add('related');
+  });
+  $('#canvasInner').classList.add('focus');
+  renderEdges();
+
+  const badge = $('#inspActivity');
+  badge.className = 'chip ' + (n.kind === 'target' ? 'reaction' : n.kind);
+  badge.innerHTML = `<i class="dot"></i>${activityLabel[n.kind] || n.label}`;
+  $('#inspName').textContent = n.title;
+  $('#inspMeta').textContent = n.meta;
+  $('#inspTimeChip').textContent = n.time;
+  $('#inspLine').textContent = n.line + ' · ' + (activityLabel[n.kind] || n.label);
+  $('#inspWindow').textContent = n.time;
+  $('#inspRuns').textContent = n.runs;
+  $('#inspStatus').textContent = n.status;
+  $('#inspJobCost').textContent = n.jobCost;
+  $('#inspMaterial').textContent = n.material;
+  $('#inspUnit').textContent = n.unit;
+  $('#inspRevenue').textContent = n.revenue;
+  $('#inspProfit').textContent = n.profit;
+  $('#inspProfit').className = 'v ' + (n.profit.startsWith('+') ? 'good' : '');
+  $('#inspNote').textContent = n.note;
+
+  $('#inspInputs').innerHTML = (n.inputs || []).map(m => `
+    <div class="material-row">
+      <i class="dot ${m.state === 'buy' ? 'warn' : m.state === 'stock' || m.state === 'ready' ? 'good' : 'teal'}"></i>
+      <span class="name">${m.name}</span>
+      <span class="qty">${m.qty}</span>
+      <span class="chip ${m.state === 'buy' ? 'buy' : m.state === 'stock' || m.state === 'ready' ? 'stock' : 'mfg'}">${m.state === 'buy' ? '采购' : m.state === 'stock' ? '库存' : m.state === 'ready' ? '就绪' : '上游'}</span>
+    </div>`).join('');
+  $('#inspOutputs').innerHTML = (n.outputs || []).map(m => `
+    <div class="material-row">
+      <i class="dot ${m.state === 'target' ? 'accent' : 'teal'}"></i>
+      <span class="name">${m.name}</span>
+      <span class="qty">${m.qty}</span>
+      <span class="chip ${m.state === 'target' ? 'reaction' : 'mfg'}">${m.state === 'target' ? '目标' : '下游'}</span>
+    </div>`).join('');
+}
+
+function applyZoom() {
+  const scale = $('#canvasScale');
+  const inner = $('#canvasInner');
+  scale.style.width = (1580 * zoom) + 'px';
+  scale.style.height = (860 * zoom) + 'px';
+  inner.style.transform = `scale(${zoom})`;
+  $('#zoomLabel').textContent = Math.round(zoom * 100) + '%';
+}
+
+function fitCanvas() {
+  const vp = $('#viewport');
+  const z = Math.min(1, (vp.clientWidth - 26) / 1580, (vp.clientHeight - 26) / 860);
+  zoom = Math.max(0.45, z);
+  applyZoom();
+}
+
+function setCollapsed(value) {
+  collapsed = value;
+  document.querySelectorAll('.node.component').forEach(el => { el.style.display = collapsed ? 'none' : ''; });
+  const group = $('#group-components');
+  if (group) group.style.display = collapsed ? 'none' : '';
+  $('#node-summary').style.display = collapsed ? '' : 'none';
+  $('#collapseBtn').textContent = collapsed ? '展开组件' : '折叠组件';
+  renderMinimap();
+  if (collapsed && COMPONENT_IDS.includes(selectedId)) selectNode('ship');
+  else renderEdges();
+}
+
+function toast(text) {
+  const el = $('#toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function renderMinimap() {
+  const mini = $('#minimap');
+  mini.querySelectorAll('.mm-node').forEach(el => el.remove());
+  const scaleX = 160 / 1580, scaleY = 80 / 860;
+  Object.entries(NODES).forEach(([id, n]) => {
+    if (id === 'summary') return;
+    if (collapsed && COMPONENT_IDS.includes(id)) return;
+    const el = document.createElement('div');
+    el.className = 'mm-node ' + n.kind;
+    el.style.left = (6 + n.x * scaleX) + 'px';
+    el.style.top = (16 + n.y * scaleY) + 'px';
+    el.style.width = Math.max(3, n.w * scaleX) + 'px';
+    el.style.height = Math.max(2, n.h * scaleY) + 'px';
+    mini.appendChild(el);
+  });
+  if (collapsed) {
+    const n = NODES.summary;
+    const el = document.createElement('div');
+    el.className = 'mm-node mfg';
+    el.style.left = (6 + n.x * scaleX) + 'px';
+    el.style.top = (16 + n.y * scaleY) + 'px';
+    el.style.width = Math.max(4, n.w * scaleX) + 'px';
+    el.style.height = Math.max(3, n.h * scaleY) + 'px';
+    mini.appendChild(el);
+  }
+}
+
+$('#collapseBtn').addEventListener('click', () => {
+  setCollapsed(!collapsed);
+  toast(collapsed ? '已折叠 6 个组件节点，只保留组级关系' : '已展开组件节点');
+});
+$('#criticalBtn').addEventListener('click', () => {
+  criticalOnly = !criticalOnly;
+  $('#criticalBtn').textContent = criticalOnly ? '显示全部节点' : '仅关键路径';
+  $('#canvasInner').classList.toggle('only-critical', criticalOnly);
+  renderEdges();
+  toast(criticalOnly ? '只保留关键路径：发明 → 总装 → 目标' : '已恢复全部关系');
+});
+$('#priceBtn').addEventListener('click', () => {
+  showPrices = !showPrices;
+  $('#canvasInner').classList.toggle('hide-price', !showPrices);
+  $('#priceBtn').textContent = showPrices ? '隐藏价格' : '显示价格';
+});
+$('#zoomIn').addEventListener('click', () => { zoom = Math.min(1.25, zoom + 0.1); applyZoom(); });
+$('#zoomOut').addEventListener('click', () => { zoom = Math.max(0.4, zoom - 0.1); applyZoom(); });
+$('#fitBtn').addEventListener('click', fitCanvas);
+$('#focusBtn').addEventListener('click', () => { selectNode(selectedId === 'ship' ? 'invention' : 'ship'); toast('聚焦：直接上下游已高亮'); });
+$('#traceBtn').addEventListener('click', () => { selectNode('invention'); setTimeout(() => selectNode('ship'), 450); setTimeout(() => selectNode('target'), 900); toast('关键路径：C-I1 → A-M1 → 交付'); });
+
+document.addEventListener('mouseover', (ev) => {
+  const path = ev.target.closest && ev.target.closest('.edge');
+  if (!path) return;
+  const tip = $('#edgeTip');
+  tip.textContent = path.dataset.label || '';
+  const r = $('#viewport').getBoundingClientRect();
+  tip.style.left = (ev.clientX - r.left + 10) + 'px';
+  tip.style.top = (ev.clientY - r.top + 10) + 'px';
+  tip.classList.add('show');
+});
+document.addEventListener('mouseout', (ev) => {
+  if (ev.target.closest && ev.target.closest('.edge')) $('#edgeTip').classList.remove('show');
+});
+
+renderNodes();
+renderMinimap();
+applyZoom();
+renderEdges();
+selectNode('ship');
+if (location.hash === '#collapsed') setCollapsed(true);
+requestAnimationFrame(() => { fitCanvas(); renderEdges(); });
+window.addEventListener('resize', () => { renderEdges(); });
+</script>
+</body>
+</html>

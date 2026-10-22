@@ -88,6 +88,7 @@ public static class IndustryOptionsFactory
 
         if (contexts == null || contexts.Count == 0)
         {
+            options.CharacterProfiles.Add(IndustryCharacterProfileFactory.CreateDefault());
             return options;
         }
 
@@ -141,6 +142,27 @@ public static class IndustryOptionsFactory
             {
                 Log.Error(ex);
             }
+        }
+
+        // 排产 profile 独立读取技能：即使某个角色的资产/蓝图/任务拉取失败，也仍保留该角色的槽位。
+        foreach (var context in contexts)
+        {
+            if (context == null) continue;
+            try
+            {
+                var skills = await CharacterIndustryDataService.GetSkillLevelsAsync(context, forceRefresh);
+                options.CharacterProfiles.Add(IndustryCharacterProfileFactory.Create(context, skills));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                options.CharacterProfiles.Add(IndustryCharacterProfileFactory.Create(context, null));
+            }
+        }
+
+        if (options.CharacterProfiles.Count == 0)
+        {
+            options.CharacterProfiles.Add(IndustryCharacterProfileFactory.CreateDefault());
         }
 
         return options;

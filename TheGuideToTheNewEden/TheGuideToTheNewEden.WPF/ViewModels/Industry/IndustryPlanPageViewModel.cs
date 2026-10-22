@@ -165,6 +165,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private readonly HashSet<int> _blacklist = new();
     private IndustryBuildPlan? _lastPlan;
     private DateTime? _resultSavedAt;
+    private IndustrySolverOptions? _lastScheduleOptions;
+    private readonly Dictionary<string, long> _schedulePins = new();
+    private IndustryScheduleViewModel? _schedule;
+    private int _scheduleObjectiveIndex;
     private bool _loaded;
     private bool _forceRefresh;
 
@@ -221,6 +225,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
 
         RefreshWarehouseSelections(preserveCurrent: false);
+        ReloadCustomCharacters();
         IndustryInventoryService.Changed += (_, _) => RefreshWarehouseSelections(preserveCurrent: true);
         ReloadSavedPlans();
     }
@@ -341,6 +346,75 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     public ObservableCollection<IndustryCharacterItem> Characters { get; } = new();
 
+    public ObservableCollection<IndustryCustomCharacterItem> CustomCharacters { get; } = new();
+
+    public bool HasCustomCharacters => CustomCharacters.Count > 0;
+
+    private void ReloadCustomCharacters()
+    {
+        CustomCharacters.Clear();
+        var selected = new HashSet<long>(_setting.SelectedCharacterIds ?? new List<long>());
+        foreach (var character in _setting.CustomCharacters ?? new List<IndustryCustomCharacter>())
+        {
+            CustomCharacters.Add(new IndustryCustomCharacterItem(character, selected.Contains(character.Id)));
+        }
+        OnPropertyChanged(nameof(HasCustomCharacters));
+    }
+
+    public long NextCustomCharacterId()
+    {
+        var min = CustomCharacters.Select(p => p.Id).DefaultIfEmpty(0).Min();
+        return min >= 0 ? -1 : min - 1;
+    }
+
+    public void AddCustomCharacter(IndustryCustomCharacter character)
+    {
+        if (character is null) return;
+        if (character.Id >= 0) character.Id = NextCustomCharacterId();
+        SaveSetting();
+
+        _setting.CustomCharacters ??= new List<IndustryCustomCharacter>();
+        _setting.CustomCharacters.RemoveAll(p => p.Id == character.Id);
+        _setting.CustomCharacters.Add(character);
+
+        var selected = new HashSet<long>(_setting.SelectedCharacterIds ?? new List<long>()) { character.Id };
+        _setting.SelectedCharacterIds = selected.ToList();
+        IndustrySettingService.Save(_setting);
+        ReloadCustomCharacters();
+    }
+
+    public void UpdateCustomCharacter(IndustryCustomCharacter character)
+    {
+        if (character is null) return;
+        SaveSetting();
+
+        _setting.CustomCharacters ??= new List<IndustryCustomCharacter>();
+        var index = _setting.CustomCharacters.FindIndex(p => p.Id == character.Id);
+        if (index >= 0)
+        {
+            _setting.CustomCharacters[index] = character;
+        }
+        else
+        {
+            _setting.CustomCharacters.Add(character);
+        }
+        IndustrySettingService.Save(_setting);
+        ReloadCustomCharacters();
+    }
+
+    public void DeleteCustomCharacter(IndustryCustomCharacterItem item)
+    {
+        if (item is null) return;
+        SaveSetting();
+
+        _setting.CustomCharacters ??= new List<IndustryCustomCharacter>();
+        _setting.CustomCharacters.RemoveAll(p => p.Id == item.Id);
+        _setting.SelectedCharacterIds ??= new List<long>();
+        _setting.SelectedCharacterIds.RemoveAll(id => id == item.Id);
+        IndustrySettingService.Save(_setting);
+        ReloadCustomCharacters();
+    }
+
     private bool _useAssets;
     public bool UseAssets { get => _useAssets; set => Set(ref _useAssets, value); }
 
@@ -397,9 +471,13 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private int _settingsTabIndex;
     public int SettingsTabIndex { get => _settingsTabIndex; set => Set(ref _settingsTabIndex, value); }
 
-    /// <summary>「计算结果」内的子页签：0 概况 / 1 生产链。</summary>
+    /// <summary>「计算结果」内的子页签：0 概况 / 1 生产详情。</summary>
     private int _resultTabIndex;
     public int ResultTabIndex { get => _resultTabIndex; set => Set(ref _resultTabIndex, value); }
+
+    /// <summary>「生产详情」内层：0 排程 / 1 步骤 / 2 工位 / 3 关系 / 4 BOM / 成本。</summary>
+    private int _detailTabIndex;
+    public int DetailTabIndex { get => _detailTabIndex; set => Set(ref _detailTabIndex, value); }
 
     private string _busyText = string.Empty;
     public string BusyText { get => _busyText; set => Set(ref _busyText, value); }
@@ -416,6 +494,37 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public ObservableCollection<IndustryPlanNodeViewModel> FlatNodes { get; } = new();
     public ObservableCollection<IndustryCostSlice> CostSlices { get; } = new();
     public ObservableCollection<IndustryOverviewBuyLine> OverviewBuyItems { get; } = new();
+
+    // ───────────── 调度结果 ─────────────
+
+    public IndustryScheduleViewModel? Schedule
+    {
+        get => _schedule;
+        private set
+        {
+            if (Set(ref _schedule, value))
+            {
+                OnPropertyChanged(nameof(HasSchedule));
+            }
+        }
+    }
+
+    public bool HasSchedule => _schedule is not null && _schedule.HasSchedule;
+
+    public bool CanReassignSchedule => _lastScheduleOptions is not null && _lastPlan is not null;
+
+    public int ScheduleObjectiveIndex
+    {
+        get => _scheduleObjectiveIndex;
+        set
+        {
+            var clamped = Math.Clamp(value, 0, 2);
+            if (Set(ref _scheduleObjectiveIndex, clamped))
+            {
+                RebuildSchedule();
+            }
+        }
+    }
 
     private IndustryPlanNodeViewModel? _selectedOverviewTarget;
     public IndustryPlanNodeViewModel? SelectedOverviewTarget
@@ -834,12 +943,22 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 : new Dictionary<int, long>(_setting.VirtualHangar);
             ApplyWarehouseStock(options);
 
+            var customProfiles = CustomCharacters
+                .Where(p => p.IsSelected)
+                .Select(p => IndustryCharacterProfileFactory.CreateCustom(p.Model))
+                .ToList();
+            if (customProfiles.Count > 0)
+            {
+                options.CharacterProfiles.RemoveAll(p => p.CharacterId == 0);
+                options.CharacterProfiles.AddRange(customProfiles);
+            }
+
             BusyText = Resolve("IndustryPage_Expanding", "展开 BOM...");
 
             var targets = Targets.Select(p => new IndustryBuildTarget(p.TypeId, p.QuantityLong)).ToList();
             var plan = await Task.Run(() => new IndustrySolver(options).Solve(targets));
 
-            FillPlan(plan, contexts.Count);
+            FillPlan(plan, contexts.Count + customProfiles.Count, scheduleOptions: options);
             PageNotifyService.Success(string.Format(
                 Resolve("IndustryPage_CalcDone", "计算完成：{0} 个流程"),
                 plan.Summary.BuildRuns.Values.Sum()));
@@ -861,6 +980,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         _lastPlan = null;
         _resultSavedAt = null;
+        _lastScheduleOptions = null;
+        _schedulePins.Clear();
+        Schedule = null;
+        OnPropertyChanged(nameof(CanReassignSchedule));
         Roots.Clear();
         FlatNodes.Clear();
         CostSlices.Clear();
@@ -883,7 +1006,58 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(TargetSummary));
     }
 
-    private void FillPlan(IndustryBuildPlan plan, int characterCount, DateTime? resultSavedAt = null)
+    public void ReassignScheduleJob(string? jobKey, long characterId)
+    {
+        if (_lastScheduleOptions is null || string.IsNullOrEmpty(jobKey))
+        {
+            return;
+        }
+
+        _schedulePins[jobKey] = characterId;
+        RebuildSchedule();
+    }
+
+    public void ClearSchedulePin(string? jobKey)
+    {
+        if (string.IsNullOrEmpty(jobKey))
+        {
+            return;
+        }
+
+        _schedulePins.Remove(jobKey);
+        RebuildSchedule();
+    }
+
+    private void RebuildSchedule()
+    {
+        if (_lastPlan is null || _lastScheduleOptions is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var selectedKey = _schedule?.SelectedJob?.Key;
+            var objective = (IndustryScheduleObjective)Math.Clamp(_scheduleObjectiveIndex, 0, 2);
+            var schedule = IndustryScheduler.Build(_lastPlan, _lastScheduleOptions, objective, _schedulePins);
+            _lastPlan.Schedule = schedule;
+            Schedule = new IndustryScheduleViewModel(schedule);
+            if (!string.IsNullOrEmpty(selectedKey))
+            {
+                Schedule.SelectJobByKey(selectedKey);
+            }
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            Schedule = null;
+        }
+
+        OnPropertyChanged(nameof(HasSchedule));
+        OnPropertyChanged(nameof(CanReassignSchedule));
+    }
+
+    private void FillPlan(IndustryBuildPlan plan, int characterCount, DateTime? resultSavedAt = null, IndustrySolverOptions? scheduleOptions = null)
     {
         _lastPlan = plan;
         _resultSavedAt = resultSavedAt ?? DateTime.Now;
@@ -933,6 +1107,30 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             : Resolve("IndustryPage_NoCharacterStatus", "未选择角色");
         SectionTabIndex = 1;
         ResultTabIndex = 0;
+        DetailTabIndex = 0;
+
+        if (scheduleOptions is not null)
+        {
+            _lastScheduleOptions = scheduleOptions;
+            _schedulePins.Clear();
+            RebuildSchedule();
+        }
+        else if (plan.Schedule is not null)
+        {
+            _lastScheduleOptions = null;
+            _schedulePins.Clear();
+            _scheduleObjectiveIndex = (int)plan.Schedule.Objective;
+            OnPropertyChanged(nameof(ScheduleObjectiveIndex));
+            Schedule = new IndustryScheduleViewModel(plan.Schedule);
+        }
+        else
+        {
+            _lastScheduleOptions = null;
+            _schedulePins.Clear();
+            Schedule = null;
+        }
+        OnPropertyChanged(nameof(CanReassignSchedule));
+        ResultTabIndex = HasSchedule ? 1 : 0;
     }
 
     private void AddCostSlice(string kind, string name, double value, double total)
@@ -1025,6 +1223,49 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         if (node is null || !node.HasChildren) return;
         node.IsExpanded = !node.IsExpanded;
         RebuildFlatNodes();
+    }
+
+    /// <summary>从概况目标/步骤行跳转到 BOM / 成本并选中对应物品节点。</summary>
+    public void FocusBomCost(int typeId)
+    {
+        if (Roots.Count == 0) return;
+
+        var path = new List<IndustryPlanNodeViewModel>();
+        var node = FindNode(Roots, typeId, path);
+        if (node is null) return;
+
+        foreach (var item in path)
+        {
+            item.IsExpanded = true;
+        }
+        RebuildFlatNodes();
+        SelectedNode = node;
+        SelectedOverviewTarget = Roots.FirstOrDefault(p => p.TypeId == typeId) ?? SelectedOverviewTarget;
+        ResultTabIndex = 1;
+        DetailTabIndex = 4;
+    }
+
+    private static IndustryPlanNodeViewModel? FindNode(
+        IEnumerable<IndustryPlanNodeViewModel> nodes,
+        int typeId,
+        List<IndustryPlanNodeViewModel> path)
+    {
+        foreach (var node in nodes)
+        {
+            path.Add(node);
+            if (node.TypeId == typeId)
+            {
+                return node;
+            }
+
+            var found = FindNode(node.Children, typeId, path);
+            if (found is not null)
+            {
+                return found;
+            }
+            path.RemoveAt(path.Count - 1);
+        }
+        return null;
     }
 
     // ───────────── 节点动作 ─────────────
@@ -1486,6 +1727,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             return;
         }
 
+        _lastScheduleOptions = null;
+        _schedulePins.Clear();
         _setting = CloneSetting(plan.Settings);
         ApplySettingToUi();
         ClearResult();
@@ -1568,7 +1811,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         plan.Settings = CloneSetting(_setting);
         plan.Result = _lastPlan;
         plan.ResultSavedAt = _lastPlan is null ? null : (_resultSavedAt ?? DateTime.Now);
-        plan.CharacterCount = Characters.Count(p => p.IsSelected);
+        plan.CharacterCount = Characters.Count(p => p.IsSelected) + CustomCharacters.Count(p => p.IsSelected);
     }
 
     private static IndustrySetting CloneSetting(IndustrySetting setting)
@@ -1645,6 +1888,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 : selectedCharacters.Contains(character.Character.CharacterID);
         }
 
+        ReloadCustomCharacters();
         RefreshWarehouseSelections(preserveCurrent: false);
     }
 
@@ -1684,6 +1928,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.SelectedWarehouseIds = Warehouses.Where(p => p.IsSelected).Select(p => p.Id).ToList();
         _setting.SelectedCharacterIds = Characters.Where(p => p.IsSelected)
             .Select(p => p.Character.CharacterID)
+            .Concat(CustomCharacters.Where(p => p.IsSelected).Select(p => p.Id))
             .ToList();
         IndustrySettingService.Save(_setting);
     }

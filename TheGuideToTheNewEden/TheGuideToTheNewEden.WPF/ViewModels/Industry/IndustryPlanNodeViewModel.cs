@@ -167,7 +167,8 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public double MaterialCost => Math.Max(0, Model.BuildCost - Model.JobCost);
     public double StockValue => Math.Max(0, Model.FullBuildCost - Model.BuildCost);
     public double CostSharePercent { get; set; }
-    public string CostShareText => $"占计划总成本 {CostSharePercent:0.#}%";
+    public string CostShareText => $"{CostSharePercent:0.#}%";
+    public string CostShareHint => $"占计划总成本 {CostSharePercent:0.#}%";
     public double MaterialShare => Model.FullBuildCost > 0 ? MaterialCost / Model.FullBuildCost * 100 : 0;
     public double JobShare => Model.FullBuildCost > 0 ? Model.JobCost / Model.FullBuildCost * 100 : 0;
     public double StockShare => Model.FullBuildCost > 0 ? StockValue / Model.FullBuildCost * 100 : 0;

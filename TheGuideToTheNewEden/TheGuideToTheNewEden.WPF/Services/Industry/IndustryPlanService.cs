@@ -75,6 +75,29 @@ public static class IndustryPlanService
                     {
                         NormalizeNode(target);
                     }
+
+                    if (plan.Result.Schedule is not null)
+                    {
+                        var schedule = plan.Result.Schedule;
+                        schedule.Characters ??= new List<IndustryScheduleCharacter>();
+                        schedule.Jobs ??= new List<IndustryScheduleJob>();
+                        schedule.CriticalJobKeys ??= new List<string>();
+                        foreach (var character in schedule.Characters)
+                        {
+                            character.Lines ??= new List<IndustryScheduleLine>();
+                            foreach (var line in character.Lines)
+                            {
+                                line.JobKeys ??= new List<string>();
+                            }
+                        }
+                        foreach (var job in schedule.Jobs)
+                        {
+                            job.Inputs ??= new List<IndustryScheduleMaterial>();
+                            job.Outputs ??= new List<IndustryScheduleMaterial>();
+                            job.Dependencies ??= new List<string>();
+                            job.Dependents ??= new List<string>();
+                        }
+                    }
                 }
             }
             return plans;

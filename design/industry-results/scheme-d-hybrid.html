@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案 D · 混合控制台 · 工业控制台</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body { display: flex; flex-direction: column; height: 100vh; }
+  .workspace {
+    flex: 1; min-height: 0; display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(360px, .78fr);
+    grid-template-rows: minmax(0, 1fr) 172px;
+    gap: 12px; padding: 12px;
+  }
+  .gantt-mini { grid-row: 1; grid-column: 1; display: flex; flex-direction: column; min-height: 0; }
+  .right-col { grid-row: 1; grid-column: 2; display: grid; grid-template-rows: minmax(0, 1.2fr) minmax(0, .8fr); gap: 12px; min-height: 0; }
+  .bottom-strip { grid-row: 2; grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 306px; gap: 12px; min-height: 0; }
+
+  .gantt-scroll { flex: 1; min-height: 0; overflow: auto; }
+  .gantt-inner { display: flex; align-items: flex-start; min-width: max-content; }
+  .g-col {
+    width: 190px; flex: none; position: sticky; left: 0; z-index: 6;
+    background: var(--bg1); border-right: 1px solid var(--line);
+  }
+  .g-head {
+    height: 29px; display: flex; align-items: center; padding: 0 9px;
+    border-bottom: 1px solid var(--line); background: var(--bg1);
+    font-size: 8.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint);
+    position: sticky; top: 0; z-index: 8;
+  }
+  .g-row { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border-bottom: 1px solid rgba(158,188,220,.05); overflow: hidden; }
+  .g-row.char { height: 30px; background: rgba(255,255,255,.018); }
+  .g-avatar { width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; background: var(--bg4); border: 1px solid var(--line2); font-size: 8px; font-weight: 600; flex: none; }
+  .g-who { min-width: 0; flex: 1; }
+  .g-name { font-size: 10px; font-weight: 600; line-height: 1.15; }
+  .g-role { font-size: 8px; color: var(--faint); }
+  .g-cap { font-family: var(--mono); font-size: 7.5px; color: var(--faint); }
+  .g-line { width: 20px; flex: none; font-family: var(--mono); font-size: 8px; color: var(--faint); }
+  .g-dot { width: 4px; height: 4px; border-radius: 50%; flex: none; }
+  .g-dot.mfg { background: var(--teal); } .g-dot.invention { background: var(--violet); } .g-dot.reaction { background: var(--amber); }
+  .g-job { flex: 1; min-width: 0; font-size: 9px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .g-time { font-family: var(--mono); font-size: 7.5px; color: var(--faint); }
+  .g-row.idle .g-job { color: var(--faint); }
+
+  .g-timeline { flex: 1; min-width: 640px; position: relative; }
+  .g-ruler { height: 29px; position: sticky; top: 0; z-index: 4; background: var(--bg1); border-bottom: 1px solid var(--line); }
+  .g-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba(158,188,220,.06); font-family: var(--mono); font-size: 7.5px; color: var(--faint); padding: 3px 0 0 3px; }
+  .g-lanes { position: relative; }
+  .g-lane { height: 24px; position: relative; border-bottom: 1px solid rgba(158,188,220,.05); }
+  .g-lane.char { height: 30px; background: rgba(255,255,255,.018); }
+  .g-span { position: absolute; top: 7px; height: 15px; border-radius: 4px; background: rgba(158,188,220,.05); border: 1px solid rgba(158,188,220,.12); display: flex; align-items: center; justify-content: space-between; padding: 0 5px; font-size: 7.5px; color: var(--muted); overflow: hidden; white-space: nowrap; }
+  .g-bar {
+    position: absolute; top: 3px; height: 17px; border-radius: 4px; padding: 0 4px;
+    font-size: 7.5px; white-space: nowrap; overflow: hidden; cursor: pointer;
+    display: flex; align-items: center; border: 1px solid transparent;
+    transition: filter .12s ease, opacity .12s ease, box-shadow .12s ease;
+  }
+  .g-bar.mfg { background: rgba(91,200,214,.24); border-color: rgba(91,200,214,.38); color: #c9f6fb; }
+  .g-bar.invention { background: rgba(167,139,250,.26); border-color: rgba(167,139,250,.42); color: #e5dbff; }
+  .g-bar.reaction { background: rgba(240,161,58,.26); border-color: rgba(240,161,58,.42); color: #ffe5ba; }
+  .g-bar.critical { box-shadow: inset 0 0 0 1px rgba(248,113,113,.7); }
+  .g-bar:hover { filter: brightness(1.2); }
+  .g-bar.selected { outline: 1.5px solid var(--amber); outline-offset: 1px; z-index: 5; }
+  .g-bar.related { box-shadow: inset 0 0 0 1px rgba(240,161,58,.5); }
+  .g-lanes.focus .g-bar:not(.selected):not(.related) { opacity: .35; }
+  .g-finish { position: absolute; top: 0; bottom: 0; border-left: 1px dashed rgba(240,161,58,.55); z-index: 2; pointer-events: none; }
+  .g-finish span { position: absolute; top: 1px; left: 4px; font-family: var(--mono); font-size: 7px; color: var(--amber); white-space: nowrap; }
+
+  .dag-panel { display: flex; flex-direction: column; min-height: 0; }
+  .dag-canvas {
+    flex: 1; min-height: 0; position: relative; overflow: hidden;
+    background:
+      radial-gradient(rgba(158,188,220,.12) 1px, transparent 1px) 0 0 / 16px 16px,
+      #081018;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .dag-edge { fill: none; stroke: rgba(158,188,220,.26); stroke-width: 1; }
+  .dag-edge.critical { stroke: rgba(248,113,113,.7); stroke-width: 1.5; }
+  .dag-edge.active { stroke: var(--amber); stroke-width: 1.7; }
+  .mnode {
+    position: absolute; z-index: 3; border: 1px solid var(--line2); border-radius: 7px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--bg2);
+    overflow: hidden; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,.26);
+    transition: border-color .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .mnode:hover { border-color: rgba(240,161,58,.5); }
+  .mnode.selected { border-color: var(--amber); box-shadow: 0 0 0 1px rgba(240,161,58,.6), 0 8px 20px rgba(0,0,0,.4); }
+  .mnode.related { border-color: rgba(240,161,58,.32); }
+  .dag-canvas.focus .mnode:not(.selected):not(.related) { opacity: .45; }
+  .mnode .mh { height: 17px; display: flex; align-items: center; gap: 4px; padding: 0 6px; border-bottom: 1px solid var(--line); font-size: 6.5px; letter-spacing: .08em; text-transform: uppercase; }
+  .mnode.mfg .mh { background: rgba(91,200,214,.09); color: var(--teal); }
+  .mnode.invention .mh { background: rgba(167,139,250,.10); color: var(--violet); }
+  .mnode.reaction .mh { background: rgba(240,161,58,.09); color: var(--amber); }
+  .mnode.buy .mh { background: rgba(127,142,163,.08); color: var(--gray); }
+  .mnode.target .mh { background: rgba(240,161,58,.12); color: var(--amber); }
+  .mnode .mb { padding: 3px 6px 4px; }
+  .mnode .mn { font-size: 9px; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mnode .mm { font-size: 7px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mnode .mf { height: 15px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-top: 1px solid var(--line); font-size: 6.5px; color: var(--faint); }
+  .mnode .mcrit { margin-left: auto; color: var(--red); font-size: 6px; }
+
+  .inspector-mini { overflow: auto; padding: 9px 11px; min-height: 0; }
+  .insp-mini-title { font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .insp-mini-meta { font-size: 9.5px; color: var(--muted); margin-top: 1px; }
+  .mini-kv { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px solid rgba(158,188,220,.055); font-size: 9.5px; }
+  .mini-kv .k { color: var(--muted); }
+  .mini-kv .v { color: var(--text2); font-variant-numeric: tabular-nums; text-align: right; }
+  .mini-io { font-size: 9px; color: var(--text2); line-height: 1.55; margin-top: 4px; }
+  .mini-io span { color: var(--faint); }
+  .cand-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-bottom: 1px solid rgba(158,188,220,.05); }
+  .cand-name { width: 58px; flex: none; color: var(--text2); font-weight: 600; font-size: 8.5px; }
+  .cand-meta { flex: 1; color: var(--muted); font-size: 7.5px; }
+  .cand-dur { font-family: var(--mono); color: var(--text2); font-size: 8px; }
+  .cand-cur { color: var(--amber); font-size: 7px; }
+
+  .material-panel { display: flex; flex-direction: column; min-height: 0; }
+  .material-scroll { flex: 1; overflow: auto; }
+  .alerts { display: flex; flex-direction: column; gap: 5px; padding: 9px 10px; overflow: auto; }
+  .alert {
+    display: flex; align-items: flex-start; gap: 7px; padding: 6px 8px;
+    border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,.015);
+    font-size: 9px; color: var(--muted); line-height: 1.45;
+  }
+  .alert b { color: var(--text2); font-weight: 600; }
+  .alert.warn { border-color: rgba(240,161,58,.25); background: var(--amber-soft); color: #e7c794; }
+  .alert.bad { border-color: rgba(248,113,113,.25); background: var(--red-soft); color: #f0b4b4; }
+  .alert .adot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex: none; margin-top: 3px; }
+  .statusbar {
+    flex: none; height: 33px; display: flex; align-items: center; gap: 11px;
+    padding: 0 14px; border-top: 1px solid var(--line);
+    background: var(--bg1); font-size: 10px; color: var(--muted);
+    white-space: nowrap; overflow: hidden;
+  }
+  .statusbar .spacer { margin-left: auto; }
+  .view-switch { display: flex; gap: 2px; background: var(--bg2); border: 1px solid var(--line); border-radius: 7px; padding: 2px; }
+  .view-switch a { padding: 4px 9px; border-radius: 5px; font-size: 10px; color: var(--muted); }
+  .view-switch a.active { background: var(--bg4); color: var(--text); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">◈</span><span class="full">新伊甸 · 工业控制台</span></div>
+  <div class="plan-title">Kirin ×10 <span>三角色协同 · T2 后勤舰</span></div>
+  <nav class="view-tabs" aria-label="方案切换">
+    <a class="tab" href="scheme-a-line-gantt.html">A · 产线甘特</a>
+    <a class="tab" href="scheme-b-blueprint.html">B · 蓝图关系</a>
+    <a class="tab" href="scheme-c-line-matrix.html">C · 产线墙</a>
+    <a class="tab active" href="scheme-d-hybrid.html">D · 混合控制台</a>
+    <a class="tab" href="scheme-e-solo.html">E · 单角色</a>
+    <a class="tab" href="index.html">方案总览</a>
+  </nav>
+  <div class="top-actions">
+    <button class="btn ghost">保存计划</button>
+    <button class="btn primary">重新计算</button>
+  </div>
+</header>
+
+<section class="kpis" aria-label="计划指标">
+  <div class="kpi"><div class="label">全部完成</div><div class="value">10h <small>00m</small></div><div class="delta good">关键路径 发明 → 总装</div></div>
+  <div class="kpi"><div class="label">制造产线</div><div class="value">13 <small>/ 15</small></div><div class="delta">A8 · B4 · C3 · 技能决定</div></div>
+  <div class="kpi"><div class="label">瓶颈</div><div class="value warn">发明槽</div><div class="delta">C-I1 · 0–6h 独占</div></div>
+  <div class="kpi"><div class="label">采购现金</div><div class="value">1.36B <small>ISK</small></div><div class="delta">库存抵扣 84M</div></div>
+  <div class="kpi"><div class="label">参考收入</div><div class="value">1.78B <small>ISK</small></div><div class="delta">按最高买价</div></div>
+  <div class="kpi"><div class="label">参考利润</div><div class="value good">+358M</div><div class="delta good">20.1% · 现金 +402M</div></div>
+</section>
+
+<main class="workspace">
+  <section class="panel gantt-mini" aria-label="协同排程">
+    <div class="panel-head">
+      <span class="panel-title">协同排程</span>
+      <span class="panel-sub">点击任务 / 关系图节点，两侧同步高亮</span>
+      <span class="chip ghost" title="技能决定槽位；总产能 = Σ 角色槽位">总产能 M15 · I3 · R3</span>
+      <span class="chip mfg" id="objectiveChip" style="cursor:pointer" title="点击切换优化目标">优化：最短完成</span>
+      <span class="spacer"></span>
+      <div class="view-switch" aria-label="视图切换">
+        <a class="active" href="scheme-d-hybrid.html">协同</a>
+        <a href="scheme-a-line-gantt.html">排程</a>
+        <a href="scheme-b-blueprint.html">关系</a>
+        <a href="scheme-c-line-matrix.html">工位</a>
+      </div>
+      <span class="chip mfg" style="margin-left:6px"><i class="dot"></i>关键路径已锁定</span>
+    </div>
+    <div class="gantt-scroll" id="ganttScroll">
+      <div class="gantt-inner">
+        <div class="g-col" id="gCol"></div>
+        <div class="g-timeline">
+          <div class="g-ruler" id="gRuler"></div>
+          <div class="g-lanes" id="gLanes"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="right-col">
+    <section class="panel dag-panel" aria-label="关系聚焦">
+      <div class="panel-head">
+        <span class="panel-title">关系聚焦</span>
+        <span class="panel-sub" id="dagSub">Kirin 总装 · 直接上下游</span>
+        <span class="spacer"></span>
+        <span class="chip ghost">点击节点同步</span>
+      </div>
+      <div class="dag-canvas" id="dagCanvas">
+        <svg class="dag-edge-layer" id="dagEdges" viewBox="0 0 450 300" aria-hidden="true"></svg>
+        <div id="dagNodes"></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="任务详情" style="display:flex;flex-direction:column;min-height:0">
+      <div class="panel-head">
+        <span class="panel-title">任务详情</span>
+        <span class="panel-sub" id="inspSub">当前选中</span>
+        <span class="spacer"></span>
+        <span class="chip ghost" id="inspTime">06:00–10:00</span>
+      </div>
+      <div class="inspector-mini" id="inspector"></div>
+    </section>
+  </div>
+
+  <div class="bottom-strip">
+    <section class="panel material-panel" aria-label="物料缺口">
+      <div class="panel-head">
+        <span class="panel-title">物料缺口 / 采购</span>
+        <span class="panel-sub">仅列前 6 项 · 按当前市场参考价</span>
+        <span class="spacer"></span>
+        <button class="btn small ghost">打开完整清单</button>
+      </div>
+      <div class="material-scroll">
+        <table class="data">
+          <thead><tr><th>物品</th><th class="num">需求</th><th class="num">库存</th><th class="num">采购</th><th class="num">单价</th><th class="num">金额</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>Tritanium</td><td class="num">1.80M</td><td class="num">0</td><td class="num">1.80M</td><td class="num">4.20</td><td class="num">7.56M</td><td><span class="chip buy">采购</span></td></tr>
+            <tr><td>Pyerite</td><td class="num">920k</td><td class="num">120k</td><td class="num">800k</td><td class="num">5.10</td><td class="num">4.08M</td><td><span class="chip buy">采购</span></td></tr>
+            <tr><td>Fullerene Intercalated Sheets</td><td class="num">400</td><td class="num">0</td><td class="num">400</td><td class="num">1.20M</td><td class="num">480M</td><td><span class="chip reaction">反应</span></td></tr>
+            <tr><td>Fernite Carbide</td><td class="num">200</td><td class="num">0</td><td class="num">200</td><td class="num">1.30M</td><td class="num">260M</td><td><span class="chip reaction">反应</span></td></tr>
+            <tr><td>Kirin BPC</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">—</td><td class="num">—</td><td><span class="chip invention">发明</span></td></tr>
+            <tr><td>Construction Blocks</td><td class="num">200</td><td class="num">0</td><td class="num">200</td><td class="num">—</td><td class="num">—</td><td><span class="chip mfg">上游</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="告警与建议">
+      <div class="panel-head"><span class="panel-title">告警与建议</span></div>
+      <div class="alerts">
+        <div class="alert bad"><i class="adot"></i><span><b>C-I1 发明是唯一关键路径</b><br>0–6h 独占；失败会直接推迟总装。</span></div>
+        <div class="alert warn"><i class="adot"></i><span><b>B-R1 反应 4.5h 释放</b><br>之后立刻接 Fernite / Tungsten 板，避免总装等料。</span></div>
+        <div class="alert"><i class="adot"></i><span><b>A-M1 总装 06:00 开始</b><br>之前保持空闲；若组件延迟，完成时间按最晚组件顺延。</span></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="statusbar">
+  <span class="chip danger"><i class="dot"></i>6 项物料缺口</span>
+  <span>采购 <b style="color:var(--text2)">1.36B ISK</b></span>
+  <span>任务费 <b style="color:var(--text2)">96M</b></span>
+  <span>库存抵扣 <b style="color:var(--green)">84M</b></span>
+  <span class="spacer"></span>
+  <span>同步选择：任一侧点击，排程 / 关系 / 详情同时定位</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HOURS = 12;
+
+const CHARS = [
+  { id:'A', name:'Aria', role:'×0.88', initial:'A' },
+  { id:'B', name:'Borealis', role:'×1.00', initial:'B' },
+  { id:'C', name:'Cinder', role:'×1.06', initial:'C' },
+];
+const CAPS = {
+  A: { m: 8, i: 1, r: 1 },
+  B: { m: 4, i: 1, r: 1 },
+  C: { m: 3, i: 1, r: 1 },
+};
+const LINE_ORDER = {
+  A: ['I1','R1','M1','M2','M3','M4','M5','M6','M7','M8'],
+  B: ['I1','R1','M1','M2','M3','M4'],
+  C: ['I1','R1','M1','M2','M3'],
+};
+
+const JOBS = [
+  { id:'a-ship', row:'A-M1', char:'A', line:'M1', name:'Kirin 总装', short:'Kirin 总装', activity:'mfg', start:6, dur:4, runs:'×10', runsText:'10 runs', critical:true,
+    inputs:[{name:'Kirin BPC',qty:'2 张',state:'ready'},{name:'组件',qty:'8 类',state:'upstream'},{name:'Quantum MP',qty:'100',state:'stock'}],
+    outputs:[{name:'Kirin',qty:'×10',state:'target'}], jobCost:'48.0M', material:'1.32B', unit:'178.0M', revenue:'1.78B', profit:'+358M',
+    status:'等待发明 / 组件', note:'A-M1 是全计划唯一总装线；06:00 前保持空闲。' },
+  { id:'a-construction', row:'A-M2', char:'A', line:'M2', name:'Construction Blocks', short:'Constr. Blocks', activity:'mfg', start:0, dur:1, runs:'×200', runsText:'4 runs',
+    inputs:[{name:'Tritanium',qty:'12k',state:'buy'},{name:'Pyerite',qty:'6k',state:'buy'}], outputs:[{name:'Construction Blocks',qty:'×200',state:'upstream'}],
+    jobCost:'0.8M', material:'14.2M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'a-magpulse', row:'A-M3', char:'A', line:'M3', name:'Magpulse Thruster', short:'Magpulse', activity:'mfg', start:0, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Isogen',qty:'2.4k',state:'buy'},{name:'Nocxium',qty:'380',state:'buy'}], outputs:[{name:'Magpulse Thruster',qty:'×50',state:'upstream'}],
+    jobCost:'0.6M', material:'9.8M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'a-gravimetric', row:'A-M4', char:'A', line:'M4', name:'Gravimetric Sensor Cluster', short:'Gravimetric', activity:'mfg', start:1, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Pyerite',qty:'1.8k',state:'buy'},{name:'Mexallon',qty:'900',state:'buy'}], outputs:[{name:'Gravimetric Cluster',qty:'×50',state:'upstream'}],
+    jobCost:'0.5M', material:'7.1M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'a-quantum', row:'A-M5', char:'A', line:'M5', name:'Quantum Microprocessor', short:'Quantum MP', activity:'mfg', start:2, dur:1, runs:'×100', runsText:'3 runs',
+    inputs:[{name:'Mexallon',qty:'2.1k',state:'buy'},{name:'Isogen',qty:'1.1k',state:'buy'}], outputs:[{name:'Quantum MP',qty:'×100',state:'upstream'}],
+    jobCost:'0.9M', material:'18.6M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'a-photon', row:'A-M6', char:'A', line:'M6', name:'Photon Microprocessor', short:'Photon MP', activity:'mfg', start:3, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Isogen',qty:'900',state:'buy'},{name:'Zydrine',qty:'120',state:'stock'}], outputs:[{name:'Photon MP',qty:'×50',state:'upstream'}],
+    jobCost:'0.7M', material:'12.4M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'b-fullerene', row:'B-R1', char:'B', line:'R1', name:'Fullerene Intercalated Sheets', short:'Fullerene', activity:'reaction', start:0, dur:1.5, runs:'×400', runsText:'2 runs',
+    inputs:[{name:'Hydrocarbons',qty:'2k',state:'buy'},{name:'Silicates',qty:'1.2k',state:'buy'}], outputs:[{name:'Fullerene',qty:'×400',state:'upstream'}],
+    jobCost:'6.0M', material:'420M', unit:'—', revenue:'—', profit:'—', status:'反应槽 R1' },
+  { id:'b-fernite-reaction', row:'B-R1', char:'B', line:'R1', name:'Fernite Carbide', short:'Fernite', activity:'reaction', start:1.5, dur:1.5, runs:'×200', runsText:'1 run',
+    inputs:[{name:'Fernite',qty:'1k',state:'buy'},{name:'Carbon',qty:'800',state:'buy'}], outputs:[{name:'Fernite Carbide',qty:'×200',state:'upstream'}],
+    jobCost:'4.2M', material:'260M', unit:'—', revenue:'—', profit:'—', status:'反应槽 R1' },
+  { id:'b-tungsten-reaction', row:'B-R1', char:'B', line:'R1', name:'Tungsten Carbide', short:'Tungsten', activity:'reaction', start:3, dur:1.5, runs:'×200', runsText:'1 run',
+    inputs:[{name:'Tungsten',qty:'1.2k',state:'buy'},{name:'Carbon',qty:'900',state:'buy'}], outputs:[{name:'Tungsten Carbide',qty:'×200',state:'upstream'}],
+    jobCost:'4.5M', material:'310M', unit:'—', revenue:'—', profit:'—', status:'反应槽 R1' },
+  { id:'b-fernite-plate', row:'B-M1', char:'B', line:'M1', name:'Fernite Carbide Armor Plate', short:'Fernite Plate', activity:'mfg', start:3, dur:1.5, runs:'×100', runsText:'3 runs',
+    inputs:[{name:'Fernite Carbide',qty:'200',state:'upstream'},{name:'Tungsten',qty:'300',state:'buy'}], outputs:[{name:'Fernite Plate',qty:'×100',state:'upstream'}],
+    jobCost:'1.4M', material:'96M', unit:'—', revenue:'—', profit:'—', status:'等待反应' },
+  { id:'b-tungsten-plate', row:'B-M2', char:'B', line:'M2', name:'Tungsten Carbide Armor Plate', short:'Tungsten Plate', activity:'mfg', start:4.5, dur:1.5, runs:'×100', runsText:'3 runs',
+    inputs:[{name:'Tungsten Carbide',qty:'200',state:'upstream'},{name:'Nocxium',qty:'240',state:'buy'}], outputs:[{name:'Tungsten Plate',qty:'×100',state:'upstream'}],
+    jobCost:'1.6M', material:'118M', unit:'—', revenue:'—', profit:'—', status:'等待反应' },
+  { id:'b-thermo', row:'B-M3', char:'B', line:'M3', name:'Thermonuclear Trigger Unit', short:'Thermo Trigger', activity:'mfg', start:4.5, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Fullerene',qty:'120',state:'upstream'},{name:'Isogen',qty:'600',state:'buy'}], outputs:[{name:'Thermo Trigger',qty:'×50',state:'upstream'}],
+    jobCost:'1.1M', material:'54M', unit:'—', revenue:'—', profit:'—', status:'等待反应' },
+  { id:'b-shield', row:'B-M4', char:'B', line:'M4', name:'Sustained Shield Emitter', short:'Shield Emitter', activity:'mfg', start:5, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Fullerene',qty:'180',state:'upstream'},{name:'Mexallon',qty:'400',state:'buy'}], outputs:[{name:'Shield Emitter',qty:'×50',state:'upstream'}],
+    jobCost:'1.0M', material:'62M', unit:'—', revenue:'—', profit:'—', status:'等待反应' },
+  { id:'c-invention', row:'C-I1', char:'C', line:'I1', name:'Kirin 发明', short:'Kirin 发明', activity:'invention', start:0, dur:6, runs:'×2', runsText:'2 attempts', critical:true,
+    inputs:[{name:'T1 BPC',qty:'2 张',state:'buy'},{name:'Datacore',qty:'8',state:'buy'},{name:'Decryptor',qty:'2',state:'stock'}], outputs:[{name:'Kirin BPC',qty:'2 张',state:'target'}],
+    jobCost:'12.0M', material:'86M', unit:'—', revenue:'—', profit:'—', status:'关键路径', note:'成功概率 38.4%；BPC 每张 10 runs。' },
+  { id:'c-ionic', row:'C-M1', char:'C', line:'M1', name:'Ionic Field Projector', short:'Ionic Projector', activity:'mfg', start:0, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Mexallon',qty:'700',state:'buy'},{name:'Isogen',qty:'300',state:'buy'}], outputs:[{name:'Ionic Projector',qty:'×50',state:'upstream'}],
+    jobCost:'0.5M', material:'8.4M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'c-photon', row:'C-M2', char:'C', line:'M2', name:'Photon Microprocessor', short:'Photon MP', activity:'mfg', start:1, dur:1.5, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Isogen',qty:'900',state:'buy'},{name:'Nocxium',qty:'150',state:'buy'}], outputs:[{name:'Photon MP',qty:'×50',state:'upstream'}],
+    jobCost:'0.7M', material:'12.8M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+  { id:'c-exotic', row:'C-M3', char:'C', line:'M3', name:'Exotic Plasma Chamber', short:'Plasma Chamber', activity:'mfg', start:2.5, dur:1.5, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Zydrine',qty:'180',state:'stock'},{name:'Megacyte',qty:'90',state:'buy'}], outputs:[{name:'Plasma Chamber',qty:'×50',state:'upstream'}],
+    jobCost:'0.9M', material:'21.6M', unit:'—', revenue:'—', profit:'—', status:'可开始' },
+];
+
+const JOB_NODE = {
+  'a-ship':'ship', 'a-construction':'components', 'a-magpulse':'components', 'a-gravimetric':'components', 'a-quantum':'components', 'a-photon':'components',
+  'b-fullerene':'reaction', 'b-fernite-reaction':'reaction', 'b-tungsten-reaction':'reaction',
+  'b-fernite-plate':'components', 'b-tungsten-plate':'components', 'b-thermo':'components', 'b-shield':'components',
+  'c-invention':'invention', 'c-ionic':'components', 'c-photon':'components', 'c-exotic':'components',
+};
+
+const NODES = {
+  invention: { x:10, y:18, w:120, h:64, kind:'invention', label:'发明', title:'Kirin 发明', meta:'C-I1 · 0–6h', jobs:['c-invention'], critical:true,
+    detail:'唯一关键路径；6h 独占发明槽。', inputs:[{name:'T1 BPC',qty:'2 张',state:'buy'},{name:'Datacore',qty:'8',state:'buy'}], outputs:[{name:'Kirin BPC',qty:'2 张',state:'target'}], jobCost:'12.0M', material:'86M', status:'关键路径' },
+  raw: { x:10, y:228, w:120, h:58, kind:'buy', label:'采购', title:'原料采购', meta:'7 类 · 1.36B', jobs:[],
+    detail:'按当前市场最低卖价估算。', inputs:[], outputs:[{name:'矿物 / 材料',qty:'7 类',state:'upstream'}], jobCost:'—', material:'1.36B', status:'采购' },
+  reaction: { x:10, y:123, w:120, h:64, kind:'reaction', label:'反应', title:'反应 ×3', meta:'B-R1 · 0–4.5h', jobs:['b-fullerene','b-fernite-reaction','b-tungsten-reaction'],
+    detail:'三段反应顺序占用 B-R1；4.5h 释放。', inputs:[{name:'烃类 / 硅酸盐',qty:'3.2k',state:'buy'},{name:'Fernite / Tungsten',qty:'2.2k',state:'buy'}], outputs:[{name:'Fullerene / Carbide',qty:'3 类',state:'upstream'}], jobCost:'14.7M', material:'990M', status:'反应槽 R1' },
+  components: { x:165, y:92, w:120, h:80, kind:'mfg', label:'制造', title:'组件 ×6', meta:'12 任务 · 15 槽 · 06:00', jobs:['a-construction','a-magpulse','a-gravimetric','a-quantum','a-photon','b-fernite-plate','b-tungsten-plate','b-thermo','b-shield','c-ionic','c-photon','c-exotic'],
+    detail:'12 个组件任务分布在 A/B/C 的制造线，06:00 前齐套。', inputs:[{name:'反应产物',qty:'3 类',state:'upstream'},{name:'原料',qty:'7 类',state:'buy'}], outputs:[{name:'组件',qty:'×8 类',state:'upstream'}], jobCost:'6.9M', material:'436M', status:'并行制造' },
+  ship: { x:320, y:92, w:120, h:76, kind:'mfg', label:'制造', title:'Kirin 总装', meta:'A-M1 · 6–10h', jobs:['a-ship'], critical:true,
+    detail:'06:00 发明完成且组件齐套后开始；10:00 交付。', inputs:[{name:'Kirin BPC',qty:'2 张',state:'ready'},{name:'组件',qty:'8 类',state:'upstream'}], outputs:[{name:'Kirin',qty:'×10',state:'target'}], jobCost:'48.0M', material:'1.32B', status:'等待发明 / 组件' },
+  target: { x:320, y:210, w:120, h:56, kind:'target', label:'目标', title:'Kirin ×10', meta:'+358M · 20.1%', jobs:[], critical:true,
+    detail:'参考收入按最高买价；全部流程完成即可交付。', inputs:[{name:'Kirin',qty:'×10',state:'target'}], outputs:[], jobCost:'—', material:'1.42B', status:'目标产物' },
+};
+
+const DAG_EDGES = [
+  { from:'raw', to:'reaction' },
+  { from:'reaction', to:'components' },
+  { from:'invention', to:'ship', critical:true },
+  { from:'components', to:'ship' },
+  { from:'ship', to:'target', critical:true },
+];
+
+let selectedJobId = 'a-ship';
+let selectedNodeId = 'ship';
+
+const $ = (s) => document.querySelector(s);
+const fmt = (h) => {
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+};
+const activityLabel = { mfg:'制造', invention:'发明', reaction:'反应', buy:'采购', target:'目标' };
+
+function jobsOnRow(row) {
+  return JOBS.filter(j => j.row === row).sort((a, b) => a.start - b.start);
+}
+function buildRows() {
+  const rows = [];
+  for (const ch of CHARS) {
+    rows.push({ type:'char', key:ch.id, char:ch });
+    const occupied = LINE_ORDER[ch.id].filter(line => JOBS.some(j => j.row === ch.id + '-' + line));
+    for (const line of occupied) {
+      const rowKey = ch.id + '-' + line;
+      rows.push({ type:'line', key:rowKey, char:ch, line, job:jobsOnRow(rowKey)[0] });
+    }
+  }
+  return rows;
+}
+
+function renderGantt() {
+  const rows = buildRows();
+  const col = $('#gCol');
+  const lanes = $('#gLanes');
+  const ruler = $('#gRuler');
+  col.innerHTML = '<div class="g-head">角色 / 产线</div>';
+  lanes.innerHTML = '';
+  ruler.innerHTML = '';
+  for (let i = 0; i <= HOURS; i++) {
+    const t = document.createElement('div');
+    t.className = 'g-tick';
+    t.style.left = (i / HOURS * 100) + '%';
+    t.textContent = i === HOURS ? '12h' : i + 'h';
+    ruler.appendChild(t);
+  }
+  for (const row of rows) {
+    if (row.type === 'char') {
+      const ch = row.char;
+      const chJobs = JOBS.filter(j => j.char === ch.id);
+      const occupied = LINE_ORDER[ch.id].filter(line => JOBS.some(j => j.row === ch.id + '-' + line));
+      const cap = CAPS[ch.id];
+      const mUsed = occupied.filter(line => line.startsWith('M')).length;
+      const iUsed = occupied.includes('I1') ? 1 : 0;
+      const rUsed = occupied.includes('R1') ? 1 : 0;
+      col.insertAdjacentHTML('beforeend', `
+        <div class="g-row char">
+          <div class="g-avatar">${ch.initial}</div>
+          <div class="g-who"><div class="g-name">${ch.name}</div><div class="g-role">M${mUsed}/${cap.m} · I${iUsed}/1 · R${rUsed}/1</div></div>
+          <span class="g-cap" title="技能时间修正">${ch.role}</span>
+        </div>`);
+      const lane = document.createElement('div');
+      lane.className = 'g-lane char';
+      const s = Math.min(...chJobs.map(j => j.start));
+      const e = Math.max(...chJobs.map(j => j.start + j.dur));
+      lane.innerHTML = `<div class="g-span" style="left:${s / HOURS * 100}%;width:${(e - s) / HOURS * 100}%"><span>${ch.name}</span><span>${fmt(e)}</span></div>`;
+      lanes.appendChild(lane);
+    } else if (row.type === 'line') {
+      col.insertAdjacentHTML('beforeend', `
+        <div class="g-row">
+          <span class="g-line">${row.line}</span><span class="g-dot ${row.job.activity}"></span>
+          <span class="g-job" title="${row.job.name}">${row.job.name}</span>
+          <span class="g-time">${fmt(row.job.start)}–${fmt(row.job.start + row.job.dur)}</span>
+        </div>`);
+      const lane = document.createElement('div');
+      lane.className = 'g-lane';
+      for (const j of jobsOnRow(row.key)) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'g-bar ' + j.activity + (j.critical ? ' critical' : '');
+        b.dataset.job = j.id;
+        b.style.left = (j.start / HOURS * 100) + '%';
+        b.style.width = (j.dur / HOURS * 100) + '%';
+        b.title = `${j.name} · ${j.runs} · ${fmt(j.start)}–${fmt(j.start + j.dur)}`;
+        b.textContent = j.dur >= 2 ? j.short : '';
+        b.addEventListener('click', () => selectJob(j.id));
+        lane.appendChild(b);
+      }
+      lanes.appendChild(lane);
+    } else {
+      col.insertAdjacentHTML('beforeend', `<div class="g-row idle"><span class="g-line">···</span><span class="g-job">空闲 ×${row.count}</span></div>`);
+      const lane = document.createElement('div');
+      lane.className = 'g-lane';
+      lanes.appendChild(lane);
+    }
+  }
+  const finish = document.createElement('div');
+  finish.className = 'g-finish';
+  finish.style.left = (10 / HOURS * 100) + '%';
+  finish.innerHTML = '<span>10:00</span>';
+  lanes.appendChild(finish);
+}
+
+function renderDag() {
+  const host = $('#dagNodes');
+  host.innerHTML = '';
+  Object.entries(NODES).forEach(([id, n]) => {
+    const el = document.createElement('div');
+    el.className = `mnode ${n.kind} ${n.critical ? 'critical' : ''}`;
+    el.id = 'mnode-' + id;
+    el.dataset.node = id;
+    el.style.left = n.x + 'px';
+    el.style.top = n.y + 'px';
+    el.style.width = n.w + 'px';
+    el.style.height = n.h + 'px';
+    el.innerHTML = `
+      <div class="mh"><i class="g-dot ${n.kind === 'target' ? 'reaction' : n.kind}"></i>${n.label}${n.critical ? '<span class="mcrit">关键</span>' : ''}</div>
+      <div class="mb"><div class="mn">${n.title}</div><div class="mm">${n.meta}</div></div>
+      <div class="mf"><span>${n.jobs.length} 任务</span><span>${n.status}</span></div>`;
+    el.addEventListener('click', () => selectNode(id));
+    host.appendChild(el);
+  });
+  renderDagEdges();
+}
+
+function renderDagEdges() {
+  const svg = $('#dagEdges');
+  svg.innerHTML = '';
+  for (const e of DAG_EDGES) {
+    const s = NODES[e.from], t = NODES[e.to];
+    if (!s || !t) continue;
+    const x1 = s.x + s.w, y1 = s.y + s.h / 2;
+    const x2 = t.x, y2 = t.y + t.h / 2;
+    const dx = Math.max(18, (x2 - x1) * 0.42);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`);
+    const active = selectedNodeId && (e.from === selectedNodeId || e.to === selectedNodeId);
+    path.setAttribute('class', 'dag-edge' + (e.critical ? ' critical' : '') + (active ? ' active' : ''));
+    svg.appendChild(path);
+  }
+}
+
+function paintGantt() {
+  document.querySelectorAll('.g-bar').forEach(b => b.classList.remove('selected', 'related'));
+  if (selectedJobId) {
+    const b = document.querySelector(`.g-bar[data-job="${selectedJobId}"]`);
+    if (b) b.classList.add('selected');
+    const node = JOB_NODE[selectedJobId];
+    if (node) {
+      document.querySelectorAll('.g-bar').forEach(x => {
+        if (JOB_NODE[x.dataset.job] === node && x.dataset.job !== selectedJobId) x.classList.add('related');
+      });
+    }
+  }
+  $('#gLanes').classList.add('focus');
+}
+
+function paintDag() {
+  document.querySelectorAll('.mnode.selected').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.mnode.related').forEach(el => el.classList.remove('related'));
+  const el = document.getElementById('mnode-' + selectedNodeId);
+  if (el) el.classList.add('selected');
+  const related = new Set([selectedNodeId]);
+  DAG_EDGES.forEach(e => {
+    if (e.from === selectedNodeId) related.add(e.to);
+    if (e.to === selectedNodeId) related.add(e.from);
+  });
+  related.forEach(id => {
+    if (id === selectedNodeId) return;
+    const r = document.getElementById('mnode-' + id);
+    if (r) r.classList.add('related');
+  });
+  $('#dagCanvas').classList.add('focus');
+  renderDagEdges();
+  const n = NODES[selectedNodeId];
+  $('#dagSub').textContent = n ? `${n.title} · 直接上下游` : '关系聚焦';
+}
+
+function selectJob(id) {
+  const job = JOBS.find(j => j.id === id);
+  if (!job) return;
+  selectedJobId = id;
+  selectedNodeId = JOB_NODE[id] || 'components';
+  paintGantt();
+  paintDag();
+  showJob(job);
+}
+
+function selectNode(id) {
+  const n = NODES[id];
+  if (!n) return;
+  selectedNodeId = id;
+  selectedJobId = n.jobs.length ? n.jobs[0] : null;
+  paintGantt();
+  paintDag();
+  if (selectedJobId) {
+    const job = JOBS.find(j => j.id === selectedJobId);
+    if (job) showJob(job, n);
+  } else {
+    showNode(n);
+  }
+}
+
+function candidatesHtml(job) {
+  const mult = { A:0.88, B:1.00, C:1.06 };
+  const base = job.dur / (mult[job.char] || 1);
+  return `<div class="section-label" style="margin-top:9px">候选角色 / 分工依据</div>`
+    + CHARS.map(ch => {
+      const dur = (base * mult[ch.id]).toFixed(1);
+      const current = ch.id === job.char;
+      return `<div class="cand-row">
+        <span class="cand-name">${ch.name}</span>
+        <span class="cand-meta">M${CAPS[ch.id].m} · ×${mult[ch.id].toFixed(2)}${current ? ' <span class="cand-cur">当前</span>' : ''}</span>
+        <span class="cand-dur">${dur}h</span>
+      </div>`;
+    }).join('')
+    + `<div class="mini-io" style="color:var(--muted);margin-top:3px">按最早完成 / 成本选择；技能快不代表一定选，线满时会比较排队。</div>`;
+}
+
+function showJob(job, node) {
+  const act = activityLabel[job.activity] || job.activity;
+  $('#inspSub').textContent = `${act} · ${job.char}-${job.line}`;
+  $('#inspTime').textContent = `${fmt(job.start)}–${fmt(job.start + job.dur)}`;
+  $('#inspector').innerHTML = `
+    <div class="insp-mini-title">${job.name}</div>
+    <div class="insp-mini-meta">${job.runs} · ${job.dur}h · ${job.char}-${job.line} · ${act}</div>
+    ${candidatesHtml(job)}
+    <div class="mini-kv"><span class="k">时间</span><span class="v">${fmt(job.start)} – ${fmt(job.start + job.dur)}</span></div>
+    <div class="mini-kv"><span class="k">任务费</span><span class="v">${job.jobCost}</span></div>
+    <div class="mini-kv"><span class="k">材料成本</span><span class="v">${job.material}</span></div>
+    <div class="mini-kv"><span class="k">状态</span><span class="v">${job.status}</span></div>
+    <div class="mini-io"><span>投入</span> ${(job.inputs || []).map(m => `${m.name} ${m.qty}`).join(' · ')}</div>
+    <div class="mini-io"><span>产出</span> ${(job.outputs || []).map(m => `${m.name} ${m.qty}`).join(' · ')}</div>
+    ${job.note ? `<div class="mini-io" style="color:var(--muted)">${job.note}</div>` : ''}`;
+}
+
+function showNode(n) {
+  $('#inspSub').textContent = `${activityLabel[n.kind] || n.label} · ${n.status}`;
+  $('#inspTime').textContent = n.meta;
+  $('#inspector').innerHTML = `
+    <div class="insp-mini-title">${n.title}</div>
+    <div class="insp-mini-meta">${n.meta} · ${n.jobs.length} 个任务</div>
+    <div class="mini-kv"><span class="k">任务费</span><span class="v">${n.jobCost}</span></div>
+    <div class="mini-kv"><span class="k">材料成本</span><span class="v">${n.material}</span></div>
+    <div class="mini-kv"><span class="k">状态</span><span class="v">${n.status}</span></div>
+    <div class="mini-io"><span>投入</span> ${(n.inputs || []).map(m => `${m.name} ${m.qty}`).join(' · ') || '—'}</div>
+    <div class="mini-io"><span>产出</span> ${(n.outputs || []).map(m => `${m.name} ${m.qty}`).join(' · ') || '—'}</div>
+    <div class="mini-io" style="color:var(--muted)">${n.detail}</div>`;
+}
+
+function toast(text) {
+  const el = $('#toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+renderGantt();
+renderDag();
+selectJob('a-ship');
+
+const OBJECTIVES = ['最短完成', '最低成本', '平衡'];
+let objectiveIndex = 0;
+const objectiveChip = $('#objectiveChip');
+if (objectiveChip) {
+  objectiveChip.addEventListener('click', () => {
+    objectiveIndex = (objectiveIndex + 1) % OBJECTIVES.length;
+    objectiveChip.textContent = '优化：' + OBJECTIVES[objectiveIndex];
+    toast(`示意：按「${OBJECTIVES[objectiveIndex]}」重新优化全部任务`);
+  });
+}
+if (location.hash === '#roles') selectJob('a-ship');
+window.addEventListener('resize', () => renderDagEdges());
+</script>
+</body>
+</html>

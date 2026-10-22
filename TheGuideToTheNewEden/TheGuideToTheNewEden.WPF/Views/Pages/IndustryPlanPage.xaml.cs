@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using TheGuideToTheNewEden.WPF.Services.Industry;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
@@ -45,6 +47,49 @@ public partial class IndustryPlanPage : Page
     private void OnClearTargetsClick(object sender, RoutedEventArgs e) => _viewModel.ClearTargets();
 
     private void OnAddRigClick(object sender, RoutedEventArgs e) => _viewModel.AddRig();
+
+    private void OnViewBomCostClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.Tag is IndustryPlanNodeViewModel node)
+        {
+            _viewModel.FocusBomCost(node.TypeId);
+        }
+    }
+
+    private void OnAddCustomCharacterClick(object sender, RoutedEventArgs e)
+    {
+        var id = _viewModel.NextCustomCharacterId();
+        var character = IndustryCustomCharacter.CreateDefault(id);
+        var window = new IndustryCustomCharacterWindow(character) { Owner = Window.GetWindow(this) };
+        if (window.ShowDialog() == true)
+        {
+            _viewModel.AddCustomCharacter(window.BuildModel(id));
+        }
+    }
+
+    private void OnEditCustomCharacterClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.Tag is IndustryCustomCharacterItem item)
+        {
+            var window = new IndustryCustomCharacterWindow(item.Model.Clone()) { Owner = Window.GetWindow(this) };
+            if (window.ShowDialog() == true)
+            {
+                _viewModel.UpdateCustomCharacter(window.BuildModel(item.Id));
+            }
+        }
+    }
+
+    private void OnDeleteCustomCharacterClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.Tag is IndustryCustomCharacterItem item)
+        {
+            if (MessageBox.Show($"删除自定义角色「{item.Name}」？", "删除自定义角色",
+                    MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                _viewModel.DeleteCustomCharacter(item);
+            }
+        }
+    }
 
     private void OnRemoveRigClick(object sender, RoutedEventArgs e)
     {

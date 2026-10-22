@@ -86,6 +86,9 @@ public sealed class IndustrySetting
 
     /// <summary>参与计算的角色 Id（在「角色与市场」中勾选）。</summary>
     public List<long> SelectedCharacterIds { get; set; } = new();
+
+    /// <summary>不依赖 ESI 的自定义角色；Id 使用负数，与真实角色区分。</summary>
+    public List<IndustryCustomCharacter> CustomCharacters { get; set; } = new();
 }
 
 /// <summary>工业设置读写（WPF 版专有文件，与 WinUI 无共享）。</summary>

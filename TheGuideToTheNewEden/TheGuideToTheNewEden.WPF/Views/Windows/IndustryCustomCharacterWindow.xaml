@@ -1,0 +1,215 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.IndustryCustomCharacterWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Width="600"
+    Height="660"
+    MinWidth="540"
+    MinHeight="560"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
+    ResizeMode="CanResize"
+    ShowInTaskbar="False"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <ui:FluentWindow.Resources>
+        <Style x:Key="SkillCard" TargetType="Border">
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style x:Key="SkillLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="SkillCombo" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Width" Value="72" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid Margin="16,48,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0">
+                <TextBlock
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="不读取 ESI，只按技能等级估算工业槽位与制造/反应耗时。"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="72" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="名称" />
+            <ui:TextBox
+                x:Name="NameBox"
+                Grid.Column="1"
+                PlaceholderText="例如：工业小号 / 反应专精" />
+        </Grid>
+
+        <ScrollViewer
+            Grid.Row="2"
+            Margin="0,12,0,0"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{StaticResource SkillCard}">
+                    <StackPanel>
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="制造" />
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Style="{StaticResource SkillLabel}" Text="批量生产（Mass Production）" />
+                            <ComboBox x:Name="MassProductionBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="1" Style="{StaticResource SkillLabel}" Text="高级批量生产（Advanced Mass Production）" />
+                            <ComboBox x:Name="AdvancedMassProductionBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="2" Style="{StaticResource SkillLabel}" Text="工业理论（Industry）" />
+                            <ComboBox x:Name="IndustryBox" Grid.Row="2" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="3" Style="{StaticResource SkillLabel}" Text="高级工业理论（Advanced Industry）" />
+                            <ComboBox x:Name="AdvancedIndustryBox" Grid.Row="3" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SkillCard}">
+                    <StackPanel>
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="发明" />
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Style="{StaticResource SkillLabel}" Text="实验室操作（Laboratory Operation）" />
+                            <ComboBox x:Name="LaboratoryOperationBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="1" Style="{StaticResource SkillLabel}" Text="高级实验室操作（Advanced Laboratory Operation）" />
+                            <ComboBox x:Name="AdvancedLaboratoryOperationBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SkillCard}">
+                    <StackPanel>
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="反应" />
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Style="{StaticResource SkillLabel}" Text="批量反应（Mass Reactions）" />
+                            <ComboBox x:Name="MassReactionsBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="1" Style="{StaticResource SkillLabel}" Text="高级批量反应（Advanced Mass Reactions）" />
+                            <ComboBox x:Name="AdvancedMassReactionsBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="2" Style="{StaticResource SkillLabel}" Text="反应理论（Reactions）" />
+                            <ComboBox x:Name="ReactionsBox" Grid.Row="2" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                            <TextBlock Grid.Row="3" Style="{StaticResource SkillLabel}" Text="高级反应理论（Advanced Reactions）" />
+                            <ComboBox x:Name="AdvancedReactionsBox" Grid.Row="3" Grid.Column="1" Style="{StaticResource SkillCombo}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock
+                    FontSize="10"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="等级 0–5：制造槽 = 1 + 批量生产 + 高级批量生产；发明/反应同理。时间修正按工业/反应理论每级 4%，高级每级 3%。"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border
+            Grid.Row="3"
+            Margin="0,10,0,0"
+            Padding="12,10"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <StackPanel>
+                <TextBlock
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="预估产能" />
+                <TextBlock
+                    x:Name="PreviewText"
+                    Margin="0,4,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel
+            Grid.Row="4"
+            Margin="0,12,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <ui:Button
+                Padding="18,6"
+                Click="OnCancelClick"
+                Content="取消"
+                IsCancel="True" />
+            <ui:Button
+                Margin="8,0,0,0"
+                Padding="18,6"
+                Appearance="Primary"
+                Click="OnSaveClick"
+                Content="保存"
+                IsDefault="True" />
+        </StackPanel>
+
+        </Grid>
+
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="自定义角色">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+    </Grid>
+</ui:FluentWindow>

@@ -94,6 +94,9 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         /// <summary>角色技能等级（TypeID → 等级），用于发明成功率。为空则按 0 级计算。</summary>
         public Dictionary<int, int> CharacterSkills { get; set; } = new Dictionary<int, int>();
 
+        /// <summary>排产用的角色能力（技能槽位、时间修正）；为空时调度器使用一个默认角色。</summary>
+        public List<IndustryCharacterProfile> CharacterProfiles { get; set; } = new List<IndustryCharacterProfile>();
+
         /// <summary>结构空间加成（高安 1.0 / 低安·00 1.9 / 虫洞 2.1）。</summary>
         public double SpaceModifier { get; set; } = 1.0;
 

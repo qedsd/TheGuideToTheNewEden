@@ -10,6 +10,9 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
     {
         public List<IndustryBuildNode> Targets { get; set; } = new List<IndustryBuildNode>();
         public IndustryPlanSummary Summary { get; set; }
+
+        /// <summary>按技能槽位/角色耗时生成的排产快照；旧计划可能为空。</summary>
+        public IndustrySchedule? Schedule { get; set; }
     }
 
     /// <summary>BOM 汇总（按 TypeID 聚合）。</summary>

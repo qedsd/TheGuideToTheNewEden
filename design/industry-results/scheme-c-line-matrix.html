@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案 C · 产线墙 · 工业控制台</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body { display: flex; flex-direction: column; height: 100vh; }
+  .workspace {
+    flex: 1; min-height: 0; display: grid;
+    grid-template-columns: minmax(0, 1fr) 336px;
+    gap: 12px; padding: 12px;
+  }
+  .matrix-panel { display: flex; flex-direction: column; min-height: 0; }
+  .matrix-scroll { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px 10px; }
+  .char-block {
+    border: 1px solid var(--line); border-radius: 8px;
+    background: rgba(255,255,255,.012);
+    padding: 8px 9px 7px; margin-bottom: 8px;
+  }
+  .char-block:last-child { margin-bottom: 0; }
+  .char-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .avatar {
+    width: 24px; height: 24px; border-radius: 7px; flex: none;
+    display: grid; place-items: center; background: var(--bg4);
+    border: 1px solid var(--line2); font-size: 10px; font-weight: 600; color: var(--text2);
+  }
+  .who { min-width: 0; }
+  .who .name { font-size: 11.5px; font-weight: 600; line-height: 1.2; }
+  .who .role { font-size: 9px; color: var(--faint); }
+  .caps { margin-left: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .cap-group { display: flex; align-items: center; gap: 5px; font-size: 8.5px; color: var(--muted); white-space: nowrap; }
+  .cap-group b { color: var(--text2); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .cap-dots { display: flex; gap: 2px; }
+  .cap-dots i { width: 3px; height: 8px; border-radius: 1px; background: rgba(158,188,220,.14); }
+  .cap-dots i.mfg { background: var(--teal); }
+  .cap-dots i.reaction { background: var(--amber); }
+  .cap-dots i.invention { background: var(--violet); }
+
+  .slots { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 5px; }
+  .slot {
+    min-width: 0; height: 95px; border-radius: 6px;
+    border: 1px solid var(--line); border-top: 2px solid transparent;
+    background: rgba(255,255,255,.016); padding: 4px 5px;
+    position: relative; overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: background .12s ease, border-color .12s ease;
+  }
+  .slot:hover { background: rgba(255,255,255,.038); }
+  .slot.mfg { border-top-color: rgba(91,200,214,.55); }
+  .slot.invention { border-top-color: rgba(167,139,250,.62); }
+  .slot.reaction { border-top-color: rgba(240,161,58,.62); }
+  .slot.special { background: rgba(240,161,58,.028); }
+  .slot.empty { border-style: dashed; border-top-color: transparent; background: transparent; }
+  .slot.empty:hover { border-color: rgba(240,161,58,.4); }
+  .slot.dragover { border-color: var(--amber) !important; background: var(--amber-soft) !important; }
+  .slot.selected { outline: 1px solid var(--amber); outline-offset: 1px; }
+  .slot.critical { box-shadow: inset 0 0 0 1px rgba(248,113,113,.52); }
+  .slot-top {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 8px; color: var(--faint);
+  }
+  .led { width: 5px; height: 5px; border-radius: 50%; background: rgba(158,188,220,.2); flex: none; }
+  .led.on { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,.45); }
+  .led.wait { background: var(--yellow); }
+  .sname {
+    margin-top: 3px; font-size: 9px; font-weight: 600; line-height: 1.2;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; color: var(--text2);
+  }
+  .smeta { margin-top: 1px; font-size: 8px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stime { margin-top: auto; font-family: var(--mono); font-size: 7.5px; color: var(--faint); }
+  .squeue {
+    position: absolute; right: 4px; bottom: 4px; font-size: 7px;
+    color: var(--amber); background: var(--amber-soft);
+    border-radius: 3px; padding: 0 3px;
+  }
+  .crit-flag { position: absolute; top: 18px; right: 4px; font-size: 6.5px; color: var(--red); letter-spacing: .04em; }
+  .empty-label { margin: auto; text-align: center; font-size: 8.5px; color: var(--faint); line-height: 1.4; }
+
+  .ribbon-wrap { margin-top: 5px; }
+  .ribbon {
+    height: 24px; position: relative; border-radius: 4px; overflow: hidden;
+    background: rgba(158,188,220,.03); border: 1px solid rgba(158,188,220,.06);
+  }
+  .ribbon .rtick { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba(158,188,220,.06); }
+  .rbar {
+    position: absolute; top: 4px; height: 16px; border-radius: 3px;
+    font-size: 7px; padding: 0 3px; overflow: hidden; white-space: nowrap;
+    display: flex; align-items: center; color: #dff8ff;
+  }
+  .rbar.mfg { background: rgba(91,200,214,.42); }
+  .rbar.invention { background: rgba(167,139,250,.46); color: #f0eaff; }
+  .rbar.reaction { background: rgba(240,161,58,.46); color: #fff0d8; }
+  .rbar.critical { box-shadow: inset 0 0 0 1px rgba(248,113,113,.75); }
+  .ribbon-labels { display: flex; justify-content: space-between; margin-top: 1px; font-size: 7px; color: var(--faint); font-family: var(--mono); }
+
+  .side-scroll { overflow: auto; padding: 10px 11px; min-height: 0; }
+  .side-title { font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); margin: 2px 0 7px; }
+  .side-title:not(:first-child) { margin-top: 15px; }
+  .pending-list { display: flex; flex-direction: column; gap: 5px; }
+  .pending-chip {
+    display: flex; align-items: center; gap: 7px; padding: 7px 8px;
+    border: 1px solid var(--line); border-radius: 7px; background: var(--bg2);
+    cursor: grab; user-select: none;
+  }
+  .pending-chip:active { cursor: grabbing; }
+  .pending-chip:hover { border-color: rgba(240,161,58,.35); }
+  .p-activity { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .p-activity.mfg { background: var(--teal); }
+  .p-activity.invention { background: var(--violet); }
+  .p-activity.reaction { background: var(--amber); }
+  .pending-chip .pname { font-size: 10.5px; font-weight: 600; line-height: 1.2; }
+  .pending-chip .pmeta { font-size: 8.5px; color: var(--muted); }
+  .drag-grip { margin-left: auto; color: var(--faint); font-size: 10px; letter-spacing: -1px; }
+  .empty-pending { font-size: 10px; color: var(--faint); padding: 7px 0; }
+
+  .handoff-row {
+    display: flex; align-items: center; gap: 5px; padding: 4px 0;
+    border-bottom: 1px solid rgba(158,188,220,.055); font-size: 8.5px; color: var(--muted);
+    white-space: nowrap; overflow: hidden;
+  }
+  .handoff-row .from, .handoff-row .to { color: var(--text2); font-family: var(--mono); font-size: 8px; }
+  .handoff-row .arrow { color: var(--faint); }
+  .handoff-row .qty { margin-left: auto; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .handoff-row .hdot { width: 5px; height: 5px; border-radius: 50%; flex: none; }
+  .hdot.ready { background: var(--green); }
+  .hdot.wait { background: var(--yellow); }
+
+  .detail-card {
+    border: 1px solid var(--line); border-radius: 7px; background: var(--bg2);
+    padding: 8px 9px;
+  }
+  .detail-card .dname { font-size: 11.5px; font-weight: 600; line-height: 1.25; }
+  .detail-card .dmeta { font-size: 9px; color: var(--muted); margin-top: 1px; }
+  .detail-card .drow { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; color: var(--muted); padding-top: 3px; }
+  .detail-card .drow b { color: var(--text2); font-weight: 500; }
+  .detail-card .dio { margin-top: 5px; font-size: 8.5px; color: var(--text2); line-height: 1.55; }
+  .detail-card .dio span { color: var(--faint); }
+  .advice {
+    margin-top: 9px; padding: 8px 9px; border-radius: 7px;
+    background: var(--amber-soft); border: 1px solid rgba(240,161,58,.22);
+    font-size: 9.5px; color: #f4d6a6; line-height: 1.55;
+  }
+  .side-actions { display: flex; gap: 6px; margin-top: 9px; }
+  .side-actions .btn { flex: 1; }
+  .statusbar {
+    flex: none; height: 33px; display: flex; align-items: center; gap: 11px;
+    padding: 0 14px; border-top: 1px solid var(--line);
+    background: var(--bg1); font-size: 10px; color: var(--muted);
+    white-space: nowrap; overflow: hidden;
+  }
+  .statusbar .spacer { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">◈</span><span class="full">新伊甸 · 工业控制台</span></div>
+  <div class="plan-title">Kirin ×10 <span>三角色协同 · T2 后勤舰</span></div>
+  <nav class="view-tabs" aria-label="方案切换">
+    <a class="tab" href="scheme-a-line-gantt.html">A · 产线甘特</a>
+    <a class="tab" href="scheme-b-blueprint.html">B · 蓝图关系</a>
+    <a class="tab active" href="scheme-c-line-matrix.html">C · 产线墙</a>
+    <a class="tab" href="scheme-d-hybrid.html">D · 混合控制台</a>
+    <a class="tab" href="scheme-e-solo.html">E · 单角色</a>
+    <a class="tab" href="index.html">方案总览</a>
+  </nav>
+  <div class="top-actions">
+    <button class="btn ghost">导出排程</button>
+    <button class="btn primary">重新计算</button>
+  </div>
+</header>
+
+<section class="kpis" aria-label="计划指标">
+  <div class="kpi"><div class="label">全部完成</div><div class="value">10h <small>00m</small></div><div class="delta good">关键路径 发明 → 总装</div></div>
+  <div class="kpi"><div class="label">制造产线</div><div class="value"><span id="kpiMfg">13</span> <small>/ 15</small></div><div class="delta">A8 · B4 · C3 · 技能决定</div></div>
+  <div class="kpi"><div class="label">专用槽</div><div class="value" style="font-size:15px">发明 1/3 <small>·</small> 反应 1/3</div><div class="delta">C-I1 · B-R1</div></div>
+  <div class="kpi"><div class="label">待排任务</div><div class="value warn" id="kpiPending">3</div><div class="delta">拖入空产线即可排产</div></div>
+  <div class="kpi"><div class="label">瓶颈</div><div class="value warn" style="font-size:15px">发明槽</div><div class="delta">C-I1 · 0–6h 独占</div></div>
+  <div class="kpi"><div class="label">参考利润</div><div class="value good">+358M</div><div class="delta good">20.1% · 采购 1.36B</div></div>
+</section>
+
+<main class="workspace">
+  <section class="panel matrix-panel" aria-label="产线墙">
+    <div class="panel-head">
+      <span class="panel-title">产线墙</span>
+      <span class="panel-sub">每个角色 11 条制造线 + 发明 / 反应专用槽 · 点亮 = 占用</span>
+      <span class="spacer"></span>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--teal)"></i>制造</span>
+        <span><i class="dot" style="background:var(--violet)"></i>发明</span>
+        <span><i class="dot" style="background:var(--amber)"></i>反应</span>
+        <span><i class="dot" style="background:var(--red)"></i>关键</span>
+      </div>
+    </div>
+    <div class="matrix-scroll" id="charBlocks"></div>
+  </section>
+
+  <aside class="panel" style="display:flex;flex-direction:column;min-height:0" aria-label="待排与交接">
+    <div class="panel-head">
+      <span class="panel-title">排产辅助</span>
+      <span class="panel-sub">拖拽 / 交接 / 详情</span>
+    </div>
+    <div class="side-scroll">
+      <div class="side-title">待排任务 <span style="color:var(--faint);text-transform:none;letter-spacing:0">（拖到空产线）</span></div>
+      <div class="pending-list" id="pendingList"></div>
+
+      <div class="side-title">物料交接</div>
+      <div id="handoffList"></div>
+
+      <div class="side-title">任务详情</div>
+      <div class="detail-card" id="detailCard"></div>
+
+      <div class="advice" id="advice">
+        发明槽 C-I1 0–6h 是唯一关键路径。建议 A-M1 总装固定在 06:00；B-M4 在 06:00 前完成，避免总装等料。
+      </div>
+
+      <div class="side-actions">
+        <button class="btn primary" id="autoBtn">自动排产</button>
+        <button class="btn ghost" id="resetBtn">重置示意</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="statusbar">
+  <span class="chip stock"><i class="dot"></i>库存抵扣 84M</span>
+  <span>采购 <b style="color:var(--text2)">1.36B ISK</b></span>
+  <span>任务费 <b style="color:var(--text2)">96M</b></span>
+  <span class="spacer"></span>
+  <span>拖拽待排任务到空产线；同一产线的多个任务会按顺序排队</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HOURS = 12;
+
+const CHARS = [
+  { id:'A', name:'Aria', role:'M8 · I1 · R1 · ×0.88', initial:'A' },
+  { id:'B', name:'Borealis', role:'M4 · I1 · R1 · ×1.00', initial:'B' },
+  { id:'C', name:'Cinder', role:'M3 · I1 · R1 · ×1.06', initial:'C' },
+];
+
+const CAPS = {
+  A: { m: 8, i: 1, r: 1 },
+  B: { m: 4, i: 1, r: 1 },
+  C: { m: 3, i: 1, r: 1 },
+};
+
+const M_LINES = ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11'];
+
+const INITIAL_JOBS = [
+  { id:'a-ship', char:'A', line:'M1', name:'Kirin 总装', short:'Kirin 总装', activity:'mfg', start:6, dur:4, runs:'×10', runsText:'10 runs', critical:true,
+    inputs:[{name:'Kirin BPC',qty:'2 张'},{name:'组件',qty:'8 类'},{name:'Construction Blocks',qty:'200'}], outputs:[{name:'Kirin',qty:'×10'}],
+    jobCost:'48.0M', status:'等待发明 / 组件', note:'A-M1 是全计划唯一总装线；06:00 前保持空闲。' },
+  { id:'a-construction', char:'A', line:'M2', name:'Construction Blocks', short:'Constr. Blocks', activity:'mfg', start:0, dur:1, runs:'×200', runsText:'4 runs',
+    inputs:[{name:'Tritanium',qty:'12k'},{name:'Pyerite',qty:'6k'}], outputs:[{name:'Construction Blocks',qty:'×200'}], jobCost:'0.8M', status:'可开始' },
+  { id:'a-magpulse', char:'A', line:'M3', name:'Magpulse Thruster', short:'Magpulse', activity:'mfg', start:0, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Isogen',qty:'2.4k'},{name:'Nocxium',qty:'380'}], outputs:[{name:'Magpulse Thruster',qty:'×50'}], jobCost:'0.6M', status:'可开始' },
+  { id:'a-gravimetric', char:'A', line:'M4', name:'Gravimetric Sensor Cluster', short:'Gravimetric', activity:'mfg', start:1, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Pyerite',qty:'1.8k'},{name:'Mexallon',qty:'900'}], outputs:[{name:'Gravimetric Cluster',qty:'×50'}], jobCost:'0.5M', status:'可开始' },
+  { id:'a-quantum', char:'A', line:'M5', name:'Quantum Microprocessor', short:'Quantum MP', activity:'mfg', start:2, dur:1, runs:'×100', runsText:'3 runs',
+    inputs:[{name:'Mexallon',qty:'2.1k'},{name:'Isogen',qty:'1.1k'}], outputs:[{name:'Quantum MP',qty:'×100'}], jobCost:'0.9M', status:'可开始' },
+  { id:'a-photon', char:'A', line:'M6', name:'Photon Microprocessor', short:'Photon MP', activity:'mfg', start:3, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Isogen',qty:'900'},{name:'Zydrine',qty:'120'}], outputs:[{name:'Photon MP',qty:'×50'}], jobCost:'0.7M', status:'可开始' },
+
+  { id:'b-fullerene', char:'B', line:'R1', name:'Fullerene Intercalated Sheets', short:'Fullerene', activity:'reaction', start:0, dur:1.5, runs:'×400', runsText:'2 runs',
+    inputs:[{name:'Hydrocarbons',qty:'2k'},{name:'Silicates',qty:'1.2k'}], outputs:[{name:'Fullerene',qty:'×400'}], jobCost:'6.0M', status:'反应槽 R1' },
+  { id:'b-fernite-reaction', char:'B', line:'R1', name:'Fernite Carbide', short:'Fernite Carbide', activity:'reaction', start:1.5, dur:1.5, runs:'×200', runsText:'1 run',
+    inputs:[{name:'Fernite',qty:'1k'},{name:'Carbon',qty:'800'}], outputs:[{name:'Fernite Carbide',qty:'×200'}], jobCost:'4.2M', status:'反应槽 R1' },
+  { id:'b-tungsten-reaction', char:'B', line:'R1', name:'Tungsten Carbide', short:'Tungsten Carbide', activity:'reaction', start:3, dur:1.5, runs:'×200', runsText:'1 run',
+    inputs:[{name:'Tungsten',qty:'1.2k'},{name:'Carbon',qty:'900'}], outputs:[{name:'Tungsten Carbide',qty:'×200'}], jobCost:'4.5M', status:'反应槽 R1' },
+  { id:'b-fernite-plate', char:'B', line:'M1', name:'Fernite Carbide Armor Plate', short:'Fernite Plate', activity:'mfg', start:3, dur:1.5, runs:'×100', runsText:'3 runs',
+    inputs:[{name:'Fernite Carbide',qty:'200'},{name:'Tungsten',qty:'300'}], outputs:[{name:'Fernite Plate',qty:'×100'}], jobCost:'1.4M', status:'等待反应' },
+  { id:'b-tungsten-plate', char:'B', line:'M2', name:'Tungsten Carbide Armor Plate', short:'Tungsten Plate', activity:'mfg', start:4.5, dur:1.5, runs:'×100', runsText:'3 runs',
+    inputs:[{name:'Tungsten Carbide',qty:'200'},{name:'Nocxium',qty:'240'}], outputs:[{name:'Tungsten Plate',qty:'×100'}], jobCost:'1.6M', status:'等待反应' },
+  { id:'b-thermo', char:'B', line:'M3', name:'Thermonuclear Trigger Unit', short:'Thermo Trigger', activity:'mfg', start:4.5, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Fullerene',qty:'120'},{name:'Isogen',qty:'600'}], outputs:[{name:'Thermo Trigger',qty:'×50'}], jobCost:'1.1M', status:'等待反应' },
+  { id:'b-shield', char:'B', line:'M4', name:'Sustained Shield Emitter', short:'Shield Emitter', activity:'mfg', start:5, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Fullerene',qty:'180'},{name:'Mexallon',qty:'400'}], outputs:[{name:'Shield Emitter',qty:'×50'}], jobCost:'1.0M', status:'等待反应' },
+
+  { id:'c-invention', char:'C', line:'I1', name:'Kirin 发明', short:'Kirin 发明', activity:'invention', start:0, dur:6, runs:'×2', runsText:'2 attempts', critical:true,
+    inputs:[{name:'T1 BPC',qty:'2 张'},{name:'Datacore',qty:'8'},{name:'Decryptor',qty:'2'}], outputs:[{name:'Kirin BPC',qty:'2 张'}], jobCost:'12.0M', status:'关键路径', note:'成功概率 38.4%；BPC 每张 10 runs。' },
+  { id:'c-ionic', char:'C', line:'M1', name:'Ionic Field Projector', short:'Ionic Projector', activity:'mfg', start:0, dur:1, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Mexallon',qty:'700'},{name:'Isogen',qty:'300'}], outputs:[{name:'Ionic Projector',qty:'×50'}], jobCost:'0.5M', status:'可开始' },
+  { id:'c-photon', char:'C', line:'M2', name:'Photon Microprocessor', short:'Photon MP', activity:'mfg', start:1, dur:1.5, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Isogen',qty:'900'},{name:'Nocxium',qty:'150'}], outputs:[{name:'Photon MP',qty:'×50'}], jobCost:'0.7M', status:'可开始' },
+  { id:'c-exotic', char:'C', line:'M3', name:'Exotic Plasma Chamber', short:'Plasma Chamber', activity:'mfg', start:2.5, dur:1.5, runs:'×50', runsText:'2 runs',
+    inputs:[{name:'Zydrine',qty:'180'},{name:'Megacyte',qty:'90'}], outputs:[{name:'Plasma Chamber',qty:'×50'}], jobCost:'0.9M', status:'可开始' },
+];
+
+const INITIAL_PENDING = [
+  { id:'p-ship2', name:'Kirin 总装 ×5', activity:'mfg', dur:4, runs:'×5', runsText:'5 runs', start:8, prefer:'A',
+    inputs:[{name:'Kirin BPC',qty:'1 张'},{name:'组件',qty:'4 类'}], outputs:[{name:'Kirin',qty:'×5'}], jobCost:'24.0M', status:'待排', note:'建议接 A-M7/M8（08:00 起），或 A-M1 10:00 后。' },
+  { id:'p-invention2', name:'Kirin 发明 ×1', activity:'invention', dur:6, runs:'×1', runsText:'1 attempt', start:6, prefer:'C',
+    inputs:[{name:'T1 BPC',qty:'1 张'},{name:'Datacore',qty:'4'}], outputs:[{name:'Kirin BPC',qty:'1 张'}], jobCost:'6.0M', status:'待排', note:'任意空闲发明槽；C-I1 忙时可放 A-I1。' },
+  { id:'p-component', name:'第二批组件（T2）', activity:'mfg', dur:1.5, runs:'×100', runsText:'3 runs', start:6, prefer:'B',
+    inputs:[{name:'Fernite Carbide',qty:'100'},{name:'Isogen',qty:'400'}], outputs:[{name:'组件',qty:'×100'}], jobCost:'2.2M', status:'待排', note:'可放入任意空制造线。' },
+];
+
+let jobs = INITIAL_JOBS.map(j => ({ ...j }));
+let pending = INITIAL_PENDING.map(j => ({ ...j }));
+let selectedId = 'a-ship';
+let dragId = null;
+
+const $ = (s) => document.querySelector(s);
+const fmt = (h) => {
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+};
+const activityLabel = { mfg:'制造', invention:'发明', reaction:'反应' };
+
+function jobsOnSlot(char, line) {
+  return jobs.filter(j => j.char === char && j.line === line).sort((a, b) => a.start - b.start);
+}
+function mfgLines(ch) {
+  return M_LINES.slice(0, CAPS[ch.id].m);
+}
+function slotsFor(ch) {
+  return ['I1', 'R1', ...mfgLines(ch)];
+}
+function occupiedManufacturing() {
+  let count = 0;
+  for (const ch of CHARS) {
+    for (const line of mfgLines(ch)) if (jobsOnSlot(ch.id, line).length) count++;
+  }
+  return count;
+}
+function capDots(total, filled, cls) {
+  return `<span class="cap-dots">${Array.from({ length: total }, (_, i) => `<i class="${i < filled ? cls : ''}"></i>`).join('')}</span>`;
+}
+function renderCaps(ch) {
+  const cap = CAPS[ch.id];
+  const mfgUsed = mfgLines(ch).filter(line => jobsOnSlot(ch.id, line).length).length;
+  const iUsed = jobsOnSlot(ch.id, 'I1').length ? 1 : 0;
+  const rUsed = jobsOnSlot(ch.id, 'R1').length ? 1 : 0;
+  return `<div class="cap-group"><span>M</span><b>${mfgUsed}/${cap.m}</b>${capDots(cap.m, mfgUsed, 'mfg')}</div>
+    <div class="cap-group"><span>I</span><b>${iUsed}/1</b>${capDots(1, iUsed, 'invention')}</div>
+    <div class="cap-group"><span>R</span><b>${rUsed}/1</b>${capDots(1, rUsed, 'reaction')}</div>`;
+}
+
+function renderSlot(ch, line) {
+  const slotJobs = jobsOnSlot(ch.id, line);
+  const isSpecial = line === 'I1' || line === 'R1';
+  const first = slotJobs[0];
+  const cls = ['slot'];
+  if (isSpecial) cls.push('special');
+  if (!first) cls.push('empty');
+  else cls.push(first.activity);
+  if (first && first.critical) cls.push('critical');
+  if (slotJobs.some(j => j.id === selectedId)) cls.push('selected');
+  const label = first
+    ? `<div class="sname" title="${first.name}">${first.name}</div>
+       <div class="smeta">${first.runs} · ${first.dur}h</div>
+       <div class="stime">${fmt(first.start)}–${fmt(first.start + first.dur)}</div>
+       ${slotJobs.length > 1 ? `<span class="squeue">+${slotJobs.length - 1}</span>` : ''}`
+    : `<div class="empty-label">空闲<br><span style="font-size:7px">拖入任务</span></div>`;
+  return `<div class="${cls.join(' ')}" data-char="${ch.id}" data-line="${line}" tabindex="0">
+    <div class="slot-top"><span>${line}</span><i class="led ${first ? 'on' : ''}"></i></div>
+    ${label}
+  </div>`;
+}
+
+function renderRibbon(ch) {
+  const chJobs = jobs.filter(j => j.char === ch.id);
+  const ticks = Array.from({ length: 12 }, (_, i) => `<div class="rtick" style="left:${(i + 1) / 12 * 100}%"></div>`).join('');
+  const bars = chJobs.map(j => `
+    <div class="rbar ${j.activity} ${j.critical ? 'critical' : ''}"
+         style="left:${j.start / HOURS * 100}%;width:${Math.max(j.dur / HOURS * 100, 1.2)}%"
+         title="${j.name} · ${j.runs} · ${fmt(j.start)}–${fmt(j.start + j.dur)}">${j.dur >= 1.5 ? j.short : ''}</div>`).join('');
+  return `<div class="ribbon-wrap">
+    <div class="ribbon">${ticks}${bars}</div>
+    <div class="ribbon-labels"><span>0h</span><span>3h</span><span>6h</span><span>9h</span><span>12h</span></div>
+  </div>`;
+}
+
+function renderMain() {
+  const host = $('#charBlocks');
+  host.innerHTML = CHARS.map(ch => `
+    <div class="char-block">
+      <div class="char-head">
+        <div class="avatar">${ch.initial}</div>
+        <div class="who"><div class="name">${ch.name}</div><div class="role">${ch.role}</div></div>
+        <div class="caps">${renderCaps(ch)}</div>
+      </div>
+      <div class="slots">${slotsFor(ch).map(line => renderSlot(ch, line)).join('')}</div>
+      ${renderRibbon(ch)}
+    </div>`).join('');
+
+  host.querySelectorAll('.slot').forEach(slot => {
+    slot.addEventListener('click', () => {
+      const char = slot.dataset.char;
+      const line = slot.dataset.line;
+      const list = jobsOnSlot(char, line);
+      if (list.length) selectJob(list[0].id);
+      else selectEmptySlot(char, line);
+    });
+    slot.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); slot.click(); }
+    });
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('dragover'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain') || dragId;
+      if (id) assign(id, slot.dataset.char, slot.dataset.line);
+    });
+  });
+}
+
+function renderPending() {
+  const host = $('#pendingList');
+  if (!pending.length) {
+    host.innerHTML = '<div class="empty-pending">全部已排产。可拖回或重新计算。</div>';
+    return;
+  }
+  host.innerHTML = pending.map(p => `
+    <div class="pending-chip" draggable="true" data-pending="${p.id}" tabindex="0">
+      <i class="p-activity ${p.activity}"></i>
+      <div style="min-width:0"><div class="pname">${p.name}</div><div class="pmeta">${p.dur}h · 建议 ${fmt(p.start)} · 优先 ${p.prefer}</div></div>
+      <span class="drag-grip">⋮⋮</span>
+    </div>`).join('');
+  host.querySelectorAll('.pending-chip').forEach(chip => {
+    chip.addEventListener('dragstart', (e) => {
+      dragId = chip.dataset.pending;
+      e.dataTransfer.setData('text/plain', dragId);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    chip.addEventListener('dragend', () => { dragId = null; });
+  });
+}
+
+function renderHandoff() {
+  const rows = [
+    { from:'C-I1', to:'A-M1', item:'Kirin BPC ×2', qty:'06:00', ready:true },
+    { from:'B-R1', to:'B-M3', item:'Fullerene ×120', qty:'01:30', ready:true },
+    { from:'B-R1', to:'B-M1', item:'Fernite Carbide ×200', qty:'03:00', ready:true },
+    { from:'B-R1', to:'B-M2', item:'Tungsten Carbide ×200', qty:'04:30', ready:true },
+    { from:'A-M2…C-M3', to:'A-M1', item:'组件 ×8 类', qty:'06:00', ready:false },
+  ];
+  $('#handoffList').innerHTML = rows.map(r => `
+    <div class="handoff-row">
+      <i class="hdot ${r.ready ? 'ready' : 'wait'}"></i>
+      <span class="from">${r.from}</span><span class="arrow">→</span><span class="to">${r.to}</span>
+      <span class="qty">${r.item} · ${r.qty}</span>
+    </div>`).join('');
+}
+
+function renderDetail(job, empty) {
+  const host = $('#detailCard');
+  if (empty) {
+    host.innerHTML = `<div class="dname">空闲产线 ${empty.char}-${empty.line}</div>
+      <div class="dmeta">从右侧「待排任务」拖入任意任务；同一产线可顺序排队。</div>
+      <div class="dio"><span>可用时段</span> 00:00–12:00<br><span>建议</span> ${empty.line.startsWith('M') ? '接组件 / 总装任务' : '专用槽，仅接受对应活动'}</div>`;
+    return;
+  }
+  if (!job) return;
+  const act = activityLabel[job.activity] || job.activity;
+  host.innerHTML = `
+    <div class="dname">${job.name}</div>
+    <div class="dmeta">${job.runs} · ${job.dur}h · ${job.char}-${job.line} · ${act}</div>
+    <div class="drow"><span>时间</span><b>${fmt(job.start)} – ${fmt(job.start + job.dur)}</b></div>
+    <div class="drow"><span>任务费</span><b>${job.jobCost}</b></div>
+    <div class="drow"><span>状态</span><b>${job.status}</b></div>
+    <div class="dio"><span>投入</span> ${(job.inputs || []).map(m => `${m.name} ${m.qty}`).join(' · ')}</div>
+    <div class="dio"><span>产出</span> ${(job.outputs || []).map(m => `${m.name} ${m.qty}`).join(' · ')}</div>
+    ${job.note ? `<div class="dio" style="color:var(--muted)">${job.note}</div>` : ''}`;
+}
+
+function renderKpis() {
+  $('#kpiMfg').textContent = occupiedManufacturing();
+  $('#kpiPending').textContent = pending.length;
+}
+
+function render() {
+  renderMain();
+  renderPending();
+  renderHandoff();
+  renderKpis();
+  const job = jobs.find(j => j.id === selectedId);
+  if (job) renderDetail(job);
+  else renderDetail(null, { char: 'A', line: 'M1' });
+}
+
+function selectJob(id) {
+  selectedId = id;
+  const job = jobs.find(j => j.id === id);
+  if (job) renderDetail(job);
+  document.querySelectorAll('.slot.selected').forEach(el => el.classList.remove('selected'));
+  const slot = document.querySelector(`.slot[data-char="${job.char}"][data-line="${job.line}"]`);
+  if (slot) slot.classList.add('selected');
+}
+
+function selectEmptySlot(char, line) {
+  selectedId = null;
+  document.querySelectorAll('.slot.selected').forEach(el => el.classList.remove('selected'));
+  const slot = document.querySelector(`.slot[data-char="${char}"][data-line="${line}"]`);
+  if (slot) slot.classList.add('selected');
+  renderDetail(null, { char, line });
+}
+
+function assign(pendingId, char, line) {
+  const p = pending.find(x => x.id === pendingId);
+  if (!p) return;
+  const ch = CHARS.find(c => c.id === char);
+  if (!ch) return;
+  if (line === 'I1' && p.activity !== 'invention') { toast('I1 只接受发明任务'); return; }
+  if (line === 'R1' && p.activity !== 'reaction') { toast('R1 只接受反应任务'); return; }
+  if (line.startsWith('M') && !mfgLines(ch).includes(line)) { toast(`${char} 没有 ${line} 这条制造线`); return; }
+  const existing = jobsOnSlot(char, line);
+  const start = existing.length ? Math.max(...existing.map(j => j.start + j.dur)) : p.start;
+  const job = { ...p, id: p.id.replace('p-', 'j-') + '-' + Date.now(), char, line, start };
+  jobs.push(job);
+  pending = pending.filter(x => x.id !== pendingId);
+  selectedId = job.id;
+  render();
+  toast(`已排入 ${char}-${line} · ${fmt(start)} 开始`);
+}
+
+function autoAssign() {
+  let assigned = 0;
+  for (const p of [...pending]) {
+    const order = [CHARS.find(c => c.id === p.prefer), ...CHARS.filter(c => c.id !== p.prefer)];
+    let done = false;
+    for (const ch of order) {
+      if (!ch) continue;
+      let lines;
+      if (p.activity === 'invention') lines = ['I1'];
+      else if (p.activity === 'reaction') lines = ['R1'];
+      else lines = mfgLines(ch);
+      for (const line of lines) {
+        if (jobsOnSlot(ch.id, line).length === 0) {
+          assign(p.id, ch.id, line);
+          assigned++;
+          done = true;
+          break;
+        }
+      }
+      if (done) break;
+    }
+  }
+  if (assigned) toast(`自动排产：已排入 ${assigned} 个任务`);
+  else toast('没有可用空产线，请先清理占用');
+}
+
+$('#autoBtn').addEventListener('click', autoAssign);
+$('#resetBtn').addEventListener('click', () => {
+  jobs = INITIAL_JOBS.map(j => ({ ...j }));
+  pending = INITIAL_PENDING.map(j => ({ ...j }));
+  selectedId = 'a-ship';
+  render();
+  toast('已重置为初始示意排产');
+});
+
+function toast(text) {
+  const el = $('#toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+render();
+</script>
+</body>
+</html>
