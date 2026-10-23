@@ -18,6 +18,7 @@ namespace TheGuideToTheNewEden.Probe;
 /// dotnet run --project probe/AssistantProbe -- routing    # 阶段 123 按需声明（工具套餐路由）
 /// dotnet run --project probe/AssistantProbe -- manuals    # 阶段 131 内置说明书（结构 / 检索分片 / AI 接线）
 /// dotnet run --project probe/AssistantProbe -- ui         # 界面构造与绑定（离屏窗口）
+/// dotnet run --project probe/AssistantProbe -- metadata <sdeDir> <db> # 增量刷新官方工业元数据表
 /// </code>
 /// 退出码：0 = 全 PASS，1 = 有 FAIL，2 = 探针自身异常。
 /// <para><b>构建务必重定向输出目录</b>（见 .csproj 头注释），否则会与 VS 的构建互相写坏主工程产物。</para>
@@ -38,6 +39,12 @@ internal static class Program
 
         var suite = args.FirstOrDefault()?.Trim().ToLowerInvariant() ?? "all";
         Console.WriteLine($"AI 助手探针：套件 = {suite}");
+
+        if (suite == "metadata")
+        {
+            IndustryMetadataTool.Run(args[1], args[2]);
+            return 0;
+        }
 
         ProbeTools.Register();
 

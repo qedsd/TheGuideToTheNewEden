@@ -17,8 +17,12 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public const int Copying = 5;
         public const int Duplicating = 6;
         public const int ReverseEngineering = 7;
+        /// <summary>内部活动：行星开发（行星 schematic，不是工业 job）。</summary>
+        public const int Planetary = 100;
         public const int Invention = 8;
         public const int Reaction = 11;
+        /// <summary>官方 SDE/ESI 的反应活动 ID（应用内部旧库仍用 11）。</summary>
+        public const int OfficialReaction = 9;
     }
 
     /// <summary>蓝图头（SDE <c>blueprints</c>）。<see cref="BlueprintTypeID"/> 即蓝图物品的类型 ID。</summary>

@@ -39,7 +39,9 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double StockValue { get; set; }
         /// <summary>目标产物的参考收入（按全量、最高买价/参考价）。</summary>
         public double Revenue { get; set; }
-        /// <summary>利润（收入 - 全量成本）。</summary>
+        /// <summary>扣除销售税/经纪人费后的净收入。</summary>
+        public double NetRevenue { get; set; }
+        /// <summary>利润（净收入 - 全量成本）。</summary>
         public double Profit { get; set; }
         /// <summary>利润率（利润 / 收入）。</summary>
         public double Margin { get; set; }
@@ -101,16 +103,17 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
                 if (target.RevenueUnitPrice > 0)
                 {
                     summary.Revenue += target.Revenue;
+                    summary.NetRevenue += target.NetRevenue;
                     summary.ProfitKnown = true;
                 }
                 Walk(target, summary);
             }
 
             summary.StockValue = Math.Max(0, summary.SelfBuildCost - summary.CashOutlay);
-            summary.Profit = summary.Revenue - summary.SelfBuildCost;
-            summary.CashProfit = summary.Revenue - summary.CashOutlay;
-            summary.Margin = summary.Revenue > 0 ? summary.Profit / summary.Revenue : 0;
-            summary.CashMargin = summary.Revenue > 0 ? summary.CashProfit / summary.Revenue : 0;
+            summary.Profit = summary.NetRevenue - summary.SelfBuildCost;
+            summary.CashProfit = summary.NetRevenue - summary.CashOutlay;
+            summary.Margin = summary.NetRevenue > 0 ? summary.Profit / summary.NetRevenue : 0;
+            summary.CashMargin = summary.NetRevenue > 0 ? summary.CashProfit / summary.NetRevenue : 0;
             return summary;
         }
 

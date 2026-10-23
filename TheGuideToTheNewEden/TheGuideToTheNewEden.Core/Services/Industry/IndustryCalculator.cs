@@ -35,6 +35,12 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         /// 每流程至少保留 1 个（即总量不低于流程数）。<paramref name="rigMe"/> 已按空间加成放大。
         /// </summary>
         public static long ApplyME(long quantityPerRun, int runs, int me, double rigMe)
+            => ApplyME(quantityPerRun, runs, me, rigMe, 1.0);
+
+        /// <summary>
+        /// 套用 ME、rig 与官方结构材料倍率：<c>floor(qty × runs × (1−ME) × (1−rigMe) × structureMaterial)</c>。
+        /// </summary>
+        public static long ApplyME(long quantityPerRun, int runs, int me, double rigMe, double structureMaterial)
         {
             if (quantityPerRun <= 0 || runs <= 0)
             {
@@ -42,7 +48,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             }
             if (rigMe < 0) rigMe = 0;
             if (rigMe > 0.99) rigMe = 0.99;
-            double factor = (1.0 - ClampME(me) * 0.01) * (1.0 - rigMe);
+            if (structureMaterial <= 0) structureMaterial = 1.0;
+            double factor = (1.0 - ClampME(me) * 0.01) * (1.0 - rigMe) * structureMaterial;
             long total = (long)Math.Floor(quantityPerRun * (double)runs * factor);
             return Math.Max(runs, total);
         }
@@ -68,6 +75,10 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
         /// <summary>作业耗时（含结构 rig 时间加成）：<c>baseTime × (1 − 0.01×TE) × (1 − rigTe) × runs</c>。</summary>
         public static double JobTimeSeconds(int baseTimeSeconds, int runs, int te, double rigTe)
+            => JobTimeSeconds(baseTimeSeconds, runs, te, rigTe, 1.0);
+
+        /// <summary>作业耗时（含 rig 与官方结构时间倍率）。</summary>
+        public static double JobTimeSeconds(int baseTimeSeconds, int runs, int te, double rigTe, double structureTime)
         {
             if (baseTimeSeconds <= 0 || runs <= 0)
             {
@@ -75,7 +86,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             }
             if (rigTe < 0) rigTe = 0;
             if (rigTe > 0.99) rigTe = 0.99;
-            double factor = (1.0 - ClampTE(te) * 0.01) * (1.0 - rigTe);
+            if (structureTime <= 0) structureTime = 1.0;
+            double factor = (1.0 - ClampTE(te) * 0.01) * (1.0 - rigTe) * structureTime;
             return baseTimeSeconds * factor * runs;
         }
 
@@ -100,13 +112,18 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
         /// <summary>作业安装费：<c>EIV × 系统成本指数 × (1 + 设施税)</c>。</summary>
         public static double JobCost(double eiv, double costIndex, double facilityTax)
+            => JobCost(eiv, costIndex, facilityTax, 1.0);
+
+        /// <summary>作业安装费（含官方结构费用倍率）：<c>EIV × 成本指数 × (1 + 设施税) × structureCost</c>。</summary>
+        public static double JobCost(double eiv, double costIndex, double facilityTax, double structureCost)
         {
             if (eiv <= 0 || costIndex <= 0)
             {
                 return 0;
             }
             if (facilityTax < 0) facilityTax = 0;
-            return eiv * costIndex * (1.0 + facilityTax);
+            if (structureCost <= 0) structureCost = 1.0;
+            return eiv * costIndex * (1.0 + facilityTax) * structureCost;
         }
 
         /// <summary>

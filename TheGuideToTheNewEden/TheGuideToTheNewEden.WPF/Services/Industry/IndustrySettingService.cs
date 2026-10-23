@@ -9,8 +9,31 @@ public sealed class IndustryRigSetting
 {
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    /// <summary>可选官方目标过滤器；0 = 只按分类。</summary>
+    public int TargetFilterId { get; set; }
+    public string TargetFilterName { get; set; } = string.Empty;
     public double MePercent { get; set; }
     public double TePercent { get; set; }
+}
+
+/// <summary>可保存/应用的建筑档案：设施税、空间加成与 rig 组合。</summary>
+public sealed class IndustryBuildingProfile
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string Name { get; set; } = string.Empty;
+    public double FacilityTaxPercent { get; set; } = 10;
+    public double SpaceModifier { get; set; } = 1.0;
+    /// <summary>官方结构类型 ID；0 = 不套官方结构加成。</summary>
+    public int StructureTypeId { get; set; }
+    /// <summary>最终建筑材料加成（百分比，2 = -2% 材料）。</summary>
+    public double MaterialBonusPercent { get; set; }
+    /// <summary>最终建筑时间加成（百分比，2 = -2% 时间）。</summary>
+    public double TimeBonusPercent { get; set; }
+    /// <summary>最终建筑费用加成（百分比，2 = -2% 任务费用）。</summary>
+    public double CostBonusPercent { get; set; }
+    public double RigMeBonusPercent { get; set; }
+    public double RigTeBonusPercent { get; set; }
+    public List<IndustryRigSetting> RigBonuses { get; set; } = new();
 }
 
 /// <summary>工业制造计划的持久化参数（<c>Configs/IndustrySetting.json</c>）。</summary>
@@ -28,6 +51,16 @@ public sealed class IndustrySetting
     /// <summary>设施税（百分比，10 = 10%）。</summary>
     public double FacilityTaxPercent { get; set; } = 10;
 
+    /// <summary>官方结构类型 ID；0 = 不套官方结构加成。</summary>
+    public int StructureTypeId { get; set; }
+
+    /// <summary>最终建筑材料加成（百分比，2 = -2% 材料）。</summary>
+    public double MaterialBonusPercent { get; set; }
+    /// <summary>最终建筑时间加成（百分比，2 = -2% 时间）。</summary>
+    public double TimeBonusPercent { get; set; }
+    /// <summary>最终建筑费用加成（百分比，2 = -2% 任务费用）。</summary>
+    public double CostBonusPercent { get; set; }
+
     public int DefaultME { get; set; } = 10;
 
     public int DefaultTE { get; set; } = 20;
@@ -43,6 +76,9 @@ public sealed class IndustrySetting
 
     /// <summary>按物类的 rig 加成（优先于全局值）。</summary>
     public List<IndustryRigSetting> RigBonuses { get; set; } = new();
+
+    /// <summary>可保存/应用的建筑档案（设施税 + 空间加成 + rig 组合）。</summary>
+    public List<IndustryBuildingProfile> BuildingProfiles { get; set; } = new();
 
     /// <summary>选中的发明解密器 TypeID；null/0 表示不使用。</summary>
     public int? DecryptorTypeId { get; set; }
@@ -71,6 +107,16 @@ public sealed class IndustrySetting
 
     /// <summary>是否拉取整星域订单做市场深度/盈利（首次较慢）。</summary>
     public bool UseMarketDepth { get; set; }
+
+    /// <summary>是否生成可选的复制/研究蓝图任务（默认关闭，不进入 BOM 材料）。</summary>
+    public bool IncludeBlueprintJobs { get; set; }
+
+    /// <summary>即时卖给买单（不计经纪人费）；false = 挂卖单。</summary>
+    public bool SellImmediately { get; set; } = true;
+    /// <summary>销售税（百分比，3.6 = 3.6%）。</summary>
+    public double SalesTaxPercent { get; set; } = 3.6;
+    /// <summary>经纪人费（百分比，1 = 1%）；仅挂卖单时计入。</summary>
+    public double BrokerFeePercent { get; set; } = 1.0;
 
     /// <summary>手动买/造决策（0 制造 / 1 采购），按产物 TypeID。</summary>
     public Dictionary<int, int> ManualDecisions { get; set; } = new();

@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.IndustryPlanPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -583,6 +583,13 @@
                         FontSize="11"
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                         Text="{Binding RunsText}" />
+                    <TextBlock
+                        Margin="0,3,0,0"
+                        FontSize="10.5"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding BlueprintStockText}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasBlueprintStockText, Converter={StaticResource BoolToVisibility}}" />
 
                     <Grid Margin="0,12,0,0">
                         <Grid.ColumnDefinitions>
@@ -614,7 +621,7 @@
                             <TextBlock
                                 Style="{StaticResource IndustryMetricLabel}"
                                 Text="任务费用（已含）"
-                                ToolTip="任务费用（Job Cost），已包含在总成本和现金支出中。" />
+                                ToolTip="任务费用（Job Cost），EIV 使用 CCP adjusted_price，不使用市场挂单价；已包含在总成本和现金支出中。" />
                             <TextBlock Style="{StaticResource IndustryMetricValue}" Text="{Binding JobCostText}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1">
@@ -809,131 +816,17 @@
             SelectedIndex="{Binding SectionTabIndex, Mode=TwoWay}">
             <!--  ================= 计划设置（计算前） =================  -->
             <TabItem Header="计划设置">
-                <controls:CardControl>
-                    <TabControl
-                        Padding="0"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        SelectedIndex="{Binding SettingsTabIndex, Mode=TwoWay}">
-                        <!--  目标：左侧常驻物品树 + 右侧目标列表  -->
-                        <TabItem Header="目标">
-                            <Grid Margin="0,10,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <controls:CardControl
-                                    Grid.Column="0"
-                                    Padding="14,8"
-                                    CornerRadius="8">
-                                    <controls:CardControl.Header>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="Search24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="可制造物品" />
-                                            </StackPanel>
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                VerticalAlignment="Center"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="{Binding ProductCountText}" />
-                                        </Grid>
-                                    </controls:CardControl.Header>
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <ui:TextBox
-                                            Grid.Row="0"
-                                            PlaceholderText="搜索可制造物品"
-                                            Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}" />
-                                        <TreeView
-                                            Grid.Row="1"
-                                            Margin="0,8,0,0"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            ItemContainerStyle="{StaticResource IndustryProductTreeItemStyle}"
-                                            ItemsSource="{Binding ProductTree}"
-                                            ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-                                    </Grid>
-                                </controls:CardControl>
-
-                                <controls:CardControl
-                                    Grid.Column="2"
-                                    Padding="14,8"
-                                    CornerRadius="8">
-                                    <controls:CardControl.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <ui:SymbolIcon
-                                                VerticalAlignment="Center"
-                                                FontSize="15"
-                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                Symbol="AppsList24" />
-                                            <TextBlock
-                                                Margin="8,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{Binding Targets.Count, StringFormat=目标物品（{0}）}" />
-                                        </StackPanel>
-
-                                    </controls:CardControl.Header>
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0" Margin="2,0,2,4">
-                                            <TextBlock
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="物品" />
-                                            <TextBlock
-                                                Margin="0,0,100,0"
-                                                HorizontalAlignment="Right"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="数量" />
-                                        </Grid>
-                                        <ScrollViewer
-                                            Grid.Row="1"
-                                            HorizontalScrollBarVisibility="Disabled"
-                                            VerticalScrollBarVisibility="Auto">
-                                            <ItemsControl ItemTemplate="{StaticResource IndustryTargetTemplate}" ItemsSource="{Binding Targets}" />
-                                        </ScrollViewer>
-                                        <ui:Button
-                                            Grid.Row="2"
-                                            Margin="0,8,0,0"
-                                            HorizontalAlignment="Right"
-                                            Click="OnClearTargetsClick"
-                                            Icon="{ui:SymbolIcon Delete24}"
-                                            ToolTip="清空全部目标" />
-                                    </Grid>
-                                </controls:CardControl>
-                            </Grid>
-                        </TabItem>
-
-                        <!--  工艺  -->
-                        <TabItem Header="工艺">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <controls:CardControl>
+                        <TabControl
+                            Padding="0"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            SelectedIndex="{Binding SettingsTabIndex, Mode=TwoWay}">
+                            <!--  目标：左侧常驻物品树 + 右侧目标列表  -->
+                            <TabItem Header="目标">
                                 <Grid Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -943,748 +836,7 @@
 
                                     <controls:CardControl
                                         Grid.Column="0"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="Calculator24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="基础参数" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="材料效率（ME）" />
-                                                    <ui:NumberBox
-                                                        Maximum="10"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding MeLevel, Mode=TwoWay}" />
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="时间效率（TE）" />
-                                                    <ui:NumberBox
-                                                        Maximum="20"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding TeLevel, Mode=TwoWay}" />
-                                                </StackPanel>
-                                            </Grid>
-
-                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="成本指数位置" />
-                                            <uc:MarketLocationSelectorView SelectedItem="{Binding SelectedLocation, Mode=TwoWay}" />
-
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="设施税（%）" />
-                                                    <ui:NumberBox
-                                                        Maximum="100"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding FacilityTaxPercent, Mode=TwoWay}" />
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="空间加成" />
-                                                    <ui:NumberBox
-                                                        Maximum="5"
-                                                        Minimum="0"
-                                                        SmallChange="0.1"
-                                                        Value="{Binding SpaceModifier, Mode=TwoWay}" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </StackPanel>
-                                    </controls:CardControl>
-
-                                    <controls:CardControl
-                                        Grid.Column="2"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                    Symbol="DataSunburst24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="发明与反应" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="发明解密器（可选）" />
-                                            <ComboBox
-                                                HorizontalAlignment="Stretch"
-                                                DisplayMemberPath="Name"
-                                                ItemsSource="{Binding Decryptors}"
-                                                SelectedItem="{Binding SelectedDecryptor, Mode=TwoWay}" />
-                                            <TextBlock
-                                                Margin="2,4,2,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="解密器会按尝试次数消耗；概率倍率、ME/TE 修正与 run 修正来自 SDE typeDogma。"
-                                                TextWrapping="Wrap" />
-
-                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="发明成本自定义（0 = 自动）" />
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="8" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="8" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="尝试次数" />
-                                                    <ui:NumberBox
-                                                        Maximum="1000"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding InventionAttemptsOverride, Mode=TwoWay}" />
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="成功率覆盖 %" />
-                                                    <ui:NumberBox
-                                                        Maximum="100"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding InventionProbabilityOverridePercent, Mode=TwoWay}" />
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="4">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="BPC 每张流程" />
-                                                    <ui:NumberBox
-                                                        Maximum="1000"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding InventionBpcRunsOverride, Mode=TwoWay}" />
-                                                </StackPanel>
-                                            </Grid>
-                                            <TextBlock
-                                                Margin="2,4,2,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="自动：尝试次数 = ceil(BPC 需求 / 成功率)，失败尝试仍消耗数据核心/解密器/T1 蓝图；BPC 可多次使用，需求张数 = ceil(生产流程 / 每张流程)。"
-                                                TextWrapping="Wrap" />
-
-                                            <CheckBox
-                                                Margin="0,12,0,0"
-                                                Content="反应套用 ME（默认关闭）"
-                                                IsChecked="{Binding ApplyMeToReactions, Mode=TwoWay}" />
-                                            <CheckBox
-                                                Margin="0,4,0,0"
-                                                Content="反应套用材料 rig（默认关闭）"
-                                                IsChecked="{Binding ApplyRigToReactions, Mode=TwoWay}" />
-                                            <ui:Button
-                                                Margin="0,12,0,0"
-                                                HorizontalAlignment="Stretch"
-                                                Click="OnClearDecisionsClick"
-                                                Content="清除手动买/造决策" />
-                                            <TextBlock
-                                                Margin="2,6,2,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="节点详情里可对单个物品强制制造 / 强制采购 / 加入黑名单。"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </controls:CardControl>
-                                </Grid>
-                            </ScrollViewer>
-                        </TabItem>
-
-                        <!--  建筑  -->
-                        <TabItem Header="建筑">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <controls:CardControl
-                                        Grid.Column="0"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="Settings24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="全局建筑改装件" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <TextBlock
-                                                Margin="2,0,2,4"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="建筑改装件提供的材料 / 时间折扣。实际生效值 = 输入百分比 × 空间加成。"
-                                                TextWrapping="Wrap" />
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="材料效率（ME）%" />
-                                                    <ui:NumberBox
-                                                        Maximum="100"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding RigMeBonusPercent, Mode=TwoWay}" />
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="时间效率（TE）%" />
-                                                    <ui:NumberBox
-                                                        Maximum="100"
-                                                        Minimum="0"
-                                                        SmallChange="1"
-                                                        Value="{Binding RigTeBonusPercent, Mode=TwoWay}" />
-                                                </StackPanel>
-                                            </Grid>
-                                            <TextBlock
-                                                Margin="2,8,2,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="例：材料效率 2% + 空间加成 1.9 → 实际约 3.8% 材料折扣。"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </controls:CardControl>
-
-                                    <controls:CardControl
-                                        Grid.Column="2"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="Filter24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="按物品分类" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <ComboBox
-                                                HorizontalAlignment="Stretch"
-                                                DisplayMemberPath="CategoryName"
-                                                ItemsSource="{Binding Categories}"
-                                                SelectedItem="{Binding NewRigCategory, Mode=TwoWay}" />
-                                            <Grid Margin="0,6,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="8" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="8" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <ui:NumberBox
-                                                    Grid.Column="0"
-                                                    Maximum="100"
-                                                    Minimum="0"
-                                                    SmallChange="1"
-                                                    Value="{Binding NewRigMePercent, Mode=TwoWay}" />
-                                                <ui:NumberBox
-                                                    Grid.Column="2"
-                                                    Maximum="100"
-                                                    Minimum="0"
-                                                    SmallChange="1"
-                                                    Value="{Binding NewRigTePercent, Mode=TwoWay}" />
-                                                <ui:Button
-                                                    Grid.Column="4"
-                                                    Click="OnAddRigClick"
-                                                    Icon="{ui:SymbolIcon Add24}" />
-                                            </Grid>
-                                            <ItemsControl
-                                                Margin="0,4,0,0"
-                                                ItemTemplate="{StaticResource IndustryRigTemplate}"
-                                                ItemsSource="{Binding RigBonuses}" />
-                                        </StackPanel>
-                                    </controls:CardControl>
-                                </Grid>
-                            </ScrollViewer>
-                        </TabItem>
-
-                        <!--  角色与市场  -->
-                        <TabItem Header="角色与市场">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <controls:CardControl
-                                        Grid.Column="0"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="People16" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="参与角色（可多选）" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <ItemsControl ItemsSource="{Binding Characters}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <CheckBox
-                                                            Margin="0,3"
-                                                            Content="{Binding DisplayName}"
-                                                            IsChecked="{Binding IsSelected, Mode=TwoWay}" />
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-
-                                            <Separator Margin="0,10,0,6" />
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel>
-                                                    <TextBlock
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="自定义角色" />
-                                                    <TextBlock
-                                                        FontSize="10"
-                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                        Text="不读取 ESI，只按技能等级估算槽位与耗时"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                                <ui:Button
-                                                    Grid.Column="1"
-                                                    Padding="10,4"
-                                                    VerticalAlignment="Center"
-                                                    Click="OnAddCustomCharacterClick"
-                                                    Content="添加"
-                                                    Icon="{ui:SymbolIcon Add24}" />
-                                            </Grid>
-
-                                            <ItemsControl Margin="0,4,0,0" ItemsSource="{Binding CustomCharacters}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid Margin="0,3">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <StackPanel>
-                                                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" />
-                                                                <TextBlock
-                                                                    Margin="28,0,0,0"
-                                                                    FontSize="10"
-                                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                    Text="{Binding Summary}"
-                                                                    TextWrapping="Wrap" />
-                                                            </StackPanel>
-                                                            <StackPanel
-                                                                Grid.Column="1"
-                                                                VerticalAlignment="Center"
-                                                                Orientation="Horizontal">
-                                                                <ui:Button
-                                                                    Padding="8,3"
-                                                                    Appearance="Secondary"
-                                                                    Click="OnEditCustomCharacterClick"
-                                                                    Content="编辑"
-                                                                    FontSize="10"
-                                                                    Tag="{Binding}" />
-                                                                <ui:Button
-                                                                    Margin="4,0,0,0"
-                                                                    Padding="8,3"
-                                                                    Appearance="Secondary"
-                                                                    Click="OnDeleteCustomCharacterClick"
-                                                                    Content="删除"
-                                                                    FontSize="10"
-                                                                    Tag="{Binding}" />
-                                                            </StackPanel>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-
-                                            <TextBlock
-                                                Margin="0,4,0,0"
-                                                FontSize="10"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="暂无自定义角色；没有登录角色时也可以添加一个只用于排产的角色。"
-                                                TextWrapping="Wrap">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasCustomCharacters}" Value="False">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </controls:CardControl>
-
-                                    <controls:CardControl
-                                        Grid.Column="2"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="Database24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="库存与市场数据" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <CheckBox
-                                                Margin="0,2"
-                                                Content="抵扣角色资产"
-                                                IsChecked="{Binding UseAssets, Mode=TwoWay}" />
-                                            <CheckBox
-                                                Margin="0,2"
-                                                Content="抵扣在制工业任务"
-                                                IsChecked="{Binding UseInProgressJobs, Mode=TwoWay}" />
-                                            <CheckBox
-                                                Margin="0,2"
-                                                Content="使用自有蓝图 ME/TE"
-                                                IsChecked="{Binding UseOwnedBlueprints, Mode=TwoWay}" />
-                                            <CheckBox
-                                                Margin="0,2"
-                                                Content="使用角色技能（发明成功率）"
-                                                IsChecked="{Binding UseCharacterSkills, Mode=TwoWay}" />
-                                            <CheckBox
-                                                Margin="0,2"
-                                                Content="拉取市场深度 / 计算利润（首次较慢）"
-                                                IsChecked="{Binding UseMarketDepth, Mode=TwoWay}" />
-                                            <TextBlock
-                                                Margin="0,10,0,2"
-                                                Style="{StaticResource IndustryLabel}"
-                                                Text="使用库存仓库（可多选）" />
-                                            <ItemsControl ItemsSource="{Binding Warehouses}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <CheckBox
-                                                            Margin="0,2"
-                                                            Content="{Binding Name}"
-                                                            IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                            ToolTip="{Binding Summary}" />
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            <TextBlock
-                                                Margin="0,2,0,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="还没有仓库，可在「工业 → 库存」中创建。"
-                                                TextWrapping="Wrap">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasWarehouses}" Value="False">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                            <TextBlock
-                                                Margin="0,10,2,3"
-                                                Style="{StaticResource IndustryLabel}"
-                                                Text="价格市场（市场深度 / 利润）" />
-                                            <uc:MarketLocationSelectorView SelectedItem="{Binding SelectedPriceLocation, Mode=TwoWay}" />
-                                            <TextBlock
-                                                Margin="2,4,2,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="默认沿用成本指数位置；启用市场深度后，按该位置所在星域的公开买卖单计算参考价/收入。建筑订单不包含。"
-                                                TextWrapping="Wrap" />
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="8" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <ui:Button
-                                                    Grid.Column="0"
-                                                    Click="OnRefreshMarketClick"
-                                                    Content="刷新市场"
-                                                    Icon="{ui:SymbolIcon ArrowSync24}" />
-                                                <ui:Button
-                                                    Grid.Column="2"
-                                                    Click="OnRefreshCharacterClick"
-                                                    Content="刷新角色"
-                                                    Icon="{ui:SymbolIcon Person24}" />
-                                            </Grid>
-                                            <TextBlock
-                                                Margin="0,6,0,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="{Binding MarketStatusText}"
-                                                TextWrapping="Wrap" />
-                                            <TextBlock
-                                                Margin="0,2,0,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="{Binding CharacterStatusText}"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </controls:CardControl>
-                                </Grid>
-                            </ScrollViewer>
-                        </TabItem>
-                    </TabControl>
-                    <controls:CardControl.Footer>
-                        <ui:Button
-                            Height="34"
-                            HorizontalAlignment="Center"
-                            Appearance="Primary"
-                            Click="OnCalculateClick"
-                            Content="执行计划"
-                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                    </controls:CardControl.Footer>
-                </controls:CardControl>
-            </TabItem>
-
-            <!--  ================= 计算结果（计算后） =================  -->
-            <TabItem Header="计划详细">
-                <controls:CardControl>
-                    <TabControl
-                        Padding="0"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        SelectedIndex="{Binding ResultTabIndex, Mode=TwoWay}">
-                        <!--  概况  -->
-                        <TabItem Header="概况">
-                            <Grid Margin="0,10,0,0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="12" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
-                                <Border
-                                    Grid.Row="0"
-                                    Padding="16,12"
-                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        FontSize="16"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="全部产品概况" />
-                                                    <StackPanel
-                                                        Margin="16,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        Orientation="Horizontal">
-                                                        <Border Style="{StaticResource IndustrySmallChip}">
-                                                            <TextBlock
-                                                                FontSize="9.5"
-                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                Text="{Binding MarketStatusText}" />
-                                                        </Border>
-                                                        <Border Style="{StaticResource IndustrySmallChip}">
-                                                            <TextBlock
-                                                                FontSize="9.5"
-                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                Text="{Binding CharacterStatusText}" />
-                                                        </Border>
-                                                    </StackPanel>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <ui:Button
-                                                            HorizontalAlignment="Stretch"
-                                                            Click="OnCopyClick"
-                                                            Icon="{ui:SymbolIcon Copy16}"
-                                                            ToolTip="复制全部产物的采购清单" />
-                                                        <ui:Button
-                                                            Margin="6,0,0,0"
-                                                            HorizontalAlignment="Stretch"
-                                                            Click="OnExportClick"
-                                                            Icon="{ui:SymbolIcon ArrowDownload16}"
-                                                            ToolTip="导出全部产物的 BOM 明细" />
-                                                    </StackPanel>
-                                                </StackPanel>
-                                            </Grid>
-                                            <Grid Margin="0,12,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <UniformGrid Columns="5" Rows="2">
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="目标项"
-                                                            ToolTip="目标行数；每个产物的请求/产出见左侧列表。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryTargets}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="总流程" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRuns}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6" ToolTip="材料全量市值（含库存）+ 任务费用">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="总成本"
-                                                            ToolTip="材料全量市值（含库存中的材料）+ 任务费用。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryFullBuild}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="参考收入"
-                                                            ToolTip="按实际产出数量 × 参考单价（优先最高买价）。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRevenue}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="利润 / 利润率"
-                                                            ToolTip="利润 = 参考收入 − 总成本；括号内为利润率（利润 / 参考收入）。" />
-                                                        <TextBlock
-                                                            FontSize="13"
-                                                            Style="{StaticResource IndustryProfitText}"
-                                                            Text="{Binding SummaryProfit}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6" ToolTip="需购买材料 + 任务费用">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="现金支出（需购买）"
-                                                            ToolTip="需购买材料（扣除角色资产/在制/上游剩余）+ 任务费用。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryCash}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="库存抵扣（市值）"
-                                                            ToolTip="总成本 − 现金支出，等于库存中已拥有材料的市场估值。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryStock}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="任务费用（已含）"
-                                                            ToolTip="任务费用（Job Cost），已包含在总成本和现金支出中。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryJobCost}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="直接购买"
-                                                            ToolTip="全部材料直接按参考价采购的对比成本。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryDirectBuy}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,14,6">
-                                                        <TextBlock
-                                                            Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="采购体积"
-                                                            ToolTip="需要采购材料的打包体积。" />
-                                                        <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryBuyVolume}" />
-                                                    </StackPanel>
-                                                </UniformGrid>
-                                                <Grid Grid.Column="1" Margin="12,0,0,0">
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto" />
-                                                        <RowDefinition />
-                                                    </Grid.RowDefinitions>
-                                                    <TextBlock
-                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Style="{StaticResource IndustryMetricLabel}"
-                                                        Text="成本构成"
-                                                        ToolTip="占总成本比例；任务费用已包含在内；库存抵扣是库存材料市值。" />
-                                                    <ItemsControl
-                                                        Grid.Row="1"
-                                                        Margin="0,4,0,0"
-                                                        ItemTemplate="{StaticResource IndustryCostSliceCompactTemplate}"
-                                                        ItemsSource="{Binding CostSlices}" />
-                                                </Grid>
-                                            </Grid>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-
-                                <Grid Grid.Row="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="380" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <controls:CardControl
-                                        Grid.Column="0"
-                                        Padding="12,8"
+                                        Padding="14,8"
                                         CornerRadius="8">
                                         <controls:CardControl.Header>
                                             <Grid>
@@ -1697,86 +849,39 @@
                                                         VerticalAlignment="Center"
                                                         FontSize="15"
                                                         Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                        Symbol="AppsList24" />
+                                                        Symbol="Search24" />
                                                     <TextBlock
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="产物列表" />
+                                                        Text="可制造物品" />
                                                 </StackPanel>
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     VerticalAlignment="Center"
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="{Binding Roots.Count, StringFormat=共 {0} 个}" />
+                                                    Text="{Binding ProductCountText}" />
                                             </Grid>
                                         </controls:CardControl.Header>
-                                        <ListBox
-                                            ItemContainerStyle="{StaticResource IndustryOverviewTargetItem}"
-                                            ItemsSource="{Binding Roots}"
-                                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                            ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                            SelectedItem="{Binding SelectedOverviewTarget, Mode=TwoWay}">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border
-                                                        Padding="10,8"
-                                                        Background="Transparent"
-                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="6">
-                                                        <Grid>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock
-                                                                FontSize="13"
-                                                                FontWeight="SemiBold"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{Binding Name}"
-                                                                TextTrimming="CharacterEllipsis" />
-                                                            <TextBlock
-                                                                Grid.Column="1"
-                                                                VerticalAlignment="Center"
-                                                                FontSize="12"
-                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                Text="{Binding TargetCostText}" />
-                                                            <TextBlock
-                                                                Grid.Row="1"
-                                                                Margin="0,2,0,0"
-                                                                FontSize="10.5"
-                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                Text="{Binding TargetQuantityText}" />
-                                                            <TextBlock
-                                                                Grid.Row="1"
-                                                                Grid.Column="1"
-                                                                Margin="8,2,0,0"
-                                                                HorizontalAlignment="Right"
-                                                                Style="{StaticResource IndustryTargetProfitText}"
-                                                                Text="{Binding TargetProfitText}" />
-                                                            <ui:Button
-                                                                Grid.Row="2"
-                                                                Grid.ColumnSpan="2"
-                                                                Margin="0,6,0,0"
-                                                                Padding="8,2"
-                                                                HorizontalAlignment="Left"
-                                                                Appearance="Secondary"
-                                                                Click="OnViewBomCostClick"
-                                                                Content="BOM / 成本"
-                                                                FontSize="10"
-                                                                Tag="{Binding}" />
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <ui:TextBox
+                                                Grid.Row="0"
+                                                PlaceholderText="搜索可制造物品"
+                                                Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TreeView
+                                                Grid.Row="1"
+                                                Margin="0,8,0,0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                ItemContainerStyle="{StaticResource IndustryProductTreeItemStyle}"
+                                                ItemsSource="{Binding ProductTree}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                                        </Grid>
                                     </controls:CardControl>
 
                                     <controls:CardControl
@@ -1789,245 +894,1231 @@
                                                     VerticalAlignment="Center"
                                                     FontSize="15"
                                                     Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="DataUsage24" />
+                                                    Symbol="AppsList24" />
                                                 <TextBlock
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
-                                                    FontWeight="SemiBold"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="产物详情" />
+                                                    Text="{Binding Targets.Count, StringFormat=目标物品（{0}）}" />
                                             </StackPanel>
+
                                         </controls:CardControl.Header>
                                         <Grid>
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="选择左侧产物查看成本、利润和采购清单">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding SelectedOverviewTarget}" Value="{x:Null}">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                                <ScrollViewer.Style>
-                                                    <Style TargetType="ScrollViewer">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding SelectedOverviewTarget}" Value="{x:Null}">
-                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </ScrollViewer.Style>
-                                                <StackPanel DataContext="{Binding SelectedOverviewTarget}">
-                                                    <TextBlock
-                                                        FontSize="16"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="{Binding Name}"
-                                                        TextWrapping="Wrap" />
-
-                                                    <UniformGrid Margin="0,12,0,0" Columns="4">
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="请求 / 产出" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetQuantityText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="总成本" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetCostText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="现金支出" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetCashText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="库存抵扣" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetStockText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="参考收入" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetRevenueText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="利润 / 利润率" />
-                                                            <TextBlock
-                                                                FontSize="15"
-                                                                Style="{StaticResource IndustryTargetProfitText}"
-                                                                Text="{Binding TargetProfitText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="任务费用" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetJobCostText}" />
-                                                        </StackPanel>
-                                                        <StackPanel Margin="0,0,12,8">
-                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="流程" />
-                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetRunsText}" />
-                                                        </StackPanel>
-                                                    </UniformGrid>
-
-                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="成本构成" />
-                                                    <Grid Height="20">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="70" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="40" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock
-                                                            VerticalAlignment="Center"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="采购材料" />
-                                                        <controls:RatioBar
-                                                            Grid.Column="1"
-                                                            Height="4"
-                                                            Margin="4,0,8,0"
-                                                            VerticalAlignment="Center"
-                                                            BarBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                            Ratio="{Binding MaterialShare}"
-                                                            TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
-                                                        <TextBlock
-                                                            Grid.Column="2"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Text="{Binding MaterialShare, StringFormat={}{0:0}%}" />
-                                                    </Grid>
-                                                    <Grid Height="20">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="70" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="40" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock
-                                                            VerticalAlignment="Center"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="任务费用" />
-                                                        <controls:RatioBar
-                                                            Grid.Column="1"
-                                                            Height="4"
-                                                            Margin="4,0,8,0"
-                                                            VerticalAlignment="Center"
-                                                            BarBrush="{DynamicResource SystemFillColorCautionBrush}"
-                                                            Ratio="{Binding JobShare}"
-                                                            TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
-                                                        <TextBlock
-                                                            Grid.Column="2"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Text="{Binding JobShare, StringFormat={}{0:0}%}" />
-                                                    </Grid>
-                                                    <Grid Height="20">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="70" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="40" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock
-                                                            VerticalAlignment="Center"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="库存抵扣" />
-                                                        <controls:RatioBar
-                                                            Grid.Column="1"
-                                                            Height="4"
-                                                            Margin="4,0,8,0"
-                                                            VerticalAlignment="Center"
-                                                            BarBrush="{DynamicResource SystemFillColorSuccessBrush}"
-                                                            Ratio="{Binding StockShare}"
-                                                            TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
-                                                        <TextBlock
-                                                            Grid.Column="2"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Text="{Binding StockShare, StringFormat={}{0:0}%}" />
-                                                    </Grid>
-
-                                                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                                                        <ui:Button
-                                                            Margin="0,0,8,0"
-                                                            Click="OnCopySelectedTargetClick"
-                                                            Content="复制本产物采购"
-                                                            Icon="{ui:SymbolIcon DocumentSettings16}" />
-                                                        <ui:Button
-                                                            Click="OnExportSelectedTargetClick"
-                                                            Content="导出本产物 CSV"
-                                                            Icon="{ui:SymbolIcon ArrowDown24}" />
-                                                    </StackPanel>
-
-                                                    <TextBlock
-                                                        Margin="0,14,0,0"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="采购清单" />
-                                                    <TextBlock
-                                                        Margin="0,2,0,0"
-                                                        FontSize="10.5"
-                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Text="本产物子树中需要直接购买的材料；已扣除库存/上游剩余。"
-                                                        TextWrapping="Wrap" />
-                                                    <ui:DataGrid
-                                                        MaxHeight="260"
-                                                        ItemsSource="{Binding DataContext.OverviewBuyItems, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                                                        Style="{StaticResource IndustryDataGrid}">
-                                                        <ui:DataGrid.Columns>
-                                                            <DataGridTextColumn
-                                                                Width="*"
-                                                                Binding="{Binding Name}"
-                                                                Header="物品" />
-                                                            <DataGridTextColumn
-                                                                Width="80"
-                                                                Binding="{Binding QuantityText}"
-                                                                Header="数量" />
-                                                            <DataGridTextColumn
-                                                                Width="80"
-                                                                Binding="{Binding UnitPriceText}"
-                                                                Header="单价" />
-                                                            <DataGridTextColumn
-                                                                Width="100"
-                                                                Binding="{Binding TotalText}"
-                                                                Header="金额" />
-                                                        </ui:DataGrid.Columns>
-                                                    </ui:DataGrid>
-                                                </StackPanel>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0" Margin="2,0,2,4">
+                                                <TextBlock
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="物品" />
+                                                <TextBlock
+                                                    Margin="0,0,100,0"
+                                                    HorizontalAlignment="Right"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="数量" />
+                                            </Grid>
+                                            <ScrollViewer
+                                                Grid.Row="1"
+                                                HorizontalScrollBarVisibility="Disabled"
+                                                VerticalScrollBarVisibility="Auto">
+                                                <ItemsControl ItemTemplate="{StaticResource IndustryTargetTemplate}" ItemsSource="{Binding Targets}" />
                                             </ScrollViewer>
+                                            <ui:Button
+                                                Grid.Row="2"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Right"
+                                                Click="OnClearTargetsClick"
+                                                Icon="{ui:SymbolIcon Delete24}"
+                                                ToolTip="清空全部目标" />
                                         </Grid>
                                     </controls:CardControl>
                                 </Grid>
-                            </Grid>
-                        </TabItem>
+                            </TabItem>
 
-                        <!--  生产详情：排程 / 步骤 / 工位 / 关系 / 生产链  -->
-                        <TabItem Header="生产详情">
-                            <uc:IndustryScheduleView />
-                        </TabItem>
-                    </TabControl>
-                    <controls:CardControl.Footer>
+                            <!--  工艺  -->
+                            <TabItem Header="工艺">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <controls:CardControl
+                                            Grid.Column="0"
+                                            Padding="16,10"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="Calculator24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="基础参数" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="12" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="材料效率（ME）" />
+                                                        <ui:NumberBox
+                                                            Maximum="10"
+                                                            Minimum="0"
+                                                            SmallChange="1"
+                                                            Value="{Binding MeLevel, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="2">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="时间效率（TE）" />
+                                                        <ui:NumberBox
+                                                            Maximum="20"
+                                                            Minimum="0"
+                                                            SmallChange="1"
+                                                            Value="{Binding TeLevel, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="成本指数位置" />
+                                                <uc:MarketLocationSelectorView SelectedItem="{Binding SelectedLocation, Mode=TwoWay}" />
+                                            </StackPanel>
+                                        </controls:CardControl>
+
+                                        <controls:CardControl
+                                            Grid.Column="2"
+                                            Padding="16,10"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                        Symbol="DataSunburst24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="发明与反应" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="发明解密器（可选）" />
+                                                <ComboBox
+                                                    HorizontalAlignment="Stretch"
+                                                    DisplayMemberPath="Name"
+                                                    ItemsSource="{Binding Decryptors}"
+                                                    SelectedItem="{Binding SelectedDecryptor, Mode=TwoWay}" />
+                                                <TextBlock
+                                                    Margin="2,4,2,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="解密器会按尝试次数消耗；概率倍率、ME/TE 修正与 run 修正来自 SDE typeDogma。"
+                                                    TextWrapping="Wrap" />
+
+                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="发明成本自定义（0 = 自动）" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="8" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="8" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="尝试次数" />
+                                                        <ui:NumberBox
+                                                            Maximum="1000"
+                                                            Minimum="0"
+                                                            SmallChange="1"
+                                                            Value="{Binding InventionAttemptsOverride, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="2">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="成功率覆盖 %" />
+                                                        <ui:NumberBox
+                                                            Maximum="100"
+                                                            Minimum="0"
+                                                            SmallChange="1"
+                                                            Value="{Binding InventionProbabilityOverridePercent, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="4">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="BPC 每张流程" />
+                                                        <ui:NumberBox
+                                                            Maximum="1000"
+                                                            Minimum="0"
+                                                            SmallChange="1"
+                                                            Value="{Binding InventionBpcRunsOverride, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                                <TextBlock
+                                                    Margin="2,4,2,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="自动：尝试次数 = ceil(BPC 需求 / 成功率)，失败尝试仍消耗数据核心/解密器/T1 蓝图；BPC 可多次使用，需求张数 = ceil(生产流程 / 每张流程)。"
+                                                    TextWrapping="Wrap" />
+
+                                                <CheckBox
+                                                    Margin="0,12,0,0"
+                                                    Content="反应套用 ME（默认关闭）"
+                                                    IsChecked="{Binding ApplyMeToReactions, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    Margin="0,4,0,0"
+                                                    Content="反应套用材料 rig（默认关闭）"
+                                                    IsChecked="{Binding ApplyRigToReactions, Mode=TwoWay}" />
+                                                <ui:Button
+                                                    Margin="0,12,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="OnClearDecisionsClick"
+                                                    Content="清除手动买/造决策" />
+                                                <TextBlock
+                                                    Margin="2,6,2,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="节点详情里可对单个物品强制制造 / 强制采购 / 加入黑名单。"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </controls:CardControl>
+                                    </Grid>
+                                </ScrollViewer>
+                            </TabItem>
+
+                            <!--  建筑  -->
+                            <TabItem Header="建筑">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="300" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <controls:CardControl
+                                            Grid.Column="0"
+                                            Padding="12,10"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="BookDatabase24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="建筑档案" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <ListBox
+                                                MinHeight="260"
+                                                ItemContainerStyle="{StaticResource StretchListItem}"
+                                                ItemsSource="{Binding BuildingProfiles}"
+                                                MouseDoubleClick="OnBuildingProfileDoubleClick"
+                                                SelectedItem="{Binding SelectedBuildingProfile, Mode=TwoWay}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Margin="4,3">
+                                                            <Grid>
+                                                                <TextBlock
+                                                                    FontSize="12"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{Binding Name}">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Visibility" Value="Visible" />
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                                <TextBox
+                                                                    Padding="0"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    FontSize="12"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    IsVisibleChanged="OnBuildingProfileEditBoxVisible"
+                                                                    KeyDown="OnBuildingProfileNameKeyDown"
+                                                                    LostFocus="OnBuildingProfileNameLostFocus"
+                                                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
+                                                                    <TextBox.Style>
+                                                                        <Style TargetType="TextBox">
+                                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBox.Style>
+                                                                </TextBox>
+                                                            </Grid>
+                                                            <TextBlock
+                                                                Margin="0,1,0,0"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{Binding Summary}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                            <controls:CardControl.Footer>
+                                                <ui:Button
+                                                    HorizontalAlignment="Center"
+                                                    Click="OnNewBuildingProfileClick"
+                                                    Content="新建"
+                                                    Icon="{ui:SymbolIcon Add24}" />
+                                            </controls:CardControl.Footer>
+                                        </controls:CardControl>
+
+                                        <controls:CardControl
+                                            Grid.Column="2"
+                                            Padding="16,10"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="Settings24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{Binding SelectedBuildingProfile.Name, FallbackValue=未选择档案, TargetNullValue=未选择档案}" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <StackPanel>
+                                                <StackPanel Margin="0,8,0,0">
+                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="材料加成 %" />
+                                                    <ui:NumberBox
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        SmallChange="1"
+                                                        ToolTip="降低制造/反应的材料需求。游戏里由结构角色材料加成、结构 rig 材料效率，以及产物是否命中 rig 目标过滤器共同决定；最终与蓝图 ME 相乘。"
+                                                        Value="{Binding MaterialBonusPercent, Mode=TwoWay}" />
+
+                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="时间加成 %" />
+                                                    <ui:NumberBox
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        SmallChange="1"
+                                                        ToolTip="降低作业基础时间。游戏里由结构角色时间加成、结构 rig 时间效率，以及产物是否命中 rig 目标过滤器决定；最终与蓝图 TE 相乘。"
+                                                        Value="{Binding TimeBonusPercent, Mode=TwoWay}" />
+
+                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="费用加成 %" />
+                                                    <ui:NumberBox
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        SmallChange="1"
+                                                        ToolTip="降低任务安装费。游戏里由结构角色费用加成、结构 rig 费用效率决定；Job Cost = EIV × 系统成本指数 × (1 - 费用加成) × (1 + 设施税)。"
+                                                        Value="{Binding CostBonusPercent, Mode=TwoWay}" />
+
+                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="设施税 %" />
+                                                    <ui:NumberBox
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        SmallChange="1"
+                                                        ToolTip="建筑所有者设置的设施税，直接加在任务安装费上。由玩家/军团在建筑上设定，不来自 SDE；不影响材料需求和作业时间。"
+                                                        Value="{Binding FacilityTaxPercent, Mode=TwoWay}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <controls:CardControl.Footer>
+                                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                    <ui:Button
+                                                        Margin="0,0,6,0"
+                                                        Click="OnSaveBuildingProfileClick"
+                                                        Content="保存"
+                                                        Icon="{ui:SymbolIcon Save16}" />
+                                                    <ui:Button
+                                                        Click="OnDeleteBuildingProfileClick"
+                                                        Content="删除"
+                                                        Icon="{ui:SymbolIcon Delete24}" />
+                                                </StackPanel>
+                                            </controls:CardControl.Footer>
+                                        </controls:CardControl>
+                                    </Grid>
+                                </ScrollViewer>
+                            </TabItem>
+
+                            <!--  角色与市场  -->
+                            <TabItem Header="角色与市场">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <controls:CardControl
+                                            Grid.Column="0"
+                                            Padding="16,10"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="People16" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="参与角色（可多选）" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <StackPanel>
+                                                <ItemsControl ItemsSource="{Binding Characters}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox
+                                                                Margin="0,3"
+                                                                Content="{Binding DisplayName}"
+                                                                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <Separator Margin="0,10,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="自定义角色" />
+                                                        <TextBlock
+                                                            FontSize="10"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="不读取 ESI，只按技能等级估算槽位与耗时"
+                                                            TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <ui:Button
+                                                        Grid.Column="1"
+                                                        Padding="10,4"
+                                                        VerticalAlignment="Center"
+                                                        Click="OnAddCustomCharacterClick"
+                                                        Content="添加"
+                                                        Icon="{ui:SymbolIcon Add24}" />
+                                                </Grid>
+
+                                                <ItemsControl Margin="0,4,0,0" ItemsSource="{Binding CustomCharacters}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,3">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel>
+                                                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                                    <TextBlock
+                                                                        Margin="28,0,0,0"
+                                                                        FontSize="10"
+                                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                        Text="{Binding Summary}"
+                                                                        TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                                <StackPanel
+                                                                    Grid.Column="1"
+                                                                    VerticalAlignment="Center"
+                                                                    Orientation="Horizontal">
+                                                                    <ui:Button
+                                                                        Padding="8,3"
+                                                                        Appearance="Secondary"
+                                                                        Click="OnEditCustomCharacterClick"
+                                                                        Content="编辑"
+                                                                        FontSize="10"
+                                                                        Tag="{Binding}" />
+                                                                    <ui:Button
+                                                                        Margin="4,0,0,0"
+                                                                        Padding="8,3"
+                                                                        Appearance="Secondary"
+                                                                        Click="OnDeleteCustomCharacterClick"
+                                                                        Content="删除"
+                                                                        FontSize="10"
+                                                                        Tag="{Binding}" />
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <TextBlock
+                                                    Margin="0,4,0,0"
+                                                    FontSize="10"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="暂无自定义角色；没有登录角色时也可以添加一个只用于排产的角色。"
+                                                    TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasCustomCharacters}" Value="False">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </controls:CardControl>
+
+                                        <controls:CardControl
+                                            Grid.Column="2"
+                                            Padding="16,10"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="Database24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="库存与市场数据" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <StackPanel>
+                                                <CheckBox
+                                                    Margin="0,2"
+                                                    Content="抵扣角色资产"
+                                                    IsChecked="{Binding UseAssets, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    Margin="0,2"
+                                                    Content="抵扣在制工业任务"
+                                                    IsChecked="{Binding UseInProgressJobs, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    Margin="0,2"
+                                                    Content="使用自有蓝图 ME/TE"
+                                                    IsChecked="{Binding UseOwnedBlueprints, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    Margin="0,2"
+                                                    Content="使用角色技能（发明成功率）"
+                                                    IsChecked="{Binding UseCharacterSkills, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    Margin="0,2"
+                                                    Content="拉取市场深度 / 计算利润（首次较慢）"
+                                                    IsChecked="{Binding UseMarketDepth, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    Margin="0,2"
+                                                    Content="即时卖给买单（不计经纪人费）"
+                                                    IsChecked="{Binding SellImmediately, Mode=TwoWay}" />
+                                                <Grid Margin="0,4,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="8" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="销售税 %" />
+                                                        <ui:NumberBox
+                                                            Maximum="100"
+                                                            Minimum="0"
+                                                            SmallChange="0.1"
+                                                            Value="{Binding SalesTaxPercent, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="2">
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="经纪人费 %" />
+                                                        <ui:NumberBox
+                                                            Maximum="100"
+                                                            Minimum="0"
+                                                            SmallChange="0.1"
+                                                            Value="{Binding BrokerFeePercent, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                                <TextBlock
+                                                    Margin="2,3,2,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="即时卖单：收入按最高买价，扣销售税；挂卖单：收入按最低卖价，再扣销售税 + 经纪人费。"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Margin="0,10,0,2"
+                                                    Style="{StaticResource IndustryLabel}"
+                                                    Text="使用库存仓库（可多选）" />
+                                                <ItemsControl ItemsSource="{Binding Warehouses}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox
+                                                                Margin="0,2"
+                                                                Content="{Binding Name}"
+                                                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                ToolTip="{Binding Summary}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="还没有仓库，可在「工业 → 库存」中创建。"
+                                                    TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasWarehouses}" Value="False">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock
+                                                    Margin="0,10,2,3"
+                                                    Style="{StaticResource IndustryLabel}"
+                                                    Text="价格市场（市场深度 / 利润）" />
+                                                <uc:MarketLocationSelectorView SelectedItem="{Binding SelectedPriceLocation, Mode=TwoWay}" />
+                                                <TextBlock
+                                                    Margin="2,4,2,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="默认沿用成本指数位置；启用市场深度后，按该位置所在星域的公开买卖单计算参考价/收入。建筑订单不包含。"
+                                                    TextWrapping="Wrap" />
+                                                <Grid Margin="0,8,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="8" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ui:Button
+                                                        Grid.Column="0"
+                                                        Click="OnRefreshMarketClick"
+                                                        Content="刷新市场"
+                                                        Icon="{ui:SymbolIcon ArrowSync24}" />
+                                                    <ui:Button
+                                                        Grid.Column="2"
+                                                        Click="OnRefreshCharacterClick"
+                                                        Content="刷新角色"
+                                                        Icon="{ui:SymbolIcon Person24}" />
+                                                </Grid>
+                                                <TextBlock
+                                                    Margin="0,6,0,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding MarketStatusText}"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding CharacterStatusText}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </controls:CardControl>
+                                    </Grid>
+                                </ScrollViewer>
+                            </TabItem>
+                        </TabControl>
+                    </controls:CardControl>
+                    <Grid
+                        Margin="0,12,12,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top">
                         <ui:Button
                             Height="34"
-                            HorizontalAlignment="Center"
                             Appearance="Primary"
-                            Content="保存计划"
+                            Click="OnCalculateClick"
+                            Content="执行计划"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}">
+                            <ui:Button.Style>
+                                <Style BasedOn="{StaticResource {x:Type ui:Button}}" TargetType="{x:Type ui:Button}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
                             <ui:Button.Icon>
-                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Save16" />
+                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
                             </ui:Button.Icon>
                         </ui:Button>
-                    </controls:CardControl.Footer>
-                </controls:CardControl>
+                        <ui:Button
+                            Height="34"
+                            Appearance="Secondary"
+                            Click="OnCancelClick"
+                            Content="停止计算"
+                            Foreground="{DynamicResource SystemFillColorCriticalBrush}">
+                            <ui:Button.Style>
+                                <Style BasedOn="{StaticResource {x:Type ui:Button}}" TargetType="{x:Type ui:Button}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="Stop24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                    </Grid>
+                </Grid>
+            </TabItem>
 
+            <!--  ================= 计算结果（计算后） =================  -->
+            <TabItem Header="计划详细">
+                <Grid>
+                    <controls:CardControl>
+                        <TabControl
+                            Padding="0"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            SelectedIndex="{Binding ResultTabIndex, Mode=TwoWay}">
+                            <!--  概况  -->
+                            <TabItem Header="概况">
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="12" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Border
+                                        Grid.Row="0"
+                                        Padding="16,12"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            FontSize="16"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="全部产品概况" />
+                                                        <StackPanel
+                                                            Margin="16,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Orientation="Horizontal">
+                                                            <Border Style="{StaticResource IndustrySmallChip}">
+                                                                <TextBlock
+                                                                    FontSize="9.5"
+                                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                    Text="{Binding MarketStatusText}" />
+                                                            </Border>
+                                                            <Border Style="{StaticResource IndustrySmallChip}">
+                                                                <TextBlock
+                                                                    FontSize="9.5"
+                                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                    Text="{Binding CharacterStatusText}" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <ui:Button
+                                                                HorizontalAlignment="Stretch"
+                                                                Click="OnCopyClick"
+                                                                Icon="{ui:SymbolIcon Copy16}"
+                                                                ToolTip="复制全部产物的采购清单" />
+                                                            <ui:Button
+                                                                Margin="6,0,0,0"
+                                                                HorizontalAlignment="Stretch"
+                                                                Click="OnExportClick"
+                                                                Icon="{ui:SymbolIcon ArrowDownload16}"
+                                                                ToolTip="导出全部产物的 BOM 明细" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Grid>
+                                                <Grid Margin="0,12,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <UniformGrid Columns="5" Rows="2">
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="目标项"
+                                                                ToolTip="目标行数；每个产物的请求/产出见左侧列表。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryTargets}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="总流程" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRuns}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6" ToolTip="材料全量市值（含库存）+ 任务费用">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="总成本"
+                                                                ToolTip="材料全量市值（含库存中的材料）+ 任务费用。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryFullBuild}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="净收入"
+                                                                ToolTip="按实际产出数量 × 参考单价（优先最高买价）。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRevenue}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="利润 / 利润率"
+                                                                ToolTip="利润 = 净收入 − 总成本；括号内为利润率（利润 / 净收入）。" />
+                                                            <TextBlock
+                                                                FontSize="13"
+                                                                Style="{StaticResource IndustryProfitText}"
+                                                                Text="{Binding SummaryProfit}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6" ToolTip="需购买材料 + 任务费用">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="现金支出（需购买）"
+                                                                ToolTip="需购买材料（扣除角色资产/在制/上游剩余）+ 任务费用。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryCash}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="库存抵扣（市值）"
+                                                                ToolTip="总成本 − 现金支出，等于库存中已拥有材料的市场估值。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryStock}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="任务费用（已含）"
+                                                                ToolTip="任务费用（Job Cost），EIV 使用 CCP adjusted_price，不使用市场挂单价；已包含在总成本和现金支出中。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryJobCost}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="直接购买"
+                                                                ToolTip="全部材料直接按参考价采购的对比成本。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryDirectBuy}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="采购体积"
+                                                                ToolTip="需要采购材料的打包体积。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryBuyVolume}" />
+                                                        </StackPanel>
+                                                    </UniformGrid>
+                                                    <Grid Grid.Column="1" Margin="12,0,0,0">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition />
+                                                        </Grid.RowDefinitions>
+                                                        <TextBlock
+                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                            Style="{StaticResource IndustryMetricLabel}"
+                                                            Text="成本构成"
+                                                            ToolTip="占总成本比例；任务费用已包含在内；库存抵扣是库存材料市值。" />
+                                                        <ItemsControl
+                                                            Grid.Row="1"
+                                                            Margin="0,4,0,0"
+                                                            ItemTemplate="{StaticResource IndustryCostSliceCompactTemplate}"
+                                                            ItemsSource="{Binding CostSlices}" />
+                                                    </Grid>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="380" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <controls:CardControl
+                                            Grid.Column="0"
+                                            Padding="12,8"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon
+                                                            VerticalAlignment="Center"
+                                                            FontSize="15"
+                                                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                            Symbol="AppsList24" />
+                                                        <TextBlock
+                                                            Margin="8,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="产物列表" />
+                                                    </StackPanel>
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="10.5"
+                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                        Text="{Binding Roots.Count, StringFormat=共 {0} 个}" />
+                                                </Grid>
+                                            </controls:CardControl.Header>
+                                            <ListBox
+                                                ItemContainerStyle="{StaticResource IndustryOverviewTargetItem}"
+                                                ItemsSource="{Binding Roots}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                SelectedItem="{Binding SelectedOverviewTarget, Mode=TwoWay}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Padding="10,8"
+                                                            Background="Transparent"
+                                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="6">
+                                                            <Grid>
+                                                                <Grid.RowDefinitions>
+                                                                    <RowDefinition Height="Auto" />
+                                                                    <RowDefinition Height="Auto" />
+                                                                    <RowDefinition Height="Auto" />
+                                                                </Grid.RowDefinitions>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock
+                                                                    FontSize="13"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{Binding Name}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="12"
+                                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                    Text="{Binding TargetCostText}" />
+                                                                <TextBlock
+                                                                    Grid.Row="1"
+                                                                    Margin="0,2,0,0"
+                                                                    FontSize="10.5"
+                                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                    Text="{Binding TargetQuantityText}" />
+                                                                <TextBlock
+                                                                    Grid.Row="1"
+                                                                    Grid.Column="1"
+                                                                    Margin="8,2,0,0"
+                                                                    HorizontalAlignment="Right"
+                                                                    Style="{StaticResource IndustryTargetProfitText}"
+                                                                    Text="{Binding TargetProfitText}" />
+                                                                <ui:Button
+                                                                    Grid.Row="2"
+                                                                    Grid.ColumnSpan="2"
+                                                                    Margin="0,6,0,0"
+                                                                    Padding="8,2"
+                                                                    HorizontalAlignment="Left"
+                                                                    Appearance="Secondary"
+                                                                    Click="OnViewBomCostClick"
+                                                                    Content="BOM / 成本"
+                                                                    FontSize="10"
+                                                                    Tag="{Binding}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </controls:CardControl>
+
+                                        <controls:CardControl
+                                            Grid.Column="2"
+                                            Padding="14,8"
+                                            CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="DataUsage24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="产物详情" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <Grid>
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="选择左侧产物查看成本、利润和采购清单">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding SelectedOverviewTarget}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                                    <ScrollViewer.Style>
+                                                        <Style TargetType="ScrollViewer">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding SelectedOverviewTarget}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ScrollViewer.Style>
+                                                    <StackPanel DataContext="{Binding SelectedOverviewTarget}">
+                                                        <TextBlock
+                                                            FontSize="16"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="{Binding Name}"
+                                                            TextWrapping="Wrap" />
+
+                                                        <UniformGrid Margin="0,12,0,0" Columns="4">
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="请求 / 产出" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetQuantityText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="总成本" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetCostText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="现金支出" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetCashText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="库存抵扣" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetStockText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="净收入" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetRevenueText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="利润 / 利润率" />
+                                                                <TextBlock
+                                                                    FontSize="15"
+                                                                    Style="{StaticResource IndustryTargetProfitText}"
+                                                                    Text="{Binding TargetProfitText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="任务费用" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetJobCostText}" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,12,8">
+                                                                <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="流程" />
+                                                                <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding TargetRunsText}" />
+                                                            </StackPanel>
+                                                        </UniformGrid>
+
+                                                        <TextBlock Style="{StaticResource IndustryLabel}" Text="成本构成" />
+                                                        <Grid Height="20">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="70" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="40" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="采购材料" />
+                                                            <controls:RatioBar
+                                                                Grid.Column="1"
+                                                                Height="4"
+                                                                Margin="4,0,8,0"
+                                                                VerticalAlignment="Center"
+                                                                BarBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                                Ratio="{Binding MaterialShare}"
+                                                                TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                            <TextBlock
+                                                                Grid.Column="2"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                Text="{Binding MaterialShare, StringFormat={}{0:0}%}" />
+                                                        </Grid>
+                                                        <Grid Height="20">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="70" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="40" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="任务费用" />
+                                                            <controls:RatioBar
+                                                                Grid.Column="1"
+                                                                Height="4"
+                                                                Margin="4,0,8,0"
+                                                                VerticalAlignment="Center"
+                                                                BarBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                                                Ratio="{Binding JobShare}"
+                                                                TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                            <TextBlock
+                                                                Grid.Column="2"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                Text="{Binding JobShare, StringFormat={}{0:0}%}" />
+                                                        </Grid>
+                                                        <Grid Height="20">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="70" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="40" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="库存抵扣" />
+                                                            <controls:RatioBar
+                                                                Grid.Column="1"
+                                                                Height="4"
+                                                                Margin="4,0,8,0"
+                                                                VerticalAlignment="Center"
+                                                                BarBrush="{DynamicResource SystemFillColorSuccessBrush}"
+                                                                Ratio="{Binding StockShare}"
+                                                                TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                            <TextBlock
+                                                                Grid.Column="2"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                Text="{Binding StockShare, StringFormat={}{0:0}%}" />
+                                                        </Grid>
+
+                                                        <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                                            <ui:Button
+                                                                Margin="0,0,8,0"
+                                                                Click="OnCopySelectedTargetClick"
+                                                                Content="复制本产物采购"
+                                                                Icon="{ui:SymbolIcon DocumentSettings16}" />
+                                                            <ui:Button
+                                                                Click="OnExportSelectedTargetClick"
+                                                                Content="导出本产物 CSV"
+                                                                Icon="{ui:SymbolIcon ArrowDown24}" />
+                                                        </StackPanel>
+
+                                                        <TextBlock
+                                                            Margin="0,14,0,0"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="采购清单" />
+                                                        <TextBlock
+                                                            Margin="0,2,0,0"
+                                                            FontSize="10.5"
+                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                            Text="本产物子树中需要直接购买的材料；已扣除库存/上游剩余。"
+                                                            TextWrapping="Wrap" />
+                                                        <ui:DataGrid
+                                                            MaxHeight="260"
+                                                            ItemsSource="{Binding DataContext.OverviewBuyItems, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                            Style="{StaticResource IndustryDataGrid}">
+                                                            <ui:DataGrid.Columns>
+                                                                <DataGridTextColumn
+                                                                    Width="*"
+                                                                    Binding="{Binding Name}"
+                                                                    Header="物品" />
+                                                                <DataGridTextColumn
+                                                                    Width="80"
+                                                                    Binding="{Binding QuantityText}"
+                                                                    Header="数量" />
+                                                                <DataGridTextColumn
+                                                                    Width="80"
+                                                                    Binding="{Binding UnitPriceText}"
+                                                                    Header="单价" />
+                                                                <DataGridTextColumn
+                                                                    Width="100"
+                                                                    Binding="{Binding TotalText}"
+                                                                    Header="金额" />
+                                                            </ui:DataGrid.Columns>
+                                                        </ui:DataGrid>
+                                                    </StackPanel>
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </controls:CardControl>
+                                    </Grid>
+                                </Grid>
+                            </TabItem>
+
+                            <!--  生产详情：排程 / 步骤 / 工位 / 关系 / 生产链  -->
+                            <TabItem Header="生产详情">
+                                <uc:IndustryScheduleView />
+                            </TabItem>
+                        </TabControl>
+                    </controls:CardControl>
+                    <ui:Button
+                        Height="34"
+                        Margin="0,12,12,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Appearance="Primary"
+                        Content="保存计划"
+                        Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Save16" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </Grid>
             </TabItem>
 
             <!--  ================= 已保存计划 =================  -->
@@ -2103,9 +2194,7 @@
                         Header="保存 / 载入">
                         <StackPanel>
                             <TextBlock Style="{StaticResource IndustryLabel}" Text="计划名称" />
-                            <ui:TextBox
-                                PlaceholderText="输入计划名称"
-                                Text="{Binding PlanName, UpdateSourceTrigger=PropertyChanged}" />
+                            <ui:TextBox PlaceholderText="输入计划名称" Text="{Binding PlanName, UpdateSourceTrigger=PropertyChanged}" />
                             <ui:Button
                                 Margin="0,8,0,0"
                                 HorizontalAlignment="Stretch"

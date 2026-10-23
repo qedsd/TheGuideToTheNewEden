@@ -1,16 +1,25 @@
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 
 namespace TheGuideToTheNewEden.WPF.Services.Industry;
 
-/// <summary>角色持有的蓝图（同一蓝图取 ME/TE 最高的一张）。</summary>
+/// <summary>角色持有的蓝图聚合（同一蓝图取最佳 BPO / BPC）。</summary>
 public sealed class OwnedBlueprint
 {
     public int BlueprintTypeId { get; set; }
     public int MaterialEfficiency { get; set; }
     public int TimeEfficiency { get; set; }
+    public bool HasBpo { get; set; }
+    public int BpoMaterialEfficiency { get; set; }
+    public int BpoTimeEfficiency { get; set; }
+    public long BpcRuns { get; set; }
+    public int BpcCount { get; set; }
+    public int BpcMaterialEfficiency { get; set; }
+    public int BpcTimeEfficiency { get; set; }
+    public bool IsCopy => !HasBpo && BpcRuns > 0;
 }
 
 /// <summary>
@@ -57,17 +66,42 @@ public static class CharacterIndustryDataService
                         int typeId = (int)blueprint.TypeId;
                         int me = (int)blueprint.MaterialEfficiency;
                         int te = (int)blueprint.TimeEfficiency;
-                        if (!result.TryGetValue(typeId, out var existing)
-                            || me > existing.MaterialEfficiency
-                            || (me == existing.MaterialEfficiency && te > existing.TimeEfficiency))
+                        if (!result.TryGetValue(typeId, out var existing))
                         {
-                            result[typeId] = new OwnedBlueprint
-                            {
-                                BlueprintTypeId = typeId,
-                                MaterialEfficiency = me,
-                                TimeEfficiency = te,
-                            };
+                            existing = new OwnedBlueprint { BlueprintTypeId = typeId };
+                            result[typeId] = existing;
                         }
+
+                        if (blueprint.Runs < 0)
+                        {
+                            // BPO：无限流程；同一蓝图取最佳 ME/TE。
+                            existing.HasBpo = true;
+                            if (me > existing.BpoMaterialEfficiency
+                                || (me == existing.BpoMaterialEfficiency && te > existing.BpoTimeEfficiency))
+                            {
+                                existing.BpoMaterialEfficiency = me;
+                                existing.BpoTimeEfficiency = te;
+                            }
+                        }
+                        else
+                        {
+                            // BPC：累加剩余流程，取最佳 ME/TE。
+                            existing.BpcRuns += Math.Max(0, blueprint.Runs);
+                            existing.BpcCount++;
+                            if (me > existing.BpcMaterialEfficiency
+                                || (me == existing.BpcMaterialEfficiency && te > existing.BpcTimeEfficiency))
+                            {
+                                existing.BpcMaterialEfficiency = me;
+                                existing.BpcTimeEfficiency = te;
+                            }
+                        }
+
+                        existing.MaterialEfficiency = existing.HasBpo
+                            ? existing.BpoMaterialEfficiency
+                            : existing.BpcMaterialEfficiency;
+                        existing.TimeEfficiency = existing.HasBpo
+                            ? existing.BpoTimeEfficiency
+                            : existing.BpcTimeEfficiency;
                     }
                 }
                 maxPages = response?.MaxPages ?? 1;
@@ -250,6 +284,54 @@ public static class CharacterIndustryDataService
     public static Dictionary<int, int> BuildTeOverrides(Dictionary<int, OwnedBlueprint> ownedBlueprints)
     {
         return BuildLevelOverrides(ownedBlueprints, false);
+    }
+
+    /// <summary>按产物聚合 BPO/BPC 状态，供求解器消耗 BPC 剩余流程。</summary>
+    public static Dictionary<int, IndustryBlueprintStock> BuildBlueprintStocks(
+        Dictionary<int, OwnedBlueprint> ownedBlueprints)
+    {
+        var result = new Dictionary<int, IndustryBlueprintStock>();
+        if (ownedBlueprints == null || ownedBlueprints.Count == 0)
+        {
+            return result;
+        }
+
+        var productOfBlueprint = InvTypeService.QueryBlueprintProducts(ownedBlueprints.Keys.ToList());
+        foreach (var pair in ownedBlueprints)
+        {
+            if (!productOfBlueprint.TryGetValue(pair.Key, out var productTypeId) || productTypeId <= 0)
+            {
+                continue;
+            }
+            if (!result.TryGetValue(productTypeId, out var stock))
+            {
+                stock = new IndustryBlueprintStock();
+                result[productTypeId] = stock;
+            }
+
+            if (pair.Value.HasBpo)
+            {
+                stock.HasBpo = true;
+                if (pair.Value.BpoMaterialEfficiency > stock.BpoMaterialEfficiency
+                    || (pair.Value.BpoMaterialEfficiency == stock.BpoMaterialEfficiency
+                        && pair.Value.BpoTimeEfficiency > stock.BpoTimeEfficiency))
+                {
+                    stock.BpoMaterialEfficiency = pair.Value.BpoMaterialEfficiency;
+                    stock.BpoTimeEfficiency = pair.Value.BpoTimeEfficiency;
+                }
+            }
+
+            stock.BpcRuns += pair.Value.BpcRuns;
+            stock.BpcCount += pair.Value.BpcCount;
+            if (pair.Value.BpcMaterialEfficiency > stock.BpcMaterialEfficiency
+                || (pair.Value.BpcMaterialEfficiency == stock.BpcMaterialEfficiency
+                    && pair.Value.BpcTimeEfficiency > stock.BpcTimeEfficiency))
+            {
+                stock.BpcMaterialEfficiency = pair.Value.BpcMaterialEfficiency;
+                stock.BpcTimeEfficiency = pair.Value.BpcTimeEfficiency;
+            }
+        }
+        return result;
     }
 
     private static Dictionary<int, int> BuildLevelOverrides(Dictionary<int, OwnedBlueprint> ownedBlueprints, bool material)

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -90,9 +91,11 @@ public sealed class IndustryRigItem : INotifyPropertyChanged
 {
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    public int TargetFilterId { get; set; }
+    public string TargetFilterName { get; set; } = string.Empty;
     public double MePercent { get; set; }
     public double TePercent { get; set; }
-    public string DisplayName => $"{CategoryName}  材料效率 {MePercent:0.##}% / 时间效率 {TePercent:0.##}%";
+    public string DisplayName => $"{(string.IsNullOrEmpty(TargetFilterName) ? CategoryName : TargetFilterName)}  材料效率 {MePercent:0.##}% / 时间效率 {TePercent:0.##}%";
     public event PropertyChangedEventHandler? PropertyChanged;
 }
 
@@ -122,6 +125,52 @@ public sealed class IndustryOverviewBuyLine
     public string QuantityText => $"{Quantity:N0}";
     public string UnitPriceText => UnitPrice > 0 ? $"{UnitPrice:N2}" : "—";
     public string TotalText => Total > 0 ? $"{Total:N0}" : "—";
+}
+
+public sealed class IndustryBlueprintJobItem
+{
+    public string Kind { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Detail { get; set; } = string.Empty;
+    public double TimeSeconds { get; set; }
+    public string TimeText => TimeSeconds <= 0
+        ? "—"
+        : TimeSeconds >= 86400
+            ? $"{TimeSeconds / 86400:0.##} 天"
+            : $"{TimeSeconds / 3600:0.##} 小时";
+}
+
+public sealed class IndustryBuildingProfileItem : INotifyPropertyChanged
+{
+    public IndustryBuildingProfile Model { get; set; } = new();
+    public string Name
+    {
+        get => Model.Name;
+        set
+        {
+            if (string.Equals(Model.Name, value, StringComparison.Ordinal)) return;
+            Model.Name = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
+        }
+    }
+    public string Summary =>
+        $"材料 -{Model.MaterialBonusPercent:0.#}% · 时间 -{Model.TimeBonusPercent:0.#}% · 费用 -{Model.CostBonusPercent:0.#}% · 税 {Model.FacilityTaxPercent:0.#}%";
+    public override string ToString() => Name;
+
+    private bool _isEditing;
+    public bool IsEditing
+    {
+        get => _isEditing;
+        set
+        {
+            if (_isEditing == value) return;
+            _isEditing = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEditing)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 /// <summary>「角色与市场」里可勾选的库存仓库。</summary>
@@ -164,6 +213,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private readonly Dictionary<int, int> _manualDecisions = new();
     private readonly HashSet<int> _blacklist = new();
     private IndustryBuildPlan? _lastPlan;
+    private CancellationTokenSource? _operationCts;
     private DateTime? _resultSavedAt;
     private IndustrySolverOptions? _lastScheduleOptions;
     private readonly Dictionary<string, long> _schedulePins = new();
@@ -180,14 +230,23 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _selectedLocation = _setting.Location;
         _selectedPriceLocation = _setting.PriceLocation ?? _setting.Location;
         _facilityTaxPercent = _setting.FacilityTaxPercent;
+        _materialBonusPercent = _setting.MaterialBonusPercent;
+        _timeBonusPercent = _setting.TimeBonusPercent;
+        _costBonusPercent = _setting.CostBonusPercent;
         _spaceModifier = _setting.SpaceModifier;
         _rigMeBonusPercent = _setting.RigMeBonusPercent;
         _rigTeBonusPercent = _setting.RigTeBonusPercent;
+        LoadStructureOptions(_setting.StructureTypeId);
+        LoadTargetFilters();
         _useAssets = _setting.UseAssets;
         _useInProgressJobs = _setting.UseInProgressJobs;
         _useOwnedBlueprints = _setting.UseOwnedBlueprints;
         _useCharacterSkills = _setting.UseCharacterSkills;
         _useMarketDepth = _setting.UseMarketDepth;
+        _includeBlueprintJobs = _setting.IncludeBlueprintJobs;
+        _sellImmediately = _setting.SellImmediately;
+        _salesTaxPercent = _setting.SalesTaxPercent;
+        _brokerFeePercent = _setting.BrokerFeePercent;
         _applyMeToReactions = _setting.ApplyMeToReactions;
         _applyRigToReactions = _setting.ApplyRigToReactions;
         _inventionAttemptsOverride = _setting.InventionAttemptsOverride ?? 0;
@@ -208,10 +267,13 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 CategoryId = rig.CategoryId,
                 CategoryName = rig.CategoryName,
+                TargetFilterId = rig.TargetFilterId,
+                TargetFilterName = rig.TargetFilterName,
                 MePercent = rig.MePercent,
                 TePercent = rig.TePercent,
             });
         }
+        ReloadBuildingProfiles();
 
         var selectedCharacters = new HashSet<long>(_setting.SelectedCharacterIds ?? new List<long>());
         int index = 0;
@@ -299,19 +361,177 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public MarketLocation? SelectedPriceLocation { get => _selectedPriceLocation; set => Set(ref _selectedPriceLocation, value); }
 
     private double _facilityTaxPercent;
-    public double FacilityTaxPercent { get => _facilityTaxPercent; set => Set(ref _facilityTaxPercent, value); }
+    public double FacilityTaxPercent
+    {
+        get => _facilityTaxPercent;
+        set { if (Set(ref _facilityTaxPercent, value)) NotifyBuildingSummary(); }
+    }
+
+    private double _materialBonusPercent;
+    public double MaterialBonusPercent
+    {
+        get => _materialBonusPercent;
+        set { if (Set(ref _materialBonusPercent, value)) NotifyBuildingSummary(); }
+    }
+
+    private double _timeBonusPercent;
+    public double TimeBonusPercent
+    {
+        get => _timeBonusPercent;
+        set { if (Set(ref _timeBonusPercent, value)) NotifyBuildingSummary(); }
+    }
+
+    private double _costBonusPercent;
+    public double CostBonusPercent
+    {
+        get => _costBonusPercent;
+        set { if (Set(ref _costBonusPercent, value)) NotifyBuildingSummary(); }
+    }
+
+    public string MaterialBonusText => $"-{MaterialBonusPercent:0.##}%";
+    public string TimeBonusText => $"-{TimeBonusPercent:0.##}%";
+    public string CostBonusText => $"-{CostBonusPercent:0.##}%";
 
     private double _spaceModifier;
-    public double SpaceModifier { get => _spaceModifier; set => Set(ref _spaceModifier, value); }
+    public double SpaceModifier
+    {
+        get => _spaceModifier;
+        set { if (Set(ref _spaceModifier, value)) NotifyBuildingSummary(); }
+    }
+
+    public ObservableCollection<IndustryStructureOption> StructureOptions { get; } = new();
+
+    private IndustryStructureOption? _selectedStructure;
+    public IndustryStructureOption? SelectedStructure
+    {
+        get => _selectedStructure;
+        set
+        {
+            if (Set(ref _selectedStructure, value))
+            {
+                NotifyBuildingSummary();
+            }
+        }
+    }
+
+    public string StructureBonusText => SelectedStructure == null
+        ? "未选择官方结构：仅使用手填设施税/rig。"
+        : SelectedStructure.Summary;
+
+    public string CurrentStructureName => SelectedStructure?.Name ?? "未选择结构";
+    public string CurrentStructureBonusText => SelectedStructure == null
+        ? "无官方结构加成"
+        : SelectedStructure.Summary;
+    public string CurrentFacilityTaxText => $"{FacilityTaxPercent:0.##}%";
+    public string CurrentSpaceText => $"×{SpaceModifier:0.##}";
+
+    public string CurrentRigSummary
+    {
+        get
+        {
+            double space = Math.Max(0, SpaceModifier);
+            double me = Math.Clamp(RigMeBonusPercent / 100.0, 0, 0.99) * space;
+            double te = Math.Clamp(RigTeBonusPercent / 100.0, 0, 0.99) * space;
+            string extra = RigBonuses.Count > 0 ? $" · {RigBonuses.Count} 条分类/过滤覆盖" : string.Empty;
+            return $"默认 材料 -{me:P1} / 时间 -{te:P1}{extra}";
+        }
+    }
+
+    public string EffectiveMaterialText =>
+        $"材料总加成 -{MaterialBonusPercent:0.##}%；与蓝图 ME 相乘，分类/过滤器不再单独区分。";
+
+    public string EffectiveTimeText =>
+        $"时间总加成 -{TimeBonusPercent:0.##}%；与蓝图 TE 相乘。";
+
+    public string EffectiveCostText =>
+        $"费用总加成 -{CostBonusPercent:0.##}% · 设施税 +{FacilityTaxPercent:0.##}%；任务费用 = EIV × 成本指数 × (1 - 费用加成) × (1 + 设施税)。";
+
+    private void NotifyBuildingSummary()
+    {
+        OnPropertyChanged(nameof(MaterialBonusText));
+        OnPropertyChanged(nameof(TimeBonusText));
+        OnPropertyChanged(nameof(CostBonusText));
+        OnPropertyChanged(nameof(MaterialBonusPercent));
+        OnPropertyChanged(nameof(TimeBonusPercent));
+        OnPropertyChanged(nameof(CostBonusPercent));
+        OnPropertyChanged(nameof(StructureBonusText));
+        OnPropertyChanged(nameof(CurrentStructureName));
+        OnPropertyChanged(nameof(CurrentStructureBonusText));
+        OnPropertyChanged(nameof(CurrentFacilityTaxText));
+        OnPropertyChanged(nameof(CurrentSpaceText));
+        OnPropertyChanged(nameof(CurrentRigSummary));
+        OnPropertyChanged(nameof(EffectiveMaterialText));
+        OnPropertyChanged(nameof(EffectiveTimeText));
+        OnPropertyChanged(nameof(EffectiveCostText));
+    }
+
+    private void LoadStructureOptions(int selectedTypeId)
+    {
+        StructureOptions.Clear();
+        foreach (var option in IndustryDbService.GetIndustryStructureOptions())
+        {
+            StructureOptions.Add(option);
+        }
+        SelectedStructure = StructureOptions.FirstOrDefault(p => p.TypeId == selectedTypeId);
+    }
+
+    public ObservableCollection<IndustryTargetFilterInfo> TargetFilters { get; } = new();
+
+    private IndustryTargetFilterInfo? _newRigTargetFilter;
+    public IndustryTargetFilterInfo? NewRigTargetFilter
+    {
+        get => _newRigTargetFilter;
+        set => Set(ref _newRigTargetFilter, value);
+    }
+
+    private void LoadTargetFilters()
+    {
+        TargetFilters.Clear();
+        foreach (var filter in IndustryDbService.GetIndustryTargetFilters())
+        {
+            TargetFilters.Add(filter);
+        }
+    }
 
     private double _rigMeBonusPercent;
-    public double RigMeBonusPercent { get => _rigMeBonusPercent; set => Set(ref _rigMeBonusPercent, value); }
+    public double RigMeBonusPercent
+    {
+        get => _rigMeBonusPercent;
+        set { if (Set(ref _rigMeBonusPercent, value)) NotifyBuildingSummary(); }
+    }
 
     private double _rigTeBonusPercent;
-    public double RigTeBonusPercent { get => _rigTeBonusPercent; set => Set(ref _rigTeBonusPercent, value); }
+    public double RigTeBonusPercent
+    {
+        get => _rigTeBonusPercent;
+        set { if (Set(ref _rigTeBonusPercent, value)) NotifyBuildingSummary(); }
+    }
 
     public ObservableCollection<IndustryRigItem> RigBonuses { get; } = new();
     public ObservableCollection<InvCategory> Categories { get; } = new();
+    public ObservableCollection<IndustryBuildingProfileItem> BuildingProfiles { get; } = new();
+
+    private IndustryBuildingProfileItem? _selectedBuildingProfile;
+    private bool _suppressProfileApply;
+    public IndustryBuildingProfileItem? SelectedBuildingProfile
+    {
+        get => _selectedBuildingProfile;
+        set
+        {
+            if (Set(ref _selectedBuildingProfile, value))
+            {
+                NewBuildingProfileName = value?.Name ?? string.Empty;
+                if (!_suppressProfileApply && value?.Model is { } profile)
+                {
+                    ApplyProfileToCurrent(profile);
+                }
+                NotifyBuildingSummary();
+            }
+        }
+    }
+
+    private string _newBuildingProfileName = string.Empty;
+    public string NewBuildingProfileName { get => _newBuildingProfileName; set => Set(ref _newBuildingProfileName, value); }
 
     private InvCategory? _newRigCategory;
     public InvCategory? NewRigCategory { get => _newRigCategory; set => Set(ref _newRigCategory, value); }
@@ -429,6 +649,40 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     private bool _useMarketDepth;
     public bool UseMarketDepth { get => _useMarketDepth; set => Set(ref _useMarketDepth, value); }
+
+    private bool _includeBlueprintJobs;
+    public bool IncludeBlueprintJobs
+    {
+        get => _includeBlueprintJobs;
+        set
+        {
+            if (Set(ref _includeBlueprintJobs, value))
+            {
+                if (_lastPlan != null)
+                {
+                    BuildBlueprintJobs(_lastPlan);
+                }
+                OnPropertyChanged(nameof(BlueprintJobsHint));
+            }
+        }
+    }
+
+    public ObservableCollection<IndustryBlueprintJobItem> BlueprintJobs { get; } = new();
+    public bool HasBlueprintJobs => BlueprintJobs.Count > 0;
+    public string BlueprintJobsHint => !IncludeBlueprintJobs
+        ? "未启用复制/研究任务；大多数情况下直接使用已有 BPO/BPC 即可。"
+        : BlueprintJobs.Count > 0
+            ? "复制/研究任务仅为可选估算，不进入 BOM 材料，也不占用排产槽位。"
+            : "当前没有可生成的复制/研究任务：T2 BPC 只能通过发明获得，BPC 不能研究；只有拥有 BPO 且 BPC runs 不足时才需要复制，BPO 的 ME/TE 低于工艺目标时才需要研究。";
+
+    private bool _sellImmediately = true;
+    public bool SellImmediately { get => _sellImmediately; set => Set(ref _sellImmediately, value); }
+
+    private double _salesTaxPercent = 3.6;
+    public double SalesTaxPercent { get => _salesTaxPercent; set => Set(ref _salesTaxPercent, value); }
+
+    private double _brokerFeePercent = 1.0;
+    public double BrokerFeePercent { get => _brokerFeePercent; set => Set(ref _brokerFeePercent, value); }
 
     // ───────────── 库存仓库 / 已保存计划 ─────────────
 
@@ -799,8 +1053,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     public void AddRig()
     {
-        if (NewRigCategory is null) return;
-        var existing = RigBonuses.FirstOrDefault(p => p.CategoryId == NewRigCategory.CategoryID);
+        if (NewRigCategory is null && NewRigTargetFilter is null) return;
+        int filterId = NewRigTargetFilter?.Id ?? 0;
+        int categoryId = NewRigCategory?.CategoryID ?? 0;
+        var existing = RigBonuses.FirstOrDefault(p => p.TargetFilterId == filterId && p.CategoryId == categoryId);
         if (existing is not null)
         {
             existing.MePercent = NewRigMePercent;
@@ -812,17 +1068,163 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         {
             RigBonuses.Add(new IndustryRigItem
             {
-                CategoryId = NewRigCategory.CategoryID,
-                CategoryName = NewRigCategory.CategoryName,
+                CategoryId = categoryId,
+                CategoryName = NewRigCategory?.CategoryName ?? string.Empty,
+                TargetFilterId = filterId,
+                TargetFilterName = NewRigTargetFilter?.Name ?? string.Empty,
                 MePercent = NewRigMePercent,
                 TePercent = NewRigTePercent,
             });
         }
+        NotifyBuildingSummary();
     }
 
     public void RemoveRig(IndustryRigItem? rig)
     {
-        if (rig is not null) RigBonuses.Remove(rig);
+        if (rig is not null)
+        {
+            RigBonuses.Remove(rig);
+            NotifyBuildingSummary();
+        }
+    }
+
+    private void ReloadBuildingProfiles(string? selectId = null)
+    {
+        var id = selectId ?? SelectedBuildingProfile?.Model.Id;
+        BuildingProfiles.Clear();
+        foreach (var profile in _setting.BuildingProfiles ?? new List<IndustryBuildingProfile>())
+        {
+            var item = new IndustryBuildingProfileItem { Model = profile };
+            item.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(IndustryBuildingProfileItem.Name))
+                {
+                    IndustrySettingService.Save(_setting);
+                    NotifyBuildingSummary();
+                }
+            };
+            BuildingProfiles.Add(item);
+        }
+        _suppressProfileApply = true;
+        try
+        {
+            SelectedBuildingProfile = id == null
+                ? null
+                : BuildingProfiles.FirstOrDefault(p => p.Model.Id == id);
+        }
+        finally
+        {
+            _suppressProfileApply = false;
+        }
+    }
+
+    public void NewBuildingProfile()
+    {
+        _setting.BuildingProfiles ??= new List<IndustryBuildingProfile>();
+        string name = "新建筑档案";
+        int index = 2;
+        while (_setting.BuildingProfiles.Any(p => string.Equals(p.Name, name, StringComparison.Ordinal)))
+        {
+            name = $"新建筑档案 {index++}";
+        }
+
+        var profile = new IndustryBuildingProfile
+        {
+            Name = name,
+            FacilityTaxPercent = FacilityTaxPercent,
+            MaterialBonusPercent = MaterialBonusPercent,
+            TimeBonusPercent = TimeBonusPercent,
+            CostBonusPercent = CostBonusPercent,
+        };
+        _setting.BuildingProfiles.Add(profile);
+        IndustrySettingService.Save(_setting);
+        ReloadBuildingProfiles(profile.Id);
+        NotifyBuildingSummary();
+    }
+
+    public void SaveBuildingProfile()
+    {
+        if (SelectedBuildingProfile?.Model is not { } profile)
+        {
+            PageNotifyService.Info(Resolve("IndustryPage_BuildingNotSelected", "请先新建或选择建筑档案"));
+            return;
+        }
+        var name = profile.Name?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            PageNotifyService.Warning(Resolve("IndustryPage_BuildingNameRequired", "建筑档案名称不能为空"));
+            return;
+        }
+
+        profile.Name = name;
+        profile.FacilityTaxPercent = FacilityTaxPercent;
+        profile.MaterialBonusPercent = MaterialBonusPercent;
+        profile.TimeBonusPercent = TimeBonusPercent;
+        profile.CostBonusPercent = CostBonusPercent;
+
+        ReloadBuildingProfiles(profile.Id);
+        IndustrySettingService.Save(_setting);
+        NotifyBuildingSummary();
+        PageNotifyService.Success(Resolve("IndustryPage_BuildingSaved", "建筑档案已保存"));
+    }
+
+    public void ApplyBuildingProfile()
+    {
+        if (SelectedBuildingProfile?.Model is not { } profile)
+        {
+            PageNotifyService.Info(Resolve("IndustryPage_BuildingNotSelected", "请先选择建筑档案"));
+            return;
+        }
+        ApplyProfileToCurrent(profile);
+        NotifyBuildingSummary();
+        PageNotifyService.Success(Resolve("IndustryPage_BuildingApplied", "已应用建筑档案"));
+    }
+
+    private void ApplyProfileToCurrent(IndustryBuildingProfile profile)
+    {
+        FacilityTaxPercent = profile.FacilityTaxPercent;
+        MaterialBonusPercent = profile.MaterialBonusPercent;
+        TimeBonusPercent = profile.TimeBonusPercent;
+        CostBonusPercent = profile.CostBonusPercent;
+        // 旧档案只有 rig 字段时，把它作为三个总加成的初始值，避免应用后归零。
+        if (MaterialBonusPercent == 0 && TimeBonusPercent == 0 && CostBonusPercent == 0)
+        {
+            MaterialBonusPercent = profile.RigMeBonusPercent;
+            TimeBonusPercent = profile.RigTeBonusPercent;
+        }
+        SpaceModifier = profile.SpaceModifier;
+        SelectedStructure = StructureOptions.FirstOrDefault(p => p.TypeId == profile.StructureTypeId);
+        RigMeBonusPercent = profile.RigMeBonusPercent;
+        RigTeBonusPercent = profile.RigTeBonusPercent;
+        RigBonuses.Clear();
+        foreach (var rig in profile.RigBonuses ?? new List<IndustryRigSetting>())
+        {
+            RigBonuses.Add(new IndustryRigItem
+            {
+                CategoryId = rig.CategoryId,
+                CategoryName = rig.CategoryName,
+                TargetFilterId = rig.TargetFilterId,
+                TargetFilterName = rig.TargetFilterName,
+                MePercent = rig.MePercent,
+                TePercent = rig.TePercent,
+            });
+        }
+    }
+
+    public void DeleteBuildingProfile()
+    {
+        if (SelectedBuildingProfile?.Model is not { } profile)
+        {
+            PageNotifyService.Info(Resolve("IndustryPage_BuildingNotSelected", "请先选择建筑档案"));
+            return;
+        }
+
+        _setting.BuildingProfiles ??= new List<IndustryBuildingProfile>();
+        _setting.BuildingProfiles.RemoveAll(p => p.Id == profile.Id);
+        ReloadBuildingProfiles();
+        NotifyBuildingSummary();
+        IndustrySettingService.Save(_setting);
+        PageNotifyService.Success(Resolve("IndustryPage_BuildingDeleted", "建筑档案已删除"));
     }
 
     // ───────────── 计算 ─────────────
@@ -835,8 +1237,28 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         HasBusyProgress = false;
     }
 
+    private CancellationToken BeginOperation()
+    {
+        _operationCts?.Dispose();
+        _operationCts = new CancellationTokenSource();
+        return _operationCts.Token;
+    }
+
+    public void CancelCurrentOperation()
+    {
+        try
+        {
+            _operationCts?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
     private void EndBusy()
     {
+        _operationCts?.Dispose();
+        _operationCts = null;
         IsBusy = false;
         BusyText = string.Empty;
         BusyProgressPercent = 0;
@@ -881,19 +1303,16 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
 
         BeginBusy(Resolve("IndustryPage_Prepare", "准备工业数据..."));
+        var cancellationToken = BeginOperation();
         try
         {
             SaveSetting();
+            cancellationToken.ThrowIfCancellationRequested();
 
             var contexts = Characters.Where(p => p.IsSelected)
                 .Select(p => new CharacterContext(p.Character))
                 .ToList();
-            var rigs = RigBonuses.Select(p => new IndustryRigBonus
-            {
-                CategoryID = p.CategoryId,
-                MeBonus = p.MePercent / 100.0,
-                TeBonus = p.TePercent / 100.0,
-            }).ToList();
+            var rigs = new List<IndustryRigBonus>();
 
             BusyText = Resolve("IndustryPage_FetchData", "读取价格、成本指数与角色数据...");
 
@@ -931,8 +1350,29 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 attemptsOverride,
                 probabilityOverride,
                 bpcRunsOverride,
-                marketPageProgress);
+                marketPageProgress,
+                cancellationToken,
+                0);
             _forceRefresh = false;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            static double Factor(double percent) => Math.Clamp(1.0 - percent / 100.0, 0.0, 1.0);
+            var building = new IndustryActivityModifier
+            {
+                Material = Factor(MaterialBonusPercent),
+                Time = Factor(TimeBonusPercent),
+                Cost = Factor(CostBonusPercent),
+            };
+            options.RigBonuses.Clear();
+            options.RigMeBonus = 0;
+            options.RigTeBonus = 0;
+            options.SalesTaxRate = Math.Clamp(SalesTaxPercent / 100.0, 0, 1);
+            options.BrokerFeeRate = Math.Clamp(BrokerFeePercent / 100.0, 0, 1);
+            options.SellImmediately = SellImmediately;
+            options.StructureModifiers.Clear();
+            options.StructureModifiers[IndustryActivity.Manufacturing] = building;
+            options.StructureModifiers[IndustryActivity.Invention] = building;
+            options.StructureModifiers[IndustryActivity.Reaction] = building;
 
             options.Decisions = _manualDecisions.ToDictionary(
                 p => p.Key,
@@ -942,6 +1382,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 ? new Dictionary<int, long>()
                 : new Dictionary<int, long>(_setting.VirtualHangar);
             ApplyWarehouseStock(options);
+            cancellationToken.ThrowIfCancellationRequested();
 
             var customProfiles = CustomCharacters
                 .Where(p => p.IsSelected)
@@ -954,14 +1395,20 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             }
 
             BusyText = Resolve("IndustryPage_Expanding", "展开 BOM...");
+            cancellationToken.ThrowIfCancellationRequested();
 
             var targets = Targets.Select(p => new IndustryBuildTarget(p.TypeId, p.QuantityLong)).ToList();
-            var plan = await Task.Run(() => new IndustrySolver(options).Solve(targets));
+            var plan = await Task.Run(() => new IndustrySolver(options, cancellationToken).Solve(targets), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             FillPlan(plan, contexts.Count + customProfiles.Count, scheduleOptions: options);
             PageNotifyService.Success(string.Format(
                 Resolve("IndustryPage_CalcDone", "计算完成：{0} 个流程"),
                 plan.Summary.BuildRuns.Values.Sum()));
+        }
+        catch (OperationCanceledException)
+        {
+            PageNotifyService.Info(Resolve("IndustryPage_CalcCancelled", "计算已停止"));
         }
         catch (Exception ex)
         {
@@ -1057,6 +1504,92 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanReassignSchedule));
     }
 
+    private void BuildBlueprintJobs(IndustryBuildPlan plan)
+    {
+        BlueprintJobs.Clear();
+        if (IncludeBlueprintJobs && plan?.Targets != null)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var target in plan.Targets)
+            {
+                CollectBlueprintJobs(target, seen);
+            }
+        }
+        OnPropertyChanged(nameof(HasBlueprintJobs));
+        OnPropertyChanged(nameof(BlueprintJobsHint));
+    }
+
+    private void CollectBlueprintJobs(IndustryBuildNode node, HashSet<string> seen)
+    {
+        if (node == null) return;
+        if (node.Decision == IndustryDecision.Build && !node.IsInvention && node.BlueprintTypeID > 0)
+        {
+            if (node.HasOwnedBpo && node.BpcRunsShortage > 0)
+            {
+                string key = $"copy:{node.BlueprintTypeID}";
+                if (seen.Add(key))
+                {
+                    int maxRuns = IndustryDbService.GetBlueprint(node.BlueprintTypeID)?.MaxProductionLimit ?? 0;
+                    maxRuns = Math.Max(1, maxRuns);
+                    int copies = (int)Math.Ceiling(node.BpcRunsShortage / (double)maxRuns);
+                    double seconds = GetActivitySeconds(node.BlueprintTypeID, IndustryActivity.Copying) * copies;
+                    BlueprintJobs.Add(new IndustryBlueprintJobItem
+                    {
+                        Kind = "复制",
+                        Name = node.TypeName,
+                        Detail = $"BPC 不足 {node.BpcRunsShortage:N0} run，复制 {copies:N0} 张（每张 {maxRuns:N0} run）",
+                        TimeSeconds = seconds,
+                    });
+                }
+            }
+
+            int targetMe = (int)Math.Round(MeLevel);
+            int targetTe = (int)Math.Round(TeLevel);
+            if (node.HasOwnedBpo && node.ME < targetMe)
+            {
+                string key = $"me:{node.BlueprintTypeID}:{node.ME}:{targetMe}";
+                if (seen.Add(key))
+                {
+                    int levels = targetMe - node.ME;
+                    BlueprintJobs.Add(new IndustryBlueprintJobItem
+                    {
+                        Kind = "材料研究",
+                        Name = node.TypeName,
+                        Detail = $"ME {node.ME} → {targetMe}（{levels} 级）",
+                        TimeSeconds = GetActivitySeconds(node.BlueprintTypeID, IndustryActivity.ResearchMaterialEfficiency) * levels,
+                    });
+                }
+            }
+            if (node.HasOwnedBpo && node.TE < targetTe)
+            {
+                string key = $"te:{node.BlueprintTypeID}:{node.TE}:{targetTe}";
+                if (seen.Add(key))
+                {
+                    int levels = targetTe - node.TE;
+                    BlueprintJobs.Add(new IndustryBlueprintJobItem
+                    {
+                        Kind = "时间研究",
+                        Name = node.TypeName,
+                        Detail = $"TE {node.TE} → {targetTe}（{levels} 级）",
+                        TimeSeconds = GetActivitySeconds(node.BlueprintTypeID, IndustryActivity.ResearchTimeEfficiency) * levels,
+                    });
+                }
+            }
+        }
+
+        foreach (var child in node.Inputs)
+        {
+            CollectBlueprintJobs(child, seen);
+        }
+    }
+
+    private static double GetActivitySeconds(int blueprintTypeId, int activityId)
+    {
+        var activity = IndustryDbService.GetActivities(blueprintTypeId)?
+            .FirstOrDefault(p => p.ActivityID == activityId);
+        return activity?.Time ?? 0;
+    }
+
     private void FillPlan(IndustryBuildPlan plan, int characterCount, DateTime? resultSavedAt = null, IndustrySolverOptions? scheduleOptions = null)
     {
         _lastPlan = plan;
@@ -1083,10 +1616,11 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         SummaryCash = summary.CashOutlay > 0 ? summary.CashOutlay.ToString("N0") : "—";
         SummaryStock = summary.StockValue > 0 ? summary.StockValue.ToString("N0") : "—";
         HasProfit = summary.ProfitKnown;
-        SummaryRevenue = summary.ProfitKnown ? summary.Revenue.ToString("N0") + " ISK" : "—";
+        SummaryRevenue = summary.ProfitKnown ? summary.NetRevenue.ToString("N0") + " ISK" : "—";
         SummaryProfit = summary.ProfitKnown ? $"{summary.Profit:N0} ISK ({summary.Margin:P0})" : "—";
         SummaryBuyVolume = summary.TotalBuyVolume > 0 ? summary.TotalBuyVolume.ToString("N0") + " m³" : "—";
         OnPropertyChanged(nameof(ProfitIsPositive));
+        BuildBlueprintJobs(plan);
 
         CostSlices.Clear();
         if (summary.SelfBuildCost > 0)
@@ -1311,23 +1845,33 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
 
         BeginBusy(Resolve("IndustryPage_RefreshMarket", "刷新市场价格与成本指数..."));
+        var cancellationToken = BeginOperation();
         try
         {
             await IndustryMarketDataService.Current.GetAdjustedPricesAsync(true);
+            cancellationToken.ThrowIfCancellationRequested();
             await IndustryMarketDataService.Current.GetAveragePricesAsync(false);
+            cancellationToken.ThrowIfCancellationRequested();
             await IndustryMarketDataService.Current.GetCostIndicesAsync(true);
+            cancellationToken.ThrowIfCancellationRequested();
             if (UseMarketDepth)
             {
                 long regionId = SelectedPriceLocation?.RegionId ?? SelectedLocation?.RegionId ?? 0;
                 if (regionId > 0)
                 {
                     var marketPageProgress = CreateMarketPageProgress();
-                    await IndustryMarketDataService.Current.GetMarketStatsAsync(regionId, true, marketPageProgress);
+                    await IndustryMarketDataService.Current.GetMarketStatsAsync(
+                        regionId, true, marketPageProgress, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
             _forceRefresh = true;
             MarketStatusText = string.Format(Resolve("IndustryPage_MarketRefreshed", "市场数据已刷新 · {0:HH:mm}"), DateTime.Now);
             PageNotifyService.Success(Resolve("IndustryPage_MarketRefreshedDone", "市场数据已刷新"));
+        }
+        catch (OperationCanceledException)
+        {
+            PageNotifyService.Info(Resolve("IndustryPage_RefreshCancelled", "刷新已停止"));
         }
         catch (Exception ex)
         {
@@ -1348,6 +1892,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
 
         BeginBusy(Resolve("IndustryPage_RefreshCharacter", "刷新角色蓝图/资产/技能..."));
+        var cancellationToken = BeginOperation();
         try
         {
             var contexts = Characters.Where(p => p.IsSelected)
@@ -1355,16 +1900,25 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 .ToList();
             for (var i = 0; i < contexts.Count; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var context = contexts[i];
                 BusyText = $"刷新角色 {i + 1}/{contexts.Count}：{context.Character.CharacterName}";
                 await CharacterIndustryDataService.GetOwnedBlueprintsAsync(context, true);
+                cancellationToken.ThrowIfCancellationRequested();
                 await CharacterIndustryDataService.GetInProgressOutputsAsync(context, true);
+                cancellationToken.ThrowIfCancellationRequested();
                 await CharacterIndustryDataService.GetAssetQuantitiesAsync(context, true);
+                cancellationToken.ThrowIfCancellationRequested();
                 await CharacterIndustryDataService.GetSkillLevelsAsync(context, true);
+                cancellationToken.ThrowIfCancellationRequested();
             }
             _forceRefresh = true;
             CharacterStatusText = string.Format(Resolve("IndustryPage_CharacterRefreshed", "角色数据已刷新 · {0:HH:mm}"), DateTime.Now);
             PageNotifyService.Success(Resolve("IndustryPage_CharacterRefreshedDone", "角色数据已刷新"));
+        }
+        catch (OperationCanceledException)
+        {
+            PageNotifyService.Info(Resolve("IndustryPage_RefreshCancelled", "刷新已停止"));
         }
         catch (Exception ex)
         {
@@ -1836,7 +2390,11 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         SelectedLocation = _setting.Location;
         SelectedPriceLocation = _setting.PriceLocation ?? _setting.Location;
         FacilityTaxPercent = _setting.FacilityTaxPercent;
+        MaterialBonusPercent = _setting.MaterialBonusPercent;
+        TimeBonusPercent = _setting.TimeBonusPercent;
+        CostBonusPercent = _setting.CostBonusPercent;
         SpaceModifier = _setting.SpaceModifier;
+        LoadStructureOptions(_setting.StructureTypeId);
         RigMeBonusPercent = _setting.RigMeBonusPercent;
         RigTeBonusPercent = _setting.RigTeBonusPercent;
         ApplyMeToReactions = _setting.ApplyMeToReactions;
@@ -1849,6 +2407,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         UseOwnedBlueprints = _setting.UseOwnedBlueprints;
         UseCharacterSkills = _setting.UseCharacterSkills;
         UseMarketDepth = _setting.UseMarketDepth;
+        SellImmediately = _setting.SellImmediately;
+        SalesTaxPercent = _setting.SalesTaxPercent;
+        BrokerFeePercent = _setting.BrokerFeePercent;
 
         RigBonuses.Clear();
         foreach (var rig in _setting.RigBonuses ?? new List<IndustryRigSetting>())
@@ -1857,10 +2418,13 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 CategoryId = rig.CategoryId,
                 CategoryName = rig.CategoryName,
+                TargetFilterId = rig.TargetFilterId,
+                TargetFilterName = rig.TargetFilterName,
                 MePercent = rig.MePercent,
                 TePercent = rig.TePercent,
             });
         }
+        ReloadBuildingProfiles();
 
         _manualDecisions.Clear();
         foreach (var pair in _setting.ManualDecisions ?? new Dictionary<int, int>())
@@ -1903,15 +2467,22 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.DefaultME = (int)Math.Round(MeLevel);
         _setting.DefaultTE = (int)Math.Round(TeLevel);
         _setting.SpaceModifier = SpaceModifier;
+        _setting.MaterialBonusPercent = MaterialBonusPercent;
+        _setting.TimeBonusPercent = TimeBonusPercent;
+        _setting.CostBonusPercent = CostBonusPercent;
+        _setting.StructureTypeId = SelectedStructure?.TypeId ?? 0;
         _setting.RigMeBonusPercent = RigMeBonusPercent;
         _setting.RigTeBonusPercent = RigTeBonusPercent;
         _setting.RigBonuses = RigBonuses.Select(p => new IndustryRigSetting
         {
             CategoryId = p.CategoryId,
             CategoryName = p.CategoryName,
+            TargetFilterId = p.TargetFilterId,
+            TargetFilterName = p.TargetFilterName,
             MePercent = p.MePercent,
             TePercent = p.TePercent,
         }).ToList();
+        _setting.BuildingProfiles = BuildingProfiles.Select(p => p.Model).ToList();
         _setting.DecryptorTypeId = SelectedDecryptor?.TypeId;
         _setting.InventionAttemptsOverride = InventionAttemptsOverride > 0 ? (int)Math.Round(InventionAttemptsOverride) : null;
         _setting.InventionProbabilityOverridePercent = InventionProbabilityOverridePercent > 0 ? InventionProbabilityOverridePercent : null;
@@ -1923,6 +2494,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.UseOwnedBlueprints = UseOwnedBlueprints;
         _setting.UseCharacterSkills = UseCharacterSkills;
         _setting.UseMarketDepth = UseMarketDepth;
+        _setting.IncludeBlueprintJobs = IncludeBlueprintJobs;
+        _setting.SellImmediately = SellImmediately;
+        _setting.SalesTaxPercent = SalesTaxPercent;
+        _setting.BrokerFeePercent = BrokerFeePercent;
         _setting.ManualDecisions = new Dictionary<int, int>(_manualDecisions);
         _setting.Blacklist = _blacklist.ToList();
         _setting.SelectedWarehouseIds = Warehouses.Where(p => p.IsSelected).Select(p => p.Id).ToList();

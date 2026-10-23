@@ -40,6 +40,7 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
             IndustryActivity.ResearchMaterialEfficiency => Resolve("IndustryActivity_ResearchMaterial", "材料研究"),
             IndustryActivity.ResearchTimeEfficiency => Resolve("IndustryActivity_ResearchTime", "时间研究"),
             IndustryActivity.ReverseEngineering => Resolve("IndustryActivity_ReverseEngineering", "逆向工程"),
+            IndustryActivity.Planetary => "行星",
             _ => string.Empty,
         };
     }
@@ -52,12 +53,14 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public string TargetCostText => FullBuildCost > 0 ? $"{FullBuildCost:N0} ISK" : "—";
     public string TargetCashText => CashCost > 0 ? $"{CashCost:N0} ISK" : "—";
     public string TargetStockText => Model.QuantityFromStock > 0 ? $"{Model.QuantityFromStock:N0} 库存" : "—";
-    public string TargetRevenueText => Revenue > 0 ? $"{Revenue:N0} ISK" : "—";
+    public string TargetRevenueText => NetRevenue > 0 ? $"{NetRevenue:N0} ISK" : "—";
     public bool HasTargetProfit => Model.RevenueUnitPrice > 0;
     public bool IsProfitPositive => HasTargetProfit && Profit >= 0;
     public string TargetProfitText => HasTargetProfit ? $"{Profit:N0} ISK ({Margin:P0})" : "—";
     public string TargetJobCostText => Model.JobCostKnown ? $"{Model.JobCost:N0} ISK" : "—";
-    public string TargetRunsText => Runs > 0 ? $"{Runs:N0} 流程" : "—";
+    public string TargetRunsText => Runs > 0
+        ? IsPlanetary ? $"{Runs:N0} 周期" : $"{Runs:N0} 流程"
+        : "—";
     public long FromAssets => Model.QuantityFromAssets;
     public long FromJobs => Model.QuantityFromJobs;
     public long FromUpstream => Model.QuantityFromHangar;
@@ -90,6 +93,7 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public bool IsBuild => DecisionKey == "build";
     public bool IsBuy => DecisionKey == "buy";
     public bool IsInvention => DecisionKey == "invention";
+    public bool IsPlanetary => Model.ActivityID == IndustryActivity.Planetary;
 
     public long Needed => Model.QuantityNeeded;
     public long Produced => Model.QuantityProduced;
@@ -102,6 +106,7 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public double CashCost => Model.BuildCost;
     public double UnitPrice => Model.ReferenceUnitPrice;
     public double Revenue => Model.Revenue;
+    public double NetRevenue => Model.NetRevenue;
     public double Profit => Model.Profit;
     public double Margin => Model.Margin;
     public double SellMin => Model.SellMinPrice;
@@ -141,8 +146,21 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
         : "材料全量市值（含库存中的材料）+ 任务费用。";
     public string RunsText => Runs <= 0
         ? string.Empty
-        : Model.IsInvention ? $"{Runs:N0} 次尝试" : $"{Runs:N0} 流程";
-    public string MeTeText => !IsStockCovered && Model.Decision == IndustryDecision.Build ? $"ME {ME} · TE {TE}" : string.Empty;
+        : Model.IsInvention ? $"{Runs:N0} 次尝试" : IsPlanetary ? $"{Runs:N0} 周期" : $"{Runs:N0} 流程";
+    public string BlueprintKindText => Model.HasOwnedBpo
+        ? "BPO"
+        : Model.BpcRunsAvailable > 0
+            ? $"BPC ×{Model.BpcCount:N0}"
+            : Model.IsInvention ? "发明 BPC" : "无自有蓝图";
+    public string BlueprintStockText => Model.HasOwnedBpo
+        ? "BPO 无限流程"
+        : Model.BpcRunsAvailable <= 0
+            ? string.Empty
+            : Model.BpcRunsShortage > 0
+                ? $"BPC 剩余 {Model.BpcRunsRemaining:N0} run · 本节点用 {Model.BpcRunsUsed:N0} · 不足 {Model.BpcRunsShortage:N0}"
+                : $"BPC 剩余 {Model.BpcRunsRemaining:N0} run · 本节点用 {Model.BpcRunsUsed:N0}";
+    public bool HasBlueprintStockText => !string.IsNullOrEmpty(BlueprintStockText);
+    public string MeTeText => !IsStockCovered && !IsPlanetary && Model.Decision == IndustryDecision.Build ? $"ME {ME} · TE {TE}" : string.Empty;
     public bool HasMeTe => !string.IsNullOrEmpty(MeTeText);
     public string JobTimeText => Model.JobTimeSeconds > 0 ? FormatDuration(Model.JobTimeSeconds) : string.Empty;
     public string JobCostText => Model.JobCostKnown ? Model.JobCost.ToString("N2") : "—";

@@ -2566,7 +2566,9 @@
     <sys:String x:Key="Nav.IndustryBlueprints">蓝图浏览器</sys:String>
     <sys:String x:Key="Home.Feature.IndustryBlueprintsDesc">按产品名搜索可制造物品，查看材料、产物与技能需求。</sys:String>
     <sys:String x:Key="Nav.IndustryInventory">库存</sys:String>
+    <sys:String x:Key="Nav.IndustryRecycle">回收 / 压缩</sys:String>
     <sys:String x:Key="Home.Feature.IndustryInventoryDesc">多仓库库存管理：角色资产导入、物品搜索添加、CSV 导入导出，并可在制造计划中按仓库抵扣材料。</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryRecycleDesc">独立计算矿石回收产出与矿石压缩结果，可调回收收率；不进入制造 BOM。</sys:String>
     <sys:String x:Key="IndustryPage_SpaceModifier">空间加成</sys:String>
     <sys:String x:Key="IndustryPage_RigMe">结构 rig 材料加成 %</sys:String>
     <sys:String x:Key="IndustryPage_RigTe">结构 rig 时间加成 %</sys:String>

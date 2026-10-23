@@ -8486,6 +8486,119 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 - **验证**：WPF `dotnet build` 0 错误；`AssistantProbe industry` **117 PASS / 0 FAIL**（新增自定义 profile 槽位/时间、设置 JSON 往返、新建默认 5 级、窗口 XAML/回填、标题栏位置/高度与下拉框 Fluent 基样式、排程/工位只显示有任务产线、工位分组、长任务时间轴压缩、关系树布局、甘特条内省略/悬浮全名、负 Id 改派）。
 - **限制**：自定义只影响排产，不提供资产/蓝图/技能加成；发明时间仍 ×1.0；勾选状态在计算/保存时落盘（切换勾选后直接关窗不保存）。
 
+## 阶段 161：计算取消（2026-10-23）
+
+### 161.1 取消链路
+
+- `IndustrySolver` 增加可选 `CancellationToken`，在 `Solve` 目标循环与 `SolveNodeInternal` 每层检查；BOM 递归可中断。
+- `IndustryOptionsFactory.BuildAsync` 接收 token：价格/成本指数/市场深度/角色数据每个阶段后检查；市场与角色 catch 中 `OperationCanceledException` 原样抛出，不再被吞掉。
+- `IndustryMarketDataService.GetMarketStatsAsync` 接收 token；`MarketOrderService.GetAllRegionOrdersAsync` 的分页 token 继续使用；取消后由工业服务在 await 后抛 `OperationCanceledException`（倒货原有“取消返回 null”行为不变）。
+- VM 新增 `_operationCts`：`BeginOperation / CancelCurrentOperation / EndBusy` 统一管理；计算、刷新市场、刷新角色均使用 token。
+- UI：计划设置底部「执行计划」在 `IsBusy` 时切换为「停止计算」（Play24 / Stop24），点击调用 `CancelCurrentOperation`；页面内进度条继续显示当前阶段/页码。
+- 取消后提示“计算已停止/刷新已停止”，不弹全局等待；已完成的数据/结果保持不变。
+
+### 161.2 验证
+
+- `AssistantProbe industry` **118 PASS / 0 FAIL**（新增取消令牌中断 BOM 断言）；`sde` 仍 **48 PASS / 0 FAIL**。
+- WPF `dotnet build` **0 错误**。
+- 取消粒度：市场分页在当前页返回后停止；角色数据在当前接口返回后停止；HTTP 单请求本身不强制中断。
+
+## 阶段 162：建筑档案（2026-10-23）
+
+### 162.1 多套建筑配置
+
+- `IndustrySetting` 新增 `BuildingProfiles`；`IndustryBuildingProfile` 保存名称、设施税、空间加成、全局 rig ME/TE 与按物品分类 rig 列表。
+- 计划设置 → 建筑新增「建筑档案」卡片：下拉选择、名称输入、保存当前、应用、删除（删除确认）。
+- 保存按名称更新/新建；应用把档案回填到当前设施税/空间/rig；档案随普通设置与已保存计划快照一起持久化，载入计划会恢复档案列表。
+- 单次计算仍只使用当前应用的一套建筑配置；不做每个产物独立建筑/并行多建筑。
+
+### 162.2 验证
+
+- `AssistantProbe industry` **121 PASS / 0 FAIL**（新增建筑档案 JSON 往返 3 项）；`sde` 仍 **48 PASS / 0 FAIL**。
+- WPF `dotnet build` **0 错误**。
+
+## 阶段 163：行星开发进入 BOM（2026-10-23）
+
+### 163.1 行星 schematic
+
+- Core 新增 `PlanetSchematic` / `PlanetSchematicTypeMap` 模型与 `IndustryDbService.GetPlanetaryRecipeByProduct`；
+  `IndustryActivity.Planetary=100`（内部活动，不是工业 job）。
+- 求解器在无制造/反应蓝图时回退行星 schematic：每周期按 schematic 输出数量、输入材料递归展开；无 ME/TE/任务费用，
+  时间按 `cycleTime × 周期`；行星任务不进入角色槽位排产。
+- 常驻可制造物品树增加行星产物；目标列表可直接添加行星产物。
+- 行星产物纳入成本、库存来源、参考价/收入；节点显示“行星”和“周期”，隐藏 ME/TE。
+
+### 163.2 验证
+
+- `AssistantProbe industry` **128 PASS / 0 FAIL**（新增行星配方/活动/周期/输入断言）；`sde` **48 PASS / 0 FAIL**。
+- WPF `dotnet build` **0 错误**。
+
+### 163.3 T3 制造 / 逆向核验（2026-10-23）
+
+- 当前 SDE 并非没有 T3 数据：Tengu 制造蓝图 29985；T3 逆向以 `invention(8)` 建模，
+  relic 30752（Intact Hull Section）的 invention 产物包含 29985，概率 0.26、数量 20 runs。
+- 求解器已能递归到该 invention 节点；relic 作为每次尝试消耗的采购输入计入，T3 BPC 复用按 20 runs 生效。
+- 新增 `T3 制造/逆向` 断言 7 项。
+- 本地 `main.db` 的 `sdeInfo.buildNumber = 3632936`，与最新下载目录一致；不需要重建主数据。
+- 新 SDE 的 `industry*` 元数据已在阶段 164 接入并增量导入当前 `main.db`；不影响 T3/行星/回收压缩基础数据。
+- 结论：不需要旧 SDE；旧目录 `3365090` 与新目录 `3632936` 都含这套 T3 数据，新目录多的是 `industryActivities` 等工业元数据。
+- 回收/压缩：SDE 有 `typeMaterials` + `portionSize` + `compressibleTypes`（新 SDE 212 条映射），可以算；
+  但它们是站点服务，不是 BOM 蓝图，且动态收率/服务税不在 SDE 里，需单独计算器，未强行塞进 `IndustrySolver`。
+
+## 阶段 164：官方工业元数据 / 结构加成（2026-10-23）
+
+### 164.1 SDE 表
+
+- 新增 `industryActivities`（6 条）、`industryAssemblyLines`（146 条）+ `industryAssemblyLineDetails`（3,133 条）、
+  `industryInstallationTypes`（102 条）、`industryModifierSources`（744 条）、
+  `industryTargetFilters`（18 条）+ 分类/组明细（14/63 条）。
+- `IndustryMetadataTool`（`AssistantProbe metadata <sdeDir> <db>`）支持只增量刷新这 8 张表，不重建 88MB 主数据；
+  当前 `main.db` 已导入，`sdeInfo.buildNumber` 仍为 3632936。
+
+### 164.2 功能
+
+- 建筑档案新增“官方结构类型”：Raitaru/Azbel/Sotiyo/Tatara；求解器按 `industryModifierSources` + `typeDogma`
+  自动套用材料/时间/费用倍率（例：Raitaru 0.99/0.85/0.97），反应官方活动 9 映射到内部 11。
+- 目标过滤器进入 rig 匹配：`IndustryRigBonus.TargetFilterId` 可按官方分类/组匹配，UI 可选择过滤器；SDE `industryModifierSources.filterID` 已解析，rig 43920 的 Equipment 过滤器为 2；仍保留按分类的旧配置。
+- 装配线/设施类型查询已接入 `IndustryDbService`，供建筑校验与后续 UI 使用。
+- 当前库导入：activities=6、assemblyLines=146、details=3,133、installations=102、modifiers=744、filters=18、
+  filterCategories=14、filterGroups=63；结构选项 4 个。
+
+### 164.3 验证
+
+- `AssistantProbe industry` **157 PASS / 0 FAIL**；`AssistantProbe sde` **56 PASS / 0 FAIL**。
+- 新增断言覆盖活动 ID、装配线明细、设施→装配线、目标过滤器、Raitaru/Tatara 倍率、结构时间/材料/费用参与求解器。
+- WPF `dotnet build` **0 错误**。
+
+## 阶段 165：建筑页收敛为三个总加成（2026-10-23）
+
+- 建筑页改为左侧「建筑档案」列表 + 右侧「当前建筑加成」详情；不再重复显示“当前生效”和“建筑加成”两套数值。
+- 档案名称在左侧列表内联编辑（默认只显示文本，双击进入编辑，选中样式沿用 `StretchListItem` 的弱高亮，不使用主题强调色）。
+- 右侧标题显示当前档案名称；详情只保留四个纵排数值，保存/删除放在 `CardControl.Footer`。
+- 右侧只编辑：**材料加成、时间加成、费用加成 + 设施税**；结构/rig/空间等来源全部折算进前三个值。
+- 点左侧档案会立即载入其四个值；右侧只显示档案名称与数值，不再显示状态说明；保存才写回档案。档案只是预设。
+- 求解器按三个总加成统一计算：材料/时间与蓝图 ME/TE 相乘；费用先乘建筑费用折扣，再乘设施税。
+- 旧的官方结构/rig/目标过滤器数据仍保留在数据库和 service 中，但不再出现在主流程 UI；后续可作为“自动预填”来源。
+
+## 阶段 166：BPO/BPC、可选蓝图任务与净利（2026-10-23）
+
+- ESI 蓝图按 `runs < 0` / `runs >= 0` 区分 BPO / BPC；BPC 汇总剩余 runs，制造节点消耗并在节点详情显示剩余/不足。
+- 自有蓝图优先 BPO；无 BPO 时使用最佳 BPC ME/TE。蓝图任务为可选开关（默认关闭），研究/复制估算单独显示在「蓝图任务」页，不进入 BOM 材料或排产。
+- 新增销售税/经纪人费与即时/挂单卖出选项；利润改为 `净收入 - 全量成本`，利润率按净收入计算。
+
+## 阶段 167：独立回收 / 压缩页（2026-10-23）
+
+- 新增 `IndustryRecyclePage`（工业导航 → 回收 / 压缩），与制造计划完全分离。
+- 回收按 `typeMaterials + portionSize + 可调收率` 计算；压缩按 `compressibleTypes` 映射，1:1 单位并显示体积。
+- 支持批量：搜索控件逐项加入批次，或直接粘贴游戏仓库/货柜复制文本（复用 `AppraisalTextParser` + `MarketTypeNameResolver`）；批次内可取消勾选、合并同名物品。
+- 不进入 BOM，也不占工业排产槽位。
+
+### 167.2 验证
+
+- `AssistantProbe industry` **164 PASS / 0 FAIL**；`AssistantProbe sde` **56 PASS / 0 FAIL**。
+- 新增断言覆盖 BPC 剩余流程消耗、销售税净收入、凡晶石回收、压缩 1:1。
+- WPF `dotnet build` **0 错误**。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

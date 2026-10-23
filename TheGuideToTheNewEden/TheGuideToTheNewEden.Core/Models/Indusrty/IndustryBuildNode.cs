@@ -59,6 +59,10 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         /// <summary>出售本节点数量的参考单价（优先最高买价，回退最低卖价/平均价）。</summary>
         public double RevenueUnitPrice { get; set; }
         public double Revenue { get; set; }
+        /// <summary>扣除销售税/经纪人费后的收入。</summary>
+        public double NetRevenue { get; set; }
+        public double SalesTax { get; set; }
+        public double BrokerFee { get; set; }
         public double Profit { get; set; }
         public double Margin { get; set; }
 
@@ -81,6 +85,15 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double PackagedVolume { get; set; }
         /// <summary>本节点数量的打包体积（约等于运输体积）。</summary>
         public double TotalPackagedVolume { get { return PackagedVolume * QuantityNeeded; } }
+
+        /// <summary>角色持有 BPO（无限流程）；为 false 时看 BPC。</summary>
+        public bool HasOwnedBpo { get; set; }
+        /// <summary>是否有自有 BPC 或其剩余流程。</summary>
+        public long BpcRunsAvailable { get; set; }
+        public long BpcRunsUsed { get; set; }
+        public long BpcRunsShortage { get; set; }
+        public long BpcRunsRemaining { get; set; }
+        public int BpcCount { get; set; }
 
         public List<IndustryBuildNode> Inputs { get; set; } = new List<IndustryBuildNode>();
     }

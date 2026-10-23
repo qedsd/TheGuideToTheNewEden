@@ -26,6 +26,23 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// <summary>工业数据是否可用（主库已载入）。</summary>
         public static bool IsAvailable => Db != null;
 
+        /// <summary>主库记录的 SDE buildNumber；用于判断本地库是否落后于下载目录。</summary>
+        public static int? GetSdeBuildNumber()
+        {
+            var db = Db;
+            if (db == null) return null;
+            try
+            {
+                var value = db.Ado.GetInt("select BuildNumber from sdeInfo where Id = 'sde'");
+                return value > 0 ? value : (int?)null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return null;
+            }
+        }
+
         private static List<int> Normalize(IEnumerable<int> ids)
         {
             return ids == null ? null : ids.Where(p => p > 0).Distinct().ToList();
@@ -602,13 +619,300 @@ LEFT JOIN blueprints b ON b.BlueprintTypeID = bp.BlueprintTypeID
 WHERE pt.Published = 1
   AND pt.Id > 0
   AND pt.Name NOT LIKE '#%'
-ORDER BY c.Name, g.Name, pt.Name";
+UNION ALL
+SELECT pm.type_id AS ProductTypeId,
+       pt.Name AS ProductName,
+       0 AS BlueprintTypeId,
+       '行星开发' AS BlueprintName,
+       100 AS ActivityId,
+       0 AS MaxProductionLimit,
+       g.Id AS GroupId,
+       g.Name AS GroupName,
+       c.Id AS CategoryId,
+       c.Name AS CategoryName
+FROM planetSchematicsTypeMap pm
+JOIN types pt ON pt.Id = pm.type_id
+JOIN groups g ON g.Id = pt.GroupID
+JOIN categories c ON c.Id = g.CategoryID
+WHERE pm.is_input = 0
+  AND pt.Published = 1
+  AND pt.Id > 0
+  AND pt.Name NOT LIKE '#%'
+  AND EXISTS (SELECT 1 FROM planetSchematics s WHERE s.schematic_id = pm.schematic_id)
+ORDER BY CategoryName, GroupName, ProductName";
                 return db.Ado.SqlQuery<IndustryProductEntry>(sql);
             }
             catch (Exception ex)
             {
                 Log.Error(ex);
                 return new List<IndustryProductEntry>();
+            }
+        }
+
+        // ───────────────────── 官方工业元数据 ─────────────────────
+
+        /// <summary>官方工业活动定义（反应官方 ID 为 9；应用内部仍用 11 兼容旧库）。</summary>
+        public static List<IndustryActivityDefinition> GetIndustryActivities()
+        {
+            var db = Db;
+            if (db == null) return new List<IndustryActivityDefinition>();
+            try
+            {
+                return db.Queryable<IndustryActivityDefinition>().OrderBy(p => p.Id).ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryActivityDefinition>();
+            }
+        }
+
+        /// <summary>装配线及其分类/组倍率明细。</summary>
+        public static List<IndustryAssemblyLineInfo> GetIndustryAssemblyLines()
+        {
+            var db = Db;
+            if (db == null) return new List<IndustryAssemblyLineInfo>();
+            try
+            {
+                var lines = db.Queryable<IndustryAssemblyLine>().OrderBy(p => p.Id).ToList();
+                var details = db.Queryable<IndustryAssemblyLineDetail>().ToList()
+                    .GroupBy(p => p.AssemblyLineID)
+                    .ToDictionary(p => p.Key, p => p.ToList());
+                return lines.Select(p => new IndustryAssemblyLineInfo
+                {
+                    Line = p,
+                    Details = details.TryGetValue(p.Id, out var rows) ? rows : new List<IndustryAssemblyLineDetail>(),
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryAssemblyLineInfo>();
+            }
+        }
+
+        /// <summary>设施类型可用的装配线 ID（解析 SDE 的逗号分隔列）。</summary>
+        public static List<int> GetInstallationAssemblyLineIds(int installationTypeId)
+        {
+            var db = Db;
+            if (db == null || installationTypeId <= 0) return new List<int>();
+            try
+            {
+                var row = db.Queryable<IndustryInstallationType>()
+                    .Where(p => p.InstallationTypeID == installationTypeId)
+                    .First();
+                if (row == null || string.IsNullOrWhiteSpace(row.AssemblyLineIDs)) return new List<int>();
+                return row.AssemblyLineIDs
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => int.TryParse(p, out var id) ? id : 0)
+                    .Where(p => p > 0)
+                    .Distinct()
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<int>();
+            }
+        }
+
+        /// <summary>结构/装备类型在某活动上使用的 dogma 属性来源。</summary>
+        public static List<IndustryModifierSource> GetIndustryModifierSources(int sourceTypeId)
+        {
+            var db = Db;
+            if (db == null || sourceTypeId <= 0) return new List<IndustryModifierSource>();
+            try
+            {
+                return db.Queryable<IndustryModifierSource>()
+                    .Where(p => p.SourceTypeID == sourceTypeId)
+                    .OrderBy(p => p.ActivityID)
+                    .OrderBy(p => p.ModifierType)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryModifierSource>();
+            }
+        }
+
+        /// <summary>
+        /// 解析结构的官方加成：modifierSources 给出活动/类型/属性 ID，
+        /// typeDogma 给出属性值（如 Raitaru 材料 0.99、时间 0.85、费用 0.97）。
+        /// </summary>
+        public static IndustryStructureModifiers GetStructureModifiers(int structureTypeId)
+        {
+            var db = Db;
+            if (db == null || structureTypeId <= 0) return null;
+            try
+            {
+                var sources = GetIndustryModifierSources(structureTypeId);
+                if (sources.Count == 0) return null;
+                var attributeIds = sources.Select(p => p.DogmaAttributeID).Distinct().ToList();
+                var values = db.Queryable<TypeDogma>()
+                    .Where(p => p.TypeID == structureTypeId && attributeIds.Contains(p.AttributeID))
+                    .ToList()
+                    .GroupBy(p => p.AttributeID)
+                    .ToDictionary(p => p.Key, p => p.First().Value);
+                var result = new IndustryStructureModifiers
+                {
+                    StructureTypeId = structureTypeId,
+                    StructureName = InvTypeService.QueryType(structureTypeId)?.TypeName ?? structureTypeId.ToString(),
+                };
+                foreach (var group in sources.GroupBy(p => p.ActivityID))
+                {
+                    var modifier = new IndustryActivityModifier();
+                    foreach (var source in group)
+                    {
+                        if (!values.TryGetValue(source.DogmaAttributeID, out var value) || value <= 0)
+                        {
+                            continue;
+                        }
+                        switch (source.ModifierType)
+                        {
+                            case IndustryModifierType.Cost:
+                                modifier.Cost *= value;
+                                break;
+                            case IndustryModifierType.Time:
+                                modifier.Time *= value;
+                                break;
+                            case IndustryModifierType.Material:
+                                modifier.Material *= value;
+                                break;
+                        }
+                    }
+                    result.Activities[group.Key] = modifier;
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return null;
+            }
+        }
+
+        /// <summary>可作为建筑档案结构选项的类型（来自 industryModifierSources，按名称排序）。</summary>
+        public static List<IndustryStructureOption> GetIndustryStructureOptions()
+        {
+            var db = Db;
+            if (db == null) return new List<IndustryStructureOption>();
+            try
+            {
+                var ids = db.Queryable<IndustryModifierSource>()
+                    .Select(p => p.SourceTypeID)
+                    .Distinct()
+                    .ToList();
+                var result = new List<IndustryStructureOption>();
+                foreach (var id in ids)
+                {
+                    var type = InvTypeService.QueryType(id);
+                    // 只列结构本体（Upwell 工程复合体/精炼厂），不把结构 rig 当成建筑。
+                    if (type == null || (type.GroupID != 1404 && type.GroupID != 1406)) continue;
+                    var modifiers = GetStructureModifiers(id);
+                    if (modifiers == null) continue;
+                    modifiers.Activities.TryGetValue(IndustryActivity.Manufacturing, out var manufacturing);
+                    result.Add(new IndustryStructureOption
+                    {
+                        TypeId = id,
+                        Name = modifiers.StructureName,
+                        MaterialMultiplier = manufacturing?.Material ?? 1.0,
+                        TimeMultiplier = manufacturing?.Time ?? 1.0,
+                        CostMultiplier = manufacturing?.Cost ?? 1.0,
+                    });
+                }
+                return result.OrderBy(p => p.Name).ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryStructureOption>();
+            }
+        }
+
+        /// <summary>官方目标过滤器（分类/组集合）。</summary>
+        public static List<IndustryTargetFilterInfo> GetIndustryTargetFilters()
+        {
+            var db = Db;
+            if (db == null) return new List<IndustryTargetFilterInfo>();
+            try
+            {
+                var filters = db.Queryable<IndustryTargetFilterDefinition>().OrderBy(p => p.Id).ToList();
+                var categories = db.Queryable<IndustryTargetFilterCategory>().ToList()
+                    .GroupBy(p => p.FilterID)
+                    .ToDictionary(p => p.Key, p => p.Select(x => x.CategoryID).ToHashSet());
+                var groups = db.Queryable<IndustryTargetFilterGroup>().ToList()
+                    .GroupBy(p => p.FilterID)
+                    .ToDictionary(p => p.Key, p => p.Select(x => x.GroupID).ToHashSet());
+                return filters.Select(p => new IndustryTargetFilterInfo
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    CategoryIds = categories.TryGetValue(p.Id, out var c) ? c : new HashSet<int>(),
+                    GroupIds = groups.TryGetValue(p.Id, out var g) ? g : new HashSet<int>(),
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryTargetFilterInfo>();
+            }
+        }
+
+        /// <summary>按分类/组判断是否命中目标过滤器。</summary>
+        public static bool MatchesTargetFilter(int filterId, int categoryId, int groupId)
+        {
+            if (filterId <= 0) return false;
+            var filter = GetIndustryTargetFilters().FirstOrDefault(p => p.Id == filterId);
+            if (filter == null) return false;
+            return filter.CategoryIds.Contains(categoryId) || filter.GroupIds.Contains(groupId);
+        }
+
+        /// <summary>按产物反查行星 schematic（planetSchematicsTypeMap 的 is_input=0）。</summary>
+        public static IndustryPlanetaryRecipe GetPlanetaryRecipeByProduct(int productTypeId)
+        {
+            var db = Db;
+            if (db == null || productTypeId <= 0)
+            {
+                return null;
+            }
+            try
+            {
+                var output = db.Queryable<PlanetSchematicTypeMap>()
+                    .Where(p => p.TypeId == productTypeId && !p.IsInput)
+                    .OrderBy(p => p.SchematicId)
+                    .First();
+                if (output == null || output.SchematicId <= 0)
+                {
+                    return null;
+                }
+
+                var schematic = db.Queryable<PlanetSchematic>()
+                    .Where(p => p.SchematicId == output.SchematicId)
+                    .First();
+                var maps = db.Queryable<PlanetSchematicTypeMap>()
+                    .Where(p => p.SchematicId == output.SchematicId)
+                    .ToList();
+                return new IndustryPlanetaryRecipe
+                {
+                    SchematicId = output.SchematicId,
+                    Name = schematic?.SchematicName ?? string.Empty,
+                    CycleTime = schematic?.CycleTime ?? 0,
+                    OutputQuantity = output.Quantity,
+                    Inputs = maps
+                        .Where(p => p.IsInput && p.Quantity > 0)
+                        .Select(p => new IndustryPlanetaryInput
+                        {
+                            TypeID = p.TypeId,
+                            Quantity = p.Quantity,
+                        })
+                        .ToList(),
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return null;
             }
         }
 

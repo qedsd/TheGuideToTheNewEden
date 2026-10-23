@@ -1,7 +1,9 @@
 using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WPF.Services.Characters;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WPF.Services.Industry;
 
@@ -40,8 +42,11 @@ public static class IndustryOptionsFactory
         int? inventionAttemptsOverride = null,
         double? inventionProbabilityOverride = null,
         int? inventionBpcRunsOverride = null,
-        Action<int, int>? marketPageCallback = null)
+        Action<int, int>? marketPageCallback = null,
+        CancellationToken cancellationToken = default,
+        int structureTypeId = 0)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var options = new IndustrySolverOptions
         {
             DefaultME = defaultMe,
@@ -59,12 +64,29 @@ public static class IndustryOptionsFactory
             ApplyRigToReactions = applyRigToReactions,
         };
 
+        if (structureTypeId > 0)
+        {
+            var structure = IndustryDbService.GetStructureModifiers(structureTypeId);
+            if (structure != null)
+            {
+                foreach (var pair in structure.Activities)
+                {
+                    // 官方反应 ID 是 9，应用内部旧库仍用 11。
+                    int activityId = pair.Key == IndustryActivity.OfficialReaction ? IndustryActivity.Reaction : pair.Key;
+                    options.StructureModifiers[activityId] = pair.Value;
+                }
+            }
+        }
+
         try
         {
             options.AdjustedPrices = await IndustryMarketDataService.Current.GetAdjustedPricesAsync(forceRefresh);
+            cancellationToken.ThrowIfCancellationRequested();
             options.AveragePrices = await IndustryMarketDataService.Current.GetAveragePricesAsync(forceRefresh);
+            cancellationToken.ThrowIfCancellationRequested();
 
             var costIndices = await IndustryMarketDataService.Current.GetCostIndicesAsync(forceRefresh);
+            cancellationToken.ThrowIfCancellationRequested();
             if (solarSystemId > 0 && costIndices.TryGetValue(solarSystemId, out var costIndex))
             {
                 options.CostIndexManufacturing = costIndex.Manufacturing;
@@ -78,8 +100,14 @@ public static class IndustryOptionsFactory
                 {
                     regionId = MapSolarSystemService.Query((int)solarSystemId)?.RegionID ?? 0;
                 }
-                options.MarketStats = await IndustryMarketDataService.Current.GetMarketStatsAsync(regionId, forceRefresh, marketPageCallback);
+                options.MarketStats = await IndustryMarketDataService.Current.GetMarketStatsAsync(
+                    regionId, forceRefresh, marketPageCallback, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -94,6 +122,7 @@ public static class IndustryOptionsFactory
 
         foreach (var context in contexts)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (context == null)
             {
                 continue;
@@ -104,16 +133,36 @@ public static class IndustryOptionsFactory
                 if (useOwnedBlueprints)
                 {
                     var owned = await CharacterIndustryDataService.GetOwnedBlueprintsAsync(context, forceRefresh);
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (owned is not null)
                     {
                         MergeMax(options.MEOverrides, CharacterIndustryDataService.BuildMeOverrides(owned));
                         MergeMax(options.TEOverrides, CharacterIndustryDataService.BuildTeOverrides(owned));
+                        var stocks = CharacterIndustryDataService.BuildBlueprintStocks(owned);
+                        foreach (var pair in stocks)
+                        {
+                            if (!options.BlueprintStocks.TryGetValue(pair.Key, out var existing))
+                            {
+                                options.BlueprintStocks[pair.Key] = pair.Value;
+                            }
+                            else
+                            {
+                                existing.HasBpo |= pair.Value.HasBpo;
+                                existing.BpcRuns += pair.Value.BpcRuns;
+                                existing.BpcCount += pair.Value.BpcCount;
+                                existing.BpoMaterialEfficiency = Math.Max(existing.BpoMaterialEfficiency, pair.Value.BpoMaterialEfficiency);
+                                existing.BpoTimeEfficiency = Math.Max(existing.BpoTimeEfficiency, pair.Value.BpoTimeEfficiency);
+                                existing.BpcMaterialEfficiency = Math.Max(existing.BpcMaterialEfficiency, pair.Value.BpcMaterialEfficiency);
+                                existing.BpcTimeEfficiency = Math.Max(existing.BpcTimeEfficiency, pair.Value.BpcTimeEfficiency);
+                            }
+                        }
                     }
                 }
 
                 if (useInProgressJobs)
                 {
                     var jobs = await CharacterIndustryDataService.GetInProgressOutputsAsync(context, forceRefresh);
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (jobs is not null)
                     {
                         MergeSum(options.InProgressJobs, jobs);
@@ -123,6 +172,7 @@ public static class IndustryOptionsFactory
                 if (useAssets)
                 {
                     var assets = await CharacterIndustryDataService.GetAssetQuantitiesAsync(context, forceRefresh);
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (assets is not null)
                     {
                         MergeSum(options.Assets, assets);
@@ -132,11 +182,16 @@ public static class IndustryOptionsFactory
                 if (useCharacterSkills)
                 {
                     var skills = await CharacterIndustryDataService.GetSkillLevelsAsync(context, forceRefresh);
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (skills is not null)
                     {
                         MergeMax(options.CharacterSkills, skills);
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

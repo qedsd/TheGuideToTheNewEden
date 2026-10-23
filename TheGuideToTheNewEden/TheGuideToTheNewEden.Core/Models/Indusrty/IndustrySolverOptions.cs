@@ -18,10 +18,27 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         }
     }
 
+    /// <summary>角色持有的蓝图聚合：BPO 无限使用；BPC 按剩余 runs 消耗。</summary>
+    public sealed class IndustryBlueprintStock
+    {
+        public bool HasBpo { get; set; }
+        public int BpoMaterialEfficiency { get; set; }
+        public int BpoTimeEfficiency { get; set; }
+        public long BpcRuns { get; set; }
+        public int BpcCount { get; set; }
+        public int BpcMaterialEfficiency { get; set; }
+        public int BpcTimeEfficiency { get; set; }
+        public int MaterialEfficiency => HasBpo ? BpoMaterialEfficiency : BpcMaterialEfficiency;
+        public int TimeEfficiency => HasBpo ? BpoTimeEfficiency : BpcTimeEfficiency;
+        public bool IsCopyOnly => !HasBpo && BpcRuns > 0;
+    }
+
     /// <summary>按物类生效的 rig 加成。</summary>
     public class IndustryRigBonus
     {
         public int CategoryID { get; set; }
+        /// <summary>可选：官方目标过滤器 ID；设置后优先按过滤器匹配分类/组。</summary>
+        public int TargetFilterId { get; set; }
         /// <summary>材料加成（0.02 = 2%）。</summary>
         public double MeBonus { get; set; }
         /// <summary>时间加成（0.20 = 20%）。</summary>
@@ -69,6 +86,9 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         /// <summary>按产物 TypeID 覆盖 TE。</summary>
         public Dictionary<int, int> TEOverrides { get; set; } = new Dictionary<int, int>();
 
+        /// <summary>产物 TypeID → 角色持有的 BPO/BPC 状态；BPC runs 会在求解中消耗。</summary>
+        public Dictionary<int, IndustryBlueprintStock> BlueprintStocks { get; set; } = new Dictionary<int, IndustryBlueprintStock>();
+
         /// <summary>强制采购的物品 TypeID（即使有蓝图）。</summary>
         public HashSet<int> Blacklist { get; set; } = new HashSet<int>();
         /// <summary>手动指定某物品制造/采购（优先级高于黑名单，低于深度/循环保护）。</summary>
@@ -90,6 +110,12 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double CostIndexInvention { get; set; }
         /// <summary>设施税（0.10 = 10%）。</summary>
         public double FacilityTax { get; set; } = 0.10;
+        /// <summary>销售税（0.036 = 3.6%）。</summary>
+        public double SalesTaxRate { get; set; }
+        /// <summary>经纪人费（0.01 = 1%）；仅挂单卖出时计入。</summary>
+        public double BrokerFeeRate { get; set; }
+        /// <summary>true = 卖给买单（即时成交，不计经纪人费）；false = 挂卖单。</summary>
+        public bool SellImmediately { get; set; } = true;
 
         /// <summary>角色技能等级（TypeID → 等级），用于发明成功率。为空则按 0 级计算。</summary>
         public Dictionary<int, int> CharacterSkills { get; set; } = new Dictionary<int, int>();
@@ -108,6 +134,9 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
 
         /// <summary>按物类生效的 rig 加成；未命中时回退全局值。</summary>
         public List<IndustryRigBonus> RigBonuses { get; set; } = new List<IndustryRigBonus>();
+
+        /// <summary>官方结构加成（活动 ID → 材料/时间/费用倍率）；为空表示 1.0。</summary>
+        public Dictionary<int, IndustryActivityModifier> StructureModifiers { get; set; } = new Dictionary<int, IndustryActivityModifier>();
 
         /// <summary>反应是否套用 ME（默认否；反应没有 ME 研究）。</summary>
         public bool ApplyMeToReactions { get; set; }

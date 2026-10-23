@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using EVEStandard.Enumerations;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core;
@@ -59,8 +60,9 @@ public sealed class IndustryMarketDataService
     /// 某星域的市场深度（最低卖价 / 最高买价 / 买卖深度），用于盈利与买/建对比。
     /// 数据来自整星域订单缓存；首次/过期时会拉取整星域订单，可能较慢。
     /// </summary>
-    public async Task<Dictionary<int, IndustryMarketStat>> GetMarketStatsAsync(long regionId, bool forceRefresh = false, Action<int, int>? pageCallback = null)
+    public async Task<Dictionary<int, IndustryMarketStat>> GetMarketStatsAsync(long regionId, bool forceRefresh = false, Action<int, int>? pageCallback = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (regionId <= 0)
         {
             return new Dictionary<int, IndustryMarketStat>();
@@ -75,7 +77,8 @@ public sealed class IndustryMarketDataService
 
         try
         {
-            var orders = await MarketOrderService.Current.GetAllRegionOrdersAsync(regionId, true, default, pageCallback);
+            var orders = await MarketOrderService.Current.GetAllRegionOrdersAsync(regionId, true, cancellationToken, pageCallback);
+            cancellationToken.ThrowIfCancellationRequested();
             if (orders == null)
             {
                 return cache?.Stats ?? new Dictionary<int, IndustryMarketStat>();
@@ -118,6 +121,10 @@ public sealed class IndustryMarketDataService
                 WriteCache(cacheFile, new MarketStatsCache { UpdateTime = DateTime.UtcNow, Stats = result });
             }
             return result;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

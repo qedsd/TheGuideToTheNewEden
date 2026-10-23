@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Newtonsoft.Json;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.Core.Services.Industry;
@@ -28,6 +31,171 @@ internal static class IndustrySuite
         if (!IndustryDbService.IsAvailable)
         {
             return;
+        }
+
+        c.Section("IndustrySuite · 计算取消");
+        using (var cts = new CancellationTokenSource())
+        {
+            cts.Cancel();
+            var canceled = false;
+            try
+            {
+                new IndustrySolver(new IndustrySolverOptions(), cts.Token)
+                    .Solve(new[] { new IndustryBuildTarget(34, 1) });
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            c.That(canceled, "取消令牌中断 BOM 求解");
+        }
+
+        c.Section("IndustrySuite · 建筑档案");
+        var profile = new IndustryBuildingProfile
+        {
+            Name = "测试建筑",
+            FacilityTaxPercent = 7,
+            SpaceModifier = 1.9,
+            RigMeBonusPercent = 2,
+            RigTeBonusPercent = 20,
+            RigBonuses = new List<IndustryRigSetting>
+            {
+                new() { CategoryId = 6, CategoryName = "Ship", MePercent = 1, TePercent = 10 },
+            },
+        };
+        var profileRoundTrip = JsonConvert.DeserializeObject<IndustryBuildingProfile>(
+            JsonConvert.SerializeObject(profile));
+        c.Equal(profileRoundTrip?.Name, "测试建筑", "建筑档案名称往返");
+        c.Equal(profileRoundTrip?.FacilityTaxPercent, 7.0, "建筑档案设施税往返");
+        c.Equal(profileRoundTrip?.RigBonuses.Count, 1, "建筑档案 rig 往返");
+
+        c.Section("IndustrySuite · 官方工业元数据");
+        var activityDefinitions = IndustryDbService.GetIndustryActivities();
+        c.That(activityDefinitions.Count >= 6, $"官方活动定义可读（{activityDefinitions.Count} 条）");
+        c.That(activityDefinitions.Any(p => p.Id == 9), "官方反应活动 ID = 9");
+        var assemblyLines = IndustryDbService.GetIndustryAssemblyLines();
+        c.That(assemblyLines.Count > 0, $"装配线可读（{assemblyLines.Count} 条）");
+        c.That(assemblyLines.Any(p => p.Details.Count > 0), "装配线分类/组倍率可读");
+        var installationLines = IndustryDbService.GetInstallationAssemblyLineIds(16216);
+        c.That(installationLines.Count >= 2, "设施类型 → 装配线可解析");
+        var targetFilters = IndustryDbService.GetIndustryTargetFilters();
+        c.That(targetFilters.Count > 0, $"目标过滤器可读（{targetFilters.Count} 个）");
+        var shipsFilter = targetFilters.FirstOrDefault(p => p.Id == 3);
+        c.That(shipsFilter != null && shipsFilter.CategoryIds.Contains(6), "Ships 过滤器命中分类 6");
+        var structures = IndustryDbService.GetIndustryStructureOptions();
+        c.That(structures.Count > 0, $"结构类型可读（{structures.Count} 个）");
+        var raitaru = IndustryDbService.GetStructureModifiers(35825);
+        c.NotNull(raitaru, "Raitaru 官方 modifier 可解析");
+        var equipmentRig = IndustryDbService.GetIndustryModifierSources(43920);
+        c.That(equipmentRig.Any(p => p.FilterID == 2), "Equipment rig 的 SDE filterID=2");
+        if (raitaru is not null)
+        {
+            c.That(raitaru.Activities.TryGetValue(1, out var manufacturing), "Raitaru 制造活动存在");
+            if (manufacturing is not null)
+            {
+                c.That(Math.Abs(manufacturing.Material - 0.99) < 0.0001, "Raitaru 材料倍率 0.99");
+                c.That(Math.Abs(manufacturing.Time - 0.85) < 0.0001, "Raitaru 时间倍率 0.85");
+                c.That(Math.Abs(manufacturing.Cost - 0.97) < 0.0001, "Raitaru 费用倍率 0.97");
+            }
+        }
+        c.That(Math.Abs(IndustryCalculator.ApplyME(100, 1, 0, 0, 0.99) - 99) < 0.001, "结构材料倍率参与 ApplyME");
+        c.That(Math.Abs(IndustryCalculator.JobTimeSeconds(100, 1, 0, 0, 0.85) - 85) < 0.001, "结构时间倍率参与 JobTime");
+        c.That(Math.Abs(IndustryCalculator.JobCost(1000, 0.01, 0.1, 0.97) - 10.67) < 0.001, "结构费用倍率参与 JobCost");
+        var tatara = IndustryDbService.GetStructureModifiers(35836);
+        c.NotNull(tatara, "Tatara 官方 modifier 可解析");
+        c.That(tatara?.Activities.ContainsKey(9) == true, "Tatara 带官方反应活动 9");
+        var baseline = new IndustrySolver(new IndustrySolverOptions { DefaultME = 0, DefaultTE = 0 })
+            .Solve(new[] { new IndustryBuildTarget(24495, 1) }).Targets[0];
+        var withStructure = new IndustrySolver(new IndustrySolverOptions
+        {
+            DefaultME = 0,
+            DefaultTE = 0,
+            StructureModifiers =
+            {
+                [IndustryActivity.Manufacturing] = new IndustryActivityModifier { Time = 0.5, Material = 0.5, Cost = 0.5 }
+            }
+        }).Solve(new[] { new IndustryBuildTarget(24495, 1) }).Targets[0];
+        c.That(baseline.JobTimeSeconds > 0 && Math.Abs(withStructure.JobTimeSeconds - baseline.JobTimeSeconds * 0.5) < 0.01,
+            "求解器套用结构时间倍率");
+
+        c.Section("IndustrySuite · BPO / BPC 与净利");
+        var bpcOptions = new IndustrySolverOptions
+        {
+            DefaultME = 0,
+            DefaultTE = 0,
+            BlueprintStocks =
+            {
+                [24495] = new IndustryBlueprintStock
+                {
+                    BpcRuns = 1,
+                    BpcCount = 1,
+                    BpcMaterialEfficiency = 5,
+                    BpcTimeEfficiency = 10,
+                }
+            }
+        };
+        var bpcNode = new IndustrySolver(bpcOptions).Solve(new[] { new IndustryBuildTarget(24495, 100000) }).Targets[0];
+        c.Equal(bpcNode.BpcRunsAvailable, 1L, "BPC 可用流程来自角色蓝图");
+        c.Equal(bpcNode.BpcRunsUsed, 1L, "BPC 流程被消耗");
+        c.Equal(bpcNode.BpcRunsRemaining, 0L, "BPC 剩余流程归零");
+        c.That(bpcNode.BpcRunsShortage > 0, "BPC 不足被标记");
+
+        var netOptions = new IndustrySolverOptions
+        {
+            DefaultME = 0,
+            DefaultTE = 0,
+            SalesTaxRate = 0.1,
+            SellImmediately = true,
+            MarketStats =
+            {
+                [24495] = new IndustryMarketStat { BuyMax = 1000, SellMin = 1100 }
+            }
+        };
+        var netNode = new IndustrySolver(netOptions).Solve(new[] { new IndustryBuildTarget(24495, 1) }).Targets[0];
+        c.That(netNode.Revenue > 0 && Math.Abs(netNode.NetRevenue - netNode.Revenue * 0.9) < 0.01,
+            "净收入扣除销售税");
+
+        var reprocessed = IndustryOreCalculator.Reprocess(1230, 1000, 1.0);
+        c.That(reprocessed.Any(p => p.TypeID == 34 && p.Quantity == 4000), "回收：凡晶石 1000 → 三钛 4000");
+        var compressed = IndustryOreCalculator.Compress(1230, 1000);
+        c.That(compressed != null && compressed.Quantity == 1000, "压缩：单位数量 1:1");
+
+        c.Section("IndustrySuite · 本地 SDE 版本");
+        var sdeBuild = IndustryDbService.GetSdeBuildNumber();
+        c.NotNull(sdeBuild, "主库 sdeInfo.buildNumber 可读");
+        c.That(sdeBuild is > 0, $"本地 SDE buildNumber = {sdeBuild}");
+
+        c.Section("IndustrySuite · 行星开发");
+        var planetaryRecipe = IndustryDbService.GetPlanetaryRecipeByProduct(9830);
+        c.NotNull(planetaryRecipe, "火箭燃料行星配方可读");
+        if (planetaryRecipe is not null)
+        {
+            c.Equal(planetaryRecipe.OutputQuantity, 5L, "行星配方每周期产出 5");
+            c.That(planetaryRecipe.Inputs.Count > 0, "行星配方有输入");
+            var planetaryNode = new IndustrySolver(new IndustrySolverOptions()).SolveNode(9830, 5);
+            c.Equal(planetaryNode.ActivityID, IndustryActivity.Planetary, "行星产物走 Planetary 活动");
+            c.Equal(planetaryNode.Runs, 1, "5 需求 / 5 产出 = 1 周期");
+            c.Equal(planetaryNode.QuantityProduced, 5L, "行星周期产出 5");
+            c.That(planetaryNode.Inputs.Count > 0, "行星节点展开输入");
+        }
+
+        c.Section("IndustrySuite · T3 制造 / 逆向");
+        var t3Plan = new IndustrySolver(new IndustrySolverOptions { IncludeInvention = true })
+            .Solve(new[] { new IndustryBuildTarget(29984, 1) });
+        var t3Target = t3Plan.Targets.FirstOrDefault();
+        c.NotNull(t3Target, "T3 目标 Tengu 可求解");
+        if (t3Target is not null)
+        {
+            c.Equal(t3Target.BlueprintTypeID, 29985, "T3 制造蓝图 29985");
+            var t3Invention = FindIndustryNode(t3Target, p => p.IsInvention && p.TypeID == 29984);
+            c.NotNull(t3Invention, "T3 逆向走 invention 节点");
+            if (t3Invention is not null)
+            {
+                c.Equal(t3Invention.BlueprintTypeID, 30752, "T3 逆向源是 relic 30752");
+                c.That(t3Invention.InventionProbability > 0, "T3 逆向概率来自 SDE");
+                c.Equal(t3Invention.InventionOutputRuns, 20, "T3 BPC 20 runs");
+                c.That(t3Invention.Inputs.Any(p => p.TypeID == 30752 && p.QuantityNeeded > 0), "T3 relic 作为消耗输入计入");
+            }
         }
 
         c.Section("IndustrySuite · 库存覆盖 / 共享半成品");
@@ -505,6 +673,18 @@ internal static class IndustrySuite
         {
             c.That(false, $"工业页面构造异常：{ex.Message}");
         }
+    }
+
+    private static IndustryBuildNode FindIndustryNode(IndustryBuildNode node, Func<IndustryBuildNode, bool> predicate)
+    {
+        if (node is null) return null;
+        if (predicate(node)) return node;
+        foreach (var input in node.Inputs)
+        {
+            var found = FindIndustryNode(input, predicate);
+            if (found is not null) return found;
+        }
+        return null;
     }
 
     private sealed class ScheduleHost

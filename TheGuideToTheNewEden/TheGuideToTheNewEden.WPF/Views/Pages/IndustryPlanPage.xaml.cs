@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using TheGuideToTheNewEden.WPF.Services.Industry;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
 using TheGuideToTheNewEden.WPF.Views.Windows;
@@ -47,6 +48,56 @@ public partial class IndustryPlanPage : Page
     private void OnClearTargetsClick(object sender, RoutedEventArgs e) => _viewModel.ClearTargets();
 
     private void OnAddRigClick(object sender, RoutedEventArgs e) => _viewModel.AddRig();
+
+    private void OnSaveBuildingProfileClick(object sender, RoutedEventArgs e) => _viewModel.SaveBuildingProfile();
+
+    private void OnNewBuildingProfileClick(object sender, RoutedEventArgs e) => _viewModel.NewBuildingProfile();
+
+    private void OnBuildingProfileDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if ((sender as ListBox)?.SelectedItem is IndustryBuildingProfileItem item)
+        {
+            item.IsEditing = true;
+        }
+    }
+
+    private void OnBuildingProfileEditBoxVisible(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is TextBox box && box.IsVisible)
+        {
+            box.Focus();
+            box.SelectAll();
+        }
+    }
+
+    private void OnBuildingProfileNameLostFocus(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is IndustryBuildingProfileItem item)
+        {
+            item.IsEditing = false;
+        }
+    }
+
+    private void OnBuildingProfileNameKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key is Key.Enter or Key.Escape
+            && (sender as FrameworkElement)?.DataContext is IndustryBuildingProfileItem item)
+        {
+            item.IsEditing = false;
+            e.Handled = true;
+        }
+    }
+
+    private void OnApplyBuildingProfileClick(object sender, RoutedEventArgs e) => _viewModel.ApplyBuildingProfile();
+
+    private void OnDeleteBuildingProfileClick(object sender, RoutedEventArgs e)
+    {
+        if (MessageBox.Show("删除当前建筑档案？", "确认", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+        _viewModel.DeleteBuildingProfile();
+    }
 
     private void OnViewBomCostClick(object sender, RoutedEventArgs e)
     {
@@ -100,6 +151,8 @@ public partial class IndustryPlanPage : Page
     }
 
     private void OnCalculateClick(object sender, RoutedEventArgs e) => _ = _viewModel.CalculateAsync();
+
+    private void OnCancelClick(object sender, RoutedEventArgs e) => _viewModel.CancelCurrentOperation();
 
     private void OnCopyClick(object sender, RoutedEventArgs e) => _viewModel.CopyPurchaseList();
 

@@ -13,6 +13,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public int GroupID { get; set; }
         public double Volume { get; set; }
         public double PackagedVolume { get; set; }
+        public int PortionSize { get; set; }
         public int? MarketGroupID { get; set; }
     }
 

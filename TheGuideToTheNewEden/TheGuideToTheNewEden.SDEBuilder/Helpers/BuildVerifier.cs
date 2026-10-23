@@ -50,6 +50,10 @@ namespace TheGuideToTheNewEden.SDEBuilder.Helpers
             Map("npcCharacters", "npcCharacters");
             Map("landmarks", "landmarks");
             Map("mercenaryTacticalOperations", "mercenaryTacticalOperations");
+            Map("industryActivities", "industryActivities");
+            Map("industryAssemblyLines", "industryAssemblyLines");
+            Map("industryInstallationTypes", "industryInstallationTypes");
+            Map("industryTargetFilters", "industryTargetFilters");
 
             if (fileDatas.ContainsKey("mapStargates") && fileDatas.ContainsKey("mapSolarSystems"))
             {
@@ -103,6 +107,13 @@ namespace TheGuideToTheNewEden.SDEBuilder.Helpers
             if (fileDatas.ContainsKey("typeDogma")) expanded.Add("typeDogma");
             if (fileDatas.ContainsKey("masteries")) expanded.Add("masteries");
             if (fileDatas.ContainsKey("planetSchematics")) expanded.Add("planetSchematicsTypeMap");
+            if (fileDatas.ContainsKey("industryAssemblyLines")) expanded.Add("industryAssemblyLineDetails");
+            if (fileDatas.ContainsKey("industryModifierSources")) expanded.Add("industryModifierSources");
+            if (fileDatas.ContainsKey("industryTargetFilters"))
+            {
+                expanded.Add("industryTargetFilterCategories");
+                expanded.Add("industryTargetFilterGroups");
+            }
 
             string sdeFolder = sdeFiles != null && sdeFiles.Length > 0 ? Path.GetDirectoryName(sdeFiles[0]) : null;
             if (!string.IsNullOrEmpty(sdeFolder) && File.Exists(Path.Combine(sdeFolder, "_sde.jsonl")))

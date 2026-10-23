@@ -75,7 +75,10 @@ internal static class SdeSuite
                          "archetypes", "compressibleTypes", "typeLists", "masteries", "cloneGrades",
                          "npcCharacters", "landmarks", "mercenaryTacticalOperations", "mapSecondarySuns",
                          "sdeInfo", "blueprints", "blueprintActivities", "typeMaterials", "typeDogma",
-                         "planetSchematics", "planetSchematicsTypeMap"
+                         "planetSchematics", "planetSchematicsTypeMap",
+                         "industryActivities", "industryAssemblyLines", "industryAssemblyLineDetails",
+                         "industryInstallationTypes", "industryModifierSources",
+                         "industryTargetFilters", "industryTargetFilterCategories", "industryTargetFilterGroups"
                      })
             {
                 c.That(db.Ado.GetInt($"select count(*) from \"{table}\"") > 0, $"{table} 有数据");
@@ -207,7 +210,29 @@ internal static class SdeSuite
             ["cloneGrades"] = new[] { """{"_key":1,"name":"Alpha Caldari","skills":[{"level":5,"typeID":3300}]}""" },
             ["npcCharacters"] = new[] { """{"_key":3000001,"bloodlineID":1,"ceo":true,"corporationID":1000001,"gender":false,"locationID":60000001,"name":{"en":"Dame Hel"},"raceID":1,"startDate":"2003-03-12 20:04:00","uniqueName":false}""" },
             ["landmarks"] = new[] { """{"_key":1,"name":{"en":"EVE Gate"},"description":{"en":"Gate"},"position":{"x":1,"y":2,"z":3}}""" },
-            ["mercenaryTacticalOperations"] = new[] { """{"_key":12367,"name":{"en":"Rogue Drone Emergence"},"description":{"en":"Drones"},"anarchyImpact":-20,"developmentImpact":10,"dungeonID":12367,"infomorphBonus":350}""" }
+            ["mercenaryTacticalOperations"] = new[] { """{"_key":12367,"name":{"en":"Rogue Drone Emergence"},"description":{"en":"Drones"},"anarchyImpact":-20,"developmentImpact":10,"dungeonID":12367,"infomorphBonus":350}""" },
+            ["industryActivities"] = new[]
+            {
+                """{"_key":1,"description":"Manufacturing of things","name":"Manufacturing"}""",
+                """{"_key":9,"description":"The process of combining raw and intermediate materials to create advanced components","name":"Reactions"}"""
+            },
+            ["industryAssemblyLines"] = new[]
+            {
+                """{"_key":10,"activityID":1,"baseCostMultiplier":1.0,"baseMaterialMultiplier":1.0,"baseTimeMultiplier":1.0,"description":"Capital Ship Assembly","name":"Capital Ship Assembly","detailsPerGroup":[{"costMultiplier":1.0,"groupID":485,"materialMultiplier":1.0,"timeMultiplier":0.75}]}"""
+            },
+            ["industryInstallationTypes"] = new[]
+            {
+                """{"_key":16216,"assemblyLines":[{"assemblyLineID":28},{"assemblyLineID":29}]}"""
+            },
+            ["industryModifierSources"] = new[]
+            {
+                """{"_key":35825,"manufacturing":{"cost":[{"dogmaAttributeID":2601}],"material":[{"dogmaAttributeID":2600}],"time":[{"dogmaAttributeID":2602}]}}""",
+                """{"_key":43920,"manufacturing":{"material":[{"dogmaAttributeID":2538,"filterID":2}]}}"""
+            },
+            ["industryTargetFilters"] = new[]
+            {
+                """{"_key":3,"categoryIDs":[6,32],"groupIDs":[963],"name":"Ships"}"""
+            }
         };
     }
 }

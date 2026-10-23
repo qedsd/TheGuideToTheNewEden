@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
 
 namespace TheGuideToTheNewEden.Core.Services.Industry
@@ -89,7 +90,9 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         {
             if (node is null) return;
 
-            if (node.Decision == IndustryDecision.Build && node.Runs > 0)
+            if (node.Decision == IndustryDecision.Build
+                && node.Runs > 0
+                && node.ActivityID != IndustryActivity.Planetary)
             {
                 var key = JobKey(node.TypeID, node.ActivityID);
                 if (!jobs.TryGetValue(key, out var job))
@@ -137,7 +140,9 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                             };
                         }
 
-                        if (input.Decision == IndustryDecision.Build && input.Runs > 0)
+                        if (input.Decision == IndustryDecision.Build
+                            && input.Runs > 0
+                            && input.ActivityID != IndustryActivity.Planetary)
                         {
                             job.DependencyKeys.Add(JobKey(input.TypeID, input.ActivityID));
                         }

@@ -90,6 +90,17 @@ namespace TheGuideToTheNewEden.SDEBuilder
             await WriteTableAsync(db, GetLandmarks(fileDatas, language));
             await WriteTableAsync(db, GetMercenaryTacticalOperations(fileDatas, language));
 
+            await WriteTableAsync(db, GetIndustryActivities(fileDatas, language));
+            var industryAssemblyLines = GetIndustryAssemblyLines(fileDatas, language);
+            await WriteTableAsync(db, industryAssemblyLines.Item1);
+            await WriteTableAsync(db, industryAssemblyLines.Item2, true);
+            await WriteTableAsync(db, GetIndustryInstallationTypes(fileDatas), true);
+            await WriteTableAsync(db, GetIndustryModifierSources(fileDatas), true);
+            var industryTargetFilters = GetIndustryTargetFilters(fileDatas);
+            await WriteTableAsync(db, industryTargetFilters.Item1);
+            await WriteTableAsync(db, industryTargetFilters.Item2, true);
+            await WriteTableAsync(db, industryTargetFilters.Item3, true);
+
             var sdeInfo = GetSDEInfo(sdeFiles);
             if (sdeInfo != null)
             {
@@ -921,6 +932,154 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 return null;
             }
             return datas.Select(p => new DBModels.MercenaryTacticalOperations(p, language)).ToList();
+        }
+
+        public static List<DBModels.IndustryActivityDefinition> GetIndustryActivities(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("industryActivities", out var datas)) return null;
+            return datas.OfType<IndustryActivities>().Select(p => new DBModels.IndustryActivityDefinition
+            {
+                Id = p.Id,
+                Name = p.Names?.GetValue(language) ?? string.Empty,
+                Description = p.Descriptions?.GetValue(language) ?? string.Empty,
+            }).ToList();
+        }
+
+        public static (List<DBModels.IndustryAssemblyLine>, List<DBModels.IndustryAssemblyLineDetail>) GetIndustryAssemblyLines(
+            Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("industryAssemblyLines", out var datas)) return (null, null);
+            var lines = new List<DBModels.IndustryAssemblyLine>();
+            var details = new List<DBModels.IndustryAssemblyLineDetail>();
+            foreach (var item in datas.OfType<IndustryAssemblyLines>())
+            {
+                lines.Add(new DBModels.IndustryAssemblyLine
+                {
+                    Id = item.Id,
+                    ActivityID = item.ActivityID,
+                    Name = item.Names?.GetValue(language) ?? string.Empty,
+                    Description = item.Descriptions?.GetValue(language) ?? string.Empty,
+                    BaseCostMultiplier = item.BaseCostMultiplier,
+                    BaseMaterialMultiplier = item.BaseMaterialMultiplier,
+                    BaseTimeMultiplier = item.BaseTimeMultiplier,
+                });
+                if (item.DetailsPerCategory != null)
+                {
+                    foreach (var detail in item.DetailsPerCategory)
+                    {
+                        if (detail.CategoryID <= 0) continue;
+                        details.Add(new DBModels.IndustryAssemblyLineDetail
+                        {
+                            AssemblyLineID = item.Id,
+                            IsCategory = true,
+                            TargetID = detail.CategoryID,
+                            CostMultiplier = detail.CostMultiplier,
+                            MaterialMultiplier = detail.MaterialMultiplier,
+                            TimeMultiplier = detail.TimeMultiplier,
+                        });
+                    }
+                }
+                if (item.DetailsPerGroup != null)
+                {
+                    foreach (var detail in item.DetailsPerGroup)
+                    {
+                        if (detail.GroupID <= 0) continue;
+                        details.Add(new DBModels.IndustryAssemblyLineDetail
+                        {
+                            AssemblyLineID = item.Id,
+                            IsCategory = false,
+                            TargetID = detail.GroupID,
+                            CostMultiplier = detail.CostMultiplier,
+                            MaterialMultiplier = detail.MaterialMultiplier,
+                            TimeMultiplier = detail.TimeMultiplier,
+                        });
+                    }
+                }
+            }
+            return (lines, details);
+        }
+
+        public static List<DBModels.IndustryInstallationType> GetIndustryInstallationTypes(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if (!fileDatas.TryGetValue("industryInstallationTypes", out var datas)) return null;
+            return datas.OfType<IndustryInstallationTypes>().Select(p => new DBModels.IndustryInstallationType
+            {
+                InstallationTypeID = p.Id,
+                AssemblyLineIDs = string.Join(",", (p.AssemblyLines ?? new List<IndustryInstallationAssemblyLine>())
+                    .Select(x => x.AssemblyLineID)
+                    .Where(x => x > 0)
+                    .Distinct()),
+            }).ToList();
+        }
+
+        public static List<DBModels.IndustryModifierSource> GetIndustryModifierSources(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if (!fileDatas.TryGetValue("industryModifierSources", out var datas)) return null;
+            var rows = new List<DBModels.IndustryModifierSource>();
+            foreach (var item in datas.OfType<IndustryModifierSources>())
+            {
+                AddModifier(item.Id, 1, item.Manufacturing);
+                AddModifier(item.Id, 3, item.ResearchTime);
+                AddModifier(item.Id, 4, item.ResearchMaterial);
+                AddModifier(item.Id, 5, item.Copying);
+                AddModifier(item.Id, 8, item.Invention);
+                AddModifier(item.Id, 9, item.Reaction);
+            }
+            return rows;
+
+            void AddModifier(int sourceTypeId, int activityId, IndustryModifierActivity activity)
+            {
+                if (activity == null) return;
+                Add(activity.Cost, 1);
+                Add(activity.Time, 2);
+                Add(activity.Material, 3);
+
+                void Add(List<IndustryModifierAttribute> attrs, int modifierType)
+                {
+                    if (attrs == null) return;
+                    foreach (var attr in attrs)
+                    {
+                        if (attr.DogmaAttributeID <= 0) continue;
+                        rows.Add(new DBModels.IndustryModifierSource
+                        {
+                            SourceTypeID = sourceTypeId,
+                            ActivityID = activityId,
+                            ModifierType = modifierType,
+                            DogmaAttributeID = attr.DogmaAttributeID,
+                            FilterID = attr.FilterID,
+                        });
+                    }
+                }
+            }
+        }
+
+        public static (List<DBModels.IndustryTargetFilterDefinition>, List<DBModels.IndustryTargetFilterCategory>, List<DBModels.IndustryTargetFilterGroup>) GetIndustryTargetFilters(
+            Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if (!fileDatas.TryGetValue("industryTargetFilters", out var datas))
+                return (null, null, null);
+            var filters = new List<DBModels.IndustryTargetFilterDefinition>();
+            var categories = new List<DBModels.IndustryTargetFilterCategory>();
+            var groups = new List<DBModels.IndustryTargetFilterGroup>();
+            foreach (var item in datas.OfType<IndustryTargetFilters>())
+            {
+                filters.Add(new DBModels.IndustryTargetFilterDefinition
+                {
+                    Id = item.Id,
+                    Name = item.Names?.En ?? string.Empty,
+                });
+                if (item.CategoryIDs != null)
+                {
+                    categories.AddRange(item.CategoryIDs.Where(x => x > 0).Distinct()
+                        .Select(x => new DBModels.IndustryTargetFilterCategory { FilterID = item.Id, CategoryID = x }));
+                }
+                if (item.GroupIDs != null)
+                {
+                    groups.AddRange(item.GroupIDs.Where(x => x > 0).Distinct()
+                        .Select(x => new DBModels.IndustryTargetFilterGroup { FilterID = item.Id, GroupID = x }));
+                }
+            }
+            return (filters, categories, groups);
         }
 
         public static DBModels.SDEInfo GetSDEInfo(string[] sdeFiles)
