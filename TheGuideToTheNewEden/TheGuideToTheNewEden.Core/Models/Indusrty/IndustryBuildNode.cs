@@ -40,9 +40,11 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
 
         /// <summary>作业耗时（秒，已套 TE）。</summary>
         public double JobTimeSeconds { get; set; }
-        /// <summary>作业安装费（EIV × 系统成本指数 × (1 + 设施税)）。</summary>
+        /// <summary>作业安装费（EIV × 系统成本指数 × 结构费用 + 设施税 + SCC）。</summary>
         public double JobCost { get; set; }
         public bool JobCostKnown { get; set; }
+        /// <summary>行星产物 POCO 出口税（已计入 BuildCost/FullBuildCost）。</summary>
+        public double PlanetTax { get; set; }
 
         /// <summary>市场参考单价（优先最低卖价，回退平均价）。</summary>
         public double ReferenceUnitPrice { get; set; }
@@ -70,6 +72,10 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double BuyMaxPrice { get; set; }
         public long SellVolume { get; set; }
         public long BuyVolume { get; set; }
+        public long UnfilledQuantity { get; set; }
+        public bool MarketVolumeLimited { get; set; }
+        public List<IndustryMarketOrderLevel> SellLevels { get; set; } = new List<IndustryMarketOrderLevel>();
+        public List<IndustryMarketOrderLevel> BuyLevels { get; set; } = new List<IndustryMarketOrderLevel>();
 
         /// <summary>发明成功率（仅发明节点）。</summary>
         public double InventionProbability { get; set; }

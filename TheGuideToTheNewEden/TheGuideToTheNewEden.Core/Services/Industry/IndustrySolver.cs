@@ -305,7 +305,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             double costIndex = isReaction ? _options.CostIndexReaction : _options.CostIndexManufacturing;
             if (eiv > 0 && costIndex > 0)
             {
-                node.JobCost = IndustryCalculator.JobCost(eiv, costIndex, _options.FacilityTax, structureModifier.Cost);
+                node.JobCost = IndustryCalculator.JobCost(eiv, costIndex, _options.FacilityTax, structureModifier.Cost, _options.SccSurchargeRate);
                 node.JobCostKnown = true;
             }
 
@@ -469,7 +469,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             // 发明产物的 Quantity 是 BPC 可支持的制造流程数；比 T2 蓝图 MaxProductionLimit 更贴近新 SDE 语义。
             int baseOutputRuns = inventionProduct.Quantity > 0 ? inventionProduct.Quantity : 1;
 
-            var decryptor = ResolveDecryptor();
+            var decryptor = ResolveDecryptor(productNode.TypeID);
             int decryptorRunModifier = decryptor?.RunModifier ?? 0;
             double decryptorMultiplier = decryptor?.ProbabilityMultiplier ?? 1.0;
             int decryptorMe = decryptor?.MeModifier ?? 0;
@@ -574,7 +574,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             double eiv = IndustryCalculator.EstimatedItemValue(eivMaterials, _options.AdjustedPrices);
             if (eiv > 0 && _options.CostIndexInvention > 0)
             {
-                node.JobCost = IndustryCalculator.JobCost(eiv, _options.CostIndexInvention, _options.FacilityTax, inventionModifier.Cost);
+                node.JobCost = IndustryCalculator.JobCost(eiv, _options.CostIndexInvention, _options.FacilityTax, inventionModifier.Cost, _options.SccSurchargeRate);
                 node.JobCostKnown = true;
             }
 
@@ -596,9 +596,15 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             return node;
         }
 
-        private IndustryDecryptorInfo ResolveDecryptor()
+        private IndustryDecryptorInfo? ResolveDecryptor(int? productTypeId = null)
         {
             int? typeId = _options.DecryptorTypeId;
+            if (productTypeId.HasValue
+                && _options.DecryptorOverrides != null
+                && _options.DecryptorOverrides.TryGetValue(productTypeId.Value, out var overrideId))
+            {
+                typeId = overrideId > 0 ? overrideId : (int?)null;
+            }
             if (!typeId.HasValue || typeId.Value <= 0)
             {
                 return null;
@@ -636,16 +642,38 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             node.BuyMaxPrice = stat?.BuyMax ?? 0;
             node.SellVolume = stat?.SellVolume ?? 0;
             node.BuyVolume = stat?.BuyVolume ?? 0;
+            node.SellLevels = stat?.SellLevels?.ToList() ?? new List<IndustryMarketOrderLevel>();
+            node.BuyLevels = stat?.BuyLevels?.ToList() ?? new List<IndustryMarketOrderLevel>();
             node.RevenueUnitPrice = GetRevenuePrice(node.TypeID);
             long revenueQuantity = node.Decision == IndustryDecision.Build && node.QuantityProduced > 0
                 ? node.QuantityProduced
                 : node.QuantityNeeded;
-            node.Revenue = node.RevenueUnitPrice > 0 ? node.RevenueUnitPrice * revenueQuantity : 0;
+
+            if (_options.SellImmediately && stat != null)
+            {
+                node.Revenue = stat.QuoteImmediate(revenueQuantity, out var unfilled);
+                node.UnfilledQuantity = unfilled;
+                node.MarketVolumeLimited = unfilled > 0;
+                node.RevenueUnitPrice = revenueQuantity > 0 ? node.Revenue / revenueQuantity : node.BuyMaxPrice;
+            }
+            else
+            {
+                node.Revenue = node.RevenueUnitPrice > 0 ? node.RevenueUnitPrice * revenueQuantity : 0;
+                node.UnfilledQuantity = stat != null ? Math.Max(0, revenueQuantity - stat.BuyVolume) : 0;
+                node.MarketVolumeLimited = node.UnfilledQuantity > 0;
+            }
+
             double salesTaxRate = Math.Clamp(_options.SalesTaxRate, 0, 1);
             double brokerFeeRate = _options.SellImmediately ? 0 : Math.Clamp(_options.BrokerFeeRate, 0, 1);
             node.SalesTax = node.Revenue * salesTaxRate;
             node.BrokerFee = node.Revenue * brokerFeeRate;
             node.NetRevenue = Math.Max(0, node.Revenue - node.SalesTax - node.BrokerFee);
+            if (node.ActivityID == IndustryActivity.Planetary && _options.PlanetTaxRate > 0)
+            {
+                node.PlanetTax = node.Revenue * Math.Clamp(_options.PlanetTaxRate, 0, 1);
+                node.BuildCost += node.PlanetTax;
+                node.FullBuildCost += node.PlanetTax;
+            }
             node.Profit = node.NetRevenue - node.FullBuildCost;
             node.Margin = node.NetRevenue > 0 ? node.Profit / node.NetRevenue : 0;
         }

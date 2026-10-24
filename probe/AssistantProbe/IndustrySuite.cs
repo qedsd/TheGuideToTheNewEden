@@ -50,6 +50,12 @@ internal static class IndustrySuite
             c.That(canceled, "取消令牌中断 BOM 求解");
         }
 
+        c.Section("IndustrySuite · 工业默认设置");
+        var defaultSetting = new IndustrySetting();
+        c.That(defaultSetting.UseMarketDepth, "默认拉取详细订单");
+        c.That(!defaultSetting.SellImmediately, "默认挂卖单");
+        c.That(defaultSetting.UseOwnedBlueprints, "默认使用角色自有蓝图");
+
         c.Section("IndustrySuite · 建筑档案");
         var profile = new IndustryBuildingProfile
         {
@@ -100,7 +106,8 @@ internal static class IndustrySuite
         }
         c.That(Math.Abs(IndustryCalculator.ApplyME(100, 1, 0, 0, 0.99) - 99) < 0.001, "结构材料倍率参与 ApplyME");
         c.That(Math.Abs(IndustryCalculator.JobTimeSeconds(100, 1, 0, 0, 0.85) - 85) < 0.001, "结构时间倍率参与 JobTime");
-        c.That(Math.Abs(IndustryCalculator.JobCost(1000, 0.01, 0.1, 0.97) - 10.67) < 0.001, "结构费用倍率参与 JobCost");
+        c.That(Math.Abs(IndustryCalculator.JobCost(1000, 0.01, 0.1, 0.97) - 149.7) < 0.001,
+            "结构费用/设施税/SCC 按加法口径参与 JobCost");
         var tatara = IndustryDbService.GetStructureModifiers(35836);
         c.NotNull(tatara, "Tatara 官方 modifier 可解析");
         c.That(tatara?.Activities.ContainsKey(9) == true, "Tatara 带官方反应活动 9");
@@ -177,6 +184,19 @@ internal static class IndustrySuite
             c.Equal(planetaryNode.Runs, 1, "5 需求 / 5 产出 = 1 周期");
             c.Equal(planetaryNode.QuantityProduced, 5L, "行星周期产出 5");
             c.That(planetaryNode.Inputs.Count > 0, "行星节点展开输入");
+
+            var planetaryOptions = new IndustrySolverOptions
+            {
+                PlanetTaxRate = 0.05,
+                AveragePrices = new Dictionary<int, double> { [9830] = 1000 },
+            };
+            var planetaryPlan = new IndustrySolver(planetaryOptions)
+                .Solve(new[] { new IndustryBuildTarget(9830, 10) });
+            var planetaryTarget = planetaryPlan.Targets[0];
+            c.That(planetaryTarget.PlanetTax > 0, "行星出口税计入节点成本");
+            var planetarySchedule = IndustryScheduler.Build(planetaryPlan, planetaryOptions);
+            c.That(planetarySchedule.Jobs.Any(p => p.ActivityId == 100 && p.LineId == "P1"),
+                "行星任务进入排产（不占工业槽位）");
         }
 
         c.Section("IndustrySuite · T3 制造 / 逆向");
@@ -375,6 +395,18 @@ internal static class IndustrySuite
             }
         }
 
+        var targetOverrideOptions = new IndustrySolverOptions
+        {
+            CharacterSkills = new Dictionary<int, int> { [21790] = 5 },
+            DecryptorTypeId = 21576,
+            DecryptorOverrides = new Dictionary<int, int> { [37458] = 0 },
+            AveragePrices = new Dictionary<int, double> { [37458] = 1_000_000 },
+        };
+        var targetOverridePlan = new IndustrySolver(targetOverrideOptions)
+            .Solve(new[] { new IndustryBuildTarget(37458, 1) });
+        var targetOverrideInvention = targetOverridePlan.Targets[0].Inputs.FirstOrDefault(p => p.IsInvention);
+        c.Equal(targetOverrideInvention?.DecryptorTypeID ?? -1, 0, "逐目标解密器可覆盖为无");
+
         c.Section("IndustrySuite · 反应规则");
         var reactionPlan = new IndustrySolver(new IndustrySolverOptions { DefaultME = 10 })
             .Solve(new[] { new IndustryBuildTarget(16672, 1) });
@@ -544,6 +576,45 @@ internal static class IndustrySuite
         c.That(!slotOverlap, "同一角色同一槽位不重叠");
         c.That(schedule.Characters.Sum(p => p.ManufacturingSlots) == 12, "制造槽位来自角色配置（8 + 4）");
 
+        c.Section("IndustrySuite · 市场档位与成交量");
+        var volumeStat = new IndustryMarketStat
+        {
+            BuyMax = 100,
+            BuyVolume = 130,
+            SellMin = 110,
+            BuyLevels = new List<IndustryMarketOrderLevel>
+            {
+                new IndustryMarketOrderLevel { Price = 100, Volume = 30 },
+                new IndustryMarketOrderLevel { Price = 90, Volume = 100 },
+            },
+        };
+        var immediateRevenue = volumeStat.QuoteImmediate(50, out var immediateUnfilled);
+        c.That(Math.Abs(immediateRevenue - 4800) < 0.1 && immediateUnfilled == 0,
+            "立即卖出按买单档位成交量计价");
+        volumeStat.QuoteImmediate(200, out var overflowUnfilled);
+        c.Equal(overflowUnfilled, 70L, "超出可见买单档位的数量被标记");
+
+        scheduleOptions.InProgressJobDetails.Add(new IndustryInProgressJob
+        {
+            JobId = 90001,
+            CharacterId = 9001,
+            CharacterName = "Aurora",
+            ProductTypeId = 34,
+            ProductName = "Tritanium",
+            ActivityId = 1,
+            Runs = 1,
+            QuantityProduced = 1,
+            RemainingHours = 5,
+            EndDate = DateTime.Now.AddHours(5),
+            Status = "active",
+        });
+        var activeSchedule = IndustryScheduler.Build(schedulePlan, scheduleOptions);
+        c.That(activeSchedule.Jobs.Any(p => p.IsInProgress && p.Key == "active:90001"), "在制任务进入排产");
+        c.That(activeSchedule.Jobs
+                .Where(p => !p.IsInProgress && p.CharacterId == 9001 && p.LineId == "M1")
+                .All(p => p.StartHours >= 5 - 0.001),
+            "在制任务占用槽位，后续任务从剩余时间之后开始");
+
         var customOnlyOptions = new IndustrySolverOptions
         {
             DefaultME = 2,
@@ -571,13 +642,41 @@ internal static class IndustrySuite
                 g.Lines.Count > 0 && g.Lines.All(line => line.HasJobs))), "工位只按类型分组显示有任务产线");
         c.That(scheduleVm.Characters.SelectMany(ch => ch.LineGroups).All(g =>
                 g.Lines.Select(line => line.Kind).Distinct().Count() == 1), "工位分组不混制造/发明/反应");
+        var longJob = new IndustryScheduleJob
+        {
+            Key = "long",
+            TypeName = "Long",
+            DurationHours = 60,
+            StartHours = 0,
+            EndHours = 60,
+        };
         var scale = IndustryScheduleTimeScale.Create(new[]
         {
-            new IndustryScheduleJob { Key = "long", TypeName = "Long", DurationHours = 60, StartHours = 0, EndHours = 60 },
+            longJob,
             new IndustryScheduleJob { Key = "short", TypeName = "Short", DurationHours = 1, StartHours = 0, EndHours = 1 },
         }, IndustryScheduleViewModel.PixelsPerHour);
-        c.That(scale.HasBreak && scale.Map(60) < 60 * IndustryScheduleViewModel.PixelsPerHour, "长任务触发时间轴压缩");
-        c.That(scale.BreakText.Contains("10h") && scale.BreakText.Contains("60h"), "压缩标签 10h ... 60h");
+        c.That(scale.HasCompression && scale.TimelineWidth < 60 * IndustryScheduleViewModel.PixelsPerHour,
+            "长任务触发不等距时间轴压缩");
+        c.That(scale.TimelineWidth <= 3600, "时间轴宽度有界");
+        c.That(scale.CreateTicks().Count < 30, "时间轴刻度自适应，不逐小时展开");
+        var compressedJob = new IndustryScheduleJobViewModel(longJob, scale);
+        c.That(compressedJob.HasCompressedGap, "长任务条标记为时间轴压缩");
+        var multiLongJobs = Enumerable.Range(0, 6)
+            .Select(i => new IndustryScheduleJob
+            {
+                Key = $"long{i}",
+                TypeName = "Long",
+                DurationHours = 100,
+                StartHours = i * 100,
+                EndHours = (i + 1) * 100,
+            })
+            .ToList();
+        var multiLongScale = IndustryScheduleTimeScale.Create(multiLongJobs, IndustryScheduleViewModel.PixelsPerHour);
+        c.That(multiLongScale.HasCompression && multiLongScale.TimelineWidth <= 3600,
+            "多个长任务（600h）仍限制时间轴宽度");
+        c.That(multiLongScale.CreateTicks().Count < 40, "600h 时间轴刻度仍有界");
+        c.That(scheduleVm.TimelineWidth <= 3600 && scheduleVm.TimelineTicks.Count < 60,
+            "排产甘特宽度与刻度有界");
         c.That(scheduleVm.GraphNodes.Count == schedule.Jobs.Count, "关系图节点完整");
         c.That(scheduleVm.GraphNodes.OrderByDescending(p => p.X).First().Job.Model.IsTarget, "关系图目标节点在最右侧");
         var ganttJob = scheduleVm.Steps.Select(p => p.Job).First();
@@ -607,6 +706,21 @@ internal static class IndustrySuite
             c.NotNull(LocalDbService.TranInvType(34), "本地化类型可读");
             c.NotNull(LocalDbService.TranInvGroup(25), "本地化分组可读");
             c.That(LocalDbService.TranInvCategories(new List<int> { 6, 7 }).Count > 0, "本地化分类可读");
+        }
+
+        c.Section("IndustrySuite · 蓝图浏览器物品树");
+        var blueprintViewModel = new IndustryBlueprintPageViewModel();
+        Task.Run(() => blueprintViewModel.LoadAllProductsAsync()).GetAwaiter().GetResult();
+        c.That(blueprintViewModel.ProductTree.Count > 0, "蓝图浏览器加载分类树");
+        c.That(blueprintViewModel.ProductCountText.Contains("可制造物品"), "蓝图浏览器显示物品计数");
+        var firstTreeProduct = blueprintViewModel.ProductTree
+            .SelectMany(p => p.Groups)
+            .SelectMany(p => p.Items)
+            .FirstOrDefault();
+        if (firstTreeProduct is not null)
+        {
+            blueprintViewModel.ProductSearchText = firstTreeProduct.Name;
+            c.That(blueprintViewModel.ProductTree.Count > 0, "蓝图浏览器搜索过滤");
         }
 
         c.Section("IndustrySuite · UI 构造");

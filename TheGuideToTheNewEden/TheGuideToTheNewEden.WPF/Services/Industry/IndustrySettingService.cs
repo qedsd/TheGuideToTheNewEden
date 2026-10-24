@@ -45,11 +45,17 @@ public sealed class IndustrySetting
     /// <summary>成本指数所用的位置（星域 / 星系 / 建筑）；默认山岳—吉他。</summary>
     public MarketLocation? Location { get; set; }
 
-    /// <summary>价格/市场深度所用的市场位置；null 时沿用 <see cref="Location"/> 的星域。</summary>
+    /// <summary>价格/详细订单所用的市场位置；null 时沿用 <see cref="Location"/> 的星域。</summary>
     public MarketLocation? PriceLocation { get; set; }
 
     /// <summary>设施税（百分比，10 = 10%）。</summary>
     public double FacilityTaxPercent { get; set; } = 10;
+
+    /// <summary>SCC 附加费（百分比，4 = 4%）。</summary>
+    public double SccSurchargePercent { get; set; } = 4.0;
+
+    /// <summary>行星产物出口税（POCO，百分比，5 = 5%）。</summary>
+    public double PlanetTaxPercent { get; set; } = 5.0;
 
     /// <summary>官方结构类型 ID；0 = 不套官方结构加成。</summary>
     public int StructureTypeId { get; set; }
@@ -92,7 +98,7 @@ public sealed class IndustrySetting
     /// <summary>手动每张发明 BPC 的可用流程数；null/0 = 自动。</summary>
     public int? InventionBpcRunsOverride { get; set; }
 
-    /// <summary>反应是否套用 ME / 材料 rig。</summary>
+    /// <summary>反应材料是否套用 ME / 建筑改装件。</summary>
     public bool ApplyMeToReactions { get; set; }
 
     public bool ApplyRigToReactions { get; set; }
@@ -101,18 +107,19 @@ public sealed class IndustrySetting
 
     public bool UseInProgressJobs { get; set; } = true;
 
+    /// <summary>使用角色自有蓝图：应用 BPO/BPC 的 ME/TE，并消耗 BPC 剩余流程。</summary>
     public bool UseOwnedBlueprints { get; set; } = true;
 
     public bool UseCharacterSkills { get; set; } = true;
 
-    /// <summary>是否拉取整星域订单做市场深度/盈利（首次较慢）。</summary>
-    public bool UseMarketDepth { get; set; }
+    /// <summary>是否拉取整星域详细订单做盈利/买建对比（首次较慢）。</summary>
+    public bool UseMarketDepth { get; set; } = true;
 
     /// <summary>是否生成可选的复制/研究蓝图任务（默认关闭，不进入 BOM 材料）。</summary>
     public bool IncludeBlueprintJobs { get; set; }
 
-    /// <summary>即时卖给买单（不计经纪人费）；false = 挂卖单。</summary>
-    public bool SellImmediately { get; set; } = true;
+    /// <summary>出货方式：true = 直接卖给买单；false = 挂卖单（默认）。</summary>
+    public bool SellImmediately { get; set; }
     /// <summary>销售税（百分比，3.6 = 3.6%）。</summary>
     public double SalesTaxPercent { get; set; } = 3.6;
     /// <summary>经纪人费（百分比，1 = 1%）；仅挂卖单时计入。</summary>
@@ -135,6 +142,9 @@ public sealed class IndustrySetting
 
     /// <summary>不依赖 ESI 的自定义角色；Id 使用负数，与真实角色区分。</summary>
     public List<IndustryCustomCharacter> CustomCharacters { get; set; } = new();
+
+    /// <summary>设置迁移版本；用于把旧默认值一次性迁到当前默认值。</summary>
+    public int PreferencesVersion { get; set; }
 }
 
 /// <summary>工业设置读写（WPF 版专有文件，与 WinUI 无共享）。</summary>
@@ -168,18 +178,31 @@ public static class IndustrySettingService
         return setting;
     }
 
-    /// <summary>旧版只有 <see cref="IndustrySetting.SolarSystemId"/>：迁移成星系位置。</summary>
+    /// <summary>旧版默认值迁移：详细订单默认开启、出货方式默认挂卖单。</summary>
     private static void Migrate(IndustrySetting setting)
     {
-        if (setting.Location is not null || setting.SolarSystemId <= 0)
+        var changed = false;
+        if (setting.PreferencesVersion < 1)
         {
-            return;
+            setting.UseMarketDepth = true;
+            setting.SellImmediately = false;
+            setting.PreferencesVersion = 1;
+            changed = true;
         }
 
-        var system = MapSolarSystemService.Query((int)setting.SolarSystemId);
-        if (system is not null)
+        if (setting.Location is null && setting.SolarSystemId > 0)
         {
-            setting.Location = new MarketLocation(system);
+            var system = MapSolarSystemService.Query((int)setting.SolarSystemId);
+            if (system is not null)
+            {
+                setting.Location = new MarketLocation(system);
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            Save(setting);
         }
     }
 

@@ -30,6 +30,7 @@ public static class CharacterIndustryDataService
 {
     private const string BlueprintsKey = "industry_blueprints";
     private const string JobOutputsKey = "industry_job_outputs";
+    private const string JobDetailsKey = "industry_job_details";
     private const string AssetsKey = "industry_assets";
     private const string SkillsKey = "industry_skills";
 
@@ -172,6 +173,87 @@ public static class CharacterIndustryDataService
             }
 
             CharacterCache.Set(context.CharacterId, JobOutputsKey, result, Ttl);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 在制工业任务明细（含剩余时间/角色/设施），用于排产占槽与甘特展示。
+    /// 需要 <c>esi-industry.read_character_jobs.v1</c>。
+    /// </summary>
+    public static async Task<List<IndustryInProgressJob>?> GetInProgressJobsAsync(CharacterContext context, bool forceRefresh = false)
+    {
+        if (!forceRefresh && CharacterCache.TryGet<List<IndustryInProgressJob>>(context.CharacterId, JobDetailsKey, out var cached) && cached is not null)
+        {
+            return cached;
+        }
+
+        if (!await context.EnsureTokenValidAsync())
+        {
+            return null;
+        }
+
+        try
+        {
+            var result = new List<IndustryInProgressJob>();
+            var jobs = (await context.Api.Industry.ListCharacterIndustryJobsAsync(context.Auth, false, null)).Model;
+            if (jobs != null)
+            {
+                foreach (var job in jobs)
+                {
+                    if (!job.ProductTypeId.HasValue || job.ProductTypeId.Value <= 0 || job.Runs <= 0) continue;
+                    if (job.ActivityId != 1 && job.ActivityId != 8 && job.ActivityId != 11) continue;
+                    if (!string.Equals(job.Status, "active", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(job.Status, "paused", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    int productTypeId = (int)job.ProductTypeId.Value;
+                    int blueprintTypeId = (int)job.BlueprintTypeId;
+                    int activityId = (int)job.ActivityId;
+                    long perRun = 1;
+                    foreach (var product in IndustryDbService.GetProducts(blueprintTypeId, activityId))
+                    {
+                        if (product.ProductTypeID == productTypeId)
+                        {
+                            perRun = product.Quantity;
+                            break;
+                        }
+                    }
+
+                    var remainingHours = (job.EndDate - DateTime.Now).TotalHours;
+                    if (remainingHours <= 0 || !string.Equals(job.Status, "active", StringComparison.OrdinalIgnoreCase))
+                    {
+                        remainingHours = Math.Max(1.0 / 60.0, job.Duration / 3600.0);
+                    }
+
+                    var info = IndustryDbService.GetTypeInfo(productTypeId);
+                    result.Add(new IndustryInProgressJob
+                    {
+                        JobId = job.JobId,
+                        CharacterId = context.CharacterId,
+                        CharacterName = context.Name,
+                        ProductTypeId = productTypeId,
+                        ProductName = info?.TypeName ?? "#" + productTypeId,
+                        BlueprintTypeId = blueprintTypeId,
+                        ActivityId = activityId,
+                        Runs = (int)Math.Min(int.MaxValue, job.Runs),
+                        QuantityProduced = Math.Max(0, perRun) * job.Runs,
+                        RemainingHours = remainingHours,
+                        EndDate = job.EndDate,
+                        FacilityId = job.FacilityId,
+                        Status = job.Status,
+                    });
+                }
+            }
+
+            CharacterCache.Set(context.CharacterId, JobDetailsKey, result, Ttl);
             return result;
         }
         catch (Exception ex)

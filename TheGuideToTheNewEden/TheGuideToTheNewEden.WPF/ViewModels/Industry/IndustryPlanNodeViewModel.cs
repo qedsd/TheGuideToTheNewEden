@@ -3,8 +3,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
+using TheGuideToTheNewEden.Core.Services.DB;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -117,7 +119,30 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public int InventionOutputRuns => Model.InventionOutputRuns;
     public int InventionOutputME => Model.InventionOutputME;
     public int InventionOutputTE => Model.InventionOutputTE;
-    public string DecryptorName => Model.DecryptorName;
+    public string DecryptorName
+    {
+        get
+        {
+            if (Model.DecryptorTypeID > 0
+                && TheGuideToTheNewEden.Core.Config.NeedLocalization
+                && DBService.LocalDbReady)
+            {
+                try
+                {
+                    var local = LocalDbService.TranInvType(Model.DecryptorTypeID);
+                    if (!string.IsNullOrWhiteSpace(local?.TypeName))
+                    {
+                        return local.TypeName;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+            }
+            return Model.DecryptorName;
+        }
+    }
     public bool HasInventionData => Model.IsInvention;
 
     public string QuantityText => Model.IsInvention
@@ -157,8 +182,8 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
         : Model.BpcRunsAvailable <= 0
             ? string.Empty
             : Model.BpcRunsShortage > 0
-                ? $"BPC 剩余 {Model.BpcRunsRemaining:N0} run · 本节点用 {Model.BpcRunsUsed:N0} · 不足 {Model.BpcRunsShortage:N0}"
-                : $"BPC 剩余 {Model.BpcRunsRemaining:N0} run · 本节点用 {Model.BpcRunsUsed:N0}";
+                ? $"BPC 剩余 {Model.BpcRunsRemaining:N0} 流程 · 本节点用 {Model.BpcRunsUsed:N0} · 不足 {Model.BpcRunsShortage:N0}"
+                : $"BPC 剩余 {Model.BpcRunsRemaining:N0} 流程 · 本节点用 {Model.BpcRunsUsed:N0}";
     public bool HasBlueprintStockText => !string.IsNullOrEmpty(BlueprintStockText);
     public string MeTeText => !IsStockCovered && !IsPlanetary && Model.Decision == IndustryDecision.Build ? $"ME {ME} · TE {TE}" : string.Empty;
     public bool HasMeTe => !string.IsNullOrEmpty(MeTeText);
@@ -169,8 +194,24 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public string UnitPriceText => Model.ReferenceUnitPrice > 0 ? Model.ReferenceUnitPrice.ToString("N2") : "—";
     public string MarketText => SellMin > 0 || BuyMax > 0
         ? $"卖 {SellMin:N2} / 买 {BuyMax:N2}"
-        : "无市场深度";
-    public string InventionText => $"成功率 {InventionProbability:P1} · 尝试 {Runs:N0} 次 · BPC 需要 {Model.QuantityNeeded:N0} 张 × {InventionOutputRuns} run · 期望成功 {Runs * InventionProbability:0.##} 张 · ME{InventionOutputME}/TE{InventionOutputTE}";
+        : "无详细订单";
+    public string MarketVolumeText => Model.MarketVolumeLimited
+        ? $"超出可见买单成交量 {Model.UnfilledQuantity:N0} 件"
+        : string.Empty;
+    public bool HasMarketVolumeWarning => Model.MarketVolumeLimited;
+    public string MarketLevelsText
+    {
+        get
+        {
+            var sells = Model.SellLevels?.Take(3).Select(p => $"{p.Price:N2}×{p.Volume:N0}") ?? Enumerable.Empty<string>();
+            var buys = Model.BuyLevels?.Take(3).Select(p => $"{p.Price:N2}×{p.Volume:N0}") ?? Enumerable.Empty<string>();
+            var sellText = string.Join(" / ", sells);
+            var buyText = string.Join(" / ", buys);
+            if (string.IsNullOrEmpty(sellText) && string.IsNullOrEmpty(buyText)) return string.Empty;
+            return $"卖档 {sellText}\n买档 {buyText}";
+        }
+    }
+    public string InventionText => $"成功率 {InventionProbability:P1} · 尝试 {Runs:N0} 次 · BPC 需要 {Model.QuantityNeeded:N0} 张 × {InventionOutputRuns} 流程 · 期望成功 {Runs * InventionProbability:0.##} 张 · ME{InventionOutputME}/TE{InventionOutputTE}";
     public string InventionCostHint => Model.IsInvention && Runs > 0
         ? $"成本按 {Runs:N0} 次尝试计：自动时尝试 = ceil(BPC 需求 / 成功率)；每次尝试消耗数据核心/解密器/T1 蓝图（未拥有时），失败同样消耗；另加发明任务费用。"
         : string.Empty;

@@ -29,6 +29,8 @@ public sealed class IndustryTargetDraft
     public int TypeId { get; set; }
     public string Name { get; set; } = string.Empty;
     public long Quantity { get; set; }
+    /// <summary>null = 跟随全局；0 = 明确不用解密器；&gt;0 = 指定解密器。</summary>
+    public int? DecryptorTypeId { get; set; }
 }
 
 public sealed class IndustryTargetItem : INotifyPropertyChanged
@@ -48,6 +50,25 @@ public sealed class IndustryTargetItem : INotifyPropertyChanged
             NotifyQuantity();
         }
     }
+
+    private IndustryDecryptorOption? _selectedDecryptor;
+    public IndustryDecryptorOption? SelectedDecryptor
+    {
+        get => _selectedDecryptor;
+        set
+        {
+            if (ReferenceEquals(_selectedDecryptor, value)) return;
+            _selectedDecryptor = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedDecryptor)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DecryptorOverrideTypeId)));
+        }
+    }
+
+    /// <summary>null = 跟随全局；0 = 明确不用；&gt;0 = 指定解密器。</summary>
+    public int? DecryptorOverrideTypeId =>
+        SelectedDecryptor is null || SelectedDecryptor.TypeId == -1
+            ? null
+            : SelectedDecryptor.TypeId.GetValueOrDefault();
 
     public long QuantityLong => Math.Max(1, (long)Math.Round(_quantity));
     public string DisplayName => $"{Name} × {QuantityLong:N0}";
@@ -204,7 +225,7 @@ public sealed class IndustrySavedPlanItem
     public string TargetSummary { get; set; } = string.Empty;
 }
 
-/// <summary>「工业 → 制造计划」页：多目标、多角色、结构 rig、解密器、市场深度、可视化 BOM。</summary>
+/// <summary>「工业 → 制造计划」页：多目标、多角色、建筑改装件、解密器、详细订单、可视化 BOM。</summary>
 public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 {
     private const int MaxTreeNodes = 6000;
@@ -367,6 +388,20 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         set { if (Set(ref _facilityTaxPercent, value)) NotifyBuildingSummary(); }
     }
 
+    private double _sccSurchargePercent = 4.0;
+    public double SccSurchargePercent
+    {
+        get => _sccSurchargePercent;
+        set { if (Set(ref _sccSurchargePercent, value)) OnPropertyChanged(nameof(EffectiveCostText)); }
+    }
+
+    private double _planetTaxPercent = 5.0;
+    public double PlanetTaxPercent
+    {
+        get => _planetTaxPercent;
+        set { if (Set(ref _planetTaxPercent, value)) OnPropertyChanged(nameof(EffectiveCostText)); }
+    }
+
     private double _materialBonusPercent;
     public double MaterialBonusPercent
     {
@@ -444,7 +479,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         $"时间总加成 -{TimeBonusPercent:0.##}%；与蓝图 TE 相乘。";
 
     public string EffectiveCostText =>
-        $"费用总加成 -{CostBonusPercent:0.##}% · 设施税 +{FacilityTaxPercent:0.##}%；任务费用 = EIV × 成本指数 × (1 - 费用加成) × (1 + 设施税)。";
+        $"费用总加成 -{CostBonusPercent:0.##}% · 设施税 +{FacilityTaxPercent:0.##}% · SCC +{SccSurchargePercent:0.##}% · 行星出口税 +{PlanetTaxPercent:0.##}%；任务费用 = EIV × (成本指数 × 结构费用倍率 + 设施税 + SCC)。";
 
     private void NotifyBuildingSummary()
     {
@@ -543,6 +578,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public double NewRigTePercent { get => _newRigTePercent; set => Set(ref _newRigTePercent, value); }
 
     public ObservableCollection<IndustryDecryptorOption> Decryptors { get; } = new();
+    public ObservableCollection<IndustryDecryptorOption> TargetDecryptors { get; } = new();
 
     private IndustryDecryptorOption? _selectedDecryptor;
     public IndustryDecryptorOption? SelectedDecryptor { get => _selectedDecryptor; set => Set(ref _selectedDecryptor, value); }
@@ -675,8 +711,31 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             ? "复制/研究任务仅为可选估算，不进入 BOM 材料，也不占用排产槽位。"
             : "当前没有可生成的复制/研究任务：T2 BPC 只能通过发明获得，BPC 不能研究；只有拥有 BPO 且 BPC runs 不足时才需要复制，BPO 的 ME/TE 低于工艺目标时才需要研究。";
 
-    private bool _sellImmediately = true;
-    public bool SellImmediately { get => _sellImmediately; set => Set(ref _sellImmediately, value); }
+    private bool _sellImmediately;
+    public bool SellImmediately
+    {
+        get => _sellImmediately;
+        set
+        {
+            if (Set(ref _sellImmediately, value))
+            {
+                OnPropertyChanged(nameof(SellModeIndex));
+            }
+        }
+    }
+
+    /// <summary>出货方式：0 = 挂卖单（默认），1 = 直接卖给买单。</summary>
+    public int SellModeIndex
+    {
+        get => SellImmediately ? 1 : 0;
+        set
+        {
+            var immediate = value == 1;
+            if (SellImmediately == immediate) return;
+            SellImmediately = immediate;
+            OnPropertyChanged();
+        }
+    }
 
     private double _salesTaxPercent = 3.6;
     public double SalesTaxPercent { get => _salesTaxPercent; set => Set(ref _salesTaxPercent, value); }
@@ -827,11 +886,29 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private string _summaryProfit = "—";
     public string SummaryProfit { get => _summaryProfit; private set => Set(ref _summaryProfit, value); }
 
+    private string _summaryRoi = "—";
+    public string SummaryRoi { get => _summaryRoi; private set => Set(ref _summaryRoi, value); }
+
+    private string _summaryProfitPerSlotHour = "—";
+    public string SummaryProfitPerSlotHour { get => _summaryProfitPerSlotHour; private set => Set(ref _summaryProfitPerSlotHour, value); }
+
+    private string _summaryCapitalLockup = "—";
+    public string SummaryCapitalLockup { get => _summaryCapitalLockup; private set => Set(ref _summaryCapitalLockup, value); }
+
+    private string _summaryBreakEven = "—";
+    public string SummaryBreakEven { get => _summaryBreakEven; private set => Set(ref _summaryBreakEven, value); }
+
     private string _summaryBuyVolume = "—";
     public string SummaryBuyVolume { get => _summaryBuyVolume; private set => Set(ref _summaryBuyVolume, value); }
 
     private bool _hasPlan;
     public bool HasPlan { get => _hasPlan; private set => Set(ref _hasPlan, value); }
+
+    private bool _bomTruncated;
+    public bool HasBomTruncation => _bomTruncated;
+    public string BomWarningText => _bomTruncated
+        ? $"BOM 节点超过 {MaxTreeNodes:N0} 上限，部分输入已截断；请拆分目标或减少层数。"
+        : string.Empty;
 
     private bool _hasProfit;
     public bool HasProfit { get => _hasProfit; private set => Set(ref _hasProfit, value); }
@@ -847,6 +924,24 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         try
         {
             var decryptors = await Task.Run(() => IndustryDbService.GetDecryptorTypes());
+            var localDecryptorNames = new Dictionary<int, string>();
+            if (TheGuideToTheNewEden.Core.Config.NeedLocalization && DBService.LocalDbReady)
+            {
+                try
+                {
+                    foreach (var local in LocalDbService.TranInvTypes(decryptors.Select(p => p.TypeID).ToList()))
+                    {
+                        if (!string.IsNullOrWhiteSpace(local.TypeName))
+                        {
+                            localDecryptorNames[local.TypeID] = local.TypeName;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+            }
             var none = new IndustryDecryptorOption
             {
                 TypeId = null,
@@ -855,14 +950,23 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             Decryptors.Add(none);
             foreach (var decryptor in decryptors)
             {
+                var name = localDecryptorNames.TryGetValue(decryptor.TypeID, out var localized)
+                    ? localized
+                    : decryptor.Name;
                 Decryptors.Add(new IndustryDecryptorOption
                 {
                     TypeId = decryptor.TypeID,
-                    Name = $"{decryptor.Name}  ×{decryptor.ProbabilityMultiplier:0.0##} / ME{decryptor.MeModifier:+#;-#;0} / TE{decryptor.TeModifier:+#;-#;0} / run{decryptor.RunModifier:+#;-#;0}",
+                    Name = $"{name}  ×{decryptor.ProbabilityMultiplier:0.0##} / ME{decryptor.MeModifier:+#;-#;0} / TE{decryptor.TeModifier:+#;-#;0} / 流程{decryptor.RunModifier:+#;-#;0}",
                     Info = decryptor,
                 });
             }
             SelectedDecryptor = Decryptors.FirstOrDefault(p => p.TypeId == _setting.DecryptorTypeId) ?? none;
+            TargetDecryptors.Clear();
+            TargetDecryptors.Add(new IndustryDecryptorOption { TypeId = -1, Name = "跟随全局" });
+            foreach (var decryptor in Decryptors)
+            {
+                TargetDecryptors.Add(decryptor);
+            }
 
             var categories = await Task.Run(() => IndustryDbService.GetCategories());
             foreach (var category in categories)
@@ -899,6 +1003,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                     TypeId = draft.TypeId,
                     Name = draft.Name,
                     Quantity = draft.Quantity,
+                    SelectedDecryptor = ResolveTargetDecryptor(draft.DecryptorTypeId),
                 };
                 target.PropertyChanged += (_, _) => OnPropertyChanged(nameof(TargetSummary));
                 Targets.Add(target);
@@ -1036,6 +1141,20 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 Quantity = 1,
             },
         });
+    }
+
+    private IndustryDecryptorOption? ResolveTargetDecryptor(int? overrideId)
+    {
+        if (!overrideId.HasValue || overrideId.Value < 0)
+        {
+            return TargetDecryptors.FirstOrDefault(p => p.TypeId == -1);
+        }
+        if (overrideId.Value == 0)
+        {
+            return TargetDecryptors.FirstOrDefault(p => p.TypeId == null);
+        }
+        return TargetDecryptors.FirstOrDefault(p => p.TypeId == overrideId.Value)
+            ?? TargetDecryptors.FirstOrDefault(p => p.TypeId == -1);
     }
 
     public void RemoveTarget(IndustryTargetItem? target)
@@ -1284,8 +1403,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private void UpdateMarketPageProgress(int page, int total)
     {
         BusyText = total > 0
-            ? string.Format(Resolve("IndustryPage_MarketPage", "拉取市场深度：第 {0}/{1} 页"), page, total)
-            : string.Format(Resolve("IndustryPage_MarketPageUnknown", "拉取市场深度：第 {0} 页"), page);
+            ? string.Format(Resolve("IndustryPage_MarketPage", "拉取详细订单：第 {0}/{1} 页"), page, total)
+            : string.Format(Resolve("IndustryPage_MarketPageUnknown", "拉取详细订单：第 {0} 页"), page);
         HasBusyProgress = total > 0;
         BusyProgressPercent = total > 0 ? Math.Min(100, page * 100.0 / total) : 0;
     }
@@ -1352,7 +1471,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 bpcRunsOverride,
                 marketPageProgress,
                 cancellationToken,
-                0);
+                0,
+                SccSurchargePercent / 100.0,
+                Targets.Where(p => p.DecryptorOverrideTypeId.HasValue)
+                    .GroupBy(p => p.TypeId)
+                    .ToDictionary(g => g.Key, g => g.First().DecryptorOverrideTypeId!.Value),
+                PlanetTaxPercent / 100.0);
             _forceRefresh = false;
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1438,6 +1562,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         SelectedNode = null;
         SelectedOverviewTarget = null;
         HasPlan = false;
+        _bomTruncated = false;
+        OnPropertyChanged(nameof(HasBomTruncation));
+        OnPropertyChanged(nameof(BomWarningText));
         HasProfit = false;
         SummaryTargets = "—";
         SummaryRuns = "0";
@@ -1448,6 +1575,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         SummaryStock = "—";
         SummaryRevenue = "—";
         SummaryProfit = "—";
+        SummaryRoi = "—";
+        SummaryProfitPerSlotHour = "—";
+        SummaryCapitalLockup = "—";
+        SummaryBreakEven = "—";
         SummaryBuyVolume = "—";
         OnPropertyChanged(nameof(ProfitIsPositive));
         OnPropertyChanged(nameof(TargetSummary));
@@ -1606,6 +1737,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         SelectedNode = FlatNodes.FirstOrDefault();
         SelectedOverviewTarget = Roots.FirstOrDefault();
         HasPlan = Roots.Count > 0;
+        OnPropertyChanged(nameof(HasBomTruncation));
+        OnPropertyChanged(nameof(BomWarningText));
 
         var summary = plan.Summary;
         SummaryTargets = plan.Targets.Count.ToString();
@@ -1618,6 +1751,22 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         HasProfit = summary.ProfitKnown;
         SummaryRevenue = summary.ProfitKnown ? summary.NetRevenue.ToString("N0") + " ISK" : "—";
         SummaryProfit = summary.ProfitKnown ? $"{summary.Profit:N0} ISK ({summary.Margin:P0})" : "—";
+        var schedule = plan.Schedule ?? Schedule?.Schedule;
+        var makespan = schedule?.MakespanHours ?? 0;
+        var usedSlotHours = schedule?.Characters.Sum(p => p.UsedSlotHours) ?? 0;
+        var targetQuantity = plan.Targets.Sum(p => p.QuantityProduced > 0 ? p.QuantityProduced : p.QuantityNeeded);
+        SummaryRoi = summary.ProfitKnown && summary.SelfBuildCost > 0
+            ? $"{summary.Profit / summary.SelfBuildCost * 100:0.#}%"
+            : "—";
+        SummaryProfitPerSlotHour = summary.ProfitKnown && usedSlotHours > 0
+            ? $"{summary.Profit / usedSlotHours:N0} ISK/槽位h"
+            : "—";
+        SummaryCapitalLockup = summary.CashOutlay > 0 && makespan > 0
+            ? $"{summary.CashOutlay * makespan:N0} ISK·h"
+            : "—";
+        SummaryBreakEven = targetQuantity > 0
+            ? $"{summary.SelfBuildCost / targetQuantity:N0} ISK/件"
+            : "—";
         SummaryBuyVolume = summary.TotalBuyVolume > 0 ? summary.TotalBuyVolume.ToString("N0") + " m³" : "—";
         OnPropertyChanged(nameof(ProfitIsPositive));
         BuildBlueprintJobs(plan);
@@ -1634,8 +1783,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
 
         MarketStatusText = UseMarketDepth
-            ? string.Format(Resolve("IndustryPage_MarketDepthStatus", "市场深度 · {0:HH:mm}"), DateTime.Now)
-            : Resolve("IndustryPage_MarketAverageStatus", "平均价（未启用市场深度）");
+            ? string.Format(Resolve("IndustryPage_MarketDepthStatus", "详细订单 · {0:HH:mm}"), DateTime.Now)
+            : Resolve("IndustryPage_MarketAverageStatus", "平均价（未拉取详细订单）");
         CharacterStatusText = characterCount > 0
             ? string.Format(Resolve("IndustryPage_CharacterStatus", "{0} 个角色参与"), characterCount)
             : Resolve("IndustryPage_NoCharacterStatus", "未选择角色");
@@ -1680,6 +1829,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     private IndustryPlanNodeViewModel BuildNodeViewModel(IndustryBuildNode node, int depth, double totalCost)
     {
+        _bomTruncated |= node.Inputs is { Count: > MaxTreeNodes };
         var vm = new IndustryPlanNodeViewModel(node)
         {
             CostSharePercent = totalCost > 0 ? node.FullBuildCost / totalCost * 100 : 0,
@@ -2292,6 +2442,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             TypeId = p.TypeId,
             Name = ResolveTypeName(p.TypeId),
             Quantity = p.Quantity,
+            DecryptorTypeId = p.DecryptorTypeId,
         }));
         IndustrySettingService.Save(_setting);
 
@@ -2361,6 +2512,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         {
             TypeId = p.TypeId,
             Quantity = p.QuantityLong,
+            DecryptorTypeId = p.DecryptorOverrideTypeId,
         }).ToList();
         plan.Settings = CloneSetting(_setting);
         plan.Result = _lastPlan;
@@ -2390,6 +2542,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         SelectedLocation = _setting.Location;
         SelectedPriceLocation = _setting.PriceLocation ?? _setting.Location;
         FacilityTaxPercent = _setting.FacilityTaxPercent;
+        SccSurchargePercent = _setting.SccSurchargePercent;
+        PlanetTaxPercent = _setting.PlanetTaxPercent;
         MaterialBonusPercent = _setting.MaterialBonusPercent;
         TimeBonusPercent = _setting.TimeBonusPercent;
         CostBonusPercent = _setting.CostBonusPercent;
@@ -2464,6 +2618,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.Location = SelectedLocation;
         _setting.PriceLocation = SelectedPriceLocation;
         _setting.FacilityTaxPercent = FacilityTaxPercent;
+        _setting.SccSurchargePercent = SccSurchargePercent;
+        _setting.PlanetTaxPercent = PlanetTaxPercent;
         _setting.DefaultME = (int)Math.Round(MeLevel);
         _setting.DefaultTE = (int)Math.Round(TeLevel);
         _setting.SpaceModifier = SpaceModifier;

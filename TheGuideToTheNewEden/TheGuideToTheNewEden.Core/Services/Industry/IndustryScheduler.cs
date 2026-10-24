@@ -67,7 +67,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             RunSnapshot? best = null;
             foreach (var order in new[] { "critical", "longest", "depth" })
             {
-                var candidate = Run(profiles, jobs, order, objective, pinnedCharacters);
+                var candidate = Run(profiles, jobs, order, objective, pinnedCharacters, options.InProgressJobDetails);
                 if (candidate == null) continue;
                 if (IsBetter(candidate, best, objective))
                 {
@@ -75,7 +75,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 }
             }
 
-            if (best is null || best.Assignments.Count == 0)
+            if (best is null || (best.Assignments.Count == 0 && best.ActiveAssignments.Count == 0))
             {
                 return result;
             }
@@ -91,8 +91,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             if (node is null) return;
 
             if (node.Decision == IndustryDecision.Build
-                && node.Runs > 0
-                && node.ActivityID != IndustryActivity.Planetary)
+                && node.Runs > 0)
             {
                 var key = JobKey(node.TypeID, node.ActivityID);
                 if (!jobs.TryGetValue(key, out var job))
@@ -141,8 +140,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                         }
 
                         if (input.Decision == IndustryDecision.Build
-                            && input.Runs > 0
-                            && input.ActivityID != IndustryActivity.Planetary)
+                            && input.Runs > 0)
                         {
                             job.DependencyKeys.Add(JobKey(input.TypeID, input.ActivityID));
                         }
@@ -225,7 +223,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             Dictionary<string, JobWork> jobs,
             string order,
             IndustryScheduleObjective objective,
-            IReadOnlyDictionary<string, long>? pinnedCharacters)
+            IReadOnlyDictionary<string, long>? pinnedCharacters,
+            IReadOnlyList<IndustryInProgressJob>? activeJobs)
         {
             var states = profiles.Select(p => new ProfileState
             {
@@ -235,6 +234,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 ReactionFree = new double[Math.Max(0, p.ReactionSlots)],
             }).ToList();
 
+            var activeAssignments = ReserveInProgress(states, activeJobs);
             var assignments = new Dictionary<string, Assignment>(StringComparer.Ordinal);
             var remaining = jobs.Values.ToDictionary(p => p.Key, p => p.DependencyKeys.Count, StringComparer.Ordinal);
             var ready = new List<JobWork>();
@@ -281,12 +281,14 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 }
             }
 
-            if (assignments.Count == 0)
+            if (assignments.Count == 0 && activeAssignments.Count == 0)
             {
                 return null;
             }
 
-            var makespan = assignments.Values.Max(p => p.End);
+            var makespan = Math.Max(
+                assignments.Values.Select(p => p.End).DefaultIfEmpty(0).Max(),
+                activeAssignments.Select(p => p.End).DefaultIfEmpty(0).Max());
             var cost = 0.0;
             foreach (var pair in assignments)
             {
@@ -297,6 +299,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             return new RunSnapshot
             {
                 Assignments = assignments,
+                ActiveAssignments = activeAssignments,
                 Makespan = makespan,
                 Cost = cost,
                 Complete = assignments.Count == jobs.Count,
@@ -418,6 +421,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
                 var stage = job.ActivityId == 8 ? "发明"
                     : job.ActivityId == 11 ? "反应"
+                    : job.ActivityId == 100 ? "行星"
                     : job.IsTarget ? "总装"
                     : "组件";
 
@@ -453,6 +457,49 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                     Dependents = job.Dependents.Select(p => p.Key).OrderBy(p => p).ToList(),
                 };
                 result.Jobs.Add(resultJob);
+            }
+
+            foreach (var active in best.ActiveAssignments)
+            {
+                var source = active.Job;
+                result.Jobs.Add(new IndustryScheduleJob
+                {
+                    Key = "active:" + source.JobId,
+                    TypeId = source.ProductTypeId,
+                    TypeName = source.ProductName,
+                    ActivityId = source.ActivityId,
+                    ActivityKey = ActivityKey(source.ActivityId),
+                    ActivityText = ActivityText(source.ActivityId),
+                    IsInvention = source.IsInvention,
+                    IsTarget = false,
+                    IsInProgress = true,
+                    Stage = "在制",
+                    Runs = source.Runs,
+                    QuantityProduced = source.QuantityProduced,
+                    BaseHours = active.Duration,
+                    DurationHours = active.Duration,
+                    StartHours = active.Start,
+                    EndHours = active.End,
+                    CharacterId = active.CharacterId,
+                    CharacterName = active.CharacterName,
+                    LineId = active.LineId,
+                    LineKind = active.LineKind,
+                    LineIndex = active.LineIndex,
+                    TimeMultiplier = 1.0,
+                    JobCost = 0,
+                    MaterialCost = 0,
+                    Outputs = new List<IndustryScheduleMaterial>
+                    {
+                        new IndustryScheduleMaterial
+                        {
+                            TypeId = source.ProductTypeId,
+                            Name = source.ProductName,
+                            Quantity = source.QuantityProduced,
+                            StateKey = "inprogress",
+                            StateText = "在制",
+                        },
+                    },
+                });
             }
 
             var byKey = result.Jobs.ToDictionary(p => p.Key, StringComparer.Ordinal);
@@ -493,6 +540,10 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 for (int i = 0; i < profile.ReactionSlots; i++)
                 {
                     character.Lines.Add(MakeLine("R", "反应", i));
+                }
+                if (result.Jobs.Any(p => p.CharacterId == profile.CharacterId && p.ActivityId == 100))
+                {
+                    character.Lines.Add(MakeLine("P", "行星", 0));
                 }
 
                 foreach (var job in result.Jobs.Where(p => p.CharacterId == profile.CharacterId))
@@ -546,6 +597,47 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             };
         }
 
+        private static List<ActiveAssignment> ReserveInProgress(
+            List<ProfileState> states,
+            IReadOnlyList<IndustryInProgressJob>? activeJobs)
+        {
+            var result = new List<ActiveAssignment>();
+            if (activeJobs is null || activeJobs.Count == 0) return result;
+
+            var nextIndex = new Dictionary<(long CharacterId, int ActivityId), int>();
+            foreach (var job in activeJobs.OrderBy(p => p.EndDate))
+            {
+                var state = states.FirstOrDefault(p => p.Profile.CharacterId == job.CharacterId);
+                if (state is null) continue;
+                var free = GetFree(state, job.ActivityId);
+                if (free.Length == 0) continue;
+
+                var key = (job.CharacterId, job.ActivityId);
+                var index = nextIndex.TryGetValue(key, out var used) ? used : 0;
+                index %= free.Length;
+                nextIndex[key] = index + 1;
+
+                var duration = Math.Max(0.01, job.RemainingHours);
+                free[index] = Math.Max(free[index], duration);
+                result.Add(new ActiveAssignment
+                {
+                    Job = job,
+                    CharacterId = job.CharacterId,
+                    CharacterName = string.IsNullOrWhiteSpace(job.CharacterName)
+                        ? state.Profile.CharacterName
+                        : job.CharacterName,
+                    Profile = state.Profile,
+                    LineId = LineId(job.ActivityId, index),
+                    LineKind = LineKind(job.ActivityId),
+                    LineIndex = index,
+                    Start = 0,
+                    End = duration,
+                    Duration = duration,
+                });
+            }
+            return result;
+        }
+
         private static List<IndustryCharacterProfile> NormalizeProfiles(IEnumerable<IndustryCharacterProfile>? profiles)
         {
             var list = new List<IndustryCharacterProfile>();
@@ -589,6 +681,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 8 => state.InventionFree,
                 11 => state.ReactionFree,
+                100 => state.PlanetFree,
                 _ => state.ManufacturingFree,
             };
         }
@@ -605,6 +698,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 8 => "发明",
                 11 => "反应",
+                100 => "行星",
                 _ => "制造",
             };
         }
@@ -615,6 +709,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 8 => "I" + (index + 1),
                 11 => "R" + (index + 1),
+                100 => "P" + (index + 1),
                 _ => "M" + (index + 1),
             };
         }
@@ -666,6 +761,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 8 => "invention",
                 11 => "reaction",
+                100 => "planetary",
                 _ => "mfg",
             };
         }
@@ -676,6 +772,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 8 => "发明",
                 11 => "反应",
+                100 => "行星",
                 _ => "制造",
             };
         }
@@ -721,9 +818,24 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             public bool IsPinned { get; set; }
         }
 
+        private sealed class ActiveAssignment
+        {
+            public IndustryInProgressJob Job { get; set; } = new IndustryInProgressJob();
+            public long CharacterId { get; set; }
+            public string CharacterName { get; set; } = string.Empty;
+            public IndustryCharacterProfile Profile { get; set; } = new IndustryCharacterProfile();
+            public string LineId { get; set; } = string.Empty;
+            public string LineKind { get; set; } = string.Empty;
+            public int LineIndex { get; set; }
+            public double Start { get; set; }
+            public double End { get; set; }
+            public double Duration { get; set; }
+        }
+
         private sealed class RunSnapshot
         {
             public Dictionary<string, Assignment> Assignments { get; set; } = new Dictionary<string, Assignment>(StringComparer.Ordinal);
+            public List<ActiveAssignment> ActiveAssignments { get; set; } = new List<ActiveAssignment>();
             public double Makespan { get; set; }
             public double Cost { get; set; }
             public bool Complete { get; set; }
@@ -735,6 +847,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             public double[] ManufacturingFree { get; set; } = Array.Empty<double>();
             public double[] InventionFree { get; set; } = Array.Empty<double>();
             public double[] ReactionFree { get; set; } = Array.Empty<double>();
+            public double[] PlanetFree { get; set; } = new double[1];
         }
     }
 }

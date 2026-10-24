@@ -1,9 +1,14 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -25,6 +30,63 @@ public partial class IndustryScheduleView : UserControl
         {
             ViewModel?.FocusBomCost(step.Job.Model.TypeId);
         }
+    }
+
+    private void OnGanttZoomOutClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.Schedule is { } schedule) schedule.GanttZoom -= 0.1;
+    }
+
+    private void OnGanttZoomInClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.Schedule is { } schedule) schedule.GanttZoom += 0.1;
+    }
+
+    private void OnGanttZoomResetClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.Schedule is { } schedule) schedule.GanttZoom = 1.0;
+    }
+
+    private void OnGanttFitClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.Schedule is not { } schedule || ScheduleScroll.ViewportWidth <= 0) return;
+        var contentWidth = schedule.TimelineWidth + 170;
+        if (contentWidth <= 0) return;
+        schedule.GanttZoom = Math.Clamp((ScheduleScroll.ViewportWidth - 24) / contentWidth, 0.4, 3.0);
+    }
+
+    private void OnExportScheduleClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.Schedule is not { } schedule || schedule.Schedule.Jobs.Count == 0) return;
+        var dialog = new SaveFileDialog
+        {
+            Filter = "CSV (*.csv)|*.csv",
+            FileName = $"industry-schedule-{DateTime.Now:yyyyMMdd-HHmm}.csv",
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        static string Fmt(double hours) => TimeSpan.FromHours(Math.Max(0, hours)).ToString(@"d\.hh\:mm");
+        static string Csv(string? value) => (value ?? string.Empty).Replace("\"", "\"\"").Replace(",", " ").Replace("\r", " ").Replace("\n", " ");
+
+        var builder = new StringBuilder();
+        builder.AppendLine("Type,Activity,Character,Line,Start,End,Hours,Runs,JobCost,Critical,InProgress");
+        foreach (var job in schedule.Schedule.Jobs.OrderBy(p => p.StartHours).ThenBy(p => p.TypeName))
+        {
+            builder.AppendLine(string.Join(",",
+                Csv(job.TypeName),
+                Csv(job.ActivityText),
+                Csv(job.CharacterName),
+                Csv(job.LineId),
+                Fmt(job.StartHours),
+                Fmt(job.EndHours),
+                job.DurationHours.ToString("0.##"),
+                job.Runs,
+                job.JobCost.ToString("0.##"),
+                job.IsCritical ? "1" : "0",
+                job.IsInProgress ? "1" : "0"));
+        }
+        File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
+        PageNotifyService.Success("排程已导出");
     }
 
     private void OnScheduleTabChanged(object sender, SelectionChangedEventArgs e)

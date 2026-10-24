@@ -9,6 +9,8 @@ public sealed class IndustrySavedTarget
 {
     public int TypeId { get; set; }
     public long Quantity { get; set; }
+    /// <summary>null = 跟随全局；0 = 明确不用解密器；&gt;0 = 指定解密器。</summary>
+    public int? DecryptorTypeId { get; set; }
 }
 
 /// <summary>

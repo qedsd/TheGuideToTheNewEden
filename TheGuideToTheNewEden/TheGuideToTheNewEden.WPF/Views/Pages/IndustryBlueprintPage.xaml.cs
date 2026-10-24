@@ -5,7 +5,7 @@ using TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
-/// <summary>工业 → 蓝图浏览器：按产品名搜索，查看材料 / 产物 / 技能。</summary>
+/// <summary>工业 → 蓝图浏览器：树形浏览可制造物品，查看材料 / 产物 / 技能。</summary>
 public partial class IndustryBlueprintPage : Page
 {
     private readonly IndustryBlueprintPageViewModel _viewModel = new();
@@ -14,6 +14,13 @@ public partial class IndustryBlueprintPage : Page
     {
         InitializeComponent();
         DataContext = _viewModel;
+        Loaded += OnPageLoaded;
+    }
+
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        Loaded -= OnPageLoaded;
+        await _viewModel.LoadAllProductsAsync();
     }
 
     private void OnSearchKeyDown(object sender, KeyEventArgs e)
@@ -26,4 +33,12 @@ public partial class IndustryBlueprintPage : Page
     }
 
     private void OnSearchClick(object sender, RoutedEventArgs e) => _ = _viewModel.SearchAsync();
+
+    private void OnProductTreeSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        if (e.NewValue is IndustryProductTreeItem item)
+        {
+            _viewModel.SelectProduct(item);
+        }
+    }
 }

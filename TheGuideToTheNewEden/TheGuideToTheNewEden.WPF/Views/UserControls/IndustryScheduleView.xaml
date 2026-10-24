@@ -370,7 +370,71 @@
                             PreviewMouseLeftButtonUp="OnPanEnd"
                             PreviewMouseMove="OnPanMove">
                             <StackPanel Margin="4,6,8,8" Background="Transparent">
-                                <Grid Margin="0,0,0,4">
+                                <StackPanel Margin="0,0,0,4" Orientation="Horizontal">
+                                    <ui:Button
+                                        Padding="8,2"
+                                        Appearance="Secondary"
+                                        Click="OnGanttZoomOutClick"
+                                        Content="−"
+                                        FontSize="10"
+                                        ToolTip="缩小甘特图" />
+                                    <TextBlock
+                                        Width="48"
+                                        Margin="6,0"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        FontSize="10.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Schedule.GanttZoomText}" />
+                                    <ui:Button
+                                        Padding="8,2"
+                                        Appearance="Secondary"
+                                        Click="OnGanttZoomInClick"
+                                        Content="+"
+                                        FontSize="10"
+                                        ToolTip="放大甘特图" />
+                                    <ui:Button
+                                        Margin="6,0,0,0"
+                                        Padding="8,2"
+                                        Appearance="Secondary"
+                                        Click="OnGanttZoomResetClick"
+                                        Content="100%"
+                                        FontSize="10" />
+                                    <ui:Button
+                                        Margin="6,0,0,0"
+                                        Padding="8,2"
+                                        Appearance="Secondary"
+                                        Click="OnGanttFitClick"
+                                        Content="适配全宽"
+                                        FontSize="10" />
+                                    <ui:Button
+                                        Margin="6,0,0,0"
+                                        Padding="8,2"
+                                        Appearance="Secondary"
+                                        Click="OnExportScheduleClick"
+                                        Content="导出排程"
+                                        FontSize="10" />
+                                    <TextBlock
+                                        Margin="12,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="10.5"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding Schedule.TimelineStartText}" />
+                                </StackPanel>
+
+                                <StackPanel>
+                                    <StackPanel.LayoutTransform>
+                                        <ScaleTransform ScaleX="{Binding Schedule.GanttZoom}" ScaleY="1" />
+                                    </StackPanel.LayoutTransform>
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        FontSize="11"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding Schedule.TimelineHint}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{Binding Schedule.HasTimelineCompression, Converter={StaticResource BoolToVisibility}}" />
+
+                                    <Grid Margin="0,0,0,4">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="170" />
                                         <ColumnDefinition Width="Auto" />
@@ -508,20 +572,11 @@
                                                                                     Style="{StaticResource ScheduleBarStyle}"
                                                                                     Tag="{Binding}"
                                                                                     ToolTip="{Binding ToolTip}">
-                                                                                    <Grid>
-                                                                                        <TextBlock
-                                                                                            FontSize="12"
-                                                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                                            Text="{Binding TypeName}"
-                                                                                            TextTrimming="CharacterEllipsis" />
-                                                                                        <TextBlock
-                                                                                            Margin="4,0"
-                                                                                            HorizontalAlignment="Right"
-                                                                                            FontSize="11"
-                                                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                                            Text="{Binding CompressedGapText}"
-                                                                                            Visibility="{Binding HasCompressedGap, Converter={StaticResource BoolToVisibility}}" />
-                                                                                    </Grid>
+                                                                                    <TextBlock
+                                                                                        FontSize="12"
+                                                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                                        Text="{Binding BarText}"
+                                                                                        TextTrimming="CharacterEllipsis" />
                                                                                 </Button>
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
@@ -535,6 +590,9 @@
                                                                 <DataTrigger Binding="{Binding ActivityKey}" Value="reaction">
                                                                     <Setter TargetName="LineKind" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
                                                                 </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ActivityKey}" Value="planetary">
+                                                                    <Setter TargetName="LineKind" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                                </DataTrigger>
                                                             </DataTemplate.Triggers>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
@@ -543,6 +601,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>

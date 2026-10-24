@@ -12,34 +12,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-
-        <DrawingBrush
-            x:Key="IndustryGridBrush"
-            TileMode="Tile"
-            Viewport="0,0,26,26"
-            ViewportUnits="Absolute">
-            <DrawingBrush.Drawing>
-                <GeometryDrawing>
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="{DynamicResource TextFillColorTertiaryBrush}" Thickness="0.5" />
-                    </GeometryDrawing.Pen>
-                    <GeometryDrawing.Geometry>
-                        <GeometryGroup>
-                            <LineGeometry StartPoint="0,0" EndPoint="26,0" />
-                            <LineGeometry StartPoint="0,0" EndPoint="0,26" />
-                        </GeometryGroup>
-                    </GeometryDrawing.Geometry>
-                </GeometryDrawing>
-            </DrawingBrush.Drawing>
-        </DrawingBrush>
-
-        <Style x:Key="IndustryFieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11.5" />
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
-            <Setter Property="Margin" Value="0,8,0,3" />
-        </Style>
-
         <Style x:Key="RecipeRow" TargetType="Border">
             <Setter Property="Margin" Value="0,2" />
             <Setter Property="Padding" Value="9,6" />
@@ -106,6 +78,41 @@
             </Setter>
         </Style>
 
+        <Style
+            x:Key="IndustryProductTreeItemStyle"
+            BasedOn="{StaticResource {x:Type TreeViewItem}}"
+            TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+
+        <HierarchicalDataTemplate DataType="{x:Type vm:IndustryProductTreeCategory}" ItemsSource="{Binding Groups}">
+            <TextBlock
+                Margin="0,2"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{Binding Name}" />
+        </HierarchicalDataTemplate>
+        <HierarchicalDataTemplate DataType="{x:Type vm:IndustryProductTreeGroup}" ItemsSource="{Binding Items}">
+            <TextBlock
+                Margin="0,1"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{Binding Name}" />
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type vm:IndustryProductTreeItem}">
+            <StackPanel Margin="0,1,4,1">
+                <TextBlock
+                    FontSize="12.5"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                    FontSize="10"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                    Text="{Binding BlueprintName}"
+                    TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate x:Key="ActivityTabTemplate" DataType="{x:Type vm:IndustryActivityItem}">
             <StackPanel>
                 <TextBlock
@@ -127,25 +134,37 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  ================= 左：搜索与结果 =================  -->
+        <!--  ================= 左：可制造物品树与搜索 =================  -->
         <controls:CardControl
             Grid.Column="0"
             Padding="14,8"
             CornerRadius="8">
             <controls:CardControl.Header>
-                <StackPanel Orientation="Horizontal">
-                    <ui:SymbolIcon
-                        VerticalAlignment="Center"
-                        FontSize="15"
-                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                        Symbol="Search24" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon
+                            VerticalAlignment="Center"
+                            FontSize="15"
+                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            Symbol="Search24" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="可制造物品" />
+                    </StackPanel>
                     <TextBlock
-                        Margin="8,0,0,0"
+                        Grid.Column="1"
                         VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="蓝图检索" />
-                </StackPanel>
+                        FontSize="10.5"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Text="{Binding ProductCountText}" />
+                </Grid>
             </controls:CardControl.Header>
 
             <Grid>
@@ -163,49 +182,23 @@
                     <ui:TextBox
                         Grid.Column="0"
                         KeyDown="OnSearchKeyDown"
-                        PlaceholderText="搜索可制造/可反应产物"
-                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                        PlaceholderText="搜索可制造物品"
+                        Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}" />
                     <ui:Button
                         Grid.Column="2"
                         Click="OnSearchClick"
                         Icon="{ui:SymbolIcon Search24}" />
                 </Grid>
 
-                <ListBox
+                <TreeView
                     Grid.Row="1"
                     Margin="0,8,0,0"
-                    HorizontalContentAlignment="Stretch"
-                    ItemsSource="{Binding Results}"
-                    SelectedItem="{Binding SelectedEntry, Mode=TwoWay}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border
-                                Margin="0,2"
-                                Padding="9,6"
-                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                CornerRadius="5">
-                                <StackPanel>
-                                    <TextBlock
-                                        FontSize="12.5"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="{Binding ProductName}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        Margin="0,2,0,0"
-                                        FontSize="10"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{Binding BlueprintName}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        FontSize="9.5"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{Binding GroupName}"
-                                        TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemContainerStyle="{StaticResource IndustryProductTreeItemStyle}"
+                    ItemsSource="{Binding ProductTree}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectedItemChanged="OnProductTreeSelected" />
             </Grid>
         </controls:CardControl>
 
@@ -225,54 +218,39 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8">
-                <Grid>
-                    <Border
-                        Background="{DynamicResource SystemAccentColorPrimaryBrush}"
-                        CornerRadius="8"
-                        Opacity="0.08" />
-                    <Border
-                        Background="{StaticResource IndustryGridBrush}"
-                        CornerRadius="8"
-                        Opacity="0.09" />
-                    <StackPanel>
-                        <TextBlock
-                            FontSize="10.5"
-                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="INDUSTRY / BLUEPRINT" />
-                        <TextBlock
-                            Margin="0,3,0,0"
-                            FontSize="20"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{Binding Title}"
-                            TextTrimming="CharacterEllipsis" />
-                        <TextBlock
-                            Margin="0,4,0,0"
-                            FontSize="11"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding Subtitle}"
-                            TextWrapping="Wrap" />
+                <StackPanel>
+                    <TextBlock
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Title}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding Subtitle}"
+                        TextWrapping="Wrap" />
 
-                        <ListBox
-                            Margin="0,10,0,0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ItemContainerStyle="{StaticResource ActivityTabItem}"
-                            ItemTemplate="{StaticResource ActivityTabTemplate}"
-                            ItemsSource="{Binding Activities}"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            SelectedItem="{Binding SelectedActivity, Mode=TwoWay}">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                        </ListBox>
-                    </StackPanel>
-                </Grid>
+                    <ListBox
+                        Margin="0,10,0,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemContainerStyle="{StaticResource ActivityTabItem}"
+                        ItemTemplate="{StaticResource ActivityTabTemplate}"
+                        ItemsSource="{Binding Activities}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        SelectedItem="{Binding SelectedActivity, Mode=TwoWay}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </StackPanel>
             </Border>
 
-            <!--  配方主体：输入 → 蓝图核心 → 输出  -->
+            <!--  配方主体：输入 → 输出  -->
             <ScrollViewer
                 Grid.Row="2"
                 HorizontalScrollBarVisibility="Disabled"
@@ -281,7 +259,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="44" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
@@ -307,67 +285,27 @@
                             <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding MaterialRows}" />
                         </controls:CardControl>
 
-                        <Grid Grid.Column="1" Margin="10,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+                        <Grid Grid.Column="1" Margin="8,0">
                             <Border
-                                Grid.Row="1"
-                                Padding="14,16"
-                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <Grid Width="62" Height="62">
-                                        <Ellipse
-                                            Stroke="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                            StrokeThickness="1.4"
-                                            Opacity="0.8" />
-                                        <Ellipse
-                                            Width="48"
-                                            Height="48"
-                                            Stroke="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                            StrokeThickness="0.8"
-                                            Opacity="0.4" />
-                                        <ui:SymbolIcon
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            FontSize="26"
-                                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                            Symbol="Calculator24" />
-                                    </Grid>
-                                    <TextBlock
-                                        Margin="0,10,0,0"
-                                        HorizontalAlignment="Center"
-                                        FontSize="12"
-                                        FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="{Binding BlueprintName}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        Margin="0,3,0,0"
-                                        HorizontalAlignment="Center"
-                                        FontSize="10"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{Binding TimeText}" />
-                                    <TextBlock
-                                        Margin="0,2,0,0"
-                                        HorizontalAlignment="Center"
-                                        FontSize="10"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{Binding MaxRunsText, StringFormat=最大流程 {0}}" />
-                                </StackPanel>
-                            </Border>
-                            <ui:SymbolIcon
-                                Grid.Row="2"
+                                Width="1"
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Top"
-                                FontSize="18"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Symbol="ChevronDown24" />
+                                Background="{DynamicResource CardStrokeColorDefaultBrush}" />
+                            <Border
+                                Width="26"
+                                Height="26"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="13">
+                                <ui:SymbolIcon
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Symbol="ChevronRight24" />
+                            </Border>
                         </Grid>
 
                         <controls:CardControl
@@ -393,77 +331,27 @@
                         </controls:CardControl>
                     </Grid>
 
-                    <Grid Margin="0,12,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <controls:CardControl
-                            Grid.Column="0"
-                            Padding="14,8"
-                            CornerRadius="8">
-                            <controls:CardControl.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                        Symbol="Settings24" />
-                                    <TextBlock
-                                        Margin="8,0,0,0"
-                                        VerticalAlignment="Center"
-                                        FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="技能需求" />
-                                </StackPanel>
-                            </controls:CardControl.Header>
-                            <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding SkillRows}" />
-                        </controls:CardControl>
-
-                        <controls:CardControl
-                            Grid.Column="2"
-                            Padding="14,8"
-                            CornerRadius="8">
-                            <controls:CardControl.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                        Symbol="Database24" />
-                                    <TextBlock
-                                        Margin="8,0,0,0"
-                                        VerticalAlignment="Center"
-                                        FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="回收 / 压缩" />
-                                </StackPanel>
-                            </controls:CardControl.Header>
-                            <StackPanel>
+                    <controls:CardControl
+                        Margin="0,12,0,0"
+                        Padding="14,8"
+                        CornerRadius="8">
+                        <controls:CardControl.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                    Symbol="Settings24" />
                                 <TextBlock
-                                    Style="{StaticResource IndustryFieldLabel}"
-                                    Text="精炼产出"
-                                    Visibility="{Binding HasReprocessing, Converter={StaticResource BoolToVisibility}}" />
-                                <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding ReprocessingRows}" />
-                                <StackPanel Visibility="{Binding HasCompression, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Style="{StaticResource IndustryFieldLabel}" Text="压缩产物" />
-                                    <TextBlock
-                                        FontSize="11.5"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="{Binding CompressionText}"
-                                        TextWrapping="Wrap" />
-                                </StackPanel>
-                                <TextBlock
-                                    Margin="0,6,0,0"
-                                    FontSize="10"
-                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                    Text="材料数量为单流程基础值；ME/TE 与结构 rig 在制造计划页计算。"
-                                    TextWrapping="Wrap" />
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="技能需求" />
                             </StackPanel>
-                        </controls:CardControl>
-                    </Grid>
+                        </controls:CardControl.Header>
+                        <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding SkillRows}" />
+                    </controls:CardControl>
                 </StackPanel>
             </ScrollViewer>
         </Grid>

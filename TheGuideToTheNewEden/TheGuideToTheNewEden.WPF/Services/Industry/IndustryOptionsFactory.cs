@@ -8,7 +8,7 @@ using System.Threading;
 namespace TheGuideToTheNewEden.WPF.Services.Industry;
 
 /// <summary>
-/// 把工业数据源（公开价格/成本指数/市场深度 + 多角色蓝图/任务/资产/技能）组装成
+/// 把工业数据源（公开价格/成本指数/详细订单 + 多角色蓝图/任务/资产/技能）组装成
 /// <see cref="IndustrySolverOptions"/>，供 <c>IndustrySolver</c> 直接使用。
 /// </summary>
 public static class IndustryOptionsFactory
@@ -44,7 +44,10 @@ public static class IndustryOptionsFactory
         int? inventionBpcRunsOverride = null,
         Action<int, int>? marketPageCallback = null,
         CancellationToken cancellationToken = default,
-        int structureTypeId = 0)
+        int structureTypeId = 0,
+        double sccSurcharge = 0.04,
+        IReadOnlyDictionary<int, int>? decryptorOverrides = null,
+        double planetTax = 0.05)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var options = new IndustrySolverOptions
@@ -52,11 +55,15 @@ public static class IndustryOptionsFactory
             DefaultME = defaultMe,
             DefaultTE = defaultTe,
             FacilityTax = facilityTax,
+            SccSurchargeRate = sccSurcharge,
+            PlanetTaxRate = planetTax,
+            DecryptorTypeId = decryptorTypeId,
+            DecryptorOverrides = decryptorOverrides?.ToDictionary(p => p.Key, p => p.Value)
+                ?? new Dictionary<int, int>(),
             SpaceModifier = spaceModifier,
             RigMeBonus = rigMeBonus,
             RigTeBonus = rigTeBonus,
             RigBonuses = rigBonuses?.ToList() ?? new List<IndustryRigBonus>(),
-            DecryptorTypeId = decryptorTypeId,
             InventionAttemptsOverride = inventionAttemptsOverride,
             InventionProbabilityOverride = inventionProbabilityOverride,
             InventionBpcRunsOverride = inventionBpcRunsOverride,
@@ -161,11 +168,19 @@ public static class IndustryOptionsFactory
 
                 if (useInProgressJobs)
                 {
-                    var jobs = await CharacterIndustryDataService.GetInProgressOutputsAsync(context, forceRefresh);
+                    var jobs = await CharacterIndustryDataService.GetInProgressJobsAsync(context, forceRefresh);
                     cancellationToken.ThrowIfCancellationRequested();
                     if (jobs is not null)
                     {
-                        MergeSum(options.InProgressJobs, jobs);
+                        foreach (var job in jobs)
+                        {
+                            if (job.ProductTypeId <= 0 || job.QuantityProduced <= 0) continue;
+                            options.InProgressJobs[job.ProductTypeId] =
+                                options.InProgressJobs.TryGetValue(job.ProductTypeId, out var existingOutput)
+                                    ? existingOutput + job.QuantityProduced
+                                    : job.QuantityProduced;
+                            options.InProgressJobDetails.Add(job);
+                        }
                     }
                 }
 

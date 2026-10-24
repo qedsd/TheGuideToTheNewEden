@@ -110,12 +110,12 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             return sum;
         }
 
-        /// <summary>作业安装费：<c>EIV × 系统成本指数 × (1 + 设施税)</c>。</summary>
+        /// <summary>作业安装费：<c>EIV × (系统成本指数 × 结构费用倍率 + 设施税 + SCC 附加费)</c>。</summary>
         public static double JobCost(double eiv, double costIndex, double facilityTax)
-            => JobCost(eiv, costIndex, facilityTax, 1.0);
+            => JobCost(eiv, costIndex, facilityTax, 1.0, 0.04);
 
-        /// <summary>作业安装费（含官方结构费用倍率）：<c>EIV × 成本指数 × (1 + 设施税) × structureCost</c>。</summary>
-        public static double JobCost(double eiv, double costIndex, double facilityTax, double structureCost)
+        /// <summary>作业安装费（含官方结构费用倍率与 SCC 附加费）。</summary>
+        public static double JobCost(double eiv, double costIndex, double facilityTax, double structureCost, double sccSurcharge = 0.04)
         {
             if (eiv <= 0 || costIndex <= 0)
             {
@@ -123,7 +123,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             }
             if (facilityTax < 0) facilityTax = 0;
             if (structureCost <= 0) structureCost = 1.0;
-            return eiv * costIndex * (1.0 + facilityTax) * structureCost;
+            return eiv * (costIndex * structureCost + facilityTax + Math.Max(0, sccSurcharge));
         }
 
         /// <summary>

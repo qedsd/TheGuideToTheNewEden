@@ -79,6 +79,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public string ActivityText { get; set; } = string.Empty;
         public bool IsInvention { get; set; }
         public bool IsTarget { get; set; }
+        public bool IsInProgress { get; set; }
         public string Stage { get; set; } = string.Empty;
 
         public int Runs { get; set; }

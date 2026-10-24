@@ -37,15 +37,30 @@ public sealed class IndustryRecipeRow
 /// <summary>「工业 → 蓝图浏览器」页：产品/蓝图/活动/配方/回收/压缩。</summary>
 public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<IndustryProductEntry> Results { get; } = new();
     public ObservableCollection<IndustryActivityItem> Activities { get; } = new();
     public ObservableCollection<IndustryRecipeRow> MaterialRows { get; } = new();
     public ObservableCollection<IndustryRecipeRow> ProductRows { get; } = new();
     public ObservableCollection<IndustryRecipeRow> SkillRows { get; } = new();
-    public ObservableCollection<IndustryRecipeRow> ReprocessingRows { get; } = new();
 
-    private string _searchText = string.Empty;
-    public string SearchText { get => _searchText; set => Set(ref _searchText, value); }
+    public ObservableCollection<IndustryProductTreeCategory> ProductTree { get; } = new();
+    private List<IndustryProductEntry> _allProducts = new();
+    private bool _productsLoaded;
+
+    private string _productSearchText = string.Empty;
+    public string ProductSearchText
+    {
+        get => _productSearchText;
+        set
+        {
+            if (Set(ref _productSearchText, value))
+            {
+                ApplyProductFilter();
+            }
+        }
+    }
+
+    private string _productCountText = "—";
+    public string ProductCountText { get => _productCountText; private set => Set(ref _productCountText, value); }
 
     private IndustryProductEntry? _selectedEntry;
     public IndustryProductEntry? SelectedEntry
@@ -88,38 +103,150 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
     private string _maxRunsText = "—";
     public string MaxRunsText { get => _maxRunsText; private set => Set(ref _maxRunsText, value); }
 
-    private string _timeText = "—";
-    public string TimeText { get => _timeText; private set => Set(ref _timeText, value); }
+    public async Task LoadAllProductsAsync()
+    {
+        if (_productsLoaded)
+        {
+            ApplyProductFilter();
+            return;
+        }
 
-    private bool _hasReprocessing;
-    public bool HasReprocessing { get => _hasReprocessing; private set => Set(ref _hasReprocessing, value); }
-
-    private bool _hasCompression;
-    public bool HasCompression { get => _hasCompression; private set => Set(ref _hasCompression, value); }
-
-    private string _compressionText = string.Empty;
-    public string CompressionText { get => _compressionText; private set => Set(ref _compressionText, value); }
+        try
+        {
+            var products = await Task.Run(() => IndustryDbService.GetAllManufacturableProducts());
+            LocalizeProductRows(products);
+            _allProducts = products;
+            _productsLoaded = true;
+            ApplyProductFilter();
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            PageNotifyService.Error(Resolve("IndustryPage_LoadFailed", "读取物品失败"));
+        }
+    }
 
     public async Task SearchAsync()
     {
-        var text = SearchText?.Trim();
-        if (string.IsNullOrEmpty(text)) return;
+        if (!_productsLoaded)
+        {
+            await LoadAllProductsAsync();
+            return;
+        }
+        ApplyProductFilter();
+    }
+
+    public void SelectProduct(IndustryProductTreeItem? item)
+    {
+        if (item is null || item.TypeId <= 0) return;
+        var entry = _allProducts.FirstOrDefault(p => p.ProductTypeId == item.TypeId && p.ActivityId == item.ActivityId)
+            ?? _allProducts.FirstOrDefault(p => p.ProductTypeId == item.TypeId);
+        if (entry is not null && !ReferenceEquals(entry, SelectedEntry))
+        {
+            SelectedEntry = entry;
+        }
+    }
+
+    private void ApplyProductFilter()
+    {
+        var keyword = ProductSearchText?.Trim();
+        var filtered = string.IsNullOrEmpty(keyword)
+            ? _allProducts
+            : _allProducts.Where(p =>
+                Contains(p.ProductName, keyword)
+                || Contains(p.BlueprintName, keyword)
+                || Contains(p.GroupName, keyword)
+                || Contains(p.CategoryName, keyword))
+                .ToList();
+
+        ProductTree.Clear();
+        foreach (var categoryGroup in filtered
+                     .GroupBy(p => new { p.CategoryId, p.CategoryName })
+                     .OrderBy(g => g.Key.CategoryName))
+        {
+            var category = new IndustryProductTreeCategory
+            {
+                CategoryId = categoryGroup.Key.CategoryId,
+                Name = string.IsNullOrEmpty(categoryGroup.Key.CategoryName) ? "未分类" : categoryGroup.Key.CategoryName,
+                IsExpanded = !string.IsNullOrEmpty(keyword),
+            };
+            foreach (var groupGroup in categoryGroup
+                         .GroupBy(p => new { p.GroupId, p.GroupName })
+                         .OrderBy(g => g.Key.GroupName))
+            {
+                var group = new IndustryProductTreeGroup
+                {
+                    GroupId = groupGroup.Key.GroupId,
+                    Name = string.IsNullOrEmpty(groupGroup.Key.GroupName) ? "未分组" : groupGroup.Key.GroupName,
+                    IsExpanded = !string.IsNullOrEmpty(keyword),
+                };
+                foreach (var product in groupGroup.OrderBy(p => p.ProductName))
+                {
+                    group.Items.Add(new IndustryProductTreeItem
+                    {
+                        TypeId = product.ProductTypeId,
+                        Name = product.ProductName,
+                        BlueprintName = product.BlueprintName,
+                        ActivityId = product.ActivityId,
+                    });
+                }
+                category.Groups.Add(group);
+            }
+            ProductTree.Add(category);
+        }
+
+        ProductCountText = string.IsNullOrEmpty(keyword)
+            ? $"{_allProducts.Count} 个可制造物品"
+            : $"匹配 {filtered.Count} / {_allProducts.Count}";
+    }
+
+    private static void LocalizeProductRows(List<IndustryProductEntry> products)
+    {
+        if (!TheGuideToTheNewEden.Core.Config.NeedLocalization || !DBService.LocalDbReady || products.Count == 0)
+        {
+            return;
+        }
+
         try
         {
-            var items = await Task.Run(() => IndustryDbService.SearchManufacturableProducts(text, 100));
-            Results.Clear();
-            foreach (var item in items) Results.Add(item);
-            if (Results.Count == 0)
+            var typeIds = products.Select(p => p.ProductTypeId)
+                .Concat(products.Select(p => p.BlueprintTypeId))
+                .Where(p => p > 0)
+                .Distinct()
+                .ToList();
+            var typeNames = LocalDbService.TranInvTypes(typeIds)
+                .Where(p => !string.IsNullOrWhiteSpace(p.TypeName))
+                .GroupBy(p => p.TypeID)
+                .ToDictionary(g => g.Key, g => g.First().TypeName);
+
+            var groupIds = products.Select(p => p.GroupId).Where(p => p > 0).Distinct().ToList();
+            var groupNames = LocalDbService.TranInvGroups(groupIds)
+                .Where(p => !string.IsNullOrWhiteSpace(p.GroupName))
+                .GroupBy(p => p.GroupID)
+                .ToDictionary(g => g.Key, g => g.First().GroupName);
+
+            var categoryIds = products.Select(p => p.CategoryId).Where(p => p > 0).Distinct().ToList();
+            var categoryNames = LocalDbService.TranInvCategories(categoryIds)
+                .Where(p => !string.IsNullOrWhiteSpace(p.CategoryName))
+                .GroupBy(p => p.CategoryID)
+                .ToDictionary(g => g.Key, g => g.First().CategoryName);
+
+            foreach (var product in products)
             {
-                PageNotifyService.Info(Resolve("IndustryPage_NoSearchResult", "没有找到匹配物品"));
+                if (typeNames.TryGetValue(product.ProductTypeId, out var name)) product.ProductName = name;
+                if (typeNames.TryGetValue(product.BlueprintTypeId, out var blueprintName)) product.BlueprintName = blueprintName;
+                if (groupNames.TryGetValue(product.GroupId, out var groupName)) product.GroupName = groupName;
+                if (categoryNames.TryGetValue(product.CategoryId, out var categoryName)) product.CategoryName = categoryName;
             }
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_SearchFailed", "搜索失败"));
         }
     }
+
+    private static bool Contains(string? text, string keyword)
+        => !string.IsNullOrEmpty(text) && text.Contains(keyword, StringComparison.OrdinalIgnoreCase);
 
     private async Task LoadActivitiesAsync(IndustryProductEntry? entry)
     {
@@ -127,9 +254,6 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         MaterialRows.Clear();
         ProductRows.Clear();
         SkillRows.Clear();
-        ReprocessingRows.Clear();
-        HasReprocessing = false;
-        HasCompression = false;
 
         if (entry is null)
         {
@@ -138,7 +262,6 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
             BlueprintName = string.Empty;
             GroupName = string.Empty;
             MaxRunsText = "—";
-            TimeText = "—";
             return;
         }
 
@@ -146,7 +269,7 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         BlueprintName = entry.BlueprintName ?? "—";
         GroupName = entry.GroupName ?? "—";
         MaxRunsText = entry.MaxProductionLimit > 0 ? entry.MaxProductionLimit.ToString("N0") : "BPO / 不限";
-        Subtitle = $"{BlueprintName} · {GroupName} · {MaxRunsText}";
+        Subtitle = $"{BlueprintName} · {GroupName} · 最大流程 {MaxRunsText}";
 
         try
         {
@@ -171,7 +294,6 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
 
             SelectedActivity = Activities.FirstOrDefault(p => p.ActivityId == entry.ActivityId)
                 ?? Activities.FirstOrDefault();
-            await LoadReprocessingAsync(entry);
         }
         catch (Exception ex)
         {
@@ -194,7 +316,6 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
             foreach (var row in data.Materials) MaterialRows.Add(row);
             foreach (var row in data.Products) ProductRows.Add(row);
             foreach (var row in data.Skills) SkillRows.Add(row);
-            TimeText = activity.TimeText;
         }
         catch (Exception ex)
         {
@@ -250,51 +371,6 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
             .ToList();
 
         return (materialRows, productRows, skillRows);
-    }
-
-    private async Task LoadReprocessingAsync(IndustryProductEntry entry)
-    {
-        try
-        {
-            var materials = await Task.Run(() => IndustryDbService.GetTypeMaterials(entry.ProductTypeId));
-            var names = materials.Count == 0
-                ? new Dictionary<int, string>()
-                : BuildNameMap(materials.Select(p => p.MaterialTypeID));
-            foreach (var material in materials.OrderByDescending(p => p.Quantity))
-            {
-                ReprocessingRows.Add(new IndustryRecipeRow
-                {
-                    TypeId = material.MaterialTypeID,
-                    Name = names.TryGetValue(material.MaterialTypeID, out var name) ? name : material.MaterialTypeID.ToString(),
-                    Amount = "×" + material.Quantity.ToString("N0"),
-                    Note = "精炼产出",
-                });
-            }
-            HasReprocessing = ReprocessingRows.Count > 0;
-
-            var compressed = await Task.Run(() => IndustryDbService.GetCompressibleType(entry.ProductTypeId));
-            if (compressed is not null)
-            {
-                var info = await Task.Run(() => IndustryDbService.GetTypeInfo(compressed.CompressedTypeID));
-                string compressedName = info?.TypeName;
-                if (TheGuideToTheNewEden.Core.Config.NeedLocalization && DBService.LocalDbReady)
-                {
-                    var local = LocalDbService.TranInvType(compressed.CompressedTypeID);
-                    if (!string.IsNullOrWhiteSpace(local?.TypeName))
-                    {
-                        compressedName = local.TypeName;
-                    }
-                }
-                CompressionText = info is null
-                    ? $"压缩 TypeID {compressed.CompressedTypeID}"
-                    : $"{compressedName} · {info.Volume:0.###} m³";
-                HasCompression = true;
-            }
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-        }
     }
 
     private static string ActivityName(int activityId)

@@ -438,6 +438,10 @@
                 Background="{DynamicResource ControlFillColorSecondaryBrush}"
                 CornerRadius="5">
                 <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="100" />
@@ -465,6 +469,16 @@
                         Click="OnRemoveTargetClick"
                         Icon="{ui:SymbolIcon Delete24}"
                         Tag="{Binding}" />
+                    <ComboBox
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Height="28"
+                        Margin="0,4,6,0"
+                        FontSize="11"
+                        DisplayMemberPath="Name"
+                        ItemsSource="{Binding DataContext.TargetDecryptors, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        SelectedItem="{Binding SelectedDecryptor, Mode=TwoWay}"
+                        ToolTip="该目标的发明解密器；跟随全局时使用工艺页的解密器。" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -1016,7 +1030,7 @@
                                                 </StackPanel>
                                             </controls:CardControl.Header>
                                             <StackPanel>
-                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="发明解密器（可选）" />
+                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="发明解密器" />
                                                 <ComboBox
                                                     HorizontalAlignment="Stretch"
                                                     DisplayMemberPath="Name"
@@ -1072,12 +1086,20 @@
 
                                                 <CheckBox
                                                     Margin="0,12,0,0"
-                                                    Content="反应套用 ME（默认关闭）"
-                                                    IsChecked="{Binding ApplyMeToReactions, Mode=TwoWay}" />
+                                                    Content="反应材料套用 ME"
+                                                    IsChecked="{Binding ApplyMeToReactions, Mode=TwoWay}"
+                                                    ToolTip="反应配方本身没有 ME；勾选后按 ME 缩减反应输入材料。" />
                                                 <CheckBox
                                                     Margin="0,4,0,0"
-                                                    Content="反应套用材料 rig（默认关闭）"
-                                                    IsChecked="{Binding ApplyRigToReactions, Mode=TwoWay}" />
+                                                    Content="反应材料套用建筑改装件"
+                                                    IsChecked="{Binding ApplyRigToReactions, Mode=TwoWay}"
+                                                    ToolTip="勾选后反应输入材料再享受建筑改装件的材料加成；EVE 默认反应不享受材料改装件加成。" />
+                                                <TextBlock
+                                                    Margin="2,4,2,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="反应默认不套用 ME / 建筑改装件；只有需要按自建规则模拟时才勾选。"
+                                                    TextWrapping="Wrap" />
                                                 <ui:Button
                                                     Margin="0,12,0,0"
                                                     HorizontalAlignment="Stretch"
@@ -1232,7 +1254,7 @@
                                                         Maximum="100"
                                                         Minimum="0"
                                                         SmallChange="1"
-                                                        ToolTip="降低任务安装费。游戏里由结构角色费用加成、结构 rig 费用效率决定；Job Cost = EIV × 系统成本指数 × (1 - 费用加成) × (1 + 设施税)。"
+                                                        ToolTip="降低任务安装费中的系统成本指数部分。最终 Job Cost = EIV × (成本指数 × 结构费用 + 设施税 + SCC)。"
                                                         Value="{Binding CostBonusPercent, Mode=TwoWay}" />
 
                                                     <TextBlock Style="{StaticResource IndustryLabel}" Text="设施税 %" />
@@ -1242,6 +1264,22 @@
                                                         SmallChange="1"
                                                         ToolTip="建筑所有者设置的设施税，直接加在任务安装费上。由玩家/军团在建筑上设定，不来自 SDE；不影响材料需求和作业时间。"
                                                         Value="{Binding FacilityTaxPercent, Mode=TwoWay}" />
+
+                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="SCC 附加费 %" />
+                                                    <ui:NumberBox
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        SmallChange="0.5"
+                                                        ToolTip="CCP 的 SCC 附加费，默认 4%；按 EIV 直接加在任务安装费上。"
+                                                        Value="{Binding SccSurchargePercent, Mode=TwoWay}" />
+
+                                                    <TextBlock Style="{StaticResource IndustryLabel}" Text="行星出口税（POCO）%" />
+                                                    <ui:NumberBox
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        SmallChange="1"
+                                                        ToolTip="行星产物从 POCO/海关出口时收取的税率，默认 5%；计入行星节点成本。"
+                                                        Value="{Binding PlanetTaxPercent, Mode=TwoWay}" />
                                                 </StackPanel>
                                             </StackPanel>
                                             <controls:CardControl.Footer>
@@ -1419,20 +1457,34 @@
                                                     IsChecked="{Binding UseInProgressJobs, Mode=TwoWay}" />
                                                 <CheckBox
                                                     Margin="0,2"
-                                                    Content="使用自有蓝图 ME/TE"
-                                                    IsChecked="{Binding UseOwnedBlueprints, Mode=TwoWay}" />
+                                                    Content="使用角色自有蓝图（ME/TE + BPC 流程）"
+                                                    IsChecked="{Binding UseOwnedBlueprints, Mode=TwoWay}"
+                                                    ToolTip="开启后优先使用角色 BPO/BPC 的 ME/TE，并消耗 BPC 剩余流程；关闭时使用工艺页的统一 ME/TE，不消耗角色蓝图。" />
                                                 <CheckBox
                                                     Margin="0,2"
                                                     Content="使用角色技能（发明成功率）"
                                                     IsChecked="{Binding UseCharacterSkills, Mode=TwoWay}" />
                                                 <CheckBox
                                                     Margin="0,2"
-                                                    Content="拉取市场深度 / 计算利润（首次较慢）"
+                                                    Content="拉取详细订单（计算利润，首次较慢）"
                                                     IsChecked="{Binding UseMarketDepth, Mode=TwoWay}" />
-                                                <CheckBox
-                                                    Margin="0,2"
-                                                    Content="即时卖给买单（不计经纪人费）"
-                                                    IsChecked="{Binding SellImmediately, Mode=TwoWay}" />
+                                                <Grid Margin="0,6,0,2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="8" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Grid.Column="0"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="11.5"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="出货方式" />
+                                                    <ComboBox Grid.Column="2" SelectedIndex="{Binding SellModeIndex, Mode=TwoWay}">
+                                                        <ComboBoxItem Content="挂卖单（最低卖价，扣经纪人费）" />
+                                                        <ComboBoxItem Content="直接卖给买单（最高买价，不计经纪人费）" />
+                                                    </ComboBox>
+                                                </Grid>
                                                 <Grid Margin="0,4,0,0">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*" />
@@ -1460,7 +1512,7 @@
                                                     Margin="2,3,2,0"
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="即时卖单：收入按最高买价，扣销售税；挂卖单：收入按最低卖价，再扣销售税 + 经纪人费。"
+                                                    Text="挂卖单：收入按最低卖价，扣销售税 + 经纪人费；直接卖给买单：收入按最高买价，只扣销售税。"
                                                     TextWrapping="Wrap" />
                                                 <TextBlock
                                                     Margin="0,10,0,2"
@@ -1497,13 +1549,13 @@
                                                 <TextBlock
                                                     Margin="0,10,2,3"
                                                     Style="{StaticResource IndustryLabel}"
-                                                    Text="价格市场（市场深度 / 利润）" />
+                                                    Text="价格市场（详细订单 / 利润）" />
                                                 <uc:MarketLocationSelectorView SelectedItem="{Binding SelectedPriceLocation, Mode=TwoWay}" />
                                                 <TextBlock
                                                     Margin="2,4,2,0"
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="默认沿用成本指数位置；启用市场深度后，按该位置所在星域的公开买卖单计算参考价/收入。建筑订单不包含。"
+                                                    Text="默认沿用成本指数位置；拉取详细订单后，按该位置所在星域的公开买卖单计算参考价/收入。建筑订单不包含。"
                                                     TextWrapping="Wrap" />
                                                 <Grid Margin="0,8,0,0">
                                                     <Grid.ColumnDefinitions>
@@ -1673,7 +1725,7 @@
                                                         <ColumnDefinition />
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
-                                                    <UniformGrid Columns="5" Rows="2">
+                                                    <UniformGrid Columns="5" Rows="3">
                                                         <StackPanel Margin="0,0,14,6">
                                                             <TextBlock
                                                                 Style="{StaticResource IndustryMetricLabel}"
@@ -1740,6 +1792,34 @@
                                                         <StackPanel Margin="0,0,14,6">
                                                             <TextBlock
                                                                 Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="ROI"
+                                                                ToolTip="利润 / 总成本（全量自建成本）。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRoi}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="每槽位小时利润"
+                                                                ToolTip="利润 / 已用槽位小时；用于比较不同规模的计划。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryProfitPerSlotHour}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="资金占用"
+                                                                ToolTip="现金支出 × 计划工期（ISK·h），用于估算资金占用成本。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryCapitalLockup}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
+                                                                Text="盈亏平衡单价"
+                                                                ToolTip="总成本 / 目标实际产出；低于此价出售会亏损。" />
+                                                            <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryBreakEven}" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="0,0,14,6">
+                                                            <TextBlock
+                                                                Style="{StaticResource IndustryMetricLabel}"
                                                                 Text="采购体积"
                                                                 ToolTip="需要采购材料的打包体积。" />
                                                             <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryBuyVolume}" />
@@ -1762,6 +1842,23 @@
                                                             ItemsSource="{Binding CostSlices}" />
                                                     </Grid>
                                                 </Grid>
+                                                <TextBlock
+                                                    Margin="0,6,0,0"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                    Text="{Binding BomWarningText}"
+                                                    TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasBomTruncation}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -2239,7 +2336,7 @@
             </TabItem>
         </TabControl>
 
-        <!--  页面内非阻塞进度：市场深度分页/计算阶段，IsHitTestVisible=False 不挡住其他操作  -->
+        <!--  页面内非阻塞进度：详细订单分页/计算阶段，IsHitTestVisible=False 不挡住其他操作  -->
         <Border
             Width="320"
             Margin="0,0,18,18"

@@ -25,76 +25,220 @@ public sealed class IndustryScheduleMaterialViewModel
     public string StateText { get; }
 }
 
-/// <summary>甘特时间轴：明显长于其他任务的任务中段折叠，避免一根条占满屏幕。</summary>
+/// <summary>
+/// 甘特时间轴：按任务起止切成时间段，长任务 / 长空闲段用不等距压缩，
+/// 总宽度限制在 1600–3600px；刻度按像素间距自适应，不再逐小时展开。
+/// </summary>
 public sealed class IndustryScheduleTimeScale
 {
-    public IndustryScheduleTimeScale(
-        double pixelsPerHour,
-        double breakStart = 0,
-        double breakEnd = 0,
-        double compressedHours = 0)
+    public const double BaselinePixelsPerHour = 80;
+    private const double BusyMinWidth = 6;
+    private const double IdleMinWidth = 2;
+    private const double TargetMinWidth = 1600;
+    private const double TargetMaxWidth = 3600;
+
+    private readonly List<Segment> _segments;
+
+    private IndustryScheduleTimeScale(List<Segment> segments, double totalHours, double pixelsPerHour)
     {
+        _segments = segments;
+        TotalHours = totalHours;
         PixelsPerHour = pixelsPerHour;
-        BreakStart = Math.Max(0, breakStart);
-        BreakEnd = Math.Max(BreakStart, breakEnd);
-        CompressedHours = Math.Max(0, compressedHours);
     }
 
     public double PixelsPerHour { get; }
-    public double BreakStart { get; }
-    public double BreakEnd { get; }
-    public double CompressedHours { get; }
-    public bool HasBreak => BreakEnd - BreakStart >= 1 && CompressedHours > 0;
-    public double BreakWidth => CompressedHours * PixelsPerHour;
-    public string BreakText => HasBreak ? $"{Format(BreakStart)} … {Format(BreakEnd)}" : string.Empty;
+    public double TotalHours { get; }
+    public double TimelineWidth => _segments.Count == 0 ? 0 : _segments[^1].EndPixel;
+    public bool HasCompression => _segments.Any(p => p.IsCompressed);
 
-    public static IndustryScheduleTimeScale Create(IEnumerable<IndustryScheduleJob> jobs, double pixelsPerHour)
+    public static IndustryScheduleTimeScale Create(
+        IEnumerable<IndustryScheduleJob> jobs,
+        double pixelsPerHour,
+        double? totalHours = null)
     {
-        var list = jobs?.ToList() ?? new List<IndustryScheduleJob>();
-        var longest = list.OrderByDescending(p => p.DurationHours).FirstOrDefault();
-        if (longest is null || list.Count < 2)
+        var list = jobs?.Where(p => p.EndHours > p.StartHours).ToList() ?? new List<IndustryScheduleJob>();
+        var total = Math.Max(12, totalHours ?? 0);
+        if (list.Count > 0)
         {
-            return new IndustryScheduleTimeScale(pixelsPerHour);
+            total = Math.Max(total, list.Max(p => p.EndHours));
+        }
+        total = Math.Max(0.1, total);
+
+        var boundaries = new List<double> { 0, total };
+        foreach (var job in list)
+        {
+            var start = Math.Clamp(job.StartHours, 0, total);
+            var end = Math.Clamp(job.EndHours, 0, total);
+            if (end - start < 0.01) continue;
+            boundaries.Add(start);
+            boundaries.Add(end);
+        }
+        boundaries.Sort();
+
+        var knots = new List<double>();
+        foreach (var boundary in boundaries)
+        {
+            if (knots.Count == 0 || boundary - knots[^1] > 0.001)
+            {
+                knots.Add(boundary);
+            }
+        }
+        if (knots.Count < 2)
+        {
+            return new IndustryScheduleTimeScale(new List<Segment>(), total, pixelsPerHour);
         }
 
-        var maxOther = list.Where(p => !ReferenceEquals(p, longest))
-            .Select(p => p.DurationHours)
-            .DefaultIfEmpty(0)
-            .Max();
-        if (longest.DurationHours < 20 || longest.DurationHours < maxOther * 2.5)
+        var intervals = new List<(double Start, double End, bool Busy, double Duration)>();
+        for (var i = 0; i < knots.Count - 1; i++)
         {
-            return new IndustryScheduleTimeScale(pixelsPerHour);
+            var start = knots[i];
+            var end = knots[i + 1];
+            var duration = end - start;
+            if (duration <= 0.001) continue;
+            var busy = list.Any(p => p.StartHours < end - 0.001 && p.EndHours > start + 0.001);
+            intervals.Add((start, end, busy, duration));
+        }
+        if (intervals.Count == 0)
+        {
+            return new IndustryScheduleTimeScale(new List<Segment>(), total, pixelsPerHour);
         }
 
-        var head = Math.Min(10, Math.Max(2, longest.DurationHours * 0.2));
-        var breakStart = longest.StartHours + head;
-        var breakEnd = longest.EndHours;
-        if (breakEnd - breakStart < 4)
+        var targetWidth = Math.Clamp(intervals.Count * 28.0, TargetMinWidth, TargetMaxWidth);
+        var minWidths = intervals.Select(p => p.Busy ? BusyMinWidth : IdleMinWidth).ToArray();
+        var minSum = minWidths.Sum();
+        var minScale = minSum > targetWidth ? targetWidth / minSum : 1;
+        var baseWidths = minWidths.Select(p => p * minScale).ToArray();
+        var remaining = Math.Max(0, targetWidth - baseWidths.Sum());
+        var weights = intervals
+            .Select(p => Math.Sqrt(p.Duration) * (p.Busy ? 1.0 : 0.3))
+            .ToArray();
+        var weightSum = weights.Sum();
+        var baseline = Math.Max(1, pixelsPerHour);
+
+        var segments = new List<Segment>(intervals.Count);
+        var pixel = 0.0;
+        for (var i = 0; i < intervals.Count; i++)
         {
-            return new IndustryScheduleTimeScale(pixelsPerHour);
+            var width = baseWidths[i] + (weightSum > 0 ? remaining * weights[i] / weightSum : 0);
+            var isCompressed = intervals[i].Duration >= 4
+                && width < intervals[i].Duration * baseline * 0.6;
+            segments.Add(new Segment(
+                intervals[i].Start,
+                intervals[i].End,
+                pixel,
+                pixel + width,
+                isCompressed));
+            pixel += width;
         }
 
-        return new IndustryScheduleTimeScale(pixelsPerHour, breakStart, breakEnd, 2);
+        return new IndustryScheduleTimeScale(segments, total, targetWidth / total);
     }
 
     public double Map(double hours)
     {
-        var value = Math.Max(0, hours);
-        if (!HasBreak || value <= BreakStart)
+        if (_segments.Count == 0)
         {
-            return value * PixelsPerHour;
+            return Math.Max(0, hours) * BaselinePixelsPerHour;
         }
 
-        if (value >= BreakEnd)
+        var value = Math.Clamp(hours, 0, TotalHours);
+        foreach (var segment in _segments)
         {
-            return BreakStart * PixelsPerHour + BreakWidth + (value - BreakEnd) * PixelsPerHour;
+            if (value <= segment.EndHour + 0.0001)
+            {
+                var duration = segment.EndHour - segment.StartHour;
+                if (duration <= 0.0001) return segment.EndPixel;
+                var ratio = (value - segment.StartHour) / duration;
+                return segment.StartPixel + ratio * segment.Width;
+            }
         }
-
-        var ratio = (value - BreakStart) / (BreakEnd - BreakStart);
-        return BreakStart * PixelsPerHour + ratio * BreakWidth;
+        return TimelineWidth;
     }
 
-    private static string Format(double hours) => hours >= 1 ? $"{hours:0.#}h" : $"{hours * 60:0}m";
+    /// <summary>任务条视觉宽度是否明显短于真实时长，需要显示压缩省略标记。</summary>
+    public bool IsJobCompressed(IndustryScheduleJob job)
+    {
+        if (job.DurationHours < 4) return false;
+        var width = Map(job.EndHours) - Map(job.StartHours);
+        return width < job.DurationHours * BaselinePixelsPerHour * 0.5;
+    }
+
+    public IReadOnlyList<IndustryScheduleTickViewModel> CreateTicks(double minSpacing = 110)
+    {
+        var ticks = new List<IndustryScheduleTickViewModel>();
+        if (_segments.Count == 0) return ticks;
+
+        var spacing = Math.Max(40, minSpacing);
+        ticks.Add(new IndustryScheduleTickViewModel { Left = 0, Hours = 0, Label = "0h" });
+        var lastHour = 0.0;
+        var target = spacing;
+        var guard = 0;
+        while (target < TimelineWidth - 16 && guard++ < 300)
+        {
+            var hour = Math.Round(HourAtPixel(target) * 2) / 2;
+            if (hour <= lastHour + 0.01)
+            {
+                target += spacing;
+                continue;
+            }
+
+            var left = Map(hour);
+            if (left - ticks[^1].Left >= spacing * 0.55)
+            {
+                ticks.Add(new IndustryScheduleTickViewModel
+                {
+                    Left = left,
+                    Hours = hour,
+                    Label = FormatTick(hour),
+                });
+                lastHour = hour;
+                target = left + spacing;
+            }
+            else
+            {
+                target += spacing;
+            }
+        }
+
+        if (TimelineWidth - ticks[^1].Left > spacing * 0.45)
+        {
+            ticks.Add(new IndustryScheduleTickViewModel
+            {
+                Left = TimelineWidth,
+                Hours = TotalHours,
+                Label = FormatTick(TotalHours),
+            });
+        }
+        return ticks;
+    }
+
+    private double HourAtPixel(double pixel)
+    {
+        var value = Math.Clamp(pixel, 0, TimelineWidth);
+        foreach (var segment in _segments)
+        {
+            if (value <= segment.EndPixel + 0.0001)
+            {
+                if (segment.Width <= 0.0001) return segment.StartHour;
+                var ratio = (value - segment.StartPixel) / segment.Width;
+                return segment.StartHour + ratio * (segment.EndHour - segment.StartHour);
+            }
+        }
+        return TotalHours;
+    }
+
+    private static string FormatTick(double hours)
+        => hours >= 1000 ? $"{hours / 1000:0.#}kh" : $"{hours:0.#}h";
+
+    private readonly record struct Segment(
+        double StartHour,
+        double EndHour,
+        double StartPixel,
+        double EndPixel,
+        bool IsCompressed)
+    {
+        public double Width => EndPixel - StartPixel;
+    }
 }
 
 public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
@@ -107,16 +251,14 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
         Left = Math.Max(0, timeScale.Map(model.StartHours));
         Width = Math.Max(10, timeScale.Map(model.EndHours) - Left);
         DisplayLeft = Left;
-        HasCompressedGap = timeScale.HasBreak
-            && model.StartHours <= timeScale.BreakStart
-            && model.EndHours >= timeScale.BreakEnd;
-        CompressedGapText = HasCompressedGap ? timeScale.BreakText : string.Empty;
+        HasCompressedGap = timeScale.IsJobCompressed(model);
         StageOrder = model.Stage switch
         {
             "发明" => 0,
             "反应" => 1,
             "组件" => 2,
-            _ => 3,
+            "行星" => 3,
+            _ => 4,
         };
     }
 
@@ -138,7 +280,11 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
     public string JobCostText => Model.JobCost > 0 ? Model.JobCost.ToString("N0") : "—";
     public string TimeMultiplierText => $"×{Model.TimeMultiplier:0.00}";
     public string ToolTip => $"{TypeName}\n{ActivityText} · {Model.Runs:N0} 流程 · {TimeText}\n{LineText} · {DurationText}"
-        + (HasCompressedGap ? $"\n时间轴压缩：{CompressedGapText}" : string.Empty);
+        + (IsInProgress ? "\n在制任务：占用当前槽位，完成前不会开始后续任务" : string.Empty)
+        + (HasCompressedGap ? "\n条形按时间轴压缩显示；真实起止见上" : string.Empty);
+
+    public bool IsInProgress => Model.IsInProgress;
+    public string BarText => IsInProgress ? "在制 · " + TypeName : TypeName;
 
     public List<IndustryScheduleMaterialViewModel> Inputs { get; }
     public List<IndustryScheduleMaterialViewModel> Outputs { get; }
@@ -147,7 +293,6 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
     public double Width { get; }
     public double DisplayLeft { get; set; }
     public bool HasCompressedGap { get; }
-    public string CompressedGapText { get; }
 
     private bool _isSelected;
     public bool IsSelected
@@ -185,6 +330,7 @@ public sealed class IndustryScheduleLineViewModel
         {
             "发明" => "invention",
             "反应" => "reaction",
+            "行星" => "planetary",
             _ => "mfg",
         };
         Jobs = new ObservableCollection<IndustryScheduleJobViewModel>(jobs.OrderBy(p => p.Model.StartHours));
@@ -315,6 +461,7 @@ public sealed class IndustryScheduleCandidateViewModel
 public sealed class IndustryScheduleTickViewModel
 {
     public double Left { get; set; }
+    public double Hours { get; set; }
     public string Label { get; set; } = string.Empty;
 }
 
@@ -370,38 +517,30 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
     public IndustryScheduleViewModel(IndustrySchedule schedule)
     {
         Schedule = schedule;
-        var timeScale = IndustryScheduleTimeScale.Create(schedule.Jobs, PixelsPerHour);
         TotalHours = Math.Max(12, Math.Ceiling(schedule.MakespanHours + 1));
-        TimelineWidth = timeScale.Map(TotalHours);
-        var ticks = new List<IndustryScheduleTickViewModel>();
-        for (var hour = 0; hour <= (int)Math.Ceiling(TotalHours); hour++)
+        TimelineStart = DateTime.Now;
+        var timeScale = IndustryScheduleTimeScale.Create(schedule.Jobs, PixelsPerHour, TotalHours);
+        TimelineWidth = timeScale.TimelineWidth;
+        HasTimelineCompression = timeScale.HasCompression;
+        TimelineHint = HasTimelineCompression
+            ? "时间轴按长任务 / 空闲段压缩；悬浮任务条查看真实起止"
+            : string.Empty;
+        var ticks = timeScale.CreateTicks();
+        if (TotalHours > 24)
         {
-            if (timeScale.HasBreak && hour > timeScale.BreakStart && hour < timeScale.BreakEnd)
+            foreach (var tick in ticks)
             {
-                continue;
+                tick.Label = TimelineStart.AddHours(tick.Hours).ToString("MM-dd HH:mm");
             }
-            ticks.Add(new IndustryScheduleTickViewModel
-            {
-                Left = timeScale.Map(hour),
-                Label = hour + "h",
-            });
         }
-        if (timeScale.HasBreak)
-        {
-            ticks.Add(new IndustryScheduleTickViewModel
-            {
-                Left = timeScale.Map(timeScale.BreakStart) + timeScale.BreakWidth / 2,
-                Label = "…",
-            });
-        }
-        TimelineTicks = new ObservableCollection<IndustryScheduleTickViewModel>(
-            ticks.OrderBy(p => p.Left));
+        TimelineTicks = new ObservableCollection<IndustryScheduleTickViewModel>(ticks);
 
         var jobs = schedule.Jobs
             .Select(p => new IndustryScheduleJobViewModel(p, timeScale))
             .OrderBy(p => p.Model.StartHours)
             .ThenBy(p => p.TypeName)
             .ToList();
+        var planJobs = jobs.Where(p => !p.Model.IsInProgress).ToList();
         _jobMap = jobs.GroupBy(p => p.Key).ToDictionary(g => g.Key, g => g.First());
 
         Characters = new ObservableCollection<IndustryScheduleCharacterViewModel>();
@@ -428,7 +567,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         }
 
         Steps = new ObservableCollection<IndustryScheduleStepViewModel>(
-            jobs.OrderBy(p => p.StageOrder)
+            planJobs.OrderBy(p => p.StageOrder)
                 .ThenBy(p => p.Model.StartHours)
                 .ThenBy(p => p.TypeName)
                 .Select(p => new IndustryScheduleStepViewModel(p)));
@@ -436,7 +575,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         StepsView.GroupDescriptions.Clear();
         StepsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(IndustryScheduleStepViewModel.Stage)));
 
-        BuildGraph(jobs);
+        BuildGraph(planJobs);
 
         MakespanText = FormatHours(schedule.MakespanHours);
         TotalJobCostText = schedule.TotalJobCost > 0 ? schedule.TotalJobCost.ToString("N0") + " ISK" : "—";
@@ -466,7 +605,9 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
 
         if (jobs.Count > 0)
         {
-            SelectJob(jobs.FirstOrDefault(p => p.StageOrder >= 3) ?? jobs[0]);
+            SelectJob(planJobs.FirstOrDefault(p => p.StageOrder >= 3)
+                ?? planJobs.FirstOrDefault()
+                ?? jobs[0]);
         }
     }
 
@@ -483,6 +624,26 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
     public double PixelsPerHourValue => PixelsPerHour;
     public double TotalHours { get; }
     public double TimelineWidth { get; }
+    public DateTime TimelineStart { get; }
+    public string TimelineStartText => $"开始 {TimelineStart:yyyy-MM-dd HH:mm}";
+    public bool HasTimelineCompression { get; }
+    public string TimelineHint { get; }
+
+    private double _ganttZoom = 1.0;
+    public double GanttZoom
+    {
+        get => _ganttZoom;
+        set
+        {
+            var zoom = Math.Clamp(value, 0.4, 3.0);
+            if (Math.Abs(_ganttZoom - zoom) < 0.0001) return;
+            _ganttZoom = zoom;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(GanttZoomText));
+        }
+    }
+
+    public string GanttZoomText => $"{GanttZoom * 100:0}%";
     public bool HasSchedule => Schedule.Jobs.Count > 0;
 
     public string MakespanText { get; }

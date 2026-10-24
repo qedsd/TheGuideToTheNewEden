@@ -274,7 +274,8 @@
                                 HorizontalAlignment="Right"
                                 FontSize="10"
                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="{Binding MarketText}" />
+                                Text="{Binding MarketText}"
+                                ToolTip="{Binding MarketLevelsText}" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -572,7 +573,23 @@
                     <TextBlock
                         FontSize="11"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{Binding MarketText}" />
+                        Text="{Binding MarketText}"
+                        ToolTip="{Binding MarketLevelsText}" />
+                    <TextBlock
+                        FontSize="10.5"
+                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                        Text="{Binding MarketVolumeText}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasMarketVolumeWarning}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <TextBlock
                         Margin="0,3,0,0"
                         FontSize="10.5"

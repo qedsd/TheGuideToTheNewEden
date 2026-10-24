@@ -2535,7 +2535,7 @@
     <sys:String x:Key="IndustryPage_Character">角色（库存 / 蓝图）</sys:String>
     <sys:String x:Key="IndustryPage_UseAssets">用角色资产抵扣</sys:String>
     <sys:String x:Key="IndustryPage_UseJobs">用在制任务抵扣</sys:String>
-    <sys:String x:Key="IndustryPage_UseBlueprints">用自有蓝图 ME/TE</sys:String>
+    <sys:String x:Key="IndustryPage_UseBlueprints">使用角色自有蓝图（ME/TE + BPC 流程）</sys:String>
     <sys:String x:Key="IndustryPage_Calculate">计算物料清单</sys:String>
     <sys:String x:Key="IndustryPage_Copy">复制采购清单</sys:String>
     <sys:String x:Key="IndustryPage_Summary">汇总</sys:String>

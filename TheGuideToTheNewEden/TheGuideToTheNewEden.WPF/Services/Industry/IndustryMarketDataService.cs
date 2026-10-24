@@ -57,7 +57,7 @@ public sealed class IndustryMarketDataService
     private static readonly TimeSpan MarketStatsTtl = TimeSpan.FromMinutes(10);
 
     /// <summary>
-    /// 某星域的市场深度（最低卖价 / 最高买价 / 买卖深度），用于盈利与买/建对比。
+    /// 某星域的详细订单（最低卖价 / 最高买价 / 买卖深度），用于盈利与买/建对比。
     /// 数据来自整星域订单缓存；首次/过期时会拉取整星域订单，可能较慢。
     /// </summary>
     public async Task<Dictionary<int, IndustryMarketStat>> GetMarketStatsAsync(long regionId, bool forceRefresh = false, Action<int, int>? pageCallback = null, CancellationToken cancellationToken = default)
@@ -99,12 +99,38 @@ public sealed class IndustryMarketDataService
                 {
                     if (order.Price > stat.BuyMax) stat.BuyMax = order.Price;
                     stat.BuyVolume += order.VolumeRemain;
+                    stat.BuyLevels.Add(new IndustryMarketOrderLevel
+                    {
+                        Price = order.Price,
+                        Volume = order.VolumeRemain,
+                    });
                 }
                 else
                 {
                     if (stat.SellMin <= 0 || order.Price < stat.SellMin) stat.SellMin = order.Price;
                     stat.SellVolume += order.VolumeRemain;
+                    stat.SellLevels.Add(new IndustryMarketOrderLevel
+                    {
+                        Price = order.Price,
+                        Volume = order.VolumeRemain,
+                    });
                 }
+            }
+
+            foreach (var stat in result.Values)
+            {
+                stat.SellLevels = stat.SellLevels
+                    .GroupBy(p => p.Price)
+                    .Select(g => new IndustryMarketOrderLevel { Price = g.Key, Volume = g.Sum(p => p.Volume) })
+                    .OrderBy(p => p.Price)
+                    .Take(10)
+                    .ToList();
+                stat.BuyLevels = stat.BuyLevels
+                    .GroupBy(p => p.Price)
+                    .Select(g => new IndustryMarketOrderLevel { Price = g.Key, Volume = g.Sum(p => p.Volume) })
+                    .OrderByDescending(p => p.Price)
+                    .Take(10)
+                    .ToList();
             }
 
             var average = await GetAveragePricesAsync(forceRefresh);

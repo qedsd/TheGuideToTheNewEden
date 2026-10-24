@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Models.Indusrty
@@ -56,7 +57,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int RunModifier { get; set; }
     }
 
-    /// <summary>单物品的市场深度摘要。</summary>
+    /// <summary>单物品的市场摘要（最优价、总量与可见价格档位）。</summary>
     public class IndustryMarketStat
     {
         public int TypeID { get; set; }
@@ -65,9 +66,46 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public long SellVolume { get; set; }
         public long BuyVolume { get; set; }
         public double AveragePrice { get; set; }
+        public List<IndustryMarketOrderLevel> SellLevels { get; set; } = new List<IndustryMarketOrderLevel>();
+        public List<IndustryMarketOrderLevel> BuyLevels { get; set; } = new List<IndustryMarketOrderLevel>();
 
         public double ReferencePrice => SellMin > 0 ? SellMin : AveragePrice;
         public double RevenuePrice => BuyMax > 0 ? BuyMax : ReferencePrice;
+
+        /// <summary>
+        /// 立即卖出的成交额：从最高买价开始吃买单档位；超出可见档位的数量返回 unfilled。
+        /// </summary>
+        public double QuoteImmediate(long quantity, out long unfilled)
+        {
+            unfilled = Math.Max(0, quantity);
+            if (quantity <= 0) return 0;
+
+            var remaining = quantity;
+            double revenue = 0;
+            foreach (var level in BuyLevels.Where(p => p.Price > 0 && p.Volume > 0)
+                         .OrderByDescending(p => p.Price))
+            {
+                var take = Math.Min(remaining, level.Volume);
+                if (take <= 0) continue;
+                revenue += take * level.Price;
+                remaining -= take;
+                if (remaining <= 0) break;
+            }
+
+            if (remaining > 0 && BuyMax > 0)
+            {
+                // 可见档位不足时仍按最优买价估算未成交部分，但明确标记数量风险。
+                revenue += remaining * BuyMax;
+            }
+            unfilled = remaining;
+            return revenue;
+        }
+    }
+
+    public sealed class IndustryMarketOrderLevel
+    {
+        public double Price { get; set; }
+        public long Volume { get; set; }
     }
 
     /// <summary>
@@ -98,6 +136,8 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public Dictionary<int, long> Assets { get; set; } = new Dictionary<int, long>();
         /// <summary>在制工业任务最终产出（TypeID → 数量），用于抵扣。</summary>
         public Dictionary<int, long> InProgressJobs { get; set; } = new Dictionary<int, long>();
+        /// <summary>在制任务明细；排产会占用角色槽位并从剩余时间开始。</summary>
+        public List<IndustryInProgressJob> InProgressJobDetails { get; set; } = new List<IndustryInProgressJob>();
         /// <summary>虚拟挂机库（TypeID → 数量）；求解过程中超产会写回这里。</summary>
         public Dictionary<int, long> Hangar { get; set; } = new Dictionary<int, long>();
 
@@ -108,6 +148,10 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double CostIndexManufacturing { get; set; }
         public double CostIndexReaction { get; set; }
         public double CostIndexInvention { get; set; }
+        /// <summary>SCC 附加费（0.04 = 4%）。</summary>
+        public double SccSurchargeRate { get; set; } = 0.04;
+        /// <summary>行星产物出口税（POCO，0.05 = 5%）。</summary>
+        public double PlanetTaxRate { get; set; } = 0.05;
         /// <summary>设施税（0.10 = 10%）。</summary>
         public double FacilityTax { get; set; } = 0.10;
         /// <summary>销售税（0.036 = 3.6%）。</summary>
@@ -145,6 +189,8 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
 
         /// <summary>选中的发明解密器（TypeID）；null/0 表示不使用。</summary>
         public int? DecryptorTypeId { get; set; }
+        /// <summary>按目标产物 TypeID 覆盖解密器；0 = 明确不用，缺省 = 跟随全局。</summary>
+        public Dictionary<int, int> DecryptorOverrides { get; set; } = new Dictionary<int, int>();
 
         /// <summary>手动指定发明尝试次数；null/<=0 表示按成功率自动估算。</summary>
         public int? InventionAttemptsOverride { get; set; }
