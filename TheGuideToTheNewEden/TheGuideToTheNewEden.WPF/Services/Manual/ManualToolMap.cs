@@ -36,6 +36,7 @@ public static class ManualToolMap
         [typeof(Views.Pages.AppraisalPage)] = "appraisal",
         // 工业
         [typeof(Views.Pages.IndustryPlanPage)] = "industry/plan",
+        [typeof(Views.Pages.IndustryPlanetaryPage)] = "industry/planetary",
         [typeof(Views.Pages.IndustryBlueprintPage)] = "industry/blueprints",
         [typeof(Views.Pages.IndustryInventoryPage)] = "industry/inventory",
         // 角色（壳页/卡片页/工作区共用 characters，工作区子页各归各）

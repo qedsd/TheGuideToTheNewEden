@@ -6,6 +6,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
     public sealed class IndustryPlanetaryRecipe
     {
         public int SchematicId { get; set; }
+        public int ProductTypeID { get; set; }
         public string Name { get; set; }
         public int CycleTime { get; set; }
         public long OutputQuantity { get; set; }

@@ -1,13 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
+using TheGuideToTheNewEden.Core.Models.Planetary;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.Core.Services.Industry;
+using TheGuideToTheNewEden.Core.Services.Planetary;
+using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Industry;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
 using TheGuideToTheNewEden.WPF.Views.Pages;
@@ -198,6 +203,110 @@ internal static class IndustrySuite
             c.That(planetarySchedule.Jobs.Any(p => p.ActivityId == 100 && p.LineId == "P1"),
                 "行星任务进入排产（不占工业槽位）");
         }
+
+        c.Section("IndustrySuite · 行星开发规划");
+        var piRecipes = PlanetaryRecipeCatalog.Load();
+        c.That(piRecipes.Products.Count >= 60, $"PI 配方目录可载入（{piRecipes.Products.Count} 个物品）");
+        var piP4 = piRecipes.GetProduct(2867); // Broadcast Node
+        c.NotNull(piP4, "Broadcast Node 在 PI 配方目录中");
+        c.Equal(piP4?.Tier, PlanetaryProductTier.P4, "Broadcast Node 层级 = P4");
+        var piP2 = piRecipes.GetProduct(9830); // Rocket Fuel
+        c.Equal(piP2?.Tier, PlanetaryProductTier.P2, "Rocket Fuel 层级 = P2");
+        var piP1 = piRecipes.GetProduct(3645); // Water
+        c.Equal(piP1?.Tier, PlanetaryProductTier.P1, "Water 层级 = P1");
+        c.That(piP1?.Recipe?.Inputs.Any(p => p.TypeID == 2268) == true, "Water 配方输入 Aqueous Liquids");
+
+        var piPlanetTypes = new PlanetTypeCatalog(piRecipes);
+        var temperate = piPlanetTypes.GetByTypeId(11);
+        var barren = piPlanetTypes.GetByTypeId(2016);
+        c.NotNull(temperate, "Temperate 行星类型可解析");
+        c.NotNull(barren, "Barren 行星类型可解析");
+        c.Equal(temperate?.P0TypeIds.Count, 5, "Temperate 有 5 种 P0");
+        c.That(temperate?.IsP4Capable == true && barren?.IsP4Capable == true, "Temperate/Barren 可建 P4");
+        var ice = piPlanetTypes.GetByTypeId(12);
+        var p4Capacity = PlanetaryCapacityCalculator.Calculate(temperate, 5, 0, PlanetaryColonySetup.P3ToP4, 3);
+        c.That(p4Capacity.Fits && p4Capacity.MaxFactories > 0, $"P4 工厂产能可算（{p4Capacity.MaxFactories} 个）");
+        c.That(!PlanetaryCapacityCalculator.Calculate(ice, 5, 0, PlanetaryColonySetup.P3ToP4, 3).Fits,
+            "冰行星不能建 P4 工厂");
+        var extractionCapacity = PlanetaryCapacityCalculator.Calculate(temperate, 5, 0, PlanetaryColonySetup.ExtractionP1, 1);
+        c.That(extractionCapacity.Fits && extractionCapacity.ExtractorHeads > 0, "P1 提取产能可算");
+        var piYield = PlanetaryExtractionYield.YieldRatioVsBaseline(96);
+        c.Between(piYield, 0.3, 1.0, "4 天提取程序有效产率低于 24h 基线");
+        c.That(PlanetaryExtractionYield.TotalYield(6965, 24) > 0, "提取衰减总产量可计算");
+
+        var piPlanner = new PlanetaryPlanner(piRecipes, piPlanetTypes);
+        var piRequest = new PlanetaryPlanRequest
+        {
+            Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
+            PeriodDays = 7,
+            Mode = PlanetaryPlanMode.SelfSufficient,
+            CcuLevel = 5,
+            RadiusKm = 0,
+            Characters = new List<PlanetaryCharacterInput>
+            {
+                new() { CharacterId = 1, Name = "PI-A", CcuLevel = 5, MaxPlanets = 6 },
+                new() { CharacterId = 2, Name = "PI-B", CcuLevel = 5, MaxPlanets = 6 },
+                new() { CharacterId = 3, Name = "PI-C", CcuLevel = 5, MaxPlanets = 6 },
+                new() { CharacterId = 4, Name = "PI-D", CcuLevel = 5, MaxPlanets = 6 },
+            },
+            Price = _ => 1000,
+            CountSetupCost = false,
+        };
+        var piPlan = piPlanner.Plan(piRequest);
+        c.That(piPlan.Products.Count >= 4, $"P4 反推覆盖多层配方（{piPlan.Products.Count} 个产品）");
+        c.That(piPlan.Summary.TotalColonies > 0, $"需求反推生成殖民地（{piPlan.Summary.TotalColonies} 个）");
+        c.That(piPlan.Summary.P4FactoryColonies >= 1, "目标 P4 至少 1 个工厂殖民地");
+        c.That(piPlan.Summary.ExtractionColonies >= 1, "自给方案包含 P1 提取殖民地");
+        c.That(piPlan.Summary.TargetDays > 0, "目标完成天数可计算");
+        c.That(piPlan.Warnings.Any(p => p.Contains("半径")), "缺少半径时明确标注估算");
+        c.That(piPlan.Colonies.All(p => p.CharacterName is "PI-A" or "PI-B" or "PI-C" or "PI-D"), "殖民地方案分配到多角色");
+
+        var importRequest = new PlanetaryPlanRequest
+        {
+            Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
+            PeriodDays = 7,
+            Mode = PlanetaryPlanMode.Import,
+            CcuLevel = 5,
+            RadiusKm = 0,
+            Characters = new List<PlanetaryCharacterInput>
+            {
+                new() { CharacterId = 1, Name = "PI-A", CcuLevel = 5, MaxPlanets = 6 },
+            },
+            Price = _ => 1000,
+            CountSetupCost = false,
+        };
+        var importPlan = piPlanner.Plan(importRequest);
+        c.That(importPlan.Imports.Count > 0, "进口模式生成外购清单");
+        c.Equal(importPlan.Summary.ExtractionColonies, 0, "进口模式不排提取殖民地");
+        c.That(importPlan.Summary.ImportCostPerDay > 0, "进口模式有进口成本");
+
+        c.Section("IndustrySuite · 行星计划快照 / 实时殖民权限");
+        var savedProbe = new PlanetarySavedPlan
+        {
+            Name = "probe-planetary",
+            Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
+            Result = piPlan,
+            Summary = "probe",
+        };
+        var savedJson = JsonConvert.SerializeObject(savedProbe);
+        var savedRoundTrip = JsonConvert.DeserializeObject<PlanetarySavedPlan>(savedJson);
+        c.NotNull(savedRoundTrip?.Result, "行星计划结果快照可序列化");
+        c.Equal(savedRoundTrip?.Result?.Summary.TotalColonies, piPlan.Summary.TotalColonies, "快照殖民地数往返一致");
+        c.Equal(savedRoundTrip?.Result?.Products.Count, piPlan.Products.Count, "快照产物链往返一致");
+
+        var noScopeCharacter = new AuthorizedCharacterData
+        {
+            CharacterID = 999999,
+            CharacterName = "no-scope",
+            Scopes = string.Empty,
+        };
+        var noScopeContext = new CharacterContext(noScopeCharacter);
+        c.That(!CharacterPlanetaryDataService.HasScope(noScopeContext), "无 scope 角色被识别");
+        var noScopeResult = CharacterPlanetaryDataService.GetColoniesAsync(noScopeContext)
+            .GetAwaiter().GetResult();
+        c.That(noScopeResult.ScopeMissing, "无 scope 时不发起 ESI，返回 ScopeMissing");
+        noScopeCharacter.Scopes = CharacterPlanetaryDataService.Scope;
+        c.That(CharacterPlanetaryDataService.HasScope(noScopeContext), "授权包含行星 scope 后识别通过");
 
         c.Section("IndustrySuite · T3 制造 / 逆向");
         var t3Plan = new IndustrySolver(new IndustrySolverOptions { IncludeInvention = true })
@@ -733,6 +842,86 @@ internal static class IndustrySuite
             c.That(blueprintPage.DataContext is IndustryBlueprintPageViewModel, "蓝图浏览器页 DataContext");
             var inventoryPage = new IndustryInventoryPage();
             c.That(inventoryPage.DataContext is IndustryInventoryPageViewModel, "库存页 DataContext");
+            var planetaryPage = new IndustryPlanetaryPage();
+            c.That(planetaryPage.DataContext is PlanetaryPlanPageViewModel, "行星开发页 DataContext");
+            if (planetaryPage.DataContext is PlanetaryPlanPageViewModel planetaryVm)
+            {
+                planetaryVm.LoadAsync().GetAwaiter().GetResult();
+                c.That(planetaryVm.Products.Count >= 60, $"行星开发页载入产物（{planetaryVm.Products.Count} 个）");
+                planetaryVm.AddTarget(2867, "Broadcast Node", 10);
+                c.Equal(planetaryVm.Targets.Count, 1, "行星开发页可添加需求");
+                planetaryVm.UseMarketPrices = false;
+                planetaryVm.CalculateAsync().GetAwaiter().GetResult();
+                c.NotNull(planetaryVm.CurrentPlan, "行星开发页执行计划产出结果");
+                c.That(planetaryVm.CurrentPlan?.Products.Count > 0, "行星开发页结果包含产物链");
+            }
+            var liveChartProbe = new PlanetaryCapacityChart
+            {
+                Series = new List<PlanetaryLiveCapacityPoint>
+                {
+                    new() { Label = "现在", Value = 100 },
+                    new() { Label = "1d", Value = 80 },
+                    new() { Label = "2d", Value = 60 },
+                },
+                Width = 320,
+                Height = 150,
+            };
+            liveChartProbe.Measure(new Size(320, 150));
+            liveChartProbe.Arrange(new Rect(0, 0, 320, 150));
+            liveChartProbe.UpdateLayout();
+            c.That(liveChartProbe.IsMeasureValid, "殖民地产能图可渲染");
+
+            var graphItem = new PlanetaryLivePlanetItem();
+            var graphLayout = new PlanetaryColonyLayout
+            {
+                Pins =
+                {
+                    new() { PinId = 1 },
+                    new() { PinId = 2, FactorySchematicId = 1 },
+                    new() { PinId = 3, FactorySchematicId = 2 },
+                },
+                Links =
+                {
+                    new() { SourcePinId = 1, DestinationPinId = 2, Level = 1 },
+                    new() { SourcePinId = 1, DestinationPinId = 3, Level = 1 },
+                },
+            };
+            var graphVm = new PlanetaryPlanPageViewModel();
+            var buildPins = typeof(PlanetaryPlanPageViewModel).GetMethod(
+                "BuildPins", BindingFlags.Instance | BindingFlags.NonPublic);
+            buildPins!.Invoke(graphVm, new object[] { graphItem, graphLayout });
+            c.Equal(graphItem.Facilities.Count, 3, "设施生产链节点数量");
+            c.That(graphItem.Facilities[0].Role == "设施", "设施节点按类型排序");
+            c.That(graphItem.Facilities.All(p => p.ConnectionCount > 0), "设施节点包含 link 连接数");
+            c.That(graphItem.Facilities.Any(p => p.MetaText.Contains("2 条连接")), "设施连接数计算正确");
+
+            var capacityItem = new PlanetaryLivePlanetItem
+            {
+                Factories =
+                {
+                    new() { Count = 2, OutputPerDay = 100 },
+                },
+            };
+            var capacityLayout = new PlanetaryColonyLayout
+            {
+                Pins =
+                {
+                    new()
+                    {
+                        ExtractorProductTypeId = 1,
+                        QtyPerCycle = 100,
+                        CycleTime = 3600,
+                        ExpiryTime = DateTime.UtcNow.AddDays(-1),
+                    },
+                },
+            };
+            var buildCapacity = typeof(PlanetaryPlanPageViewModel).GetMethod(
+                "BuildCapacitySeries", BindingFlags.Instance | BindingFlags.NonPublic);
+            buildCapacity!.Invoke(graphVm, new object[] { capacityItem, capacityLayout });
+            c.That(capacityItem.ExtractorCapacitySeries.All(p => p.Value == 0), "停止提取器的产能为 0");
+            c.That(capacityItem.FactoryCapacitySeries.All(p => p.Value == 100), "工厂理论产能单独保留");
+            c.That(capacityItem.FactoryCapacityHint.Contains("满产上限"), "工厂曲线标注为理论满产");
+
             var customWindow = new IndustryCustomCharacterWindow(new IndustryCustomCharacter
             {
                 Id = -1,

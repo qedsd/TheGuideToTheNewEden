@@ -2500,6 +2500,8 @@
     <!--  Industry  -->
     <sys:String x:Key="Nav.Industry">Industry</sys:String>
     <sys:String x:Key="Nav.IndustryPlan">Build Plan</sys:String>
+    <sys:String x:Key="Nav.IndustryPlanetary">Planetary Development</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryPlanetaryDesc">Reverse PI colonies, factories, extractor heads, cycles and cost from a P4 product or blueprint.</sys:String>
     <sys:String x:Key="IndustryPage_Target">Target product</sys:String>
     <sys:String x:Key="IndustryPage_SearchPlaceholder">Search an item by name</sys:String>
     <sys:String x:Key="IndustryPage_Search">Search</sys:String>

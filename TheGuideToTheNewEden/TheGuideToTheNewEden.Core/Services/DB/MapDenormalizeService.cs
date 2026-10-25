@@ -40,5 +40,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.MainDb.Queryable<MapDenormalize>().Where(p => ids.Contains(p.SolarSystemID)).ToList();
         }
+
+        public static MapDenormalize Query(int id)
+        {
+            return DBService.MainDb.Queryable<MapDenormalize>().Where(p => p.ItemID == id).First();
+        }
     }
 }

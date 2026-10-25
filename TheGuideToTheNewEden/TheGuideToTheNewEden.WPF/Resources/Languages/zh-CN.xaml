@@ -2522,6 +2522,8 @@
     <!--  工业  -->
     <sys:String x:Key="Nav.Industry">工业</sys:String>
     <sys:String x:Key="Nav.IndustryPlan">制造计划</sys:String>
+    <sys:String x:Key="Nav.IndustryPlanetary">行星开发</sys:String>
+    <sys:String x:Key="Home.Feature.IndustryPlanetaryDesc">从 P4 产物或蓝图反推行星殖民地、工厂、提取头、周期与成本。</sys:String>
     <sys:String x:Key="IndustryPage_Target">目标产物</sys:String>
     <sys:String x:Key="IndustryPage_SearchPlaceholder">输入物品名称搜索</sys:String>
     <sys:String x:Key="IndustryPage_Search">搜索</sys:String>

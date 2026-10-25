@@ -896,6 +896,7 @@ ORDER BY CategoryName, GroupName, ProductName";
                 return new IndustryPlanetaryRecipe
                 {
                     SchematicId = output.SchematicId,
+                    ProductTypeID = productTypeId,
                     Name = schematic?.SchematicName ?? string.Empty,
                     CycleTime = schematic?.CycleTime ?? 0,
                     OutputQuantity = output.Quantity,
@@ -913,6 +914,59 @@ ORDER BY CategoryName, GroupName, ProductName";
             {
                 Log.Error(ex);
                 return null;
+            }
+        }
+
+        /// <summary>全部行星开发 schematic（以输出产物为一条配方）。</summary>
+        public static List<IndustryPlanetaryRecipe> GetAllPlanetaryRecipes()
+        {
+            var db = Db;
+            if (db == null)
+            {
+                return new List<IndustryPlanetaryRecipe>();
+            }
+            try
+            {
+                var schematics = db.Queryable<PlanetSchematic>().ToList()
+                    .ToDictionary(p => p.SchematicId);
+                var maps = db.Queryable<PlanetSchematicTypeMap>().ToList()
+                    .GroupBy(p => p.SchematicId)
+                    .ToDictionary(p => p.Key, p => p.ToList());
+
+                var result = new List<IndustryPlanetaryRecipe>();
+                foreach (var group in maps)
+                {
+                    schematics.TryGetValue(group.Key, out var schematic);
+                    var output = group.Value.FirstOrDefault(p => !p.IsInput && p.Quantity > 0);
+                    if (output == null)
+                    {
+                        continue;
+                    }
+                    result.Add(new IndustryPlanetaryRecipe
+                    {
+                        SchematicId = group.Key,
+                        ProductTypeID = output.TypeId,
+                        Name = schematic?.SchematicName ?? string.Empty,
+                        CycleTime = schematic?.CycleTime ?? 0,
+                        OutputQuantity = output.Quantity,
+                        Inputs = group.Value
+                            .Where(p => p.IsInput && p.Quantity > 0)
+                            .Select(p => new IndustryPlanetaryInput
+                            {
+                                TypeID = p.TypeId,
+                                Quantity = p.Quantity,
+                            })
+                            .ToList(),
+                    });
+                }
+                return result
+                    .OrderBy(p => p.SchematicId)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return new List<IndustryPlanetaryRecipe>();
             }
         }
 

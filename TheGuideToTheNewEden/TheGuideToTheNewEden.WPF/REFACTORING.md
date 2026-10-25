@@ -8687,6 +8687,45 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 - WPF `dotnet build` **0 错误**。
 - `AssistantProbe industry` **182 PASS / 0 FAIL**（新增市场档位、在制占槽、行星税/产线、逐目标解密器断言）。
 
+## 阶段 173：行星开发独立功能（2026-10-24）
+
+### 173.1 参考项目取舍
+
+- 优化器 `jwebbdev/eve-pi`：采用配方层级/反推、CCP 提取衰减、CCU CPU/PG 殖民地容量、P4 仅 Temperate/Barren、self-sufficient/import/hybrid 思路、市场 profitability 口径。
+- 追踪器 `calli-eve/eve-pi`：采用实时殖民地/提取器/工厂/库存/当前进出口/停止告警的交互，不采用 3D 行星和浏览器备份。
+- 没有复制两个项目的 Python/TS 代码；用本项目 SDE + EVEStandard + MVVM 重写。
+
+### 173.2 Core
+
+- 新增 `PlanetaryRecipeCatalog`：从 `planetSchematics*` 全量载入，按依赖推断 P1–P4；P4 直接吃 P1 的特例正常展开；`GetAllPlanetaryRecipes()` / `ProductTypeID` 补齐。
+- 新增 `PlanetTypeCatalog`：8 类行星的 P0 组成、P4 能力、设施 TypeID；P0 名称运行时解析为 SDE TypeID。
+- 新增 `PlanetaryCapacityCalculator`：CCU 0–5、Launchpad、Basic/Advanced/High-Tech Factory、ECU/Head、link 成本；P4 禁止非 Temperate/Barren；缺真实半径时按 2000 km 估算并标记。
+- 新增 `PlanetaryExtractionYield`：CCP 0.012 衰减 / 0.8 噪声、30m–8h 程序周期、有效产率折算。
+- 新增 `PlanetaryPlanner`：目标数量/周期 → 殖民地级 P1 提取/P2–P4 工厂方案、角色行星位分配、进口/自给/当前产出抵扣、建造成本/进口税/收入/利润/回本、风险提示。
+- 新增 `MapDenormalizeService.Query(id)`，用于实时行星名/类型。
+
+### 173.3 页面、实时殖民与保存
+
+- 新增独立页 `IndustryPlanetaryPage`，导航「工业 → 行星开发」，顶层页签 **我的殖民地 / 计划设置 / 计划详细 / 已保存计划**；「我的殖民地」为首个页签且默认打开并自动刷新。
+- 计划设置：`需求 / 角色与产能 / 价格与税`；支持直接选 P1–P4、从蓝图直接材料导入、多角色 CCU/行星位、市场价、POCO/销售/经纪人费、设施成本、提取周期。
+- 计划详细：内部再分 **概况 / 产物链 / 殖民分配 / 外购** 页签，列表占满剩余高度（不再用 330/360px 的 MaxHeight 截断）；计划设置也去掉外层 ScrollViewer，由各列表/表格自行滚动；结果仍是**殖民地级**，不做引脚/模板。
+- 新增 `CharacterPlanetaryDataService`：EVEStandard `GetColoniesAsync` / `GetColonyLayoutAsync`；scope 缺失/令牌失效/网络失败有明确结果；殖民列表缓存 5 分钟、单殖民布局缓存 2 分钟。
+- 「我的殖民地」改为三栏主从：左栏仅列有殖民地的角色（底部显示全局角色/殖民地数）、中栏选中角色的殖民地简表（底部显示该角色统计）、右栏固定头部 + **产能估算 / 设施清单 / 生产明细 / 库存与物流 / 引脚明细** 内嵌页签（提取器衰减与工厂理论满产两张曲线、逐引脚设施卡、提取器程序与同配方工厂组、库存/进出口、原始引脚明细）；顶部不再显示「已刷新 N 个殖民地」和常驻警告条；读取失败、令牌失效、缺少权限等错误合并为一条右下角 `PageNotifyService` 通知（自动消失），页面加载时自动读取。设施展示不再用关系图或游戏经纬度，也不再按 link 推断父子树（ESI link 是网络连接，工厂可挂仓库下、工厂间也可互连）：页面用制造计划同款节点卡按设施类型平铺，展示角色/设施类型/Pin/连接数；ListBox 自身滚动，不产生整页滚动。产能拆成两张图：提取器按实际停止/衰减计算，工厂单独标注为理论满产，避免「有提取器时只看提取器、无提取器时看工厂」的口径混淆。
+- 行星开发页移除所有页面级 ScrollViewer：计划设置 / 计划详情使用 Tab + 自适应 Grid，角色/目标/产物/蓝图/殖民地/设施/引脚等列表和 DataGrid 各自滚动；殖民地右侧详情由长 ScrollViewer 改为内嵌 Tab。
+- 全页滚动根因是 WPF-UI `NavigationViewContentPresenter` 的 `DynamicScrollViewer`，不是页面自己的 ScrollViewer；`IndustryPlanetaryPage` 根节点设置 `ScrollViewer.CanContentScroll="False"`，WPF-UI 在 `OnNavigated` 中据此关闭动态 ScrollViewer（其静态构造把 Page 的 CanContentScroll 默认改成了 true）。
+- 加载提示与制造计划一致：移除计划设置左下角的内联 BusyText/停止；计划计算和「我的殖民地」刷新共用页面右下角非阻塞加载卡（`IsAnyBusy` / `BusyNoticeText`，`IsHitTestVisible=False`），停止按钮放到计划设置右上角；刷新完成/失败/取消走右下角 `PageNotifyService` 通知。
+- 混合模式可用「我的殖民地」工厂日产出抵扣输入需求（只抵扣输入，不抵扣角色资产）。
+- 新增 `IndustryPlanetaryPlanService`：`Configs/IndustryPlanetaryPlans.json` 保存参数 + `PlanetaryPlan` 结果快照；载入不重新计算；支持保存/覆盖/载入/删除。
+- 新增 `industry/planetary.md`，注册 HomeFeatureCatalog / ManualToolMap / MainWindow / 中英文导航键。
+
+### 173.4 验证与限制
+
+- WPF `dotnet build` 0 错误；`AssistantProbe industry` **220 PASS / 0 FAIL**（含 P4 反推、进口模式、快照序列化、无 scope 门禁、页面构造、页面执行计划、产能图与引脚位置图渲染）。
+- 限制：阶段 1 只到殖民地产能级，不生成精确 CPU/PG/link/pin 文件，也没有 3D 行星/引脚；行星半径缺少真实来源时按 2000 km 估算。
+- 限制：页面暂未选择具体星系/行星，只按行星类型和角色行星位分配；P0 组成是固定领域表，不来自本地 Equinox 行星资源表。
+- 限制：阶段 1 的殖民地容量按所选角色最低 CCU 保守估算（行星位仍逐角色检查），尚未按每个角色 CCU 精确重排殖民地。
+- 限制：蓝图模式取蓝图**直接材料**中的行星产物，不递归展开成完整舰船 BOM；「我的殖民地」只读，ESI 没有写殖民布局接口。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

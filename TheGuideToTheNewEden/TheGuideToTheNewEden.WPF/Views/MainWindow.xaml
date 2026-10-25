@@ -148,6 +148,17 @@
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.IndustryPlanetary}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:IndustryPlanetaryPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.industry}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
                             Content="{DynamicResource Nav.IndustryBlueprints}"
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:IndustryBlueprintPage}">

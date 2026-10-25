@@ -106,6 +106,8 @@ public static class HomeFeatureCatalog
         // ---------- 工业 ----------
         new("industry-plan", SymbolRegular.Building24, "industry", "Nav.IndustryPlan", "Nav.Industry",
             "Home.Feature.IndustryPlanDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryPlanPage)),
+        new("industry-planetary", SymbolRegular.Planet24, "industry", "Nav.IndustryPlanetary", "Nav.Industry",
+            "Home.Feature.IndustryPlanetaryDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryPlanetaryPage)),
         new("industry-blueprints", SymbolRegular.DocumentText24, "industry", "Nav.IndustryBlueprints", "Nav.Industry",
             "Home.Feature.IndustryBlueprintsDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryBlueprintPage)),
         new("industry-inventory", SymbolRegular.Database24, "industry", "Nav.IndustryInventory", "Nav.Industry",
