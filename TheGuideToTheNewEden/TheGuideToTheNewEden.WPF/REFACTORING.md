@@ -9264,6 +9264,49 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
 - **不要开启 `PublishTrimmed`**：WPF 依赖反射与 XAML 资源，裁剪会在运行时报找不到类型/资源。
 - 重复向同一 `PublishDir` 发布会保留上一次的陈旧文件（SDK 不自动清理）；正式出包前先删空该目录。
 
+## 阶段 190：ESI 凭据编译期内置（发布前填写、开箱即用）（2026-10-26）
+
+> 用户要求：`ESILicense.txt` 的内容要在**发布时写进代码**，终端用户打开即用；像 WinUI 3 版在
+> `ActivationService` 里预留那样，发布前手动填好再编译。
+
+### 190.1 新增发布接口
+
+- 新增 `Services/EsiLicenseRelease.cs`（`internal static`），三个 `const` 占位：
+  - `ClientId`（第 1 行）、`Callback`（第 2 行）、`ClientSecret`（第 3 行）；
+  - `IsConfigured`：三项都非空才算已内置；
+  - `Lines`：按 `ESILicense.txt` 行序返回；
+  - 文件头写明**发布前只改这里**、Callback 必须与开发者后台一致、常量可被提取，不要把真实值提交公开仓库。
+- 默认三项目前均为空，仓库里不含真实凭据；发布时填写后重新编译即可。
+
+### 190.2 注入逻辑（`CoreInitializer.ApplyEsiCredentials`）
+
+- **优先级**：发布内置（`EsiLicenseRelease.IsConfigured`）→ `SettingsService.DataPath\Configs\ESILicense.txt` → 无。
+  - 内置优先是为了“打开即用”，并避免旧版本/用户目录里残留的 `ESILicense.txt` 覆盖发布凭据；
+  - 本地开发把内置三项留空，即可继续用文件（与原流程一致）。
+- 文件回退要求三行都非空；不足 3 行或有空行视为不可用并记 WARN，不再直接把半个凭据塞进 `Config`。
+- 成功时记一条 INFO 说明来源（文件路径 / 发布内置），**不输出任何凭据值**。
+- 方法末尾统一 `Core.Services.ESIService.Reset()`：凭据或服务器变化后丢弃按旧 `Config` 构造的 SSO / ESI 客户端单例
+  （`SwitchGameServer` 里原有的 Reset 保留，重复调用无害）。
+- 无内置且无可用文件时仍按原行为记 WARN（不是错误，不阻塞启动），只是无法发起新的授权。
+
+### 190.3 文案与手册同步
+
+- `CharacterAuthService`、`AuthHelper`、`LoopbackAuthServer`、`TestSettingPage` 中“凭据/回调只来自 `Configs/ESILicense.txt`”的描述改为“发布内置或文件”。
+- 手册：`settings/test.md`（三处一致、报错处置、限制）、`getting-started.md`（配置目录表）、`troubleshooting.md`（配置目录表、redirect_uri 报错）注明发布版通常已内置、文件仅用于开发/覆盖。
+
+### 190.4 发布步骤
+
+1. 在 `Services/EsiLicenseRelease.cs` 填入 `ClientId` / `Callback` / `ClientSecret`；
+2. 确认 `Callback` 与 EVE 开发者后台登记的 Callback URL 完全一致（欧服必须是本机回环 http 地址，不支持通配端口）；
+3. 编译 Release / 按阶段 189 的 `win-x64-single-file` 发布；终端用户无需 `Configs/ESILicense.txt`。
+
+### 190.5 验证
+
+- `dotnet build` WPF：**0 错误**（56 个既有警告，无新增）。
+- `AssistantProbe manuals`：**58 PASS / 0 FAIL**（手册仅改描述，结构/体量均在预算内）。
+- 未填入真实凭据，因此未做真实授权链路回归；逻辑分支（内置为空、文件缺失）与编译期常量检查已通过代码审阅。
+- 安全边界：编译进程序集的 ClientSecret 可被逆向提取，这是“开箱即用”的固有代价；不要提交真实值到公开仓库。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

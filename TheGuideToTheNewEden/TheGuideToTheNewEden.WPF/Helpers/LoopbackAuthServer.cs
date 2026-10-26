@@ -83,7 +83,7 @@ internal sealed class LoopbackPageStrings
 /// 只绑 IPv4 会出现"授权页跳转过去了但回调收不到"。
 ///
 /// **端口**：CCP 不允许通配端口（回调地址必须是登记时那个确切值），因此端口固定，
-/// 由 <c>Configs/ESILicense.txt</c> 第 2 行的回调地址决定，不在这里写死。
+/// 由 <c>Config.ESICallback</c>（发布内置凭据或 <c>Configs/ESILicense.txt</c> 第 2 行）决定，不在这里写死。
 /// </remarks>
 internal sealed class LoopbackAuthServer : IDisposable
 {

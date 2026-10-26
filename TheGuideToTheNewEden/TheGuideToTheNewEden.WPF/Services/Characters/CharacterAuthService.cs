@@ -19,7 +19,7 @@ public static class CharacterAuthService
     /// </summary>
     public static string? LastFailure { get; private set; }
 
-    /// <summary>凭据是否就绪（来自 Configs/ESILicense.txt）。</summary>
+    /// <summary>凭据是否就绪（发布内置常量，或 Configs/ESILicense.txt）。</summary>
     public static bool CredentialsAvailable =>
         !string.IsNullOrWhiteSpace(Core.Config.ClientId)
         && !string.IsNullOrWhiteSpace(Core.Config.ClientSecret);
@@ -68,7 +68,7 @@ public static class CharacterAuthService
         if (!CredentialsAvailable)
         {
             // 调用方在进入本方法前已单独提示过"缺少凭据"，这里只记日志。
-            Core.Log.Error("缺少 ESI 凭据（Configs/ESILicense.txt），无法发起授权");
+            Core.Log.Error("缺少 ESI 凭据（发布内置与 Configs/ESILicense.txt 均为空），无法发起授权");
             return null;
         }
 

@@ -97,42 +97,78 @@ public static class CoreInitializer
     }
 
     /// <summary>
-    /// 灌入 ESI 授权所需配置：客户端凭据来自 Configs/ESILicense.txt，权限范围来自 ESI 权限设置。
+    /// 灌入 ESI 授权所需配置：客户端凭据优先来自**发布内置常量**（<see cref="EsiLicenseRelease"/>），
+    /// 未内置时回退 <c>Configs/ESILicense.txt</c>；权限范围来自 ESI 权限设置。
     /// 必须在首次访问 Core.Services.ESIService.Current 之前完成（SSO 实例在构造时读取 Config）。
     /// </summary>
     public static void ApplyEsiCredentials()
     {
+        var lines = ReadEsiLicenseLines(out var source);
+        if (lines is not null)
+        {
+            Config.ClientId = GameServerSelectorService.Value == GameServerType.Serenity
+                ? SerenityAuthHelper.ClientId
+                : lines[0].Trim();
+            Config.ESICallback = lines[1].Trim();
+            Config.ClientSecret = lines[2].Trim();
+            Log.Info($"ESI 凭据来源：{source}");
+        }
+        else
+        {
+            // 没有内置、也没有可用的本地文件：不是崩溃，只是暂时无法发起新的授权。
+            Log.Warn("未找到可用的 ESI 凭据（发布内置为空，且 Configs/ESILicense.txt 不存在或不足 3 行），无法进行新的 ESI 授权");
+        }
+
+        Config.Scopes = ESIScopeService.Current.GetSelectedScopes().ToList();
+
+        // 凭据或服务器可能已变化：丢弃按旧 Config 构造的 SSO / ESI 客户端单例。
+        Core.Services.ESIService.Reset();
+    }
+
+    /// <summary>
+    /// 读取 ESI 凭据，顺序为 ClientId / Callback / ClientSecret。
+    /// <para>
+    /// 优先级：**发布内置常量**（<see cref="EsiLicenseRelease"/>，发布版用）→
+    /// <c>Configs/ESILicense.txt</c>（开发/运维临时覆盖）→ 无。
+    /// 内置值三项都填写后，终端用户无需任何配置文件；本地开发把内置值留空即可继续用文件。
+    /// </para>
+    /// </summary>
+    private static string[]? ReadEsiLicenseLines(out string source)
+    {
+        if (EsiLicenseRelease.IsConfigured)
+        {
+            source = "发布内置（EsiLicenseRelease.cs）";
+            return EsiLicenseRelease.Lines;
+        }
+
         var licenseFile = Path.Combine(SettingsService.DataPath, "Configs", "ESILicense.txt");
         if (File.Exists(licenseFile))
         {
             try
             {
                 var lines = File.ReadAllLines(licenseFile);
-                if (lines.Length >= 3)
+                if (IsUsableEsiLicense(lines))
                 {
-                    Config.ClientId = GameServerSelectorService.Value == GameServerType.Serenity
-                        ? SerenityAuthHelper.ClientId
-                        : lines[0].Trim();
-                    Config.ESICallback = lines[1].Trim();
-                    Config.ClientSecret = lines[2].Trim();
+                    source = licenseFile;
+                    return lines;
                 }
-                else
-                {
-                    Log.Error("ESILicense.txt 内容不足 3 行，无法读取 ESI 凭据");
-                }
+
+                Log.Warn($"Configs/ESILicense.txt 不足 3 行或有空行：{licenseFile}");
             }
             catch (Exception ex)
             {
                 Log.Error(ex);
             }
         }
-        else
-        {
-            // 首次运行本来就没有这个文件（要等用户在界面上填/授权），不是错误：
-            // 记 Warn 以免污染错误计数（ScalperPage 之类的"本次错误数"会读它）
-            Log.Warn("未找到 Configs/ESILicense.txt，无法进行新的 ESI 授权");
-        }
 
-        Config.Scopes = ESIScopeService.Current.GetSelectedScopes().ToList();
+        source = string.Empty;
+        return null;
     }
+
+    /// <summary>三项齐全且都非空才算可用，避免用半个凭据发起授权。</summary>
+    private static bool IsUsableEsiLicense(string[]? lines)
+        => lines is { Length: >= 3 }
+           && !string.IsNullOrWhiteSpace(lines[0])
+           && !string.IsNullOrWhiteSpace(lines[1])
+           && !string.IsNullOrWhiteSpace(lines[2]);
 }

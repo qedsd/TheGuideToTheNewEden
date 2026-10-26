@@ -99,8 +99,8 @@ public partial class TestSettingPage : Page
     /// 校验配置里的回调地址，并**真的占用一次端口**，确认浏览器回调能打进本进程。
     /// </summary>
     /// <remarks>
-    /// 授权能不能收到回调，取决于三件事同时成立：<c>Configs/ESILicense.txt</c> 第 2 行的地址、
-    /// EVE 开发者后台登记的 Callback URL、以及本机这个端口真的能用。这里一次全测掉。
+    /// 授权能不能收到回调，取决于三件事同时成立：<c>Config.ESICallback</c>（发布内置凭据或
+    /// <c>Configs/ESILicense.txt</c> 第 2 行）、EVE 开发者后台登记的 Callback URL、以及本机这个端口真的能用。这里一次全测掉。
     /// </remarks>
     private void CheckLoopback()
     {

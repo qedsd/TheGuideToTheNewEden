@@ -66,7 +66,7 @@ updated: 2026-10-26
 | 位置 | 里面有什么 | 怎么打开 |
 |---|---|---|
 | 数据目录（默认 `%LocalAppData%\TheGuideToTheNewEden\V4`） | 配置根目录；由**根目录**的 `datapath.json` 记录当前选择，可改为旧目录或自定义目录 | 「设置 → 一般 → 其他 → 数据目录」的路径与「打开」按钮 |
-| 配置目录 `<数据目录>\Configs` | `settings.json`（设置）、`ESILicense.txt`（第 2 行是授权回调地址）、`ESIScopes.txt`（权限勾选）、`Auth.json` / `Auth_Serenity.json`（两套服务器的角色授权）、`HomeShortcuts.json`（主页磁贴）、市场缓存目录（建筑 / 星域 / 历史） | 主页「打开配置目录」直达；「数据目录 → 打开」打开的是它的上级目录 |
+| 配置目录 `<数据目录>\Configs` | `settings.json`（设置）、`ESILicense.txt`（可选：开发/覆盖用；发布版通常已内置，第 2 行是回调地址）、`ESIScopes.txt`（权限勾选）、`Auth.json` / `Auth_Serenity.json`（两套服务器的角色授权）、`HomeShortcuts.json`（主页磁贴）、市场缓存目录（建筑 / 星域 / 历史） | 主页「打开配置目录」直达；「数据目录 → 打开」打开的是它的上级目录 |
 | 软件日志 `%LocalAppData%\TheGuideToTheNewEden\Logs` | 按日期命名的 `.txt`，含启动、异常与托盘 / 授权的诊断行；多版本共用 | 「设置 → 一般」的「App日志 → 查看」；主页「打开日志」 |
 | EVE 游戏日志 | EVE 自己写的日志；软件在其下 `Chatlogs`（聊天）与 `Gamelogs`（游戏日志）找文件 | 「设置 → 游戏日志」的「游戏日志路径」（默认「文档\EVE\logs」） |
 

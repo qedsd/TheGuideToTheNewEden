@@ -19,14 +19,15 @@ internal static class AuthHelper
     /// <summary>
     /// 建议使用的回调端口。
     /// 端口必须与 EVE 开发者后台登记的 Callback URL **完全一致**（CCP 不支持通配端口），
-    /// 所以真正的取值来自 <c>Configs/ESILicense.txt</c> 第 2 行，这里只是给配置时用的建议值。
+    /// 所以真正的取值来自 <c>Config.ESICallback</c>（发布内置的 <see cref="Services.EsiLicenseRelease.Callback"/>，
+    /// 或开发时 <c>Configs/ESILicense.txt</c> 第 2 行），这里只是给配置时用的建议值。
     /// </summary>
     public const int DefaultCallbackPort = 38471;
 
     /// <summary>建议使用的回调路径。</summary>
     public const string DefaultCallbackPath = "/callback/";
 
-    /// <summary>建议在开发者后台与 <c>ESILicense.txt</c> 里填写的完整回调地址。</summary>
+    /// <summary>建议在开发者后台与发布内置凭据（或 <c>ESILicense.txt</c>）里填写的完整回调地址。</summary>
     public static string SuggestedCallbackUrl => $"http://localhost:{DefaultCallbackPort}{DefaultCallbackPath}";
 
     /// <summary>当前配置的回调地址；未配置时返回建议值（用于界面展示与复制）。</summary>
@@ -37,7 +38,7 @@ internal static class AuthHelper
     }
 
     /// <summary>
-    /// 解析并校验回环回调地址（即 <c>Configs/ESILicense.txt</c> 第 2 行 → <see cref="Core.Config.ESICallback"/>）。
+    /// 解析并校验回环回调地址（即 <c>Config.ESICallback</c>；来自发布内置凭据或 <c>Configs/ESILicense.txt</c> 第 2 行）。
     /// </summary>
     /// <remarks>
     /// 校验失败**不能**照常打开授权页：授权 URL 里的 <c>redirect_uri</c> 就是这里取的值，
@@ -51,7 +52,7 @@ internal static class AuthHelper
         var raw = Core.Config.ESICallback?.Trim();
         if (string.IsNullOrWhiteSpace(raw))
         {
-            error = EndpointGuidance("尚未配置回调地址（Configs/ESILicense.txt 第 2 行为空）");
+            error = EndpointGuidance("尚未配置回调地址（发布内置凭据与 Configs/ESILicense.txt 第 2 行均为空）");
             return false;
         }
 
@@ -100,7 +101,7 @@ internal static class AuthHelper
 
     private static string EndpointGuidance(string reason)
     {
-        return $"{reason}。请把 EVE 开发者后台的 Callback URL 与 Configs/ESILicense.txt 第 2 行都设为 {SuggestedCallbackUrl}";
+        return $"{reason}。请把 EVE 开发者后台的 Callback URL 与当前回调配置（发布内置，或 Configs/ESILicense.txt 第 2 行）都设为 {SuggestedCallbackUrl}";
     }
 
     /// <summary>
