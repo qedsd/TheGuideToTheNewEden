@@ -135,7 +135,7 @@
                             FontSize="12.5"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{Binding Role}"
+                            Text="{Binding Role, Converter={StaticResource IndustryRoleName}}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             Margin="0,2,0,0"
@@ -513,7 +513,7 @@
                             Margin="0,2,0,0"
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="{Binding InputsText, StringFormat=输入：{0}}"
+                            Text="{Binding InputsLabel}"
                             TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                     <StackPanel
@@ -578,7 +578,7 @@
                         Margin="0,3,0,1"
                         FontSize="10.5"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="提取器"
+                        Text="{DynamicResource IndustryPlanetary_RoleExtractor}"
                         Visibility="{Binding HasExtractors, Converter={StaticResource BoolToVisibility}}" />
                     <ItemsControl
                         ItemTemplate="{StaticResource PlanetaryLiveExtractorTemplate}"
@@ -588,7 +588,7 @@
                         Margin="0,6,0,1"
                         FontSize="10.5"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="工厂"
+                        Text="{DynamicResource IndustryPlanetary_RoleFactory}"
                         Visibility="{Binding HasFactories, Converter={StaticResource BoolToVisibility}}" />
                     <ItemsControl
                         ItemTemplate="{StaticResource PlanetaryLiveFactoryTemplate}"
@@ -602,7 +602,7 @@
                         <TextBlock
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="库存" />
+                            Text="{DynamicResource IndustryPlanetary_Stock}" />
                         <TextBlock
                             Grid.Column="1"
                             Margin="8,0,0,0"
@@ -619,7 +619,7 @@
                         <TextBlock
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="进口" />
+                            Text="{DynamicResource IndustryPlanetary_Import}" />
                         <TextBlock
                             Grid.Column="1"
                             Margin="8,0,0,0"
@@ -636,7 +636,7 @@
                         <TextBlock
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="出口" />
+                            Text="{DynamicResource IndustryPlanetary_Export}" />
                         <TextBlock
                             Grid.Column="1"
                             Margin="8,0,0,0"
@@ -689,7 +689,7 @@
             SelectionChanged="OnSectionTabChanged">
 
             <!--  ================= 我的殖民地 =================  -->
-            <TabItem Header="我的殖民地">
+            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Colonies}">
                 <Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -715,7 +715,7 @@
                                         Margin="7,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="角色" />
+                                        Text="{DynamicResource IndustryPlanetary_Col_Character}" />
                                 </StackPanel>
                             </controls:CardControl.Header>
                             <Grid>
@@ -775,7 +775,7 @@
                                         Margin="7,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="殖民地" />
+                                        Text="{DynamicResource IndustryPlanetary_Colonies}" />
                                 </StackPanel>
                             </controls:CardControl.Header>
                             <Grid>
@@ -831,7 +831,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="12"
                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="选择殖民地查看详情"
+                                Text="{DynamicResource IndustryPlanetary_SelectColonyHint}"
                                 Visibility="{Binding HasNoSelectedLiveColony, Converter={StaticResource BoolToVisibility}}" />
                             <Grid Visibility="{Binding HasSelectedLiveColony, Converter={StaticResource BoolToVisibility}}">
                                 <Grid>
@@ -868,7 +868,7 @@
                                                         Margin="0,2,0,0"
                                                         FontSize="10"
                                                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Text="{Binding SelectedLiveColony.LastUpdateText, StringFormat=最后更新 {0}}" />
+                                                        Text="{Binding SelectedLiveColony.LastUpdateLabel}" />
                                                 </StackPanel>
                                                 <StackPanel
                                                     Grid.Column="1"
@@ -879,13 +879,13 @@
                                                         Appearance="Secondary"
                                                         Click="OnRefreshLiveClick"
                                                         Icon="{ui:SymbolIcon ArrowSync24}"
-                                                        ToolTip="刷新殖民地"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_RefreshColonies}"
                                                         Visibility="{Binding IsLiveNotBusy, Converter={StaticResource BoolToVisibility}}" />
                                                     <ui:Button
                                                         Click="OnCancelLiveClick"
                                                         Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                         Icon="{ui:SymbolIcon RecordStop24}"
-                                                        ToolTip="停止刷新"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_StopRefresh}"
                                                         Visibility="{Binding IsLiveBusy, Converter={StaticResource BoolToVisibility}}" />
                                                 </StackPanel>
                                             </Grid>
@@ -908,15 +908,15 @@
                                                     <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.UpgradeLevel}" />
                                                 </StackPanel>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="引脚" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Pins}" />
                                                     <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.NumPins}" />
                                                 </StackPanel>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="提取器" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_RoleExtractor}" />
                                                     <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.Extractors.Count}" />
                                                 </StackPanel>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="工厂" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_RoleFactory}" />
                                                     <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.FactoryPinCount}" />
                                                 </StackPanel>
                                             </UniformGrid>
@@ -936,7 +936,7 @@
                                             Background="Transparent"
                                             BorderThickness="0"
                                             DataContext="{Binding SelectedLiveColony}">
-                                            <TabItem Header="产能估算">
+                                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Capacity}">
                                                 <StackPanel Margin="0,10,0,0">
                                                 <controls:CardControl
                                                     Padding="14,8"
@@ -953,7 +953,7 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="提取产能（P0/天）" />
+                                                                Text="{DynamicResource IndustryPlanetary_ExtractionCapacity}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <StackPanel>
@@ -961,7 +961,7 @@
                                                             FontSize="9.5"
                                                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                             Text="{Binding ExtractorCapacityHint}"
-                                                            ToolTip="按当前提取程序与 CCP 衰减估算；到期后按 0 计。" />
+                                                            ToolTip="{DynamicResource IndustryPlanetary_ExtractionCapacityTip}" />
                                                         <uc:PlanetaryCapacityChart
                                                             Height="150"
                                                             Margin="0,4,0,0"
@@ -985,14 +985,14 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="工厂理论产出（/天）" />
+                                                                Text="{DynamicResource IndustryPlanetary_FactoryTheoreticalOutput}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <uc:PlanetaryCapacityChart Height="150" Series="{Binding FactoryCapacitySeries}" />
                                                 </controls:CardControl>
                                             </StackPanel>
                                         </TabItem>
-                                        <TabItem Header="设施清单">
+                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Facilities}">
                                             <Grid Margin="0,10,0,0">
                                                 <controls:CardControl Padding="14,8" CornerRadius="8">
                                                     <controls:CardControl.Header>
@@ -1006,7 +1006,7 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="设施清单" />
+                                                                Text="{DynamicResource IndustryPlanetary_Tab_Facilities}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <Grid>
@@ -1024,13 +1024,13 @@
                                                             VerticalAlignment="Center"
                                                             FontSize="11"
                                                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="没有设施数据"
+                                                            Text="{DynamicResource IndustryPlanetary_NoFacilities}"
                                                             Visibility="{Binding HasNoFacilities, Converter={StaticResource BoolToVisibility}}" />
                                                     </Grid>
                                                 </controls:CardControl>
                                             </Grid>
                                         </TabItem>
-                                        <TabItem Header="生产明细">
+                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Production}">
                                             <Grid Margin="0,10,0,0">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1052,7 +1052,7 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="提取器" />
+                                                                Text="{DynamicResource IndustryPlanetary_RoleExtractor}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <ListBox
@@ -1081,7 +1081,7 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="工厂组（同配方合并）" />
+                                                                Text="{DynamicResource IndustryPlanetary_FactoryGroups}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <ListBox
@@ -1093,7 +1093,7 @@
                                                 </controls:CardControl>
                                             </Grid>
                                         </TabItem>
-                                        <TabItem Header="库存与物流">
+                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_StockLogistics}">
                                             <Grid Margin="0,10,0,0">
                                                 <controls:CardControl Padding="14,8" CornerRadius="8">
                                                     <controls:CardControl.Header>
@@ -1107,7 +1107,7 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="库存与物流" />
+                                                                Text="{DynamicResource IndustryPlanetary_Tab_StockLogistics}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <Grid>
@@ -1123,7 +1123,7 @@
                                                         <TextBlock
                                                             FontSize="10"
                                                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="库存" />
+                                                            Text="{DynamicResource IndustryPlanetary_Stock}" />
                                                         <TextBlock
                                                             Grid.Column="1"
                                                             FontSize="10.5"
@@ -1135,7 +1135,7 @@
                                                             Margin="0,4,0,0"
                                                             FontSize="10"
                                                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="进口" />
+                                                            Text="{DynamicResource IndustryPlanetary_Import}" />
                                                         <TextBlock
                                                             Grid.Row="1"
                                                             Grid.Column="1"
@@ -1149,7 +1149,7 @@
                                                             Margin="0,4,0,0"
                                                             FontSize="10"
                                                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="出口" />
+                                                            Text="{DynamicResource IndustryPlanetary_Export}" />
                                                         <TextBlock
                                                             Grid.Row="2"
                                                             Grid.Column="1"
@@ -1162,7 +1162,7 @@
                                                 </controls:CardControl>
                                             </Grid>
                                         </TabItem>
-                                        <TabItem Header="引脚明细">
+                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_PinDetail}">
                                             <Grid Margin="0,10,0,0">
                                                 <controls:CardControl
                                                     Padding="14,8"
@@ -1179,7 +1179,7 @@
                                                                 Margin="7,0,0,0"
                                                                 VerticalAlignment="Center"
                                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="引脚明细" />
+                                                                Text="{DynamicResource IndustryPlanetary_Tab_PinDetail}" />
                                                         </StackPanel>
                                                     </controls:CardControl.Header>
                                                     <ListBox
@@ -1198,7 +1198,7 @@
                                                                     <TextBlock
                                                                         FontSize="10"
                                                                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                        Text="{Binding Role}" />
+                                                                        Text="{Binding Role, Converter={StaticResource IndustryRoleName}}" />
                                                                     <TextBlock
                                                                         Grid.Column="1"
                                                                         FontSize="10.5"
@@ -1227,7 +1227,7 @@
             </TabItem>
 
             <!--  ================= 计划设置 =================  -->
-            <TabItem Header="计划设置">
+            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Settings}">
                 <Grid>
                     <controls:CardControl>
                         <TabControl
@@ -1238,7 +1238,7 @@
                             BorderThickness="0"
                             SelectedIndex="{Binding SettingsTabIndex, Mode=TwoWay}">
 
-                            <TabItem Header="需求">
+                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Demand}">
                                 <Grid Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="1.25*" />
@@ -1258,7 +1258,7 @@
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="选择行星产物" />
+                                                        Text="{DynamicResource IndustryPlanetary_SelectProduct}" />
                                                 </StackPanel>
                                             </TabItem.Header>
                                             <Grid>
@@ -1269,7 +1269,7 @@
                                                 </Grid.RowDefinitions>
                                                 <ui:TextBox
                                                     Grid.Row="0"
-                                                    PlaceholderText="搜索行星产物（P1–P4）"
+                                                    PlaceholderText="{DynamicResource IndustryPlanetary_SearchProduct}"
                                                     Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}" />
                                                 <ListBox
                                                     Grid.Row="1"
@@ -1289,7 +1289,7 @@
                                                     <TextBlock
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                        Text="数量" />
+                                                        Text="{DynamicResource General_Quantity}" />
                                                     <ui:NumberBox
                                                         Grid.Column="1"
                                                         Margin="8,0"
@@ -1301,7 +1301,7 @@
                                                     <ui:Button
                                                         Grid.Column="2"
                                                         Click="OnAddProductClick"
-                                                        Content="添加"
+                                                        Content="{DynamicResource General_Add}"
                                                         Icon="{ui:SymbolIcon Add24}" />
                                                 </Grid>
                                             </Grid>
@@ -1318,8 +1318,8 @@
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="从蓝图导入"
-                                                        ToolTip="取蓝图直接材料里的行星产物，按流程数合并到已选需求。" />
+                                                        Text="{DynamicResource IndustryPlanetary_ImportFromBlueprint}"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_ImportFromBlueprintTip}" />
                                                 </StackPanel>
                                             </TabItem.Header>
                                             <Grid>
@@ -1328,7 +1328,7 @@
                                                     <RowDefinition Height="*" />
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
-                                                <ui:TextBox PlaceholderText="搜索蓝图 / 产物名称" Text="{Binding BlueprintSearchText, UpdateSourceTrigger=PropertyChanged}" />
+                                                <ui:TextBox PlaceholderText="{DynamicResource IndustryPlanetary_SearchBlueprint}" Text="{Binding BlueprintSearchText, UpdateSourceTrigger=PropertyChanged}" />
                                                 <ListBox
                                                     Grid.Row="1"
                                                     Margin="0,6,0,0"
@@ -1361,7 +1361,7 @@
                                                     <ui:Button
                                                         Grid.Column="2"
                                                         Click="OnImportBlueprintClick"
-                                                        Content="导入"
+                                                        Content="{DynamicResource IndustryPlanetary_ImportButton}"
                                                         Icon="{ui:SymbolIcon ArrowDownload24}" />
                                                 </Grid>
                                             </Grid>
@@ -1382,7 +1382,7 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="{Binding Targets.Count, StringFormat=已选需求（{0}）}" />
+                                                    Text="{Binding TargetsCountText}" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <Grid>
@@ -1405,27 +1405,27 @@
                                                 HorizontalAlignment="Right"
                                                 Appearance="Secondary"
                                                 Click="OnClearTargetsClick"
-                                                Content="清空"
+                                                Content="{DynamicResource IndustryPlanetary_Clear}"
                                                 Icon="{ui:SymbolIcon Delete24}" />
                                             <StackPanel Grid.Row="2" Margin="0,12,0,0">
-                                                <TextBlock Style="{StaticResource PlanetaryLabel}" Text="需求周期（天）" />
+                                                <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_PeriodDays}" />
                                                 <ui:NumberBox
                                                     MaxDecimalPlaces="0"
                                                     Maximum="365"
                                                     Minimum="1"
                                                     SmallChange="1"
                                                     Value="{Binding PeriodDays, Mode=TwoWay}" />
-                                                <TextBlock Style="{StaticResource PlanetaryLabel}" Text="生产方式" />
-                                                <ComboBox SelectedIndex="{Binding ModeIndex, Mode=TwoWay}" ToolTip="自给自足：从 P0 提取逐层生产；进口：只建目标工厂、输入全部外购；混合：先用「我的殖民地」产出抵扣输入。">
-                                                    <ComboBoxItem Content="自给自足" />
-                                                    <ComboBoxItem Content="进口" />
-                                                    <ComboBoxItem Content="混合" />
+                                                <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_Mode}" />
+                                                <ComboBox SelectedIndex="{Binding ModeIndex, Mode=TwoWay}" ToolTip="{DynamicResource IndustryPlanetary_ModeTip}">
+                                                    <ComboBoxItem Content="{DynamicResource IndustryPlanetary_ModeSelfSufficient}" />
+                                                    <ComboBoxItem Content="{DynamicResource IndustryPlanetary_Import}" />
+                                                    <ComboBoxItem Content="{DynamicResource IndustryPlanetary_ModeHybrid}" />
                                                 </ComboBox>
                                                 <CheckBox
                                                     Margin="0,8,0,0"
-                                                    Content="抵扣我的殖民地产出"
+                                                    Content="{DynamicResource IndustryPlanetary_DeductColonyOutput}"
                                                     IsChecked="{Binding UseCurrentSupply, Mode=TwoWay}"
-                                                    ToolTip="需要先在「我的殖民地」刷新数据；仅对配方输入做抵扣。" />
+                                                    ToolTip="{DynamicResource IndustryPlanetary_DeductColonyOutputTip}" />
                                             </StackPanel>
                                         </Grid>
                                     </controls:CardControl>
@@ -1433,7 +1433,7 @@
                             </TabItem>
 
                             <!--  ================= 行星选择 =================  -->
-                            <TabItem Header="行星选择">
+                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Planets}">
                                 <Grid Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="330" />
@@ -1449,7 +1449,7 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <StackPanel Orientation="Horizontal" ToolTip="选中星系会把它下面的全部行星加入候选池；可跨多个星系多选。">
+                                                <StackPanel Orientation="Horizontal" ToolTip="{DynamicResource IndustryPlanetary_SelectSystemTip}">
                                                     <ui:SymbolIcon
                                                         VerticalAlignment="Center"
                                                         FontSize="15"
@@ -1459,7 +1459,7 @@
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="星系" />
+                                                        Text="{DynamicResource General_SolarSystem}" />
                                                 </StackPanel>
                                                 <TextBlock
                                                     Grid.Column="1"
@@ -1496,7 +1496,7 @@
                                                     Grid.Column="1"
                                                     Appearance="Secondary"
                                                     Click="OnClearPlanetsClick"
-                                                    Content="清空"
+                                                    Content="{DynamicResource IndustryPlanetary_Clear}"
                                                     Icon="{ui:SymbolIcon Delete24}"
                                                     IsEnabled="{Binding HasSelectedPlanets}" />
                                             </Grid>
@@ -1532,7 +1532,7 @@
                                                     VerticalAlignment="Center"
                                                     FontSize="11"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="用上方选择器添加星系"
+                                                    Text="{DynamicResource IndustryPlanetary_AddSystemHint}"
                                                     TextWrapping="Wrap"
                                                     Visibility="{Binding HasNoSelectedSystems, Converter={StaticResource BoolToVisibility}}" />
                                             </Grid>
@@ -1596,7 +1596,7 @@
                                                                 Click="OnRemovePlanetClick"
                                                                 Icon="{ui:SymbolIcon Delete24}"
                                                                 Tag="{Binding}"
-                                                                ToolTip="移除" />
+                                                                ToolTip="{DynamicResource IndustryPlanetary_Remove}" />
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ListBox.ItemTemplate>
@@ -1607,7 +1607,7 @@
                                                 VerticalAlignment="Center"
                                                 FontSize="11.5"
                                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="左侧添加星系后，这里显示行星"
+                                                Text="{DynamicResource IndustryPlanetary_SelectSystemFirst}"
                                                 TextWrapping="Wrap"
                                                 Visibility="{Binding HasNoVisiblePlanets, Converter={StaticResource BoolToVisibility}}" />
                                         </Grid>
@@ -1615,7 +1615,7 @@
                                 </Grid>
                             </TabItem>
 
-                            <TabItem Header="角色与产能">
+                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Characters}">
                                 <Grid Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -1638,8 +1638,8 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="参与角色（可多选）"
-                                                    ToolTip="未勾选角色时自动生成「角色1、角色2…」，每个使用下方的默认 CCU / 行星位（不限角色数量）；勾选后按所选角色最低 CCU 估算。" />
+                                                    Text="{DynamicResource IndustryPage_ParticipatingCharacters}"
+                                                    ToolTip="{DynamicResource IndustryPlanetary_AutoCharacterTip}" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <Grid>
@@ -1656,7 +1656,7 @@
                                                 <TextBlock
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="角色" />
+                                                    Text="{DynamicResource IndustryPlanetary_Col_Character}" />
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     HorizontalAlignment="Center"
@@ -1668,7 +1668,7 @@
                                                     HorizontalAlignment="Center"
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="行星位" />
+                                                    Text="{DynamicResource IndustryPlanetary_PlanetSlots}" />
                                             </Grid>
                                             <ListBox
                                                 Grid.Row="1"
@@ -1696,8 +1696,8 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="产能参数"
-                                                    ToolTip="殖民地级容量估算；不做精确引脚；P4 工厂只允许温带/贫瘠行星。" />
+                                                    Text="{DynamicResource IndustryPlanetary_CapacityParameters}"
+                                                    ToolTip="{DynamicResource IndustryPlanetary_CapacityParametersTip}" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <StackPanel>
@@ -1708,7 +1708,7 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="默认 CCU（自动角色）" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_DefaultCcu}" />
                                                     <ui:NumberBox
                                                         Maximum="5"
                                                         Minimum="0"
@@ -1716,7 +1716,7 @@
                                                         Value="{Binding CcuLevel, Mode=TwoWay}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="默认行星位" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_DefaultPlanetSlots}" />
                                                     <ui:NumberBox
                                                         Maximum="6"
                                                         Minimum="1"
@@ -1731,7 +1731,7 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="行星半径 km" ToolTip="仅在未选择候选行星时使用：0 = 按 2000 km 估算；选了候选行星后每颗行星用自己的真实半径。" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_PlanetRadius}" ToolTip="{DynamicResource IndustryPlanetary_PlanetRadiusTip}" />
                                                     <ui:NumberBox
                                                         IsEnabled="{Binding IsRadiusEditable}"
                                                         MaxDecimalPlaces="0"
@@ -1741,7 +1741,7 @@
                                                         Value="{Binding RadiusKm, Mode=TwoWay}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="提取周期（天）" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_ExtractionCycle}" />
                                                     <ui:NumberBox
                                                         MaxDecimalPlaces="1"
                                                         Maximum="30"
@@ -1752,14 +1752,14 @@
                                             </Grid>
                                             <CheckBox
                                                 Margin="0,12,0,0"
-                                                Content="计入殖民地设施建造成本"
+                                                Content="{DynamicResource IndustryPlanetary_CountSetupCost}"
                                                 IsChecked="{Binding UseSetupCost, Mode=TwoWay}" />
                                         </StackPanel>
                                     </controls:CardControl>
                                 </Grid>
                             </TabItem>
 
-                            <TabItem Header="价格与税">
+                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_PriceTax}">
                                 <Grid Margin="0,10,0,0">
 
                                     <controls:CardControl
@@ -1767,7 +1767,7 @@
                                         VerticalAlignment="Top"
                                         Padding="16,10"
                                         CornerRadius="8"
-                                        ToolTip="价格来自所选市场（卖单最低价，缺失时回退平均价）；进口按 POCO 税、卖单再扣销售税与经纪人费。">
+                                        ToolTip="{DynamicResource IndustryPlanetary_PriceTaxTip}">
                                         <controls:CardControl.Header>
                                             <StackPanel Orientation="Horizontal">
                                                 <ui:SymbolIcon
@@ -1779,11 +1779,11 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="市场与税" />
+                                                    Text="{DynamicResource IndustryPlanetary_MarketTax}" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource PlanetaryLabel}" Text="价格市场" />
+                                            <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_PriceMarket}" />
                                             <uc:MarketLocationSelectorView SelectedItem="{Binding SelectedPriceLocation, Mode=TwoWay}" />
                                             <TextBlock
                                                 Margin="2,4,0,0"
@@ -1793,9 +1793,9 @@
                                                 TextWrapping="Wrap" />
                                             <CheckBox
                                                 Margin="0,8,0,0"
-                                                Content="使用市场参考价"
+                                                Content="{DynamicResource IndustryPlanetary_UseMarketPrice}"
                                                 IsChecked="{Binding UseMarketPrices, Mode=TwoWay}"
-                                                ToolTip="卖单最低价；缺失时回退平均价。" />
+                                                ToolTip="{DynamicResource IndustryPlanetary_UseMarketPriceTip}" />
                                             <Grid Margin="0,4,0,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -1803,7 +1803,7 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="POCO 税 %" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_PocoTax}" />
                                                     <ui:NumberBox
                                                         Maximum="100"
                                                         Minimum="0"
@@ -1811,7 +1811,7 @@
                                                         Value="{Binding PlanetTaxPercent, Mode=TwoWay}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="销售税 %" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPage_SalesTax}" />
                                                     <ui:NumberBox
                                                         Maximum="100"
                                                         Minimum="0"
@@ -1819,7 +1819,7 @@
                                                         Value="{Binding SalesTaxPercent, Mode=TwoWay}" />
                                                 </StackPanel>
                                             </Grid>
-                                            <TextBlock Style="{StaticResource PlanetaryLabel}" Text="经纪人费 %" />
+                                            <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPage_BrokerFee}" />
                                             <ui:NumberBox
                                                 Maximum="100"
                                                 Minimum="0"
@@ -1828,7 +1828,7 @@
                                             <ui:Button
                                                 Margin="0,10,0,0"
                                                 Click="OnRefreshPricesClick"
-                                                Content="刷新价格"
+                                                Content="{DynamicResource IndustryPlanetary_RefreshPrices}"
                                                 Icon="{ui:SymbolIcon ArrowSync24}" />
                                             <TextBlock
                                                 Margin="0,6,0,0"
@@ -1853,7 +1853,7 @@
                             Height="34"
                             Appearance="Primary"
                             Click="OnCalculateClick"
-                            Content="执行行星计划"
+                            Content="{DynamicResource IndustryPlanetary_RunPlan}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Visibility="{Binding IsNotBusy, Converter={StaticResource BoolToVisibility}}">
                             <ui:Button.Icon>
@@ -1864,7 +1864,7 @@
                             Height="34"
                             Appearance="Secondary"
                             Click="OnCancelClick"
-                            Content="停止"
+                            Content="{DynamicResource General_Stop}"
                             Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
@@ -1872,14 +1872,14 @@
             </TabItem>
 
             <!--  ================= 计划详细 =================  -->
-            <TabItem Header="计划详细">
+            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Result}">
                 <Grid>
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                        Text="执行计划后显示结果。"
+                        Text="{DynamicResource IndustryPlanetary_RunFirst}"
                         Visibility="{Binding HasNoResult, Converter={StaticResource BoolToVisibility}}" />
                     <!--  结果内容放到卡片里，与计划设置/已保存计划的卡片背景一致；保存按钮在子页签 header 最右侧  -->
                     <controls:CardControl
@@ -1893,7 +1893,7 @@
                                 VerticalContentAlignment="Stretch"
                                 Background="Transparent"
                                 BorderThickness="0">
-                                <TabItem Header="概况">
+                                <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Overview}">
                             <StackPanel Margin="0,10,0,0">
                                 <controls:CardControl Padding="16,10" CornerRadius="8">
                                     <controls:CardControl.Header>
@@ -1907,50 +1907,50 @@
                                                 Margin="8,0,0,0"
                                                 VerticalAlignment="Center"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="计划概况" />
+                                                Text="{DynamicResource IndustryPlanetary_Overview}" />
                                         </StackPanel>
                                     </controls:CardControl.Header>
                                     <StackPanel>
                                         <UniformGrid Margin="0,8,0,0" Columns="5">
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="目标完成" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.TargetDays, StringFormat={}{0:N1} 天}" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_TargetCompletion}" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding TargetDaysText}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="殖民地" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Colonies}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.TotalColonies}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="参与角色" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Characters}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.CharacterCount}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="目标日产" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_TargetPerDay}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.OutputPerDay, StringFormat={}{0:N1}}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="日利润" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_ProfitPerDay}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.ProfitPerDay, StringFormat={}{0:N0} ISK}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="P1 提取殖民地" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_P1Colonies}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.ExtractionColonies}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="P2 / P3 / P4 工厂殖民地" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_P234Colonies}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.P234FactoryColonies}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="建造成本" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_SetupCost}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.SetupCost, StringFormat={}{0:N0} ISK}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="日收入" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_RevenuePerDay}" />
                                                 <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.RevenuePerDay, StringFormat={}{0:N0} ISK}" />
                                             </StackPanel>
                                             <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="回本天数" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.PaybackDays, StringFormat={}{0:N1} 天}" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_PaybackDays}" />
+                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding PaybackDaysText}" />
                                             </StackPanel>
                                         </UniformGrid>
                                         <TextBlock
@@ -1984,10 +1984,10 @@
                                                 Margin="8,0,0,0"
                                                 VerticalAlignment="Center"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="计划提示" />
+                                                Text="{DynamicResource IndustryPlanetary_PlanHints}" />
                                         </StackPanel>
                                     </controls:CardControl.Header>
-                                    <ItemsControl ItemsSource="{Binding CurrentPlan.Warnings}">
+                                    <ItemsControl ItemsSource="{Binding PlanWarnings}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock
@@ -2003,7 +2003,7 @@
 
                             </StackPanel>
                         </TabItem>
-                        <TabItem Header="产物链">
+                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Chain}">
                             <Grid Margin="0,10,0,0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -2019,8 +2019,8 @@
                                         VerticalAlignment="Center"
                                         FontSize="10.5"
                                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="按配方依赖展开"
-                                        ToolTip="目标 → 中间产物 → 外购 / P0 原料；同一中间产物被多个目标共用时会在各自分支下各显示一次。"
+                                        Text="{DynamicResource IndustryPlanetary_ChainSubtitle}"
+                                        ToolTip="{DynamicResource IndustryPlanetary_ChainTip}"
                                         TextTrimming="CharacterEllipsis" />
                                     <StackPanel
                                         Grid.Column="1"
@@ -2037,7 +2037,7 @@
                                             Padding="8,0"
                                             Appearance="Transparent"
                                             Click="OnExpandAllNodesClick"
-                                            Content="展开全部"
+                                            Content="{DynamicResource IndustryPlanetary_ExpandAll}"
                                             FontSize="10.5" />
                                         <ui:Button
                                             Height="24"
@@ -2045,7 +2045,7 @@
                                             Padding="8,0"
                                             Appearance="Transparent"
                                             Click="OnCollapseAllNodesClick"
-                                            Content="收起全部"
+                                            Content="{DynamicResource IndustryPlanetary_CollapseAll}"
                                             FontSize="10.5" />
                                     </StackPanel>
                                 </Grid>
@@ -2067,12 +2067,12 @@
                                         VerticalAlignment="Center"
                                         FontSize="11.5"
                                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="执行计划后显示产物链"
+                                        Text="{DynamicResource IndustryPlanetary_ChainEmpty}"
                                         Visibility="{Binding HasNoProductNodes, Converter={StaticResource BoolToVisibility}}" />
                                 </Grid>
                             </Grid>
                         </TabItem>
-                        <TabItem Header="殖民地分配">
+                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_ColonyAllocation}">
                             <Grid Margin="0,10,0,0">
                                 <ui:DataGrid ItemsSource="{Binding CurrentPlan.Colonies}" Style="{StaticResource PlanetaryDataGrid}">
                                     <ui:DataGrid.RowStyle>
@@ -2097,76 +2097,76 @@
                                     <ui:DataGrid.Columns>
                                         <DataGridTextColumn
                                             Width="Auto"
-                                            Binding="{Binding CharacterName}"
-                                            Header="角色" />
+                                            Binding="{Binding CharacterName, Converter={StaticResource IndustryCharacterName}}"
+                                            Header="{DynamicResource IndustryPlanetary_Col_Character}" />
                                         <DataGridTextColumn
                                             Width="Auto"
                                             Binding="{Binding PlanetName}"
-                                            Header="行星" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_Planet}" />
                                         <DataGridTextColumn
                                             Width="Auto"
                                             Binding="{Binding RadiusKm, StringFormat={}{0:N0}}"
-                                            Header="半径 km" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_Radius}" />
                                         <DataGridTextColumn
                                             Width="92"
                                             Binding="{Binding PlanetType}"
-                                            Header="行星类型" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_PlanetType}" />
                                         <DataGridTextColumn
                                             Width="52"
-                                            Binding="{Binding Role}"
-                                            Header="职责" />
+                                            Binding="{Binding Role, Converter={StaticResource IndustryRoleName}}"
+                                            Header="{DynamicResource IndustryPlanetary_Col_Role}" />
                                         <DataGridTextColumn
                                             Width="*"
                                             Binding="{Binding ProductName}"
-                                            Header="产品" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_Product}" />
                                         <DataGridTextColumn
                                             Width="56"
                                             Binding="{Binding Factories}"
-                                            Header="工厂" />
+                                            Header="{DynamicResource IndustryPlanetary_RoleFactory}" />
                                         <DataGridTextColumn
                                             Width="56"
                                             Binding="{Binding ExtractorHeads}"
-                                            Header="提取头" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_ExtractorHeads}" />
                                         <DataGridTextColumn
                                             Width="80"
                                             Binding="{Binding OutputPerDay, StringFormat={}{0:N1}}"
-                                            Header="产出/天" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_OutputPerDay}" />
                                         <DataGridTextColumn
                                             Width="82"
                                             Binding="{Binding InputsPerDay, StringFormat={}{0:N0}}"
-                                            Header="输入/天" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_InputPerDay}" />
                                         <DataGridTextColumn
                                             Width="96"
                                             Binding="{Binding SetupCost, StringFormat={}{0:N0}}"
-                                            Header="建造 ISK" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_SetupIsk}" />
                                     </ui:DataGrid.Columns>
                                 </ui:DataGrid>
                             </Grid>
                         </TabItem>
-                        <TabItem Header="外购">
+                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Imports}">
                             <Grid Margin="0,10,0,0">
                                 <ui:DataGrid ItemsSource="{Binding CurrentPlan.Imports}" Style="{StaticResource PlanetaryDataGrid}">
                                     <ui:DataGrid.Columns>
                                         <DataGridTextColumn
                                             Width="Auto"
                                             Binding="{Binding Tier}"
-                                            Header="层级" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_Tier}" />
                                         <DataGridTextColumn
                                             Width="*"
                                             Binding="{Binding Name}"
-                                            Header="物品" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_Item}" />
                                         <DataGridTextColumn
                                             Width="90"
                                             Binding="{Binding QuantityPerDay, StringFormat={}{0:N1}}"
-                                            Header="数量/天" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_QtyPerDay}" />
                                         <DataGridTextColumn
                                             Width="100"
                                             Binding="{Binding UnitPrice, StringFormat={}{0:N0}}"
-                                            Header="单价" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_UnitPrice}" />
                                         <DataGridTextColumn
                                             Width="110"
                                             Binding="{Binding CostPerDay, StringFormat={}{0:N0}}"
-                                            Header="成本/天" />
+                                            Header="{DynamicResource IndustryPlanetary_Col_CostPerDay}" />
                                     </ui:DataGrid.Columns>
                                 </ui:DataGrid>
                             </Grid>
@@ -2180,7 +2180,7 @@
                                 Panel.ZIndex="10"
                                 Appearance="Secondary"
                                 Click="OnSavePlanHeaderClick"
-                                Content="保存计划"
+                                Content="{DynamicResource IndustryPlanetary_SavePlan}"
                                 Icon="{ui:SymbolIcon Save24}"
                                 Visibility="{Binding ShowPlanSaveButton, Converter={StaticResource BoolToVisibility}}" />
                         </Grid>
@@ -2189,7 +2189,7 @@
             </TabItem>
 
             <!--  ================= 已保存计划 =================  -->
-            <TabItem Header="已保存计划">
+            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_SavedPlans}">
                 <Grid>
                     <controls:CardControl
                         Padding="14,8"
@@ -2210,7 +2210,7 @@
                                         Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="已保存计划" />
+                                        Text="{DynamicResource IndustryPlanetary_Tab_SavedPlans}" />
                                     <TextBlock
                                         Margin="8,0,0,0"
                                         VerticalAlignment="Center"
@@ -2222,14 +2222,14 @@
                                     <ui:Button
                                         Appearance="Secondary"
                                         Click="OnLoadPlanClick"
-                                        Content="载入"
+                                        Content="{DynamicResource IndustryPlanetary_Load}"
                                         Icon="{ui:SymbolIcon FolderOpen24}"
                                         IsEnabled="{Binding HasSavedPlans}" />
                                     <ui:Button
                                         Margin="6,0,0,0"
                                         Appearance="Secondary"
                                         Click="OnDeletePlanClick"
-                                        Content="删除"
+                                        Content="{DynamicResource General_Remove}"
                                         Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                         Icon="{ui:SymbolIcon Delete24}"
                                         IsEnabled="{Binding HasSavedPlans}" />
@@ -2242,7 +2242,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="12"
                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="暂无已保存计划。"
+                                Text="{DynamicResource IndustryPlanetary_NoSavedPlans}"
                                 Visibility="{Binding HasNoSavedPlans, Converter={StaticResource BoolToVisibility}}" />
                             <ListBox
                                 Background="Transparent"
@@ -2251,7 +2251,7 @@
                                 ItemsSource="{Binding SavedPlans}"
                                 MouseDoubleClick="OnSavedPlanDoubleClick"
                                 SelectedItem="{Binding SelectedSavedPlan, Mode=TwoWay}"
-                                ToolTip="双击名称可重命名"
+                                ToolTip="{DynamicResource IndustryPlanetary_RenameTip}"
                                 Visibility="{Binding HasSavedPlans, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>

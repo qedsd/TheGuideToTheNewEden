@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -59,7 +60,9 @@ public sealed class IndustryProductTreeItem : INotifyPropertyChanged
     public string Name { get; set; } = string.Empty;
     public string BlueprintName { get; set; } = string.Empty;
     public int ActivityId { get; set; }
-    public string ActivityText => ActivityId == 11 ? "反应" : "制造";
+    public string ActivityText => LanguageService.Get(ActivityId == 11
+        ? "IndustryActivity_Reaction"
+        : "IndustryActivity_Manufacturing");
     public bool IsExpanded { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;

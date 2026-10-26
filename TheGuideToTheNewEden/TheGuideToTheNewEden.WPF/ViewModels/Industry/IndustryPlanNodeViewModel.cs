@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -22,46 +25,27 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
             : IsJobCovered ? "jobs"
             : IsMixedCovered ? "mixed"
             : model.IsInvention ? "invention" : model.Decision == IndustryDecision.Buy ? "buy" : "build";
-        DecisionText = IsAssetCovered
-            ? "库存"
-            : IsUpstreamCovered ? "上游剩余"
-            : IsJobCovered ? "在制"
-            : IsMixedCovered ? "混合覆盖"
-            : DecisionKey switch
-            {
-                "invention" => Resolve("IndustryPage_Decision_Invention", "发明"),
-                "buy" => Resolve("IndustryPage_Decision_Buy", "采购"),
-                _ => Resolve("IndustryPage_Decision_Build", "制造"),
-            };
-        _activityText = model.ActivityID switch
-        {
-            IndustryActivity.Manufacturing => Resolve("IndustryActivity_Manufacturing", "制造"),
-            IndustryActivity.Reaction => Resolve("IndustryActivity_Reaction", "反应"),
-            IndustryActivity.Invention => Resolve("IndustryActivity_Invention", "发明"),
-            IndustryActivity.Copying => Resolve("IndustryActivity_Copying", "复制"),
-            IndustryActivity.ResearchMaterialEfficiency => Resolve("IndustryActivity_ResearchMaterial", "材料研究"),
-            IndustryActivity.ResearchTimeEfficiency => Resolve("IndustryActivity_ResearchTime", "时间研究"),
-            IndustryActivity.ReverseEngineering => Resolve("IndustryActivity_ReverseEngineering", "逆向工程"),
-            IndustryActivity.Planetary => "行星",
-            _ => string.Empty,
-        };
     }
 
     public IndustryBuildNode Model { get; }
 
     public int TypeId => Model.TypeID;
     public string Name => Model.TypeName;
-    public string TargetQuantityText => $"请求 {Needed:N0} · 产出 {Produced:N0}";
+    public string TargetQuantityText => LanguageService.Format("IndustryChain_TargetQuantity", Needed, Produced);
     public string TargetCostText => FullBuildCost > 0 ? $"{FullBuildCost:N0} ISK" : "—";
     public string TargetCashText => CashCost > 0 ? $"{CashCost:N0} ISK" : "—";
-    public string TargetStockText => Model.QuantityFromStock > 0 ? $"{Model.QuantityFromStock:N0} 库存" : "—";
+    public string TargetStockText => Model.QuantityFromStock > 0
+        ? LanguageService.Format("IndustryChain_StockQuantity", Model.QuantityFromStock)
+        : "—";
     public string TargetRevenueText => NetRevenue > 0 ? $"{NetRevenue:N0} ISK" : "—";
     public bool HasTargetProfit => Model.RevenueUnitPrice > 0;
     public bool IsProfitPositive => HasTargetProfit && Profit >= 0;
     public string TargetProfitText => HasTargetProfit ? $"{Profit:N0} ISK ({Margin:P0})" : "—";
     public string TargetJobCostText => Model.JobCostKnown ? $"{Model.JobCost:N0} ISK" : "—";
     public string TargetRunsText => Runs > 0
-        ? IsPlanetary ? $"{Runs:N0} 周期" : $"{Runs:N0} 流程"
+        ? IsPlanetary
+            ? LanguageService.Format("IndustryChain_RunsCycles", Runs)
+            : LanguageService.Format("IndustryChain_RunsCount", Runs)
         : "—";
     public long FromAssets => Model.QuantityFromAssets;
     public long FromJobs => Model.QuantityFromJobs;
@@ -87,10 +71,48 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
         && !IsAssetCovered
         && !IsUpstreamCovered
         && !IsJobCovered;
-    public string DecisionText { get; }
+
+    public string DecisionText => IsAssetCovered
+        ? LanguageService.Get("IndustryChain_CoverageStock")
+        : IsUpstreamCovered ? LanguageService.Get("IndustryChain_CoverageUpstream")
+        : IsJobCovered ? LanguageService.Get("IndustryChain_CoverageJob")
+        : IsMixedCovered ? LanguageService.Get("IndustryChain_CoverageMixed")
+        : DecisionKey switch
+        {
+            "invention" => LanguageService.Get("IndustryPage_Decision_Invention"),
+            "buy" => LanguageService.Get("IndustryPage_Decision_Buy"),
+            _ => LanguageService.Get("IndustryPage_Decision_Build"),
+        };
     public string DecisionKey { get; }
-    private readonly string _activityText;
-    public string ActivityText => IsStockCovered ? string.Empty : _activityText;
+
+    /// <summary>语言无关的活动代码：给 DataTrigger 用（不能用本地化文本比较）。</summary>
+    public string ActivityKind => Model.ActivityID switch
+    {
+        IndustryActivity.Manufacturing => "manufacturing",
+        IndustryActivity.Reaction => "reaction",
+        IndustryActivity.Invention => "invention",
+        IndustryActivity.Copying => "copying",
+        IndustryActivity.ResearchMaterialEfficiency => "researchMaterial",
+        IndustryActivity.ResearchTimeEfficiency => "researchTime",
+        IndustryActivity.ReverseEngineering => "reverseEngineering",
+        IndustryActivity.Planetary => "planetary",
+        _ => string.Empty,
+    };
+
+    public string ActivityText => IsStockCovered
+        ? string.Empty
+        : LanguageService.Get(Model.ActivityID switch
+        {
+            IndustryActivity.Manufacturing => "IndustryActivity_Manufacturing",
+            IndustryActivity.Reaction => "IndustryActivity_Reaction",
+            IndustryActivity.Invention => "IndustryActivity_Invention",
+            IndustryActivity.Copying => "IndustryActivity_Copying",
+            IndustryActivity.ResearchMaterialEfficiency => "IndustryActivity_ResearchMaterial",
+            IndustryActivity.ResearchTimeEfficiency => "IndustryActivity_ResearchTime",
+            IndustryActivity.ReverseEngineering => "IndustryActivity_ReverseEngineering",
+            IndustryActivity.Planetary => "IndustryChain_ActivityPlanetary",
+            _ => "IndustryActivity_Manufacturing",
+        });
     public bool HasActivity => !string.IsNullOrEmpty(ActivityText);
     public bool IsBuild => DecisionKey == "build";
     public bool IsBuy => DecisionKey == "buy";
@@ -146,44 +168,54 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public bool HasInventionData => Model.IsInvention;
 
     public string QuantityText => Model.IsInvention
-        ? $"BPC 需要 {Needed:N0} 张 · 产出 {Produced:N0} 张 · 采购 {ToBuy:N0}"
+        ? LanguageService.Format("IndustryChain_BpcNeed", Needed, Produced, ToBuy)
         : IsStockCovered
-            ? $"需要 {Needed:N0} · {CoverageText} · 采购 0"
+            ? LanguageService.Format("IndustryChain_NeedCoveredNoBuy", Needed, CoverageText)
             : FromStock > 0
-                ? $"需要 {Needed:N0} · {CoverageText} · 产出 {Produced:N0} · 采购 {ToBuy:N0}"
-                : $"需要 {Needed:N0} · 产出 {Produced:N0} · 采购 {ToBuy:N0}";
+                ? LanguageService.Format("IndustryChain_NeedCoveredProducedBuy", Needed, CoverageText, Produced, ToBuy)
+                : LanguageService.Format("IndustryChain_NeedProducedBuy", Needed, Produced, ToBuy);
     public bool HasStock => FromStock > 0;
     public string CoverageText
     {
         get
         {
             var parts = new List<string>();
-            if (FromAssets > 0) parts.Add($"角色资产 {FromAssets:N0}");
-            if (FromJobs > 0) parts.Add($"在制 {FromJobs:N0}");
-            if (FromUpstream > 0) parts.Add($"上游剩余 {FromUpstream:N0}");
+            if (FromAssets > 0) parts.Add(LanguageService.Format("IndustryChain_FromAssets", FromAssets));
+            if (FromJobs > 0) parts.Add(LanguageService.Format("IndustryChain_FromJobs", FromJobs));
+            if (FromUpstream > 0) parts.Add(LanguageService.Format("IndustryChain_FromUpstream", FromUpstream));
             return string.Join(" · ", parts);
         }
     }
-    public string StockText => HasStock ? $"库存抵扣 {FromStock:N0}（{CoverageText}）" : string.Empty;
-    public string FullCostLabel => IsStockCovered ? "库存市值" : "总成本";
+    public string StockText => HasStock
+        ? LanguageService.Format("IndustryChain_StockCovered", FromStock, CoverageText)
+        : string.Empty;
+    public string FullCostLabel => IsStockCovered
+        ? LanguageService.Get("IndustryChain_StockValueLabel")
+        : LanguageService.Get("IndustryPage_TotalCost");
     public string FullCostHint => IsStockCovered
-        ? "完全由库存覆盖：显示库存材料市值，现金支出为 0。"
-        : "材料全量市值（含库存中的材料）+ 任务费用。";
+        ? LanguageService.Get("IndustryChain_StockCoveredTip")
+        : LanguageService.Get("IndustryPage_TotalCostTipLong");
     public string RunsText => Runs <= 0
         ? string.Empty
-        : Model.IsInvention ? $"{Runs:N0} 次尝试" : IsPlanetary ? $"{Runs:N0} 周期" : $"{Runs:N0} 流程";
+        : Model.IsInvention
+            ? LanguageService.Format("IndustryChain_AttemptsCount", Runs)
+            : IsPlanetary
+                ? LanguageService.Format("IndustryChain_RunsCycles", Runs)
+                : LanguageService.Format("IndustryChain_RunsCount", Runs);
     public string BlueprintKindText => Model.HasOwnedBpo
         ? "BPO"
         : Model.BpcRunsAvailable > 0
             ? $"BPC ×{Model.BpcCount:N0}"
-            : Model.IsInvention ? "发明 BPC" : "无自有蓝图";
+            : Model.IsInvention
+                ? LanguageService.Get("IndustryChain_BlueprintInvention")
+                : LanguageService.Get("IndustryChain_NoOwnBlueprint");
     public string BlueprintStockText => Model.HasOwnedBpo
-        ? "BPO 无限流程"
+        ? LanguageService.Get("IndustryChain_BpoUnlimited")
         : Model.BpcRunsAvailable <= 0
             ? string.Empty
             : Model.BpcRunsShortage > 0
-                ? $"BPC 剩余 {Model.BpcRunsRemaining:N0} 流程 · 本节点用 {Model.BpcRunsUsed:N0} · 不足 {Model.BpcRunsShortage:N0}"
-                : $"BPC 剩余 {Model.BpcRunsRemaining:N0} 流程 · 本节点用 {Model.BpcRunsUsed:N0}";
+                ? LanguageService.Format("IndustryChain_BpcRemaining", Model.BpcRunsRemaining, Model.BpcRunsUsed, Model.BpcRunsShortage)
+                : LanguageService.Format("IndustryChain_BpcRemainingShort", Model.BpcRunsRemaining, Model.BpcRunsUsed);
     public bool HasBlueprintStockText => !string.IsNullOrEmpty(BlueprintStockText);
     public string MeTeText => !IsStockCovered && !IsPlanetary && Model.Decision == IndustryDecision.Build ? $"ME {ME} · TE {TE}" : string.Empty;
     public bool HasMeTe => !string.IsNullOrEmpty(MeTeText);
@@ -192,11 +224,12 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public string FullBuildCostText => Model.FullBuildCost > 0 ? Model.FullBuildCost.ToString("N0") : "—";
     public string CashCostText => Model.BuildCost > 0 ? Model.BuildCost.ToString("N0") : "—";
     public string UnitPriceText => Model.ReferenceUnitPrice > 0 ? Model.ReferenceUnitPrice.ToString("N2") : "—";
+    public string ReferencePriceText => LanguageService.Format("IndustryPage_ReferenceUnitPrice", UnitPriceText);
     public string MarketText => SellMin > 0 || BuyMax > 0
-        ? $"卖 {SellMin:N2} / 买 {BuyMax:N2}"
-        : "无详细订单";
+        ? LanguageService.Format("IndustryChain_SellBuy", SellMin, BuyMax)
+        : LanguageService.Get("IndustryChain_NoDetailedOrders");
     public string MarketVolumeText => Model.MarketVolumeLimited
-        ? $"超出可见买单成交量 {Model.UnfilledQuantity:N0} 件"
+        ? LanguageService.Format("IndustryChain_UnfilledVolume", Model.UnfilledQuantity)
         : string.Empty;
     public bool HasMarketVolumeWarning => Model.MarketVolumeLimited;
     public string MarketLevelsText
@@ -208,26 +241,30 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
             var sellText = string.Join(" / ", sells);
             var buyText = string.Join(" / ", buys);
             if (string.IsNullOrEmpty(sellText) && string.IsNullOrEmpty(buyText)) return string.Empty;
-            return $"卖档 {sellText}\n买档 {buyText}";
+            return LanguageService.Format("IndustryChain_OrderBook", sellText, buyText);
         }
     }
-    public string InventionText => $"成功率 {InventionProbability:P1} · 尝试 {Runs:N0} 次 · BPC 需要 {Model.QuantityNeeded:N0} 张 × {InventionOutputRuns} 流程 · 期望成功 {Runs * InventionProbability:0.##} 张 · ME{InventionOutputME}/TE{InventionOutputTE}";
+    public string InventionText => LanguageService.Format("IndustryChain_InventionText",
+        InventionProbability, Runs, Model.QuantityNeeded, InventionOutputRuns,
+        Runs * InventionProbability, InventionOutputME, InventionOutputTE);
     public string InventionCostHint => Model.IsInvention && Runs > 0
-        ? $"成本按 {Runs:N0} 次尝试计：自动时尝试 = ceil(BPC 需求 / 成功率)；每次尝试消耗数据核心/解密器/T1 蓝图（未拥有时），失败同样消耗；另加发明任务费用。"
+        ? LanguageService.Format("IndustryChain_InventionCostHint", Runs)
         : string.Empty;
     public bool HasInventionWarning => Model.IsInvention
         && Runs > 0
         && Runs * InventionProbability + 0.000001 < Model.QuantityNeeded;
     public string InventionWarning => HasInventionWarning
-        ? $"期望成功 {Runs * InventionProbability:0.##} 张 < 需要 {Model.QuantityNeeded:N0} 张，当前尝试次数可能不够。"
+        ? LanguageService.Format("IndustryChain_InventionWarning", Runs * InventionProbability, Model.QuantityNeeded)
         : string.Empty;
-    public string DecryptorText => string.IsNullOrEmpty(DecryptorName) ? "无解密器" : DecryptorName;
+    public string DecryptorText => string.IsNullOrEmpty(DecryptorName)
+        ? LanguageService.Get("IndustryPage_DecryptorNone")
+        : DecryptorName;
 
     public double MaterialCost => Math.Max(0, Model.BuildCost - Model.JobCost);
     public double StockValue => Math.Max(0, Model.FullBuildCost - Model.BuildCost);
     public double CostSharePercent { get; set; }
     public string CostShareText => $"{CostSharePercent:0.#}%";
-    public string CostShareHint => $"占计划总成本 {CostSharePercent:0.#}%";
+    public string CostShareHint => LanguageService.Format("IndustryChain_CostShareHint", CostSharePercent);
     public double MaterialShare => Model.FullBuildCost > 0 ? MaterialCost / Model.FullBuildCost * 100 : 0;
     public double JobShare => Model.FullBuildCost > 0 ? Model.JobCost / Model.FullBuildCost * 100 : 0;
     public double StockShare => Model.FullBuildCost > 0 ? StockValue / Model.FullBuildCost * 100 : 0;
@@ -246,9 +283,6 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    private static string Resolve(string key, string fallback)
-        => Application.Current?.TryFindResource(key) as string ?? fallback;
 
     private static string FormatDuration(double seconds)
     {

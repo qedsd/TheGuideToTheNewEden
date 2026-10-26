@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -23,6 +24,9 @@ public sealed class PlanetaryLiveFactoryItem
     public string OutputText { get; set; } = string.Empty;
     public string CycleText { get; set; } = string.Empty;
     public string InputsText { get; set; } = string.Empty;
+
+    /// <summary>「输入：xxx」（XAML 里不能直接对本地化前缀用 StringFormat）。</summary>
+    public string InputsLabel => LanguageService.Format("IndustryPlanetary_InputsLabel", InputsText);
 }
 
 public sealed class PlanetaryLivePinItem
@@ -49,7 +53,7 @@ public sealed class PlanetaryFacilityNode
         ? $"Pin #{PinId}"
         : TypeName;
     public string MetaText => ConnectionCount > 0
-        ? $"Pin #{PinId} · {ConnectionCount} 条连接"
+        ? LanguageService.Format("IndustryPlanetary_Live_PinConnections", PinId, ConnectionCount)
         : $"Pin #{PinId}";
 }
 
@@ -75,8 +79,9 @@ public sealed class PlanetaryLiveCharacterGroup
     public int ExtractorCount => Colonies.Sum(p => p.Extractors.Count);
     public int StoppedExtractorCount => Colonies.Sum(p => p.Extractors.Count(p => p.IsStopped));
     public int FactoryCount => Colonies.Sum(p => p.Factories.Sum(p => p.Count));
-    public string ColonyCountText => $"{ColonyCount} 个殖民地";
-    public string Summary => $"{ColonyCount} 个殖民地 · {ExtractorCount} 个提取器（{StoppedExtractorCount} 停止） · {FactoryCount} 个工厂";
+    public string ColonyCountText => LanguageService.Format("IndustryPlanetary_Live_ColonyCount", ColonyCount);
+    public string Summary => LanguageService.Format("IndustryPlanetary_Live_Summary",
+        ColonyCount, ExtractorCount, StoppedExtractorCount, FactoryCount);
 }
 
 public sealed class PlanetaryLivePlanetItem
@@ -90,6 +95,11 @@ public sealed class PlanetaryLivePlanetItem
     public int UpgradeLevel { get; set; }
     public long NumPins { get; set; }
     public string LastUpdateText { get; set; } = string.Empty;
+
+    /// <summary>「最后更新 xxx」。</summary>
+    public string LastUpdateLabel => string.IsNullOrEmpty(LastUpdateText)
+        ? string.Empty
+        : LanguageService.Format("IndustryPlanetary_LastUpdate", LastUpdateText);
     public string StorageText { get; set; } = string.Empty;
     public string ImportsText { get; set; } = string.Empty;
     public string ExportsText { get; set; } = string.Empty;
@@ -121,15 +131,19 @@ public sealed class PlanetaryLivePlanetItem
             var parts = new List<string>();
             if (Extractors.Count > 0)
             {
-                parts.Add("提取 " + string.Join("、", Extractors.GroupBy(p => p.ProductName)
-                    .Select(g => g.Key + (g.Count() > 1 ? "×" + g.Count() : string.Empty))));
+                parts.Add(LanguageService.Format("IndustryPlanetary_Live_ExtractPart",
+                    string.Join(LanguageService.Get("IndustryPlanetary_ListSeparator"), Extractors.GroupBy(p => p.ProductName)
+                        .Select(g => g.Key + (g.Count() > 1 ? "×" + g.Count() : string.Empty)))));
             }
             if (Factories.Count > 0)
             {
-                parts.Add("工厂 " + string.Join("、", Factories.GroupBy(p => p.ProductName)
-                    .Select(g => g.Key + "×" + g.Sum(x => x.Count))));
+                parts.Add(LanguageService.Format("IndustryPlanetary_Live_FactoryPart",
+                    string.Join(LanguageService.Get("IndustryPlanetary_ListSeparator"), Factories.GroupBy(p => p.ProductName)
+                        .Select(g => g.Key + "×" + g.Sum(x => x.Count)))));
             }
-            return parts.Count == 0 ? "无生产设施" : string.Join(" · ", parts);
+            return parts.Count == 0
+                ? LanguageService.Get("IndustryPlanetary_Live_NoProduction")
+                : string.Join(" · ", parts);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using TheGuideToTheNewEden.Core.Models.Planetary;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -51,10 +52,10 @@ public sealed class PlanetaryProductNodeViewModel : INotifyPropertyChanged
         ImportUnitPrice = import?.UnitPrice ?? 0;
         ImportCostPerDay = import?.CostPerDay ?? 0;
         InputsText = import is not null
-            ? string.Format("外购合计 {0:N1}/天 · 成本 {1:N0} ISK/天", import.QuantityPerDay, import.CostPerDay)
+            ? LanguageService.Format("IndustryPlanetary_ImportTotal", import.QuantityPerDay, import.CostPerDay)
             : tier == PlanetaryProductTier.P0
-                ? "P0 原料 · 由提取器采集"
-                : "计划未安排生产 · 需外购";
+                ? LanguageService.Get("IndustryPlanetary_P0Raw")
+                : LanguageService.Get("IndustryPlanetary_NotScheduled");
         Depth = depth;
         IndentMargin = new Thickness(depth * 18, 0, 0, 0);
     }
@@ -90,21 +91,26 @@ public sealed class PlanetaryProductNodeViewModel : INotifyPropertyChanged
     public bool IsRaw => !IsProduced && !IsImport;
 
     public string TierText => "P" + (int)Tier;
-    public string DecisionText => IsTarget ? "目标" : IsProduced ? "自产" : IsImport ? "外购" : "提取";
-    public string RequiredText => RequiredPerDay > 0 ? string.Format("需求 {0:N1}/天", RequiredPerDay) : "—";
+    public string DecisionText => LanguageService.Get(IsTarget ? "IndustryPlanetary_DecisionTarget"
+        : IsProduced ? "IndustryPlanetary_DecisionProduced"
+        : IsImport ? "IndustryPlanetary_DecisionImport"
+        : "IndustryPlanetary_DecisionExtract");
+    public string RequiredText => RequiredPerDay > 0
+        ? LanguageService.Format("IndustryPlanetary_RequiredPerDay", RequiredPerDay)
+        : "—";
 
     public string MetaText
     {
         get
         {
             var parts = new List<string>();
-            if (OutputPerDay > 0) parts.Add(string.Format("产出 {0:N1}/天", OutputPerDay));
-            if (Factories > 0) parts.Add(Factories + " 工厂");
-            if (Colonies > 0) parts.Add(Colonies + " 殖民地");
+            if (OutputPerDay > 0) parts.Add(LanguageService.Format("IndustryPlanetary_OutputPerDay", OutputPerDay));
+            if (Factories > 0) parts.Add(LanguageService.Format("IndustryPlanetary_Factories", Factories));
+            if (Colonies > 0) parts.Add(LanguageService.Format("IndustryPlanetary_ColoniesCount", Colonies));
             if (!string.IsNullOrWhiteSpace(PlanetType)) parts.Add(PlanetType);
-            if (SetupCost > 0) parts.Add(string.Format("建造 {0:N0} ISK", SetupCost));
-            if (ImportUnitPrice > 0) parts.Add(string.Format("单价 {0:N2}", ImportUnitPrice));
-            if (ImportCostPerDay > 0) parts.Add(string.Format("日成本 {0:N0} ISK", ImportCostPerDay));
+            if (SetupCost > 0) parts.Add(LanguageService.Format("IndustryPlanetary_SetupCostLine", SetupCost));
+            if (ImportUnitPrice > 0) parts.Add(LanguageService.Format("IndustryPlanetary_UnitPriceLine", ImportUnitPrice));
+            if (ImportCostPerDay > 0) parts.Add(LanguageService.Format("IndustryPlanetary_DailyCost", ImportCostPerDay));
             return string.Join(" · ", parts);
         }
     }

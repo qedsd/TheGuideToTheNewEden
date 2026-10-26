@@ -2,19 +2,12 @@ using TheGuideToTheNewEden.Core.Services.DB;
 
 namespace TheGuideToTheNewEden.WPF.Services.Industry;
 
-/// <summary>行星页的名称显示：优先本地化库，英文回退；行星类型用中文领域名。</summary>
+/// <summary>行星页的名称显示：优先本地化库，英文回退；行星类型按当前界面语言显示。</summary>
 public static class PlanetaryNameLocalizer
 {
-    private static readonly Dictionary<string, string> PlanetTypeNames = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly string[] PlanetTypeCodes =
     {
-        ["Temperate"] = "温带",
-        ["Ice"] = "冰原",
-        ["Gas"] = "气态",
-        ["Oceanic"] = "海洋",
-        ["Lava"] = "熔岩",
-        ["Barren"] = "贫瘠",
-        ["Storm"] = "风暴",
-        ["Plasma"] = "等离子",
+        "Temperate", "Ice", "Gas", "Oceanic", "Lava", "Barren", "Storm", "Plasma",
     };
 
     public static string TypeName(int typeId, string fallback)
@@ -33,8 +26,26 @@ public static class PlanetaryNameLocalizer
 
     public static string PlanetType(string name)
     {
-        return !string.IsNullOrWhiteSpace(name) && PlanetTypeNames.TryGetValue(name, out var local)
-            ? local
-            : name;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        // SDE 里可能是 "Temperate"，也可能是 "Planet (Temperate)"
+        var code = name.Trim();
+        var open = code.IndexOf('(');
+        if (open >= 0 && code.EndsWith(")", StringComparison.Ordinal))
+        {
+            code = code.Substring(open + 1, code.Length - open - 2).Trim();
+        }
+
+        foreach (var candidate in PlanetTypeCodes)
+        {
+            if (string.Equals(candidate, code, StringComparison.OrdinalIgnoreCase))
+            {
+                return LanguageService.Get("PlanetType_" + candidate);
+            }
+        }
+        return name;
     }
 }

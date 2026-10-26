@@ -103,8 +103,25 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
     private string _maxRunsText = "—";
     public string MaxRunsText { get => _maxRunsText; private set => Set(ref _maxRunsText, value); }
 
+    private bool _languageHooked;
+
     public async Task LoadAllProductsAsync()
     {
+        if (!_languageHooked)
+        {
+            _languageHooked = true;
+            LanguageService.LanguageChanged += async (_, _) =>
+            {
+                // 分类/组的"未分类/未分组"、产品计数、蓝图副标题都是生成时拼的
+                LocalizeProductRows(_allProducts);
+                ApplyProductFilter();
+                if (SelectedEntry is not null)
+                {
+                    await LoadActivitiesAsync(SelectedEntry);
+                }
+            };
+        }
+
         if (_productsLoaded)
         {
             ApplyProductFilter();
@@ -122,7 +139,7 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_LoadFailed", "读取物品失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_LoadFailed"));
         }
     }
 
@@ -167,7 +184,9 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
             var category = new IndustryProductTreeCategory
             {
                 CategoryId = categoryGroup.Key.CategoryId,
-                Name = string.IsNullOrEmpty(categoryGroup.Key.CategoryName) ? "未分类" : categoryGroup.Key.CategoryName,
+                Name = string.IsNullOrEmpty(categoryGroup.Key.CategoryName)
+                    ? LanguageService.Get("LinksPage_Uncategorized")
+                    : categoryGroup.Key.CategoryName,
                 IsExpanded = !string.IsNullOrEmpty(keyword),
             };
             foreach (var groupGroup in categoryGroup
@@ -177,7 +196,9 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
                 var group = new IndustryProductTreeGroup
                 {
                     GroupId = groupGroup.Key.GroupId,
-                    Name = string.IsNullOrEmpty(groupGroup.Key.GroupName) ? "未分组" : groupGroup.Key.GroupName,
+                    Name = string.IsNullOrEmpty(groupGroup.Key.GroupName)
+                        ? LanguageService.Get("MapTool_Sov_Ungrouped")
+                        : groupGroup.Key.GroupName,
                     IsExpanded = !string.IsNullOrEmpty(keyword),
                 };
                 foreach (var product in groupGroup.OrderBy(p => p.ProductName))
@@ -196,8 +217,8 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         }
 
         ProductCountText = string.IsNullOrEmpty(keyword)
-            ? $"{_allProducts.Count} 个可制造物品"
-            : $"匹配 {filtered.Count} / {_allProducts.Count}";
+            ? LanguageService.Format("IndustryPage_ManufacturableCount", _allProducts.Count)
+            : LanguageService.Format("IndustryPage_MatchCount", filtered.Count, _allProducts.Count);
     }
 
     private static void LocalizeProductRows(List<IndustryProductEntry> products)
@@ -266,10 +287,16 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         }
 
         Title = entry.ProductName ?? string.Empty;
-        BlueprintName = entry.BlueprintName ?? "—";
+        // 行星开发产物在 SQL 里是"伪蓝图"（BlueprintTypeId = 0），名称由界面按语言补。
+        BlueprintName = entry.BlueprintTypeId <= 0
+            ? LanguageService.Get("IndustryBlueprint_PlanetaryIndustry")
+            : entry.BlueprintName ?? "—";
         GroupName = entry.GroupName ?? "—";
-        MaxRunsText = entry.MaxProductionLimit > 0 ? entry.MaxProductionLimit.ToString("N0") : "BPO / 不限";
-        Subtitle = $"{BlueprintName} · {GroupName} · 最大流程 {MaxRunsText}";
+        MaxRunsText = entry.MaxProductionLimit > 0
+            ? entry.MaxProductionLimit.ToString("N0")
+            : LanguageService.Get("IndustryBlueprint_BpoUnlimited");
+        Subtitle = LanguageService.Format("IndustryBlueprint_Subtitle",
+            BlueprintName, GroupName, MaxRunsText);
 
         try
         {
@@ -298,7 +325,7 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_CalcFailed", "读取蓝图失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryBlueprint_LoadFailed"));
         }
     }
 
@@ -320,7 +347,7 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_CalcFailed", "读取配方失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryBlueprint_RecipeFailed"));
         }
     }
 
@@ -347,7 +374,7 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
                 TypeId = p.MaterialTypeID,
                 Name = Name(p.MaterialTypeID),
                 Amount = "×" + p.Quantity.ToString("N0"),
-                Note = "每流程",
+                Note = LanguageService.Get("IndustryBlueprint_PerRun"),
             })
             .ToList();
 
@@ -357,7 +384,9 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
                 TypeId = p.ProductTypeID,
                 Name = Name(p.ProductTypeID),
                 Amount = "×" + p.Quantity.ToString("N0"),
-                Note = p.Probability.HasValue ? $"成功率 {p.Probability.Value:P1}" : string.Empty,
+                Note = p.Probability.HasValue
+                    ? LanguageService.Format("IndustryBlueprint_SuccessRate", p.Probability.Value)
+                    : string.Empty,
             })
             .ToList();
 
@@ -377,16 +406,16 @@ public sealed class IndustryBlueprintPageViewModel : INotifyPropertyChanged
     {
         return activityId switch
         {
-            IndustryActivity.Manufacturing => Resolve("IndustryActivity_Manufacturing", "制造"),
-            IndustryActivity.ResearchTechnology => Resolve("IndustryActivity_ResearchTechnology", "科技研究"),
-            IndustryActivity.ResearchTimeEfficiency => Resolve("IndustryActivity_ResearchTime", "时间效率研究"),
-            IndustryActivity.ResearchMaterialEfficiency => Resolve("IndustryActivity_ResearchMaterial", "材料效率研究"),
-            IndustryActivity.Copying => Resolve("IndustryActivity_Copying", "复制"),
-            IndustryActivity.Duplicating => Resolve("IndustryActivity_Duplicating", "复制"),
-            IndustryActivity.ReverseEngineering => Resolve("IndustryActivity_ReverseEngineering", "逆向工程"),
-            IndustryActivity.Invention => Resolve("IndustryActivity_Invention", "发明"),
-            IndustryActivity.Reaction => Resolve("IndustryActivity_Reaction", "反应"),
-            _ => "Activity " + activityId,
+            IndustryActivity.Manufacturing => LanguageService.Get("IndustryActivity_Manufacturing"),
+            IndustryActivity.ResearchTechnology => LanguageService.Get("IndustryActivity_ResearchTechnology"),
+            IndustryActivity.ResearchTimeEfficiency => LanguageService.Get("IndustryActivity_ResearchTime"),
+            IndustryActivity.ResearchMaterialEfficiency => LanguageService.Get("IndustryActivity_ResearchMaterial"),
+            IndustryActivity.Copying => LanguageService.Get("IndustryActivity_Copying"),
+            IndustryActivity.Duplicating => LanguageService.Get("IndustryActivity_Duplicating"),
+            IndustryActivity.ReverseEngineering => LanguageService.Get("IndustryActivity_ReverseEngineering"),
+            IndustryActivity.Invention => LanguageService.Get("IndustryActivity_Invention"),
+            IndustryActivity.Reaction => LanguageService.Get("IndustryActivity_Reaction"),
+            _ => LanguageService.Format("IndustryBlueprint_UnknownActivity", activityId),
         };
     }
 

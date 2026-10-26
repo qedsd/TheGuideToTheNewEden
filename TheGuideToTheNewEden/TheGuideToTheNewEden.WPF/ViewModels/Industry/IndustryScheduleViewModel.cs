@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -16,13 +17,24 @@ public sealed class IndustryScheduleMaterialViewModel
         Name = model.Name;
         QuantityText = model.Quantity.ToString("N0");
         StateKey = model.StateKey;
-        StateText = model.StateText;
+        StateText = LocalizeState(model.StateKey);
     }
 
     public string Name { get; }
     public string QuantityText { get; }
     public string StateKey { get; }
     public string StateText { get; }
+
+    private static string LocalizeState(string stateKey) => stateKey switch
+    {
+        "buy" => LanguageService.Get("IndustrySchedule_StateBuy"),
+        "stock" => LanguageService.Get("IndustrySchedule_StateStock"),
+        "upstream" => LanguageService.Get("IndustrySchedule_StateUpstream"),
+        "target" => LanguageService.Get("IndustrySchedule_StateTarget"),
+        "downstream" => LanguageService.Get("IndustrySchedule_StateDownstream"),
+        "inprogress" or "在制" => LanguageService.Get("IndustrySchedule_StateInProgress"),
+        _ => stateKey,
+    };
 }
 
 /// <summary>
@@ -254,10 +266,10 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
         HasCompressedGap = timeScale.IsJobCompressed(model);
         StageOrder = model.Stage switch
         {
-            "发明" => 0,
-            "反应" => 1,
-            "组件" => 2,
-            "行星" => 3,
+            "invention" or "发明" => 0,
+            "reaction" or "反应" => 1,
+            "component" or "组件" => 2,
+            "planetary" or "行星" => 3,
             _ => 4,
         };
     }
@@ -266,25 +278,40 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
     public string Key => Model.Key;
     public string TypeName => Model.TypeName;
     public string ActivityKey => Model.ActivityKey;
-    public string ActivityText => Model.ActivityText;
+    public string ActivityText => LocalizeActivity(Model.ActivityKey);
     public string Stage => Model.Stage;
+    public string StageText => LanguageService.Get(Model.Stage switch
+    {
+        "invention" or "发明" => "IndustrySchedule_StageInvention",
+        "reaction" or "反应" => "IndustrySchedule_StageReaction",
+        "planetary" or "行星" => "IndustrySchedule_StagePlanetary",
+        "target" or "总装" => "IndustrySchedule_StageTarget",
+        "component" or "组件" => "IndustrySchedule_StageComponent",
+        "inprogress" or "在制" => "IndustrySchedule_StageInProgress",
+        _ => "IndustrySchedule_StageComponent",
+    });
     public int StageOrder { get; }
-    public string RunsText => Model.IsInvention ? $"{Model.Runs:N0} 次尝试" : $"{Model.Runs:N0} 流程";
+    public string RunsText => Model.IsInvention
+        ? LanguageService.Format("IndustrySchedule_Attempts", Model.Runs)
+        : LanguageService.Format("IndustrySchedule_Runs", Model.Runs);
     public string CharacterName => Model.CharacterName;
     public string LineText => string.IsNullOrEmpty(Model.CharacterName) ? "—" : $"{Model.CharacterName} · {Model.LineId}";
     public string StartText => FormatHours(Model.StartHours);
     public string EndText => FormatHours(Model.EndHours);
     public string DurationText => FormatHours(Model.DurationHours);
     public string TimeText => $"{StartText} → {EndText}";
-    public string TimeRangeToolTip => $"开始 {StartText} · 结束 {EndText} · 耗时 {DurationText}";
+    public string TimeRangeToolTip => LanguageService.Format("IndustrySchedule_TimeRange", StartText, EndText, DurationText);
     public string JobCostText => Model.JobCost > 0 ? Model.JobCost.ToString("N0") : "—";
     public string TimeMultiplierText => $"×{Model.TimeMultiplier:0.00}";
-    public string ToolTip => $"{TypeName}\n{ActivityText} · {Model.Runs:N0} 流程 · {TimeText}\n{LineText} · {DurationText}"
-        + (IsInProgress ? "\n在制任务：占用当前槽位，完成前不会开始后续任务" : string.Empty)
-        + (HasCompressedGap ? "\n条形按时间轴压缩显示；真实起止见上" : string.Empty);
+    public string ToolTip => LanguageService.Format("IndustrySchedule_JobToolTip",
+            TypeName, ActivityText, Model.Runs, TimeText, LineText, DurationText)
+        + (IsInProgress ? LanguageService.Get("IndustrySchedule_JobToolTipInProgress") : string.Empty)
+        + (HasCompressedGap ? LanguageService.Get("IndustrySchedule_JobToolTipCompressed") : string.Empty);
 
     public bool IsInProgress => Model.IsInProgress;
-    public string BarText => IsInProgress ? "在制 · " + TypeName : TypeName;
+    public string BarText => IsInProgress
+        ? LanguageService.Format("IndustrySchedule_BarInProgress", TypeName)
+        : TypeName;
 
     public List<IndustryScheduleMaterialViewModel> Inputs { get; }
     public List<IndustryScheduleMaterialViewModel> Outputs { get; }
@@ -318,6 +345,15 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
         if (span.TotalHours >= 1) return $"{(int)span.TotalHours}h {span.Minutes:00}m";
         return $"{span.Minutes}m";
     }
+
+    /// <summary>活动代码 → 当前语言文案。</summary>
+    private static string LocalizeActivity(string? activityKey) => LanguageService.Get(activityKey switch
+    {
+        "invention" => "IndustrySchedule_StageInvention",
+        "reaction" => "IndustrySchedule_StageReaction",
+        "planetary" => "IndustrySchedule_StagePlanetary",
+        _ => "IndustrySchedule_StageComponent",
+    });
 }
 
 public sealed class IndustryScheduleLineViewModel
@@ -328,9 +364,9 @@ public sealed class IndustryScheduleLineViewModel
         Kind = model.Kind;
         ActivityKey = model.Kind switch
         {
-            "发明" => "invention",
-            "反应" => "reaction",
-            "行星" => "planetary",
+            "invention" or "发明" => "invention",
+            "reaction" or "反应" => "reaction",
+            "planetary" or "行星" => "planetary",
             _ => "mfg",
         };
         Jobs = new ObservableCollection<IndustryScheduleJobViewModel>(jobs.OrderBy(p => p.Model.StartHours));
@@ -349,6 +385,13 @@ public sealed class IndustryScheduleLineViewModel
 
     public string Id { get; }
     public string Kind { get; }
+    public string KindText => LanguageService.Get(Kind switch
+    {
+        "invention" or "发明" => "IndustrySchedule_StageInvention",
+        "reaction" or "反应" => "IndustrySchedule_StageReaction",
+        "planetary" or "行星" => "IndustrySchedule_StagePlanetary",
+        _ => "IndustrySchedule_StageComponent",
+    });
     public string ActivityKey { get; }
     public ObservableCollection<IndustryScheduleJobViewModel> Jobs { get; }
     public double BusyHours { get; }
@@ -356,9 +399,13 @@ public sealed class IndustryScheduleLineViewModel
     public bool IsIdle => Jobs.Count == 0;
     public IndustryScheduleJobViewModel? FirstJob => Jobs.FirstOrDefault();
     public string QueueText => Jobs.Count > 1 ? $"+{Jobs.Count - 1}" : string.Empty;
-    public string QueueToolTip => Jobs.Count > 1 ? $"该产线还有 {Jobs.Count - 1} 个任务排队" : string.Empty;
-    public string LineLabel => $"{Id} · {Kind}";
-    public string BusyText => BusyHours > 0 ? $"{BusyHours:0.0}h" : "空闲";
+    public string QueueToolTip => Jobs.Count > 1
+        ? LanguageService.Format("IndustrySchedule_Queue", Jobs.Count - 1)
+        : string.Empty;
+    public string LineLabel => $"{Id} · {KindText}";
+    public string BusyText => BusyHours > 0
+        ? LanguageService.Format("IndustrySchedule_BusyHours", BusyHours)
+        : LanguageService.Get("IndustrySchedule_Idle");
 }
 
 public sealed class IndustryScheduleLineGroupViewModel
@@ -384,24 +431,25 @@ public sealed class IndustryScheduleCharacterViewModel
         IndustryScheduleCharacter model,
         IEnumerable<IndustryScheduleLineViewModel> lines)
     {
-        Name = model.CharacterName;
-        SourceText = string.IsNullOrWhiteSpace(model.Source) ? "技能" : model.Source;
+        Name = LocalizeCharacterName(model.CharacterName);
+        SourceText = LocalizeSource(model.Source);
         CapabilitiesText = $"M{model.ManufacturingSlots} · I{model.InventionSlots} · R{model.ReactionSlots} · ×{model.ManufacturingTimeMultiplier:0.00}";
         UtilizationText = $"{model.UtilizationPercent:0}%";
-        UsedSlotText = $"{model.UsedSlotHours:0.0} / {model.AvailableSlotHours:0.0} 槽时";
+        UsedSlotText = LanguageService.Format("IndustrySchedule_UsedSlots",
+            model.UsedSlotHours, model.AvailableSlotHours);
         Lines = new ObservableCollection<IndustryScheduleLineViewModel>(lines);
         ActiveLines = Lines.Where(p => p.HasJobs).ToList();
         LineGroups = ActiveLines
             .GroupBy(p => p.Kind)
             .OrderBy(g => g.Key switch
             {
-                "制造" => 0,
-                "发明" => 1,
-                "反应" => 2,
+                "manufacturing" or "制造" => 0,
+                "invention" or "发明" => 1,
+                "reaction" or "反应" => 2,
                 _ => 3,
             })
             .Select(g => new IndustryScheduleLineGroupViewModel(
-                $"{g.Key} ({g.Count()})",
+                LanguageService.Format("IndustrySchedule_LineGroupTitle", g.First().KindText, g.Count()),
                 g.First().ActivityKey,
                 g.ToList()))
             .ToList();
@@ -416,6 +464,35 @@ public sealed class IndustryScheduleCharacterViewModel
     public IReadOnlyList<IndustryScheduleLineViewModel> ActiveLines { get; }
     public IReadOnlyList<IndustryScheduleLineGroupViewModel> LineGroups { get; }
     public bool HasActiveLines => ActiveLines.Count > 0;
+
+    /// <summary>Core 里的角色名可能是代码：auto:default / auto:N / #ID。</summary>
+    public static string LocalizeCharacterName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return LanguageService.Get("IndustrySchedule_DefaultCharacter");
+        }
+        if (name == "auto:default")
+        {
+            return LanguageService.Get("IndustrySchedule_DefaultCharacter");
+        }
+        if (name.StartsWith("auto:", StringComparison.Ordinal)
+            && int.TryParse(name.AsSpan(5), out var index))
+        {
+            return LanguageService.Format("IndustrySchedule_AutoCharacter", index);
+        }
+        return name;
+    }
+
+    /// <summary>技能来源代码 → 当前语言文案；未知值（如角色名）原样返回。</summary>
+    public static string LocalizeSource(string? source) => source switch
+    {
+        null or "" or "skills" or "技能" => LanguageService.Get("IndustrySchedule_SourceSkills"),
+        "skillsUnread" or "技能未读取（按 1 条）" => LanguageService.Get("IndustrySchedule_SourceSkillsUnread"),
+        "default" or "默认（满技能估算）" => LanguageService.Get("IndustrySchedule_SourceDefault"),
+        "custom" or "自定义" => LanguageService.Get("IndustrySchedule_SourceCustom"),
+        _ => source,
+    };
 }
 
 public sealed class IndustryScheduleStepViewModel : INotifyPropertyChanged
@@ -424,11 +501,16 @@ public sealed class IndustryScheduleStepViewModel : INotifyPropertyChanged
     {
         Job = job;
         Stage = job.Stage;
+        StageKey = job.Stage;
+        StageText = job.StageText;
         StageOrder = job.StageOrder;
     }
 
     public IndustryScheduleJobViewModel Job { get; }
     public string Stage { get; }
+    /// <summary>语言无关的阶段代码（分组用）。</summary>
+    public string StageKey { get; }
+    public string StageText { get; }
     public int StageOrder { get; }
 
     private bool _isSelected;
@@ -523,7 +605,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         TimelineWidth = timeScale.TimelineWidth;
         HasTimelineCompression = timeScale.HasCompression;
         TimelineHint = HasTimelineCompression
-            ? "时间轴按长任务 / 空闲段压缩；悬浮任务条查看真实起止"
+            ? LanguageService.Get("IndustrySchedule_TimelineHint")
             : string.Empty;
         var ticks = timeScale.CreateTicks();
         if (TotalHours > 24)
@@ -573,7 +655,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
                 .Select(p => new IndustryScheduleStepViewModel(p)));
         StepsView = CollectionViewSource.GetDefaultView(Steps);
         StepsView.GroupDescriptions.Clear();
-        StepsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(IndustryScheduleStepViewModel.Stage)));
+        StepsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(IndustryScheduleStepViewModel.StageKey)));
 
         BuildGraph(planJobs);
 
@@ -581,19 +663,23 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         TotalJobCostText = schedule.TotalJobCost > 0 ? schedule.TotalJobCost.ToString("N0") + " ISK" : "—";
         var manufacturingSlots = schedule.Characters.Sum(p => p.ManufacturingSlots);
         var usedManufacturing = schedule.Characters.SelectMany(p => p.Lines)
-            .Count(p => p.Kind == "制造" && p.JobKeys.Count > 0);
-        ManufacturingUsageText = $"{usedManufacturing}/{manufacturingSlots} · 峰值 {PeakConcurrency(schedule, 1)}";
-        var inventionUsed = schedule.Characters.SelectMany(p => p.Lines).Count(p => p.Kind == "发明" && p.JobKeys.Count > 0);
+            .Count(p => (p.Kind == "manufacturing" || p.Kind == "制造") && p.JobKeys.Count > 0);
+        ManufacturingUsageText = LanguageService.Format("IndustrySchedule_ManufacturingUsage",
+            usedManufacturing, manufacturingSlots, PeakConcurrency(schedule, 1));
+        var inventionUsed = schedule.Characters.SelectMany(p => p.Lines)
+            .Count(p => (p.Kind == "invention" || p.Kind == "发明") && p.JobKeys.Count > 0);
         var inventionSlots = schedule.Characters.Sum(p => p.InventionSlots);
-        var reactionUsed = schedule.Characters.SelectMany(p => p.Lines).Count(p => p.Kind == "反应" && p.JobKeys.Count > 0);
+        var reactionUsed = schedule.Characters.SelectMany(p => p.Lines)
+            .Count(p => (p.Kind == "reaction" || p.Kind == "反应") && p.JobKeys.Count > 0);
         var reactionSlots = schedule.Characters.Sum(p => p.ReactionSlots);
-        SpecialUsageText = $"发明 {inventionUsed}/{inventionSlots} · 反应 {reactionUsed}/{reactionSlots}";
-        ObjectiveText = schedule.Objective switch
+        SpecialUsageText = LanguageService.Format("IndustrySchedule_SpecialUsage",
+            inventionUsed, inventionSlots, reactionUsed, reactionSlots);
+        ObjectiveText = LanguageService.Get(schedule.Objective switch
         {
-            IndustryScheduleObjective.Cost => "最低成本",
-            IndustryScheduleObjective.Balanced => "平衡",
-            _ => "最短完成",
-        };
+            IndustryScheduleObjective.Cost => "IndustrySchedule_ObjectiveCost",
+            IndustryScheduleObjective.Balanced => "IndustrySchedule_ObjectiveBalanced",
+            _ => "IndustrySchedule_ObjectiveMakespan",
+        });
         var bottleneck = schedule.Jobs
             .Where(p => p.IsCritical)
             .OrderByDescending(p => p.DurationHours)
@@ -601,7 +687,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         BottleneckText = bottleneck is null ? "—" : $"{bottleneck.TypeName} · {FormatHours(bottleneck.DurationHours)}";
         CharacterSummaryText = string.Join(" · ", schedule.Characters.Select(p =>
             $"{p.CharacterName} M{p.ManufacturingSlots}/I{p.InventionSlots}/R{p.ReactionSlots}"));
-        CriticalCountText = $"{schedule.CriticalJobKeys.Count} 个关键任务";
+        CriticalCountText = LanguageService.Format("IndustrySchedule_CriticalCount", schedule.CriticalJobKeys.Count);
 
         if (jobs.Count > 0)
         {
@@ -625,7 +711,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
     public double TotalHours { get; }
     public double TimelineWidth { get; }
     public DateTime TimelineStart { get; }
-    public string TimelineStartText => $"开始 {TimelineStart:yyyy-MM-dd HH:mm}";
+    public string TimelineStartText => LanguageService.Format("IndustrySchedule_TimelineStart", TimelineStart);
     public bool HasTimelineCompression { get; }
     public string TimelineHint { get; }
 
@@ -766,7 +852,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
                 CharacterId = character.CharacterId,
                 Name = character.CharacterName,
                 DurationText = FormatHours(duration),
-                CapacityText = $"{SlotsName(job.ActivityId)} {slots} 槽",
+                CapacityText = LanguageService.Format("IndustrySchedule_Capacity", SlotsName(job.ActivityId), slots),
                 TimeText = $"×{multiplier:0.00}",
                 IsCurrent = isCurrent,
                 IsPinned = isCurrent && job.IsPinned,
@@ -944,15 +1030,20 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         return peak;
     }
 
-    private static string SlotsName(int activityId)
+    private static string SlotsName(int activityId) => LanguageService.Get(activityId switch
     {
-        return activityId switch
-        {
-            8 => "发明",
-            11 => "反应",
-            _ => "制造",
-        };
-    }
+        8 => "IndustrySchedule_StageInvention",
+        11 => "IndustrySchedule_StageReaction",
+        _ => "IndustrySchedule_StageComponent",
+    });
+
+    private static string LocalizeActivity(string? activityKey) => LanguageService.Get(activityKey switch
+    {
+        "invention" => "IndustrySchedule_StageInvention",
+        "reaction" => "IndustrySchedule_StageReaction",
+        "planetary" => "IndustrySchedule_StagePlanetary",
+        _ => "IndustrySchedule_StageComponent",
+    });
 
     private static string FormatHours(double hours)
     {

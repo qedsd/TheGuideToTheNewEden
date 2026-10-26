@@ -9008,6 +9008,72 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 - 手册里指向该页的说明改为"当前未开放入口"：`industry/blueprints.md`（一句话/步骤/限制 3 处）、`industry/plan.md`（字段口径 1 处）。
 - 验证：WPF `dotnet build` **0 错误**；`AssistantProbe ui` **120 PASS / 0 FAIL**；`AssistantProbe industry` **324 PASS / 0 FAIL**；`AssistantProbe manuals` 从 3 条失败降到 **2 条**——原来"功能目录的页面条目都有手册（缺口 industry-recycle）"随入口移除消失，剩下的是既有问题（`industry/inventory`、`industry/plan` 章节顺序 + `industry/plan#limits` 2208 > 2200）。
 
+## 阶段 185：制造（工业）模块整体中英文切换（2026-10-26）
+
+> 用户要求：**整个制造功能**都做中英文切换，不再使用硬编码中文。
+> 覆盖范围：制造计划（`IndustryPlanPage` + 排产视图 + 生产链视图 + 节点 VM）、行星开发（`IndustryPlanetaryPage` + 实时殖民地 + 产物链 + 自定义角色窗口）、蓝图浏览器、库存、回收/压缩（入口已隐藏但代码保留），以及 Core 规划器/排产器里会被界面显示的文案。
+
+### 185.1 基础设施
+
+- **`Services/LanguageService.cs` 新增两个静态入口**（代码侧统一取词，不再在 C# 里写死中文）：
+  - `LanguageService.Get(key)`：`Application.Current?.TryFindResource(key) as string ?? key`，并 `try/catch` 兜底（非 UI 线程/资源未就绪时返回键名而不是抛异常）；
+  - `LanguageService.Format(key, args)`：`Get` + `string.Format`，占位符与参数不匹配时返回原文（不打断界面）。
+- **XAML 一律用 `{DynamicResource 键}`**：制造模块原本 0 个语言键、全部是字面量中文，本轮共替换 **约 430 处属性值**（Text / Content / Header / ToolTip / PlaceholderText）。
+- **需要"前缀 + 数字"的文案改走 VM 属性**（`StringFormat` 无法绑定 `DynamicResource`）：
+  - `TargetsCountText`（目标物品（N））、`RootsCountText` / `SavedPlansCountText`（共 N 个）、`SelectedBuildingProfileName`（未选择档案）、`TargetDaysText` / `PaybackDaysText`（N 天）、`InputsLabel`（输入：…）、`LastUpdateLabel`（最后更新 …）、`PlanWarnings`（计划提示）。
+  - 步骤分组的"N 步"用两个 `Run` 拼（`{Binding ItemCount}` + `DynamicResource IndustrySchedule_StepsSuffix`），因为 `CollectionViewGroup` 上没法加属性。
+- **三个转换器**（新增，均注册在 `App.xaml`）：
+  - `IndustryStageName`：排产阶段代码（invention/reaction/planetary/target/component/inprogress）→ 文案；**分组也按代码分**（`PropertyGroupDescription(StageKey)`），切语言后绑定重算即可刷新；
+  - `IndustryRoleName`：殖民地/引脚角色（extractor/factory/storage/facility/unassigned）→ 文案；
+  - `IndustryCharacterName`：规划器里的角色名代码（`auto:N` / `auto:default` / `unassigned`）→ 文案。
+- 三个转换器都**同时接受旧的中文值**（`发明`/`工厂`/`在制`…），保证已保存的计划快照仍能正确显示。
+
+### 185.2 Core：把"显示文案"与"数据代码"分开
+
+Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示又参与比较），本轮拆开：
+
+- **`IndustryScheduler`**：`IndustryScheduleJob.Stage` / `IndustryScheduleLine.Kind` / `IndustryScheduleCharacter.Source` / 材料 `StateText` 全部改成语言无关代码（invention/reaction/planetary/target/component/inprogress；manufacturing/invention/reaction/planetary；skills/skillsUnread/default/custom；buy/stock/upstream/…）。`ActivityText` 直接返回 `ActivityKey`。自动角色名改为 `auto:N` / `auto:default`。
+- **`PlanetaryPlanner`**：`PlanetaryColonyPlan.Role` 改为 `extractor` / `factory` / `unassigned`；自动角色名 `auto:N`；缺名称的角色/物品回退 `#ID`；`Product.Inputs` 不再在 Core 拼中文（改由 WPF 按语言生成）。
+- **`PlanetaryPlanner` 的 22 条提示改成"代码 + 参数"编码**：`plan.Warnings` 里存 `@code␟arg1␟arg2`（`␟` = U+001F），WPF 侧 `PlanetaryPlanPageViewModel.DecodeWarning` 按 `IndustryPlanetary_Warn_<code>` 查键并格式化；**旧快照里的纯文本提示不带前导 `@`，原样显示**（JSON 结构仍是 `List<string>`，向后兼容）。
+- `IndustryDbService` 里行星开发"伪蓝图"行的名字由 `'行星开发'` 改为空串，蓝图浏览器在 `BlueprintTypeId <= 0` 时显示本地化的「行星开发 / Planetary industry」。
+- `IndustryStructureOption.Summary` 改为语言中性缩写（`M… · T… · C…`；该属性当前没有任何界面绑定）。
+
+### 185.3 页面与 VM 的"切语言即刷新"
+
+制造页是 `NavigationCacheMode="Required"` 的常驻页，只换字典不会让**生成时拼好的字符串**更新，因此按既有约定补了 `LanguageService.LanguageChanged` 处理：
+
+- `IndustryPlanPageViewModel`：重算解密器下拉名字（新增 `IndustryDecryptorOption.BaseName` 保存未加后缀的名字）、重建仓库摘要、重建已保存计划摘要、**用同一份排产数据重建 `IndustryScheduleViewModel`**；`MarketStatusText` / `CharacterStatusText` 从"存字符串"改为"存键 + 参数"（`SetMarketStatus` / `SetCharacterStatus`），切语言即重算。
+- `PlanetaryPlanPageViewModel`：重跑 `LocalizePlan`（行星类型名、目标文本）、重新解码计划提示、重建已保存计划摘要与产物链。
+- `IndustryInventoryPageViewModel`：重建仓库摘要并刷新明细（`Load()` 里挂一次）。
+- `IndustryBlueprintPageViewModel`：重新本地化产品树 + 重新加载当前蓝图详情（`LoadAllProductsAsync()` 里挂一次）。
+
+### 185.4 术语与翻译口径
+
+- 中文侧**沿用原有措辞**（不借机改写），英文按 EVE 工业惯例：ME = Material efficiency、TE = Time efficiency、Job cost、Facility tax、SCC surcharge、POCO tax、BPC runs per copy、Break-even unit price、Capital lockup、BOM / Cost …
+- 英文里 `Advanced` / `High-Tech` 工厂保持游戏原词；`IndustryPage_*` 前缀继续用于制造计划（与既有 `Resolve("IndustryPage_…")` 一致），新增前缀：`IndustryPlanetary_*`、`IndustryBlueprint_*`、`IndustryInventory_*`、`IndustryRecycle_*`、`IndustrySchedule_*`、`IndustryChain_*`、`IndustryCustomCharacter_*`、`IndustryActivity_*`、`PlanetType_*`。
+- 语言字典本轮 **zh +743 / en +743**（2453 → 3196）（含 3 个"已存在、保留原值"的键：`IndustryPage_NothingToCopy` / `_Copied` / `_CopyFailed`，它们的旧文案更完整，因此没有覆盖）。两语言键集完全一致、无重复键（重复键会让应用启动即崩，见 §8 第 33 条）。
+
+### 185.5 验证
+
+- **`dotnet build` 0 错误**（`-p:OutDir=%TEMP%\wpf-l10n-verify` 构建，未占用正在运行的 `bin`）。
+- **静态校验**（脚本）：
+  - 制造 XAML 里全部 `DynamicResource` 引用键 vs 语言字典求差集 → 只剩同文件内的样式键与 3 个 `App.xaml` 转换器键（非语言键）；
+  - 制造 C# 里的 `LanguageService.Get/Format` / `Resolve` 键 vs 字典 → 0 缺失；
+  - 两语言键集一致（3196 / 3196）、无重复；两个 `Resources/Languages/*.xaml` 均可被 XML 解析器解析。
+- **实机（UIA 驱动，先中文后切英文再切回中文）**：
+  - 中文下打开「工业 → 制造计划」：分区页签/卡片/按钮全部中文，无键名泄漏；
+  - 运行时把语言切到 English（设置 → 一般 → 语言下拉选择 English），再打开/切回制造页：页签 `Plan settings / Targets / Process / Structure / Characters & market / Plan details`、`Targets (0)`、`Manufacturable items`、`Saved plans`、`Overview`、`All products overview`、`Production` 全部英文；`Planetary Interaction` 页签 `My colonies / Plan settings / Plan details / Saved plans`、`Demand / Planet selection / Characters & capacity / Price & tax`、`Selected demand (0)`、`Demand period (days)`、`No colonies yet`、`No character selected`、`Select a colony to see details`、`Reading character colonies...` 全部英文；`Inventory` 页 `Warehouses / Warehouse name / New warehouse / Rename / Remove / Add / Import / Search items (Chinese or English names) / Add to warehouse / Import assets from characters / Merge import / Replace import / Import CSV / Export CSV / Inventory detail / Item` 全部英文；`Blueprint Browser` 的卡片标题与搜索框英文；
+  - **切回中文后同一批常驻页面立即变回中文**（未重启应用），说明 185.3 的 `LanguageChanged` 处理生效；
+  - 全程无 `XamlParseException`、无键名（`Industry…_`）泄漏到界面；日志里只有既有的网络错误（沙箱内 SSL 不通）。
+  - 屏幕上仍可能出现中文的只有**游戏数据名**（本地化 SDE 库里的物品/星系/行星产物名，随"本地化数据库"设置走）与品牌副标题（有意保留另一语言），不属于界面文案。
+
+### 185.6 已知限制
+
+- 旧计划快照里已经"烤进去"的本地化文本（例如行星计划 `Summary` 字符串、旧提示纯文本）不会因为切语言而改写；重新计算或重新保存后即为当前语言。
+- Core 的 `PlanetaryCapacityCalculator.Detail`（容量不足的具体原因）仍是中文，但它**没有任何界面绑定**（只用于内部/探针），未纳入本轮。
+- AI 助手工具 `CharacterIndustryTool` 的描述与结果文案仍是中文（属 AI 助手模块的既有状态，不在制造页面范围内）。
+- 兼容用的中文比较字面量保留在三个转换器与 `IndustryScheduleViewModel` 里（`"发明" or "invention"` 这类），**它们只用于识别旧数据、不会显示**。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -10473,6 +10539,17 @@ Core 的 `MapConfig`（`MapCanvasConfig` / `MapSovGroupConfig` / `MapDisplayConf
 3. 每个失败分支都有且只有一条右下角通知；成功分支不产生噪声通知。
 4. 空态、加载态、无数据态都只有短句，且不遮挡操作控件。
 5. 写操作失败不再被服务层静默吞掉。
+
+### UI 约定：界面文案一律走语言键（阶段 185 起，**适用于所有功能**）
+
+> 制造模块本轮把最后一批硬编码中文清掉了。以后新增任何界面文案，按下面的口径写，不要在中英文之外的"第三种状态"（写死中文）里停留。
+
+1. **XAML**：一律 `Text/Content/Header/ToolTip/PlaceholderText="{DynamicResource 键}"`；不要写字面量中文，也不要用 `{x:Static}` 包一层。键名前缀按模块（`IndustryPage_*`、`IndustryPlanetary_*`、`IndustrySchedule_*`…），并能一眼看出归属。
+2. **C#**：`LanguageService.Get("键")`；带参数用 `LanguageService.Format("键", args)`。**不要**再写 `Application.Current?.TryFindResource(...) ?? "中文"` 这种带中文兜底的写法（缺键时应显示键名，便于发现漏译，而不是静默回退到中文）。
+3. **`StringFormat` 里不能塞 `DynamicResource`**：需要"前缀 + 数字"时，在 VM 上做一个计算属性（如 `TargetsCountText`），或在 XAML 用两个 `Run` 拼（`{Binding Count}` + `DynamicResource 后缀`）。
+4. **不要用本地化文本当数据/比较键**：分组、`DataTrigger`、状态判断要用语言无关代码（如 `ActivityKind` / `StageKey` / `Role`），显示时再用转换器或 `Get` 翻译。Core 里同理：需要给 UI 的提示用"代码 + 参数"（见阶段 185 的 `@code␟args` 约定），不要直接拼中文。
+5. **常驻页要挂 `LanguageService.LanguageChanged`**：凡是"生成时就把字符串拼进对象"的（下拉选项名、列表摘要、状态行、Snapshots），切语言时必须重建或重算；`=> LanguageService.Get(...)` 这种计算属性由 `LanguageService` 的绑定重算自动刷新。
+6. **加完键必须查重/对齐**：`Resources/Languages/zh-CN.xaml` 与 `en-US.xaml` 键集必须一致、不能有重复键（重复键 = 应用启动即崩且无日志，见 §8 第 33 条）。
 
 ### 结构（structure）ID 解析约定 —— **structure id 请走 StructureService**
 

@@ -312,10 +312,10 @@
                     <Setter TargetName="DecisionBg" Property="Background" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
                     <Setter TargetName="DecisionLabel" Property="Foreground" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding ActivityText}" Value="发明">
+                <DataTrigger Binding="{Binding ActivityKind}" Value="invention">
                     <Setter TargetName="ActivityLabel" Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding ActivityText}" Value="反应">
+                <DataTrigger Binding="{Binding ActivityKind}" Value="reaction">
                     <Setter TargetName="ActivityLabel" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -421,8 +421,8 @@
                         <StackPanel Grid.Column="1">
                             <TextBlock
                                 Style="{StaticResource IndustryMetricLabel}"
-                                Text="现金支出（需购买）"
-                                ToolTip="需购买材料（扣除角色资产/在制/上游剩余）+ 任务费用。" />
+                                Text="{DynamicResource IndustryPage_CashOutlay}"
+                                ToolTip="{DynamicResource IndustryPage_CashOutlayTip}" />
                             <TextBlock Style="{StaticResource IndustryMetricValue}" Text="{Binding CashCostText}" />
                         </StackPanel>
                     </Grid>
@@ -435,20 +435,20 @@
                         <StackPanel>
                             <TextBlock
                                 Style="{StaticResource IndustryMetricLabel}"
-                                Text="任务费用（已含）"
-                                ToolTip="任务费用（Job Cost），已包含在总成本和现金支出中。" />
+                                Text="{DynamicResource IndustryPage_JobCostIncluded}"
+                                ToolTip="{DynamicResource IndustryChain_JobCostTip}" />
                             <TextBlock Style="{StaticResource IndustryMetricValue}" Text="{Binding JobCostText}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1">
-                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="作业耗时" />
+                            <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="{DynamicResource IndustryPage_JobDuration}" />
                             <TextBlock Style="{StaticResource IndustryMetricValue}" Text="{Binding JobTimeText}" />
                         </StackPanel>
                     </Grid>
 
                     <TextBlock
                         Style="{StaticResource IndustryLabel}"
-                        Text="成本构成"
-                        ToolTip="占总成本比例；任务费用已包含在内；库存抵扣是库存材料市值。" />
+                        Text="{DynamicResource IndustryPage_CostBreakdown}"
+                        ToolTip="{DynamicResource IndustryPage_CostBreakdownTip}" />
                     <Grid Height="20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="66" />
@@ -459,8 +459,8 @@
                             VerticalAlignment="Center"
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="采购材料"
-                            ToolTip="需购买材料（现金支出部分）。" />
+                            Text="{DynamicResource IndustryPage_PurchaseMaterials}"
+                            ToolTip="{DynamicResource IndustryPage_PurchaseMaterialsTip}" />
                         <controls:RatioBar
                             Grid.Column="1"
                             Height="3"
@@ -487,8 +487,8 @@
                             VerticalAlignment="Center"
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="任务费用"
-                            ToolTip="已包含在总成本和现金支出中。" />
+                            Text="{DynamicResource IndustryPage_JobCost}"
+                            ToolTip="{DynamicResource IndustryPage_JobCostIncludedTip}" />
                         <controls:RatioBar
                             Grid.Column="1"
                             Height="3"
@@ -515,8 +515,8 @@
                             VerticalAlignment="Center"
                             FontSize="10"
                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="库存抵扣"
-                            ToolTip="库存材料市值；总成本 − 现金支出。" />
+                            Text="{DynamicResource IndustryPage_StockOffset}"
+                            ToolTip="{DynamicResource IndustryPage_StockOffsetTip}" />
                         <controls:RatioBar
                             Grid.Column="1"
                             Height="3"
@@ -538,11 +538,11 @@
                         Margin="0,6,0,0"
                         FontSize="10"
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                        Text="总成本 = 材料全量市值（含库存）+ 任务费用；现金支出 = 需购买材料 + 任务费用；库存抵扣 = 两者差额。"
+                        Text="{DynamicResource IndustryPage_CostFormula}"
                         TextWrapping="Wrap" />
 
                     <StackPanel Visibility="{Binding HasInventionData, Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Style="{StaticResource IndustryLabel}" Text="发明数据" />
+                        <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_InventionData}" />
                         <TextBlock
                             FontSize="11"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -569,7 +569,7 @@
                             TextWrapping="Wrap" />
                     </StackPanel>
 
-                    <TextBlock Style="{StaticResource IndustryLabel}" Text="市场参考" />
+                    <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_MarketReference}" />
                     <TextBlock
                         FontSize="11"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -594,27 +594,27 @@
                         Margin="0,3,0,0"
                         FontSize="10.5"
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                        Text="{Binding UnitPriceText, StringFormat=参考单价 {0}}" />
+                        Text="{Binding ReferencePriceText}" />
 
-                    <TextBlock Style="{StaticResource IndustryLabel}" Text="节点操作" />
+                    <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_NodeActions}" />
                     <WrapPanel>
                         <ui:Button
                             Margin="0,0,6,0"
                             Appearance="Secondary"
                             Click="OnForceBuildClick"
-                            Content="强制制造" />
+                            Content="{DynamicResource IndustryPage_ForceBuild}" />
                         <ui:Button
                             Margin="0,0,6,0"
                             Appearance="Secondary"
                             Click="OnForceBuyClick"
-                            Content="强制采购" />
+                            Content="{DynamicResource IndustryPage_ForceBuy}" />
                         <ui:Button
                             Appearance="Secondary"
                             Click="OnBlacklistClick"
-                            Content="加入黑名单" />
+                            Content="{DynamicResource IndustryPage_Blacklist}" />
                     </WrapPanel>
 
-                    <TextBlock Style="{StaticResource IndustryLabel}" Text="直接输入" />
+                    <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_DirectInput}" />
                     <ui:DataGrid
                         MaxHeight="220"
                         ItemsSource="{Binding Children}"
@@ -623,20 +623,20 @@
                             <DataGridTextColumn
                                 Width="*"
                                 Binding="{Binding Name}"
-                                Header="物品" />
+                                Header="{DynamicResource IndustryPage_Col_Item}" />
                             <DataGridTextColumn
                                 Width="180"
                                 Binding="{Binding QuantityText}"
-                                Header="需要 / 产出 / 采购" />
+                                Header="{DynamicResource IndustryPage_Col_NeedProduceBuy}" />
                         </ui:DataGrid.Columns>
                     </ui:DataGrid>
                 </StackPanel>
             </ScrollViewer>
             <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding ActivityText}" Value="发明">
+                <DataTrigger Binding="{Binding ActivityKind}" Value="invention">
                     <Setter TargetName="DetailActivityLabel" Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding ActivityText}" Value="反应">
+                <DataTrigger Binding="{Binding ActivityKind}" Value="reaction">
                     <Setter TargetName="DetailActivityLabel" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -711,54 +711,54 @@
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="目标项"
-                                                            ToolTip="目标行数；单次产出见标题中的 ×请求 → 产出。" />
+                                                            Text="{DynamicResource IndustryPage_TargetItems}"
+                                                            ToolTip="{DynamicResource IndustryChain_TargetItemsTip}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryTargets}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
-                                                        <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="总流程" />
+                                                        <TextBlock Style="{StaticResource IndustryMetricLabel}" Text="{DynamicResource IndustryPage_TotalRuns}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRuns}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="任务费用（已含）"
-                                                            ToolTip="任务费用（Job Cost），已包含在总成本和现金支出中。" />
+                                                            Text="{DynamicResource IndustryPage_JobCostIncluded}"
+                                                            ToolTip="{DynamicResource IndustryChain_JobCostTip}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryJobCost}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="总成本"
-                                                            ToolTip="材料全量市值（含库存中的材料）+ 任务费用。" />
+                                                            Text="{DynamicResource IndustryPage_TotalCost}"
+                                                            ToolTip="{DynamicResource IndustryPage_TotalCostTipLong}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryFullBuild}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="现金支出（需购买）"
-                                                            ToolTip="需购买材料（扣除角色资产/在制/上游剩余）+ 任务费用。" />
+                                                            Text="{DynamicResource IndustryPage_CashOutlay}"
+                                                            ToolTip="{DynamicResource IndustryPage_CashOutlayTip}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryCash}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="库存抵扣（市值）"
-                                                            ToolTip="总成本 − 现金支出，等于库存中已拥有材料的市场估值。" />
+                                                            Text="{DynamicResource IndustryPage_StockOffsetMarket}"
+                                                            ToolTip="{DynamicResource IndustryPage_StockOffsetMarketTip}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryStock}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="参考收入"
-                                                            ToolTip="按实际产出数量 × 参考单价（优先最高买价）。" />
+                                                            Text="{DynamicResource IndustryChain_ReferenceRevenue}"
+                                                            ToolTip="{DynamicResource IndustryPage_NetRevenueTip}" />
                                                         <TextBlock Style="{StaticResource IndustryMetricValueCompact}" Text="{Binding SummaryRevenue}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,14,4">
                                                         <TextBlock
                                                             Style="{StaticResource IndustryMetricLabel}"
-                                                            Text="利润 / 利润率"
-                                                            ToolTip="利润 = 参考收入 − 总成本；括号内为利润率（利润 / 参考收入）。" />
+                                                            Text="{DynamicResource IndustryPage_ProfitMargin}"
+                                                            ToolTip="{DynamicResource IndustryChain_ProfitTip}" />
                                                         <TextBlock
                                                             FontSize="13"
                                                             Style="{StaticResource IndustryProfitText}"
@@ -770,7 +770,7 @@
                                                     Margin="0,5,0,0"
                                                     FontSize="9.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="总成本 = 材料全量市值（含库存）+ 任务费用；现金支出 = 需购买材料 + 任务费用；库存抵扣 = 两者差额。"
+                                                    Text="{DynamicResource IndustryPage_CostFormula}"
                                                     TextWrapping="Wrap" />
                                             </Grid>
 
@@ -783,8 +783,8 @@
                                                 <TextBlock
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="成本构成"
-                                                    ToolTip="占总成本比例；任务费用已包含在内；库存抵扣是库存材料市值。" />
+                                                    Text="{DynamicResource IndustryPage_CostBreakdown}"
+                                                    ToolTip="{DynamicResource IndustryPage_CostBreakdownTip}" />
                                                 <ItemsControl
                                                     Margin="0,4,0,0"
                                                     ItemTemplate="{StaticResource IndustryCostSliceTemplate}"
@@ -801,12 +801,12 @@
                                                     Margin="0,0,0,6"
                                                     Click="OnCopyClick"
                                                     Icon="{ui:SymbolIcon DocumentSettings16}"
-                                                    ToolTip="复制采购" />
+                                                    ToolTip="{DynamicResource IndustryChain_CopyShopping}" />
                                                 <ui:Button
                                                     Height="32"
                                                     Click="OnExportClick"
                                                     Icon="{ui:SymbolIcon ArrowDown24}"
-                                                    ToolTip="导出 CSV" />
+                                                    ToolTip="{DynamicResource IndustryChain_ExportCsv}" />
                                             </StackPanel>
                                         </Grid>
                                     </Grid>
@@ -839,7 +839,7 @@
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="BOM / 成本" />
+                                                        Text="{DynamicResource IndustryPage_BomCost}" />
                                                 </StackPanel>
                                             </Grid>
                                         </controls:CardControl.Header>
@@ -860,7 +860,7 @@
                                                 VerticalAlignment="Center"
                                                 FontSize="12"
                                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="添加目标并计算后，这里会展开完整 BOM">
+                                                Text="{DynamicResource IndustryChain_Empty}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -890,7 +890,7 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="节点详情" />
+                                                    Text="{DynamicResource IndustryChain_NodeDetail}" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <Grid>
@@ -899,7 +899,7 @@
                                                 VerticalAlignment="Center"
                                                 FontSize="11.5"
                                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="在 BOM / 成本中选择一个节点">
+                                                Text="{DynamicResource IndustryChain_SelectNode}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Visibility" Value="Collapsed" />

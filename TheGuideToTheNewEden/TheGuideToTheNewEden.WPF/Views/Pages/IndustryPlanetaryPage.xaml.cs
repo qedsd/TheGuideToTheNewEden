@@ -61,7 +61,7 @@ public partial class IndustryPlanetaryPage : Page
         }
         catch (Exception ex)
         {
-            PageNotifyService.Error("导入蓝图失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_ImportFailed", ex.Message));
         }
     }
 
@@ -73,7 +73,7 @@ public partial class IndustryPlanetaryPage : Page
         }
         catch (Exception ex)
         {
-            PageNotifyService.Error("市场价格刷新失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_PriceRefreshFailed", ex.Message));
         }
     }
 
@@ -131,11 +131,13 @@ public partial class IndustryPlanetaryPage : Page
         }
 
         var dialog = new Views.Windows.EveSettingsTextInputWindow(
-            "重命名计划",
-            "计划名称",
+            LanguageService.Get("IndustryPlanetary_RenameTitle"),
+            LanguageService.Get("IndustryPlanetary_RenamePrompt"),
             plan.Name,
-            "输入新的计划名称",
-            value => string.IsNullOrWhiteSpace(value) ? "名称不能为空" : null)
+            LanguageService.Get("IndustryPlanetary_RenamePlaceholder"),
+            value => string.IsNullOrWhiteSpace(value)
+                ? LanguageService.Get("IndustryPlanetary_RenameEmpty")
+                : null)
         {
             Owner = Window.GetWindow(this),
         };
@@ -150,7 +152,9 @@ public partial class IndustryPlanetaryPage : Page
     private void OnDeletePlanClick(object sender, RoutedEventArgs e)
     {
         if (_viewModel.SelectedSavedPlan is null) return;
-        if (MessageBox.Show($"删除行星计划「{_viewModel.SelectedSavedPlan.Name}」？", "删除行星计划",
+        if (MessageBox.Show(
+                LanguageService.Format("IndustryPlanetary_DeleteConfirm", _viewModel.SelectedSavedPlan.Name),
+                LanguageService.Get("IndustryPlanetary_DeleteTitle"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
         {
             return;

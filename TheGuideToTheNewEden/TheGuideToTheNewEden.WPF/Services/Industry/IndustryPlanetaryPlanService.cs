@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.WPF.Services.Industry;
 public sealed class PlanetarySavedPlan
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
-    public string Name { get; set; } = "行星计划";
+    public string Name { get; set; } = LanguageService.Get("IndustryPlanetary_DefaultPlanName");
     public DateTime Created { get; set; } = DateTime.Now;
     public DateTime Updated { get; set; } = DateTime.Now;
     public List<PlanetaryTarget> Targets { get; set; } = new();

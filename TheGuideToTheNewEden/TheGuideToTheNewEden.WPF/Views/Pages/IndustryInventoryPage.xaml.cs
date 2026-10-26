@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
@@ -46,7 +47,9 @@ public partial class IndustryInventoryPage : Page
             _viewModel.DeleteWarehouse();
             return;
         }
-        if (MessageBox.Show($"确定删除仓库「{_viewModel.SelectedWarehouse.Name}」？", "删除仓库",
+        if (MessageBox.Show(
+                LanguageService.Format("IndustryInventory_DeleteConfirm", _viewModel.SelectedWarehouse.Name),
+                LanguageService.Get("IndustryInventory_DeleteTitle"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
         {
             _viewModel.DeleteWarehouse();
@@ -57,7 +60,9 @@ public partial class IndustryInventoryPage : Page
 
     private void OnReplaceImportClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show("覆盖导入会清空当前仓库已有物品，确定继续？", "覆盖导入",
+        if (MessageBox.Show(
+                LanguageService.Get("IndustryInventory_ReplaceConfirm"),
+                LanguageService.Get("IndustryInventory_ReplaceImport"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
         {
             return;
@@ -69,7 +74,7 @@ public partial class IndustryInventoryPage : Page
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "CSV (*.csv)|*.csv|所有文件 (*.*)|*.*",
+            Filter = LanguageService.Get("IndustryInventory_CsvFilter"),
         };
         if (dialog.ShowDialog() == true)
         {

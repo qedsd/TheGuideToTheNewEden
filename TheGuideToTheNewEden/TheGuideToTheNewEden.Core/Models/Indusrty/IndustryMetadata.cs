@@ -36,8 +36,9 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double MaterialMultiplier { get; set; } = 1.0;
         public double TimeMultiplier { get; set; } = 1.0;
         public double CostMultiplier { get; set; } = 1.0;
+        /// <summary>语言无关的加成摘要（M=材料 / T=时间 / C=费用）；界面文案由 UI 层生成。</summary>
         public string Summary =>
-            $"材料 {Format(MaterialMultiplier)} · 时间 {Format(TimeMultiplier)} · 费用 {Format(CostMultiplier)}";
+            $"M {Format(MaterialMultiplier)} · T {Format(TimeMultiplier)} · C {Format(CostMultiplier)}";
 
         private static string Format(double multiplier)
         {

@@ -30,7 +30,7 @@ public sealed class PlanetaryPlanetOption
     public bool HasRadius => RadiusKm > 0;
 
     public string DisplayText => IsNone
-        ? "（不指定）"
+        ? LanguageService.Get("IndustryPlanetary_PlanetNotSpecified")
         : HasRadius
             ? $"{Name} · {PlanetType} · {RadiusKm:N0} km"
             : $"{Name} · {PlanetType}";
@@ -40,7 +40,11 @@ public sealed class PlanetaryPlanetOption
         ? $"{SolarSystemName} · {PlanetType} · {RadiusKm:N0} km"
         : $"{SolarSystemName} · {PlanetType}";
 
-    public static PlanetaryPlanetOption None() => new() { PlanetId = 0, Name = "（不指定）" };
+    public static PlanetaryPlanetOption None() => new()
+    {
+        PlanetId = 0,
+        Name = LanguageService.Get("IndustryPlanetary_PlanetNotSpecified"),
+    };
 }
 
 /// <summary>

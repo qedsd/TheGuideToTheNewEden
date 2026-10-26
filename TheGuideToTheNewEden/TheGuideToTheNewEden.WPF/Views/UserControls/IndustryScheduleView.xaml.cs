@@ -86,7 +86,7 @@ public partial class IndustryScheduleView : UserControl
                 job.IsInProgress ? "1" : "0"));
         }
         File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
-        PageNotifyService.Success("排程已导出");
+        PageNotifyService.Success(LanguageService.Get("IndustrySchedule_Exported"));
     }
 
     private void OnScheduleTabChanged(object sender, SelectionChangedEventArgs e)
@@ -222,7 +222,7 @@ public partial class IndustryScheduleView : UserControl
         }
         if (!viewModel.CanReassignSchedule)
         {
-            PageNotifyService.Info("载入的旧结果不能改派；请先在计划设置中重新计算。");
+            PageNotifyService.Info(LanguageService.Get("IndustrySchedule_StaleResult"));
             return;
         }
 
@@ -238,7 +238,7 @@ public partial class IndustryScheduleView : UserControl
         }
         if (!viewModel.CanReassignSchedule)
         {
-            PageNotifyService.Info("载入的旧结果不能改派；请先在计划设置中重新计算。");
+            PageNotifyService.Info(LanguageService.Get("IndustrySchedule_StaleResult"));
             return;
         }
 

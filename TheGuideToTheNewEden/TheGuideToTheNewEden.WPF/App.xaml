@@ -26,6 +26,9 @@
             </ResourceDictionary.MergedDictionaries>
 
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibility" />
+            <converters:IndustryStageNameConverter x:Key="IndustryStageName" />
+            <converters:IndustryRoleNameConverter x:Key="IndustryRoleName" />
+            <converters:IndustryCharacterNameConverter x:Key="IndustryCharacterName" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

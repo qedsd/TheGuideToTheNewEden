@@ -8,7 +8,7 @@ public sealed class IndustryWarehouse
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
-    public string Name { get; set; } = "新仓库";
+    public string Name { get; set; } = LanguageService.Get("IndustryInventory_NewWarehouse");
 
     public DateTime Updated { get; set; } = DateTime.Now;
 
@@ -45,7 +45,9 @@ public static class IndustryInventoryService
         EnsureLoaded();
         var warehouse = new IndustryWarehouse
         {
-            Name = string.IsNullOrWhiteSpace(name) ? "新仓库" : name.Trim(),
+            Name = string.IsNullOrWhiteSpace(name)
+                ? LanguageService.Get("IndustryInventory_NewWarehouse")
+                : name.Trim(),
         };
         _warehouses!.Add(warehouse);
         Save();

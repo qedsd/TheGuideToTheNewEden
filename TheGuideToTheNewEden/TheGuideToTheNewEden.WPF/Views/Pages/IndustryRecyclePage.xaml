@@ -36,7 +36,7 @@
                         Margin="8,0,0,0"
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="回收 / 压缩" />
+                        Text="{DynamicResource IndustryRecycle_Title}" />
                 </StackPanel>
             </controls:CardControl.Header>
             <Grid>
@@ -47,12 +47,12 @@
                 </Grid.ColumnDefinitions>
                 <ui:TextBox
                     Grid.Column="0"
-                    PlaceholderText="输入物品名，例如 Veldspar / 凡晶石"
+                    PlaceholderText="{DynamicResource IndustryRecycle_SearchPlaceholder}"
                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
                 <ui:Button
                     Grid.Column="2"
                     Click="OnSearchClick"
-                    Content="搜索"
+                    Content="{DynamicResource IndustryPage_Search}"
                     Icon="{ui:SymbolIcon Search24}" />
             </Grid>
         </controls:CardControl>
@@ -68,7 +68,7 @@
                 <controls:CardControl.Header>
                     <TextBlock
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="搜索结果" />
+                        Text="{DynamicResource IndustryRecycle_SearchResults}" />
                 </controls:CardControl.Header>
                 <ListBox
                     MinHeight="260"
@@ -99,7 +99,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Style="{StaticResource RecycleLabel}" Text="数量" />
+                            <TextBlock Style="{StaticResource RecycleLabel}" Text="{DynamicResource General_Quantity}" />
                             <ui:NumberBox
                                 Maximum="1000000000"
                                 Minimum="1"
@@ -110,12 +110,12 @@
                             Grid.Column="2"
                             Margin="0,21,0,0"
                             Click="OnAddToBatchClick"
-                            Content="添加到批次"
+                            Content="{DynamicResource IndustryRecycle_AddToBatch}"
                             Icon="{ui:SymbolIcon Add24}" />
                     </Grid>
 
                     <StackPanel Grid.Row="1" Margin="0,8,0,0">
-                        <TextBlock Style="{StaticResource RecycleLabel}" Text="批量导入（游戏仓库/货柜复制文本）" />
+                        <TextBlock Style="{StaticResource RecycleLabel}" Text="{DynamicResource IndustryRecycle_BatchImport}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -126,7 +126,7 @@
                                 Grid.Column="0"
                                 Height="64"
                                 AcceptsReturn="True"
-                                PlaceholderText="每行：物品名 [Tab/空格] 数量"
+                                PlaceholderText="{DynamicResource IndustryRecycle_BatchPlaceholder}"
                                 Text="{Binding PasteText, UpdateSourceTrigger=PropertyChanged}"
                                 TextWrapping="Wrap"
                                 VerticalContentAlignment="Top" />
@@ -135,7 +135,7 @@
                                 Margin="0,0,0,0"
                                 VerticalAlignment="Bottom"
                                 Click="OnImportClick"
-                                Content="导入"
+                                Content="{DynamicResource IndustryRecycle_Import}"
                                 Icon="{ui:SymbolIcon ArrowDownload24}" />
                         </Grid>
                     </StackPanel>
@@ -153,7 +153,7 @@
                         <ui:Button
                             Grid.Column="1"
                             Click="OnClearBatchClick"
-                            Content="清空批次"
+                            Content="{DynamicResource IndustryRecycle_ClearBatch}"
                             Icon="{ui:SymbolIcon Delete24}" />
                     </Grid>
 
@@ -164,9 +164,9 @@
                         IsReadOnly="False"
                         ItemsSource="{Binding Batch}">
                         <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Binding="{Binding IsIncluded, UpdateSourceTrigger=PropertyChanged}" Header="启用" Width="60" />
-                            <DataGridTextColumn Binding="{Binding Name}" Header="物品" IsReadOnly="True" Width="*" />
-                            <DataGridTextColumn Binding="{Binding Quantity, StringFormat=N0}" Header="数量" Width="140" />
+                            <DataGridCheckBoxColumn Binding="{Binding IsIncluded, UpdateSourceTrigger=PropertyChanged}" Header="{DynamicResource IndustryRecycle_Include}" Width="60" />
+                            <DataGridTextColumn Binding="{Binding Name}" Header="{DynamicResource IndustryPage_Col_Item}" IsReadOnly="True" Width="*" />
+                            <DataGridTextColumn Binding="{Binding Quantity, StringFormat=N0}" Header="{DynamicResource General_Quantity}" Width="140" />
                         </DataGrid.Columns>
                     </DataGrid>
 
@@ -181,15 +181,15 @@
                         <ui:Button
                             Grid.Column="0"
                             Click="OnReprocessClick"
-                            Content="计算回收"
+                            Content="{DynamicResource IndustryRecycle_Reprocess}"
                             Icon="{ui:SymbolIcon ArrowSync24}" />
                         <ui:Button
                             Grid.Column="2"
                             Click="OnCompressClick"
-                            Content="计算压缩"
+                            Content="{DynamicResource IndustryRecycle_Compress}"
                             Icon="{ui:SymbolIcon ArrowMinimize24}" />
                         <StackPanel Grid.Column="4">
-                            <TextBlock Style="{StaticResource RecycleLabel}" Text="回收收率 %" />
+                            <TextBlock Style="{StaticResource RecycleLabel}" Text="{DynamicResource IndustryRecycle_Yield}" />
                             <ui:NumberBox
                                 Maximum="100"
                                 Minimum="0"
@@ -211,10 +211,10 @@
                             IsReadOnly="True"
                             ItemsSource="{Binding Outputs}">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding Name}" Header="物品" Width="*" />
-                                <DataGridTextColumn Binding="{Binding Quantity, StringFormat=N0}" Header="数量" Width="140" />
-                                <DataGridTextColumn Binding="{Binding UnitVolume, StringFormat=0.####}" Header="单位体积 m³" Width="130" />
-                                <DataGridTextColumn Binding="{Binding TotalVolume, StringFormat=N2}" Header="总体积 m³" Width="130" />
+                                <DataGridTextColumn Binding="{Binding Name}" Header="{DynamicResource IndustryPage_Col_Item}" Width="*" />
+                                <DataGridTextColumn Binding="{Binding Quantity, StringFormat=N0}" Header="{DynamicResource General_Quantity}" Width="140" />
+                                <DataGridTextColumn Binding="{Binding UnitVolume, StringFormat=0.####}" Header="{DynamicResource IndustryRecycle_UnitVolume}" Width="130" />
+                                <DataGridTextColumn Binding="{Binding TotalVolume, StringFormat=N2}" Header="{DynamicResource IndustryRecycle_TotalVolume}" Width="130" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>

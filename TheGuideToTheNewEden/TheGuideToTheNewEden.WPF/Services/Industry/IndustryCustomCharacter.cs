@@ -7,7 +7,7 @@ namespace TheGuideToTheNewEden.WPF.Services.Industry;
 public sealed class IndustryCustomCharacter
 {
     public long Id { get; set; }
-    public string Name { get; set; } = "自定义角色";
+    public string Name { get; set; } = LanguageService.Get("IndustryCustomCharacter_DefaultName");
 
     public int MassProduction { get; set; }
     public int AdvancedMassProduction { get; set; }
@@ -26,7 +26,7 @@ public sealed class IndustryCustomCharacter
     public static IndustryCustomCharacter CreateDefault(long id) => new()
     {
         Id = id,
-        Name = "自定义角色",
+        Name = LanguageService.Get("IndustryCustomCharacter_DefaultName"),
         MassProduction = 5,
         AdvancedMassProduction = 5,
         LaboratoryOperation = 5,

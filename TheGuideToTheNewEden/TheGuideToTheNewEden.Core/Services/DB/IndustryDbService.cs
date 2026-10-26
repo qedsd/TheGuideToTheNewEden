@@ -623,7 +623,7 @@ UNION ALL
 SELECT pm.type_id AS ProductTypeId,
        pt.Name AS ProductName,
        0 AS BlueprintTypeId,
-       '行星开发' AS BlueprintName,
+       '' AS BlueprintName,
        100 AS ActivityId,
        0 AS MaxProductionLimit,
        g.Id AS GroupId,

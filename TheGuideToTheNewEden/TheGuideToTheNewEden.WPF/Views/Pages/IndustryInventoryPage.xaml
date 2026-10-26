@@ -63,7 +63,7 @@
         </Grid.ColumnDefinitions>
 
         <!--  左：仓库列表与管理  -->
-        <controls:CardControl Grid.Column="0" Header="仓库">
+        <controls:CardControl Grid.Column="0" Header="{DynamicResource IndustryInventory_Warehouses}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -94,15 +94,15 @@
                 </ListBox>
 
                 <StackPanel Grid.Row="1" Margin="0,8,0,0">
-                    <TextBlock Style="{StaticResource InvLabel}" Text="仓库名称" />
+                    <TextBlock Style="{StaticResource InvLabel}" Text="{DynamicResource IndustryInventory_WarehouseName}" />
                     <ui:TextBox
-                        PlaceholderText="新仓库名称"
+                        PlaceholderText="{DynamicResource IndustryInventory_NewWarehouseName}"
                         Text="{Binding NewWarehouseName, UpdateSourceTrigger=PropertyChanged}" />
                     <ui:Button
                         Margin="0,6,0,0"
                         HorizontalAlignment="Stretch"
                         Click="OnCreateWarehouseClick"
-                        Content="新建仓库"
+                        Content="{DynamicResource IndustryInventory_Create}"
                         Icon="{ui:SymbolIcon Add24}" />
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -114,14 +114,14 @@
                             Grid.Column="0"
                             HorizontalAlignment="Stretch"
                             Click="OnRenameWarehouseClick"
-                            Content="重命名"
+                            Content="{DynamicResource IndustryInventory_Rename}"
                             Icon="{ui:SymbolIcon Edit24}" />
                         <ui:Button
                             Grid.Column="2"
                             HorizontalAlignment="Stretch"
                             Appearance="Danger"
                             Click="OnDeleteWarehouseClick"
-                            Content="删除"
+                            Content="{DynamicResource General_Remove}"
                             Icon="{ui:SymbolIcon Delete24}" />
                     </Grid>
                 </StackPanel>
@@ -136,7 +136,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <controls:CardControl Grid.Row="0" Header="添加 / 导入">
+            <controls:CardControl Grid.Row="0" Header="{DynamicResource IndustryInventory_AddImport}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -145,7 +145,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Style="{StaticResource InvLabel}" Text="搜索物品（中英文名称均可）" />
+                        <TextBlock Style="{StaticResource InvLabel}" Text="{DynamicResource IndustryInventory_SearchHint}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -155,12 +155,12 @@
                             <ui:TextBox
                                 Grid.Column="0"
                                 KeyDown="OnSearchKeyDown"
-                                PlaceholderText="输入物品名称"
+                                PlaceholderText="{DynamicResource IndustryInventory_ItemNamePlaceholder}"
                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
                             <ui:Button
                                 Grid.Column="2"
                                 Click="OnSearchClick"
-                                Content="搜索" />
+                                Content="{DynamicResource IndustryPage_Search}" />
                         </Grid>
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions>
@@ -206,12 +206,12 @@
                                 Grid.Column="4"
                                 Appearance="Primary"
                                 Click="OnAddItemClick"
-                                Content="添加到仓库" />
+                                Content="{DynamicResource IndustryInventory_AddToWarehouse}" />
                         </Grid>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
-                        <TextBlock Style="{StaticResource InvLabel}" Text="从角色导入资产" />
+                        <TextBlock Style="{StaticResource InvLabel}" Text="{DynamicResource IndustryInventory_ImportFromCharacter}" />
                         <ScrollViewer MaxHeight="130" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding Characters}">
                                 <ItemsControl.ItemTemplate>
@@ -234,12 +234,12 @@
                                 Grid.Column="0"
                                 HorizontalAlignment="Stretch"
                                 Click="OnMergeImportClick"
-                                Content="合并导入" />
+                                Content="{DynamicResource IndustryInventory_MergeImport}" />
                             <ui:Button
                                 Grid.Column="2"
                                 HorizontalAlignment="Stretch"
                                 Click="OnReplaceImportClick"
-                                Content="覆盖导入" />
+                                Content="{DynamicResource IndustryInventory_ReplaceImport}" />
                         </Grid>
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions>
@@ -251,12 +251,12 @@
                                 Grid.Column="0"
                                 HorizontalAlignment="Stretch"
                                 Click="OnImportCsvClick"
-                                Content="导入 CSV" />
+                                Content="{DynamicResource IndustryInventory_ImportCsv}" />
                             <ui:Button
                                 Grid.Column="2"
                                 HorizontalAlignment="Stretch"
                                 Click="OnExportCsvClick"
-                                Content="导出 CSV" />
+                                Content="{DynamicResource IndustryInventory_ExportCsv}" />
                         </Grid>
                         <TextBlock
                             Margin="0,6,0,0"
@@ -268,7 +268,7 @@
                 </Grid>
             </controls:CardControl>
 
-            <controls:CardControl Grid.Row="2" Header="库存明细">
+            <controls:CardControl Grid.Row="2" Header="{DynamicResource IndustryInventory_Items}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -285,17 +285,17 @@
                                 Width="*"
                                 Binding="{Binding Name}"
                                 ElementStyle="{StaticResource InvCell}"
-                                Header="物品" />
+                                Header="{DynamicResource IndustryPage_Col_Item}" />
                             <DataGridTextColumn
                                 Width="120"
                                 Binding="{Binding QuantityText}"
                                 ElementStyle="{StaticResource InvNumberCell}"
-                                Header="数量" />
+                                Header="{DynamicResource General_Quantity}" />
                             <DataGridTextColumn
                                 Width="140"
                                 Binding="{Binding VolumeText}"
                                 ElementStyle="{StaticResource InvNumberCell}"
-                                Header="体积" />
+                                Header="{DynamicResource IndustryInventory_ColVolume}" />
                         </ui:DataGrid.Columns>
                     </ui:DataGrid>
 
@@ -318,11 +318,11 @@
                         <ui:Button
                             Margin="0,0,8,0"
                             Click="OnSetQuantityClick"
-                            Content="设置数量" />
+                            Content="{DynamicResource IndustryInventory_SetQuantity}" />
                         <ui:Button
                             Appearance="Danger"
                             Click="OnRemoveItemClick"
-                            Content="移除选中物品"
+                            Content="{DynamicResource IndustryInventory_RemoveSelected}"
                             Icon="{ui:SymbolIcon Delete24}" />
                     </StackPanel>
                 </Grid>

@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.Core.Services.Industry;
 using TheGuideToTheNewEden.WPF.Services.Business;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Industry;
 
@@ -68,7 +69,8 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
         }
     }
 
-    public string SelectedTypeName => SelectedType?.TypeName ?? "未选择物品";
+    public string SelectedTypeName => SelectedType?.TypeName
+        ?? LanguageService.Get("IndustryRecycle_NoItemSelected");
 
     private double _quantity = 100;
     public double Quantity
@@ -91,7 +93,7 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
         set => Set(ref _pasteText, value);
     }
 
-    private string _statusText = "搜索物品逐项添加，或粘贴游戏仓库文本批量导入。";
+    private string _statusText = LanguageService.Get("IndustryRecycle_StatusHint");
     public string StatusText
     {
         get => _statusText;
@@ -100,8 +102,9 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
 
     public bool HasBatch => Batch.Count > 0;
     public string BatchSummary => Batch.Count == 0
-        ? "尚未添加物品"
-        : $"{Batch.Count} 种物品 · 共 {Batch.Sum(p => (long)Math.Round(p.Quantity)):N0} 个";
+        ? LanguageService.Get("IndustryRecycle_EmptyBatch")
+        : LanguageService.Format("IndustryRecycle_BatchSummary", Batch.Count,
+            Batch.Sum(p => (long)Math.Round(p.Quantity)));
 
     public void Search()
     {
@@ -109,7 +112,7 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
         var keyword = SearchText?.Trim();
         if (string.IsNullOrEmpty(keyword))
         {
-            StatusText = "请输入物品名。";
+            StatusText = LanguageService.Get("IndustryRecycle_EnterName");
             return;
         }
 
@@ -124,11 +127,13 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
                 SearchResults.Add(item);
             }
             SelectedType = SearchResults.FirstOrDefault();
-            StatusText = results.Count == 0 ? "没有找到匹配物品。" : $"找到 {results.Count} 个物品。";
+            StatusText = results.Count == 0
+                ? LanguageService.Get("IndustryRecycle_NoMatch")
+                : LanguageService.Format("IndustryRecycle_Found", results.Count);
         }
         catch (Exception ex)
         {
-            StatusText = $"搜索失败：{ex.Message}";
+            StatusText = LanguageService.Format("IndustryRecycle_SearchFailed", ex.Message);
         }
     }
 
@@ -136,7 +141,7 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
     {
         if (SelectedType == null)
         {
-            StatusText = "请先选择物品。";
+            StatusText = LanguageService.Get("IndustryRecycle_SelectItem");
             return;
         }
         AddBatchItem(SelectedType.TypeID, SelectedType.TypeName, (long)Math.Max(0, Math.Round(Quantity)));
@@ -147,14 +152,14 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
     {
         if (string.IsNullOrWhiteSpace(PasteText))
         {
-            StatusText = "请粘贴游戏仓库文本。";
+            StatusText = LanguageService.Get("IndustryRecycle_PasteEmpty");
             return;
         }
 
         var lines = AppraisalTextParser.Parse(PasteText);
         if (lines.Count == 0)
         {
-            StatusText = "没有解析到物品行。";
+            StatusText = LanguageService.Get("IndustryRecycle_NoLines");
             return;
         }
 
@@ -174,7 +179,10 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
             added++;
         }
         NotifyBatch();
-        StatusText = $"导入 {added} 行" + (unknown > 0 ? $"，{unknown} 行未识别。" : "。");
+        StatusText = LanguageService.Format("IndustryRecycle_Imported", added)
+            + (unknown > 0
+                ? LanguageService.Format("IndustryRecycle_ImportedUnknown", 0, unknown)
+                : LanguageService.Get("IndustryRecycle_ImportedDone"));
         if (added > 0) PasteText = string.Empty;
     }
 
@@ -183,7 +191,7 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
         Batch.Clear();
         Outputs.Clear();
         NotifyBatch();
-        StatusText = "已清空批次。";
+        StatusText = LanguageService.Get("IndustryRecycle_Cleared");
     }
 
     public void Reprocess()
@@ -192,7 +200,7 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
         var items = Batch.Where(p => p.IsIncluded && p.Quantity > 0).ToList();
         if (items.Count == 0)
         {
-            StatusText = "请先添加并勾选物品。";
+            StatusText = LanguageService.Get("IndustryRecycle_SelectItems");
             return;
         }
 
@@ -221,12 +229,13 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
                 Outputs.Add(output);
             }
             StatusText = merged.Count == 0
-                ? "没有可回收的物品，或数量不足一个处理批次。"
-                : $"回收 {items.Count} 种物品，产出 {merged.Count} 种材料（收率 {YieldPercent:0.#}%）。";
+                ? LanguageService.Get("IndustryRecycle_NoReprocess")
+                : LanguageService.Format("IndustryRecycle_ReprocessDone",
+                    items.Count, merged.Count, YieldPercent);
         }
         catch (Exception ex)
         {
-            StatusText = $"回收计算失败：{ex.Message}";
+            StatusText = LanguageService.Format("IndustryRecycle_ReprocessFailed", ex.Message);
         }
     }
 
@@ -236,7 +245,7 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
         var items = Batch.Where(p => p.IsIncluded && p.Quantity > 0).ToList();
         if (items.Count == 0)
         {
-            StatusText = "请先添加并勾选物品。";
+            StatusText = LanguageService.Get("IndustryRecycle_SelectItems");
             return;
         }
 
@@ -254,12 +263,15 @@ public sealed class IndustryRecyclePageViewModel : INotifyPropertyChanged
                 Outputs.Add(result);
             }
             StatusText = Outputs.Count == 0
-                ? "勾选物品都没有压缩映射。"
-                : $"压缩 {Outputs.Count} 种物品" + (skipped > 0 ? $"，{skipped} 种无映射已跳过。" : "。");
+                ? LanguageService.Get("IndustryRecycle_NoCompressMapping")
+                : LanguageService.Format("IndustryRecycle_CompressDone", Outputs.Count)
+                  + (skipped > 0
+                      ? LanguageService.Format("IndustryRecycle_CompressSkipped", 0, skipped)
+                      : LanguageService.Get("IndustryRecycle_ImportedDone"));
         }
         catch (Exception ex)
         {
-            StatusText = $"压缩计算失败：{ex.Message}";
+            StatusText = LanguageService.Format("IndustryRecycle_CompressFailed", ex.Message);
         }
     }
 

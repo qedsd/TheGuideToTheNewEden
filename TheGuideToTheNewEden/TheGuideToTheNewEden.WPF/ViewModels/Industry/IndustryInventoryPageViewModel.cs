@@ -166,7 +166,7 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         set => Set(ref _statusText, value);
     }
 
-    private string _totalText = "0 种 · 0 件";
+    private string _totalText = LanguageService.Get("IndustryInventory_Empty");
     public string TotalText
     {
         get => _totalText;
@@ -177,6 +177,8 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
 
     // ───────────── 生命周期 ─────────────
 
+    private bool _languageHooked;
+
     public void Load()
     {
         Characters.Clear();
@@ -185,6 +187,20 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
             Characters.Add(new IndustryCharacterImportItem(character));
         }
         ReloadWarehouses(null);
+
+        if (!_languageHooked)
+        {
+            _languageHooked = true;
+            LanguageService.LanguageChanged += (_, _) =>
+            {
+                // 仓库摘要 / 合计 / 状态文字都是生成时拼好的，切语言后重建
+                ReloadWarehouses(SelectedWarehouse?.Id);
+                if (SelectedWarehouse is not null)
+                {
+                    RefreshItems();
+                }
+            };
+        }
     }
 
     private void ReloadWarehouses(string? selectId)
@@ -209,7 +225,7 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
     {
         long quantity = warehouse.Items?.Values.Sum() ?? 0;
         int kinds = warehouse.Items?.Count(p => p.Value > 0) ?? 0;
-        return $"{kinds} 种 · {quantity:N0} 件";
+        return LanguageService.Format("IndustryInventory_Summary", kinds, quantity);
     }
 
     private IndustryWarehouse? CurrentWarehouse()
@@ -221,7 +237,7 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null)
         {
-            TotalText = "0 种 · 0 件";
+            TotalText = LanguageService.Format("IndustryInventory_Summary", 0, 0);
             OnPropertyChanged(nameof(HasWarehouse));
             return;
         }
@@ -257,10 +273,10 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         }
 
         long totalQuantity = Items.Sum(p => p.Quantity);
-        TotalText = $"{Items.Count:N0} 种 · {totalQuantity:N0} 件";
+        TotalText = LanguageService.Format("IndustryInventory_Summary", Items.Count, totalQuantity);
         if (SelectedWarehouse is not null)
         {
-            SelectedWarehouse.Summary = $"{Items.Count:N0} 种 · {totalQuantity:N0} 件";
+            SelectedWarehouse.Summary = LanguageService.Format("IndustryInventory_Summary", Items.Count, totalQuantity);
         }
         OnPropertyChanged(nameof(HasWarehouse));
     }
@@ -271,7 +287,7 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
     {
         var warehouse = IndustryInventoryService.Create(NewWarehouseName);
         ReloadWarehouses(warehouse.Id);
-        PageNotifyService.Success($"已创建仓库「{warehouse.Name}」");
+        PageNotifyService.Success(LanguageService.Format("IndustryInventory_Created", warehouse.Name));
     }
 
     public void RenameWarehouse()
@@ -279,12 +295,12 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null)
         {
-            PageNotifyService.Warning("请先选择仓库");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectWarehouse"));
             return;
         }
         if (string.IsNullOrWhiteSpace(NewWarehouseName))
         {
-            PageNotifyService.Warning("请输入仓库名称");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_EnterName"));
             return;
         }
 
@@ -297,13 +313,13 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null)
         {
-            PageNotifyService.Warning("请先选择仓库");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectWarehouse"));
             return;
         }
 
         IndustryInventoryService.Delete(warehouse);
         ReloadWarehouses(null);
-        PageNotifyService.Info($"已删除仓库「{warehouse.Name}」");
+        PageNotifyService.Info(LanguageService.Format("IndustryInventory_Deleted", warehouse.Name));
     }
 
     // ───────────── 物品动作 ─────────────
@@ -330,13 +346,13 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
 
             if (SearchResults.Count == 0)
             {
-                PageNotifyService.Info("没有找到匹配的物品");
+                PageNotifyService.Info(LanguageService.Get("IndustryInventory_NoMatch"));
             }
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error("物品搜索失败");
+            PageNotifyService.Error(LanguageService.Get("IndustryInventory_SearchFailed"));
         }
     }
 
@@ -345,12 +361,12 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null)
         {
-            PageNotifyService.Warning("请先选择或新建仓库");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectOrCreateWarehouse"));
             return;
         }
         if (SelectedSearchResult is null)
         {
-            PageNotifyService.Warning("请先搜索并选择物品");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectItem"));
             return;
         }
 
@@ -382,7 +398,7 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null || SelectedItem is null)
         {
-            PageNotifyService.Warning("请先选择要修改的库存行");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectRow"));
             return;
         }
 
@@ -408,19 +424,19 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null)
         {
-            PageNotifyService.Warning("请先选择或新建仓库");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectOrCreateWarehouse"));
             return;
         }
 
         var selected = Characters.Where(p => p.IsSelected).Select(p => p.Character).ToList();
         if (selected.Count == 0)
         {
-            PageNotifyService.Warning("请先勾选要导入的角色");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectCharacters"));
             return;
         }
 
         IsBusy = true;
-        StatusText = "正在读取角色资产…";
+        StatusText = LanguageService.Get("IndustryInventory_ReadingAssets");
         try
         {
             var merged = new Dictionary<int, long>();
@@ -448,12 +464,14 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
             warehouse.Updated = DateTime.Now;
             IndustryInventoryService.Save();
             RefreshItems();
-            PageNotifyService.Success($"已导入 {merged.Count:N0} 种物品（{(replace ? "覆盖" : "合并")}）");
+            PageNotifyService.Success(LanguageService.Format("IndustryInventory_Imported",
+                merged.Count,
+                LanguageService.Get(replace ? "IndustryInventory_ReplaceMode" : "IndustryInventory_MergeMode")));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error("角色资产导入失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryInventory_AssetImportFailed", ex.Message));
         }
         finally
         {
@@ -470,7 +488,7 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
         var warehouse = CurrentWarehouse();
         if (warehouse is null)
         {
-            PageNotifyService.Warning("请先选择或新建仓库");
+            PageNotifyService.Warning(LanguageService.Get("IndustryInventory_SelectOrCreateWarehouse"));
             return;
         }
 
@@ -545,12 +563,12 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
             warehouse.Updated = DateTime.Now;
             IndustryInventoryService.Save();
             RefreshItems();
-            PageNotifyService.Success($"CSV 导入完成：导入 {imported:N0} 条，跳过 {skipped:N0} 条");
+            PageNotifyService.Success(LanguageService.Format("IndustryInventory_CsvImported", imported, skipped));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error("CSV 导入失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryInventory_CsvImportFailed", ex.Message));
         }
     }
 
@@ -567,12 +585,12 @@ public sealed class IndustryInventoryPageViewModel : INotifyPropertyChanged
                     .Append(Csv(item.Name)).AppendLine();
             }
             File.WriteAllText(path, builder.ToString(), new UTF8Encoding(true));
-            PageNotifyService.Success("仓库已导出为 CSV");
+            PageNotifyService.Success(LanguageService.Get("IndustryInventory_Exported"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error("CSV 导出失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryInventory_CsvExportFailed", ex.Message));
         }
     }
 

@@ -116,7 +116,8 @@ public sealed class IndustryRigItem : INotifyPropertyChanged
     public string TargetFilterName { get; set; } = string.Empty;
     public double MePercent { get; set; }
     public double TePercent { get; set; }
-    public string DisplayName => $"{(string.IsNullOrEmpty(TargetFilterName) ? CategoryName : TargetFilterName)}  材料效率 {MePercent:0.##}% / 时间效率 {TePercent:0.##}%";
+    public string DisplayName => $"{(string.IsNullOrEmpty(TargetFilterName) ? CategoryName : TargetFilterName)}  "
+        + LanguageService.Format("IndustryPage_ProfileMeTe", MePercent, TePercent);
     public event PropertyChangedEventHandler? PropertyChanged;
 }
 
@@ -132,6 +133,8 @@ public sealed class IndustryDecryptorOption
 {
     public int? TypeId { get; set; }
     public string Name { get; set; } = string.Empty;
+    /// <summary>未加语言后缀的解密器名（切语言时据此重算 <see cref="Name"/>）。</summary>
+    public string BaseName { get; set; } = string.Empty;
     public IndustryDecryptorInfo? Info { get; set; }
     public override string ToString() => Name;
 }
@@ -157,8 +160,8 @@ public sealed class IndustryBlueprintJobItem
     public string TimeText => TimeSeconds <= 0
         ? "—"
         : TimeSeconds >= 86400
-            ? $"{TimeSeconds / 86400:0.##} 天"
-            : $"{TimeSeconds / 3600:0.##} 小时";
+            ? LanguageService.Format("IndustryPage_DurationDays", TimeSeconds / 86400)
+            : LanguageService.Format("IndustryPage_DurationHours", TimeSeconds / 3600);
 }
 
 public sealed class IndustryBuildingProfileItem : INotifyPropertyChanged
@@ -175,8 +178,8 @@ public sealed class IndustryBuildingProfileItem : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
         }
     }
-    public string Summary =>
-        $"材料 -{Model.MaterialBonusPercent:0.#}% · 时间 -{Model.TimeBonusPercent:0.#}% · 费用 -{Model.CostBonusPercent:0.#}% · 税 {Model.FacilityTaxPercent:0.#}%";
+    public string Summary => LanguageService.Format("IndustryPage_BonusSummary",
+        Model.MaterialBonusPercent, Model.TimeBonusPercent, Model.CostBonusPercent, Model.FacilityTaxPercent);
     public override string ToString() => Name;
 
     private bool _isEditing;
@@ -311,6 +314,42 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         ReloadCustomCharacters();
         IndustryInventoryService.Changed += (_, _) => RefreshWarehouseSelections(preserveCurrent: true);
         ReloadSavedPlans();
+        Targets.CollectionChanged += (_, _) => Notify(nameof(TargetsCountText));
+        Roots.CollectionChanged += (_, _) => Notify(nameof(RootsCountText));
+        SavedPlans.CollectionChanged += (_, _) => Notify(nameof(SavedPlansCountText));
+        LanguageService.LanguageChanged += OnLanguageChanged;
+    }
+
+    /// <summary>
+    /// 语言切换：重建"生成时就把文案拼进对象"的集合（解密器选项 / 仓库摘要 / 已保存计划摘要 / 排产 VM），
+    /// 其余计算属性由 <see cref="LanguageService"/> 的绑定重算负责。
+    /// </summary>
+    private void OnLanguageChanged(object? sender, string language)
+    {
+        foreach (var option in Decryptors)
+        {
+            option.Name = option.TypeId is null
+                ? LanguageService.Get("IndustryPage_DecryptorNone")
+                : LanguageService.Format("IndustryPage_DecryptorOption", option.BaseName,
+                    option.Info?.ProbabilityMultiplier ?? 0, option.Info?.MeModifier ?? 0,
+                    option.Info?.TeModifier ?? 0, option.Info?.RunModifier ?? 0);
+        }
+        if (TargetDecryptors.Count > 0)
+        {
+            TargetDecryptors[0].Name = LanguageService.Get("IndustryPage_DecryptorFollowGlobal");
+        }
+
+        RefreshWarehouseSelections(preserveCurrent: true);
+        ReloadSavedPlans();
+        if (_schedule is not null)
+        {
+            Schedule = new IndustryScheduleViewModel(_schedule.Schedule);
+        }
+
+        Notify(nameof(TargetsCountText));
+        Notify(nameof(RootsCountText));
+        Notify(nameof(SavedPlansCountText));
+        Notify(nameof(SelectedBuildingProfileName));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -318,6 +357,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     // ───────────── 目标 ─────────────
 
     public ObservableCollection<IndustryTargetItem> Targets { get; } = new();
+
+    /// <summary>「目标物品（N）」——用属性而不是 XAML StringFormat，才能跟着语言切换。</summary>
+    public string TargetsCountText => LanguageService.Format("IndustryPage_TargetsCount", Targets.Count);
 
     public string TargetSummary
     {
@@ -336,7 +378,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 }));
             }
             return Targets.Count == 0
-                ? Resolve("IndustryPage_NoTargets", "尚未添加目标")
+                ? LanguageService.Get("IndustryPage_NoTargets")
                 : string.Join(" · ", Targets.Select(p => $"{p.Name} ×{p.QuantityLong:N0}"));
         }
     }
@@ -450,12 +492,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     }
 
     public string StructureBonusText => SelectedStructure == null
-        ? "未选择官方结构：仅使用手填设施税/rig。"
+        ? LanguageService.Get("IndustryPage_StructureNotSelectedTip")
         : SelectedStructure.Summary;
 
-    public string CurrentStructureName => SelectedStructure?.Name ?? "未选择结构";
+    public string CurrentStructureName => SelectedStructure?.Name ?? LanguageService.Get("IndustryPage_NoStructure");
     public string CurrentStructureBonusText => SelectedStructure == null
-        ? "无官方结构加成"
+        ? LanguageService.Get("IndustryPage_NoStructureBonus")
         : SelectedStructure.Summary;
     public string CurrentFacilityTaxText => $"{FacilityTaxPercent:0.##}%";
     public string CurrentSpaceText => $"×{SpaceModifier:0.##}";
@@ -467,19 +509,21 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             double space = Math.Max(0, SpaceModifier);
             double me = Math.Clamp(RigMeBonusPercent / 100.0, 0, 0.99) * space;
             double te = Math.Clamp(RigTeBonusPercent / 100.0, 0, 0.99) * space;
-            string extra = RigBonuses.Count > 0 ? $" · {RigBonuses.Count} 条分类/过滤覆盖" : string.Empty;
-            return $"默认 材料 -{me:P1} / 时间 -{te:P1}{extra}";
+            string extra = RigBonuses.Count > 0
+                ? LanguageService.Format("IndustryPage_RigOverrideSuffix", RigBonuses.Count)
+                : string.Empty;
+            return LanguageService.Format("IndustryPage_DefaultBonus", me, te, extra);
         }
     }
 
     public string EffectiveMaterialText =>
-        $"材料总加成 -{MaterialBonusPercent:0.##}%；与蓝图 ME 相乘，分类/过滤器不再单独区分。";
+        LanguageService.Format("IndustryPage_MaterialBonusTotal", MaterialBonusPercent);
 
     public string EffectiveTimeText =>
-        $"时间总加成 -{TimeBonusPercent:0.##}%；与蓝图 TE 相乘。";
+        LanguageService.Format("IndustryPage_TimeBonusTotal", TimeBonusPercent);
 
-    public string EffectiveCostText =>
-        $"费用总加成 -{CostBonusPercent:0.##}% · 设施税 +{FacilityTaxPercent:0.##}% · SCC +{SccSurchargePercent:0.##}% · 行星出口税 +{PlanetTaxPercent:0.##}%；任务费用 = EIV × (成本指数 × 结构费用倍率 + 设施税 + SCC)。";
+    public string EffectiveCostText => LanguageService.Format("IndustryPage_CostBonusTotal",
+        CostBonusPercent, FacilityTaxPercent, SccSurchargePercent, PlanetTaxPercent);
 
     private void NotifyBuildingSummary()
     {
@@ -546,6 +590,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public ObservableCollection<InvCategory> Categories { get; } = new();
     public ObservableCollection<IndustryBuildingProfileItem> BuildingProfiles { get; } = new();
 
+    public string SelectedBuildingProfileName => SelectedBuildingProfile?.Name
+        ?? LanguageService.Get("IndustryPage_NoProfileSelected");
+
     private IndustryBuildingProfileItem? _selectedBuildingProfile;
     private bool _suppressProfileApply;
     public IndustryBuildingProfileItem? SelectedBuildingProfile
@@ -555,6 +602,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         {
             if (Set(ref _selectedBuildingProfile, value))
             {
+                Notify(nameof(SelectedBuildingProfileName));
                 NewBuildingProfileName = value?.Name ?? string.Empty;
                 if (!_suppressProfileApply && value?.Model is { } profile)
                 {
@@ -706,10 +754,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public ObservableCollection<IndustryBlueprintJobItem> BlueprintJobs { get; } = new();
     public bool HasBlueprintJobs => BlueprintJobs.Count > 0;
     public string BlueprintJobsHint => !IncludeBlueprintJobs
-        ? "未启用复制/研究任务；大多数情况下直接使用已有 BPO/BPC 即可。"
+        ? LanguageService.Get("IndustryPage_CopyResearchDisabled")
         : BlueprintJobs.Count > 0
-            ? "复制/研究任务仅为可选估算，不进入 BOM 材料，也不占用排产槽位。"
-            : "当前没有可生成的复制/研究任务：T2 BPC 只能通过发明获得，BPC 不能研究；只有拥有 BPO 且 BPC runs 不足时才需要复制，BPO 的 ME/TE 低于工艺目标时才需要研究。";
+            ? LanguageService.Get("IndustryPage_CopyResearchOptional")
+            : LanguageService.Get("IndustryPage_CopyResearchNone");
 
     private bool _sellImmediately;
     public bool SellImmediately
@@ -749,6 +797,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     public ObservableCollection<IndustrySavedPlanItem> SavedPlans { get; } = new();
 
+    public string SavedPlansCountText => LanguageService.Format("IndustryPage_CountTotal", SavedPlans.Count);
+
     private IndustrySavedPlanItem? _selectedSavedPlan;
     public IndustrySavedPlanItem? SelectedSavedPlan
     {
@@ -767,11 +817,29 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     public bool HasWarehouses => Warehouses.Count > 0;
 
-    private string _marketStatusText = string.Empty;
-    public string MarketStatusText { get => _marketStatusText; set => Set(ref _marketStatusText, value); }
+    private string _marketStatusKey = "IndustryPage_MarketAverageStatus";
+    private object[] _marketStatusArgs = Array.Empty<object>();
 
-    private string _characterStatusText = string.Empty;
-    public string CharacterStatusText { get => _characterStatusText; set => Set(ref _characterStatusText, value); }
+    /// <summary>市场状态文案（存"键 + 参数"，切语言后自动重算）。</summary>
+    public string MarketStatusText => LanguageService.Format(_marketStatusKey, _marketStatusArgs);
+
+    private string _characterStatusKey = "IndustryPage_NoCharacterStatus";
+    private object[] _characterStatusArgs = Array.Empty<object>();
+    public string CharacterStatusText => LanguageService.Format(_characterStatusKey, _characterStatusArgs);
+
+    private void SetMarketStatus(string key, params object[] args)
+    {
+        _marketStatusKey = key;
+        _marketStatusArgs = args;
+        Notify(nameof(MarketStatusText));
+    }
+
+    private void SetCharacterStatus(string key, params object[] args)
+    {
+        _characterStatusKey = key;
+        _characterStatusArgs = args;
+        Notify(nameof(CharacterStatusText));
+    }
 
     private bool _isBusy;
     public bool IsBusy { get => _isBusy; set => Set(ref _isBusy, value); }
@@ -804,6 +872,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     // ───────────── 结果 ─────────────
 
     public ObservableCollection<IndustryPlanNodeViewModel> Roots { get; } = new();
+
+    public string RootsCountText => LanguageService.Format("IndustryPage_CountTotal", Roots.Count);
     public ObservableCollection<IndustryPlanNodeViewModel> FlatNodes { get; } = new();
     public ObservableCollection<IndustryCostSlice> CostSlices { get; } = new();
     public ObservableCollection<IndustryOverviewBuyLine> OverviewBuyItems { get; } = new();
@@ -907,7 +977,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private bool _bomTruncated;
     public bool HasBomTruncation => _bomTruncated;
     public string BomWarningText => _bomTruncated
-        ? $"BOM 节点超过 {MaxTreeNodes:N0} 上限，部分输入已截断；请拆分目标或减少层数。"
+        ? LanguageService.Format("IndustryPage_BomTruncated", MaxTreeNodes)
         : string.Empty;
 
     private bool _hasProfit;
@@ -945,7 +1015,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             var none = new IndustryDecryptorOption
             {
                 TypeId = null,
-                Name = Resolve("IndustryPage_DecryptorNone", "无解密器"),
+                Name = LanguageService.Get("IndustryPage_DecryptorNone"),
             };
             Decryptors.Add(none);
             foreach (var decryptor in decryptors)
@@ -956,13 +1026,15 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 Decryptors.Add(new IndustryDecryptorOption
                 {
                     TypeId = decryptor.TypeID,
-                    Name = $"{name}  ×{decryptor.ProbabilityMultiplier:0.0##} / ME{decryptor.MeModifier:+#;-#;0} / TE{decryptor.TeModifier:+#;-#;0} / 流程{decryptor.RunModifier:+#;-#;0}",
+                    BaseName = name,
+                    Name = LanguageService.Format("IndustryPage_DecryptorOption", name,
+                        decryptor.ProbabilityMultiplier, decryptor.MeModifier, decryptor.TeModifier, decryptor.RunModifier),
                     Info = decryptor,
                 });
             }
             SelectedDecryptor = Decryptors.FirstOrDefault(p => p.TypeId == _setting.DecryptorTypeId) ?? none;
             TargetDecryptors.Clear();
-            TargetDecryptors.Add(new IndustryDecryptorOption { TypeId = -1, Name = "跟随全局" });
+            TargetDecryptors.Add(new IndustryDecryptorOption { TypeId = -1, Name = LanguageService.Get("IndustryPage_DecryptorFollowGlobal") });
             foreach (var decryptor in Decryptors)
             {
                 TargetDecryptors.Add(decryptor);
@@ -1093,7 +1165,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             var category = new IndustryProductTreeCategory
             {
                 CategoryId = categoryGroup.Key.CategoryId,
-                Name = string.IsNullOrEmpty(categoryGroup.Key.CategoryName) ? "未分类" : categoryGroup.Key.CategoryName,
+                Name = string.IsNullOrEmpty(categoryGroup.Key.CategoryName)
+                    ? LanguageService.Get("LinksPage_Uncategorized")
+                    : categoryGroup.Key.CategoryName,
                 IsExpanded = !string.IsNullOrEmpty(keyword),
             };
             foreach (var groupGroup in categoryGroup
@@ -1103,7 +1177,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 var group = new IndustryProductTreeGroup
                 {
                     GroupId = groupGroup.Key.GroupId,
-                    Name = string.IsNullOrEmpty(groupGroup.Key.GroupName) ? "未分组" : groupGroup.Key.GroupName,
+                    Name = string.IsNullOrEmpty(groupGroup.Key.GroupName)
+                        ? LanguageService.Get("MapTool_Sov_Ungrouped")
+                        : groupGroup.Key.GroupName,
                     IsExpanded = !string.IsNullOrEmpty(keyword),
                 };
                 foreach (var product in groupGroup.OrderBy(p => p.ProductName))
@@ -1122,8 +1198,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
 
         ProductCountText = string.IsNullOrEmpty(keyword)
-            ? $"{_allProducts.Count} 个可制造物品"
-            : $"匹配 {filtered.Count} / {_allProducts.Count}";
+            ? LanguageService.Format("IndustryPage_ManufacturableCount", _allProducts.Count)
+            : LanguageService.Format("IndustryPage_MatchCount", filtered.Count, _allProducts.Count);
     }
 
     private static bool Contains(string? text, string keyword)
@@ -1240,11 +1316,11 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public void NewBuildingProfile()
     {
         _setting.BuildingProfiles ??= new List<IndustryBuildingProfile>();
-        string name = "新建筑档案";
+        string name = LanguageService.Get("IndustryPage_NewProfileName");
         int index = 2;
         while (_setting.BuildingProfiles.Any(p => string.Equals(p.Name, name, StringComparison.Ordinal)))
         {
-            name = $"新建筑档案 {index++}";
+            name = LanguageService.Format("IndustryPage_NewProfileNameIndexed", index++);
         }
 
         var profile = new IndustryBuildingProfile
@@ -1265,13 +1341,13 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (SelectedBuildingProfile?.Model is not { } profile)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_BuildingNotSelected", "请先新建或选择建筑档案"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_BuildingNotSelected"));
             return;
         }
         var name = profile.Name?.Trim();
         if (string.IsNullOrEmpty(name))
         {
-            PageNotifyService.Warning(Resolve("IndustryPage_BuildingNameRequired", "建筑档案名称不能为空"));
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_BuildingNameRequired"));
             return;
         }
 
@@ -1284,19 +1360,19 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         ReloadBuildingProfiles(profile.Id);
         IndustrySettingService.Save(_setting);
         NotifyBuildingSummary();
-        PageNotifyService.Success(Resolve("IndustryPage_BuildingSaved", "建筑档案已保存"));
+        PageNotifyService.Success(LanguageService.Get("IndustryPage_BuildingSaved"));
     }
 
     public void ApplyBuildingProfile()
     {
         if (SelectedBuildingProfile?.Model is not { } profile)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_BuildingNotSelected", "请先选择建筑档案"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_BuildingNotSelectedToApply"));
             return;
         }
         ApplyProfileToCurrent(profile);
         NotifyBuildingSummary();
-        PageNotifyService.Success(Resolve("IndustryPage_BuildingApplied", "已应用建筑档案"));
+        PageNotifyService.Success(LanguageService.Get("IndustryPage_BuildingApplied"));
     }
 
     private void ApplyProfileToCurrent(IndustryBuildingProfile profile)
@@ -1334,7 +1410,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (SelectedBuildingProfile?.Model is not { } profile)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_BuildingNotSelected", "请先选择建筑档案"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_BuildingNotSelectedToApply"));
             return;
         }
 
@@ -1343,7 +1419,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         ReloadBuildingProfiles();
         NotifyBuildingSummary();
         IndustrySettingService.Save(_setting);
-        PageNotifyService.Success(Resolve("IndustryPage_BuildingDeleted", "建筑档案已删除"));
+        PageNotifyService.Success(LanguageService.Get("IndustryPage_BuildingDeleted"));
     }
 
     // ───────────── 计算 ─────────────
@@ -1403,8 +1479,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private void UpdateMarketPageProgress(int page, int total)
     {
         BusyText = total > 0
-            ? string.Format(Resolve("IndustryPage_MarketPage", "拉取详细订单：第 {0}/{1} 页"), page, total)
-            : string.Format(Resolve("IndustryPage_MarketPageUnknown", "拉取详细订单：第 {0} 页"), page);
+            ? LanguageService.Format("IndustryPage_MarketPage", page, total)
+            : LanguageService.Format("IndustryPage_MarketPageUnknown", page);
         HasBusyProgress = total > 0;
         BusyProgressPercent = total > 0 ? Math.Min(100, page * 100.0 / total) : 0;
     }
@@ -1413,7 +1489,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (Targets.Count == 0)
         {
-            PageNotifyService.Warning(Resolve("IndustryPage_NoTarget", "请先添加目标产物"));
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_NoTargetForRun"));
             return;
         }
         if (IsBusy)
@@ -1421,7 +1497,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        BeginBusy(Resolve("IndustryPage_Prepare", "准备工业数据..."));
+        BeginBusy(LanguageService.Get("IndustryPage_Prepare"));
         var cancellationToken = BeginOperation();
         try
         {
@@ -1433,7 +1509,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 .ToList();
             var rigs = new List<IndustryRigBonus>();
 
-            BusyText = Resolve("IndustryPage_FetchData", "读取价格、成本指数与角色数据...");
+            BusyText = LanguageService.Get("IndustryPage_FetchData");
 
             var attemptsOverride = InventionAttemptsOverride > 0
                 ? (int)Math.Round(InventionAttemptsOverride)
@@ -1518,7 +1594,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 options.CharacterProfiles.AddRange(customProfiles);
             }
 
-            BusyText = Resolve("IndustryPage_Expanding", "展开 BOM...");
+            BusyText = LanguageService.Get("IndustryPage_Expanding");
             cancellationToken.ThrowIfCancellationRequested();
 
             var targets = Targets.Select(p => new IndustryBuildTarget(p.TypeId, p.QuantityLong)).ToList();
@@ -1526,20 +1602,17 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             cancellationToken.ThrowIfCancellationRequested();
 
             FillPlan(plan, contexts.Count + customProfiles.Count, scheduleOptions: options);
-            PageNotifyService.Success(string.Format(
-                Resolve("IndustryPage_CalcDone", "计算完成：{0} 个流程"),
+            PageNotifyService.Success(LanguageService.Format("IndustryPage_CalcDone",
                 plan.Summary.BuildRuns.Values.Sum()));
         }
         catch (OperationCanceledException)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_CalcCancelled", "计算已停止"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_CalcCancelled"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(string.Format(
-                Resolve("IndustryPage_CalcFailed", "计算失败：{0}"),
-                ex.Message));
+            PageNotifyService.Error(LanguageService.Format("IndustryPage_CalcFailed", ex.Message));
         }
         finally
         {
@@ -1666,9 +1739,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                     double seconds = GetActivitySeconds(node.BlueprintTypeID, IndustryActivity.Copying) * copies;
                     BlueprintJobs.Add(new IndustryBlueprintJobItem
                     {
-                        Kind = "复制",
+                        Kind = LanguageService.Get("IndustryPage_JobCopy"),
                         Name = node.TypeName,
-                        Detail = $"BPC 不足 {node.BpcRunsShortage:N0} run，复制 {copies:N0} 张（每张 {maxRuns:N0} run）",
+                        Detail = LanguageService.Format("IndustryPage_JobCopyDetail", node.BpcRunsShortage, copies, maxRuns),
                         TimeSeconds = seconds,
                     });
                 }
@@ -1684,9 +1757,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                     int levels = targetMe - node.ME;
                     BlueprintJobs.Add(new IndustryBlueprintJobItem
                     {
-                        Kind = "材料研究",
+                        Kind = LanguageService.Get("IndustryPage_JobMaterialResearch"),
                         Name = node.TypeName,
-                        Detail = $"ME {node.ME} → {targetMe}（{levels} 级）",
+                        Detail = LanguageService.Format("IndustryPage_JobMaterialResearchDetail", node.ME, targetMe, levels),
                         TimeSeconds = GetActivitySeconds(node.BlueprintTypeID, IndustryActivity.ResearchMaterialEfficiency) * levels,
                     });
                 }
@@ -1699,9 +1772,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                     int levels = targetTe - node.TE;
                     BlueprintJobs.Add(new IndustryBlueprintJobItem
                     {
-                        Kind = "时间研究",
+                        Kind = LanguageService.Get("IndustryPage_JobTimeResearch"),
                         Name = node.TypeName,
-                        Detail = $"TE {node.TE} → {targetTe}（{levels} 级）",
+                        Detail = LanguageService.Format("IndustryPage_JobTimeResearchDetail", node.TE, targetTe, levels),
                         TimeSeconds = GetActivitySeconds(node.BlueprintTypeID, IndustryActivity.ResearchTimeEfficiency) * levels,
                     });
                 }
@@ -1759,13 +1832,13 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             ? $"{summary.Profit / summary.SelfBuildCost * 100:0.#}%"
             : "—";
         SummaryProfitPerSlotHour = summary.ProfitKnown && usedSlotHours > 0
-            ? $"{summary.Profit / usedSlotHours:N0} ISK/槽位h"
+            ? LanguageService.Format("IndustryPage_ProfitPerSlotHourValue", summary.Profit / usedSlotHours)
             : "—";
         SummaryCapitalLockup = summary.CashOutlay > 0 && makespan > 0
             ? $"{summary.CashOutlay * makespan:N0} ISK·h"
             : "—";
         SummaryBreakEven = targetQuantity > 0
-            ? $"{summary.SelfBuildCost / targetQuantity:N0} ISK/件"
+            ? LanguageService.Format("IndustryPage_ProfitPerUnitValue", summary.SelfBuildCost / targetQuantity)
             : "—";
         SummaryBuyVolume = summary.TotalBuyVolume > 0 ? summary.TotalBuyVolume.ToString("N0") + " m³" : "—";
         OnPropertyChanged(nameof(ProfitIsPositive));
@@ -1777,17 +1850,13 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             double material = Math.Max(0, summary.CashOutlay - summary.TotalJobCost);
             double job = Math.Max(0, summary.TotalJobCost);
             double stock = Math.Max(0, summary.StockValue);
-            AddCostSlice("material", Resolve("IndustryPage_CostMaterial", "采购材料"), material, summary.SelfBuildCost);
-            AddCostSlice("job", Resolve("IndustryPage_CostJob", "任务费用"), job, summary.SelfBuildCost);
-            AddCostSlice("stock", Resolve("IndustryPage_CostStock", "库存抵扣"), stock, summary.SelfBuildCost);
+            AddCostSlice("material", LanguageService.Get("IndustryPage_CostMaterial"), material, summary.SelfBuildCost);
+            AddCostSlice("job", LanguageService.Get("IndustryPage_CostJob"), job, summary.SelfBuildCost);
+            AddCostSlice("stock", LanguageService.Get("IndustryPage_CostStock"), stock, summary.SelfBuildCost);
         }
 
-        MarketStatusText = UseMarketDepth
-            ? string.Format(Resolve("IndustryPage_MarketDepthStatus", "详细订单 · {0:HH:mm}"), DateTime.Now)
-            : Resolve("IndustryPage_MarketAverageStatus", "平均价（未拉取详细订单）");
-        CharacterStatusText = characterCount > 0
-            ? string.Format(Resolve("IndustryPage_CharacterStatus", "{0} 个角色参与"), characterCount)
-            : Resolve("IndustryPage_NoCharacterStatus", "未选择角色");
+        SetMarketStatus(UseMarketDepth ? "IndustryPage_MarketDepthStatus" : "IndustryPage_MarketAverageStatus", DateTime.Now);
+        SetCharacterStatus(characterCount > 0 ? "IndustryPage_CharacterStatus" : "IndustryPage_NoCharacterStatus", characterCount);
         SectionTabIndex = 1;
         ResultTabIndex = 0;
         DetailTabIndex = 0;
@@ -1874,7 +1943,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 if (local.TryGetValue(node.TypeID, out var name))
                 {
-                    node.TypeName = node.IsInvention ? name + "（发明）" : name;
+                    node.TypeName = node.IsInvention
+                        ? name + LanguageService.Get("IndustryPage_InventionSuffix")
+                        : name;
                 }
             }
         }
@@ -1994,7 +2065,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        BeginBusy(Resolve("IndustryPage_RefreshMarket", "刷新市场价格与成本指数..."));
+        BeginBusy(LanguageService.Get("IndustryPage_RefreshMarket"));
         var cancellationToken = BeginOperation();
         try
         {
@@ -2016,17 +2087,17 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 }
             }
             _forceRefresh = true;
-            MarketStatusText = string.Format(Resolve("IndustryPage_MarketRefreshed", "市场数据已刷新 · {0:HH:mm}"), DateTime.Now);
-            PageNotifyService.Success(Resolve("IndustryPage_MarketRefreshedDone", "市场数据已刷新"));
+            SetMarketStatus("IndustryPage_MarketRefreshed", DateTime.Now);
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_MarketRefreshedDone"));
         }
         catch (OperationCanceledException)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_RefreshCancelled", "刷新已停止"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_RefreshCancelled"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_RefreshFailed", "刷新失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_RefreshFailed"));
         }
         finally
         {
@@ -2041,7 +2112,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        BeginBusy(Resolve("IndustryPage_RefreshCharacter", "刷新角色蓝图/资产/技能..."));
+        BeginBusy(LanguageService.Get("IndustryPage_RefreshCharacter"));
         var cancellationToken = BeginOperation();
         try
         {
@@ -2052,7 +2123,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var context = contexts[i];
-                BusyText = $"刷新角色 {i + 1}/{contexts.Count}：{context.Character.CharacterName}";
+                BusyText = LanguageService.Format("IndustryPage_RefreshCharacterProgress",
+                    i + 1, contexts.Count, context.Character.CharacterName);
                 await CharacterIndustryDataService.GetOwnedBlueprintsAsync(context, true);
                 cancellationToken.ThrowIfCancellationRequested();
                 await CharacterIndustryDataService.GetInProgressOutputsAsync(context, true);
@@ -2063,17 +2135,17 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 cancellationToken.ThrowIfCancellationRequested();
             }
             _forceRefresh = true;
-            CharacterStatusText = string.Format(Resolve("IndustryPage_CharacterRefreshed", "角色数据已刷新 · {0:HH:mm}"), DateTime.Now);
-            PageNotifyService.Success(Resolve("IndustryPage_CharacterRefreshedDone", "角色数据已刷新"));
+            SetCharacterStatus("IndustryPage_CharacterRefreshed", DateTime.Now);
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_CharacterRefreshedDone"));
         }
         catch (OperationCanceledException)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_RefreshCancelled", "刷新已停止"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_RefreshCancelled"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_RefreshFailed", "刷新失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_RefreshFailed"));
         }
         finally
         {
@@ -2127,25 +2199,25 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (target is null)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_SelectProduct", "请先选择左侧产物"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_SelectProduct"));
             return;
         }
         var lines = BuildBuyLines(target.Model);
         if (lines.Count == 0)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_NothingToCopy", "该产物没有需要采购的物品"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_ProductNothingToBuy"));
             return;
         }
         try
         {
             Clipboard.SetText(string.Join(Environment.NewLine,
                 lines.Select(p => $"{p.Name}\t{p.Quantity:N0}")));
-            PageNotifyService.Success(Resolve("IndustryPage_Copied", "采购清单已复制"));
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_CopyFailed", "复制失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_CopyFailed"));
         }
     }
 
@@ -2153,7 +2225,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (target is null)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_SelectProduct", "请先选择左侧产物"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_SelectProduct"));
             return;
         }
         try
@@ -2169,12 +2241,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             builder.AppendLine("Target,Item,Decision,Activity,Needed,Produced,Runs,ToBuy,JobCost,UnitPrice,FullCost,CashCost,Revenue,Profit,Margin");
             WriteNodeCsv(builder, target.Model, target.Name, 0);
             File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
-            PageNotifyService.Success(Resolve("IndustryPage_Exported", "计划已导出"));
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_Exported"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_ExportFailed", "导出失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_ExportFailed"));
         }
     }
 
@@ -2182,7 +2254,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (_lastPlan is null || _lastPlan.Summary.BuyQuantities.Count == 0)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_NothingToCopy", "没有需要采购的物品"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_NothingToBuy"));
             return;
         }
         try
@@ -2198,12 +2270,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 builder.AppendLine(name + "\t" + pair.Value);
             }
             Clipboard.SetText(builder.ToString());
-            PageNotifyService.Success(Resolve("IndustryPage_Copied", "采购清单已复制"));
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_CopyFailed", "复制失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_CopyFailed"));
         }
     }
 
@@ -2211,7 +2283,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (_lastPlan is null)
         {
-            PageNotifyService.Info(Resolve("IndustryPage_NothingToCopy", "没有可导出的计划"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_NothingToExport"));
             return;
         }
         try
@@ -2230,12 +2302,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 WriteNodeCsv(builder, target, target.TypeName, 0);
             }
             File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
-            PageNotifyService.Success(Resolve("IndustryPage_Exported", "计划已导出"));
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_Exported"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error(Resolve("IndustryPage_ExportFailed", "导出失败"));
+            PageNotifyService.Error(LanguageService.Get("IndustryPage_ExportFailed"));
         }
     }
 
@@ -2288,7 +2360,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 Id = warehouse.Id,
                 Name = warehouse.Name,
-                Summary = $"{warehouse.Items.Count:N0} 种 · {warehouse.Items.Values.Sum():N0} 件",
+                Summary = LanguageService.Format("IndustryPage_WarehouseSummary",
+                    warehouse.Items.Count, warehouse.Items.Values.Sum()),
                 IsSelected = selected.Contains(warehouse.Id),
             };
             selection.PropertyChanged += (_, e) =>
@@ -2337,6 +2410,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     private void ReloadSavedPlans()
     {
+        var selectedId = SelectedSavedPlan?.Id;
         SavedPlans.Clear();
         foreach (var plan in IndustryPlanService.Load().OrderByDescending(p => p.Updated))
         {
@@ -2345,17 +2419,23 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 .ToList();
             var suffix = plan.Targets.Count > names.Count ? "…" : string.Empty;
             var resultText = plan.Result is null
-                ? "未保存结果"
-                : $"含结果 {(plan.ResultSavedAt ?? plan.Updated):MM-dd HH:mm}";
+                ? LanguageService.Get("IndustryPage_NoSavedResult")
+                : LanguageService.Format("IndustryPage_WithResult", plan.ResultSavedAt ?? plan.Updated);
             SavedPlans.Add(new IndustrySavedPlanItem
             {
                 Id = plan.Id,
                 Name = plan.Name,
                 UpdatedText = plan.Updated.ToString("yyyy-MM-dd HH:mm"),
                 TargetSummary = plan.Targets.Count == 0
-                    ? $"空计划 · {resultText}"
-                    : $"{plan.Targets.Count:N0} 个目标 · {string.Join("、", names)}{suffix} · {resultText}",
+                    ? LanguageService.Format("IndustryPage_EmptyPlan", resultText)
+                    : LanguageService.Format("IndustryPage_PlanSummary", plan.Targets.Count,
+                        string.Join(LanguageService.Get("IndustryPage_NameListSeparator"), names), suffix, resultText),
             });
+        }
+
+        if (!string.IsNullOrEmpty(selectedId))
+        {
+            SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == selectedId);
         }
     }
 
@@ -2364,12 +2444,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         var name = PlanName?.Trim();
         if (string.IsNullOrEmpty(name))
         {
-            PageNotifyService.Warning("请先填写计划名称");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_PlanNameRequired"));
             return;
         }
         if (Targets.Count == 0)
         {
-            PageNotifyService.Warning("请先添加目标产物");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_NoTargetForRun"));
             return;
         }
 
@@ -2387,14 +2467,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         IndustryPlanService.Save(plans);
         ReloadSavedPlans();
         SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
-        PageNotifyService.Success(existed ? "已更新同名计划" : "计划已保存");
+        PageNotifyService.Success(LanguageService.Get(existed ? "IndustryPage_PlanUpdated" : "IndustryPage_PlanSaved"));
     }
 
     public void OverwriteSelectedPlan()
     {
         if (SelectedSavedPlan is null)
         {
-            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_SelectSavedPlan"));
             return;
         }
 
@@ -2402,7 +2482,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         var plan = plans.FirstOrDefault(p => p.Id == SelectedSavedPlan.Id);
         if (plan is null)
         {
-            PageNotifyService.Warning("计划不存在，可能已被删除");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_PlanNotFound"));
             ReloadSavedPlans();
             return;
         }
@@ -2412,21 +2492,21 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         IndustryPlanService.Save(plans);
         ReloadSavedPlans();
         SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
-        PageNotifyService.Success("已覆盖保存");
+        PageNotifyService.Success(LanguageService.Get("IndustryPage_PlanOverwritten"));
     }
 
     public void LoadSelectedPlan()
     {
         if (SelectedSavedPlan is null)
         {
-            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_SelectSavedPlan"));
             return;
         }
 
         var plan = IndustryPlanService.Load().FirstOrDefault(p => p.Id == SelectedSavedPlan.Id);
         if (plan is null)
         {
-            PageNotifyService.Warning("计划不存在，可能已被删除");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_PlanNotFound"));
             ReloadSavedPlans();
             return;
         }
@@ -2451,14 +2531,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         if (plan.Result is not null)
         {
             FillPlan(plan.Result, plan.CharacterCount, plan.ResultSavedAt ?? plan.Updated);
-            MarketStatusText = $"保存时价格快照 · {(_resultSavedAt ?? plan.Updated):yyyy-MM-dd HH:mm}";
-            PageNotifyService.Success("已载入计划与保存时的结果；重新计算会刷新为当前价格");
+            SetMarketStatus("IndustryPage_SaveSnapshotStatus", _resultSavedAt ?? plan.Updated);
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_PlanLoadedWithResult"));
         }
         else
         {
             SectionTabIndex = 0;
             SettingsTabIndex = 0;
-            PageNotifyService.Success("计划已载入，请点击「计算制造计划」");
+            PageNotifyService.Success(LanguageService.Get("IndustryPage_PlanLoaded"));
         }
     }
 
@@ -2466,14 +2546,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         if (SelectedSavedPlan is null)
         {
-            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_SelectSavedPlan"));
             return;
         }
 
         var name = PlanName?.Trim();
         if (string.IsNullOrEmpty(name))
         {
-            PageNotifyService.Warning("请先填写计划名称");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_PlanNameRequired"));
             return;
         }
 
@@ -2485,14 +2565,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         IndustryPlanService.Save(plans);
         ReloadSavedPlans();
         SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
-        PageNotifyService.Success("已重命名");
+        PageNotifyService.Success(LanguageService.Get("IndustryPage_PlanRenamed"));
     }
 
     public void DeleteSelectedPlan()
     {
         if (SelectedSavedPlan is null)
         {
-            PageNotifyService.Warning("请先在左侧选择一个已保存计划");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPage_SelectSavedPlan"));
             return;
         }
 
@@ -2501,7 +2581,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         IndustryPlanService.Save(plans);
         ReloadSavedPlans();
         SelectedSavedPlan = null;
-        PageNotifyService.Info("已删除计划");
+        PageNotifyService.Info(LanguageService.Get("IndustryPage_PlanDeleted"));
     }
 
     private void FillPlanSnapshot(IndustrySavedPlan plan, string name)
@@ -2666,8 +2746,9 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     // ───────────── 辅助 ─────────────
 
-    private static string Resolve(string key, string fallback)
-        => Application.Current?.TryFindResource(key) as string ?? fallback;
+    private static string Resolve(string key) => LanguageService.Get(key);
+
+    private void Notify(string propertyName) => OnPropertyChanged(propertyName);
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {

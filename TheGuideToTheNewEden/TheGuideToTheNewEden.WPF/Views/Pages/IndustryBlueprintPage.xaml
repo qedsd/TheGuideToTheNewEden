@@ -156,7 +156,7 @@
                             VerticalAlignment="Center"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="可制造物品" />
+                            Text="{DynamicResource IndustryPage_Manufacturable}" />
                     </StackPanel>
                     <TextBlock
                         Grid.Column="1"
@@ -182,7 +182,7 @@
                     <ui:TextBox
                         Grid.Column="0"
                         KeyDown="OnSearchKeyDown"
-                        PlaceholderText="搜索可制造物品"
+                        PlaceholderText="{DynamicResource IndustryBp_SearchLabel}"
                         Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}" />
                     <ui:Button
                         Grid.Column="2"
@@ -279,7 +279,7 @@
                                         VerticalAlignment="Center"
                                         FontWeight="SemiBold"
                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="输入材料" />
+                                        Text="{DynamicResource IndustryBlueprint_InputMaterials}" />
                                 </StackPanel>
                             </controls:CardControl.Header>
                             <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding MaterialRows}" />
@@ -324,7 +324,7 @@
                                         VerticalAlignment="Center"
                                         FontWeight="SemiBold"
                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        Text="输出产物" />
+                                        Text="{DynamicResource IndustryBlueprint_OutputProducts}" />
                                 </StackPanel>
                             </controls:CardControl.Header>
                             <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding ProductRows}" />
@@ -347,7 +347,7 @@
                                     VerticalAlignment="Center"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="技能需求" />
+                                    Text="{DynamicResource IndustryBlueprint_SkillRequirements}" />
                             </StackPanel>
                         </controls:CardControl.Header>
                         <ItemsControl ItemTemplate="{StaticResource RecipeRowTemplate}" ItemsSource="{Binding SkillRows}" />

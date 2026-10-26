@@ -44,7 +44,7 @@ public static class IndustryCharacterProfileFactory
         {
             CharacterId = characterId,
             CharacterName = characterName,
-            Source = "技能",
+            Source = "skills",
         };
 
         if (skills is null)
@@ -52,7 +52,7 @@ public static class IndustryCharacterProfileFactory
             profile.ManufacturingSlots = 1;
             profile.InventionSlots = 1;
             profile.ReactionSlots = 1;
-            profile.Source = "技能未读取（按 1 条）";
+            profile.Source = "skillsUnread";
             return profile;
         }
 
@@ -77,23 +77,25 @@ public static class IndustryCharacterProfileFactory
         return new IndustryCharacterProfile
         {
             CharacterId = 0,
-            CharacterName = "默认角色",
+            CharacterName = "auto:default",
             ManufacturingSlots = 11,
             InventionSlots = 11,
             ReactionSlots = 11,
-            Source = "默认（未选择角色，按满技能估算）",
+            Source = "default",
             SkillsLoaded = false,
         };
     }
 
     public static IndustryCharacterProfile CreateCustom(IndustryCustomCharacter character)
     {
-        var name = string.IsNullOrWhiteSpace(character?.Name) ? "自定义角色" : character!.Name.Trim();
+        var name = string.IsNullOrWhiteSpace(character?.Name)
+            ? LanguageService.Get("IndustryCustomCharacter_DefaultName")
+            : character!.Name.Trim();
         var profile = new IndustryCharacterProfile
         {
             CharacterId = character?.Id ?? 0,
             CharacterName = name,
-            Source = "自定义",
+            Source = "custom",
             SkillsLoaded = true,
         };
 

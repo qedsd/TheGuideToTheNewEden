@@ -61,7 +61,7 @@ public sealed class PlanetaryCharacterItem : INotifyPropertyChanged
     public AuthorizedCharacterData Character { get; }
     public long CharacterId => Character.CharacterID;
     public string DisplayName => Character.CharacterName;
-    public string Summary => $"CCU {CcuLevel} · 行星位 {MaxPlanets}";
+    public string Summary => LanguageService.Format("IndustryPlanetary_Summary", CcuLevel, MaxPlanets);
 
     private bool _isSelected;
     public bool IsSelected
@@ -116,7 +116,7 @@ public sealed class PlanetarySelectedSystemItem
     public string Name { get; init; } = string.Empty;
     public IReadOnlyList<PlanetaryPlanetOption> Planets { get; init; } = Array.Empty<PlanetaryPlanetOption>();
     public int PlanetCount => Planets.Count;
-    public string CountText => $"{PlanetCount} 颗";
+    public string CountText => LanguageService.Format("IndustryPlanetary_PlanetsCount", PlanetCount);
     public override string ToString() => Name;
 }
 
@@ -175,6 +175,41 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         {
             _suspendSettingSave = false;
         }
+
+        LanguageService.LanguageChanged += OnLanguageChanged;
+    }
+
+    /// <summary>
+    /// 语言切换：重算"生成时拼进对象"的文案（计划提示、已保存计划摘要、行星类型名），
+    /// 其余计算属性由 <see cref="LanguageService"/> 的绑定重算负责。
+    /// </summary>
+    private void OnLanguageChanged(object? sender, string language)
+    {
+        if (CurrentPlan is not null)
+        {
+            LocalizePlan(CurrentPlan);
+            RefreshPlanWarnings();
+        }
+
+        ReloadSavedPlans();
+        RefreshLiveCharacterSummary();
+        if (!IsLiveBusy)
+        {
+            LiveStatusText = LanguageService.Get("IndustryPlanetary_Live_Reading");
+        }
+        Notify(nameof(MarketStatusText));
+        Notify(nameof(PlanetSourceText));
+        Notify(nameof(PlanetSummaryText));
+        Notify(nameof(PlanetListHeaderText));
+        Notify(nameof(RadiusHintText));
+        Notify(nameof(TargetsCountText));
+        Notify(nameof(TargetDaysText));
+        Notify(nameof(PaybackDaysText));
+        Notify(nameof(SelectedCharacterSummaryText));
+        Notify(nameof(SelectedBlueprintText));
+        Notify(nameof(PriceLocationText));
+        Notify(nameof(SavedPlanCountText));
+        RebuildProductTree();
     }
 
     /// <summary>立即把当前计划设置写盘（防抖计时器与"执行计划"都会调用）。</summary>
@@ -374,33 +409,35 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     public bool IsRadiusEditable => !HasSelectedPlanets;
 
     public string PlanetSummaryText => SelectedPlanets.Count == 0
-        ? "未选候选行星"
-        : $"{SelectedPlanets.Count} 颗 · {SelectedSystems.Count} 个星系";
+        ? LanguageService.Get("IndustryPlanetary_NoPlanetsSelected")
+        : LanguageService.Format("IndustryPlanetary_PlanetsSystems", SelectedPlanets.Count, SelectedSystems.Count);
 
-    public string SystemsHeaderText => $"{SelectedSystems.Count} 个星系";
+    public string SystemsHeaderText => LanguageService.Format("IndustryPlanetary_SystemsHeader", SelectedSystems.Count);
 
     public string PlanetListHeaderText => SelectedSystemItem is null
-        ? $"行星（{SelectedPlanets.Count}）"
+        ? LanguageService.Format("IndustryPlanetary_PlanetsHeader", SelectedPlanets.Count)
         : $"{SelectedSystemItem.Name}（{SelectedSystemItem.PlanetCount}）";
 
     public string RadiusHintText => HasSelectedPlanets
-        ? "候选行星各自使用真实半径"
+        ? LanguageService.Get("IndustryPlanetary_RadiusFromPlanets")
         : RadiusKm > 0
-            ? $"未选候选行星，按手动 {RadiusKm:N0} km"
-            : $"未选候选行星，按 {PlanetaryCapacityCalculator.DefaultRadiusKm:N0} km 估算";
+            ? LanguageService.Format("IndustryPlanetary_RadiusManual", RadiusKm)
+            : LanguageService.Format("IndustryPlanetary_RadiusEstimated",
+                PlanetaryCapacityCalculator.DefaultRadiusKm);
 
     /// <summary>概况里的短状态。</summary>
     public string PlanetSourceText => CurrentPlan is not null && CurrentPlan.Summary.PlanetCount > 0
-        ? $"候选行星 {CurrentPlan.Summary.PlanetCount} 颗 · 已用 {CurrentPlan.Summary.UsedPlanetCount} 颗"
+        ? LanguageService.Format("IndustryPlanetary_PlanetPoolUsed",
+            CurrentPlan.Summary.PlanetCount, CurrentPlan.Summary.UsedPlanetCount)
         : HasSelectedPlanets
-            ? $"候选行星 {SelectedPlanets.Count} 颗"
+            ? LanguageService.Format("IndustryPlanetary_CandidatePlanets", SelectedPlanets.Count)
             : RadiusKm > 0
-                ? $"未选候选行星 · 按手动 {RadiusKm:N0} km"
-                : "未选候选行星 · 按行星类型估算";
+                ? LanguageService.Format("IndustryPlanetary_NoCandidateManual", RadiusKm)
+                : LanguageService.Get("IndustryPlanetary_NoCandidateEstimate");
 
-    public string PlanetSourceTooltip => HasSelectedPlanets
-        ? "殖民地只会排到你选中的行星上，每颗行星最多一个殖民地、按各自真实半径计算容量；候选行星不够时会给出提示。"
-        : "未选择候选行星：按行星类型 + 手动半径（0 = 2000 km 估算）排产。";
+    public string PlanetSourceTooltip => LanguageService.Get(HasSelectedPlanets
+        ? "IndustryPlanetary_CandidateHint"
+        : "IndustryPlanetary_NoCandidateHint");
 
     /// <summary>把某个星系的行星全部加入候选池（去重），返回新增数量。</summary>
     public int AddSystemPlanets(PlanetarySystemOption? system)
@@ -415,7 +452,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             .ToList();
         if (planets.Count == 0)
         {
-            PageNotifyService.Info("该星系没有可用于行星开发的行星");
+            PageNotifyService.Info(LanguageService.Get("IndustryPlanetary_NoHabitPlanets"));
             return 0;
         }
 
@@ -643,8 +680,9 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     }
 
     public string PriceLocationText => SelectedPriceLocation is null
-        ? "默认市场位置"
-        : $"{SelectedPriceLocation.Name}（星域 {SelectedPriceLocation.RegionId}）";
+        ? LanguageService.Get("IndustryPlanetary_DefaultMarket")
+        : LanguageService.Format("IndustryPlanetary_MarketWithRegion",
+            SelectedPriceLocation.Name, SelectedPriceLocation.RegionId);
 
     private string _blueprintSearchText = string.Empty;
     public string BlueprintSearchText
@@ -669,7 +707,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     }
 
     public string SelectedBlueprintText => SelectedBlueprint is null
-        ? "未选择蓝图"
+        ? LanguageService.Get("IndustryPlanetary_NoBlueprint")
         : $"{SelectedBlueprint.ProductName} · {SelectedBlueprint.BlueprintName}";
 
     private double _blueprintQuantity = 1;
@@ -679,11 +717,16 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         set => Set(ref _blueprintQuantity, Math.Max(1, Math.Round(value)));
     }
 
-    private string _marketStatusText = "参考价未加载";
-    public string MarketStatusText
+    private string _marketStatusKey = "IndustryPlanetary_MarketLoading";
+    private object[] _marketStatusArgs = Array.Empty<object>();
+
+    public string MarketStatusText => LanguageService.Format(_marketStatusKey, _marketStatusArgs);
+
+    private void SetMarketStatus(string key, params object[] args)
     {
-        get => _marketStatusText;
-        set => Set(ref _marketStatusText, value);
+        _marketStatusKey = key;
+        _marketStatusArgs = args;
+        Notify(nameof(MarketStatusText));
     }
 
     private bool _isBusy;
@@ -725,14 +768,93 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             Notify(nameof(HasNoResult));
             Notify(nameof(HasWarnings));
             Notify(nameof(PlanetSourceText));
+            Notify(nameof(TargetDaysText));
+            Notify(nameof(PaybackDaysText));
             Notify(nameof(ShowPlanSaveButton));
+            RefreshPlanWarnings();
             RebuildProductTree();
         }
     }
 
     public bool HasResult => CurrentPlan is not null;
     public bool HasNoResult => CurrentPlan is null;
-    public bool HasWarnings => CurrentPlan?.Warnings.Count > 0;
+    public bool HasWarnings => PlanWarnings.Count > 0;
+
+    /// <summary>计划提示：Core 存的是 <c>@code␟args</c> 编码，这里按语言解码（旧快照的纯文本原样显示）。</summary>
+    public ObservableCollection<string> PlanWarnings { get; } = new();
+
+    private void RefreshPlanWarnings()
+    {
+        if (_productNameMap.Count == 0)
+        {
+            BuildProductNameMap();
+        }
+
+        PlanWarnings.Clear();
+        foreach (var warning in CurrentPlan?.Warnings ?? new List<string>())
+        {
+            PlanWarnings.Add(DecodeWarning(warning));
+        }
+        Notify(nameof(HasWarnings));
+    }
+
+    private string DecodeWarning(string warning)
+    {
+        if (string.IsNullOrEmpty(warning) || warning[0] != '@')
+        {
+            return warning;
+        }
+
+        var parts = warning[1..].Split('\u001F');
+        var code = parts[0];
+        var args = parts.Skip(1).ToArray();
+        for (var i = 0; i < args.Length; i++)
+        {
+            if (args[i] is "p3" or "p4")
+            {
+                args[i] = LanguageService.Get(args[i] == "p4"
+                    ? "IndustryPlanetary_FactoryHighTech"
+                    : "IndustryPlanetary_FactoryAdvanced");
+            }
+            else if (_productNameMap.TryGetValue(args[i], out var localName))
+            {
+                args[i] = localName;
+            }
+        }
+
+        if (code == "unsupportedPlanet" && args.Length > 1 && string.IsNullOrWhiteSpace(args[0]))
+        {
+            args[0] = LanguageService.Format("IndustryPlanetary_Warn_PlanetFallback", args[1]);
+        }
+
+        var key = "IndustryPlanetary_Warn_" + code;
+        var format = LanguageService.Get(key);
+        if (format == key)
+        {
+            return warning;
+        }
+        try
+        {
+            return string.Format(format, args);
+        }
+        catch (FormatException)
+        {
+            return format;
+        }
+    }
+
+    /// <summary>目标完成天数（本地化单位）。</summary>
+    public string TargetDaysText => CurrentPlan is null
+        ? "—"
+        : LanguageService.Format("IndustryPlanetary_DaysValue", CurrentPlan.Summary.TargetDays);
+
+    /// <summary>回本天数（本地化单位）。</summary>
+    public string PaybackDaysText => CurrentPlan is null
+        ? "—"
+        : LanguageService.Format("IndustryPlanetary_DaysValue", CurrentPlan.Summary.PaybackDays);
+
+    /// <summary>「已选需求（N）」——属性而非 StringFormat，才能跟着语言切换。</summary>
+    public string TargetsCountText => LanguageService.Format("IndustryPlanetary_TargetsCount", Targets.Count);
 
     // ---- 产物链：目标 → 配方输入逐层展开的依赖节点树（对齐制造计划的 BOM / 成本视图）----
 
@@ -750,7 +872,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     public bool HasNoProductNodes => FlatProductNodes.Count == 0;
     public string ProductNodeCountText => ProductRoots.Count == 0
         ? string.Empty
-        : $"{ProductRoots.Count} 个目标 · {FlatProductNodes.Count} 个节点";
+        : LanguageService.Format("IndustryPlanetary_ProductNodes", ProductRoots.Count, FlatProductNodes.Count);
 
     private PlanetarySavedPlan? _selectedSavedPlan;
     public PlanetarySavedPlan? SelectedSavedPlan
@@ -761,7 +883,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
 
     public bool HasSavedPlans => SavedPlans.Count > 0;
     public bool HasNoSavedPlans => SavedPlans.Count == 0;
-    public string SavedPlanCountText => $"{SavedPlans.Count} 个计划";
+    public string SavedPlanCountText => LanguageService.Format("IndustryPlanetary_SavedPlanCount", SavedPlans.Count);
 
     public string ProductCountText => $"{FilteredProducts.Count} / {Products.Count}";
 
@@ -770,7 +892,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         if (_loaded) return;
         _loaded = true;
         IsBusy = true;
-        BusyText = "载入行星配方与行星类型...";
+        BusyText = LanguageService.Get("IndustryPlanetary_LoadingData");
         try
         {
             var (recipes, blueprints) = await Task.Run(() => (
@@ -816,12 +938,12 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             }
             RefreshFilteredProducts();
             ReloadSavedPlans();
-            MarketStatusText = "参考价未加载";
+            SetMarketStatus("IndustryPlanetary_MarketLoading");
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error("行星数据载入失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_LoadFailed", ex.Message));
         }
         finally
         {
@@ -895,7 +1017,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     {
         if (SelectedBlueprint is null)
         {
-            PageNotifyService.Info("请先搜索并选择一个蓝图");
+            PageNotifyService.Info(LanguageService.Get("IndustryPlanetary_SelectBlueprintFirst"));
             return;
         }
         var entry = SelectedBlueprint.Entry;
@@ -916,7 +1038,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         // 正常导入不给提示（右侧「已选需求」列表就是结果）；只有"蓝图中没有行星产物"这类异常才弹全局通知。
         if (imported == 0)
         {
-            PageNotifyService.Warning("该蓝图的直接材料中没有行星产物");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPlanetary_NoPlanetaryInBlueprint"));
         }
     }
 
@@ -939,9 +1061,9 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             var price = stat.SellMin > 0 ? stat.SellMin : stat.BuyMax > 0 ? stat.BuyMax : stat.AveragePrice;
             if (price > 0) _prices[pair.Key] = price;
         }
-        MarketStatusText = stats.Count > 0
-            ? $"参考价 {stats.Count:N0} 项 · {DateTime.Now:HH:mm}"
-            : $"参考价（均价）· {DateTime.Now:HH:mm}";
+        SetMarketStatus(stats.Count > 0
+            ? "IndustryPlanetary_MarketStats"
+            : "IndustryPlanetary_MarketAverage", stats.Count, DateTime.Now);
     }
 
     public async Task CalculateAsync()
@@ -953,7 +1075,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         if (_planner is null) return;
         if (Targets.Count == 0)
         {
-            PageNotifyService.Warning("请先添加至少一个行星产物或从蓝图导入需求");
+            PageNotifyService.Warning(LanguageService.Get("IndustryPlanetary_NoTargets"));
             return;
         }
 
@@ -961,7 +1083,9 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         _operationCts = new CancellationTokenSource();
         var token = _operationCts.Token;
         IsBusy = true;
-        BusyText = UseMarketPrices ? "加载市场价格并反推殖民地..." : "反推行星殖民地...";
+        BusyText = LanguageService.Get(UseMarketPrices
+            ? "IndustryPlanetary_LoadingPrices"
+            : "IndustryPlanetary_Calculating");
         try
         {
             if (UseMarketPrices)
@@ -1016,17 +1140,17 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             SectionTabIndex = 2;
             SaveSettings();
             PageNotifyService.Success(plan.Warnings.Count > 0
-                ? $"行星计划已完成（{plan.Warnings.Count} 条提示）"
-                : "行星计划已完成");
+                ? LanguageService.Format("IndustryPlanetary_PlanDone", plan.Warnings.Count)
+                : LanguageService.Get("IndustryPlanetary_PlanDoneNoNotes"));
         }
         catch (OperationCanceledException)
         {
-            PageNotifyService.Info("行星计划计算已停止");
+            PageNotifyService.Info(LanguageService.Get("IndustryPlanetary_PlanCancelled"));
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            PageNotifyService.Error("行星计划计算失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_PlanFailed", ex.Message));
         }
         finally
         {
@@ -1057,7 +1181,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     {
         if (CurrentPlan is null)
         {
-            PageNotifyService.Info("请先执行行星计划，再保存结果快照");
+            PageNotifyService.Info(LanguageService.Get("IndustryPlanetary_SaveNeedResult"));
             return;
         }
         var saved = CreateSavedPlan(null);
@@ -1069,11 +1193,11 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         Notify(nameof(SavedPlanCountText));
         if (IndustryPlanetaryPlanService.Save(SavedPlans))
         {
-            PageNotifyService.Success($"已保存「{saved.Name}」");
+            PageNotifyService.Success(LanguageService.Format("IndustryPlanetary_Saved", saved.Name));
         }
         else
         {
-            PageNotifyService.Error("行星计划保存失败（详见日志）");
+            PageNotifyService.Error(LanguageService.Get("IndustryPlanetary_SaveFailed"));
         }
     }
 
@@ -1091,13 +1215,13 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         saved.Updated = DateTime.Now;
         if (!IndustryPlanetaryPlanService.Save(SavedPlans))
         {
-            PageNotifyService.Error("重命名后保存失败（详见日志）");
+            PageNotifyService.Error(LanguageService.Get("IndustryPlanetary_RenameFailed"));
             return false;
         }
 
         var id = saved.Id;        ReloadSavedPlans();
         SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == id) ?? SavedPlans.FirstOrDefault();
-        PageNotifyService.Success($"已重命名为「{trimmed}」");
+        PageNotifyService.Success(LanguageService.Format("IndustryPlanetary_Renamed", trimmed));
         return true;
     }
 
@@ -1148,7 +1272,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         SaveSettings();
         if (saved.Result is null)
         {
-            PageNotifyService.Info("已载入计划参数；该快照没有计算结果，请重新执行");
+            PageNotifyService.Info(LanguageService.Get("IndustryPlanetary_LoadedNoResult"));
         }
     }
 
@@ -1163,7 +1287,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         Notify(nameof(SavedPlanCountText));
         if (!IndustryPlanetaryPlanService.Save(SavedPlans))
         {
-            PageNotifyService.Error("删除后保存失败（详见日志）");
+            PageNotifyService.Error(LanguageService.Get("IndustryPlanetary_DeleteFailed"));
         }
     }
 
@@ -1332,15 +1456,17 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             {
                 var input = recipe.Inputs[0];
                 var perDay = product.RequiredPerDay * input.Quantity / recipe.OutputQuantity;
-                product.Inputs = string.Format(
-                    "{0} {1:N1}/天（P0，提取）",
+                product.Inputs = LanguageService.Format(
+                    "IndustryPlanetary_P0Input",
                     PlanetaryNameLocalizer.TypeName(input.TypeID, "Type " + input.TypeID),
                     perDay);
             }
             else
             {
-                product.Inputs = string.Join("、", recipe.Inputs.Select(p =>
-                    $"{PlanetaryNameLocalizer.TypeName(p.TypeID, "Type " + p.TypeID)} {p.Quantity:N0}"));
+                product.Inputs = string.Join(
+                    LanguageService.Get("IndustryPlanetary_ListSeparator"),
+                    recipe.Inputs.Select(p =>
+                        $"{PlanetaryNameLocalizer.TypeName(p.TypeID, "Type " + p.TypeID)} {p.Quantity:N0}"));
             }
         }
         foreach (var colony in plan.Colonies)
@@ -1352,11 +1478,40 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         {
             import.Name = PlanetaryNameLocalizer.TypeName(import.TypeId, import.Name);
         }
-        plan.Summary.TargetText = string.Join("、", Targets.Select(p => $"{p.Name} × {p.QuantityLong:N0}"));
+        plan.Summary.TargetText = string.Join(
+            LanguageService.Get("IndustryPlanetary_ListSeparator"),
+            Targets.Select(p => $"{p.Name} × {p.QuantityLong:N0}"));
 
-        // 规划器里的提示用的是 SDE 英文名（如 Proteins / Complex Organisms），
-        // 这里按本地化库统一替换成中文名；长名优先，避免短名先命中把长名拆坏。
-        var nameMap = new List<(string Source, string Target)>();
+        // 提示的两种形态：
+        // ① 新格式 = 语言无关的 `@code␟args`（由 DecodeWarning 按语言键格式化，参数在这里换成当前语言名）；
+        // ② 旧快照 = 纯文本，仍按"英文 SDE 名 → 本地化名"做一次替换。
+        BuildProductNameMap();
+
+        for (var i = 0; i < plan.Warnings.Count; i++)
+        {
+            var warning = plan.Warnings[i];
+            if (warning.StartsWith('@'))
+            {
+                continue;
+            }
+
+            warning = warning
+                .Replace("Temperate", PlanetaryNameLocalizer.PlanetType("Temperate"))
+                .Replace("Barren", PlanetaryNameLocalizer.PlanetType("Barren"));
+            foreach (var pair in _productNameMap.OrderByDescending(p => p.Key.Length))
+            {
+                warning = warning.Replace(pair.Key, pair.Value);
+            }
+            plan.Warnings[i] = warning;
+        }
+    }
+
+    /// <summary>英文 SDE 名 → 当前语言名（含用户自选目标的显示名），用于翻译提示参数与旧快照文本。</summary>
+    private Dictionary<string, string> _productNameMap = new(StringComparer.Ordinal);
+
+    private void BuildProductNameMap()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
         if (_recipes is not null)
         {
             foreach (var product in _recipes.Products)
@@ -1370,38 +1525,32 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
                 if (!string.IsNullOrWhiteSpace(local)
                     && !string.Equals(local, product.Name, StringComparison.Ordinal))
                 {
-                    nameMap.Add((product.Name, local));
+                    map[product.Name] = local;
                 }
             }
         }
-        nameMap = nameMap.OrderByDescending(p => p.Source.Length).ToList();
 
-        for (var i = 0; i < plan.Warnings.Count; i++)
+        foreach (var target in Targets)
         {
-            var warning = plan.Warnings[i]
-                .Replace("Temperate", PlanetaryNameLocalizer.PlanetType("Temperate"))
-                .Replace("Barren", PlanetaryNameLocalizer.PlanetType("Barren"));
-            foreach (var target in Targets)
+            var product = _recipes?.GetProduct(target.TypeId);
+            if (product is null || string.IsNullOrWhiteSpace(product.Name))
             {
-                var product = _recipes?.GetProduct(target.TypeId);
-                if (product is null || string.Equals(product.Name, target.Name, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-                warning = warning.Replace(product.Name, target.Name);
+                continue;
             }
-            foreach (var pair in nameMap)
+            if (!string.Equals(product.Name, target.Name, StringComparison.Ordinal))
             {
-                warning = warning.Replace(pair.Source, pair.Target);
+                map[product.Name] = target.Name;
             }
-            plan.Warnings[i] = warning;
         }
+
+        _productNameMap = map;
     }
 
     private PlanetarySavedPlan CreateSavedPlan(PlanetarySavedPlan? existing)
     {
         // 保存按钮不再让用户先起名：新计划用带秒的时间戳，之后再双击列表项重命名。
-        var baseName = existing?.Name ?? ("行星计划 " + DateTime.Now.ToString("MM-dd HH:mm:ss"));
+        var baseName = existing?.Name
+            ?? LanguageService.Format("IndustryPlanetary_DefaultPlanName", DateTime.Now.ToString("MM-dd HH:mm:ss"));
         var name = baseName;
         var index = 2;
         while (existing is null && SavedPlans.Any(p => string.Equals(p.Name, name, StringComparison.Ordinal)))
@@ -1444,8 +1593,9 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             .ToList();
         saved.Result = CurrentPlan;
         saved.Summary = CurrentPlan is null
-            ? "无结果快照"
-            : $"{CurrentPlan.Summary.TargetText} · {CurrentPlan.Summary.TotalColonies} 殖民地"
+            ? LanguageService.Get("IndustryPlanetary_NoResultSnapshot")
+            : LanguageService.Format("IndustryPlanetary_SummaryLine",
+                  CurrentPlan.Summary.TargetText, CurrentPlan.Summary.TotalColonies)
               + $" · {CurrentPlan.Summary.SetupCost:N0} ISK";
         return saved;
     }

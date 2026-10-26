@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services.Industry;
 using Wpf.Ui.Controls;
+using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -14,8 +15,8 @@ public partial class IndustryCustomCharacterWindow : FluentWindow
     public IndustryCustomCharacterWindow(IndustryCustomCharacter character)
     {
         InitializeComponent();
-        TitleBar.Title = "自定义角色";
-        Title = "自定义角色";
+        TitleBar.Title = LanguageService.Get("IndustryCustomCharacter_DefaultName");
+        Title = LanguageService.Get("IndustryCustomCharacter_DefaultName");
 
         _id = character?.Id ?? 0;
         _levelBoxes = new[]
@@ -39,7 +40,9 @@ public partial class IndustryCustomCharacterWindow : FluentWindow
             }
         }
 
-        NameBox.Text = string.IsNullOrWhiteSpace(character?.Name) ? "自定义角色" : character!.Name;
+        NameBox.Text = string.IsNullOrWhiteSpace(character?.Name)
+            ? LanguageService.Get("IndustryCustomCharacter_DefaultName")
+            : character!.Name;
         SetLevel(MassProductionBox, character?.MassProduction ?? 0);
         SetLevel(AdvancedMassProductionBox, character?.AdvancedMassProduction ?? 0);
         SetLevel(IndustryBox, character?.Industry ?? 0);
@@ -64,7 +67,9 @@ public partial class IndustryCustomCharacterWindow : FluentWindow
         return new IndustryCustomCharacter
         {
             Id = id,
-            Name = string.IsNullOrWhiteSpace(NameBox.Text) ? "自定义角色" : NameBox.Text.Trim(),
+            Name = string.IsNullOrWhiteSpace(NameBox.Text)
+                ? LanguageService.Get("IndustryCustomCharacter_DefaultName")
+                : NameBox.Text.Trim(),
             MassProduction = Level(MassProductionBox),
             AdvancedMassProduction = Level(AdvancedMassProductionBox),
             LaboratoryOperation = Level(LaboratoryOperationBox),
@@ -85,8 +90,9 @@ public partial class IndustryCustomCharacterWindow : FluentWindow
     private void UpdatePreview()
     {
         var profile = IndustryCharacterProfileFactory.CreateCustom(BuildModel(_id));
-        PreviewText.Text = $"制造 {profile.ManufacturingSlots} 槽 · 发明 {profile.InventionSlots} 槽 · 反应 {profile.ReactionSlots} 槽\n"
-            + $"制造时间 ×{profile.ManufacturingTimeMultiplier:0.00} · 反应时间 ×{profile.ReactionTimeMultiplier:0.00}";
+        PreviewText.Text = LanguageService.Format("IndustryCustomCharacter_PreviewText",
+            profile.ManufacturingSlots, profile.InventionSlots, profile.ReactionSlots,
+            profile.ManufacturingTimeMultiplier, profile.ReactionTimeMultiplier);
     }
 
     private void OnSaveClick(object sender, RoutedEventArgs e) => DialogResult = true;

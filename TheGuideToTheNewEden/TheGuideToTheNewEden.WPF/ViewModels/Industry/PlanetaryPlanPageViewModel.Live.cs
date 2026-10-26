@@ -32,7 +32,7 @@ public sealed partial class PlanetaryPlanPageViewModel
 
     public bool IsLiveNotBusy => !IsLiveBusy;
 
-    private string _liveStatusText = "读取殖民地";
+    private string _liveStatusText = LanguageService.Get("IndustryPlanetary_Live_Reading");
     public string LiveStatusText
     {
         get => _liveStatusText;
@@ -43,7 +43,7 @@ public sealed partial class PlanetaryPlanPageViewModel
         }
     }
 
-    private string _liveCharacterSummaryText = "暂无殖民地";
+    private string _liveCharacterSummaryText = LanguageService.Get("IndustryPlanetary_Live_NoColonies");
     public string LiveCharacterSummaryText
     {
         get => _liveCharacterSummaryText;
@@ -81,7 +81,8 @@ public sealed partial class PlanetaryPlanPageViewModel
 
     public bool HasSelectedLiveColony => SelectedLiveColony is not null;
     public bool HasNoSelectedLiveColony => SelectedLiveColony is null;
-    public string SelectedCharacterSummaryText => SelectedLiveCharacter?.Summary ?? "未选择角色";
+    public string SelectedCharacterSummaryText => SelectedLiveCharacter?.Summary
+        ?? LanguageService.Get("IndustryPlanetary_NoCharacter");
 
     private bool _liveScopeMissing;
     public bool LiveScopeMissing
@@ -106,7 +107,7 @@ public sealed partial class PlanetaryPlanPageViewModel
         var token = _liveCts.Token;
         IsLiveBusy = true;
         LiveScopeMissing = false;
-        LiveStatusText = "正在读取角色殖民地...";
+        LiveStatusText = LanguageService.Get("IndustryPlanetary_Live_ReadingColonies");
         try
         {
             var selected = Characters.Where(p => p.IsSelected).ToList();
@@ -114,7 +115,7 @@ public sealed partial class PlanetaryPlanPageViewModel
             if (selected.Count == 0)
             {
                 ClearLiveData();
-                PageNotifyService.Warning("未选择角色；请先在「计划设置 → 角色与产能」添加或勾选角色");
+                PageNotifyService.Warning(LanguageService.Get("IndustryPlanetary_Live_NoCharacterTip"));
                 return;
             }
 
@@ -149,17 +150,19 @@ public sealed partial class PlanetaryPlanPageViewModel
                 var issues = new List<string>();
                 if (scopeMissing.Count > 0)
                 {
-                    issues.Add("缺少 esi-planets.manage_planets.v1 权限，请重新授权：" + string.Join("、", scopeMissing));
+                    issues.Add(LanguageService.Format("IndustryPlanetary_Live_MissingScope",
+                        string.Join(LanguageService.Get("IndustryPlanetary_ListSeparator"), scopeMissing)));
                 }
                 if (errors.Count > 0)
                 {
                     issues.Add(string.Join("；", errors));
                 }
-                PageNotifyService.Error("殖民地刷新失败：" + string.Join("  ", issues));
+                PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_Live_Failed",
+                    string.Join("  ", issues)));
                 return;
             }
 
-            LiveStatusText = "正在读取殖民地布局...";
+            LiveStatusText = LanguageService.Get("IndustryPlanetary_Live_ReadingLayout");
             var selectedCharacterId = SelectedLiveCharacter?.CharacterId ?? 0;
             var selectedPlanetId = SelectedLiveColony?.PlanetId ?? 0;
             var semaphore = new SemaphoreSlim(3);
@@ -201,28 +204,31 @@ public sealed partial class PlanetaryPlanPageViewModel
             var notices = new List<string>();
             if (errors.Count > 0)
             {
-                notices.Add("读取失败：" + string.Join("；", errors));
+                notices.Add(LanguageService.Format("IndustryPlanetary_Live_ReadFailed",
+                    string.Join(LanguageService.Get("IndustryPlanetary_ErrorSeparator"), errors)));
             }
             if (scopeMissing.Count > 0)
             {
-                notices.Add("缺少行星权限：" + string.Join("、", scopeMissing));
+                notices.Add(LanguageService.Format("IndustryPlanetary_Live_MissingScopeShort",
+                    string.Join(LanguageService.Get("IndustryPlanetary_ListSeparator"), scopeMissing)));
             }
             if (notices.Count > 0)
             {
-                PageNotifyService.Error("殖民地刷新未全部成功：" + string.Join("  ", notices));
+                PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_Live_PartialFailed",
+                    string.Join("  ", notices)));
             }
             else
             {
-                PageNotifyService.Success("殖民地数据已刷新");
+                PageNotifyService.Success(LanguageService.Get("IndustryPlanetary_Live_Refreshed"));
             }
         }
         catch (OperationCanceledException)
         {
-            PageNotifyService.Info("殖民地刷新已停止");
+            PageNotifyService.Info(LanguageService.Get("IndustryPlanetary_Live_RefreshStopped"));
         }
         catch (Exception ex)
         {
-            PageNotifyService.Error("殖民地读取失败：" + ex.Message);
+            PageNotifyService.Error(LanguageService.Format("IndustryPlanetary_Live_ReadError", ex.Message));
             Core.Log.Error(ex);
         }
         finally
@@ -236,13 +242,22 @@ public sealed partial class PlanetaryPlanPageViewModel
         _liveCts?.Cancel();
     }
 
+    /// <summary>角色/殖民地计数摘要（切语言时也重算）。</summary>
+    private void RefreshLiveCharacterSummary()
+    {
+        LiveCharacterSummaryText = LiveCharacters.Count == 0
+            ? LanguageService.Get("IndustryPlanetary_Live_NoColonies")
+            : LanguageService.Format("IndustryPlanetary_Live_CharacterSummary",
+                LiveCharacters.Count, LivePlanets.Count);
+    }
+
     private void ClearLiveData()
     {
         LivePlanets.Clear();
         LiveCharacters.Clear();
         SelectedLiveCharacter = null;
         SelectedLiveColony = null;
-        LiveCharacterSummaryText = "暂无殖民地";
+        LiveCharacterSummaryText = LanguageService.Get("IndustryPlanetary_Live_NoColonies");
         Notify(nameof(HasLivePlanets));
         Notify(nameof(HasNoLivePlanets));
     }
@@ -259,9 +274,7 @@ public sealed partial class PlanetaryPlanPageViewModel
                 group.Key, group.First().CharacterName, colonies));
         }
 
-        LiveCharacterSummaryText = LiveCharacters.Count == 0
-            ? "暂无殖民地"
-            : $"{LiveCharacters.Count} 个角色 · {LivePlanets.Count} 个殖民地";
+        RefreshLiveCharacterSummary();
         Notify(nameof(HasLivePlanets));
         Notify(nameof(HasNoLivePlanets));
 
@@ -299,7 +312,9 @@ public sealed partial class PlanetaryPlanPageViewModel
         if (layout is null)
         {
             item.HasAlert = true;
-            item.AlertText = string.IsNullOrEmpty(layoutResult.Error) ? "殖民布局读取失败" : layoutResult.Error;
+            item.AlertText = string.IsNullOrEmpty(layoutResult.Error)
+                ? LanguageService.Get("IndustryPlanetary_Live_LayoutFailed")
+                : layoutResult.Error;
             return item;
         }
 
@@ -317,11 +332,19 @@ public sealed partial class PlanetaryPlanPageViewModel
             item.Extractors.Add(new PlanetaryLiveExtractorItem
             {
                 ProductName = productName,
-                QuantityText = pin.QtyPerCycle > 0 ? $"{pin.QtyPerCycle:N0} / 周期" : "无产量",
+                QuantityText = pin.QtyPerCycle > 0
+                    ? LanguageService.Format("IndustryPlanetary_Live_QtyPerCycle", pin.QtyPerCycle)
+                    : LanguageService.Get("IndustryPlanetary_Live_NoOutput"),
                 CycleText = FormatCycle(pin.CycleTime),
-                HeadsText = pin.HeadCount > 0 ? $"{pin.HeadCount} 头" : string.Empty,
-                RemainingText = isStopped ? "已停止" : FormatRemaining(expiryUtc.GetValueOrDefault()),
-                StatusText = isStopped ? "已停止" : "提取中",
+                HeadsText = pin.HeadCount > 0
+                    ? LanguageService.Format("IndustryPlanetary_Live_Heads", pin.HeadCount)
+                    : string.Empty,
+                RemainingText = isStopped
+                    ? LanguageService.Get("IndustryPlanetary_Live_Stopped")
+                    : FormatRemaining(expiryUtc.GetValueOrDefault()),
+                StatusText = isStopped
+                    ? LanguageService.Get("IndustryPlanetary_Live_Stopped")
+                    : LanguageService.Get("IndustryPlanetary_Live_Extracting"),
                 IsStopped = isStopped,
             });
             produced.Add(pin.ExtractorProductTypeId);
@@ -336,7 +359,7 @@ public sealed partial class PlanetaryPlanPageViewModel
             {
                 item.Factories.Add(new PlanetaryLiveFactoryItem
                 {
-                    ProductName = "未知配方 #" + group.Key,
+                    ProductName = LanguageService.Format("IndustryPlanetary_Live_UnknownRecipe", group.Key),
                     Count = group.Count(),
                 });
                 continue;
@@ -351,9 +374,11 @@ public sealed partial class PlanetaryPlanPageViewModel
                 ProductName = PlanetaryNameLocalizer.TypeName(product.TypeId, product.Name),
                 Count = group.Count(),
                 OutputPerDay = outputPerDay,
-                OutputText = $"{outputPerDay:N0}/天",
+                OutputText = LanguageService.Format("IndustryPlanetary_PerDay", outputPerDay),
                 CycleText = FormatCycle(recipe.CycleTime),
-                InputsText = string.IsNullOrEmpty(inputText) ? "无输入" : inputText,
+                InputsText = string.IsNullOrEmpty(inputText)
+                    ? LanguageService.Get("IndustryPlanetary_Live_NoInput")
+                    : inputText,
             });
             produced.Add(product.TypeId);
             foreach (var input in recipe.Inputs)
@@ -370,15 +395,27 @@ public sealed partial class PlanetaryPlanPageViewModel
             .GroupBy(p => p.TypeId)
             .Select(p => $"{TypeName(p.Key)} ×{p.Sum(x => x.Amount):N0}")
             .ToList();
-        item.StorageText = storage.Count == 0 ? "无库存" : string.Join(" · ", storage);
+        item.StorageText = storage.Count == 0
+            ? LanguageService.Get("IndustryPlanetary_Live_NoStock")
+            : string.Join(" · ", storage);
         var imports = consumed.Where(p => !produced.Contains(p)).Select(TypeName).ToList();
         var exports = produced.Where(p => !consumed.Contains(p)).Select(TypeName).ToList();
-        item.ImportsText = imports.Count == 0 ? "无" : string.Join("、", imports);
-        item.ExportsText = exports.Count == 0 ? "无" : string.Join("、", exports);
+        item.ImportsText = imports.Count == 0
+            ? LanguageService.Get("IndustryPlanetary_Live_None")
+            : string.Join(LanguageService.Get("IndustryPlanetary_ListSeparator"), imports);
+        item.ExportsText = exports.Count == 0
+            ? LanguageService.Get("IndustryPlanetary_Live_None")
+            : string.Join(LanguageService.Get("IndustryPlanetary_ListSeparator"), exports);
 
         var alerts = new List<string>();
-        if (stopped > 0) alerts.Add($"提取器停止 {stopped}");
-        if (imports.Count > 0) alerts.Add("需进口");
+        if (stopped > 0)
+        {
+            alerts.Add(LanguageService.Format("IndustryPlanetary_Live_ExtractorStopped", stopped));
+        }
+        if (imports.Count > 0)
+        {
+            alerts.Add(LanguageService.Get("IndustryPlanetary_Live_NeedImport"));
+        }
         item.HasAlert = alerts.Count > 0;
         item.AlertText = string.Join(" · ", alerts);
         return item;
@@ -390,11 +427,19 @@ public sealed partial class PlanetaryPlanPageViewModel
         foreach (var pin in layout.Pins)
         {
             var role = pin.ExtractorProductTypeId > 0
-                ? "提取器"
+                ? "extractor"
                 : pin.FactorySchematicId > 0
-                    ? "工厂"
-                    : pin.Contents.Count > 0 ? "仓储" : "设施";
-            var typeName = pin.TypeId > 0 ? TypeName(pin.TypeId) : role;
+                    ? "factory"
+                    : pin.Contents.Count > 0 ? "storage" : "facility";
+            var typeName = pin.TypeId > 0
+                ? TypeName(pin.TypeId)
+                : LanguageService.Get(role switch
+                {
+                    "extractor" => "IndustryPlanetary_RoleExtractor",
+                    "factory" => "IndustryPlanetary_RoleFactory",
+                    "storage" => "IndustryPlanetary_RoleStorage",
+                    _ => "IndustryPlanetary_RoleFacility",
+                });
             var mapped = new PlanetaryLivePinItem
             {
                 PinId = pin.PinId,
@@ -403,7 +448,7 @@ public sealed partial class PlanetaryPlanPageViewModel
                 Role = role,
                 IsExtractor = pin.ExtractorProductTypeId > 0,
                 IsFactory = pin.FactorySchematicId > 0,
-                IsStorage = role == "仓储",
+                IsStorage = role == "storage",
             };
             item.Pins.Add(mapped);
             byId[pin.PinId] = mapped;
@@ -442,9 +487,9 @@ public sealed partial class PlanetaryPlanPageViewModel
 
     private static int RoleOrder(string role)
     {
-        return role == "设施" ? 0
-            : role == "仓储" ? 1
-            : role == "提取器" ? 2
+        return role == "facility" ? 0
+            : role == "storage" ? 1
+            : role == "extractor" ? 2
             : 3;
     }
 
@@ -475,11 +520,15 @@ public sealed partial class PlanetaryPlanPageViewModel
                 }
                 item.ExtractorCapacitySeries.Add(new PlanetaryLiveCapacityPoint
                 {
-                    Label = i == 0 ? "现在" : $"{hours / 24:0.#}d",
+                    Label = i == 0
+                        ? LanguageService.Get("IndustryPlanetary_Now")
+                        : $"{hours / 24:0.#}d",
                     Value = total,
                 });
             }
-            item.ExtractorCapacityHint = hasActiveExtractor ? "运行中" : "已停止";
+            item.ExtractorCapacityHint = LanguageService.Get(hasActiveExtractor
+                ? "IndustryPlanetary_Live_Running"
+                : "IndustryPlanetary_Live_Stopped");
         }
 
         if (item.Factories.Count > 0)
@@ -489,13 +538,15 @@ public sealed partial class PlanetaryPlanPageViewModel
             {
                 item.FactoryCapacitySeries.Add(new PlanetaryLiveCapacityPoint
                 {
-                    Label = i == 0 ? "现在" : $"{(i * 12.0 / 24):0.#}d",
+                    Label = i == 0
+                        ? LanguageService.Get("IndustryPlanetary_Now")
+                        : $"{(i * 12.0 / 24):0.#}d",
                     Value = total,
                 });
             }
             var factoryCount = item.Factories.Sum(p => p.Count);
-            item.FactoryCapacityHint =
-                $"按当前 {factoryCount} 个工厂与配方循环估算的满产上限；ESI 不提供工厂启停/输入库存，实际可能因缺料停产。";
+            item.FactoryCapacityHint = LanguageService.Format(
+                "IndustryPlanetary_Live_FactoryHint", factoryCount);
         }
     }
 
@@ -514,17 +565,32 @@ public sealed partial class PlanetaryPlanPageViewModel
     private static string FormatCycle(long seconds)
     {
         if (seconds <= 0) return string.Empty;
-        if (seconds % 3600 == 0) return $"{seconds / 3600} 小时/周期";
-        if (seconds % 60 == 0) return $"{seconds / 60} 分/周期";
-        return $"{seconds} 秒/周期";
+        if (seconds % 3600 == 0)
+        {
+            return LanguageService.Format("IndustryPlanetary_Live_HoursPerCycle", seconds / 3600);
+        }
+        if (seconds % 60 == 0)
+        {
+            return LanguageService.Format("IndustryPlanetary_Live_MinutesPerCycle", seconds / 60);
+        }
+        return LanguageService.Format("IndustryPlanetary_Live_SecondsPerCycle", seconds);
     }
 
     private static string FormatRemaining(DateTime expiryUtc)
     {
         var span = expiryUtc - DateTime.UtcNow;
-        if (span <= TimeSpan.Zero) return "已停止";
-        if (span.TotalDays >= 1) return $"剩余 {(int)span.TotalDays} 天 {span.Hours} 小时";
-        if (span.TotalHours >= 1) return $"剩余 {span.Hours} 小时 {span.Minutes} 分";
-        return $"剩余 {Math.Max(0, span.Minutes)} 分";
+        if (span <= TimeSpan.Zero) return LanguageService.Get("IndustryPlanetary_Live_Stopped");
+        if (span.TotalDays >= 1)
+        {
+            return LanguageService.Format("IndustryPlanetary_Live_RemainingDays",
+                (int)span.TotalDays, span.Hours);
+        }
+        if (span.TotalHours >= 1)
+        {
+            return LanguageService.Format("IndustryPlanetary_Live_RemainingHours",
+                span.Hours, span.Minutes);
+        }
+        return LanguageService.Format("IndustryPlanetary_Live_RemainingMinutes",
+            Math.Max(0, span.Minutes));
     }
 }

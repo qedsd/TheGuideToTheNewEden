@@ -296,19 +296,19 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal">
                         <StackPanel Width="120" Margin="0,0,12,0">
-                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="全部完成" />
+                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_AllComplete}" />
                             <TextBlock Style="{StaticResource ScheduleValue}" Text="{Binding Schedule.MakespanText}" />
                         </StackPanel>
                         <StackPanel Width="145" Margin="0,0,12,0">
-                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="制造产线 / 峰值" />
+                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_ManufacturingLines}" />
                             <TextBlock Style="{StaticResource ScheduleValue}" Text="{Binding Schedule.ManufacturingUsageText}" />
                         </StackPanel>
                         <StackPanel Width="160" Margin="0,0,12,0">
-                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="专用槽（已用/总）" />
+                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_DedicatedSlots}" />
                             <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Schedule.SpecialUsageText}" />
                         </StackPanel>
                         <StackPanel Width="175" Margin="0,0,12,0">
-                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="瓶颈" />
+                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_Bottleneck}" />
                             <TextBlock
                                 FontSize="14"
                                 FontWeight="SemiBold"
@@ -317,11 +317,11 @@
                                 TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                         <StackPanel Width="125" Margin="0,0,12,0">
-                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="任务费合计" />
+                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_JobCostTotal}" />
                             <TextBlock Style="{StaticResource ScheduleValue}" Text="{Binding Schedule.TotalJobCostText}" />
                         </StackPanel>
                         <StackPanel Width="100">
-                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="关键任务" />
+                            <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_CriticalJobs}" />
                             <TextBlock Style="{StaticResource ScheduleValue}" Text="{Binding Schedule.CriticalCountText}" />
                         </StackPanel>
                     </StackPanel>
@@ -333,14 +333,14 @@
                             Margin="0,0,6,0"
                             VerticalAlignment="Center"
                             Style="{StaticResource ScheduleLabel}"
-                            Text="优化目标" />
+                            Text="{DynamicResource IndustrySchedule_Objective}" />
                         <ComboBox
                             Width="112"
                             IsEnabled="{Binding CanReassignSchedule}"
                             SelectedIndex="{Binding ScheduleObjectiveIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="最短完成" />
-                            <ComboBoxItem Content="最低成本" />
-                            <ComboBoxItem Content="平衡" />
+                            <ComboBoxItem Content="{DynamicResource IndustrySchedule_ObjectiveMakespan}" />
+                            <ComboBoxItem Content="{DynamicResource IndustrySchedule_ObjectiveCost}" />
+                            <ComboBoxItem Content="{DynamicResource IndustrySchedule_ObjectiveBalanced}" />
                         </ComboBox>
                     </StackPanel>
                 </Grid>
@@ -359,7 +359,7 @@
                     Background="Transparent"
                     SelectedIndex="{Binding DetailTabIndex, Mode=TwoWay}"
                     SelectionChanged="OnScheduleTabChanged">
-                    <TabItem Header="排程">
+                    <TabItem Header="{DynamicResource IndustrySchedule_TabSchedule}">
                         <ScrollViewer
                             x:Name="ScheduleScroll"
                             Cursor="SizeAll"
@@ -377,7 +377,7 @@
                                         Click="OnGanttZoomOutClick"
                                         Content="−"
                                         FontSize="10"
-                                        ToolTip="缩小甘特图" />
+                                        ToolTip="{DynamicResource IndustrySchedule_ZoomOut}" />
                                     <TextBlock
                                         Width="48"
                                         Margin="6,0"
@@ -392,7 +392,7 @@
                                         Click="OnGanttZoomInClick"
                                         Content="+"
                                         FontSize="10"
-                                        ToolTip="放大甘特图" />
+                                        ToolTip="{DynamicResource IndustrySchedule_ZoomIn}" />
                                     <ui:Button
                                         Margin="6,0,0,0"
                                         Padding="8,2"
@@ -405,14 +405,14 @@
                                         Padding="8,2"
                                         Appearance="Secondary"
                                         Click="OnGanttFitClick"
-                                        Content="适配全宽"
+                                        Content="{DynamicResource IndustrySchedule_FitWidth}"
                                         FontSize="10" />
                                     <ui:Button
                                         Margin="6,0,0,0"
                                         Padding="8,2"
                                         Appearance="Secondary"
                                         Click="OnExportScheduleClick"
-                                        Content="导出排程"
+                                        Content="{DynamicResource IndustrySchedule_ExportCsv}"
                                         FontSize="10" />
                                     <TextBlock
                                         Margin="12,0,0,0"
@@ -442,7 +442,7 @@
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Style="{StaticResource ScheduleLabel}"
-                                        Text="角色 / 槽位" />
+                                        Text="{DynamicResource IndustrySchedule_CharacterSlot}" />
                                     <ItemsControl
                                         Grid.Column="1"
                                         Width="{Binding Schedule.TimelineWidth}"
@@ -606,7 +606,7 @@
                         </ScrollViewer>
                     </TabItem>
 
-                    <TabItem Header="步骤">
+                    <TabItem Header="{DynamicResource IndustrySchedule_TabSteps}">
                         <ui:DataGrid
                             Margin="6"
                             ItemsSource="{Binding Schedule.StepsView}"
@@ -629,19 +629,21 @@
                                                         FontSize="12"
                                                         FontWeight="SemiBold"
                                                         Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                        Text="{Binding Name}" />
+                                                        Text="{Binding Name, Converter={StaticResource IndustryStageName}}" />
                                                     <TextBlock
                                                         Margin="8,0,0,0"
                                                         FontSize="12"
-                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Text="{Binding ItemCount, StringFormat={}{0} 步}" />
+                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                                                        <Run Text="{Binding ItemCount, Mode=OneWay}" />
+                                                        <Run Text="{DynamicResource IndustrySchedule_StepsSuffix}" />
+                                                    </TextBlock>
                                                 </StackPanel>
                                             </Border>
                                             <DataTemplate.Triggers>
-                                                <DataTrigger Binding="{Binding Name}" Value="发明">
+                                                <DataTrigger Binding="{Binding Name}" Value="invention">
                                                     <Setter TargetName="StepGroupTitle" Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding Name}" Value="反应">
+                                                <DataTrigger Binding="{Binding Name}" Value="reaction">
                                                     <Setter TargetName="StepGroupTitle" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
                                                 </DataTrigger>
                                             </DataTemplate.Triggers>
@@ -650,7 +652,7 @@
                                 </GroupStyle>
                             </ui:DataGrid.GroupStyle>
                             <ui:DataGrid.Columns>
-                                <DataGridTemplateColumn Width="Auto" Header="步骤">
+                                <DataGridTemplateColumn Width="Auto" Header="{DynamicResource IndustrySchedule_TabSteps}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" Margin="4,3">
@@ -689,7 +691,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="220" Header="产出">
+                                <DataGridTemplateColumn Width="220" Header="{DynamicResource IndustrySchedule_Produced}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock
@@ -701,7 +703,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="280" Header="投入">
+                                <DataGridTemplateColumn Width="280" Header="{DynamicResource IndustrySchedule_Input}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ItemsControl ItemTemplate="{StaticResource MaterialChipTemplate}" ItemsSource="{Binding Job.Inputs}">
@@ -714,7 +716,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="150" Header="产线 / 时间">
+                                <DataGridTemplateColumn Width="150" Header="{DynamicResource IndustrySchedule_ColLineTime}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Margin="4,3">
@@ -732,7 +734,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="76" Header="任务费">
+                                <DataGridTemplateColumn Width="76" Header="{DynamicResource IndustrySchedule_JobCost}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock
@@ -745,7 +747,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="86" Header="BOM / 成本">
+                                <DataGridTemplateColumn Width="86" Header="{DynamicResource IndustryPage_BomCost}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ui:Button
@@ -753,7 +755,7 @@
                                                 HorizontalAlignment="Left"
                                                 Appearance="Secondary"
                                                 Click="OnViewBomCostClick"
-                                                Content="查看"
+                                                Content="{DynamicResource IndustrySchedule_View}"
                                                 FontSize="10"
                                                 Tag="{Binding}" />
                                         </DataTemplate>
@@ -763,7 +765,7 @@
                         </ui:DataGrid>
                     </TabItem>
 
-                    <TabItem Header="工位">
+                    <TabItem Header="{DynamicResource IndustrySchedule_TabStations}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <ItemsControl Margin="8" ItemsSource="{Binding Schedule.ActiveCharacters}">
                                 <ItemsControl.ItemTemplate>
@@ -889,7 +891,7 @@
                                                                         VerticalAlignment="Center"
                                                                         FontSize="12"
                                                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                        Text="空闲">
+                                                                        Text="{DynamicResource IndustrySchedule_Idle}">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
                                                                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -933,7 +935,7 @@
                         </ScrollViewer>
                     </TabItem>
 
-                    <TabItem Header="关系">
+                    <TabItem Header="{DynamicResource IndustrySchedule_TabRelations}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -949,7 +951,7 @@
                                     Margin="6,0,14,0"
                                     FontSize="11"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Text="依赖" />
+                                    Text="{DynamicResource IndustrySchedule_Dependency}" />
                                 <Rectangle
                                     Width="18"
                                     Height="2"
@@ -959,7 +961,7 @@
                                     Margin="6,0,0,0"
                                     FontSize="11"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Text="关键路径" />
+                                    Text="{DynamicResource IndustrySchedule_CriticalPath}" />
                             </StackPanel>
                             <ScrollViewer
                                 Grid.Row="1"
@@ -1081,7 +1083,7 @@
                         </ScrollViewer>
                         </Grid>
                     </TabItem>
-                    <TabItem Header="BOM / 成本">
+                    <TabItem Header="{DynamicResource IndustryPage_BomCost}">
                         <uc:IndustryProductionChainView />
                     </TabItem>
                 </TabControl>
@@ -1101,7 +1103,7 @@
                             <TextBlock
                                 FontSize="13"
                                 FontWeight="SemiBold"
-                                Text="任务详情" />
+                                Text="{DynamicResource IndustrySchedule_JobDetails}" />
                             <ContentControl Margin="0,6,0,0" Content="{Binding Schedule.SelectedJob}">
                                 <ContentControl.ContentTemplate>
                                     <DataTemplate>
@@ -1122,11 +1124,11 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="产线" />
+                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_Line}" />
                                                     <TextBlock FontSize="12" Text="{Binding LineText}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1">
-                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="时间" />
+                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_Time}" />
                                                     <TextBlock
                                                         FontFamily="Cascadia Code, Consolas"
                                                         FontSize="12"
@@ -1140,7 +1142,7 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="活动 / 耗时" />
+                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_ActivityDuration}" />
                                                     <TextBlock
                                                         x:Name="DetailActivityTitle"
                                                         FontSize="12"
@@ -1148,11 +1150,11 @@
                                                         Text="{Binding ActivityText}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="技能修正" />
+                                                    <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_SkillModifier}" />
                                                     <TextBlock FontSize="12" Text="{Binding TimeMultiplierText}" />
                                                 </StackPanel>
                                             </Grid>
-                                            <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="投入" />
+                                            <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="{DynamicResource IndustrySchedule_Input}" />
                                             <ItemsControl ItemTemplate="{StaticResource MaterialChipTemplate}" ItemsSource="{Binding Inputs}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -1160,7 +1162,7 @@
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
-                                            <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="产出" />
+                                            <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="{DynamicResource IndustrySchedule_Produced}" />
                                             <ItemsControl ItemTemplate="{StaticResource MaterialChipOutputTemplate}" ItemsSource="{Binding Outputs}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -1173,7 +1175,7 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Style="{StaticResource ScheduleLabel}" Text="任务费" />
+                                                <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_JobCost}" />
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     FontFamily="Cascadia Code, Consolas"
@@ -1193,7 +1195,7 @@
                                 </ContentControl.ContentTemplate>
                             </ContentControl>
 
-                            <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="候选角色 / 分工依据" />
+                            <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="{DynamicResource IndustrySchedule_CandidateCharacters}" />
                             <ItemsControl ItemsSource="{Binding Schedule.Candidates}" IsEnabled="{Binding CanReassignSchedule}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -1248,13 +1250,13 @@
                                                         <TextBlock
                                                             FontSize="11"
                                                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Text="当前" />
+                                                            Text="{DynamicResource IndustrySchedule_Current}" />
                                                     </Border>
                                                     <Button
                                                         Margin="5,0,0,0"
                                                         Padding="6,1"
                                                         Click="OnReassignClick"
-                                                        Content="改派"
+                                                        Content="{DynamicResource IndustrySchedule_Reassign}"
                                                         FontSize="12"
                                                         IsEnabled="{Binding CanReassign}"
                                                         Tag="{Binding}" />
@@ -1269,14 +1271,14 @@
                                 Padding="8,3"
                                 HorizontalAlignment="Left"
                                 Click="OnAutoAssignClick"
-                                Content="自动排产"
+                                Content="{DynamicResource IndustrySchedule_AutoSchedule}"
                                 FontSize="12"
                                 IsEnabled="{Binding CanReassignSchedule}" />
                             <TextBlock
                                 Margin="0,7,0,0"
                                 FontSize="11"
                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="优化器按最早完成 / 成本选择；技能快不代表一定选，线满时会比较排队。"
+                                Text="{DynamicResource IndustrySchedule_OptimizerTip}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </ScrollViewer>
@@ -1314,12 +1316,12 @@
                     HorizontalAlignment="Center"
                     FontSize="15"
                     FontWeight="SemiBold"
-                    Text="还没有排产结果" />
+                    Text="{DynamicResource IndustrySchedule_NoResult}" />
                 <TextBlock
                     Margin="0,4,0,0"
                     HorizontalAlignment="Center"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="在「计划设置」添加目标并点击「计算制造计划」，这里会按角色技能槽位生成排程、步骤、工位和关系图。"
+                    Text="{DynamicResource IndustrySchedule_Empty}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
             </StackPanel>

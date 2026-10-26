@@ -419,11 +419,12 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 var job = pair.Value;
                 if (!best.Assignments.TryGetValue(job.Key, out var assignment)) continue;
 
-                var stage = job.ActivityId == 8 ? "发明"
-                    : job.ActivityId == 11 ? "反应"
-                    : job.ActivityId == 100 ? "行星"
-                    : job.IsTarget ? "总装"
-                    : "组件";
+                // 阶段用语言无关代码；WPF 侧按 code 查语言键显示。
+                var stage = job.ActivityId == 8 ? "invention"
+                    : job.ActivityId == 11 ? "reaction"
+                    : job.ActivityId == 100 ? "planetary"
+                    : job.IsTarget ? "target"
+                    : "component";
 
                 var resultJob = new IndustryScheduleJob
                 {
@@ -473,7 +474,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                     IsInvention = source.IsInvention,
                     IsTarget = false,
                     IsInProgress = true,
-                    Stage = "在制",
+                    Stage = "inprogress",
                     Runs = source.Runs,
                     QuantityProduced = source.QuantityProduced,
                     BaseHours = active.Duration,
@@ -496,7 +497,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                             Name = source.ProductName,
                             Quantity = source.QuantityProduced,
                             StateKey = "inprogress",
-                            StateText = "在制",
+                            StateText = "inprogress",
                         },
                     },
                 });
@@ -531,19 +532,19 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
                 for (int i = 0; i < profile.ManufacturingSlots; i++)
                 {
-                    character.Lines.Add(MakeLine("M", "制造", i));
+                    character.Lines.Add(MakeLine("M", "manufacturing", i));
                 }
                 for (int i = 0; i < profile.InventionSlots; i++)
                 {
-                    character.Lines.Add(MakeLine("I", "发明", i));
+                    character.Lines.Add(MakeLine("I", "invention", i));
                 }
                 for (int i = 0; i < profile.ReactionSlots; i++)
                 {
-                    character.Lines.Add(MakeLine("R", "反应", i));
+                    character.Lines.Add(MakeLine("R", "reaction", i));
                 }
                 if (result.Jobs.Any(p => p.CharacterId == profile.CharacterId && p.ActivityId == 100))
                 {
-                    character.Lines.Add(MakeLine("P", "行星", 0));
+                    character.Lines.Add(MakeLine("P", "planetary", 0));
                 }
 
                 foreach (var job in result.Jobs.Where(p => p.CharacterId == profile.CharacterId))
@@ -654,7 +655,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                     profile.InventionTimeMultiplier = Math.Clamp(profile.InventionTimeMultiplier, 0.1, 2.0);
                     if (string.IsNullOrWhiteSpace(profile.CharacterName))
                     {
-                        profile.CharacterName = profile.CharacterId != 0 ? "角色 " + profile.CharacterId : "默认角色";
+                        profile.CharacterName = profile.CharacterId != 0 ? "#" + profile.CharacterId : "auto:default";
                     }
                     list.Add(profile);
                 }
@@ -665,11 +666,11 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 list.Add(new IndustryCharacterProfile
                 {
                     CharacterId = 0,
-                    CharacterName = "默认角色",
+                    CharacterName = "auto:default",
                     ManufacturingSlots = 11,
                     InventionSlots = 11,
                     ReactionSlots = 11,
-                    Source = "默认（满技能估算）",
+                    Source = "default",
                 });
             }
             return list;
@@ -696,10 +697,10 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         {
             return activityId switch
             {
-                8 => "发明",
-                11 => "反应",
-                100 => "行星",
-                _ => "制造",
+                8 => "invention",
+                11 => "reaction",
+                100 => "planetary",
+                _ => "manufacturing",
             };
         }
 
@@ -729,18 +730,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             return "upstream";
         }
 
-        private static string StateText(string state)
-        {
-            return state switch
-            {
-                "buy" => "采购",
-                "stock" => "库存",
-                "upstream" => "上游",
-                "target" => "目标",
-                "downstream" => "下游",
-                _ => state,
-            };
-        }
+        private static string StateText(string state) => state;
 
         private static int StateOrder(string state)
         {
@@ -766,16 +756,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             };
         }
 
-        private static string ActivityText(int activityId)
-        {
-            return activityId switch
-            {
-                8 => "发明",
-                11 => "反应",
-                100 => "行星",
-                _ => "制造",
-            };
-        }
+        /// <summary>活动代码（与 <see cref="ActivityKey"/> 相同）；显示文案由 UI 层按语言生成。</summary>
+        private static string ActivityText(int activityId) => ActivityKey(activityId);
 
         private sealed class JobWork
         {

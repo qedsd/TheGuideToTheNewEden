@@ -6,6 +6,8 @@ using TheGuideToTheNewEden.WPF.Services.Characters;
 using EveColony = EVEStandard.Models.Colony;
 using EveColonyLayout = EVEStandard.Models.ColonyLayout;
 
+using TheGuideToTheNewEden.WPF.Services;
+
 namespace TheGuideToTheNewEden.WPF.Services.Industry;
 
 public sealed class PlanetaryColonySummary
@@ -94,7 +96,7 @@ public static class CharacterPlanetaryDataService
     {
         if (context is null)
         {
-            return new PlanetaryColoniesResult { Error = "角色上下文为空" };
+            return new PlanetaryColoniesResult { Error = LanguageService.Get("IndustryPlanetary_ErrorNoCharacterContext") };
         }
         if (!HasScope(context))
         {
@@ -108,7 +110,7 @@ public static class CharacterPlanetaryDataService
         }
         if (!await context.EnsureTokenValidAsync())
         {
-            return new PlanetaryColoniesResult { Error = "角色令牌已失效，请重新授权" };
+            return new PlanetaryColoniesResult { Error = LanguageService.Get("IndustryPlanetary_ErrorTokenExpired") };
         }
 
         try
@@ -136,7 +138,7 @@ public static class CharacterPlanetaryDataService
     {
         if (context is null)
         {
-            return new PlanetaryColonyLayoutResult { Error = "角色上下文为空" };
+            return new PlanetaryColonyLayoutResult { Error = LanguageService.Get("IndustryPlanetary_ErrorNoCharacterContext") };
         }
         if (!HasScope(context))
         {
@@ -151,7 +153,7 @@ public static class CharacterPlanetaryDataService
         }
         if (!await context.EnsureTokenValidAsync())
         {
-            return new PlanetaryColonyLayoutResult { Error = "角色令牌已失效，请重新授权" };
+            return new PlanetaryColonyLayoutResult { Error = LanguageService.Get("IndustryPlanetary_ErrorTokenExpired") };
         }
 
         try

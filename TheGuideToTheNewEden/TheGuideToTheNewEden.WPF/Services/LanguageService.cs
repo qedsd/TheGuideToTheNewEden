@@ -38,6 +38,42 @@ public static class LanguageService
 
     public static event EventHandler<string>? LanguageChanged;
 
+    /// <summary>
+    /// 按语言键取当前语言的文案（代码侧统一入口，不再在 C# 里写死中文）。
+    /// 缺失的键回退成键名本身（便于一眼看出漏译），非 UI 线程调用也不会抛异常。
+    /// </summary>
+    public static string Get(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            return Application.Current?.TryFindResource(key) as string ?? key;
+        }
+        catch
+        {
+            return key;
+        }
+    }
+
+    /// <summary>按语言键取带占位符的文案并格式化（<see cref="Get"/> + <see cref="string.Format(string, object[])"/>）。</summary>
+    public static string Format(string key, params object?[] args)
+    {
+        var format = Get(key);
+        try
+        {
+            return string.Format(format, args);
+        }
+        catch (FormatException)
+        {
+            // 文案里的占位符与本处参数不匹配时不要把界面打断（返回原文比抛异常更有用）
+            return format;
+        }
+    }
+
     public static void Initialize()
     {
         HookLoadedRefresh();
