@@ -9211,6 +9211,59 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
 - 实机启动核验：`TheGuideToTheNewEden.exe` 正常启动并停在主页，12 个快捷方式磁贴（日志监控 / 角色 / 估价 / 市场 / 倒货 / 频道监控 / 频道预警 / 订单 / 星图 / 多开…）右上角**均无黄色圆点**，主页其余区域（品牌条、最近使用、钱包卡、行情卡）渲染正常。
 - 旧配置兼容：`MissingMemberHandling.Ignore` 已开启，含 `"badge": true` 的旧 `HomeShortcuts.json` 可正常加载。
 
+## 阶段 189：单文件发布配置（win-x64 自包含，发布目录只有一个 exe）（2026-10-26）
+
+> 用户要求：给项目创建发布配置，需要发布成单个 exe 文件。
+
+### 189.1 新增发布配置
+
+新增 `Properties/PublishProfiles/win-x64-single-file.pubxml`（VS「发布」与 `dotnet publish` 共用）：
+
+| 属性 | 值 | 说明 |
+|---|---|---|
+| `Configuration` | `Release` | 发布配置 |
+| `RuntimeIdentifier` | `win-x64` | 64 位 Windows |
+| `SelfContained` | `true` | 自带 .NET 8 运行时，目标机无需另装 .NET |
+| `PublishSingleFile` | `true` | 托管程序集打进一个 exe |
+| `IncludeNativeLibrariesForSelfExtract` | `true` | SkiaSharp / WPF 原生 DLL 也进 exe |
+| `IncludeAllContentForSelfExtract` | `true` | `Resources/**`、`log4net.config` 等内容也进 exe——**发布目录只剩一个 exe 的关键** |
+| `EnableCompressionInSingleFile` | `true` | 实测 369MB → 134MB，首次启动约 2.5s |
+| `PublishTrimmed` / `PublishReadyToRun` | `false` | WPF 不支持裁剪；R2R 对单文件收益有限 |
+| `DebugType` / `CopyOutputSymbolsToPublishDirectory` | `none` / `false` | 不产出/复制符号 |
+| `PublishDir` | `bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish-single\` | 发布产物目录 |
+
+项目引用的 `TheGuideToTheNewEden.Core`、`ZKB.NET` 仍会把自己的 `.pdb` 放进
+`ResolvedFileToPublish`（`CopyOutputSymbolsToPublishDirectory` 只约束当前项目），
+因此 profile 里追加了 `RemovePdbsFromSingleFilePublish` 目标（挂点与 csproj 的 log4net 去重一致：
+`AfterTargets="ComputeResolvedFilesToPublishList"`），按扩展名 `.pdb` 从发布列表移除，保证目录里真的只有一个文件。
+
+### 189.2 单文件下的资源路径
+
+`IncludeAllContentForSelfExtract=true` 时，程序启动会把包内内容解压到
+`%TEMP%\.net\TheGuideToTheNewEden\<hash>\`，并把 **`AppContext.BaseDirectory` 指向该解压目录**。
+业务代码里所有按 `AppDomain.CurrentDomain.BaseDirectory` / `AppContext.BaseDirectory`
+拼 `Resources\...` 的写法（数据库、Configs、Manuals、default.mp3、log4net.config 等）**无需改动**。
+代价：首次启动要先解压（实测目录 617 个文件、约 359MB），之后同一 exe 复用同一份缓存；
+系统清理临时目录后会重新解压。用户配置仍写 `%LocalAppData%\TheGuideToTheNewEden\Configs`，不受影响。
+
+### 189.3 验证
+
+- 发布命令（在 `TheGuideToTheNewEden` 解决方案目录下）：
+  `dotnet publish .\TheGuideToTheNewEden.WPF\TheGuideToTheNewEden.WPF.csproj -p:PublishProfile=win-x64-single-file`
+- 发布结果：`bin\Release\net8.0-windows10.0.19041\win-x64\publish-single\` 下**只有**
+  `TheGuideToTheNewEden.exe`（140,128,244 字节 ≈ 133.6 MB），无 DLL / PDB / Resources 目录。
+- 冒烟：启动该 exe，窗口标题「新伊甸漫游指南 4.0.0」，首次窗口约 **2.0–2.5s** 出现；
+  托盘创建日志正常，日志无「数据库初始化失败」；解压目录内 `Resources\Database\main.db`、
+  `Resources\Manuals\zh-CN\home.md`、`log4net.config` 均存在，说明数据库/手册/日志配置在单文件模式下可用。
+- 回退路径：普通开发仍用 `dotnet build` / 原来的 `FolderProfile.pubxml`；单文件配置只影响发布，不改任何运行时逻辑。
+
+### 189.4 注意事项
+
+- 单文件把 134MB 的 SDE 数据库也包进 exe，所以 exe 体积 ≈ 134MB（压缩后），运行时解压 ≈ 359MB；
+  若以后更在意启动速度/临时目录占用，可改成「exe + 外部 Resources」布局，但那就不是单个 exe 了。
+- **不要开启 `PublishTrimmed`**：WPF 依赖反射与 XAML 资源，裁剪会在运行时报找不到类型/资源。
+- 重复向同一 `PublishDir` 发布会保留上一次的陈旧文件（SDK 不自动清理）；正式出包前先删空该目录。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
