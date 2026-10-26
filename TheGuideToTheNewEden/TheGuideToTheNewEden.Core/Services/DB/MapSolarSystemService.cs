@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -85,6 +85,17 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 LocalDbService.TranMapSolarSystems(list);
             }
             return list;
+        }
+
+        /// <summary>主库原始（英文）星系列表，不做本地化；供"中/英文都能搜"的星系选择器做双语匹配。</summary>
+        public static List<MapSolarSystem> QueryAllEnglish()
+        {
+            return DBService.MainDb.Queryable<MapSolarSystem>().ToList();
+        }
+
+        public static async Task<List<MapSolarSystem>> QueryAllEnglishAsync()
+        {
+            return await Task.Run(QueryAllEnglish);
         }
 
         /// <summary>

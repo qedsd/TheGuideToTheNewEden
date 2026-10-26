@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -489,6 +489,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     GroupID = 6,
                     SolarSystemID = data.SolarSystemID,
                     TypeID = data.TypeID,
+                    Radius = data.Radius,
                     ItemName = $"{SystemName(data.SolarSystemID)} - {starGroupName}"
                 };
                 allDatas.Add(row);
@@ -505,6 +506,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     GroupID = 7,
                     SolarSystemID = data.SolarSystemID,
                     TypeID = data.TypeID,
+                    Radius = data.Radius,
                     ItemName = $"{SystemName(data.SolarSystemID)} {RomanConverter.ToRoman(data.CelestialIndex)}"
                 };
                 allDatas.Add(row);
@@ -522,6 +524,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     GroupID = 8,
                     SolarSystemID = data.SolarSystemID,
                     TypeID = data.TypeID,
+                    Radius = data.Radius,
                     ItemName = $"{parent} - {moonGroupName} {data.OrbitIndex}"
                 };
                 allDatas.Add(row);
@@ -539,6 +542,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     GroupID = 9,
                     SolarSystemID = data.SolarSystemID,
                     TypeID = data.TypeID,
+                    Radius = data.Radius,
                     ItemName = $"{parent} - {beltGroupName} {data.OrbitIndex}"
                 };
                 allDatas.Add(row);

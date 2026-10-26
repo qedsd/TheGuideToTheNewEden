@@ -15,6 +15,7 @@ public partial class IndustryPlanetaryPage : Page
     {
         InitializeComponent();
         DataContext = _viewModel;
+        SystemPicker.SelectedItemChanged += OnSystemPicked;
         Loaded += OnLoaded;
     }
 
@@ -84,9 +85,65 @@ public partial class IndustryPlanetaryPage : Page
 
     private void OnCancelLiveClick(object sender, RoutedEventArgs e) => _viewModel.CancelLive();
 
-    private void OnSavePlanClick(object sender, RoutedEventArgs e) => _viewModel.SaveCurrentPlan();
+    private void OnToggleProductNodeClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.Tag is PlanetaryProductNodeViewModel node)
+        {
+            _viewModel.ToggleProductNode(node);
+        }
+    }
 
-    private void OnOverwritePlanClick(object sender, RoutedEventArgs e) => _viewModel.OverwriteSelectedPlan();
+    private void OnExpandAllNodesClick(object sender, RoutedEventArgs e) => _viewModel.ExpandAllProductNodes();
+
+    private void OnCollapseAllNodesClick(object sender, RoutedEventArgs e) => _viewModel.CollapseAllProductNodes();
+
+    private void OnClearPlanetsClick(object sender, RoutedEventArgs e) => _viewModel.ClearSelectedPlanets();
+
+    private void OnRemovePlanetClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element && element.Tag is Services.Industry.PlanetaryPlanetOption planet)
+        {
+            _viewModel.RemovePlanet(planet);
+        }
+    }
+
+    private void OnSystemPicked(Core.DBModels.MapSolarSystem? system)
+    {
+        if (system is null)
+        {
+            return;
+        }
+
+        _viewModel.AddSystemPlanets(new Services.Industry.PlanetarySystemOption
+        {
+            SolarSystemId = system.SolarSystemID,
+            Name = system.SolarSystemName,
+        });
+    }
+
+    private void OnSavePlanHeaderClick(object sender, RoutedEventArgs e) => _viewModel.SaveCurrentPlan();
+
+    private void OnSavedPlanDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (_viewModel.SelectedSavedPlan is not { } plan)
+        {
+            return;
+        }
+
+        var dialog = new Views.Windows.EveSettingsTextInputWindow(
+            "重命名计划",
+            "计划名称",
+            plan.Name,
+            "输入新的计划名称",
+            value => string.IsNullOrWhiteSpace(value) ? "名称不能为空" : null)
+        {
+            Owner = Window.GetWindow(this),
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            _viewModel.RenameSelectedPlan(dialog.Value);
+        }
+    }
 
     private void OnLoadPlanClick(object sender, RoutedEventArgs e) => _viewModel.LoadSelectedPlan();
 

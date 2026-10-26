@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using SqlSugar;
@@ -19,6 +19,9 @@ namespace TheGuideToTheNewEden.SDEBuilder.LocalDBModels
         [SugarColumn(IsPrimaryKey = true)]
         public int ID { get; set; }
 
+        /// <summary>天体半径（米）；非天体为 0。</summary>
+        public double Radius { get; set; }
+
         [SqlSugar.SugarColumn(IsNullable = true)]
         public string ItemName { get; set; }
 
@@ -26,6 +29,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.LocalDBModels
         public MapDenormalizes(DBModels.MapDenormalizes model)
         {
             ID = model.ID;
+            Radius = model.Radius;
             ItemName = model.ItemName;
         }
     }

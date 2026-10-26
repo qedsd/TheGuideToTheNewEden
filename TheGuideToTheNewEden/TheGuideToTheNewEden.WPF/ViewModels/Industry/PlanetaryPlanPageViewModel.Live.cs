@@ -32,7 +32,7 @@ public sealed partial class PlanetaryPlanPageViewModel
 
     public bool IsLiveNotBusy => !IsLiveBusy;
 
-    private string _liveStatusText = "点击「刷新」读取已授权角色的殖民地。";
+    private string _liveStatusText = "读取殖民地";
     public string LiveStatusText
     {
         get => _liveStatusText;
@@ -114,7 +114,6 @@ public sealed partial class PlanetaryPlanPageViewModel
             if (selected.Count == 0)
             {
                 ClearLiveData();
-                LiveStatusText = "未选择角色";
                 PageNotifyService.Warning("未选择角色；请先在「计划设置 → 角色与产能」添加或勾选角色");
                 return;
             }
@@ -147,7 +146,6 @@ public sealed partial class PlanetaryPlanPageViewModel
             if (entries.Count == 0 && (scopeMissing.Count > 0 || errors.Count > 0))
             {
                 ClearLiveData();
-                LiveStatusText = "殖民地读取失败";
                 var issues = new List<string>();
                 if (scopeMissing.Count > 0)
                 {
@@ -199,9 +197,7 @@ public sealed partial class PlanetaryPlanPageViewModel
                     : factory.OutputPerDay;
             }
 
-            LiveStatusText = $"已刷新 {LivePlanets.Count} 个殖民地";
-
-            // 所有失败信息合并成一条右下角通知，不在页面顶部堆提示。
+            // 所有失败信息合并成一条右下角通知，页面不显示状态文本。
             var notices = new List<string>();
             if (errors.Count > 0)
             {
@@ -222,12 +218,10 @@ public sealed partial class PlanetaryPlanPageViewModel
         }
         catch (OperationCanceledException)
         {
-            LiveStatusText = "殖民地刷新已停止";
             PageNotifyService.Info("殖民地刷新已停止");
         }
         catch (Exception ex)
         {
-            LiveStatusText = "殖民地读取失败";
             PageNotifyService.Error("殖民地读取失败：" + ex.Message);
             Core.Log.Error(ex);
         }

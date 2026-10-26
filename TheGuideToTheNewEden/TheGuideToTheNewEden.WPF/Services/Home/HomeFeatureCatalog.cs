@@ -112,8 +112,7 @@ public static class HomeFeatureCatalog
             "Home.Feature.IndustryBlueprintsDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryBlueprintPage)),
         new("industry-inventory", SymbolRegular.Database24, "industry", "Nav.IndustryInventory", "Nav.Industry",
             "Home.Feature.IndustryInventoryDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryInventoryPage)),
-        new("industry-recycle", SymbolRegular.ArrowSync24, "industry", "Nav.IndustryRecycle", "Nav.Industry",
-            "Home.Feature.IndustryRecycleDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryRecyclePage)),
+        // 「回收 / 压缩」入口已隐藏（页面与计算保留，暂不提供导航 / 主页入口）。
 
         // ---------- 多开 ----------
         new("game-preview", SymbolRegular.SquareMultiple24, "gamePreview", "Nav.GamePreview", "Nav.GamePreview",

@@ -8726,6 +8726,288 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
 - 限制：阶段 1 的殖民地容量按所选角色最低 CCU 保守估算（行星位仍逐角色检查），尚未按每个角色 CCU 精确重排殖民地。
 - 限制：蓝图模式取蓝图**直接材料**中的行星产物，不递归展开成完整舰船 BOM；「我的殖民地」只读，ESI 没有写殖民布局接口。
 
+## 阶段 174：行星开发交互与展示修正（2026-10-26）
+
+> 用户反馈三条：①「我的殖民地」的刷新/停止按钮总是一起显示；②计划设置的「执行行星计划/停止」同样；③产物链应是带依赖关系的节点树（对齐制造计划），且殖民分配与外购的首列宽度要随内容自动。
+
+### 174.1 按钮互斥（两条根因，第一条才是主因）
+
+- **「我的殖民地」刷新/停止始终同时可见的根因**：这两个按钮在殖民地头部的 `CardControl.Header` 里，而**外层祖先 Grid 把 `DataContext` 切换成了 `SelectedLiveColony`**（`<Grid DataContext="{Binding SelectedLiveColony}">`）。按钮上的 `Visibility="{Binding IsLiveBusy}"` / `IsEnabled="{Binding IsLiveNotBusy}"` 因此是对**殖民对象**求值 → 属性不存在 → **绑定失败、静默退回默认值**：`Visibility` 默认 `Visible`、`IsEnabled` 默认 `true`，于是两个按钮永远都在。
+  - 处置：把殖民地头部区域的 DataContext 还原为页面 VM——去掉那层 `DataContext` 覆盖，头部与指标区改绑 `SelectedLiveColony.*`，下方五个内嵌页签统一在 `TabControl` 上设 `DataContext="{Binding SelectedLiveColony}"`（页签内部绑定不变）。按钮随后直接绑 VM 的 `IsLiveBusy / IsLiveNotBusy`，状态真实生效。
+  - 试过但不可行的两条路：`RelativeSource AncestorType=Page` + `DataContext.xxx` 在 `CardControl.Header` 的模板化内容里**运行时 `PathError`**（能定位到祖先 Page，但路径求值失败）；`Source={x:Reference 页面根}` 在 Page 内容里会触发 **XamlParseException「因存在循环依赖而无法调用 MarkupExtension.ProvideValue」**。结论：**别在这种"模板化 Header + 被改写的 DataContext"组合里跟祖先绑定较劲，把 DataContext 理顺最省事**。
+  - 互斥写法：刷新 `Visibility="{Binding IsLiveNotBusy, Converter=BoolToVisibility}"`，停止 `Visibility="{Binding IsLiveBusy, ...}"`；同时删掉刷新按钮的 `IsEnabled`（不再需要"禁用态"）。
+- **执行行星计划 / 停止** 本来就各自绑 VM 的 `IsNotBusy / IsBusy`（那块的 `DataContext` 没有改写过），问题只是"执行"用了 `IsEnabled` 而不是 `Visibility`——计算中它只是变灰、与"停止"并列。改为 `Visibility="{Binding IsNotBusy, ...}"`，两个按钮互斥。
+
+### 174.2 产物链改为依赖节点树
+
+- 原来「产物链」是 `DataGrid`（层级/产物/需求/工厂/殖民地/产出/行星/输入 八列，按层级排序的平表），看不出"谁是谁的输入"。
+- 改为与制造计划 BOM / 成本视图同款做法：**扁平 `ListBox` + 缩进 + 展开/收起**（不用 `TreeView`，避免缩进把卡片挤窄）。节点卡显示层级 chip、产物名、决策 chip（目标/自产/外购/提取）、需求/天、产出/天、工厂/殖民地/行星类型/建造费用与每周期输入；右上角有「展开全部 / 收起全部」与「N 个目标 · M 个节点」计数。
+- 新增 `ViewModels/Industry/PlanetaryProductNodeViewModel.cs`（节点 VM：`IsTarget / IsBuild / IsImport / IsRaw` 四个互斥标记驱动配色与图标）；页面 VM 新增 `ProductRoots / FlatProductNodes / SelectedProductNode / HasProductNodes`，在 `CurrentPlan` 的 setter 里调 `RebuildProductTree()`（**计算完成与载入快照两条路径都会重建**）。
+- 依赖关系取自 `PlanetaryRecipeCatalog.GetRecipe(typeId).Inputs`：
+  - 输入在 `plan.Products` 里 → 挂「自产」子节点并继续递归；
+  - 输入不在计划内 → 叶子节点：有 `plan.Imports` 记录 → 「外购」（显示外购合计/日成本），否则 P0 → 「提取」（P0 原料），其余 → 「外购」；
+  - 目标识别优先用 `IsTarget`，老快照没有标记时回退成"没有被任何产物当作输入"的最高层产物；`HashSet` 路径防环。
+- 进口模式下目标只挂一层「外购」叶子（P3）；自给模式一路展开到 P0（实测 P4 广播节点 → 34 个节点，P1 → P0 提取叶子齐全）。
+
+### 174.3 殖民分配 / 外购首列宽度
+
+- 殖民分配「角色」列 `Width="100"` → `Auto`（实测按 "Arya C Stark" 自动成 108 DIP）；外购「层级」列 `Width="42"` → `Auto`（实测 47 DIP），不再截断。
+
+### 174.4 验证
+
+- `dotnet build` WPF **0 错误**（仅既有警告）。
+- `AssistantProbe industry` **236 PASS / 0 FAIL**（在原 226 条上新增 10 条产物链断言：有目标根节点、根都是目标、按依赖展开子节点、目标挂下游依赖、依赖含中间产物、节点带每日需求量、自给模式展开到 P0 叶子、收起减少可见节点、展开全部恢复、收起全部只留目标）。
+- 离屏渲染逐项核对（临时探针套件，核对后已删除；页面挂 `Frame` 进离屏窗口并 `ThemeService.ApplyTheme(Dark)`）：
+  - 我的殖民地：空闲时**只有刷新**、`IsLiveBusy=true` 时**只有停止**；
+  - 计划设置：空闲时**只有执行行星计划**、`IsBusy=true` 时**只有停止**；
+  - 产物链（自给）：目标 → P3 → P2 → P1 → P0 五层缩进与展开箭头正常，34 个节点，「自产/提取」chip 与需求/产出/工厂/输入齐全；
+  - 产物链（进口）：目标下三个 P3「外购」叶子（外购合计 85.7/天 · 成本 0 ISK/天，价格未加载时按 0 显示）；
+  - 殖民分配「角色」列 108 DIP、外购「层级」列 47 DIP，表头与内容均完整。
+
+## 阶段 175：行星半径进本地库 + 计划可选具体行星（2026-10-26）
+
+> 背景：阶段 173 的行星半径只能手填，缺省按 2000 km 估算。本轮先量清半径的影响面，再把半径写进本地 SDE 库，并在计划里加入**可选的参考行星**（选则自动取真实半径，不选则维持手动/估算）。
+
+### 175.1 半径到底影响什么（先量清口径）
+
+- 半径在代码里只有一条通路：`PlanetaryPlanRequest.RadiusKm` → `PlanetaryCapacityCalculator`（`MinLinkDistance` / `LinkCosts`），**只参与 CPU/PG 容量**，不参与配方、周期、提取衰减、税率与价格。
+  - `d_min = max(0, -0.7716 + 0.012182 × R_km)`；每条 link 的 CPU/PG 随 `d_min` 线性增长；每个工厂/发射台按 1.5 条 link 预留。
+  - 影响：单殖民地 `MaxFactories` / `ExtractorHeads` / `Launchpads` / `Fits` → 需要的殖民地数量、角色行星位占用、每殖民地固定设施（CCU/LP/ECU）与建造成本、回本天数。
+- 实算（CCU 5、温带）：122–2000 km 时 P3 25 个 / P4 19 个工厂每殖民地；6970 km 24/18；50000 km 21/16；159270 km（全库最大）15/12。
+  - 结论：常见行星（几千到两万公里）差别只有 1 个工厂上下；**5 万公里以上的超大行星才会掉 20%～45%**，此前的 2000 km 缺省对超大行星会明显高估容量。
+
+### 175.2 数据层：半径写入本地库（A 方案）
+
+- SDEBuilder：`DBModels/MapDenormalizes.cs` 新增 `Radius`（**米**，与 CCP SDE / ESI 一致）；`Builder.GetMapDenormalizes` 为恒星 / 行星 / 月球 / 小行星带写入源数据半径，星门与空间站为 0；`LocalDBModels/MapDenormalizes.cs` 同步字段。
+- Core：`DBModels/MapDenormalize.cs` 新增 `Radius` 与忽略列 `RadiusKm`；`MapDenormalizeService` 新增 `QueryPlanetsBySolarSystemID(int)`（按天体编号排序）与 `QueryPlanet(long)`。
+- **用最新 SDE 重建 `Resources/Database/main.db`**（`eve-online-static-data-3632936-jsonl`，buildNumber **3632936**，2026-10-20）：
+  - `mapDenormalizes` 482,107 行（行星 68,407，**全部**有半径）；`sdeInfo=3632936`；构建自检报告全部 OK。
+  - 旧库不兼容（按用户要求不做迁移，直接换库）。
+  - 数据抽检：Tanoo I=5060 km、Tanoo V=16140 km；Jita V=57970 km；全库行星半径 121.7–159,270 km（中位约 6,970 km）。
+- 说明：`types.Radius` 对 10 种行星类型恒为 10000，是类型占位值，不能当真实半径用——真实半径只有 `mapPlanets.radius`。
+
+### 175.3 计划里可选具体行星（可空）
+
+- 新增 `Services/Industry/PlanetaryPlanetCatalog.cs`：
+  - `SearchSystems(text)`：星系模糊搜索（主库 + 本地化库合并，按 ID 去重、优先本地化名，最多 20 条）；
+  - `GetPlanets(system)`：按星系列行星（首项为「不指定」），带真实半径与中文领域类型名；
+  - `GetPlanet(planetId)`：载入计划时按 ID 还原。
+  - 行星类型名统一用**主库英文名**解析（`Planet (Temperate)` → `温带`）；本地化库把它译成「温和」，直接用会与计划结果的用词不一致。
+- 「计划设置 → 角色与产能」顶部新增**参考行星（可选）**卡片：星系搜索框 + 搜索按钮 + 结果列表 + 行星下拉 + 生效半径 + 「清除参考行星」。
+  - 选中行星 → 半径自动填入真实值，右侧「产能参数」里的半径 NumberBox **锁定**；
+  - 清除 → 行星下拉清空禁用、半径恢复可编辑（保留当前值）；
+  - 不选 → 维持原行为：手动半径，0 = 2000 km 估算并提示。
+  - 「概况」显示半径来源：`半径来自 Tanoo I（温带，5,060 km）` / `手动填写的行星半径` / `未指定半径：按 2000 km 估算`。
+- `PlanetarySavedPlan` 新增 `ReferencePlanetId / ReferencePlanetName / ReferencePlanetType / ReferencePlanetRadiusKm / ReferenceSystemId / ReferenceSystemName`；保存时带上，载入时按行星 ID 还原（库里查不到则回退手动半径）。
+- **语义边界（有意为之）**：参考行星只提供半径（与类型展示），**不会**把计划限制成"只能在该行星/该类型上建殖民地"——当前规划仍是"殖民地级、按行星类型分配"的模型，一颗行星也只能建一个殖民地。要让计划变成"按具体行星逐个分配"，属于下一步的模型改造。
+
+### 175.4 验证
+
+- `dotnet build` WPF **0 错误**（仅既有警告）。
+- `AssistantProbe industry` **267 PASS / 0 FAIL**（较阶段 174 的 236 新增 31 条：行星半径读数与按 ID 查询、星系搜索、行星下拉半径/类型/「不指定」首项、真实半径进计划后不再标记估算、快照参考行星字段往返、选中/清除参考行星后的半径锁定与可编辑状态、保存→清除→载入后参考行星/半径/星系恢复）。
+- 离屏渲染 + 程序化布局断言（临时探针，核对后已删除）：
+  - 选中 Tanoo I：行星下拉 7 项（含「不指定」）、显示 `Tanoo I · 温带 · 5,060 km`；半径 NumberBox `enabled=False value=5060`；生效半径 `5,060 km`；来源文案正确；
+  - 清除后：下拉清空且禁用、半径 `enabled=True`、来源变「手动填写的行星半径」；
+  - 搜索 `Tanoo`：结果列表出现（1 项）；选中星系后行星下拉 7 项并启用；
+  - 布局：参考行星卡 1354×222，下方两张卡各 671×541，合计 773 < 838，无溢出；概况页显示半径来源。
+
+## 阶段 176：行星开发「蓝图导入状态」收敛为右下角通知（2026-10-26）
+
+> 用户要求：删掉 `BlueprintImportStatus`，只在「蓝图没有行星产物」这类异常情况才用右下角全局通知。
+
+- 删除页面 VM 的 `BlueprintImportStatus`（字段 + 属性）与「从蓝图导入」页签底部的状态 `TextBlock`（连同多出来的 `RowDefinition`）：加载蓝图、搜索命中数、导入成功都不再占一行文字。
+- `ImportBlueprint()`：正常导入不写任何状态；只有 `imported == 0`（直接材料里没有行星产物）时 `PageNotifyService.Warning("该蓝图的直接材料中没有行星产物")`。未选择蓝图仍是既有的 `PageNotifyService.Info(...)` 校验。
+- `RefreshBlueprintResults()` 不再写「没有匹配 / 找到 N 条」；结果列表为空即代表无匹配。`LoadAsync` 也不再显示「已载入 N 条制造蓝图」。
+- 顺带修回 `ProductCountText`（`{FilteredProducts.Count} / {Products.Count}`，需求页的「可选物品」计数）：该属性在本轮首次编辑时被误删，编译期由 `Notify(nameof(ProductCountText))` 报 `CS0103` 暴露后恢复。
+- 验证：WPF `dotnet build` **0 错误**；`AssistantProbe industry` **268 PASS / 0 FAIL**（新增 1 条：没有行星产物的蓝图不添加需求）；手册同步为「成功导入不显示状态文字，异常才右下角提示」。
+
+## 阶段 177：行星开发页面文案与异常提示收敛（2026-10-26）
+
+> 用户要求：异常信息不要在页面里自己显示文本，一律用 App 全局右下角通知；删掉页面里无意义、重复累赘的自然语言提示，必要时用 ToolTip 或短文本；并把这条规则写进重构文档，**以后所有功能都适用**（约定见文末「UI 约定：异常一律走全局右下角通知」）。
+
+### 177.1 删掉的页面内状态/错误文案
+
+- **`PlanStatusText` 整条删除**（需求页底部 + 「口径说明」卡）：加载、添加目标、计划完成、已停止、计算失败、载入计划等都不再写页面文字。对应反馈改为：失败 `PageNotifyService.Error`、取消 `Info`、成功 `Success`（计划完成时带上提示条数）。
+- **`SavePlanStatus` 删除**（已保存计划卡底部）：保存/覆盖成功已走 `Success`；载入/删除不再写文字。`IndustryPlanetaryPlanService.Save` 改为**返回 bool**，写盘失败时 `PageNotifyService.Error`（此前是静默吞掉）。
+- **删除与列表/指标重复的复述**：`TargetSummary`（"已选需求"卡里再列一遍目标）、`PeriodText`（"按 N 天需求量反推"）、`ModeText`（生产方式整句说明）、`ResultHeadline`（概况卡标题复述目标与殖民地数）。概况卡标题固定为「计划概况」。
+- **`MarketStatusText` 缩短**为「参考价 N 项 · HH:mm」；**「口径说明」整张卡片删除**（含"自给 P1→P4…""进口 POCO…"两句说明书式文案），口径解释移到「价格与税」卡片的 `ToolTip`。
+- **`LiveStatusText` 只保留读取进度**（右下角加载卡显示）；"殖民地读取失败/刷新已停止/已刷新 N 个"等状态文字删除（通知里已有）。
+- 静态长句收敛（全部改短标签 + `ToolTip`）：星系 / 行星 / 行星半径标签、参与角色（默认值说明）、产能参数（估算口径）、参考行星的整段半径说明、产物链展开说明与空态、蓝图导入页签标题、市场参考价复选框。
+- 上一轮已删的 `BlueprintImportStatus` 维持：只有"蓝图为空"等异常才通知。
+
+### 177.2 约定
+
+见文末 **「UI 约定：异常一律走全局右下角通知，页面不写状态/错误文案」**（含评审清单）。
+
+### 177.3 验证
+
+- 编译 **0 错误**。验证时本机有运行中的实例（锁住 `bin` 的 exe），因此用 `dotnet build -p:OutDir=%TEMP%\wpf-verify` 构建到临时目录验证，**没有打断用户正在运行的 App**；正式 `bin` 需在关闭应用后重新构建。
+- `AssistantProbe industry` **268 PASS / 0 FAIL**。
+- 离屏布局核对（临时探针，核对后删除）：需求页卡片 596×773；角色与产能 = 参考行星卡 189 + 两张 574；价格与税单卡 1354×367（顶部对齐）；概况与已保存计划正常。页面上残留的长文本只剩**动态值**（行星标签、计划风险提示、已保存计划摘要），不再有说明书式文案。
+
+## 阶段 178：行星开发改为「候选行星多选 + 按行星排布」（2026-10-26）
+
+> 用户要求：参考行星改成多选；星系搜索与"价格市场"一样悬浮显示；选中星系把该星系全部行星加入总列表，可逐颗移除、可跨星系多选；计划从这些行星里安排；行星选择从「角色与产能」独立成一个页签。
+
+### 178.1 Core：行星池与按行星排布
+
+- 新增 `PlanetaryPlanetInput`（PlanetId / Name / TypeId / TypeName / RadiusKm / SolarSystemId / SolarSystemName）；`PlanetaryPlanRequest.Planets` 非空即进入"候选行星模式"。
+- `PlanetaryColonyPlan` 增加 `PlanetId / PlanetName / RadiusKm`；`PlanetaryPlanSummary` 增加 `PlanetCount / UsedPlanetCount`；汇总半径取已用行星的平均值。
+- `PlanetaryPlanner`：
+  - `BuildPlanetPool` 把选中的行星按 `TypeId` 解析成 `PlanetTypeProfile`（解析不到的行星忽略并告警）；按 PlanetId 去重。
+  - 新增 `BuildP1ExtractionFromPlanets`：只挑"能采到该 P0"的候选行星，每颗行星一个提取殖民地，容量按该行星半径算，累加到满足需求为止。
+  - 新增 `BuildFactoryFromPlanets`：按 P2/P3/P4 工厂类型挑可用行星（P4 只认温带/贫瘠），每颗行星一个工厂殖民地、按各自半径算能放多少工厂，直到工厂数满足需求。
+  - 两颗行星用尽仍不够时写"候选行星不足"类提示（提取：还差 X/天；工厂：还差 N 个工厂）；工厂模式按**实际排到的工厂数**折算下级输入，避免虚报需求。
+  - 没有选行星时完全保留旧行为（按行星类型 + `RadiusKm`，0 = 2000 km 估算），旧调用方不受影响。
+- 候选行星模式下 `UsedEstimatedRadius=false`，不再提示"半径估算"。
+
+### 178.2 WPF：独立「行星选择」页签 + 悬浮星系选择器
+
+- 新增 `Views/UserControls/SolarSystemPickerView`：与「价格市场」选择器同款的**按钮 + 悬浮弹层**（搜索框 + 虚拟化列表，约 5,500 个非特殊星系），选中后自动收起并把星系抛给页面；搜索**中/英文都能命中**（本地化名 + `MapSolarSystemService.QueryAllEnglishAsync()` 取的主库英文名做双语匹配）。
+- 「计划设置」页签顺序改为 **需求 / 行星选择 / 角色与产能 / 价格与税**：
+  - 新页签「行星选择」：顶部是星系选择器 + 状态（`14 颗 · 2 个星系`）+ 清空；下方是候选行星列表（行星名、`星系 · 类型 · 半径`、逐行移除），空态一句"用上方星系选择器添加行星"。
+  - 选中星系 → 该星系**全部行星**入池；按 PlanetId 去重，可跨星系继续加、可逐颗移除、可一键清空。
+- 「角色与产能」移除上一轮的"参考行星"卡片，恢复两张卡片并排；「行星半径 km」改为**仅在未选候选行星时生效**的回退值（`IsRadiusEditable = 未选候选行星`）。
+- 计划详细 → 概况的半径来源改为「候选行星 N 颗 · 已用 M 颗」；「殖民分配」新增 **行星**、**半径 km** 两列（候选行星模式下每颗行星只出现一次）。
+- `PlanetarySavedPlan` 的 `ReferencePlanet*` 字段替换为 `List<PlanetaryPlanetInput> Planets`；保存带上候选行星，载入按 ID 从本地库还原（查不到的用保存值兜底）。
+- 计算请求直接带 `Planets`；`RadiusKm` 仍传入，但候选行星模式下不会使用。
+
+### 178.3 验证
+
+- 编译 **0 错误**（本机 App 仍锁着 `bin`，用 `-p:OutDir=%TEMP%\wpf-verify` 构建验证）。
+- `AssistantProbe industry` **279 PASS / 0 FAIL**：新增/改写断言覆盖候选池数量与使用数、每颗行星最多一个殖民地、殖民地都来自候选池、半径来自各自行星、行星不足提示、快照保存候选行星列表（ID/半径往返）、UI 加入/去重/跨星系/移除/再加回、保存→清空→载入恢复候选行星。
+- 离屏布局与交互核对（临时探针，已删除）：
+  - 行星选择页：选择卡 1354×95、列表卡 1354×668，列表 14 项（Tanoo 6 + Jita 8），摘要 `14 颗 · 2 个星系`；
+  - 星系选择器悬浮层打开后列出 **5,485** 个非特殊星系；输入 `Tanoo` 过滤到 **1** 个（显示本地化名「坦欧」）；选中后自动收起并一次性加入该星系 **6** 颗行星；
+  - 角色与产能：两张卡片各 671×773 并排（参考行星卡已移除）；
+  - 殖民分配列：角色 108 / 行星 86 / 半径 km 70 / 行星类型 92 / 产品 598 …（行星与半径列已出现）。
+
+## 阶段 179：行星选择改为「星系 / 行星」两栏 + 支持虫洞（2026-10-26）
+
+> 用户要求：行星选择页改成左右两部分——左栏已选星系、右栏该星系的行星；右栏把某个星系的行星删空后，左栏该星系也要消失；另外星系选择器要能搜虫洞。
+
+### 179.1 两栏主从 + 星系自动消失
+
+- VM 新增派生状态：`SelectedSystems`（按 `SolarSystemId` 聚合候选行星，带行星数）与 `VisiblePlanets`（右栏，当前选中星系的行星；未选中时显示全部）；`SelectedSystemItem` 切换时刷新右栏，标题显示 `星系名（N）`。
+- 候选行星变化统一走 `RefreshPlanetState → RebuildSelectedSystems`：
+  - 左栏星系**完全由候选行星派生**，所以右栏把某星系的行星逐颗删空后，该星系自然从左栏消失（不需要额外"删除星系"逻辑）；
+  - 若被删空的正是当前选中的星系，自动回退到剩余列表里的第一个星系；全部删空则左右两栏都为空。
+  - 通过星系选择器加入星系后，自动选中该星系，右栏立即显示它的行星。
+- XAML：`行星选择` 页签改为 330px + `*` 两栏卡片——左卡 = 星系选择器 + 摘要/清空 + 星系列表（星系名 + `N 颗`）；右卡 = `行星（N）` 标题 + 行星列表（行星名 + `星系 · 类型 · 半径` + 逐行移除）；两栏各有短空态。
+
+### 179.2 星系选择器支持虫洞（**按控件开关，不影响其他地方**）
+
+- `SolarSystemPickerView` 新增依赖属性 `IncludeSpecialSystems`（**默认 `false`**，与「价格市场」选择器一致，排除虫洞/特殊星系）；只有行星开发页在 XAML 里显式设 `IncludeSpecialSystems="True"`，才把 J 编号 / Thera（席拉）等一起列出。实测同一控件的列表：默认 **5,485** 个星系、开启后 **8,490** 个。
+- 需要说清的是：**过滤从来不在服务层**——`MapSolarSystemService.QueryAll*` 一直返回全部星系，`IsSpecial()` 过滤是各调用方自己做的（市场选择器、星图、地图坐标助手等仍各自 `Where(!IsSpecial())`），所以本轮的改动**只作用于这个新控件**，其他界面不受影响；将来别的页面要用星系选择器时，默认行为也仍是"不含虫洞"。
+- 虫洞行星有真实半径（实测 `Sentinel MZ` 7 颗、`Thera` 14 颗，半径齐全），所以也能直接进候选池；占位文案改为「搜索星系 / 虫洞（J 编号）」。
+- 与「价格市场」选择器（排除特殊星系）的差异是有意为之：市场不覆盖虫洞，行星开发需要。
+
+### 179.3 验证
+
+- 编译 **0 错误**；`AssistantProbe industry` **293 PASS / 0 FAIL**（新增：左右栏星系/行星数量与标题、新加入星系自动选中、删空 Jita 后左栏移除并回退到 Tanoo、虫洞星系行星可读/可加入/删空后移除、重新加入恢复）。
+- 离屏核对（临时探针，已删除）：
+  - 两栏卡片 330×773 与 1012×773；加入 Tanoo+Jita 后左栏 2 项、右栏 8 项；把 Jita 行星删空后左栏 **1** 项、右栏 6 项，标题变 `Tanoo（6）`，摘要 `6 颗 · 1 个星系`；
+  - 星系选择器：默认 **5,485** 个星系（不含虫洞）；行星页开启 `IncludeSpecialSystems` 后 **8,490** 个；搜索 `J100744` 命中 1 个（J100744）、`Thera` 命中 1 个（显示本地化名「席拉」）。
+
+## 阶段 180：未勾选角色时按「角色1、角色2…」自动分配（2026-10-26）
+
+> 用户反馈：不勾选参与角色时只默认一个角色参与（默认 6 个行星位），方案会被卡在 6 个殖民地；应该是默认无上限角色，殖民分配显示成「角色1、角色2…」。
+
+- 根因：`PlanetaryPlanner.BuildCharacters` 在没有任何有效角色时会**补一个"默认角色"**（`MaxPlanets = DefaultMaxPlanets`），于是角色上限恒为 1、殖民地超过默认行星位后开始出现「未分配」和"行星位不足"警告。
+- 修复：
+  - `BuildCharacters` 只返回用户勾选的角色，**不再补默认角色**；返回空列表即表示"未勾选角色"。
+  - `Plan` 识别 `autoCharacters = characters.Count == 0`，`AssignCharacter` 在名额用尽时**按需生成**「角色1、角色2…」占位角色（`CharacterId = -序号`，CCU/行星位取请求里的默认值），因此角色数量不设上限。
+  - 每个自动角色仍受"默认行星位"约束（默认 6），用满后自动开下一个；自动模式**不再产生**"角色可用的行星位不足"警告。`effectiveCcu` 在自动模式下取 `request.CcuLevel`（默认 CCU）。
+  - 汇总的 `CharacterCount` 会把自动角色计入（实测 14 个殖民地 → 角色1(6)、角色2(6)、角色3(2)）。
+- UI 文案：参与角色卡片提示改为"未勾选角色时自动生成「角色1、角色2…」，每个使用下面的默认 CCU / 行星位（不限角色数量）"；字段标签改为「默认 CCU（自动角色）」。
+- 验证：WPF `dotnet build` **0 错误**；`AssistantProbe industry` **299 PASS / 0 FAIL**（新增 6 条：无角色时不限行星位总数、角色名以「角色」开头、自动角色按行星位递增、每个自动角色不超过默认行星位、自动模式不报行星位不足、汇总角色数包含自动角色）。
+- 手册同步：角色与产能步骤、字段口径补充自动角色说明。
+
+## 阶段 181：行星设置自动保存 + 计划提示本地化（2026-10-26）
+
+> 用户反馈：角色与产能、价格与税改了不保存（不知道什么时候才会存）；计划提示里的物品名还是 SDE 英文名（`Proteins` / `Complex Organisms`）。
+
+### 181.1 设置自动保存
+
+- 之前只有「执行行星计划」成功时，才把 **4 个字段**（价格市场 / POCO 税 / 销售税 / 经纪人费）写进与制造计划共用的 `IndustrySetting`；周期、CCU、行星位、半径、提取周期、开关、角色勾选/参数都不保存。
+- 新增 `Services/Industry/PlanetaryPlanSettingService.cs`（模型 `PlanetaryPlanSetting` / `PlanetaryCharacterSetting`，文件 `Configs/PlanetaryPlanSetting.json`），与制造计划设置**分离**：
+  - 字段：需求周期、生产方式、默认 CCU / 行星位、半径、提取周期、POCO/销售/经纪人费、设施成本/当前产出抵扣/市场参考价开关、价格市场，以及每个角色的**勾选 + CCU + 行星位**。
+  - 保存时机：任一相关属性变化后**防抖 400ms** 写盘（`DispatcherTimer`）；「执行行星计划」成功时、载入已保存计划后也会立即写一次；启动时从文件恢复（没有文件则用默认值，不再读制造计划的 `IndustrySetting`）。
+- 页面参数与「已保存计划」是两层：后者是**可多份、手动保存/载入的完整结果快照**；前者是"当前页面怎么算"的默认值。
+
+### 181.2 计划提示本地化
+
+- 规划器（Core）用 SDE 英文名拼提示，之前 `LocalizePlan` 只替换了目标产物名与 Temperate/Barren，新的"候选行星不足/没有能提取"类提示里仍会出现 `Proteins`、`Complex Organisms` 等英文。
+- 现在 `LocalizePlan` 用 `_recipes.Products` 构建「英文名 → 本地化名」映射（只收真的译过的），**按英文名长度倒序**替换全部提示，避免短名先替换把长名拆坏；目标名/Temperate/Barren 的既有替换保留。
+- 实测提示变成 `生物燃料 的候选行星里没有能提取 碳化合物 的行星`、`超张力塑料 的候选行星里没有可建 Advanced 工厂的行星`。
+
+### 181.3 验证
+
+- WPF `dotnet build` **0 错误**；`AssistantProbe industry` **311 PASS / 0 FAIL**（新增：设置写盘后新页面实例恢复 CCU/周期/提取周期/POCO 税；Jita-only 计划提示里 `Biofuels`→`生物燃料`、P0 名中文、且不再含 `Proteins/Complex Organisms/Bacteria` 等英文名）。
+- 手工核对提示输出（临时探针，已删除）：`超张力塑料 的候选行星里没有可建 Advanced 工厂的行星` / `生物燃料 的候选行星里没有能提取 碳化合物 的行星` / `缺少 广播节点 的价格`。
+
+## 阶段 182：殖民地分配改名 / 缺行星占位标红 / 计划改为显式保存（2026-10-26）
+
+> 用户要求：`殖民分配` 改名「殖民地分配」；候选行星缺所需类型时不要静默丢行，要显示出来（行星名留空、整行标红、其余按默认估算）；去掉执行计划即保存，改成「计划详细」页签右上角的保存按钮；已保存计划删掉保存/覆盖 UI，改成双击名称重命名。
+
+### 182.1 缺匹配行星时保留占位行
+
+- `PlanetaryColonyPlan` 新增 `MissingPlanet`；候选行星模式里如果**没有**匹配类型（提取要能采对应 P0、工厂要温带/贫瘠），不再直接 `return`，而是：
+  - 写一条提示（`… 的候选行星里没有能提取 X 的行星，已按默认类型估算`）；
+  - 走原来的"按行星类型 + 默认半径"估算逻辑生成殖民地：`PlanetId = 0`、`PlanetName` 留空、`RadiusKm` 用 2000 km 默认值、`MissingPlanet = true`，工厂数/产出/成本等照常算出来。
+- WPF「殖民地分配」表格给该 DataGrid 加了 `RowStyle`/`CellStyle`：`MissingPlanet=true` 的行用 `SystemFillColorCriticalBackgroundBrush` 铺底、文字用 `SystemFillColorCriticalBrush`，行星列自然显示为空。实测离线渲染：22 行里 16 行占位，占位行背景 `#FF442726`、正常行透明。
+
+### 182.2 计划保存改为显式按钮
+
+- 确认 `CalculateAsync` **不会**写计划（新增探针断言：执行前后 `SavedPlans.Count` 不变）；之前只有「已保存计划」页的「保存当前」会保存。
+- 顶部「计划详细」页签最右侧新增**保存计划**按钮（页面根 Grid 右上角覆盖，`ShowPlanSaveButton = SectionTabIndex == 2 && HasResult`，离开计划详细或没有结果时隐藏；实测按钮 102×31、位于 (1270,22)）。
+- 保存不再要求先起名：新计划用 `行星计划 MM-dd HH:mm:ss` 时间戳，随后可在列表里双击改名。移除了 `PlanName` 属性与已保存计划页的「计划名称输入 + 保存当前 + 覆盖选中」整块 UI，同时删除 `OverwriteSelectedPlan` 与对应事件处理器。
+- 双击「已保存计划」列表项 → 复用通用输入对话框 `EveSettingsTextInputWindow` 重命名；`RenameSelectedPlan` 改名后立即写盘并刷新列表/选中项（实测改名后从文件读回仍是新名字）。
+
+### 182.3 验证
+
+- WPF `dotnet build` **0 错误**；`AssistantProbe industry` **323 PASS / 0 FAIL**（新增：缺类型时生成占位行、占位行星名留空、占位行仍算出产能、有匹配类型的行仍带行星、提示"已按默认类型估算"、执行计划不自动保存、保存按钮显隐、默认名带时间、重命名生效并写盘）。
+- 离屏核对（临时探针，已删除）：页签为 `概况/产物链/殖民地分配/外购`；保存按钮在右上角；已保存计划页不再有「保存当前/覆盖选中」按钮。
+- 手册同步：改名、占位标红说明、保存入口/双击重命名、移除"保存当前"步骤。
+
+## 阶段 183：保存按钮移到子页签 header 右侧 / 新计划排最前 / 两处内容包卡片（2026-10-26）
+
+> 用户反馈：保存按钮应该贴在「概况、产物链、殖民地分配、外购」这些 header 的最右侧（不是页面右上角）；新保存的计划跑到了列表最底部，而其它计划是最新在最前；「我的殖民地」「计划详细」的内容要放进 CardControl，让背景色和另外两个 Tab 一致。
+
+### 183.1 保存按钮位置
+
+- 删掉页面根 Grid 右上角的覆盖按钮，改为放进「计划详细」的 `CardControl` 内：与内层 `TabControl` 同一个 `Grid`，按钮 `HorizontalAlignment=Right / VerticalAlignment=Top`，正好落在子页签（概况/产物链/殖民地分配/外购）header 的最右侧。
+- 实测：内层 TabControl 位于 `(21,57)`，按钮位于 `(1271,57)`、102×31 —— 与子页签同一行、贴在右端。显示条件仍是 `ShowPlanSaveButton`（计划详细 + 有结果）。
+
+### 183.2 已保存计划排序
+
+- `SaveCurrentPlan` 由 `SavedPlans.Add` 改为 **`Insert(0, …)`**：新保存的计划立即排到列表最前，与「重新载入时按更新时间倒序」的口径一致。
+- 默认名带秒；同一秒内连续保存会命中重名，`CreateSavedPlan` 自动追加 `(2)(3)…` 去重。
+- 实测连续保存两次：列表顺序 `新1 | 新2 | …`，选中项 = 最新一条。
+
+### 183.3 两个 Tab 的内容改放 CardControl
+
+-「我的殖民地」：右侧殖民地详情的 `TabControl`（产能估算/设施清单/生产明细/库存与物流/引脚明细）外面包一层 `CardControl`（`Margin=0,8,0,0`、`Padding=8,6`）。
+-「计划详细」：内层四个子页签的 `TabControl` 外面包一层 `CardControl`（`Padding=8,6`），空态文案仍在卡片外。
+- 这样两处内容的背景都来自 `CardBackgroundFillColorDefaultBrush`，与「计划设置」「已保存计划」的卡片一致（离屏实测两处 TabControl 的祖先 CardControl 背景均为 `#0DFFFFFF`，深色主题下的卡片底色）。
+
+### 183.4 验证
+
+- WPF `dotnet build` **0 错误**；`AssistantProbe industry` **324 PASS / 0 FAIL**（新增：新保存的计划排在最前）。
+- 离屏核对（临时探针，已删除）：保存按钮与子页签同排且在最右侧；「计划详细」「我的殖民地」详情 TabControl 均能向上找到 CardControl；连续保存后列表最新在最前。
+
+## 阶段 184：隐藏「回收 / 压缩」入口（2026-10-26）
+
+> 用户要求：隐藏回收 / 压缩功能。
+
+- 移除两处入口（**只隐藏入口，不删功能**）：
+  - `Views/MainWindow.xaml`：删掉「工业 → 回收 / 压缩」的 `NavigationViewItem`（原位留注释）；
+  - `Services/Home/HomeFeatureCatalog.cs`：删掉 `industry-recycle` 条目（主页功能目录、主页搜索、快捷键/最近使用的来源都来自这份 catalog）。
+- 页面 `IndustryRecyclePage` / VM / `IndustryOreCalculator` / 语言键全部保留：以后要恢复，只需把上面两处条目加回来。
+- 旧的"主页固定 / 最近使用"里如果还存着 `industry-recycle`，`HomeFeatureCatalog.Find` 返回 null，`HomeShortcutService` 与 `HomePageViewModel` 都有判空并跳过，不会出现空白卡片。
+- 手册里指向该页的说明改为"当前未开放入口"：`industry/blueprints.md`（一句话/步骤/限制 3 处）、`industry/plan.md`（字段口径 1 处）。
+- 验证：WPF `dotnet build` **0 错误**；`AssistantProbe ui` **120 PASS / 0 FAIL**；`AssistantProbe industry` **324 PASS / 0 FAIL**；`AssistantProbe manuals` 从 3 条失败降到 **2 条**——原来"功能目录的页面条目都有手册（缺口 industry-recycle）"随入口移除消失，剩下的是既有问题（`industry/inventory`、`industry/plan` 章节顺序 + `industry/plan#limits` 2208 > 2200）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -9660,6 +9942,16 @@ Ctrl Win Alt Space Alt Win Menu Ctrl│                  │ 0 (跨两列) . Ent
      **反向转码只能救回大部分**，已经落到 U+FFFD 的字符永久丢失，最后只能整文件重写。
      改写文本一律用编辑工具（或 .NET 的 `[IO.File]::ReadAllText/WriteAllText` + 显式 `UTF8Encoding($false)`），
      并且改完**抽查一行中文**（PowerShell 里也要用 `ReadAllLines($f, [Text.Encoding]::UTF8)` 复核，别用默认编码）。
+105. **绑定失败是"静默"的：`Visibility`/`IsEnabled` 绑到不存在的属性 = 永远可见 / 永远可用**（阶段 174 实机反馈"刷新和停止按钮总是一起显示"）：
+     `CardControl.Header` 一类**模板化内容**会继承宿主控件的 `DataContext`；若祖先某层把 `DataContext` 改写成了业务对象
+     （本项目：`<Grid DataContext="{Binding SelectedLiveColony}">`），Header 里的按钮再写 `{Binding IsLiveBusy}` 就是对业务对象求值——
+     属性不存在时 **不抛异常、不弹窗**，`Visibility` 保持默认 `Visible`、`IsEnabled` 保持默认 `true`，
+     表现成"两个互斥按钮永远一起出现"。
+     排查方式：把按钮的绑定表达式打出来——`BindingOperations.GetBindingExpression(btn, UIElement.VisibilityProperty)`
+     的 `Status` 为 `PathError` 就是它（同时打印 `DataContext?.GetType().Name` 看求值对象对不对）。
+     两条绕路子都别走：① `RelativeSource AncestorType=Page` + `DataContext.X` 在 `CardControl.Header` 里实测 **`PathError`**；
+     ② `Source={x:Reference 页面根}` 会抛 **「因存在循环依赖而无法调用 MarkupExtension.ProvideValue」**。
+     正解是**理顺 DataContext**：需要 VM 状态的那一小块别被业务对象覆盖，业务数据显式写 `SelectedXxx.Prop`，子区域再单独设 `DataContext`。
 
 ---
 
@@ -10153,6 +10445,34 @@ Core 的 `MapConfig`（`MapCanvasConfig` / `MapSovGroupConfig` / `MapDisplayConf
 - **例外**：**壳页 / 子页仍可保留标题**。目前 `Views/Pages/SettingsPage`（左分类 + 右子页）与
   `Views/Pages/Characters/CharacterCardsPage`（角色壳页下的卡片页）仍用 `SettingsPageTitle`——
   它们不是导航的顶层项，标题在那里承担"当前分类 / 当前子页"的指示作用。要不要一并去掉按同样的取舍单独判断。
+
+### UI 约定：异常一律走全局右下角通知，页面不写状态/错误文案
+
+> 用户要求（阶段 177 起定稿，**适用于所有功能，不限于行星开发**）：
+> 异常信息不要自己在页面里显示文本，而是用 App 的全局右下角通知；同时删掉页面上无意义、重复累赘的自然语言说明，必要时用 `ToolTip` 或简短文本。
+
+**一、错误/异常：只走全局通知**
+- 加载失败、计算失败、保存失败、权限缺失、令牌失效、网络/接口错误、参数校验不通过……一律 `PageNotifyService.Error(...)`（提示性质用 `Warning`，纯提示用 `Info`）。
+- 页面里**不得**再出现"XX 失败：…""XX 错误""读取失败"之类的 `TextBlock`；同一件事**只允许报一次**，不要"页面一行 + 右下角一条"重复。
+- 服务层不要把异常静默吞掉后让页面"看起来正常"：需要反馈的写操作（保存/删除/写入）应返回成功与否，由 VM 调 `PageNotifyService.Error`。参考 `IndustryPlanetaryPlanService.Save` 改成返回 `bool`。
+
+**二、进度/瞬时状态：只放进右下角非阻塞加载卡**
+- "正在读取…/正在计算…"这类过程中的文字用既有的 `IsAnyBusy` + `BusyNoticeText`（右下角加载卡），随操作结束自动消失；不要写进页面正文，也不要在结束后留下"已完成/已停止"的残影。
+- 成功后优先靠"界面本身的变化"表达（列表/表格/结果页已更新）；确需确认才用 `PageNotifyService.Success`。
+
+**三、页面上的自然语言：越短越好，长解释进 ToolTip**
+- 字段/区块只留最短标签（"星系""行星""行星半径 km""产能参数""按配方依赖展开"）；解释性内容放 `ToolTip`。
+- 禁止说明书式整句（如"自给 P1→P4 · 进口只建目标工厂""进口 POCO · 销售税/经纪人费…"）；这类内容属于手册，不属于页面。
+- 空态只给一句短语（"选择殖民地查看详情""执行计划后显示产物链"），不要写操作教程。
+- 动态状态值要短：例如行星标签显示 `Tanoo I · 温带 · 5,060 km`，完整口径（"半径取本地 SDE…"）放 `ToolTip`。
+- 与已有列表/指标重复的复述（把已选需求再列一遍、把生产方式再解释一遍、标题复述结果）一律删除。
+
+**四、评审清单（每个页面/每次 UI 改动收尾时自查）**
+1. 全局搜 `Text="{Binding .*Status}"`、`"失败"`、`"错误"`、`"无法"`：确认没有页面内错误/状态文案残留。
+2. 全局搜长文本（`Text="..."` 超过 ~18 字、`Content="..."` 超过 ~12 字）：逐条判断"能否删/能否进 ToolTip/能否缩短"。
+3. 每个失败分支都有且只有一条右下角通知；成功分支不产生噪声通知。
+4. 空态、加载态、无数据态都只有短句，且不遮挡操作控件。
+5. 写操作失败不再被服务层静默吞掉。
 
 ### 结构（structure）ID 解析约定 —— **structure id 请走 StructureService**
 

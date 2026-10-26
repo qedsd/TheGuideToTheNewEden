@@ -280,6 +280,149 @@ internal static class IndustrySuite
         c.Equal(importPlan.Summary.ExtractionColonies, 0, "进口模式不排提取殖民地");
         c.That(importPlan.Summary.ImportCostPerDay > 0, "进口模式有进口成本");
 
+        c.Section("IndustrySuite · 行星半径（本地 SDE）");
+        var tanooPlanets = MapDenormalizeService.QueryPlanetsBySolarSystemID(30000001);
+        c.That(tanooPlanets.Count >= 5, $"Tanoo 行星可读（{tanooPlanets.Count} 颗）");
+        c.That(tanooPlanets.All(p => p.Radius > 0), "行星半径已写入本地库（米）");
+        var tanooI = tanooPlanets.FirstOrDefault(p => p.ItemName == "Tanoo I");
+        c.NotNull(tanooI, "Tanoo I 可定位");
+        c.Equal(Math.Round(tanooI?.RadiusKm ?? 0), 5060d, "Tanoo I 半径 5060 km");
+        var radiusPlanet = MapDenormalizeService.QueryPlanet(tanooI!.ItemID);
+        c.That(radiusPlanet?.Radius > 0, "按行星 ID 可查询半径");
+        c.Equal(radiusPlanet?.GroupID, 7, "查询结果是行星");
+
+        var tanooSystems = PlanetaryPlanetCatalog.SearchSystems("Tanoo");
+        c.That(tanooSystems.Any(p => p.Name.Contains("Tanoo")), "星系搜索命中 Tanoo");
+        var tanooOption = tanooSystems.FirstOrDefault(p => p.Name.Contains("Tanoo"));
+        c.NotNull(tanooOption, "星系搜索返回可选星系");
+        var planetOptions = PlanetaryPlanetCatalog.GetPlanets(tanooOption);
+        c.That(planetOptions.Count > 1, $"星系内行星可列出（{planetOptions.Count - 1} 颗）");
+        c.That(planetOptions.Skip(1).All(p => p.RadiusKm > 0), "行星下拉项都带真实半径");
+        c.That(planetOptions[0].IsNone, "行星下拉首项是「不指定」");
+        var tanooOptionI = PlanetaryPlanetCatalog.GetPlanet(tanooI.ItemID);
+        c.Equal(Math.Round(tanooOptionI?.RadiusKm ?? 0), 5060d, "行星下拉项半径与库一致");
+        c.Equal(tanooOptionI?.PlanetType, "温带", "行星类型解析为中文领域名");
+
+        var planetInputs = tanooPlanets.Select(p => new PlanetaryPlanetInput
+        {
+            PlanetId = p.ItemID,
+            Name = p.ItemName,
+            TypeId = p.TypeID,
+            RadiusKm = p.RadiusKm,
+            SolarSystemId = p.SolarSystemID,
+            SolarSystemName = "Tanoo",
+        }).ToList();
+
+        var planetRequest = new PlanetaryPlanRequest
+        {
+            Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
+            PeriodDays = 7,
+            Mode = PlanetaryPlanMode.SelfSufficient,
+            CcuLevel = 5,
+            Planets = planetInputs,
+            Characters = new List<PlanetaryCharacterInput>
+            {
+                new() { CharacterId = 1, Name = "PI-A", CcuLevel = 5, MaxPlanets = 6 },
+                new() { CharacterId = 2, Name = "PI-B", CcuLevel = 5, MaxPlanets = 6 },
+            },
+            Price = _ => 1000,
+            CountSetupCost = false,
+        };
+        var planetPlan = piPlanner.Plan(planetRequest);
+        c.Equal(planetPlan.Summary.PlanetCount, planetInputs.Count, "计划使用候选行星数量");
+        c.That(planetPlan.Summary.UsedPlanetCount > 0, $"候选行星被排入殖民地（{planetPlan.Summary.UsedPlanetCount} 颗）");
+        c.That(planetPlan.Summary.UsedPlanetCount <= planetInputs.Count, "使用行星数不超过候选数");
+        c.That(planetPlan.Colonies.Count(p => !p.MissingPlanet) <= planetInputs.Count, "排到行星的殖民地不超过候选数");
+        c.That(planetPlan.Colonies.Where(p => !p.MissingPlanet).All(p => p.PlanetId > 0), "有行星的殖民地都带具体行星");
+        c.Equal(planetPlan.Colonies.Where(p => !p.MissingPlanet).Select(p => p.PlanetId).Distinct().Count(),
+            planetPlan.Colonies.Count(p => !p.MissingPlanet),
+            "每颗行星最多一个殖民地");
+        c.That(planetPlan.Colonies.Where(p => !p.MissingPlanet)
+            .All(p => planetInputs.Any(x => x.PlanetId == p.PlanetId)), "有行星的殖民地来自候选池");
+        c.That(planetPlan.Colonies.All(p => p.RadiusKm > 0), "殖民地使用各自行星半径");
+        var tanooIColony = planetPlan.Colonies.FirstOrDefault(p => p.PlanetId == tanooI.ItemID);
+        if (tanooIColony is not null)
+        {
+            c.Equal(tanooIColony.RadiusKm, 5060d, "Tanoo I 殖民地半径正确");
+        }
+        c.That(planetPlan.Summary.UsedEstimatedRadius == false, "候选行星模式不标记半径估算");
+        c.That(planetPlan.Warnings.Any(p => p.Contains("候选行星")), "候选行星不足时给出提示");
+
+        // 未勾选角色：不设角色数量上限，自动生成「角色1、角色2…」占位角色
+        var jitaPlanetRows = MapDenormalizeService.QueryPlanetsBySolarSystemID(30000142);
+        var allPlanetInputs = planetInputs.Concat(jitaPlanetRows.Select(p => new PlanetaryPlanetInput
+        {
+            PlanetId = p.ItemID,
+            Name = p.ItemName,
+            TypeId = p.TypeID,
+            RadiusKm = p.RadiusKm,
+            SolarSystemId = p.SolarSystemID,
+            SolarSystemName = "Jita",
+        })).ToList();
+        var autoCharacterRequest = new PlanetaryPlanRequest
+        {
+            Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
+            PeriodDays = 7,
+            Mode = PlanetaryPlanMode.SelfSufficient,
+            CcuLevel = 5,
+            DefaultMaxPlanets = 6,
+            Planets = allPlanetInputs,
+            Characters = new List<PlanetaryCharacterInput>(),
+            Price = _ => 1000,
+            CountSetupCost = false,
+        };
+        var autoCharacterPlan = piPlanner.Plan(autoCharacterRequest);
+        c.That(autoCharacterPlan.Summary.TotalColonies > 6, "未勾选角色时不限行星位总数");
+        c.That(autoCharacterPlan.Colonies.All(p => p.CharacterName.StartsWith("角色")),
+            "未勾选角色时自动命名「角色N」");
+        var autoNames = autoCharacterPlan.Colonies.Select(p => p.CharacterName).Distinct().ToList();
+        c.That(autoNames.Count >= 2, $"自动角色按行星位递增（{autoNames.Count} 个）");
+        c.That(autoCharacterPlan.Colonies.GroupBy(p => p.CharacterName).All(g => g.Count() <= 6),
+            "每个自动角色不超过默认行星位");
+        c.That(!autoCharacterPlan.Warnings.Any(p => p.Contains("行星位不足")), "自动角色模式不报行星位不足");
+        c.Equal(autoCharacterPlan.Summary.CharacterCount, autoNames.Count, "汇总角色数包含自动角色");
+
+        // 候选行星缺少所需类型：仍生成默认估算的殖民地行（行星名留空、MissingPlanet=true）
+        var barrenPlanets = new[] { 40000007, 40009077, 40009078 }
+            .Select(id => MapDenormalizeService.QueryPlanet(id))
+            .Where(p => p != null)
+            .Select(p => new PlanetaryPlanetInput
+            {
+                PlanetId = p!.ItemID,
+                Name = p.ItemName,
+                TypeId = p.TypeID,
+                RadiusKm = p.RadiusKm,
+                SolarSystemId = p.SolarSystemID,
+                SolarSystemName = "Barren",
+            })
+            .ToList();
+        var missingPlanetRequest = new PlanetaryPlanRequest
+        {
+            Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
+            PeriodDays = 7,
+            Mode = PlanetaryPlanMode.SelfSufficient,
+            CcuLevel = 5,
+            Planets = barrenPlanets,
+            Characters = new List<PlanetaryCharacterInput>
+            {
+                new() { CharacterId = 1, Name = "PI-A", CcuLevel = 5, MaxPlanets = 6 },
+            },
+            Price = _ => 1000,
+            CountSetupCost = false,
+        };
+        var missingPlanetPlan = piPlanner.Plan(missingPlanetRequest);
+        c.That(missingPlanetPlan.Colonies.Any(p => p.MissingPlanet), "缺少类型时仍生成占位殖民地行");
+        c.That(missingPlanetPlan.Colonies.Where(p => p.MissingPlanet)
+                .All(p => p.PlanetId == 0 && string.IsNullOrEmpty(p.PlanetName)),
+            "占位殖民地的行星名留空");
+        c.That(missingPlanetPlan.Colonies.Where(p => p.MissingPlanet)
+                .All(p => p.Factories > 0 || p.OutputPerDay > 0),
+            "占位殖民地按默认类型算出产能");
+        c.That(missingPlanetPlan.Colonies.Where(p => !p.MissingPlanet).All(p => p.PlanetId > 0),
+            "有匹配类型的殖民地仍带具体行星");
+        c.That(missingPlanetPlan.Warnings.Any(w => w.Contains("已按默认类型估算")),
+            "缺少类型时给出默认估算提示");
+
         c.Section("IndustrySuite · 行星计划快照 / 实时殖民权限");
         var savedProbe = new PlanetarySavedPlan
         {
@@ -287,12 +430,16 @@ internal static class IndustrySuite
             Targets = new List<PlanetaryTarget> { new() { TypeId = 2867, Quantity = 100 } },
             Result = piPlan,
             Summary = "probe",
+            Planets = planetInputs,
         };
         var savedJson = JsonConvert.SerializeObject(savedProbe);
         var savedRoundTrip = JsonConvert.DeserializeObject<PlanetarySavedPlan>(savedJson);
         c.NotNull(savedRoundTrip?.Result, "行星计划结果快照可序列化");
         c.Equal(savedRoundTrip?.Result?.Summary.TotalColonies, piPlan.Summary.TotalColonies, "快照殖民地数往返一致");
         c.Equal(savedRoundTrip?.Result?.Products.Count, piPlan.Products.Count, "快照产物链往返一致");
+        c.Equal(savedRoundTrip?.Planets.Count, planetInputs.Count, "快照保存候选行星列表");
+        c.Equal(savedRoundTrip?.Planets.FirstOrDefault()?.PlanetId, planetInputs[0].PlanetId, "快照候选行星 ID 往返一致");
+        c.Equal(savedRoundTrip?.Planets.FirstOrDefault()?.RadiusKm, planetInputs[0].RadiusKm, "快照候选行星半径往返一致");
 
         var noScopeCharacter = new AuthorizedCharacterData
         {
@@ -854,6 +1001,158 @@ internal static class IndustrySuite
                 planetaryVm.CalculateAsync().GetAwaiter().GetResult();
                 c.NotNull(planetaryVm.CurrentPlan, "行星开发页执行计划产出结果");
                 c.That(planetaryVm.CurrentPlan?.Products.Count > 0, "行星开发页结果包含产物链");
+                var rootNode = planetaryVm.ProductRoots.FirstOrDefault();
+                c.NotNull(rootNode, "产物链有目标根节点");
+                c.That(planetaryVm.ProductRoots.All(p => p.IsTarget), "产物链根节点都是目标产物");
+                var expandedCount = planetaryVm.FlatProductNodes.Count;
+                c.That(expandedCount > planetaryVm.ProductRoots.Count,
+                    $"产物链按配方依赖展开子节点（{expandedCount} 个可见节点）");
+                c.That(rootNode?.HasChildren == true, "目标产物节点挂有下游依赖");
+                c.That(rootNode?.Children.Any(p => p.IsProduced) == true, "依赖里包含计划内生产的中间产物");
+                c.That(rootNode?.Children.Any(p => p.RequiredPerDay > 0) == true, "依赖节点带每日需求量");
+                c.That(planetaryVm.FlatProductNodes.Any(p => p.IsRaw), "自给模式展开到 P0 原料叶子");
+                planetaryVm.ToggleProductNode(rootNode);
+                c.That(planetaryVm.FlatProductNodes.Count < expandedCount, "收起目标节点后可见节点减少");
+                planetaryVm.ExpandAllProductNodes();
+                c.Equal(planetaryVm.FlatProductNodes.Count, expandedCount, "展开全部恢复节点数");
+                planetaryVm.CollapseAllProductNodes();
+                c.Equal(planetaryVm.FlatProductNodes.Count, planetaryVm.ProductRoots.Count, "收起全部只留目标节点");
+
+                // 蓝图导入：没有行星产物的蓝图不添加需求（异常才走右下角通知，成功不再有状态文字）
+                planetaryVm.BlueprintSearchText = "Rifter";
+                planetaryVm.RefreshBlueprintResults();
+                var noPiBlueprint = planetaryVm.BlueprintResults.FirstOrDefault();
+                if (noPiBlueprint is not null)
+                {
+                    var targetsBefore = planetaryVm.Targets.Count;
+                    planetaryVm.SelectedBlueprint = noPiBlueprint;
+                    planetaryVm.ImportBlueprint();
+                    c.Equal(planetaryVm.Targets.Count, targetsBefore, "没有行星产物的蓝图不添加需求");
+                }
+
+                // 候选行星：选星系 → 全部行星入池 → 去重/跨星系/可移除；计划只排到候选行星上
+                planetaryVm.ClearSelectedPlanets();
+                c.That(planetaryVm.IsRadiusEditable, "未选候选行星时半径可手动填写");
+                var added = planetaryVm.AddSystemPlanets(new PlanetarySystemOption { SolarSystemId = 30000001, Name = "Tanoo" });
+                c.Equal(added, 6, "选中 Tanoo 加入 6 颗行星");
+                c.Equal(planetaryVm.SelectedPlanets.Count, 6, "候选行星列表包含星系全部行星");
+                c.That(planetaryVm.PlanetSummaryText.Contains("1 个星系"), "摘要显示星系数");
+                c.Equal(planetaryVm.AddSystemPlanets(new PlanetarySystemOption { SolarSystemId = 30000001, Name = "Tanoo" }), 0,
+                    "重复加入同一星系不产生重复行星");
+                c.Equal(planetaryVm.AddSystemPlanets(new PlanetarySystemOption { SolarSystemId = 30000142, Name = "Jita" }), 8,
+                    "可跨星系继续加入行星");
+                c.That(planetaryVm.PlanetSummaryText.Contains("2 个星系"), "摘要显示多个星系");
+                c.Equal(planetaryVm.SelectedSystems.Count, 2, "左栏列出 2 个已选星系");
+                c.Equal(planetaryVm.SelectedSystems.First(p => p.SolarSystemId == 30000142).PlanetCount, 8,
+                    "左栏星系显示行星数");
+                c.Equal(planetaryVm.SelectedSystemItem?.SolarSystemId, 30000142, "新加入的星系自动选中");
+                c.Equal(planetaryVm.VisiblePlanets.Count, 8, "右栏显示选中星系的行星");
+                c.That(planetaryVm.PlanetListHeaderText.Contains("Jita"), "右栏标题显示星系名");
+
+                // 把 Jita 的行星逐颗删空 → 左栏 Jita 消失，右栏回退到剩余星系
+                foreach (var planet in planetaryVm.SelectedPlanets
+                             .Where(p => p.SolarSystemId == 30000142)
+                             .ToList())
+                {
+                    planetaryVm.RemovePlanet(planet);
+                }
+                c.Equal(planetaryVm.SelectedSystems.Count, 1, "星系行星删空后左栏移除该星系");
+                c.That(planetaryVm.SelectedSystems.All(p => p.SolarSystemId != 30000142), "左栏不再包含 Jita");
+                c.Equal(planetaryVm.SelectedSystemItem?.SolarSystemId, 30000001, "右栏回退到剩余星系");
+                c.Equal(planetaryVm.VisiblePlanets.Count, 6, "右栏显示剩余星系的行星");
+                planetaryVm.AddSystemPlanets(new PlanetarySystemOption { SolarSystemId = 30000142, Name = "Jita" });
+                c.Equal(planetaryVm.SelectedPlanets.Count, 14, "可重新加入星系");
+
+                // 虫洞星系也可作为候选（Thera 31000005）；加完再删掉，不影响后续 Tanoo+Jita 基准
+                var theraPlanets = PlanetaryPlanetCatalog.GetPlanets(
+                    new PlanetarySystemOption { SolarSystemId = 31000005, Name = "Thera" });
+                c.That(theraPlanets.Count > 1 && theraPlanets.Skip(1).All(p => p.RadiusKm > 0),
+                    $"虫洞星系行星可读取（{theraPlanets.Count - 1} 颗）");
+                var wormholeAdded = planetaryVm.AddSystemPlanets(
+                    new PlanetarySystemOption { SolarSystemId = 31000005, Name = "Thera" });
+                c.That(wormholeAdded > 0, $"虫洞行星可加入候选池（{wormholeAdded} 颗）");
+                c.That(planetaryVm.SelectedSystems.Any(p => p.SolarSystemId == 31000005), "左栏包含虫洞星系");
+                foreach (var planet in planetaryVm.SelectedPlanets
+                             .Where(p => p.SolarSystemId == 31000005)
+                             .ToList())
+                {
+                    planetaryVm.RemovePlanet(planet);
+                }
+                c.That(planetaryVm.SelectedSystems.All(p => p.SolarSystemId != 31000005), "虫洞星系删空后从左栏移除");
+                var removedPlanet = planetaryVm.SelectedPlanets.First(p => p.PlanetId == 40000002);
+                planetaryVm.RemovePlanet(removedPlanet);
+                c.Equal(planetaryVm.SelectedPlanets.Count, 13, "可移除个别行星");
+                planetaryVm.AddPlanets(new[] { removedPlanet });
+                c.Equal(planetaryVm.SelectedPlanets.Count, 14, "移除后可以再加回");
+
+                planetaryVm.CalculateAsync().GetAwaiter().GetResult();
+                var uiPlan = planetaryVm.CurrentPlan;
+                c.Equal(uiPlan?.Summary.PlanetCount, planetaryVm.SelectedPlanets.Count, "页面计划使用候选行星数量");
+                c.That(uiPlan?.Colonies.Where(p => !p.MissingPlanet).All(p => p.PlanetId > 0) == true,
+                    "页面计划在有匹配行星的殖民地上带行星");
+                c.That(!planetaryVm.IsRadiusEditable, "选了候选行星后手动半径锁定");
+
+                // 保存 → 清空 → 载入：候选行星列表应恢复
+                planetaryVm.SaveCurrentPlan();
+                var expectedPlanets = planetaryVm.SelectedPlanets.Select(p => p.PlanetId).ToList();
+                planetaryVm.ClearSelectedPlanets();
+                c.That(planetaryVm.IsRadiusEditable, "清空候选行星后半径恢复可编辑");
+                planetaryVm.LoadSelectedPlan();
+                c.Equal(planetaryVm.SelectedPlanets.Count, expectedPlanets.Count, "载入计划恢复候选行星数量");
+                c.That(expectedPlanets.All(id => planetaryVm.SelectedPlanets.Any(p => p.PlanetId == id)),
+                    "载入计划恢复候选行星 ID");
+
+                // 计划提示本地化：只给 Jita 行星会缺某些 P0，提示里的物品名应为本地化名
+                planetaryVm.ClearSelectedPlanets();
+                planetaryVm.AddSystemPlanets(new PlanetarySystemOption { SolarSystemId = 30000142, Name = "Jita" });
+                planetaryVm.CalculateAsync().GetAwaiter().GetResult();
+                c.That(planetaryVm.CurrentPlan?.Warnings.Any(w => w.Contains("的候选行星里没有能提取")) == true,
+                    "缺少 P0 时给出候选行星提示");
+                c.That(planetaryVm.CurrentPlan?.Warnings.All(w =>
+                        !w.Contains("Proteins") && !w.Contains("Complex Organisms") && !w.Contains("Bacteria")
+                        && !w.Contains("Biofuels") && !w.Contains("Carbon Compounds")) == true,
+                    "计划提示中的物品名使用本地化名称");
+                c.That(planetaryVm.CurrentPlan?.Warnings.Any(w => w.Contains("生物燃料")) == true,
+                    "计划提示里的 Biofuels 已替换为「生物燃料」");
+                c.That(planetaryVm.CurrentPlan?.Warnings.Any(w => w.Contains("碳化合物")) == true,
+                    "计划提示里的 P0 名已替换为中文");
+
+                // 角色与产能 / 价格与税设置自动保存，新页面实例可读回
+                planetaryVm.CcuLevel = 3;
+                planetaryVm.CycleDays = 6;
+                planetaryVm.PlanetTaxPercent = 8;
+                planetaryVm.UseSetupCost = false;
+                planetaryVm.PeriodDays = 5;
+                planetaryVm.SaveSettings();
+                var reloadedSetting = PlanetaryPlanSettingService.Load();
+                c.Equal(reloadedSetting?.CcuLevel, 3, "行星设置已写入 CCU");
+                c.Equal(reloadedSetting?.CycleDays, 6d, "行星设置已写入提取周期");
+                c.Equal(reloadedSetting?.PlanetTaxPercent, 8d, "行星设置已写入 POCO 税");
+                c.Equal(reloadedSetting?.UseSetupCost, false, "行星设置已写入设施成本开关");
+                var reloadedVm = new PlanetaryPlanPageViewModel();
+                c.Equal(reloadedVm.CcuLevel, 3d, "新页面实例恢复 CCU");
+                c.Equal(reloadedVm.PeriodDays, 5d, "新页面实例恢复需求周期");
+                c.Equal(reloadedVm.CycleDays, 6d, "新页面实例恢复提取周期");
+                c.Equal(reloadedVm.PlanetTaxPercent, 8d, "新页面实例恢复 POCO 税");
+
+                // 执行计划不自动保存计划；保存按钮只在计划详细+有结果时显示；可重命名
+                var savedBefore = planetaryVm.SavedPlans.Count;
+                planetaryVm.CalculateAsync().GetAwaiter().GetResult();
+                c.Equal(planetaryVm.SavedPlans.Count, savedBefore, "执行计划不会自动保存计划");
+
+                planetaryVm.SectionTabIndex = 2;
+                c.That(planetaryVm.ShowPlanSaveButton, "计划详细且有结果时显示保存按钮");
+                planetaryVm.SectionTabIndex = 0;
+                c.That(!planetaryVm.ShowPlanSaveButton, "离开计划详细后隐藏保存按钮");
+                planetaryVm.SectionTabIndex = 2;
+
+                planetaryVm.SaveCurrentPlan();
+                var savedNew = planetaryVm.SelectedSavedPlan;
+                c.That(savedNew?.Name.StartsWith("行星计划 ") == true, "保存按钮使用带时间的默认名");
+                c.That(ReferenceEquals(planetaryVm.SavedPlans.FirstOrDefault(), savedNew), "新保存的计划排在最前");
+                c.That(planetaryVm.RenameSelectedPlan("测试计划改名"), "计划可重命名");
+                c.Equal(planetaryVm.SelectedSavedPlan?.Name, "测试计划改名", "重命名生效");
+                c.That(IndustryPlanetaryPlanService.Load().Any(p => p.Name == "测试计划改名"), "重命名已写盘");
             }
             var liveChartProbe = new PlanetaryCapacityChart
             {

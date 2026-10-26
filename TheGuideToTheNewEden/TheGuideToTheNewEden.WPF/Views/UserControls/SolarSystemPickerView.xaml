@@ -1,0 +1,71 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.SolarSystemPickerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="RootPicker"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+    </UserControl.Resources>
+
+    <Grid>
+        <!--  与「价格市场」选择器同款：按钮 + 悬浮弹层（搜索 + 列表）  -->
+        <ToggleButton
+            x:Name="PickerToggle"
+            MinHeight="32"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Left">
+            <ToggleButton.Content>
+                <Grid>
+                    <TextBlock
+                        Text="搜索星系"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding HasSelection, ElementName=RootPicker, Converter={StaticResource InverseBoolToVis}}" />
+                    <TextBlock
+                        Text="{Binding SelectedItem.SolarSystemName, ElementName=RootPicker}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding HasSelection, ElementName=RootPicker, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </ToggleButton.Content>
+        </ToggleButton>
+
+        <Popup
+            AllowsTransparency="True"
+            IsOpen="{Binding IsChecked, ElementName=PickerToggle, Mode=TwoWay}"
+            Placement="Bottom"
+            PlacementTarget="{Binding ElementName=PickerToggle}"
+            PopupAnimation="Fade"
+            StaysOpen="False">
+            <Border
+                Width="{Binding PopupWidth, ElementName=RootPicker}"
+                Height="{Binding PopupHeight, ElementName=RootPicker}"
+                Margin="0,4,0,0"
+                Style="{StaticResource AccentFlyoutBorder}">
+                <Grid Margin="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ui:TextBox
+                        x:Name="SystemSearch"
+                        PlaceholderText="搜索星系 / 虫洞（J 编号）"
+                        TextChanged="OnSystemSearchChanged" />
+                    <ListBox
+                        x:Name="SystemList"
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
+                        DisplayMemberPath="SolarSystemName"
+                        IsSynchronizedWithCurrentItem="False"
+                        ScrollViewer.CanContentScroll="True"
+                        SelectionChanged="OnSystemSelectionChanged"
+                        VirtualizingStackPanel.IsVirtualizing="True"
+                        VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

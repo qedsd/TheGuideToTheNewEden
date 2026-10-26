@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using SqlSugar;
@@ -21,6 +21,12 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
         public int TypeID { get; set; }
         public int GroupID { get; set; }
         public int SolarSystemID { get; set; }
+
+        /// <summary>
+        /// 天体半径（米，与 CCP SDE / ESI 一致）；星门、空间站等非天体为 0。
+        /// 行星半径即 PI 殖民地 CPU/PG 容量估算的输入。
+        /// </summary>
+        public double Radius { get; set; }
 
         [SqlSugar.SugarColumn(IsNullable = true)]
         public string ItemName { get; set; }

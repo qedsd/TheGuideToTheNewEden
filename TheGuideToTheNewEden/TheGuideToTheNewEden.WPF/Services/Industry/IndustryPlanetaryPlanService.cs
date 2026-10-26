@@ -20,6 +20,8 @@ public sealed class PlanetarySavedPlan
     public int DefaultMaxPlanets { get; set; } = 6;
     public double RadiusKm { get; set; }
     public double CycleDays { get; set; } = 4;
+    /// <summary>候选行星（用户多选；为空 = 按行星类型 + 半径估算）。</summary>
+    public List<PlanetaryPlanetInput> Planets { get; set; } = new();
     public double PlanetTaxPercent { get; set; } = 5;
     public double SalesTaxPercent { get; set; } = 3.6;
     public double BrokerFeePercent { get; set; }
@@ -52,16 +54,18 @@ public static class IndustryPlanetaryPlanService
         }
     }
 
-    public static void Save(IEnumerable<PlanetarySavedPlan> plans)
+    public static bool Save(IEnumerable<PlanetarySavedPlan> plans)
     {
         try
         {
             Directory.CreateDirectory(Folder);
             File.WriteAllText(FilePath, JsonConvert.SerializeObject(plans.ToList(), Formatting.Indented));
+            return true;
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
+            return false;
         }
     }
 }

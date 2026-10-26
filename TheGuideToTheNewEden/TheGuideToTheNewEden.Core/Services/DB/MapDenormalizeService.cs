@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,6 +44,34 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static MapDenormalize Query(int id)
         {
             return DBService.MainDb.Queryable<MapDenormalize>().Where(p => p.ItemID == id).First();
+        }
+
+        /// <summary>
+        /// 某星系的全部行星（groupID = 7），按天体编号排序；<see cref="MapDenormalize.Radius"/> 为真实半径（米）。
+        /// </summary>
+        public static List<MapDenormalize> QueryPlanetsBySolarSystemID(int solarSystemId)
+        {
+            if (solarSystemId <= 0)
+            {
+                return new List<MapDenormalize>();
+            }
+            return DBService.MainDb.Queryable<MapDenormalize>()
+                .Where(p => p.SolarSystemID == solarSystemId && p.GroupID == 7)
+                .ToList()
+                .OrderBy(p => p.ItemID)
+                .ToList();
+        }
+
+        /// <summary>按行星 ID 取单个行星（含真实半径）；不是行星时返回 null。</summary>
+        public static MapDenormalize QueryPlanet(long planetId)
+        {
+            if (planetId <= 0 || planetId > int.MaxValue)
+            {
+                return null;
+            }
+            return DBService.MainDb.Queryable<MapDenormalize>()
+                .Where(p => p.ItemID == (int)planetId && p.GroupID == 7)
+                .First();
         }
     }
 }

@@ -180,17 +180,7 @@
                                     Source="{StaticResource NavIcon.industry}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
-                        <ui:NavigationViewItem
-                            Content="{DynamicResource Nav.IndustryRecycle}"
-                            NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:IndustryRecyclePage}">
-                            <ui:NavigationViewItem.Icon>
-                                <ui:ImageIcon
-                                    Width="20"
-                                    Height="20"
-                                    Source="{StaticResource NavIcon.industry}" />
-                            </ui:NavigationViewItem.Icon>
-                        </ui:NavigationViewItem>
+                        <!--  「回收 / 压缩」入口已隐藏（页面与计算保留，暂不提供导航入口）  -->
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 

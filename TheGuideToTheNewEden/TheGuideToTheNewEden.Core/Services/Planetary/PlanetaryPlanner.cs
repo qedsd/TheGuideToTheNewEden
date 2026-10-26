@@ -30,17 +30,28 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             var plan = new PlanetaryPlan();
             var periodDays = Math.Max(0.01, request.PeriodDays);
             var cycleDays = Math.Max(0.01, request.CycleDays);
+            var planetPool = BuildPlanetPool(request, plan);
+            var usePlanets = request.Planets != null && request.Planets.Count > 0;
             var radius = request.RadiusKm;
-            var usedEstimatedRadius = radius <= 0;
+            // 有候选行星时：每颗殖民地按各自行星半径算，不再需要"单一半径/估算"。
+            var usedEstimatedRadius = !usePlanets && radius <= 0;
             if (usedEstimatedRadius)
             {
                 radius = PlanetaryCapacityCalculator.DefaultRadiusKm;
             }
+            if (usePlanets)
+            {
+                radius = 0;
+            }
 
             var characters = BuildCharacters(request);
+            // 未勾选角色：不设角色数量上限，按默认行星位自动生成「角色1、角色2…」。
+            var autoCharacters = characters.Count == 0;
+            var defaultMaxPlanets = Math.Max(1, Math.Min(6, request.DefaultMaxPlanets));
+            var defaultCcu = Math.Max(0, Math.Min(5, request.CcuLevel));
             var effectiveCcu = characters.Count > 0
                 ? characters.Min(p => p.CcuLevel)
-                : Math.Max(0, Math.Min(5, request.CcuLevel));
+                : defaultCcu;
             effectiveCcu = Math.Max(0, Math.Min(5, effectiveCcu));
             var availablePlanetTypes = NormalizeAvailablePlanetTypes(request.AvailablePlanetTypes, plan);
             var characterSlots = characters
@@ -96,7 +107,6 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             {
                 Warn(plan, "未提供行星半径，CPU/PG 产能按 " + PlanetaryCapacityCalculator.DefaultRadiusKm + " km 估算");
             }
-
             var required = new Dictionary<int, double>();
             foreach (var target in targets)
             {
@@ -141,14 +151,16 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                     {
                         BuildP1Extraction(
                             plan, request, product, productPlan, availablePlanetTypes,
-                            effectiveCcu, radius, cycleDays, periodDays, characterSlots, targetOutputPerDay);
+                            effectiveCcu, radius, cycleDays, periodDays, characterSlots, targetOutputPerDay,
+                            planetPool, usePlanets, autoCharacters, defaultMaxPlanets, defaultCcu);
                     }
                     else
                     {
                         BuildFactory(
                             plan, request, product, productPlan, availablePlanetTypes,
                             effectiveCcu, radius, cycleDays, periodDays, characterSlots,
-                            required, imports, targetOutputPerDay);
+                            required, imports, targetOutputPerDay, planetPool, usePlanets,
+                            autoCharacters, defaultMaxPlanets, defaultCcu);
                     }
 
                     productPlans[product.TypeId] = productPlan;
@@ -167,7 +179,7 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                 .ToList();
 
             BuildImports(plan, request, imports, periodDays);
-            BuildSummary(plan, request, targetProducts, targets, targetOutputPerDay, periodDays, effectiveCcu, radius, usedEstimatedRadius, cycleDays);
+            BuildSummary(plan, request, targetProducts, targets, targetOutputPerDay, periodDays, effectiveCcu, radius, usedEstimatedRadius, cycleDays, planetPool);
             if (usedEstimatedRadius)
             {
                 plan.Summary.UsedEstimatedRadius = true;
@@ -186,7 +198,12 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             double cycleDays,
             double periodDays,
             List<CharacterSlot> characters,
-            Dictionary<int, double> targetOutputPerDay)
+            Dictionary<int, double> targetOutputPerDay,
+            List<PlanetSlot> planetPool,
+            bool usePlanets,
+            bool autoCharacters,
+            int defaultMaxPlanets,
+            int defaultCcu)
         {
             var recipe = product.Recipe;
             var p0Input = recipe.Inputs.FirstOrDefault();
@@ -195,6 +212,27 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                 Warn(plan, product.Name + " 的提取配方没有 P0 输入");
                 productPlan.IsImported = false;
                 return;
+            }
+
+            var missingPlanet = false;
+            if (usePlanets)
+            {
+                var hasCandidate = planetPool.Any(p => !p.Used && p.Profile?.P0TypeIds != null
+                                                       && p.Profile.P0TypeIds.Contains(p0Input.TypeID));
+                if (hasCandidate)
+                {
+                    BuildP1ExtractionFromPlanets(
+                        plan, request, product, productPlan, planetPool, ccuLevel,
+                        p0Input.TypeID, p0Input.Quantity, cycleDays, periodDays, characters, targetOutputPerDay,
+                        autoCharacters, defaultMaxPlanets, defaultCcu);
+                    return;
+                }
+
+                // 选中的行星里没有能采这个 P0 的类型：仍按默认行星类型估算一行，行星名留空（界面标红）。
+                missingPlanet = true;
+                Warn(plan, product.Name + " 的候选行星里没有能提取 "
+                    + (_recipes.GetProduct(p0Input.TypeID)?.Name ?? ("Type " + p0Input.TypeID))
+                    + " 的行星，已按默认类型估算");
             }
 
             var planetType = FindP1PlanetType(p0Input.TypeID, availablePlanetTypes, plan, product.Name);
@@ -244,7 +282,7 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             var p0PerDay = productPlan.RequiredPerDay * p0Input.Quantity / recipe.OutputQuantity;
             for (var i = 0; i < colonies; i++)
             {
-                var character = AssignCharacter(characters, plan);
+                var character = AssignCharacter(characters, plan, autoCharacters, defaultMaxPlanets, defaultCcu);
                 var setupCost = CalculateSetupCost(planetType, request, PlanetaryColonySetup.ExtractionP1,
                     capacity.MaxFactories, 0, capacity.Launchpads);
                 var colony = new PlanetaryColonyPlan
@@ -262,9 +300,128 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                     SetupCost = setupCost,
                     CcuLevel = ccuLevel,
                     UsedEstimatedRadius = capacity.UsedEstimatedRadius,
+                    RadiusKm = radius > 0 ? radius : PlanetaryCapacityCalculator.DefaultRadiusKm,
+                    MissingPlanet = missingPlanet,
                 };
                 plan.Colonies.Add(colony);
                 productPlan.SetupCost += setupCost;
+            }
+        }
+
+        /// <summary>
+        /// 候选行星模式：P1 提取只排到"能采到该 P0"的选中行星上；每颗行星一个殖民地，
+        /// 容量按该行星自己的半径算；行星用尽仍不够时给出"候选行星不足"警告。
+        /// </summary>
+        private void BuildP1ExtractionFromPlanets(
+            PlanetaryPlan plan,
+            PlanetaryPlanRequest request,
+            PlanetaryProduct product,
+            PlanetaryProductPlan productPlan,
+            List<PlanetSlot> planetPool,
+            int ccuLevel,
+            int p0TypeId,
+            double p0Quantity,
+            double cycleDays,
+            double periodDays,
+            List<CharacterSlot> characters,
+            Dictionary<int, double> targetOutputPerDay,
+            bool autoCharacters,
+            int defaultMaxPlanets,
+            int defaultCcu)
+        {
+            var recipe = product.Recipe;
+            var cycleSeconds = Math.Max(1, recipe.CycleTime);
+            var outputPerFactoryPerHour = recipe.OutputQuantity * 3600.0 / cycleSeconds;
+            var yieldRatio = PlanetaryExtractionYield.YieldRatioVsBaseline(cycleDays * 24);
+            var outputPerFactoryPerDay = outputPerFactoryPerHour * 24 * yieldRatio;
+            if (outputPerFactoryPerDay <= 0)
+            {
+                Warn(plan, product.Name + " 提取产率为 0");
+                return;
+            }
+
+            var p0Name = _recipes.GetProduct(p0TypeId)?.Name ?? ("Type " + p0TypeId);
+            var candidates = planetPool
+                .Where(p => !p.Used && p.Profile?.P0TypeIds != null && p.Profile.P0TypeIds.Contains(p0TypeId))
+                .ToList();
+            if (candidates.Count == 0)
+            {
+                Warn(plan, product.Name + " 的候选行星里没有能提取 " + p0Name + " 的行星");
+                return;
+            }
+
+            var totalOutput = 0.0;
+            var totalFactories = 0;
+            var totalSetup = 0.0;
+            var colonies = 0;
+            foreach (var slot in candidates)
+            {
+                var capacity = PlanetaryCapacityCalculator.Calculate(
+                    slot.Profile, ccuLevel, slot.Input.RadiusKm, PlanetaryColonySetup.ExtractionP1, 1);
+                if (!capacity.Fits || capacity.MaxFactories <= 0)
+                {
+                    continue;
+                }
+
+                var outputPerColony = capacity.MaxFactories * outputPerFactoryPerDay;
+                if (outputPerColony <= 0)
+                {
+                    continue;
+                }
+
+                slot.Used = true;
+                var character = AssignCharacter(characters, plan, autoCharacters, defaultMaxPlanets, defaultCcu);
+                var setupCost = CalculateSetupCost(slot.Profile, request, PlanetaryColonySetup.ExtractionP1,
+                    capacity.MaxFactories, 0, capacity.Launchpads);
+                plan.Colonies.Add(new PlanetaryColonyPlan
+                {
+                    CharacterName = character,
+                    PlanetId = slot.Input.PlanetId,
+                    PlanetName = slot.Input.Name,
+                    RadiusKm = slot.Input.RadiusKm,
+                    PlanetType = slot.Profile.Name,
+                    Role = "提取",
+                    ProductTypeId = product.TypeId,
+                    ProductName = product.Name,
+                    Tier = product.Tier,
+                    Factories = capacity.MaxFactories,
+                    ExtractorHeads = capacity.ExtractorHeads,
+                    OutputPerDay = outputPerColony,
+                    InputsPerDay = outputPerColony * p0Quantity / recipe.OutputQuantity,
+                    SetupCost = setupCost,
+                    CcuLevel = ccuLevel,
+                    UsedEstimatedRadius = false,
+                });
+                colonies++;
+                totalOutput += outputPerColony;
+                totalFactories += capacity.MaxFactories;
+                totalSetup += setupCost;
+                if (totalOutput >= productPlan.RequiredPerDay)
+                {
+                    break;
+                }
+            }
+
+            productPlan.PlanetType = plan.Colonies
+                .Where(p => p.ProductTypeId == product.TypeId)
+                .Select(p => p.PlanetType)
+                .LastOrDefault() ?? string.Empty;
+            productPlan.Colonies = colonies;
+            productPlan.Factories = totalFactories;
+            productPlan.OutputPerDay = totalOutput;
+            productPlan.SetupCost = totalSetup;
+            productPlan.FactoriesPerColony = colonies > 0 ? (int)Math.Round((double)totalFactories / colonies) : 0;
+            productPlan.Inputs = string.Format(
+                "{0} {1:N1}/天（P0，提取）",
+                p0Name,
+                productPlan.RequiredPerDay * p0Quantity / recipe.OutputQuantity);
+            targetOutputPerDay[product.TypeId] = totalOutput;
+
+            if (totalOutput < productPlan.RequiredPerDay)
+            {
+                Warn(plan, string.Format(
+                    "{0} 的候选行星不足：已排 {1:N1}/天，需求 {2:N1}/天",
+                    product.Name, totalOutput, productPlan.RequiredPerDay));
             }
         }
 
@@ -281,7 +438,12 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             List<CharacterSlot> characters,
             Dictionary<int, double> required,
             Dictionary<int, double> imports,
-            Dictionary<int, double> targetOutputPerDay)
+            Dictionary<int, double> targetOutputPerDay,
+            List<PlanetSlot> planetPool,
+            bool usePlanets,
+            bool autoCharacters,
+            int defaultMaxPlanets,
+            int defaultCcu)
         {
             var recipe = product.Recipe;
             var setup = product.Tier == PlanetaryProductTier.P2
@@ -289,6 +451,28 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                 : product.Tier == PlanetaryProductTier.P3
                     ? PlanetaryColonySetup.P2ToP3
                     : PlanetaryColonySetup.P3ToP4;
+
+            var missingPlanet = false;
+            if (usePlanets)
+            {
+                var hasCandidate = planetPool.Any(p => !p.Used && p.Profile != null
+                                                       && (setup != PlanetaryColonySetup.P3ToP4 || p.Profile.IsP4Capable));
+                if (hasCandidate)
+                {
+                    BuildFactoryFromPlanets(
+                        plan, request, product, productPlan, planetPool, ccuLevel, setup,
+                        periodDays, characters, required, imports, targetOutputPerDay,
+                        autoCharacters, defaultMaxPlanets, defaultCcu);
+                    return;
+                }
+
+                // 选中的行星里没有能建该类工厂的类型：仍按默认行星类型估算，行星名留空（界面标红）。
+                missingPlanet = true;
+                Warn(plan, product.Name + " 的候选行星里没有可建"
+                    + (setup == PlanetaryColonySetup.P3ToP4 ? " High-Tech " : " Advanced ")
+                    + "工厂的行星，已按默认类型估算");
+            }
+
             var planetType = FindFactoryPlanetType(setup, availablePlanetTypes, plan, product.Name);
             if (planetType == null)
             {
@@ -327,7 +511,7 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             {
                 var factoriesInColony = Math.Min(capacity.MaxFactories, Math.Max(0, remainingFactories));
                 remainingFactories -= factoriesInColony;
-                var character = AssignCharacter(characters, plan);
+                var character = AssignCharacter(characters, plan, autoCharacters, defaultMaxPlanets, defaultCcu);
                 var setupCost = CalculateSetupCost(planetType, request, setup,
                     factoriesInColony, 0, capacity.Launchpads);
                 var inputPerDay = recipe.Inputs.Sum(p =>
@@ -347,6 +531,8 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                     SetupCost = setupCost,
                     CcuLevel = ccuLevel,
                     UsedEstimatedRadius = capacity.UsedEstimatedRadius,
+                    RadiusKm = radius > 0 ? radius : PlanetaryCapacityCalculator.DefaultRadiusKm,
+                    MissingPlanet = missingPlanet,
                 };
                 plan.Colonies.Add(colony);
                 productPlan.SetupCost += setupCost;
@@ -399,9 +585,200 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             }
         }
 
+        /// <summary>
+        /// 候选行星模式：工厂殖民地逐颗排到选中行星上（每颗行星一个殖民地，按各自半径算容量）；
+        /// 行星用尽仍缺工厂时给出警告，并按**实际排到的工厂数**折算下级输入（不虚报需求）。
+        /// </summary>
+        private void BuildFactoryFromPlanets(
+            PlanetaryPlan plan,
+            PlanetaryPlanRequest request,
+            PlanetaryProduct product,
+            PlanetaryProductPlan productPlan,
+            List<PlanetSlot> planetPool,
+            int ccuLevel,
+            PlanetaryColonySetup setup,
+            double periodDays,
+            List<CharacterSlot> characters,
+            Dictionary<int, double> required,
+            Dictionary<int, double> imports,
+            Dictionary<int, double> targetOutputPerDay,
+            bool autoCharacters,
+            int defaultMaxPlanets,
+            int defaultCcu)
+        {
+            var recipe = product.Recipe;
+            var cycleSeconds = Math.Max(1, recipe.CycleTime);
+            var outputPerFactoryPerHour = recipe.OutputQuantity * 3600.0 / cycleSeconds;
+            var neededFactories = (int)Math.Ceiling(productPlan.RequiredPerDay / (outputPerFactoryPerHour * 24));
+            if (neededFactories <= 0)
+            {
+                neededFactories = 1;
+            }
+
+            var candidates = planetPool
+                .Where(p => !p.Used && p.Profile != null
+                            && (setup != PlanetaryColonySetup.P3ToP4 || p.Profile.IsP4Capable))
+                .ToList();
+            if (candidates.Count == 0)
+            {
+                Warn(plan, product.Name + " 的候选行星里没有可建"
+                    + (setup == PlanetaryColonySetup.P3ToP4 ? " High-Tech " : " Advanced ") + "工厂的行星");
+                return;
+            }
+
+            var remaining = neededFactories;
+            var totalFactories = 0;
+            var totalOutput = 0.0;
+            var totalSetup = 0.0;
+            var colonies = 0;
+            foreach (var slot in candidates)
+            {
+                if (remaining <= 0)
+                {
+                    break;
+                }
+
+                var capacity = PlanetaryCapacityCalculator.Calculate(
+                    slot.Profile, ccuLevel, slot.Input.RadiusKm, setup, recipe.Inputs.Count);
+                if (!capacity.Fits || capacity.MaxFactories <= 0)
+                {
+                    continue;
+                }
+
+                var factoriesInColony = Math.Min(capacity.MaxFactories, remaining);
+                if (factoriesInColony <= 0)
+                {
+                    continue;
+                }
+
+                slot.Used = true;
+                remaining -= factoriesInColony;
+                var character = AssignCharacter(characters, plan, autoCharacters, defaultMaxPlanets, defaultCcu);
+                var setupCost = CalculateSetupCost(slot.Profile, request, setup,
+                    factoriesInColony, 0, capacity.Launchpads);
+                var inputPerDay = recipe.Inputs.Sum(p =>
+                    p.Quantity * factoriesInColony * 24.0 * 3600 / cycleSeconds);
+                plan.Colonies.Add(new PlanetaryColonyPlan
+                {
+                    CharacterName = character,
+                    PlanetId = slot.Input.PlanetId,
+                    PlanetName = slot.Input.Name,
+                    RadiusKm = slot.Input.RadiusKm,
+                    PlanetType = slot.Profile.Name,
+                    Role = "工厂",
+                    ProductTypeId = product.TypeId,
+                    ProductName = product.Name,
+                    Tier = product.Tier,
+                    Factories = factoriesInColony,
+                    ExtractorHeads = 0,
+                    OutputPerDay = factoriesInColony * outputPerFactoryPerHour * 24,
+                    InputsPerDay = inputPerDay,
+                    SetupCost = setupCost,
+                    CcuLevel = ccuLevel,
+                    UsedEstimatedRadius = false,
+                });
+                colonies++;
+                totalFactories += factoriesInColony;
+                totalOutput += factoriesInColony * outputPerFactoryPerHour * 24;
+                totalSetup += setupCost;
+            }
+
+            productPlan.PlanetType = plan.Colonies
+                .Where(p => p.ProductTypeId == product.TypeId && p.Role == "工厂")
+                .Select(p => p.PlanetType)
+                .LastOrDefault() ?? string.Empty;
+            productPlan.Factories = totalFactories;
+            productPlan.Colonies = colonies;
+            productPlan.OutputPerDay = totalOutput;
+            productPlan.SetupCost = totalSetup;
+            productPlan.FactoriesPerColony = colonies > 0 ? (int)Math.Round((double)totalFactories / colonies) : 0;
+            targetOutputPerDay[product.TypeId] = totalOutput;
+
+            // 只按实际排到的工厂折算下级输入。
+            var coverage = neededFactories > 0 ? Math.Min(1.0, (double)totalFactories / neededFactories) : 0;
+            var cycles = productPlan.RequiredPerPeriod / recipe.OutputQuantity * coverage;
+            foreach (var input in recipe.Inputs)
+            {
+                var inputQuantity = input.Quantity * cycles;
+                if (inputQuantity <= 0)
+                {
+                    continue;
+                }
+
+                var imported = request.Mode == PlanetaryPlanMode.Import;
+                if (!imported && request.Mode == PlanetaryPlanMode.Hybrid
+                    && request.CurrentSupplyPerDay != null
+                    && request.CurrentSupplyPerDay.TryGetValue(input.TypeID, out var currentSupply))
+                {
+                    inputQuantity = Math.Max(0, inputQuantity - currentSupply * periodDays);
+                }
+
+                if (inputQuantity <= 0)
+                {
+                    continue;
+                }
+
+                var inputProduct = _recipes.GetProduct(input.TypeID);
+                if (imported || inputProduct == null || inputProduct.Tier == PlanetaryProductTier.P0)
+                {
+                    if (!imports.ContainsKey(input.TypeID))
+                    {
+                        imports[input.TypeID] = 0;
+                    }
+                    imports[input.TypeID] += inputQuantity;
+                }
+                else
+                {
+                    if (!required.ContainsKey(input.TypeID))
+                    {
+                        required[input.TypeID] = 0;
+                    }
+                    required[input.TypeID] += inputQuantity;
+                }
+            }
+
+            if (remaining > 0)
+            {
+                Warn(plan, string.Format("{0} 的候选行星不足：还差 {1} 个工厂", product.Name, remaining));
+            }
+        }
+
+        /// <summary>把用户选中的具体行星转成可分配的池子（类型解析不到的行星会被忽略并告警）。</summary>
+        private List<PlanetSlot> BuildPlanetPool(PlanetaryPlanRequest request, PlanetaryPlan plan)
+        {
+            var slots = new List<PlanetSlot>();
+            var seen = new HashSet<int>();
+            foreach (var input in request.Planets ?? new List<PlanetaryPlanetInput>())
+            {
+                if (input == null || input.PlanetId <= 0 || !seen.Add(input.PlanetId))
+                {
+                    continue;
+                }
+
+                var profile = _planetTypes.GetByTypeId(input.TypeId);
+                if (profile == null)
+                {
+                    Warn(plan, (string.IsNullOrWhiteSpace(input.Name) ? ("行星 " + input.PlanetId) : input.Name)
+                        + " 的行星类型不支持行星开发，已忽略");
+                    continue;
+                }
+
+                slots.Add(new PlanetSlot
+                {
+                    Input = input,
+                    Profile = profile,
+                });
+            }
+            return slots;
+        }
+
+        /// <summary>
+        /// 只返回用户勾选的角色。返回空列表表示"未勾选角色"：规划时会按默认行星位自动生成
+        /// 「角色1、角色2…」占位角色（不设角色数量上限），而不是只给一个默认角色。
+        /// </summary>
         private List<PlanetaryCharacterInput> BuildCharacters(PlanetaryPlanRequest request)
         {
-            var characters = (request.Characters ?? new List<PlanetaryCharacterInput>())
+            return (request.Characters ?? new List<PlanetaryCharacterInput>())
                 .Where(p => p != null && p.MaxPlanets > 0)
                 .Select(p => new PlanetaryCharacterInput
                 {
@@ -411,17 +788,6 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                     MaxPlanets = Math.Max(1, Math.Min(6, p.MaxPlanets)),
                 })
                 .ToList();
-            if (characters.Count == 0)
-            {
-                characters.Add(new PlanetaryCharacterInput
-                {
-                    CharacterId = 0,
-                    Name = "默认角色",
-                    CcuLevel = Math.Max(0, Math.Min(5, request.CcuLevel)),
-                    MaxPlanets = Math.Max(1, Math.Min(6, request.DefaultMaxPlanets)),
-                });
-            }
-            return characters;
         }
 
         private List<PlanetTypeProfile> NormalizeAvailablePlanetTypes(
@@ -498,9 +864,35 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             return result;
         }
 
-        private string AssignCharacter(List<CharacterSlot> characters, PlanetaryPlan plan)
+        /// <summary>
+        /// 分配一个殖民地到角色。未勾选任何角色时（<paramref name="autoCharacters"/>）不设上限：
+        /// 按默认行星位自动生成「角色1、角色2…」占位角色，避免"未勾选就被卡在 6 个殖民地"。
+        /// </summary>
+        private string AssignCharacter(
+            List<CharacterSlot> characters,
+            PlanetaryPlan plan,
+            bool autoCharacters,
+            int defaultMaxPlanets,
+            int defaultCcu)
         {
             var slot = characters.FirstOrDefault(p => p.Used < p.Character.MaxPlanets);
+            if (slot == null && autoCharacters)
+            {
+                var index = characters.Count + 1;
+                slot = new CharacterSlot
+                {
+                    Character = new PlanetaryCharacterInput
+                    {
+                        CharacterId = -index,
+                        Name = "角色" + index,
+                        CcuLevel = defaultCcu,
+                        MaxPlanets = defaultMaxPlanets,
+                    },
+                    Used = 0,
+                };
+                characters.Add(slot);
+            }
+
             if (slot == null)
             {
                 Warn(plan, "角色可用的行星位不足，部分殖民地无法分配");
@@ -606,7 +998,8 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
             int ccuLevel,
             double radius,
             bool usedEstimatedRadius,
-            double cycleDays)
+            double cycleDays,
+            List<PlanetSlot> planetPool)
         {
             var summary = plan.Summary;
             summary.TargetText = string.Join("、", targetProducts.Select(p =>
@@ -625,9 +1018,12 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
                 .Count();
             summary.SetupCost = plan.Colonies.Sum(p => p.SetupCost);
             summary.CcuLevel = ccuLevel;
-            summary.RadiusKm = radius;
+            var usedRadii = plan.Colonies.Where(p => p.RadiusKm > 0).Select(p => p.RadiusKm).ToList();
+            summary.RadiusKm = usedRadii.Count > 0 ? usedRadii.Average() : radius;
             summary.UsedEstimatedRadius = usedEstimatedRadius;
             summary.CycleDays = cycleDays;
+            summary.PlanetCount = planetPool.Count;
+            summary.UsedPlanetCount = planetPool.Count(p => p.Used);
 
             var price = request.Price;
             double revenue = 0;
@@ -687,6 +1083,13 @@ namespace TheGuideToTheNewEden.Core.Services.Planetary
         }
 
         private static void Warning(PlanetaryPlan plan, string message) => Warn(plan, message);
+
+        private sealed class PlanetSlot
+        {
+            public PlanetaryPlanetInput Input { get; set; }
+            public PlanetTypeProfile Profile { get; set; }
+            public bool Used { get; set; }
+        }
 
         private sealed class CharacterSlot
         {

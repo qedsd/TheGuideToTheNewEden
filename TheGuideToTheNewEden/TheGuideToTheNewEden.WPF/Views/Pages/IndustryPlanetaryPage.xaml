@@ -68,6 +68,16 @@
             <Setter Property="Margin" Value="0" />
         </Style>
 
+        <Style
+            x:Key="PlanetaryNodeListItem"
+            BasedOn="{StaticResource StretchListItem}"
+            TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+
         <DataTemplate x:Key="PlanetaryFacilityNodeTemplate" DataType="{x:Type vm:PlanetaryFacilityNode}">
             <Border
                 Margin="0,2,4,2"
@@ -162,8 +172,182 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <DataTemplate x:Key="PlanetaryProductNodeTemplate" DataType="{x:Type vm:PlanetaryProductNodeViewModel}">
+            <Grid Margin="{Binding IndentMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ui:Button
+                    Grid.Column="0"
+                    Width="18"
+                    Height="18"
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    Appearance="Transparent"
+                    Click="OnToggleProductNodeClick"
+                    Tag="{Binding}"
+                    Visibility="{Binding HasChildren, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <ui:SymbolIcon
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            Symbol="ChevronDown24">
+                            <ui:SymbolIcon.Style>
+                                <Style TargetType="ui:SymbolIcon">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsExpanded}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:SymbolIcon.Style>
+                        </ui:SymbolIcon>
+                        <ui:SymbolIcon
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            Symbol="ChevronRight24">
+                            <ui:SymbolIcon.Style>
+                                <Style TargetType="ui:SymbolIcon">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsExpanded}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:SymbolIcon.Style>
+                        </ui:SymbolIcon>
+                    </Grid>
+                </ui:Button>
+
+                <Border
+                    Grid.Column="1"
+                    Margin="0,2,4,2"
+                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    ToolTip="{Binding TooltipText}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="36" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            x:Name="ProductAccent"
+                            Grid.Column="0"
+                            Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            CornerRadius="3,0,0,3" />
+
+                        <Grid
+                            Grid.Column="1"
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <Ellipse Fill="{DynamicResource ControlFillColorSecondaryBrush}" />
+                            <ui:SymbolIcon
+                                x:Name="ProductIcon"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                Symbol="Target24" />
+                        </Grid>
+
+                        <StackPanel Grid.Column="2" Margin="0,5,8,5">
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    MinWidth="26"
+                                    Padding="5,0"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="3">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        FontSize="9.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding TierText}" />
+                                </Border>
+                                <TextBlock
+                                    Margin="7,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12.5"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Border
+                                    x:Name="DecisionChip"
+                                    Margin="7,0,0,0"
+                                    Padding="5,0"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="3">
+                                    <TextBlock
+                                        x:Name="DecisionLabel"
+                                        FontSize="9.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding DecisionText}" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                FontSize="10"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding MetaText}"
+                                TextTrimming="CharacterEllipsis"
+                                Visibility="{Binding HasMetaText, Converter={StaticResource BoolToVisibility}}" />
+                            <TextBlock
+                                Margin="0,1,0,0"
+                                FontSize="9.5"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding InputsText}"
+                                TextTrimming="CharacterEllipsis"
+                                Visibility="{Binding HasInputsText, Converter={StaticResource BoolToVisibility}}" />
+                        </StackPanel>
+
+                        <TextBlock
+                            Grid.Column="3"
+                            Margin="0,5,10,5"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding RequiredText}" />
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsBuild}" Value="True">
+                    <Setter TargetName="ProductAccent" Property="Background" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                    <Setter TargetName="ProductIcon" Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                    <Setter TargetName="ProductIcon" Property="Symbol" Value="Wrench24" />
+                    <Setter TargetName="DecisionLabel" Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsImport}" Value="True">
+                    <Setter TargetName="ProductAccent" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                    <Setter TargetName="ProductIcon" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                    <Setter TargetName="ProductIcon" Property="Symbol" Value="Database24" />
+                    <Setter TargetName="DecisionLabel" Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsRaw}" Value="True">
+                    <Setter TargetName="ProductAccent" Property="Background" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <Setter TargetName="ProductIcon" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <Setter TargetName="ProductIcon" Property="Symbol" Value="ArrowDownload24" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
         <DataTemplate x:Key="PlanetaryProductTemplate">
-            <Grid>
+            <Grid Margin="0,4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -176,7 +360,7 @@
                     CornerRadius="3">
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="10"
+                        FontSize="12"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Text="{Binding TierText}" />
                 </Border>
@@ -184,7 +368,6 @@
                     Grid.Column="1"
                     Margin="8,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="12"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{Binding Name}"
                     TextTrimming="CharacterEllipsis" />
@@ -215,7 +398,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="92" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
@@ -648,14 +831,18 @@
                                 VerticalAlignment="Center"
                                 FontSize="12"
                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="选择左侧角色，再选择殖民地查看详情。"
+                                Text="选择殖民地查看详情"
                                 Visibility="{Binding HasNoSelectedLiveColony, Converter={StaticResource BoolToVisibility}}" />
                             <Grid Visibility="{Binding HasSelectedLiveColony, Converter={StaticResource BoolToVisibility}}">
-                                <Grid DataContext="{Binding SelectedLiveColony}">
+                                <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
+                                    <!--
+                                        头部保持页面 VM 的 DataContext（刷新/停止按钮要按 VM 的忙碌状态互斥），
+                                        殖民地数据一律走 SelectedLiveColony.*；下方页签整体切到殖民地对象。
+                                    -->
                                     <controls:CardControl
                                         Grid.Row="0"
                                         Padding="14,8"
@@ -671,32 +858,34 @@
                                                         <TextBlock
                                                             FontSize="15"
                                                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                            Text="{Binding Header}" />
+                                                            Text="{Binding SelectedLiveColony.Header}" />
                                                         <TextBlock
                                                             Margin="8,0,0,0"
                                                             FontSize="15"
-                                                            Text="{Binding SubHeader}" />
+                                                            Text="{Binding SelectedLiveColony.SubHeader}" />
                                                     </StackPanel>
                                                     <TextBlock
                                                         Margin="0,2,0,0"
                                                         FontSize="10"
                                                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Text="{Binding LastUpdateText, StringFormat=最后更新 {0}}" />
+                                                        Text="{Binding SelectedLiveColony.LastUpdateText, StringFormat=最后更新 {0}}" />
                                                 </StackPanel>
                                                 <StackPanel
                                                     Grid.Column="1"
                                                     HorizontalAlignment="Right"
                                                     Orientation="Horizontal">
+                                                    <!--  刷新与停止互斥：不在读殖民地时只显示刷新，读取中只显示停止  -->
                                                     <ui:Button
                                                         Appearance="Secondary"
                                                         Click="OnRefreshLiveClick"
                                                         Icon="{ui:SymbolIcon ArrowSync24}"
-                                                        IsEnabled="{Binding IsLiveNotBusy}" />
+                                                        ToolTip="刷新殖民地"
+                                                        Visibility="{Binding IsLiveNotBusy, Converter={StaticResource BoolToVisibility}}" />
                                                     <ui:Button
-                                                        Margin="6,0,0,0"
                                                         Click="OnCancelLiveClick"
                                                         Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                         Icon="{ui:SymbolIcon RecordStop24}"
+                                                        ToolTip="停止刷新"
                                                         Visibility="{Binding IsLiveBusy, Converter={StaticResource BoolToVisibility}}" />
                                                 </StackPanel>
                                             </Grid>
@@ -707,42 +896,48 @@
                                                 HorizontalAlignment="Left"
                                                 Background="{DynamicResource ControlFillColorSecondaryBrush}"
                                                 CornerRadius="4"
-                                                Visibility="{Binding HasAlert, Converter={StaticResource BoolToVisibility}}">
+                                                Visibility="{Binding SelectedLiveColony.HasAlert, Converter={StaticResource BoolToVisibility}}">
                                                 <TextBlock
                                                     FontSize="9.5"
                                                     Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                                    Text="{Binding AlertText}" />
+                                                    Text="{Binding SelectedLiveColony.AlertText}" />
                                             </Border>
                                             <UniformGrid Margin="0,6,0,0" Columns="4">
                                                 <StackPanel>
                                                     <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="CCU" />
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding UpgradeLevel}" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.UpgradeLevel}" />
                                                 </StackPanel>
                                                 <StackPanel>
                                                     <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="引脚" />
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding NumPins}" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.NumPins}" />
                                                 </StackPanel>
                                                 <StackPanel>
                                                     <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="提取器" />
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding Extractors.Count}" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.Extractors.Count}" />
                                                 </StackPanel>
                                                 <StackPanel>
                                                     <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="工厂" />
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding FactoryPinCount}" />
+                                                    <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.FactoryPinCount}" />
                                                 </StackPanel>
                                             </UniformGrid>
                                         </StackPanel>
                                     </controls:CardControl>
 
-                                    <TabControl
+                                    <!--  详情页签放到卡片里，与其它 Tab 的卡片背景一致  -->
+                                    <controls:CardControl
                                         Grid.Row="1"
-                                        Padding="0"
-                                        HorizontalContentAlignment="Stretch"
-                                        VerticalContentAlignment="Stretch"
-                                        Background="Transparent"
-                                        BorderThickness="0">
-                                        <TabItem Header="产能估算">
-                                            <StackPanel Margin="0,10,0,0">
+                                        Margin="0,8,0,0"
+                                        Padding="8,6"
+                                        CornerRadius="8">
+                                        <TabControl
+                                            Padding="0"
+                                            HorizontalContentAlignment="Stretch"
+                                            VerticalContentAlignment="Stretch"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            DataContext="{Binding SelectedLiveColony}">
+                                            <TabItem Header="产能估算">
+                                                <StackPanel Margin="0,10,0,0">
                                                 <controls:CardControl
                                                     Padding="14,8"
                                                     CornerRadius="8"
@@ -1023,6 +1218,7 @@
                                             </Grid>
                                         </TabItem>
                                     </TabControl>
+                                    </controls:CardControl>
                                 </Grid>
                             </Grid>
                         </Grid>
@@ -1049,39 +1245,26 @@
                                         <ColumnDefinition Width="12" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0">
-                                        <controls:CardControl Padding="14,8" CornerRadius="8">
-                                            <controls:CardControl.Header>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <ui:SymbolIcon
-                                                            VerticalAlignment="Center"
-                                                            FontSize="15"
-                                                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                            Symbol="Planet24" />
-                                                        <TextBlock
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                            Text="直接选择行星产物" />
-                                                    </StackPanel>
-                                                    <TextBlock
-                                                        Grid.Column="1"
+                                    <TabControl>
+                                        <TabItem>
+                                            <TabItem.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
                                                         VerticalAlignment="Center"
-                                                        FontSize="10.5"
-                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                        Text="{Binding ProductCountText}" />
-                                                </Grid>
-                                            </controls:CardControl.Header>
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="Planet24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="选择行星产物" />
+                                                </StackPanel>
+                                            </TabItem.Header>
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="150" />
+                                                    <RowDefinition Height="*" />
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
                                                 <ui:TextBox
@@ -1122,13 +1305,9 @@
                                                         Icon="{ui:SymbolIcon Add24}" />
                                                 </Grid>
                                             </Grid>
-                                        </controls:CardControl>
-
-                                        <controls:CardControl
-                                            Margin="0,10,0,0"
-                                            Padding="14,8"
-                                            CornerRadius="8">
-                                            <controls:CardControl.Header>
+                                        </TabItem>
+                                        <TabItem>
+                                            <TabItem.Header>
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon
                                                         VerticalAlignment="Center"
@@ -1139,13 +1318,19 @@
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                        Text="从蓝图导入（直接材料）" />
+                                                        Text="从蓝图导入"
+                                                        ToolTip="取蓝图直接材料里的行星产物，按流程数合并到已选需求。" />
                                                 </StackPanel>
-                                            </controls:CardControl.Header>
-                                            <StackPanel>
+                                            </TabItem.Header>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
                                                 <ui:TextBox PlaceholderText="搜索蓝图 / 产物名称" Text="{Binding BlueprintSearchText, UpdateSourceTrigger=PropertyChanged}" />
                                                 <ListBox
-                                                    Height="130"
+                                                    Grid.Row="1"
                                                     Margin="0,6,0,0"
                                                     Background="Transparent"
                                                     BorderThickness="0"
@@ -1153,10 +1338,10 @@
                                                     ItemTemplate="{StaticResource PlanetaryBlueprintTemplate}"
                                                     ItemsSource="{Binding BlueprintResults}"
                                                     SelectedItem="{Binding SelectedBlueprint, Mode=TwoWay}" />
-                                                <Grid Margin="0,6,0,0">
+                                                <Grid Grid.Row="2" Margin="0,6,0,0">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="88" />
+                                                        <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock
@@ -1179,16 +1364,9 @@
                                                         Content="导入"
                                                         Icon="{ui:SymbolIcon ArrowDownload24}" />
                                                 </Grid>
-                                                <TextBlock
-                                                    Margin="0,5,0,0"
-                                                    FontSize="10.5"
-                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="{Binding BlueprintImportStatus}"
-                                                    TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </controls:CardControl>
-                                    </StackPanel>
-
+                                            </Grid>
+                                        </TabItem>
+                                    </TabControl>
                                     <controls:CardControl
                                         Grid.Column="2"
                                         Padding="14,8"
@@ -1212,7 +1390,6 @@
                                                 <RowDefinition Height="*" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <ListBox
                                                 Grid.Row="0"
@@ -1231,11 +1408,6 @@
                                                 Content="清空"
                                                 Icon="{ui:SymbolIcon Delete24}" />
                                             <StackPanel Grid.Row="2" Margin="0,12,0,0">
-                                                <TextBlock
-                                                    FontSize="10.5"
-                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                    Text="{Binding TargetSummary}"
-                                                    TextWrapping="Wrap" />
                                                 <TextBlock Style="{StaticResource PlanetaryLabel}" Text="需求周期（天）" />
                                                 <ui:NumberBox
                                                     MaxDecimalPlaces="0"
@@ -1243,36 +1415,201 @@
                                                     Minimum="1"
                                                     SmallChange="1"
                                                     Value="{Binding PeriodDays, Mode=TwoWay}" />
-                                                <TextBlock
-                                                    Margin="0,3,0,0"
-                                                    FontSize="10.5"
-                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="{Binding PeriodText}" />
                                                 <TextBlock Style="{StaticResource PlanetaryLabel}" Text="生产方式" />
-                                                <ComboBox SelectedIndex="{Binding ModeIndex, Mode=TwoWay}">
-                                                    <ComboBoxItem Content="自给自足（从 P0 提取）" />
-                                                    <ComboBoxItem Content="进口模式（输入外购）" />
-                                                    <ComboBoxItem Content="混合模式（当前产出抵扣）" />
+                                                <ComboBox SelectedIndex="{Binding ModeIndex, Mode=TwoWay}" ToolTip="自给自足：从 P0 提取逐层生产；进口：只建目标工厂、输入全部外购；混合：先用「我的殖民地」产出抵扣输入。">
+                                                    <ComboBoxItem Content="自给自足" />
+                                                    <ComboBoxItem Content="进口" />
+                                                    <ComboBoxItem Content="混合" />
                                                 </ComboBox>
-                                                <TextBlock
-                                                    Margin="0,3,0,0"
-                                                    FontSize="10.5"
-                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="{Binding ModeText}"
-                                                    TextWrapping="Wrap" />
                                                 <CheckBox
                                                     Margin="0,8,0,0"
-                                                    Content="混合模式抵扣我的殖民地产出"
+                                                    Content="抵扣我的殖民地产出"
                                                     IsChecked="{Binding UseCurrentSupply, Mode=TwoWay}"
                                                     ToolTip="需要先在「我的殖民地」刷新数据；仅对配方输入做抵扣。" />
                                             </StackPanel>
+                                        </Grid>
+                                    </controls:CardControl>
+                                </Grid>
+                            </TabItem>
+
+                            <!--  ================= 行星选择 =================  -->
+                            <TabItem Header="行星选择">
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="330" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!--  左：已选星系（由候选行星聚合；某星系的行星被删空时整项自动消失）  -->
+                                    <controls:CardControl Padding="12,8" CornerRadius="8">
+                                        <controls:CardControl.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal" ToolTip="选中星系会把它下面的全部行星加入候选池；可跨多个星系多选。">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="Planet24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="星系" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding SystemsHeaderText}" />
+                                            </Grid>
+                                        </controls:CardControl.Header>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <uc:SolarSystemPickerView
+                                                x:Name="SystemPicker"
+                                                IncludeSpecialSystems="True"
+                                                PopupHeight="420"
+                                                PopupWidth="320" />
+                                            <Grid Grid.Row="1" Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding PlanetSummaryText}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip="{Binding PlanetSourceTooltip}" />
+                                                <ui:Button
+                                                    Grid.Column="1"
+                                                    Appearance="Secondary"
+                                                    Click="OnClearPlanetsClick"
+                                                    Content="清空"
+                                                    Icon="{ui:SymbolIcon Delete24}"
+                                                    IsEnabled="{Binding HasSelectedPlanets}" />
+                                            </Grid>
+                                            <Grid Grid.Row="2" Margin="0,6,0,0">
+                                                <ListBox
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    ItemContainerStyle="{StaticResource PlanetaryListItem}"
+                                                    ItemsSource="{Binding SelectedSystems}"
+                                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                    SelectedItem="{Binding SelectedSystemItem, Mode=TwoWay}">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Margin="0,4">
+                                                                <TextBlock
+                                                                    FontSize="12.5"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{Binding Name}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock
+                                                                    Margin="0,2,0,0"
+                                                                    FontSize="10"
+                                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                    Text="{Binding CountText}" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                                <TextBlock
+                                                    Margin="12"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="用上方选择器添加星系"
+                                                    TextWrapping="Wrap"
+                                                    Visibility="{Binding HasNoSelectedSystems, Converter={StaticResource BoolToVisibility}}" />
+                                            </Grid>
+                                        </Grid>
+                                    </controls:CardControl>
+
+                                    <!--  右：选中星系的行星（逐颗移除；删空后左栏星系消失）  -->
+                                    <controls:CardControl
+                                        Grid.Column="2"
+                                        Padding="12,8"
+                                        CornerRadius="8">
+                                        <controls:CardControl.Header>
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon
+                                                    VerticalAlignment="Center"
+                                                    FontSize="15"
+                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                    Symbol="AppsList24" />
+                                                <TextBlock
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding PlanetListHeaderText}" />
+                                            </StackPanel>
+                                        </controls:CardControl.Header>
+                                        <Grid>
+                                            <ListBox
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                ItemContainerStyle="{StaticResource PlanetaryListItem}"
+                                                ItemsSource="{Binding VisiblePlanets}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,3">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel>
+                                                                <TextBlock
+                                                                    FontSize="12.5"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{Binding Name}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock
+                                                                    Margin="0,2,0,0"
+                                                                    FontSize="10"
+                                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                    Text="{Binding DetailText}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                            <ui:Button
+                                                                Grid.Column="1"
+                                                                Width="26"
+                                                                Height="26"
+                                                                Padding="0"
+                                                                VerticalAlignment="Center"
+                                                                Appearance="Transparent"
+                                                                Click="OnRemovePlanetClick"
+                                                                Icon="{ui:SymbolIcon Delete24}"
+                                                                Tag="{Binding}"
+                                                                ToolTip="移除" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
                                             <TextBlock
-                                                Grid.Row="3"
-                                                Margin="0,8,0,0"
-                                                FontSize="10.5"
+                                                Margin="18"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontSize="11.5"
                                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="{Binding PlanStatusText}"
-                                                TextWrapping="Wrap" />
+                                                Text="左侧添加星系后，这里显示行星"
+                                                TextWrapping="Wrap"
+                                                Visibility="{Binding HasNoVisiblePlanets, Converter={StaticResource BoolToVisibility}}" />
                                         </Grid>
                                     </controls:CardControl>
                                 </Grid>
@@ -1301,14 +1638,14 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="参与角色（可多选）" />
+                                                    Text="参与角色（可多选）"
+                                                    ToolTip="未勾选角色时自动生成「角色1、角色2…」，每个使用下方的默认 CCU / 行星位（不限角色数量）；勾选后按所选角色最低 CCU 估算。" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
-                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <Grid Grid.Row="0" Margin="0,2,0,4">
                                                 <Grid.ColumnDefinitions>
@@ -1341,13 +1678,6 @@
                                                 ItemTemplate="{StaticResource PlanetaryCharacterTemplate}"
                                                 ItemsSource="{Binding Characters}"
                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-                                            <TextBlock
-                                                Grid.Row="2"
-                                                Margin="0,8,0,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="默认 CCU / 行星位 · 最低 CCU 估算"
-                                                TextWrapping="Wrap" />
                                         </Grid>
                                     </controls:CardControl>
 
@@ -1366,7 +1696,8 @@
                                                     Margin="8,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="产能参数" />
+                                                    Text="产能参数"
+                                                    ToolTip="殖民地级容量估算；不做精确引脚；P4 工厂只允许温带/贫瘠行星。" />
                                             </StackPanel>
                                         </controls:CardControl.Header>
                                         <StackPanel>
@@ -1377,7 +1708,7 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="默认 CCU（无角色时）" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="默认 CCU（自动角色）" />
                                                     <ui:NumberBox
                                                         Maximum="5"
                                                         Minimum="0"
@@ -1400,8 +1731,9 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="行星半径 km（0 = 评估）" />
+                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="行星半径 km" ToolTip="仅在未选择候选行星时使用：0 = 按 2000 km 估算；选了候选行星后每颗行星用自己的真实半径。" />
                                                     <ui:NumberBox
+                                                        IsEnabled="{Binding IsRadiusEditable}"
                                                         MaxDecimalPlaces="0"
                                                         Maximum="100000"
                                                         Minimum="0"
@@ -1422,12 +1754,6 @@
                                                 Margin="0,12,0,0"
                                                 Content="计入殖民地设施建造成本"
                                                 IsChecked="{Binding UseSetupCost, Mode=TwoWay}" />
-                                            <TextBlock
-                                                Margin="0,4,0,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="殖民地级估算；不做精确引脚；P4 限温带/贫瘠。"
-                                                TextWrapping="Wrap" />
                                         </StackPanel>
                                     </controls:CardControl>
                                 </Grid>
@@ -1435,16 +1761,13 @@
 
                             <TabItem Header="价格与税">
                                 <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
 
                                     <controls:CardControl
                                         Grid.Column="0"
+                                        VerticalAlignment="Top"
                                         Padding="16,10"
-                                        CornerRadius="8">
+                                        CornerRadius="8"
+                                        ToolTip="价格来自所选市场（卖单最低价，缺失时回退平均价）；进口按 POCO 税、卖单再扣销售税与经纪人费。">
                                         <controls:CardControl.Header>
                                             <StackPanel Orientation="Horizontal">
                                                 <ui:SymbolIcon
@@ -1470,8 +1793,9 @@
                                                 TextWrapping="Wrap" />
                                             <CheckBox
                                                 Margin="0,8,0,0"
-                                                Content="使用市场参考价（卖单最低价；缺失时回退平均价）"
-                                                IsChecked="{Binding UseMarketPrices, Mode=TwoWay}" />
+                                                Content="使用市场参考价"
+                                                IsChecked="{Binding UseMarketPrices, Mode=TwoWay}"
+                                                ToolTip="卖单最低价；缺失时回退平均价。" />
                                             <Grid Margin="0,4,0,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -1514,45 +1838,6 @@
                                                 TextWrapping="Wrap" />
                                         </StackPanel>
                                     </controls:CardControl>
-
-                                    <controls:CardControl
-                                        Grid.Column="2"
-                                        Padding="16,10"
-                                        CornerRadius="8">
-                                        <controls:CardControl.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon
-                                                    VerticalAlignment="Center"
-                                                    FontSize="15"
-                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                    Symbol="Calculator24" />
-                                                <TextBlock
-                                                    Margin="8,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="口径说明" />
-                                            </StackPanel>
-                                        </controls:CardControl.Header>
-                                        <StackPanel>
-                                            <TextBlock
-                                                FontSize="11"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="自给 P1→P4 · 进口只建目标工厂"
-                                                TextWrapping="Wrap" />
-                                            <TextBlock
-                                                Margin="0,6,0,0"
-                                                FontSize="11"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="进口 POCO · 销售税/经纪人费 · 成本/半径估算"
-                                                TextWrapping="Wrap" />
-                                            <TextBlock
-                                                Margin="0,12,0,0"
-                                                FontSize="10.5"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Text="{Binding PlanStatusText}"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </controls:CardControl>
                                 </Grid>
                             </TabItem>
                         </TabControl>
@@ -1563,20 +1848,20 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Orientation="Horizontal">
+                        <!--  执行与停止互斥：计算中隐藏「执行行星计划」，只留「停止」  -->
                         <ui:Button
                             Height="34"
                             Appearance="Primary"
                             Click="OnCalculateClick"
                             Content="执行行星计划"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                            IsEnabled="{Binding IsNotBusy}">
+                            Visibility="{Binding IsNotBusy, Converter={StaticResource BoolToVisibility}}">
                             <ui:Button.Icon>
                                 <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
                             </ui:Button.Icon>
                         </ui:Button>
                         <ui:Button
                             Height="34"
-                            Margin="8,0,0,0"
                             Appearance="Secondary"
                             Click="OnCancelClick"
                             Content="停止"
@@ -1596,14 +1881,19 @@
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                         Text="执行计划后显示结果。"
                         Visibility="{Binding HasNoResult, Converter={StaticResource BoolToVisibility}}" />
-                    <TabControl
-                        Padding="0"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
-                        Background="Transparent"
-                        BorderThickness="0"
+                    <!--  结果内容放到卡片里，与计划设置/已保存计划的卡片背景一致；保存按钮在子页签 header 最右侧  -->
+                    <controls:CardControl
+                        Padding="8,6"
+                        CornerRadius="8"
                         Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
-                        <TabItem Header="概况">
+                        <Grid>
+                            <TabControl
+                                Padding="0"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0">
+                                <TabItem Header="概况">
                             <StackPanel Margin="0,10,0,0">
                                 <controls:CardControl Padding="16,10" CornerRadius="8">
                                     <controls:CardControl.Header>
@@ -1617,7 +1907,7 @@
                                                 Margin="8,0,0,0"
                                                 VerticalAlignment="Center"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{Binding ResultHeadline}" />
+                                                Text="计划概况" />
                                         </StackPanel>
                                     </controls:CardControl.Header>
                                     <StackPanel>
@@ -1668,6 +1958,13 @@
                                             FontSize="10.5"
                                             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                             Text="{Binding CurrentPlan.Summary.TargetText}" />
+                                        <TextBlock
+                                            Margin="0,2,0,0"
+                                            FontSize="10.5"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                            Text="{Binding PlanetSourceText}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTip="{Binding PlanetSourceTooltip}" />
                                     </StackPanel>
                                 </controls:CardControl>
 
@@ -1708,52 +2005,108 @@
                         </TabItem>
                         <TabItem Header="产物链">
                             <Grid Margin="0,10,0,0">
-                                <ui:DataGrid ItemsSource="{Binding CurrentPlan.Products}" Style="{StaticResource PlanetaryDataGrid}">
-                                    <ui:DataGrid.Columns>
-                                        <DataGridTextColumn
-                                            Width="42"
-                                            Binding="{Binding Tier}"
-                                            Header="层级" />
-                                        <DataGridTextColumn
-                                            Width="*"
-                                            Binding="{Binding Name}"
-                                            Header="产物" />
-                                        <DataGridTextColumn
-                                            Width="76"
-                                            Binding="{Binding RequiredPerDay, StringFormat={}{0:N1}}"
-                                            Header="需求/天" />
-                                        <DataGridTextColumn
-                                            Width="56"
-                                            Binding="{Binding Factories}"
-                                            Header="工厂" />
-                                        <DataGridTextColumn
-                                            Width="56"
-                                            Binding="{Binding Colonies}"
-                                            Header="殖民地" />
-                                        <DataGridTextColumn
-                                            Width="76"
-                                            Binding="{Binding OutputPerDay, StringFormat={}{0:N1}}"
-                                            Header="产出/天" />
-                                        <DataGridTextColumn
-                                            Width="92"
-                                            Binding="{Binding PlanetType}"
-                                            Header="行星" />
-                                        <DataGridTextColumn
-                                            Width="*"
-                                            Binding="{Binding Inputs}"
-                                            Header="输入" />
-                                    </ui:DataGrid.Columns>
-                                </ui:DataGrid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="2,0,2,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="10.5"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="按配方依赖展开"
+                                        ToolTip="目标 → 中间产物 → 外购 / P0 原料；同一中间产物被多个目标共用时会在各自分支下各显示一次。"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            Margin="8,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="10.5"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                            Text="{Binding ProductNodeCountText}" />
+                                        <ui:Button
+                                            Height="24"
+                                            Padding="8,0"
+                                            Appearance="Transparent"
+                                            Click="OnExpandAllNodesClick"
+                                            Content="展开全部"
+                                            FontSize="10.5" />
+                                        <ui:Button
+                                            Height="24"
+                                            Margin="4,0,0,0"
+                                            Padding="8,0"
+                                            Appearance="Transparent"
+                                            Click="OnCollapseAllNodesClick"
+                                            Content="收起全部"
+                                            FontSize="10.5" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Grid.Row="1">
+                                    <ListBox
+                                        HorizontalContentAlignment="Stretch"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemContainerStyle="{StaticResource PlanetaryNodeListItem}"
+                                        ItemTemplate="{StaticResource PlanetaryProductNodeTemplate}"
+                                        ItemsSource="{Binding FlatProductNodes}"
+                                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                        SelectedItem="{Binding SelectedProductNode, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Margin="18"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="11.5"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="执行计划后显示产物链"
+                                        Visibility="{Binding HasNoProductNodes, Converter={StaticResource BoolToVisibility}}" />
+                                </Grid>
                             </Grid>
                         </TabItem>
-                        <TabItem Header="殖民分配">
+                        <TabItem Header="殖民地分配">
                             <Grid Margin="0,10,0,0">
                                 <ui:DataGrid ItemsSource="{Binding CurrentPlan.Colonies}" Style="{StaticResource PlanetaryDataGrid}">
+                                    <ui:DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow" BasedOn="{StaticResource FluentDataGridRowStyle}">
+                                            <Style.Triggers>
+                                                <!--  候选行星里没有匹配类型：行星名留空、整行标红提示  -->
+                                                <DataTrigger Binding="{Binding MissingPlanet}" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ui:DataGrid.RowStyle>
+                                    <ui:DataGrid.CellStyle>
+                                        <Style TargetType="DataGridCell" BasedOn="{StaticResource FluentDataGridCellStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MissingPlanet}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ui:DataGrid.CellStyle>
                                     <ui:DataGrid.Columns>
                                         <DataGridTextColumn
-                                            Width="100"
+                                            Width="Auto"
                                             Binding="{Binding CharacterName}"
                                             Header="角色" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding PlanetName}"
+                                            Header="行星" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding RadiusKm, StringFormat={}{0:N0}}"
+                                            Header="半径 km" />
                                         <DataGridTextColumn
                                             Width="92"
                                             Binding="{Binding PlanetType}"
@@ -1795,7 +2148,7 @@
                                 <ui:DataGrid ItemsSource="{Binding CurrentPlan.Imports}" Style="{StaticResource PlanetaryDataGrid}">
                                     <ui:DataGrid.Columns>
                                         <DataGridTextColumn
-                                            Width="42"
+                                            Width="Auto"
                                             Binding="{Binding Tier}"
                                             Header="层级" />
                                         <DataGridTextColumn
@@ -1819,80 +2172,26 @@
                             </Grid>
                         </TabItem>
                     </TabControl>
+                            <!--  保存按钮：贴在「概况/产物链/殖民地分配/外购」子页签 header 的最右侧  -->
+                            <ui:Button
+                                Margin="0,0,6,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Panel.ZIndex="10"
+                                Appearance="Secondary"
+                                Click="OnSavePlanHeaderClick"
+                                Content="保存计划"
+                                Icon="{ui:SymbolIcon Save24}"
+                                Visibility="{Binding ShowPlanSaveButton, Converter={StaticResource BoolToVisibility}}" />
+                        </Grid>
+                    </controls:CardControl>
                 </Grid>
             </TabItem>
 
             <!--  ================= 已保存计划 =================  -->
             <TabItem Header="已保存计划">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="12" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
                     <controls:CardControl
-                        Grid.Row="0"
-                        Margin="0,8,0,0"
-                        Padding="14,8"
-                        CornerRadius="8">
-                        <controls:CardControl.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon
-                                    VerticalAlignment="Center"
-                                    FontSize="15"
-                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                    Symbol="Save24" />
-                                <TextBlock
-                                    Margin="8,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="保存当前行星计划" />
-                            </StackPanel>
-                        </controls:CardControl.Header>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="10" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="6" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ui:TextBox
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                PlaceholderText="计划名称"
-                                Text="{Binding PlanName, UpdateSourceTrigger=PropertyChanged}" />
-                            <ui:Button
-                                Grid.Row="0"
-                                Grid.Column="2"
-                                Click="OnSavePlanClick"
-                                Content="保存当前"
-                                Icon="{ui:SymbolIcon Save24}"
-                                IsEnabled="{Binding HasResult}" />
-                            <ui:Button
-                                Grid.Row="0"
-                                Grid.Column="4"
-                                Click="OnOverwritePlanClick"
-                                Content="覆盖选中"
-                                Icon="{ui:SymbolIcon ArrowSync24}"
-                                IsEnabled="{Binding HasResult}" />
-                            <TextBlock
-                                Grid.Row="1"
-                                Grid.ColumnSpan="5"
-                                Margin="0,5,0,0"
-                                FontSize="10.5"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="{Binding SavePlanStatus}"
-                                TextWrapping="Wrap" />
-                        </Grid>
-                    </controls:CardControl>
-
-                    <controls:CardControl
-                        Grid.Row="2"
                         Padding="14,8"
                         CornerRadius="8">
                         <controls:CardControl.Header>
@@ -1950,7 +2249,9 @@
                                 BorderThickness="0"
                                 ItemContainerStyle="{StaticResource PlanetaryListItem}"
                                 ItemsSource="{Binding SavedPlans}"
+                                MouseDoubleClick="OnSavedPlanDoubleClick"
                                 SelectedItem="{Binding SelectedSavedPlan, Mode=TwoWay}"
+                                ToolTip="双击名称可重命名"
                                 Visibility="{Binding HasSavedPlans, Converter={StaticResource BoolToVisibility}}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>

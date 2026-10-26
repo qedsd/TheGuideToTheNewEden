@@ -27,6 +27,20 @@ namespace TheGuideToTheNewEden.Core.Models.Planetary
         public int MaxPlanets { get; set; } = 6;
     }
 
+    /// <summary>候选行星（用户选中的具体行星）：规划器只会把殖民地排到这些行星上，每颗行星最多一个殖民地。</summary>
+    public sealed class PlanetaryPlanetInput
+    {
+        public int PlanetId { get; set; }
+        public string Name { get; set; }
+        public int TypeId { get; set; }
+        /// <summary>行星类型名（可选，规划器以 <see cref="TypeId"/> 解析类型）。</summary>
+        public string TypeName { get; set; }
+        /// <summary>真实半径（km）；未知时为 0。</summary>
+        public double RadiusKm { get; set; }
+        public int SolarSystemId { get; set; }
+        public string SolarSystemName { get; set; }
+    }
+
     public sealed class PlanetaryPlanRequest
     {
         public List<PlanetaryTarget> Targets { get; set; } = new List<PlanetaryTarget>();
@@ -45,6 +59,11 @@ namespace TheGuideToTheNewEden.Core.Models.Planetary
         public Func<int, double> Price { get; set; }
         /// <summary>当前殖民的日产出，仅 Hybrid 模式用于抵扣。</summary>
         public IReadOnlyDictionary<int, long> CurrentSupplyPerDay { get; set; }
+        /// <summary>
+        /// 候选行星（用户多选的真实行星）。非空时规划器只把殖民地排到这些行星上：
+        /// 每颗行星最多一个殖民地，容量按该行星的真实半径计算；为空时退回按行星类型 + <see cref="RadiusKm"/> 估算。
+        /// </summary>
+        public List<PlanetaryPlanetInput> Planets { get; set; } = new List<PlanetaryPlanetInput>();
         /// <summary>可选：限定在某个星系的可用行星类型；为空时使用全部类型。</summary>
         public IReadOnlyList<PlanetTypeProfile> AvailablePlanetTypes { get; set; }
         public bool CountSetupCost { get; set; } = true;
@@ -80,6 +99,13 @@ namespace TheGuideToTheNewEden.Core.Models.Planetary
     public sealed class PlanetaryColonyPlan
     {
         public string CharacterName { get; set; }
+        /// <summary>排到的具体行星（仅候选行星模式）；0 = 未指定。</summary>
+        public int PlanetId { get; set; }
+        public string PlanetName { get; set; }
+        /// <summary>该殖民地的行星半径（km）；0 = 使用估算值。</summary>
+        public double RadiusKm { get; set; }
+        /// <summary>候选行星里没有匹配类型：行星名留空、按默认行星类型/半径估算（界面标红提示）。</summary>
+        public bool MissingPlanet { get; set; }
         public string PlanetType { get; set; }
         public string Role { get; set; }
         public int ProductTypeId { get; set; }
@@ -133,5 +159,9 @@ namespace TheGuideToTheNewEden.Core.Models.Planetary
         public double RadiusKm { get; set; }
         public bool UsedEstimatedRadius { get; set; }
         public double CycleDays { get; set; }
+        /// <summary>候选行星总数（0 = 未使用候选行星）。</summary>
+        public int PlanetCount { get; set; }
+        /// <summary>实际排到殖民地的候选行星数。</summary>
+        public int UsedPlanetCount { get; set; }
     }
 }

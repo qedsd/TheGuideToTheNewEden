@@ -109,32 +109,129 @@ public sealed class PlanetaryCharacterItem : INotifyPropertyChanged
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
+/// <summary>左栏"已选星系"的一项：由候选行星按星系聚合而来（行星被删空时整项消失）。</summary>
+public sealed class PlanetarySelectedSystemItem
+{
+    public int SolarSystemId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public IReadOnlyList<PlanetaryPlanetOption> Planets { get; init; } = Array.Empty<PlanetaryPlanetOption>();
+    public int PlanetCount => Planets.Count;
+    public string CountText => $"{PlanetCount} 颗";
+    public override string ToString() => Name;
+}
+
 public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
 {
     private PlanetaryRecipeCatalog? _recipes;
     private PlanetTypeCatalog? _planetTypes;
     private PlanetaryPlanner? _planner;
-    private IndustrySetting _setting;
+    private PlanetaryPlanSetting _setting;
     private List<PlanetaryBlueprintItem> _blueprintItems = new();
     private readonly Dictionary<int, double> _prices = new();
     private readonly Dictionary<int, double> _liveSupplyPerDay = new();
     private CancellationTokenSource? _operationCts;
     private bool _loaded;
+    private bool _suspendSettingSave;
+    private bool _saveTimerHooked;
+    private System.Windows.Threading.DispatcherTimer? _settingSaveTimer;
 
     public PlanetaryPlanPageViewModel()
     {
-        _setting = IndustrySettingService.Load();
-        _selectedPriceLocation = _setting.PriceLocation ?? _setting.Location;
-        _planetTaxPercent = _setting.PlanetTaxPercent;
-        _salesTaxPercent = _setting.SalesTaxPercent;
-        _brokerFeePercent = _setting.BrokerFeePercent;
-        _ccuLevel = 5;
-        _cycleDays = 4;
-        _periodDays = 7;
-        foreach (var character in CharacterStore.Characters)
+        _setting = PlanetaryPlanSettingService.Load() ?? new PlanetaryPlanSetting();
+        _suspendSettingSave = true;
+        try
         {
-            Characters.Add(new PlanetaryCharacterItem(character, true));
+            _selectedPriceLocation = _setting.PriceLocation;
+            _planetTaxPercent = _setting.PlanetTaxPercent;
+            _salesTaxPercent = _setting.SalesTaxPercent;
+            _brokerFeePercent = _setting.BrokerFeePercent;
+            _ccuLevel = Math.Clamp(_setting.CcuLevel, 0, 5);
+            _maxPlanets = Math.Clamp(_setting.MaxPlanets, 1, 6);
+            _radiusKm = Math.Max(0, Math.Round(_setting.RadiusKm));
+            _cycleDays = Math.Max(0.1, _setting.CycleDays);
+            _periodDays = Math.Max(1, Math.Round(_setting.PeriodDays));
+            _modeIndex = Math.Clamp(_setting.ModeIndex, 0, 2);
+            _useSetupCost = _setting.UseSetupCost;
+            _useCurrentSupply = _setting.UseCurrentSupply;
+            _useMarketPrices = _setting.UseMarketPrices;
+
+            var savedCharacters = (_setting.Characters ?? new List<PlanetaryCharacterSetting>())
+                .GroupBy(p => p.CharacterId)
+                .ToDictionary(g => g.Key, g => g.First());
+            foreach (var character in CharacterStore.Characters)
+            {
+                var hasSaved = savedCharacters.TryGetValue(character.CharacterID, out var saved);
+                var item = new PlanetaryCharacterItem(character, !hasSaved || saved!.Selected);
+                if (hasSaved && saved is not null)
+                {
+                    item.CcuLevel = saved.CcuLevel;
+                    item.MaxPlanets = saved.MaxPlanets;
+                }
+                item.PropertyChanged += (_, _) => ScheduleSettingSave();
+                Characters.Add(item);
+            }
         }
+        finally
+        {
+            _suspendSettingSave = false;
+        }
+    }
+
+    /// <summary>立即把当前计划设置写盘（防抖计时器与"执行计划"都会调用）。</summary>
+    public void SaveSettings()
+    {
+        _settingSaveTimer?.Stop();
+        if (_suspendSettingSave)
+        {
+            return;
+        }
+
+        _setting.PeriodDays = PeriodDays;
+        _setting.ModeIndex = ModeIndex;
+        _setting.CcuLevel = (int)CcuLevel;
+        _setting.MaxPlanets = (int)MaxPlanets;
+        _setting.RadiusKm = RadiusKm;
+        _setting.CycleDays = CycleDays;
+        _setting.PlanetTaxPercent = PlanetTaxPercent;
+        _setting.SalesTaxPercent = SalesTaxPercent;
+        _setting.BrokerFeePercent = BrokerFeePercent;
+        _setting.UseSetupCost = UseSetupCost;
+        _setting.UseCurrentSupply = UseCurrentSupply;
+        _setting.UseMarketPrices = UseMarketPrices;
+        _setting.PriceLocation = SelectedPriceLocation;
+        _setting.Characters = Characters.Select(p => new PlanetaryCharacterSetting
+        {
+            CharacterId = p.CharacterId,
+            Selected = p.IsSelected,
+            CcuLevel = p.CcuLevel,
+            MaxPlanets = p.MaxPlanets,
+        }).ToList();
+        PlanetaryPlanSettingService.Save(_setting);
+    }
+
+    /// <summary>参数变化后防抖保存（400ms），避免连续拖动数字框时反复写盘。</summary>
+    private void ScheduleSettingSave()
+    {
+        if (_suspendSettingSave)
+        {
+            return;
+        }
+
+        _settingSaveTimer ??= new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(400),
+        };
+        if (!_saveTimerHooked)
+        {
+            _saveTimerHooked = true;
+            _settingSaveTimer.Tick += (_, _) =>
+            {
+                _settingSaveTimer?.Stop();
+                SaveSettings();
+            };
+        }
+        _settingSaveTimer.Stop();
+        _settingSaveTimer.Start();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -147,7 +244,18 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
     public ObservableCollection<PlanetarySavedPlan> SavedPlans { get; } = new();
 
     private int _sectionTabIndex;
-    public int SectionTabIndex { get => _sectionTabIndex; set => Set(ref _sectionTabIndex, value); }
+    public int SectionTabIndex
+    {
+        get => _sectionTabIndex;
+        set
+        {
+            if (!Set(ref _sectionTabIndex, value)) return;
+            Notify(nameof(ShowPlanSaveButton));
+        }
+    }
+
+    /// <summary>「计划详细」页签右上角的保存按钮：只有在该页且有结果时才显示。</summary>
+    public bool ShowPlanSaveButton => SectionTabIndex == 2 && HasResult;
 
     private int _settingsTabIndex;
     public int SettingsTabIndex { get => _settingsTabIndex; set => Set(ref _settingsTabIndex, value); }
@@ -184,11 +292,9 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         set
         {
             if (!Set(ref _periodDays, Math.Max(1, Math.Round(value)))) return;
-            Notify(nameof(PeriodText));
+            ScheduleSettingSave();
         }
     }
-
-    public string PeriodText => $"按 {PeriodDays:N0} 天需求量反推";
 
     private int _modeIndex;
     public int ModeIndex
@@ -197,85 +303,331 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         set
         {
             if (!Set(ref _modeIndex, Math.Max(0, Math.Min(2, value)))) return;
-            Notify(nameof(ModeText));
+            ScheduleSettingSave();
         }
     }
-
-    public string ModeText => ModeIndex switch
-    {
-        1 => "只排目标工厂，配方输入全部采购",
-        2 => "自给生产，并用「我的殖民地」产出抵扣输入需求",
-        _ => "从 P0 提取开始，自行生产每一层",
-    };
 
     private double _ccuLevel = 5;
     public double CcuLevel
     {
         get => _ccuLevel;
-        set => Set(ref _ccuLevel, Math.Max(0, Math.Min(5, Math.Round(value))));
+        set
+        {
+            if (!Set(ref _ccuLevel, Math.Max(0, Math.Min(5, Math.Round(value))))) return;
+            ScheduleSettingSave();
+        }
     }
 
     private double _maxPlanets = 6;
     public double MaxPlanets
     {
         get => _maxPlanets;
-        set => Set(ref _maxPlanets, Math.Max(1, Math.Min(6, Math.Round(value))));
+        set
+        {
+            if (!Set(ref _maxPlanets, Math.Max(1, Math.Min(6, Math.Round(value))))) return;
+            ScheduleSettingSave();
+        }
     }
 
     private double _radiusKm;
     public double RadiusKm
     {
         get => _radiusKm;
-        set => Set(ref _radiusKm, Math.Max(0, Math.Round(value)));
+        set
+        {
+            if (!Set(ref _radiusKm, Math.Max(0, Math.Round(value)))) return;
+            Notify(nameof(RadiusHintText));
+            Notify(nameof(PlanetSourceText));
+            ScheduleSettingSave();
+        }
+    }
+
+    // ---- 候选行星（多星系、多行星）：规划器只把殖民地排到这些行星上 ----
+
+    public ObservableCollection<PlanetaryPlanetOption> SelectedPlanets { get; } = new();
+
+    /// <summary>由候选行星派生的星系列表（左栏）；某星系的行星被全部移除时它会自动消失。</summary>
+    public ObservableCollection<PlanetarySelectedSystemItem> SelectedSystems { get; } = new();
+
+    /// <summary>右栏当前显示的行星（选中的星系；未选中时显示全部）。</summary>
+    public ObservableCollection<PlanetaryPlanetOption> VisiblePlanets { get; } = new();
+
+    private PlanetarySelectedSystemItem? _selectedSystemItem;
+    public PlanetarySelectedSystemItem? SelectedSystemItem
+    {
+        get => _selectedSystemItem;
+        set
+        {
+            if (!Set(ref _selectedSystemItem, value)) return;
+            RefreshVisiblePlanets();
+        }
+    }
+
+    public bool HasSelectedPlanets => SelectedPlanets.Count > 0;
+    public bool HasNoSelectedPlanets => SelectedPlanets.Count == 0;
+    public bool HasSelectedSystems => SelectedSystems.Count > 0;
+    public bool HasNoSelectedSystems => SelectedSystems.Count == 0;
+    public bool HasVisiblePlanets => VisiblePlanets.Count > 0;
+    public bool HasNoVisiblePlanets => VisiblePlanets.Count == 0;
+
+    /// <summary>选了候选行星后，手动半径不再生效（每颗行星用自己的真实半径）。</summary>
+    public bool IsRadiusEditable => !HasSelectedPlanets;
+
+    public string PlanetSummaryText => SelectedPlanets.Count == 0
+        ? "未选候选行星"
+        : $"{SelectedPlanets.Count} 颗 · {SelectedSystems.Count} 个星系";
+
+    public string SystemsHeaderText => $"{SelectedSystems.Count} 个星系";
+
+    public string PlanetListHeaderText => SelectedSystemItem is null
+        ? $"行星（{SelectedPlanets.Count}）"
+        : $"{SelectedSystemItem.Name}（{SelectedSystemItem.PlanetCount}）";
+
+    public string RadiusHintText => HasSelectedPlanets
+        ? "候选行星各自使用真实半径"
+        : RadiusKm > 0
+            ? $"未选候选行星，按手动 {RadiusKm:N0} km"
+            : $"未选候选行星，按 {PlanetaryCapacityCalculator.DefaultRadiusKm:N0} km 估算";
+
+    /// <summary>概况里的短状态。</summary>
+    public string PlanetSourceText => CurrentPlan is not null && CurrentPlan.Summary.PlanetCount > 0
+        ? $"候选行星 {CurrentPlan.Summary.PlanetCount} 颗 · 已用 {CurrentPlan.Summary.UsedPlanetCount} 颗"
+        : HasSelectedPlanets
+            ? $"候选行星 {SelectedPlanets.Count} 颗"
+            : RadiusKm > 0
+                ? $"未选候选行星 · 按手动 {RadiusKm:N0} km"
+                : "未选候选行星 · 按行星类型估算";
+
+    public string PlanetSourceTooltip => HasSelectedPlanets
+        ? "殖民地只会排到你选中的行星上，每颗行星最多一个殖民地、按各自真实半径计算容量；候选行星不够时会给出提示。"
+        : "未选择候选行星：按行星类型 + 手动半径（0 = 2000 km 估算）排产。";
+
+    /// <summary>把某个星系的行星全部加入候选池（去重），返回新增数量。</summary>
+    public int AddSystemPlanets(PlanetarySystemOption? system)
+    {
+        if (system is null || system.SolarSystemId <= 0)
+        {
+            return 0;
+        }
+
+        var planets = PlanetaryPlanetCatalog.GetPlanets(system)
+            .Where(p => !p.IsNone && p.PlanetId > 0)
+            .ToList();
+        if (planets.Count == 0)
+        {
+            PageNotifyService.Info("该星系没有可用于行星开发的行星");
+            return 0;
+        }
+
+        var added = AddPlanets(planets);
+        SelectedSystemItem = SelectedSystems.FirstOrDefault(p => p.SolarSystemId == system.SolarSystemId);
+        return added;
+    }
+
+    /// <summary>加入行星（按 PlanetId 去重），返回新增数量。</summary>
+    public int AddPlanets(IEnumerable<PlanetaryPlanetOption> planets)
+    {
+        var existing = SelectedPlanets.Select(p => p.PlanetId).ToHashSet();
+        var added = 0;
+        foreach (var planet in planets)
+        {
+            if (planet is null || planet.IsNone || planet.PlanetId <= 0 || !existing.Add(planet.PlanetId))
+            {
+                continue;
+            }
+            SelectedPlanets.Add(planet);
+            added++;
+        }
+
+        if (added > 0)
+        {
+            RefreshPlanetState();
+        }
+        return added;
+    }
+
+    public void RemovePlanet(PlanetaryPlanetOption? planet)
+    {
+        if (planet is null || !SelectedPlanets.Remove(planet))
+        {
+            return;
+        }
+        RefreshPlanetState();
+    }
+
+    public void ClearSelectedPlanets()
+    {
+        if (SelectedPlanets.Count == 0)
+        {
+            return;
+        }
+        SelectedPlanets.Clear();
+        RefreshPlanetState();
+    }
+
+    /// <summary>载入已保存计划时还原候选行星（本地库查不到的用保存值兜底）。</summary>
+    public void LoadSavedPlanets(IEnumerable<PlanetaryPlanetInput>? planets)
+    {
+        SelectedPlanets.Clear();
+        foreach (var input in planets ?? Enumerable.Empty<PlanetaryPlanetInput>())
+        {
+            if (input is null || input.PlanetId <= 0)
+            {
+                continue;
+            }
+
+            var option = PlanetaryPlanetCatalog.GetPlanet(input.PlanetId);
+            if (option is null)
+            {
+                option = new PlanetaryPlanetOption
+                {
+                    PlanetId = input.PlanetId,
+                    Name = string.IsNullOrWhiteSpace(input.Name) ? ("Planet " + input.PlanetId) : input.Name,
+                    TypeId = input.TypeId,
+                    PlanetType = PlanetaryPlanetCatalog.ResolvePlanetType(input.TypeName),
+                    RadiusKm = input.RadiusKm,
+                    SolarSystemId = input.SolarSystemId,
+                    SolarSystemName = input.SolarSystemName,
+                };
+            }
+
+            if (SelectedPlanets.All(p => p.PlanetId != option.PlanetId))
+            {
+                SelectedPlanets.Add(option);
+            }
+        }
+        RefreshPlanetState();
+    }
+
+    private void RefreshPlanetState()
+    {
+        RebuildSelectedSystems();
+        Notify(nameof(HasSelectedPlanets));
+        Notify(nameof(HasNoSelectedPlanets));
+        Notify(nameof(IsRadiusEditable));
+        Notify(nameof(PlanetSummaryText));
+        Notify(nameof(RadiusHintText));
+        Notify(nameof(PlanetSourceText));
+        Notify(nameof(PlanetSourceTooltip));
+    }
+
+    /// <summary>按候选行星重建左栏星系；右栏保持/回退到某个星系。</summary>
+    private void RebuildSelectedSystems()
+    {
+        var selectedId = _selectedSystemItem?.SolarSystemId ?? 0;
+        SelectedSystems.Clear();
+        foreach (var group in SelectedPlanets
+                     .GroupBy(p => p.SolarSystemId)
+                     .OrderBy(g => g.FirstOrDefault()?.SolarSystemName, StringComparer.OrdinalIgnoreCase))
+        {
+            var planets = group.OrderBy(p => p.PlanetId).ToList();
+            SelectedSystems.Add(new PlanetarySelectedSystemItem
+            {
+                SolarSystemId = group.Key,
+                Name = planets[0].SolarSystemName,
+                Planets = planets,
+            });
+        }
+
+        var match = selectedId > 0
+            ? SelectedSystems.FirstOrDefault(p => p.SolarSystemId == selectedId)
+            : null;
+        _selectedSystemItem = match ?? SelectedSystems.FirstOrDefault();
+        Notify(nameof(SelectedSystemItem));
+        RefreshVisiblePlanets();
+        Notify(nameof(HasSelectedSystems));
+        Notify(nameof(HasNoSelectedSystems));
+        Notify(nameof(SystemsHeaderText));
+    }
+
+    private void RefreshVisiblePlanets()
+    {
+        VisiblePlanets.Clear();
+        var source = SelectedSystemItem?.Planets ?? (IReadOnlyList<PlanetaryPlanetOption>)SelectedPlanets;
+        foreach (var planet in source)
+        {
+            VisiblePlanets.Add(planet);
+        }
+        Notify(nameof(HasVisiblePlanets));
+        Notify(nameof(HasNoVisiblePlanets));
+        Notify(nameof(PlanetListHeaderText));
     }
 
     private double _cycleDays = 4;
     public double CycleDays
     {
         get => _cycleDays;
-        set => Set(ref _cycleDays, Math.Max(0.1, value));
+        set
+        {
+            if (!Set(ref _cycleDays, Math.Max(0.1, value))) return;
+            ScheduleSettingSave();
+        }
     }
 
     private double _planetTaxPercent = 5;
     public double PlanetTaxPercent
     {
         get => _planetTaxPercent;
-        set => Set(ref _planetTaxPercent, Math.Max(0, Math.Min(100, value)));
+        set
+        {
+            if (!Set(ref _planetTaxPercent, Math.Max(0, Math.Min(100, value)))) return;
+            ScheduleSettingSave();
+        }
     }
 
     private double _salesTaxPercent = 3.6;
     public double SalesTaxPercent
     {
         get => _salesTaxPercent;
-        set => Set(ref _salesTaxPercent, Math.Max(0, Math.Min(100, value)));
+        set
+        {
+            if (!Set(ref _salesTaxPercent, Math.Max(0, Math.Min(100, value)))) return;
+            ScheduleSettingSave();
+        }
     }
 
     private double _brokerFeePercent;
     public double BrokerFeePercent
     {
         get => _brokerFeePercent;
-        set => Set(ref _brokerFeePercent, Math.Max(0, Math.Min(100, value)));
+        set
+        {
+            if (!Set(ref _brokerFeePercent, Math.Max(0, Math.Min(100, value)))) return;
+            ScheduleSettingSave();
+        }
     }
 
     private bool _useSetupCost = true;
     public bool UseSetupCost
     {
         get => _useSetupCost;
-        set => Set(ref _useSetupCost, value);
+        set
+        {
+            if (!Set(ref _useSetupCost, value)) return;
+            ScheduleSettingSave();
+        }
     }
 
     private bool _useCurrentSupply = true;
     public bool UseCurrentSupply
     {
         get => _useCurrentSupply;
-        set => Set(ref _useCurrentSupply, value);
+        set
+        {
+            if (!Set(ref _useCurrentSupply, value)) return;
+            ScheduleSettingSave();
+        }
     }
 
     private bool _useMarketPrices = true;
     public bool UseMarketPrices
     {
         get => _useMarketPrices;
-        set => Set(ref _useMarketPrices, value);
+        set
+        {
+            if (!Set(ref _useMarketPrices, value)) return;
+            ScheduleSettingSave();
+        }
     }
 
     private MarketLocation? _selectedPriceLocation;
@@ -286,6 +638,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         {
             if (!Set(ref _selectedPriceLocation, value)) return;
             Notify(nameof(PriceLocationText));
+            ScheduleSettingSave();
         }
     }
 
@@ -326,25 +679,11 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         set => Set(ref _blueprintQuantity, Math.Max(1, Math.Round(value)));
     }
 
-    private string _blueprintImportStatus = "搜索蓝图后导入其直接材料中的行星产物。";
-    public string BlueprintImportStatus
-    {
-        get => _blueprintImportStatus;
-        set => Set(ref _blueprintImportStatus, value);
-    }
-
-    private string _marketStatusText = "尚未加载市场数据";
+    private string _marketStatusText = "参考价未加载";
     public string MarketStatusText
     {
         get => _marketStatusText;
         set => Set(ref _marketStatusText, value);
-    }
-
-    private string _planStatusText = "添加目标后执行计划";
-    public string PlanStatusText
-    {
-        get => _planStatusText;
-        set => Set(ref _planStatusText, value);
     }
 
     private bool _isBusy;
@@ -385,47 +724,39 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             Notify(nameof(HasResult));
             Notify(nameof(HasNoResult));
             Notify(nameof(HasWarnings));
-            Notify(nameof(TargetSummary));
-            Notify(nameof(ResultHeadline));
+            Notify(nameof(PlanetSourceText));
+            Notify(nameof(ShowPlanSaveButton));
+            RebuildProductTree();
         }
     }
 
     public bool HasResult => CurrentPlan is not null;
     public bool HasNoResult => CurrentPlan is null;
     public bool HasWarnings => CurrentPlan?.Warnings.Count > 0;
-    public string TargetSummary => Targets.Count == 0
-        ? "未添加需求"
-        : string.Join(" · ", Targets.Select(p => $"{p.Name} ×{p.QuantityLong:N0}"));
-    public string ResultHeadline => CurrentPlan is null
-        ? "尚无计算结果"
-        : $"{CurrentPlan.Summary.TargetText} · {CurrentPlan.Summary.TotalColonies} 个殖民地";
 
-    private string _planName = "行星计划";
-    public string PlanName
+    // ---- 产物链：目标 → 配方输入逐层展开的依赖节点树（对齐制造计划的 BOM / 成本视图）----
+
+    public ObservableCollection<PlanetaryProductNodeViewModel> ProductRoots { get; } = new();
+    public ObservableCollection<PlanetaryProductNodeViewModel> FlatProductNodes { get; } = new();
+
+    private PlanetaryProductNodeViewModel? _selectedProductNode;
+    public PlanetaryProductNodeViewModel? SelectedProductNode
     {
-        get => _planName;
-        set => Set(ref _planName, value);
+        get => _selectedProductNode;
+        set => Set(ref _selectedProductNode, value);
     }
+
+    public bool HasProductNodes => FlatProductNodes.Count > 0;
+    public bool HasNoProductNodes => FlatProductNodes.Count == 0;
+    public string ProductNodeCountText => ProductRoots.Count == 0
+        ? string.Empty
+        : $"{ProductRoots.Count} 个目标 · {FlatProductNodes.Count} 个节点";
 
     private PlanetarySavedPlan? _selectedSavedPlan;
     public PlanetarySavedPlan? SelectedSavedPlan
     {
         get => _selectedSavedPlan;
-        set
-        {
-            if (!Set(ref _selectedSavedPlan, value)) return;
-            if (value is not null)
-            {
-                PlanName = value.Name;
-            }
-        }
-    }
-
-    private string _savePlanStatus = "执行计划后可保存参数与结果快照。";
-    public string SavePlanStatus
-    {
-        get => _savePlanStatus;
-        set => Set(ref _savePlanStatus, value);
+        set => Set(ref _selectedSavedPlan, value);
     }
 
     public bool HasSavedPlans => SavedPlans.Count > 0;
@@ -485,15 +816,12 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             }
             RefreshFilteredProducts();
             ReloadSavedPlans();
-            MarketStatusText = "点击「刷新价格」或直接执行计划时加载市场参考价";
-            BlueprintImportStatus = $"已载入 {_blueprintItems.Count:N0} 条制造蓝图，输入产物名搜索。";
-            PlanStatusText = "选择目标、角色与模式后执行计划";
+            MarketStatusText = "参考价未加载";
         }
         catch (Exception ex)
         {
-            PlanStatusText = "载入失败：" + ex.Message;
-            PageNotifyService.Error("行星数据载入失败：" + ex.Message);
             Core.Log.Error(ex);
+            PageNotifyService.Error("行星数据载入失败：" + ex.Message);
         }
         finally
         {
@@ -519,20 +847,16 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         {
             Targets.Add(new IndustryTargetItem { TypeId = typeId, Name = name, Quantity = quantity });
         }
-        Notify(nameof(TargetSummary));
-        PlanStatusText = $"已添加 {name} × {quantity:N0}";
     }
 
     public void RemoveTarget(IndustryTargetItem target)
     {
         Targets.Remove(target);
-        Notify(nameof(TargetSummary));
     }
 
     public void ClearTargets()
     {
         Targets.Clear();
-        Notify(nameof(TargetSummary));
     }
 
     public void RefreshFilteredProducts()
@@ -565,14 +889,6 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         {
             BlueprintResults.Add(item);
         }
-        if (BlueprintResults.Count == 0)
-        {
-            BlueprintImportStatus = "没有匹配的制造蓝图";
-        }
-        else
-        {
-            BlueprintImportStatus = $"找到 {BlueprintResults.Count} 条，选择后导入。";
-        }
     }
 
     public void ImportBlueprint()
@@ -596,10 +912,12 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             AddTarget(pi.TypeId, PlanetaryNameLocalizer.TypeName(pi.TypeId, pi.Name), (long)material.Quantity * runs);
             imported++;
         }
-        BlueprintImportStatus = imported == 0
-            ? "该蓝图的直接材料中没有行星产物"
-            : $"已导入 {imported} 种行星产物（{SelectedBlueprint.ProductName} × {BlueprintQuantity:N0}，{runs} 流程）";
-        PlanStatusText = BlueprintImportStatus;
+
+        // 正常导入不给提示（右侧「已选需求」列表就是结果）；只有"蓝图中没有行星产物"这类异常才弹全局通知。
+        if (imported == 0)
+        {
+            PageNotifyService.Warning("该蓝图的直接材料中没有行星产物");
+        }
     }
 
     public async Task RefreshPricesAsync(bool forceRefresh = false)
@@ -622,8 +940,8 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             if (price > 0) _prices[pair.Key] = price;
         }
         MarketStatusText = stats.Count > 0
-            ? $"已加载 {stats.Count:N0} 个物品的详细订单 · {DateTime.Now:HH:mm}"
-            : $"已加载参考价（平均价）· {DateTime.Now:HH:mm}";
+            ? $"参考价 {stats.Count:N0} 项 · {DateTime.Now:HH:mm}"
+            : $"参考价（均价）· {DateTime.Now:HH:mm}";
     }
 
     public async Task CalculateAsync()
@@ -679,6 +997,16 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
                     MaxPlanets = p.MaxPlanets,
                 }).ToList(),
                 Price = typeId => _prices.TryGetValue(typeId, out var price) ? price : 0,
+                Planets = SelectedPlanets.Select(p => new PlanetaryPlanetInput
+                {
+                    PlanetId = p.PlanetId,
+                    Name = p.Name,
+                    TypeId = p.TypeId,
+                    TypeName = p.PlanetType,
+                    RadiusKm = p.RadiusKm,
+                    SolarSystemId = p.SolarSystemId,
+                    SolarSystemName = p.SolarSystemName,
+                }).ToList(),
             };
 
             var plan = await Task.Run(() => _planner.Plan(request), token);
@@ -686,24 +1014,17 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             LocalizePlan(plan);
             CurrentPlan = plan;
             SectionTabIndex = 2;
-            PlanStatusText = plan.Warnings.Count > 0
-                ? $"计划完成，有 {plan.Warnings.Count} 条提示"
-                : "计划完成";
-            _setting.PriceLocation = SelectedPriceLocation;
-            _setting.PlanetTaxPercent = PlanetTaxPercent;
-            _setting.SalesTaxPercent = SalesTaxPercent;
-            _setting.BrokerFeePercent = BrokerFeePercent;
-            IndustrySettingService.Save(_setting);
-            PageNotifyService.Success("行星计划已完成");
+            SaveSettings();
+            PageNotifyService.Success(plan.Warnings.Count > 0
+                ? $"行星计划已完成（{plan.Warnings.Count} 条提示）"
+                : "行星计划已完成");
         }
         catch (OperationCanceledException)
         {
-            PlanStatusText = "计算已停止";
             PageNotifyService.Info("行星计划计算已停止");
         }
         catch (Exception ex)
         {
-            PlanStatusText = "计算失败：" + ex.Message;
             Core.Log.Error(ex);
             PageNotifyService.Error("行星计划计算失败：" + ex.Message);
         }
@@ -730,9 +1051,6 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         Notify(nameof(HasSavedPlans));
         Notify(nameof(HasNoSavedPlans));
         Notify(nameof(SavedPlanCountText));
-        SavePlanStatus = SavedPlans.Count == 0
-            ? "还没有已保存计划；执行计划后保存参数与结果快照。"
-            : "读取已保存计划不会重新计算，直接显示保存时的结果。";
     }
 
     public void SaveCurrentPlan()
@@ -743,45 +1061,51 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             return;
         }
         var saved = CreateSavedPlan(null);
-        SavedPlans.Add(saved);
-        IndustryPlanetaryPlanService.Save(SavedPlans);
-        PlanName = saved.Name;
+        // 新保存的计划排在最前（列表口径：最新在最上面）。
+        SavedPlans.Insert(0, saved);
         SelectedSavedPlan = saved;
         Notify(nameof(HasSavedPlans));
         Notify(nameof(HasNoSavedPlans));
         Notify(nameof(SavedPlanCountText));
-        SavePlanStatus = $"已保存「{saved.Name}」· {DateTime.Now:HH:mm}";
-        PageNotifyService.Success("行星计划已保存");
+        if (IndustryPlanetaryPlanService.Save(SavedPlans))
+        {
+            PageNotifyService.Success($"已保存「{saved.Name}」");
+        }
+        else
+        {
+            PageNotifyService.Error("行星计划保存失败（详见日志）");
+        }
     }
 
-    public void OverwriteSelectedPlan()
+    /// <summary>重命名已保存计划（列表项双击触发）。</summary>
+    public bool RenameSelectedPlan(string name)
     {
-        if (CurrentPlan is null)
+        var saved = SelectedSavedPlan;
+        var trimmed = name?.Trim() ?? string.Empty;
+        if (saved is null || trimmed.Length == 0)
         {
-            PageNotifyService.Info("请先执行行星计划，再覆盖保存");
-            return;
+            return false;
         }
-        if (SelectedSavedPlan is null)
+
+        saved.Name = trimmed;
+        saved.Updated = DateTime.Now;
+        if (!IndustryPlanetaryPlanService.Save(SavedPlans))
         {
-            SaveCurrentPlan();
-            return;
+            PageNotifyService.Error("重命名后保存失败（详见日志）");
+            return false;
         }
-        var index = SavedPlans.IndexOf(SelectedSavedPlan);
-        var saved = CreateSavedPlan(SelectedSavedPlan);
-        if (index >= 0) SavedPlans[index] = saved; else SavedPlans.Add(saved);
-        IndustryPlanetaryPlanService.Save(SavedPlans);
-        SelectedSavedPlan = saved;
-        Notify(nameof(HasSavedPlans));
-        Notify(nameof(HasNoSavedPlans));
-        Notify(nameof(SavedPlanCountText));
-        SavePlanStatus = $"已覆盖「{saved.Name}」· {DateTime.Now:HH:mm}";
-        PageNotifyService.Success("已覆盖保存");
+
+        var id = saved.Id;        ReloadSavedPlans();
+        SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == id) ?? SavedPlans.FirstOrDefault();
+        PageNotifyService.Success($"已重命名为「{trimmed}」");
+        return true;
     }
 
     public void LoadSelectedPlan()
     {
         var saved = SelectedSavedPlan;
         if (saved is null) return;
+        _suspendSettingSave = true;
         Targets.Clear();
         foreach (var target in saved.Targets)
         {
@@ -799,6 +1123,7 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         MaxPlanets = saved.DefaultMaxPlanets;
         RadiusKm = saved.RadiusKm;
         CycleDays = saved.CycleDays;
+        LoadSavedPlanets(saved.Planets);
         PlanetTaxPercent = saved.PlanetTaxPercent;
         SalesTaxPercent = saved.SalesTaxPercent;
         BrokerFeePercent = saved.BrokerFeePercent;
@@ -819,11 +1144,12 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         }
         CurrentPlan = saved.Result;
         SectionTabIndex = saved.Result is null ? 1 : 2;
-        PlanStatusText = saved.Result is null
-            ? "已载入计划参数；该快照没有计算结果，请重新执行。"
-            : $"已载入计划「{saved.Name}」的结果快照";
-        SavePlanStatus = $"已载入「{saved.Name}」· {saved.Updated:yyyy-MM-dd HH:mm}";
-        Notify(nameof(TargetSummary));
+        _suspendSettingSave = false;
+        SaveSettings();
+        if (saved.Result is null)
+        {
+            PageNotifyService.Info("已载入计划参数；该快照没有计算结果，请重新执行");
+        }
     }
 
     public void DeleteSelectedPlan()
@@ -831,12 +1157,167 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         var saved = SelectedSavedPlan;
         if (saved is null) return;
         SavedPlans.Remove(saved);
-        IndustryPlanetaryPlanService.Save(SavedPlans);
         SelectedSavedPlan = SavedPlans.FirstOrDefault();
         Notify(nameof(HasSavedPlans));
         Notify(nameof(HasNoSavedPlans));
         Notify(nameof(SavedPlanCountText));
-        SavePlanStatus = $"已删除「{saved.Name}」";
+        if (!IndustryPlanetaryPlanService.Save(SavedPlans))
+        {
+            PageNotifyService.Error("删除后保存失败（详见日志）");
+        }
+    }
+
+    /// <summary>
+    /// 按配方依赖重建产物链：目标产物为根，配方输入里「计划内生产」的挂子节点，
+    /// 没有安排生产的输入（外购 / P0 原料）挂成叶子并标注需外购还是靠提取。
+    /// </summary>
+    private void RebuildProductTree()
+    {
+        ProductRoots.Clear();
+
+        var plan = CurrentPlan;
+        if (plan?.Products is { Count: > 0 })
+        {
+            var products = new Dictionary<int, PlanetaryProductPlan>();
+            foreach (var product in plan.Products)
+            {
+                if (product.TypeId > 0) products[product.TypeId] = product;
+            }
+
+            var imports = new Dictionary<int, PlanetaryImportPlan>();
+            foreach (var import in plan.Imports)
+            {
+                if (import.TypeId > 0) imports[import.TypeId] = import;
+            }
+
+            var periodDays = plan.Summary.PeriodDays;
+            if (periodDays <= 0)
+            {
+                periodDays = plan.Products
+                    .Where(p => p.RequiredPerDay > 0)
+                    .Select(p => p.RequiredPerPeriod / p.RequiredPerDay)
+                    .DefaultIfEmpty(1)
+                    .Max();
+            }
+            periodDays = Math.Max(0.01, periodDays);
+
+            var roots = plan.Products.Where(p => p.IsTarget).ToList();
+            if (roots.Count == 0)
+            {
+                // 老快照没有 IsTarget 标记时，用「没有被任何产物当成输入」的最高层产物兜底。
+                var consumed = new HashSet<int>();
+                foreach (var product in plan.Products)
+                {
+                    var recipe = _recipes?.GetRecipe(product.TypeId);
+                    if (recipe is null) continue;
+                    foreach (var input in recipe.Inputs) consumed.Add(input.TypeID);
+                }
+                roots = plan.Products.Where(p => !consumed.Contains(p.TypeId)).ToList();
+                if (roots.Count == 0) roots = plan.Products.Take(1).ToList();
+            }
+
+            foreach (var product in roots)
+            {
+                ProductRoots.Add(BuildProductNode(product, products, imports, periodDays, 0, new HashSet<int>()));
+            }
+        }
+
+        RebuildFlatProductNodes();
+    }
+
+    private PlanetaryProductNodeViewModel BuildProductNode(
+        PlanetaryProductPlan product,
+        Dictionary<int, PlanetaryProductPlan> products,
+        Dictionary<int, PlanetaryImportPlan> imports,
+        double periodDays,
+        int depth,
+        HashSet<int> path)
+    {
+        var node = new PlanetaryProductNodeViewModel(product, depth);
+        if (!path.Add(product.TypeId))
+        {
+            return node;
+        }
+
+        var recipe = _recipes?.GetRecipe(product.TypeId);
+        if (recipe is not null)
+        {
+            var cycles = recipe.OutputQuantity > 0 ? product.RequiredPerPeriod / recipe.OutputQuantity : 0;
+            foreach (var input in recipe.Inputs)
+            {
+                if (products.TryGetValue(input.TypeID, out var childPlan))
+                {
+                    node.Children.Add(BuildProductNode(childPlan, products, imports, periodDays, depth + 1, path));
+                    continue;
+                }
+
+                var inputProduct = _recipes?.GetProduct(input.TypeID);
+                var fallback = inputProduct?.Name
+                               ?? IndustryDbService.GetTypeInfo(input.TypeID)?.TypeName
+                               ?? "Type " + input.TypeID;
+                imports.TryGetValue(input.TypeID, out var importPlan);
+                node.Children.Add(new PlanetaryProductNodeViewModel(
+                    input.TypeID,
+                    PlanetaryNameLocalizer.TypeName(input.TypeID, fallback),
+                    inputProduct?.Tier ?? PlanetaryProductTier.P0,
+                    Math.Max(0, input.Quantity * cycles / periodDays),
+                    importPlan,
+                    depth + 1));
+            }
+        }
+
+        path.Remove(product.TypeId);
+        return node;
+    }
+
+    /// <summary>按展开状态重建扁平节点列表（ListBox + 缩进，避免 TreeView 把卡片挤窄）。</summary>
+    private void RebuildFlatProductNodes()
+    {
+        var selected = SelectedProductNode;
+        FlatProductNodes.Clear();
+        foreach (var root in ProductRoots) AddVisibleProductNode(root);
+        SelectedProductNode = selected is not null && FlatProductNodes.Contains(selected)
+            ? selected
+            : FlatProductNodes.FirstOrDefault();
+        Notify(nameof(HasProductNodes));
+        Notify(nameof(HasNoProductNodes));
+        Notify(nameof(ProductNodeCountText));
+    }
+
+    private void AddVisibleProductNode(PlanetaryProductNodeViewModel node)
+    {
+        FlatProductNodes.Add(node);
+        if (!node.IsExpanded) return;
+        foreach (var child in node.Children) AddVisibleProductNode(child);
+    }
+
+    public void ToggleProductNode(PlanetaryProductNodeViewModel? node)
+    {
+        if (node is null || !node.HasChildren) return;
+        node.IsExpanded = !node.IsExpanded;
+        RebuildFlatProductNodes();
+    }
+
+    public void ExpandAllProductNodes()
+    {
+        SetProductNodesExpanded(ProductRoots, true);
+        RebuildFlatProductNodes();
+    }
+
+    public void CollapseAllProductNodes()
+    {
+        SetProductNodesExpanded(ProductRoots, false);
+        RebuildFlatProductNodes();
+    }
+
+    private static void SetProductNodesExpanded(IEnumerable<PlanetaryProductNodeViewModel> nodes, bool expanded)
+    {
+        foreach (var node in nodes)
+        {
+            if (!node.HasChildren) continue;
+            node.IsExpanded = expanded;
+            SetProductNodesExpanded(node.Children, expanded);
+        }
     }
 
     private void LocalizePlan(PlanetaryPlan plan)
@@ -872,6 +1353,29 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
             import.Name = PlanetaryNameLocalizer.TypeName(import.TypeId, import.Name);
         }
         plan.Summary.TargetText = string.Join("、", Targets.Select(p => $"{p.Name} × {p.QuantityLong:N0}"));
+
+        // 规划器里的提示用的是 SDE 英文名（如 Proteins / Complex Organisms），
+        // 这里按本地化库统一替换成中文名；长名优先，避免短名先命中把长名拆坏。
+        var nameMap = new List<(string Source, string Target)>();
+        if (_recipes is not null)
+        {
+            foreach (var product in _recipes.Products)
+            {
+                if (string.IsNullOrWhiteSpace(product.Name))
+                {
+                    continue;
+                }
+
+                var local = PlanetaryNameLocalizer.TypeName(product.TypeId, product.Name);
+                if (!string.IsNullOrWhiteSpace(local)
+                    && !string.Equals(local, product.Name, StringComparison.Ordinal))
+                {
+                    nameMap.Add((product.Name, local));
+                }
+            }
+        }
+        nameMap = nameMap.OrderByDescending(p => p.Source.Length).ToList();
+
         for (var i = 0; i < plan.Warnings.Count; i++)
         {
             var warning = plan.Warnings[i]
@@ -886,15 +1390,24 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
                 }
                 warning = warning.Replace(product.Name, target.Name);
             }
+            foreach (var pair in nameMap)
+            {
+                warning = warning.Replace(pair.Source, pair.Target);
+            }
             plan.Warnings[i] = warning;
         }
     }
 
     private PlanetarySavedPlan CreateSavedPlan(PlanetarySavedPlan? existing)
     {
-        var name = string.IsNullOrWhiteSpace(PlanName)
-            ? "行星计划 " + DateTime.Now.ToString("MM-dd HH:mm")
-            : PlanName.Trim();
+        // 保存按钮不再让用户先起名：新计划用带秒的时间戳，之后再双击列表项重命名。
+        var baseName = existing?.Name ?? ("行星计划 " + DateTime.Now.ToString("MM-dd HH:mm:ss"));
+        var name = baseName;
+        var index = 2;
+        while (existing is null && SavedPlans.Any(p => string.Equals(p.Name, name, StringComparison.Ordinal)))
+        {
+            name = $"{baseName} ({index++})";
+        }
         var saved = existing ?? new PlanetarySavedPlan();
         saved.Name = name;
         saved.Updated = DateTime.Now;
@@ -905,6 +1418,16 @@ public sealed partial class PlanetaryPlanPageViewModel : INotifyPropertyChanged
         saved.DefaultMaxPlanets = (int)MaxPlanets;
         saved.RadiusKm = RadiusKm;
         saved.CycleDays = CycleDays;
+        saved.Planets = SelectedPlanets.Select(p => new PlanetaryPlanetInput
+        {
+            PlanetId = p.PlanetId,
+            Name = p.Name,
+            TypeId = p.TypeId,
+            TypeName = p.PlanetType,
+            RadiusKm = p.RadiusKm,
+            SolarSystemId = p.SolarSystemId,
+            SolarSystemName = p.SolarSystemName,
+        }).ToList();
         saved.PlanetTaxPercent = PlanetTaxPercent;
         saved.SalesTaxPercent = SalesTaxPercent;
         saved.BrokerFeePercent = BrokerFeePercent;
