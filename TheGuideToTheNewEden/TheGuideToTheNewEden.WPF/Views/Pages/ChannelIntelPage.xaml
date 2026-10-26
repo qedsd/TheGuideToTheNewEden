@@ -428,6 +428,7 @@
                                             Grid.Column="1"
                                             Margin="0,8,40,0"
                                             MaxHeight="120"
+                                            DisplayMemberPath="Name"
                                             SelectionMode="Multiple"
                                             SelectionChanged="OnNameDbsSelectionChanged" />
                                     </Grid>

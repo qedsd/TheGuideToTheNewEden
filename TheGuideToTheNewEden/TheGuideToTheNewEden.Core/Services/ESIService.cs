@@ -47,16 +47,21 @@ namespace TheGuideToTheNewEden.Core.Services
         }
 
         /// <summary>
-        /// 公开ESI
+        /// 公开 ESI。只依赖 ESI 数据源，不需要 SSO 凭据。
         /// </summary>
         public EVEStandardAPI EsiClient { get; private set; }
-        public SSOv2 SSO { get; private set; }
+
+        private SSOv2 _sso;
+
+        /// <summary>
+        /// SSO 客户端。按需创建，避免没有配置 ESI 凭据时连公共 ESI 查询也无法使用。
+        /// </summary>
+        public SSOv2 SSO => _sso ??= new SSOv2(GetDataSource(), Config.ESICallback, Config.ClientId, Config.ClientSecret);
+
         private static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public ESIService()
         {
             EsiClient = GetDefaultESI();
-            SSO = new SSOv2(GetDataSource(), Config.ESICallback, Config.ClientId, Config.ClientSecret);
-            
         }
         public string GetAuthorizeUrl()
         {
