@@ -26,7 +26,7 @@ namespace TheGuideToTheNewEden.WPF;
 /// 另经实测：只要 Main 的方法体不引用 <see cref="App"/>（WPF 派生类），进程内
 /// PresentationFramework / System.Xaml / WindowsBase 会**一个都不加载**
 /// （引用 App 的静态成员则会连带其基类 Application 一起加载）；
-/// 而读取普通静态类（如 <see cref="SettingsService.DataPath"/>，其方法签名里虽有 WPF 的 Color）
+/// 而读取普通静态类（如 <see cref="DataPathService.RootPath"/>）
 /// 不会加载任何 WPF 程序集。这也是单实例状态留在本类、而不放在 App 上的原因。
 /// </remarks>
 public static class Program
@@ -53,7 +53,7 @@ public static class Program
         try
         {
             singleInstance = new SingleInstanceHelper(InstanceName, InstanceTempFile);
-            if (!singleInstance.RegisterSingleInstance(SettingsService.DataPath))
+            if (!singleInstance.RegisterSingleInstance(DataPathService.RootPath))
             {
                 // 已有实例在运行：命令行已交给它，本进程到此为止。
                 return 0;

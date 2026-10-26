@@ -30,6 +30,7 @@ public partial class GeneralSettingPage : Page
         InitializeGameServer();
         InitializeAutoUpdate();
         InitializeOpenButtons();
+        InitializeDataPath();
     }
 
     // ---------- 主题色 ----------
@@ -235,9 +236,114 @@ public partial class GeneralSettingPage : Page
     private void InitializeOpenButtons()
     {
         OpenLogButton.Click += (_, _) => ShellHelper.OpenFolder(Core.Log.GetLogPath());
-        OpenConfigButton.Click += (_, _) =>
-            ShellHelper.OpenFolder(System.IO.Path.Combine(SettingsService.DataPath, "Configs"));
     }
+
+    // ---------- 数据目录（阶段 186） ----------
+
+    private void InitializeDataPath()
+    {
+        RefreshDataPathText();
+
+        OpenDataPathButton.Click += (_, _) => ShellHelper.OpenFolder(DataPathService.Current);
+        ChangeDataPathButton.Click += (_, _) => PickDataPath();
+        ResetDataPathButton.Click += (_, _) =>
+        {
+            if (!IsSameFolder(DataPathService.PendingDataPath, DataPathService.DefaultDataPath))
+            {
+                ApplyDataPath(DataPathService.DefaultDataPath);
+            }
+        };
+    }
+
+    private void RefreshDataPathText()
+    {
+        var pending = DataPathService.PendingDataPath;
+        var isPending = !IsSameFolder(pending, DataPathService.Current);
+        DataPathText.Text = pending;
+        DataPathText.ToolTip = pending;
+        DataPathCard.Description = string.Format(
+            "{0} · {1}",
+            FindString(DataPathService.ModeKeyFor(DataPathService.GetModeFor(pending))),
+            FindString(isPending ? "Setting_DataPath_Pending" : "Setting_DataPath_Description"));
+    }
+
+    private void PickDataPath()
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = FindString("Setting_DataPath_PickTitle"),
+            InitialDirectory = DataPathService.Current,
+            Multiselect = false,
+        };
+
+        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FolderName))
+        {
+            return;
+        }
+
+        ApplyDataPath(dialog.FolderName);
+    }
+
+    /// <summary>切换数据目录：先问是否把当前配置复制过去，再写选择记录并提示重启（下次启动生效）。</summary>
+    private void ApplyDataPath(string target)
+    {
+        if (IsSameFolder(target, DataPathService.Current))
+        {
+            System.Windows.MessageBox.Show(
+                FindString("Setting_DataPath_SameFolder"),
+                FindString("Setting_DataPath_Title"),
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+            return;
+        }
+
+        var answer = System.Windows.MessageBox.Show(
+            string.Format(FindString("Setting_DataPath_CopyQuestion"), Environment.NewLine),
+            FindString("Setting_DataPath_Title"),
+            System.Windows.MessageBoxButton.YesNoCancel,
+            System.Windows.MessageBoxImage.Question);
+        if (answer == System.Windows.MessageBoxResult.Cancel)
+        {
+            return;
+        }
+
+        var copy = answer == System.Windows.MessageBoxResult.Yes;
+        if (!DataPathService.SetDataPath(target, copy))
+        {
+            System.Windows.MessageBox.Show(
+                FindString("Setting_DataPath_SetFailed"),
+                FindString("Setting_DataPath_Title"),
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            return;
+        }
+
+        // 本次运行仍用旧目录：界面显示"待生效"的新目录
+        var pending = DataPathService.PendingDataPath;
+        DataPathText.Text = pending;
+        DataPathText.ToolTip = pending;
+        DataPathCard.Description = string.Format(
+            "{0} · {1}",
+            FindString(DataPathService.ModeKeyFor(DataPathService.GetModeFor(pending))),
+            FindString("Setting_DataPath_Pending"));
+
+        if (System.Windows.MessageBox.Show(
+                string.Format(FindString("Setting_DataPath_Changed_Message"), pending, Environment.NewLine),
+                FindString("Setting_DataPath_Changed_Title"),
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Information) == System.Windows.MessageBoxResult.Yes)
+        {
+            App.RequestRestart();
+        }
+    }
+
+    private static bool IsSameFolder(string? left, string? right)
+        => !string.IsNullOrWhiteSpace(left)
+           && !string.IsNullOrWhiteSpace(right)
+           && string.Equals(
+               left.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar),
+               right.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar),
+               StringComparison.OrdinalIgnoreCase);
 
     private static string FindString(string key)
     {

@@ -6,9 +6,12 @@ using System.Windows.Media;
 namespace TheGuideToTheNewEden.WPF.Services;
 
 /// <summary>
-/// 应用设置存储：与 WinUI 版共用同一份键值字典文件
-/// (%LocalAppData%\TheGuideToTheNewEden\Configs\settings.json)，键名保持一致，
-/// 因此从 WinUI 迁移过来的配置可以直接沿用。
+/// 应用设置存储：键值字典文件放在 <see cref="DataPath"/> 下的 <c>Configs\settings.json</c>。
+/// <para>
+/// 数据目录由 <see cref="DataPathService"/> 在启动最早期解析（阶段 186）：
+/// 默认是 <c>%LocalAppData%\TheGuideToTheNewEden\V4</c>（按大版本隔离，避免与旧版本配置冲突），
+/// 首次运行时可选择沿用旧目录或自定义目录。键名与 WinUI 版保持一致，迁移配置后可以直接沿用。
+/// </para>
 /// WPF 专有项（主题色、托盘、窗口位置）也存于同一文件。
 /// </summary>
 public static class SettingsService
@@ -27,9 +30,12 @@ public static class SettingsService
     public const string WindowHeightKey = "WindowHeight";
     public const string WindowMaximizedKey = "WindowMaximized";
 
-    public static string DataPath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "TheGuideToTheNewEden");
+    /// <summary>
+    /// 用户数据目录。由 <see cref="DataPathService"/> 在启动最早期解析：
+    /// 默认是 <c>%LocalAppData%\TheGuideToTheNewEden\V4</c>（按大版本隔离），
+    /// 也可以在首次运行选择框或设置页改为旧目录 / 自定义目录。
+    /// </summary>
+    public static string DataPath => DataPathService.Current;
 
     private static string ConfigFolder => Path.Combine(DataPath, "Configs");
 

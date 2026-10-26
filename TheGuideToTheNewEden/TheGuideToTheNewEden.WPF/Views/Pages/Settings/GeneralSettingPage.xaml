@@ -149,13 +149,39 @@
                         <Border Style="{StaticResource SettingsDivider}" />
 
                         <controls:SettingCard
-                            Title="{DynamicResource Setting_Config_Title}"
-                            Description="{DynamicResource Setting_Config_Description}"
+                            x:Name="DataPathCard"
+                            Title="{DynamicResource Setting_DataPath_Title}"
+                            Description="{DynamicResource Setting_DataPath_Description}"
                             Icon="Folder24">
-                            <Button
-                                x:Name="OpenConfigButton"
-                                MinWidth="100"
-                                Content="{DynamicResource Setting_Config_Check}" />
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    x:Name="DataPathText"
+                                    MaxWidth="380"
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Consolas"
+                                    FontSize="11"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                                <Button
+                                    x:Name="OpenDataPathButton"
+                                    MinWidth="72"
+                                    Content="{DynamicResource Setting_DataPath_Open}" />
+                                <Button
+                                    x:Name="ChangeDataPathButton"
+                                    MinWidth="72"
+                                    Margin="8,0,0,0"
+                                    Content="{DynamicResource Setting_DataPath_Change}" />
+                                <Button
+                                    x:Name="ResetDataPathButton"
+                                    MinWidth="72"
+                                    Margin="8,0,0,0"
+                                    Content="{DynamicResource Setting_DataPath_Reset}" />
+                            </StackPanel>
                         </controls:SettingCard>
                     </StackPanel>
                 </Border>

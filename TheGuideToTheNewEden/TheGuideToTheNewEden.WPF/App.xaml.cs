@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -10,6 +11,16 @@ namespace TheGuideToTheNewEden.WPF;
 public partial class App : Application
 {
     public static new Views.MainWindow? MainWindow { get; private set; }
+
+    /// <summary>本次退出后是否重新拉起自身（改数据目录等"需要重启"的设置会用到，阶段 186）。</summary>
+    private static bool _restartPending;
+
+    /// <summary>请求退出并重新启动应用。</summary>
+    public static void RequestRestart()
+    {
+        _restartPending = true;
+        Current?.Shutdown();
+    }
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -32,6 +43,33 @@ public partial class App : Application
         if (Program.SingleInstance is not null)
         {
             Program.SingleInstance.Activated += OnSingleInstanceActivated;
+        }
+
+        // 数据目录必须最先确定：设置、日志路径、缓存目录都按它解析（阶段 186）。
+        // 首次运行且检测到旧版本配置时，先让用户选择沿用旧目录还是用按大版本隔离的新目录。
+        DataPathService.Initialize();
+        if (DataPathService.NeedsDecision)
+        {
+            var useLegacy = false;
+            var copyLegacy = true;
+            try
+            {
+                // 选择框本身要按旧配置的语言显示（此时还没有 SettingsService）
+                LanguageService.UseStartupLanguage(
+                    LanguageService.TryReadUiLanguage(DataPathService.LegacyDataPath));
+
+                var dialog = new Views.Windows.DataPathMigrationWindow();
+                dialog.ShowDialog();
+                useLegacy = dialog.UseLegacyFolder;
+                copyLegacy = dialog.CopyLegacyConfig;
+            }
+            catch (Exception ex)
+            {
+                // 选择框本身出问题不能把程序卡在启动前：按推荐方案继续
+                Core.Log.Error(ex);
+            }
+
+            DataPathService.ApplyFirstRunChoice(useLegacy, copyLegacy);
         }
 
         // 初始化 Core（含设置存储、数据库、ESI 凭据），之后主题/语言才能读取设置。
@@ -117,5 +155,38 @@ public partial class App : Application
         Core.Services.ObservableFileService.StopAll();
         Core.Services.DB.ShipNameCacheService.Current.Dispose();
         SettingsService.Save();
+
+        if (_restartPending)
+        {
+            StartDetachedRestart();
+        }
+    }
+
+    /// <summary>
+    /// 延迟 2 秒后重新启动自身：必须等本进程**真正退出**（释放单实例命名事件、
+    /// 放开输出目录里的文件锁），否则新进程会被当成"第二个实例"直接转交命令行后退出。
+    /// </summary>
+    private static void StartDetachedRestart()
+    {
+        try
+        {
+            var exe = Environment.ProcessPath;
+            if (string.IsNullOrWhiteSpace(exe))
+            {
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c timeout /t 2 /nobreak >nul & start \"\" \"{exe}\"",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+            });
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Warn($"[重启] 启动新进程失败：{ex.Message}");
+        }
     }
 }

@@ -83,7 +83,59 @@ public static class LanguageService
         _initialized = true;
     }
 
+    /// <summary>
+    /// 启动最早期（数据目录选择框之前）只换字典、不写设置：让选择框本身用旧配置里记录的语言。
+    /// 之后 <see cref="Initialize"/> 会按最终数据目录里的设置再正式设置一次。
+    /// </summary>
+    public static void UseStartupLanguage(string? language)
+    {
+        var value = string.IsNullOrWhiteSpace(language) ? DefaultLanguage : language;
+        HookLoadedRefresh();
+        ApplyDictionary(value);
+    }
+
+    /// <summary>
+    /// 从某个数据目录的 <c>Configs/settings.json</c> 直接读界面语言（不经过 SettingsService，
+    /// 因为那时数据目录还没定）。读不到返回 null。
+    /// </summary>
+    public static string? TryReadUiLanguage(string dataPath)
+    {
+        try
+        {
+            var file = System.IO.Path.Combine(dataPath, "Configs", "settings.json");
+            if (!System.IO.File.Exists(file))
+            {
+                return null;
+            }
+
+            var values = System.Text.Json.JsonSerializer
+                .Deserialize<Dictionary<string, string?>>(System.IO.File.ReadAllText(file));
+            return values is not null && values.TryGetValue(SettingsService.LanguageKey, out var language)
+                ? language
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public static void SetLanguage(string language)
+    {
+        ApplyDictionary(language);
+
+        SettingsService.SetValue(SettingsService.LanguageKey, language);
+        SettingsService.Save();
+
+        // 先让订阅者（VM）重建它们"生成时就烤进对象"的文案，再统一重算绑定
+        LanguageChanged?.Invoke(null, language);
+
+        _refreshOnLoaded |= _initialized;
+        RefreshAllBindings();
+    }
+
+    /// <summary>换字典 + 切 Culture（不动设置、不发事件）。</summary>
+    private static void ApplyDictionary(string language)
     {
         Value = language;
 
@@ -106,15 +158,6 @@ public static class LanguageService
 
         CultureInfo.CurrentUICulture = new CultureInfo(language);
         CultureInfo.CurrentCulture = new CultureInfo(language);
-
-        SettingsService.SetValue(SettingsService.LanguageKey, language);
-        SettingsService.Save();
-
-        // 先让订阅者（VM）重建它们"生成时就烤进对象"的文案，再统一重算绑定
-        LanguageChanged?.Invoke(null, language);
-
-        _refreshOnLoaded |= _initialized;
-        RefreshAllBindings();
     }
 
     // ==================================================================

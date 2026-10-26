@@ -9074,6 +9074,79 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
 - AI 助手工具 `CharacterIndustryTool` 的描述与结果文案仍是中文（属 AI 助手模块的既有状态，不在制造页面范围内）。
 - 兼容用的中文比较字面量保留在三个转换器与 `IndustryScheduleViewModel` 里（`"发明" or "invention"` 这类），**它们只用于识别旧数据、不会显示**。
 
+## 阶段 186：数据目录（配置保存路径）按大版本隔离 + 首次运行选择（2026-10-26）
+
+> 用户要求：开放软件配置保存路径；当前默认在 `%LOCALAPPDATA%\TheGuideToTheNewEden`，可能与旧版本冲突。
+> 首次使用新版本时要检测是否沿用旧版本配置（提示"旧版本可能无法使用、新旧版本可能冲突"），
+> 也可以不沿用而是新建文件夹，**默认在 `TheGuideToTheNewEden` 下按大版本号建 `V4`**。
+
+### 186.1 目录解析（`Services/DataPathService.cs`，新增）
+
+- 目录约定：
+  - 根目录（旧版本一直用的目录）：`%LOCALAPPDATA%\TheGuideToTheNewEden`；
+  - **新默认数据目录**：`…\TheGuideToTheNewEden\V4`（`V` + 主版本号，取自 `AppVersion.Current`，将来 5.x 自动变 `V5`）；
+  - 选择记录：**根目录**下的 `datapath.json`（`{ DataPath, Mode, Updated }`）——放在根目录而不是数据目录里，
+    这样无论选哪个目录、启动多早都能读到。
+- `SettingsService.DataPath` 由"编译期常量"改为 `DataPathService.Current`（其余代码一行不用改，所有服务本来就走 `SettingsService.DataPath`）。
+- `Program.Main` 的单实例临时文件改用 `DataPathService.RootPath`：此时还没做目录选择，用根目录最稳；
+  第二个进程也不会去碰用户数据（原来传的是 `SettingsService.DataPath`）。
+- 解析时机：`App.OnStartup` 的**第一件事** `DataPathService.Initialize()`（早于 `CoreInitializer.Init()`，
+  因为设置、DB 缓存、各功能配置都在启动期把目录固化进路径）。
+- 旧数据检测：根目录存在 `Configs`（且有内容）/ `settings.wpf.json` / `Auth.json` 即认为"旧版本留下了配置"。
+
+### 186.2 首次运行选择框（`Views/Windows/DataPathMigrationWindow`，新增）
+
+- 触发条件：**有旧数据 且 没有 `datapath.json`**（即新版本第一次跑）。没有旧数据时直接建 `V4` 并写记录，不打扰用户。
+- 内容：旧目录路径 + 冲突警告 + 两个单选项：
+  1. **使用新目录（推荐）**（默认选中）：显示 `…\V4`，附"复制旧版本的配置与登录信息到新目录（不复制缓存）"复选框（默认勾选）；
+  2. **沿用旧目录（与旧版本共用）**：明确写出"旧版本可能无法再使用，新旧版本也可能互相冲突"。
+- "继续"落选择记录并继续启动；**直接点窗口关闭键**按推荐方案（新目录 + 复制）处理，不会把用户卡在启动前。
+- 选择框自己的语言：此时 `SettingsService` 还没初始化，所以先从**旧目录的 `settings.json`** 直接读 `AppPrimaryLanguage`，
+  用 `LanguageService.UseStartupLanguage` 只换字典不写设置；等目录定下来后 `LanguageService.Initialize()` 再按最终目录正式设置一次。
+- 迁移内容（`CopyUserData`）：旧目录 `Configs` 的**顶层文件**（`settings.json` / `Auth.json` / 各功能 json / `cache.db`）
+  + `ShoppingRecords`、`.backups` 两个小目录 + `EveSettings`（配置同步备份）；
+  **不复制** `HistoryOrders`、`RegionOrders`、`IndustryCache`、`CharacterCache`、`TranslationCache` 等可重建缓存
+  （实测旧目录 215 MB 里 213 MB 是这些缓存，配置本体只有 ~1.5 MB）。
+- 目标目录落在源目录内部时跳过复制（防止"边写边枚举"甚至递归）。
+
+### 186.3 设置页：数据目录卡片（`GeneralSettingPage`）
+
+- "其他 → 数据目录"：显示当前（或待生效）路径 + 模式说明（`默认：按大版本隔离` / `沿用旧版本目录（有冲突风险）` / `自定义目录`），
+  右侧三个按钮：**打开 / 更改… / 恢复默认**。
+- "更改…"用 .NET 8 的 `Microsoft.Win32.OpenFolderDialog`；选完先问三选一：
+  **是 = 把当前目录的配置与登录信息复制到新目录**、**否 = 用空目录**、**取消 = 不修改**。
+- 改动**只写 `datapath.json`，本次运行仍用旧目录**（避免出现"设置写新目录、缓存还在旧目录"的半迁移状态），
+  卡片立即显示"下次启动生效"的新路径，并询问是否立即重启；"立即重启"由 `App.RequestRestart()` 处理
+  （`OnExit` 清理完之后用 `cmd /c timeout 2 & start` 延迟拉起自身，等本进程真正退出、释放单实例命名事件与文件锁）。
+- 原来"打开配置目录"的卡片被这张替换（日志卡片保留：日志仍写在根目录 `Logs`，见 186.4）。
+
+### 186.4 有意保持共享的路径
+
+- **日志**仍在 `%LOCALAPPDATA%\TheGuideToTheNewEden\Logs`：`log4net.config` 里是静态路径，且日志是排障用的、
+  多版本共写不会互相破坏（`MinimalLock`）；改目录也不会把日志搬走。设置页"打开日志"指向这里。
+- 单实例临时文件在根目录（`SingleInstanceTemp.WPF`），与数据目录无关。
+
+### 186.5 验证
+
+- `dotnet build` **0 错误 0 新警告**。
+- 实机（UIA + 截图，测试时先把真实目录改名备份、造一份假旧配置，验证后原样还原，仓库外无残留）：
+  - 有旧配置 + 无 `datapath.json` → 启动先弹选择框：标题/说明/警告/两个选项/复制勾选框/继续按钮全部正确（中文）；
+  - 选默认"使用新目录 + 复制"→ 生成 `datapath.json`（`Mode: Versioned`、`DataPath: …\V4`），
+    `V4\Configs` 里出现 `settings.json` / `Auth.json` / `Links.json`（内容与假旧配置一致），主窗口正常打开；
+  - 再跑一次（有旧配置、无记录）→ 选"沿用旧目录"→ `datapath.json` 写 `Mode: Legacy`、`DataPath` = 根目录，不创建 `V4`；
+  - 第三次直接关掉选择框（X）→ 按默认方案写 `Mode: Versioned` + `V4`，主窗口正常打开（不会卡在启动前）；
+  - 设置 → 一般：新"数据目录"卡片显示 `…\V4`、模式"默认：按大版本隔离"、三个按钮；点"更改…"弹出系统文件夹选择框
+    （标题"选择数据目录"、初始位置为当前目录）。
+- 未覆盖：真正的"自定义路径 + 复制 + 立即重启"完整链路（需要人工在文件夹对话框里选目录）；
+  选择框的英文文案（只做了静态核对，键与中文一一对应）。
+
+### 186.6 已知限制
+
+- 改数据目录**必须重启**才生效；旧目录不会被删除/移动（想清理需要用户自己删）。
+- 日志目录不跟数据目录走（186.4）。
+- 首次运行判定只能看"根目录有没有旧配置"，无法区分那份配置是旧版本写的还是本版本早期开发版写的；
+  开发机上第一次运行也会看到选择框（选一次即记住）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
