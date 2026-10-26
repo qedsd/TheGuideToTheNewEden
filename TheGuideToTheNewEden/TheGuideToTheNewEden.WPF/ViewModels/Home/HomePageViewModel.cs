@@ -21,7 +21,6 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Home;
 public sealed class HomePageViewModel : INotifyPropertyChanged
 {
     private readonly DispatcherTimer _clockTimer;
-    private readonly DispatcherTimer _statusTimer;
     private bool _initialized;
     private string _playersText = string.Empty;
     private string _gameTimeText = string.Empty;
@@ -34,14 +33,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
             Interval = TimeSpan.FromSeconds(1),
         };
         _clockTimer.Tick += (_, _) => GameTimeText = DateTime.UtcNow.ToString("HH:mm:ss");
-
-        // 角标用的运行态里，有三处（预警 / 监控 / 多开）没有可订阅的事件，
-        // 所以只在主页**可见期间**用一个 3 秒定时器刷新（离开页面即停，不是后台轮询）。
-        _statusTimer = new DispatcherTimer(DispatcherPriority.Background)
-        {
-            Interval = TimeSpan.FromSeconds(3),
-        };
-        _statusTimer.Tick += (_, _) => RefreshBadges();
 
         HomeShortcutService.Changed += OnShortcutsChanged;
     }
@@ -149,23 +140,13 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         }
     }
 
-    public void StartClock()
-    {
-        _clockTimer.Start();
-        _statusTimer.Start();
-        RefreshBadges();
-    }
+    public void StartClock() => _clockTimer.Start();
 
-    public void StopClock()
-    {
-        _clockTimer.Stop();
-        _statusTimer.Stop();
-    }
+    public void StopClock() => _clockTimer.Stop();
 
     public void Dispose()
     {
         _clockTimer.Stop();
-        _statusTimer.Stop();
         HomeShortcutService.Changed -= OnShortcutsChanged;
     }
 
@@ -189,20 +170,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(AppSubtitle));
         OnPropertyChanged(nameof(NewVersionText));
         OnPropertyChanged(nameof(CountText));
-    }
-
-    /// <summary>刷新磁贴角标（运行态）。</summary>
-    public void RefreshBadges()
-    {
-        foreach (var tile in Tiles)
-        {
-            tile.RefreshBadge();
-        }
-
-        foreach (var tile in RecentTiles)
-        {
-            tile.RefreshBadge();
-        }
     }
 
     // ---------- 磁贴操作 ----------
@@ -278,7 +245,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         }
 
         RebuildRecent();
-        RefreshBadges();
 
         OnPropertyChanged(nameof(CountText));
         OnPropertyChanged(nameof(IsEmpty));

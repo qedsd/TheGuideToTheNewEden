@@ -5,7 +5,7 @@ group: Nav.Links
 page: Views/Pages/LinksPage.xaml
 tools: [links_search]
 aliases: [快速链接, 链接库, 工具站, 收藏链接, 网站, links, bookmarks, websites]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 快速链接
@@ -68,7 +68,8 @@ updated: 2026-10-16
 ## AI 能替你做什么 {#ai}
 - 工具：`links_search`（在内置链接库按关键词搜站点 / 工具，匹配口径与本页搜索一致；结果会跳转到本页并填好搜索词，可只搜收藏）。
 - 推荐问法：「有没有查价格的网站」「给我几个虫洞工具」「帮我找个装配站」。
-- **做不到**：不会替你打开浏览器（回执里给网址，你自己点）；也不会帮你增删、编辑或收藏链接。
+- **可以读 / 改链接库**：`config_read` / `config_write`（name=`links`）读写白名单里的 `Links.json`（名称、地址、分类）；收藏另存在 `settings.json` 的 `Links.Favorites`（同属白名单，用 name=`settings`）。写入都需确认、旧内容自动备份、可用 `config_restore` 回滚；改完用 `feature_restart`（name=`links`）在下次进入本页时生效。
+- **做不到**：不会替你打开浏览器（回执里给网址，你自己点）；不能替你点「新建 / 编辑 / 删除」按钮。
 
 ## 常见失败与处置 {#errors}
 

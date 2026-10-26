@@ -5,7 +5,7 @@ group: Nav.Channel
 page: Views/Pages/ChannelScanPage.xaml
 tools: [channel_scan]
 aliases: [频道统计, 名单, 人员统计, 军团人数, 联盟人数, 忽略名单, 战绩, channel scan, roster, zkb]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 频道 · 统计
@@ -60,7 +60,8 @@ updated: 2026-10-16
 - 工具：`channel_scan`（只读，无需确认）。把名单发给它，返回**军团 / 联盟人数排行**；参数 `withZkb` 开启后附带前若干人的 ZKB 摘要（危险值 / 抱团 / 击杀 / 损失）。
 - 推荐问法：「统计这份名单，看看有哪些大团」「这 13 个人是哪个军团的，顺带查下威胁值」。
 - **规模限制**：工具一次最多 300 个名字，默认列前 10 个军团 / 联盟（上限 30）、ZKB 只查前 15 人（上限 30）；更大的名单请用本页处理（页面的 ZKB 上限可自己调）。
-- **做不到**：工具只给人数排行与 ZKB 摘要，没有页面的 14 列详细表格；不管理忽略名单；拿不到在线状态；也不能替你点「重新获取ZKB信息」或修改页面设置。
+- **可以读 / 改统计配置**：`config_read` / `config_write`（name=`channelscan`）读写白名单里的 `ChannelScanSetting.json`（ZKB 开关、上限、忽略名单），写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完用 `feature_restart`（name=`channelscan`）重读；它是一次性计算，没有长驻任务。
+- **做不到**：工具只给人数排行与 ZKB 摘要，没有页面的 14 列详细表格；拿不到在线状态；也不能替你点「重新获取ZKB信息」或「开始分析」。
 
 ## 常见失败与处置 {#errors}
 

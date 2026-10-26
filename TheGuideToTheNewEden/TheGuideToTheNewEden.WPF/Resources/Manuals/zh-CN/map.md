@@ -5,7 +5,7 @@ group: Nav.Map
 page: Views/Pages/MapPage.xaml
 tools: [map_route, map_system_info, map_layer, system_navigate]
 aliases: [星图, 地图, 寻路, 路线, 怎么去, 跳数, 规避, 航点, 跳桥, 主权, 安等, 筛选, 星域, 星系, map, route, waypoint, jump bridge, sovereignty, filter]
-updated: 2026-10-16
+updated: 2026-10-26
 children: [map/intel, map/jumpbridge, map/detail]
 ---
 
@@ -83,7 +83,8 @@ children: [map/intel, map/jumpbridge, map/detail]
 - 推荐问法：「从吉他到米亚尔加怎么走」「算一条避开 XX 的路线」「吉他到 XX 的旗舰跳路线」「把星图切到主权着色」「定位到吉他」。
 - 约束：星系名必须**唯一命中**，任一名歧义或查不到时工具只回报原因、**不画图**；星图命令是**叠加应用**，不会锁死你的手动操作。
 - 跳桥的新增 / 删除 / 导入是**写操作**（需要你确认），见 [星图 · 跳桥](map/jumpbridge)。
-- **做不到**：不能替你在游戏里设置航点；也不会替你改「显示设置」里的滑杆参数。
+- **可以读 / 改星图设置**：`config_read` / `config_write`（name=`map`）读写白名单里的 `MapSettings.json`（图层、配色、显示参数、情报开关、主权分组等），写入需确认、旧内容自动备份、可用 `config_restore` 回滚；改完用 `feature_restart`（name=`map`）在下次进入星图时生效。
+- **做不到**：不能替你在游戏里设置航点；也不能替你点星图窗口里的滑杆或保存按钮（只能改配置文件）。
 
 ## 常见失败与处置 {#errors}
 

@@ -5,7 +5,7 @@ group: Nav.Translation
 page: Views/Pages/AiTranslationPage.xaml + Views/UserControls/AiTranslationChatView.xaml
 tools: [translate, glossary_write]
 aliases: [AI 翻译, 在线翻译, 大模型翻译, 对话翻译, 上下文, 术语, 整句翻译, ai translation, llm, translate]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 翻译 · AI 翻译
@@ -59,7 +59,8 @@ updated: 2026-10-16
 ## AI 能替你做什么 {#ai}
 - 工具：`translate`（中英互译，本地词库优先、AI 源兜底；**不需要确认**）、`glossary_write`（新增 / 更新 / 删除一条用户术语，**写操作，需要你确认**，一次只改一条）。
 - 推荐问法：「把这段频道置顶信息翻成中文」「以后把 Xxx 译成 Yyy」「Rifter 的中文译名是什么」。
-- **做不到**：不能替你修改模型端点、API Key 或生成参数（那是「设置 → AI → 模型」的事）；读写不到对话记录文件；`glossary_write` 一次只改一条，批量整理请用「设置 → 术语表」页。
+- **可以读 / 改翻译参数（不含 Key）**：`config_read`（name=`settings`）读 `settings.json` 里的 `Ai.Translation.*` 与 `Ai.Model` 等非密钥键，`config_write` 只能改已存在的非密钥键（API Key 不读不写）；写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完用 `feature_restart`（name=`translation`）让下一句翻译使用新参数。
+- **做不到**：替你填 API Key、点「发送」或管理对话记录文件；`glossary_write` 一次只改一条，批量整理请用「设置 → 术语表」页。
 - 本页的界面操作（新建对话、展开气泡等）助手无法代劳。
 
 ## 常见失败与处置 {#errors}

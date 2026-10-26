@@ -20,21 +20,6 @@ public sealed class IntelWarningService
     private readonly Dictionary<string, IntelWindow> _windows = [];
     private readonly Dictionary<string, SoundNotifyItem> _sounds = [];
 
-    /// <summary>已登记的监听者（角色名）。窗口与声音都是可选的，所以单独记一份"谁在跑"。</summary>
-    private readonly HashSet<string> _listeners = new(StringComparer.Ordinal);
-
-    /// <summary>正在跑预警的角色数（主页磁贴角标用；"有几个角色开了预警"）。</summary>
-    public int ListenerCount
-    {
-        get
-        {
-            lock (_listeners)
-            {
-                return _listeners.Count;
-            }
-        }
-    }
-
     private IntelWarningService()
     {
         // 点击预警气泡 → 停止全部报警声音（对齐 WinUI 的 Toast 点击行为）
@@ -43,11 +28,6 @@ public sealed class IntelWarningService
 
     public bool Add(ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
     {
-        lock (_listeners)
-        {
-            _listeners.Add(setting.Listener);
-        }
-
         if (setting.OverlapNotify)
         {
             if (_windows.ContainsKey(setting.Listener))
@@ -82,11 +62,6 @@ public sealed class IntelWarningService
     {
         if (!string.IsNullOrEmpty(listener))
         {
-            lock (_listeners)
-            {
-                _listeners.Remove(listener);
-            }
-
             if (_windows.TryGetValue(listener, out var window))
             {
                 window.Dispose();

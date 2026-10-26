@@ -5,7 +5,7 @@ group: Nav.Map
 page: Views/UserControls/Map/MapSystemDetailView.xaml + Views/UserControls/Map/OneJumpCoverView.xaml + Views/UserControls/Map/PlanetResourceListView.xaml + Views/UserControls/Map/SovGroupSettingView.xaml
 tools: [map_system_info, map_route]
 aliases: [星系详情, 一跳覆盖, 行星资源, 主权, 设施, 邻接, system detail, one jump, planet resource, sovereignty]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 星图 · 星系详情与图层
@@ -70,7 +70,8 @@ updated: 2026-10-16
 ## AI 能替你做什么 {#ai}
 - 工具：`map_system_info`（按星系名回报安等、星域、有无跳桥、主权联盟与资源行星数）、`map_route`（计算星门 / 旗舰路线并画到图上）。
 - 推荐问法：「吉他详情」「XX 有没有跳桥」「YY 是谁的领土」「从 A 到 B 画条路线」。
-- **做不到**：不能替你编辑主权分组或配色（保存只能手动点）；读不到详情窗里的天体、邻接明细；也不会替你算一跳覆盖——请在本窗点「计算覆盖」。
+- **可以改星图配置**：`config_read` / `config_write`（name=`map`）可读写 `MapSettings.json` 里的主权分组与配色（含 `Sov` 分组）；写入需确认、旧内容自动备份、可用 `config_restore` 回滚；改完用 `feature_restart`（name=`map`）在下次进入星图时生效。
+- **做不到**：不能替你点本窗的「保存」按钮；读不到详情窗里的天体、邻接明细；也不会替你算一跳覆盖——请在本窗点「计算覆盖」。
 
 ## 常见失败与处置 {#errors}
 

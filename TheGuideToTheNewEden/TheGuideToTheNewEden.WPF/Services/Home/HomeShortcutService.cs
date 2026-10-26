@@ -357,7 +357,6 @@ public static class HomeShortcutService
             {
                 Id = item.Id,
                 Size = item.Size,
-                Badge = item.Badge,
                 Param = item.Param,
                 Label = item.Label,
             });

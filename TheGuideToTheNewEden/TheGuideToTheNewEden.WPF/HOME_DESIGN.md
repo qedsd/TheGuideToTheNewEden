@@ -173,7 +173,6 @@ public sealed class HomePage : PlaceholderPage
 | 圆角 / 描边 | 8 / 1px `CardStrokeColorDefaultBrush` | 同左 |
 | 背景 | `CardBackgroundFillColorDefaultBrush`（悬停 `…SecondaryBrush`） | 同左 |
 | 间距 | 磁贴间 12，卡内边距 20，卡片间距 12 | — |
-| 角标 | 右上角 10px 圆点（`SystemFillColorCautionBrush`），P2 用数字徽标 | 同左 |
 
 **磁贴标签一律取导航键（`Nav.*`）原文**——零新增翻译；副标题取所属分组名（`Nav.Business` 等）。所有图标名已用反射核验存在于 `SymbolRegular`（见 §7 清单）。
 
@@ -213,7 +212,7 @@ public sealed class HomePage : PlaceholderPage
     { "id": "scalper"        },
     { "id": "appraisal"      },
     { "id": "game-preview"   },
-    { "id": "channel-intel", "badge": true   },
+    { "id": "channel-intel" },
     { "id": "channel-monitor" },
     { "id": "channel-market" },
     { "id": "channel-scan"   },
@@ -229,7 +228,7 @@ public sealed class HomePage : PlaceholderPage
 
 规则：
 
-- **顺序即数组顺序**；`size` 缺省 = `small`；`badge` 缺省 = 跟随功能是否有可用状态（P2）。
+- **顺序即数组顺序**；`size` 缺省 = `small`。
 - `id` 用**稳定的 kebab-case 字符串**（不用页面类型名），以便：跨版本稳定、用户可手改、将来支持带参数磁贴。
 - 加载时**丢弃目录里不存在的 id**（功能下线/改名）并记一条 `Log.Warn`，同时把清理结果写回一次；文件损坏 → 备份为 `HomeShortcuts.json.bak` 后用推荐种子重建。
 - 首次运行（无文件）写入**推荐种子 12 项**：角色 / 市场 / 订单 / 倒货 / 估价 / 多开 / 频道预警 / 频道监控 / 频道查价 / 频道统计 / 日志监控 / 星图。
@@ -302,19 +301,12 @@ L2 动作项：
 - 工具类导航项（`ToolPages` 字典里的 4 项）固定后，磁贴点击走 `ToolWindowHost.Show`，**不要走 `Navigate`**（否则会先实例化页面再被 `Navigating` 拦截）。
 - 语言切换后菜单文本要刷新（`LanguageService.LanguageChanged` 时重设 `Header`）。
 
-### 4.9 角标（P2）
+### 4.9 ~~角标~~（阶段 188 移除）
 
-磁贴右上角的状态圆点/数字，取自各功能自己的运行态：
-
-| 功能 | 角标语义 | 数据来源 |
-|---|---|---|
-| `channel-intel` | 预警中（橙点）/ 监听角色数 | `IntelWarningService` / `ChannelIntelViewModel` 会话表 |
-| `game-preview` | 预览窗口数 | `PreviewWindowManager` |
-| `zkb` | 击杀流已连接 | `ZkbKillStreamHub` |
-| `channel-monitor` | 监控中角色数 | `ChannelMonitorNotifyService` |
-| `market` | 收藏物品数 | `MarketStarService` |
-
-实现建议：`IFeatureStatusProvider { string Id; FeatureStatus? Get(); }` 注册进 `HomeFeatureCatalog`，主页 `Loaded` 与状态变化时刷新；**不做轮询**（各服务已有事件就订阅事件，没有就只在进入主页时取一次）。
+磁贴右上角的黄色状态圆点（预警 / 监控 / 多开 / 击杀流 / 收藏的运行态）已按用户要求**整体移除**：
+界面模板去掉圆点、视图模型去掉角标属性与刷新方法、`Services/Home/HomeFeatureStatusService.cs` 删除、
+`HomeShortcutItem.Badge` 配置字段与 `Home.Quick.BadgeCount` / `Home.Quick.BadgeRunning` 语言键一并删除。
+旧 `HomeShortcuts.json` 里的 `badge` 字段反序列化时被忽略，下次保存自然消失。
 
 ### 4.10 「最近使用」（可选，P2）
 
@@ -348,7 +340,7 @@ L2 动作项：
 
 | 文件 | 预估 | 职责 | 状态 |
 |---|---|---|---|
-| `Services/Home/HomeShortcutItem.cs` | 40 行 | 数据模型（`Id` / `Size` / `Badge` / `Param`） | ✅ 已实现 |
+| `Services/Home/HomeShortcutItem.cs` | 40 行 | 数据模型（`Id` / `Size` / `Param` / `Label`） | ✅ 已实现 |
 | `Services/Home/HomeShortcutService.cs` | 180 行 | 文件读写、增删改排序、种子、恢复默认、`Changed` 事件、坏文件备份 | ✅ 已实现 |
 | `Services/Home/HomeFeatureCatalog.cs` | 220 行 | 功能目录（L1 26 项 + L2 3 项）+ 按 id/分组/页面类型查询 + `NavigationExclusions` | ✅ 已实现 |
 | `Services/Home/HomeFeatureLauncher.cs` | 70 行 | 统一的功能打开入口（设计稿原计划写在 VM 里，实现时抽成独立类供主窗口复用） | ✅ 已实现 |
@@ -366,7 +358,7 @@ L2 动作项：
 | `Services/Home/HomeWalletSummaryService.cs` | P1 | 钱包汇总（余额 + 收支分类 + 区间 + 缓存） | ✅ 已实现 |
 | `ViewModels/Home/HomeWalletCardViewModel.cs` | P1 | 钱包卡（四态 + 区间切换） | ✅ 已实现 |
 | `ViewModels/Home/HomeMarketCardViewModel.cs` | P1 | 行情卡（异步图标 + 均价/销量 + 失败降级） | ✅ 已实现 |
-| `Services/Home/HomeFeatureStatusService.cs` | P2 | 角标的运行态来源 | ✅ 已实现 |
+| ~~`Services/Home/HomeFeatureStatusService.cs`~~ | P2→188 | 角标的运行态来源——阶段 188 随角标功能一并删除 | ❌ 已删除 |
 | ~~`ViewModels/Home/HomeShortcutGroupViewModel.cs`~~ | P3→101 | 分段显示的一段——「磁贴按分组分段显示」随阶段 101 移除 | ❌ 已删除 |
 | `Views/Windows/AboutWindow.xaml(.cs)` | P2 | 关于（版本 / 运行时 / 链接 / 开源致谢） | ✅ 已实现 |
 | ~~`Views/Pages/Settings/HomeSettingPage.xaml(.cs)`~~ | P2→94 | 设置 → 主页（显示策略 / 列表管理）——阶段 94 删除 | ♻️ 阶段 99 重建（卡片显示开关）、阶段 100 加入快捷方式编辑、**阶段 101 起为唯一编辑入口** |
@@ -389,7 +381,7 @@ L2 动作项：
 |---|---|---|
 | **P0 ✅**（阶段 92） | 目录 + 数据层 + 主页骨架（品牌条 + 快捷方式网格 + 编辑模式 + 导航右键固定 + 种子）+「添加功能」窗口 | ① 26 项导航功能全部可固定/移除；② 顺序、尺寸、上限落盘，重启保留；③ 编辑态拖动排序可用；④ 磁贴点击后左侧导航高亮跟随；⑤ 深浅色切换配色正确；⑥ 中英切换磁贴文字即时更新 |
 | **P1 ✅**（追加一） | 钱包卡 + 行情卡 | ① 无角色时钱包卡显示引导；② 收藏为空时行情卡显示引导；③ 单项取数失败不影响其它卡；④ 刷新期间有加载指示、失败有右下角通知 |
-| **P2 ✅**（追加二） | 角标 + 最近使用 + 设置→主页 + 关于窗口 + 日志/配置目录/手册入口 + 设置子页磁贴 | ① 预警/多开/ZKB/监控/收藏的运行态出现角标；② 设置子页磁贴能直达对应分类；③ 关于窗口版本号与标题栏一致；④ 手册按语言打开、缺失时明确提示 |
+| **P2 ✅**（追加二） | 角标 + 最近使用 + 设置→主页 + 关于窗口 + 日志/配置目录/手册入口 + 设置子页磁贴 | ① 预警/多开/ZKB/监控/收藏的运行态出现角标（**角标已于阶段 188 移除**）；② 设置子页磁贴能直达对应分类；③ 关于窗口版本号与标题栏一致；④ 手册按语言打开、缺失时明确提示 |
 | **P3 ✅**（追加三） | 带参数磁贴（`param` + `label`）：指定物品市场 / 指定角色工作区 / 指定星系星图；磁贴分段显示 | ① 三个参数在点击后都被正确消费（探针断言）；② 老文件（无 `param`）向后兼容；③ 分段显示与平铺共用同一份磁贴模板 |
 
 **实现差异（与设计稿不同、且是有意为之）**
@@ -398,7 +390,7 @@ L2 动作项：
 |---|---|---|
 | 行情卡显示"最低卖价" | 显示**最近一日历史均价** | 实时订单是每物品一次无缓存 ESI 请求；主页只做速览，实时数据交给点击后的市场页（卡底已写明口径） |
 | 收藏为空时回落 PLEX / 技能注入器 / 三钛 | 显示引导卡 + 「去市场页」 | 硬编码回落对用户不可预期 |
-| 角标"不轮询、只订阅事件" | 进入主页 + **可见期内 3 秒定时器** | 预警 / 监控 / 多开三处没有可订阅的状态事件 |
+| ~~角标"不轮询、只订阅事件"~~ | ~~进入主页 + **可见期内 3 秒定时器**~~ | 角标整体于阶段 188 移除（用户不再需要），定时器与运行态数据源一并删除 |
 | 数据卡"窗口 &lt; 1100 时上下堆叠" | 钱包卡内部用 `WrapPanel`（收入支出两行、两个构成列各自换行）；两张卡本身右栏固定 392 | 不加断点代码也能自适应，窄窗口下钱包卡仍可读 |
 | 添加功能窗口"不设 Owner" | **设了 Owner** | 该规则针对 ToolWindow 的置顶按钮语义；本窗口没有图钉，设 Owner 才不会被主窗口盖住 |
 | 磁贴分组"分段 / 文件夹" | 曾实现**分段**（按功能分组显示小标题） | "文件夹"语义复杂；**分段本身也随阶段 101 移除**（用户不再需要该功能，连同「⋯」按钮与 `ShowGrouped` 字段） |
@@ -411,8 +403,9 @@ L2 动作项：
 
 **新增（按用途分组，中英同步，注意 §8-33：改语言文件后必须查重键）**：
 
-- 快捷方式：`Home.Quick.Title` `Home.Quick.Count` `Home.Quick.RestoreDefaults` `Home.Quick.RestoreConfirm` `Home.Quick.Empty` `Home.Quick.LimitReached` `Home.Quick.Pin` `Home.Quick.Unpin` `Home.Quick.Remove` `Home.Quick.ToWide` `Home.Quick.ToSmall` `Home.Quick.Manage` `Home.Quick.BadgeTip`
-  （阶段 101 删除：`Home.Quick.Add` `AddTip` `Edit` `Done` `EditHint` `MoveFirst`、`Home.Setting.Grouped`——编辑统一在设置页）
+- 快捷方式：`Home.Quick.Title` `Home.Quick.Count` `Home.Quick.RestoreDefaults` `Home.Quick.RestoreConfirm` `Home.Quick.Empty` `Home.Quick.LimitReached` `Home.Quick.Pin` `Home.Quick.Unpin` `Home.Quick.Remove` `Home.Quick.ToWide` `Home.Quick.ToSmall` `Home.Quick.Manage`
+  （阶段 101 删除：`Home.Quick.Add` `AddTip` `Edit` `Done` `EditHint` `MoveFirst`、`Home.Setting.Grouped`——编辑统一在设置页；
+  阶段 188 删除：`Home.Quick.BadgeCount` `Home.Quick.BadgeRunning`——角标功能移除）
 - 添加功能：`Home.Add.Title` `Home.Add.Search` `Home.Add.Add` `Home.Add.Added` `Home.Add.Summary` `Home.Add.Hint` `Home.Add.GroupAll`
 - 品牌与状态：`Home.Status.Online` `Home.Status.Players` `Home.Status.GameTime` `Home.Status.NewVersion` `Home.Status.Community`
 - 钱包：`Home.Wallet.Title` `Home.Wallet.Total` `Home.Wallet.Income` `Home.Wallet.Outcome` `Home.Wallet.IncomeBreakdown` `Home.Wallet.OutcomeBreakdown` `Home.Wallet.NoCharacter` `Home.Wallet.PartialFailed` `Home.Wallet.Range` `Home.Wallet.Range30` `Home.Wallet.RangeAll` `Home.Wallet.Note`

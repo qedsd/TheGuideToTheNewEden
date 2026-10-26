@@ -25,10 +25,6 @@ public sealed class HomeShortcutItem
     [JsonProperty("size", NullValueHandling = NullValueHandling.Ignore)]
     public string? Size { get; set; }
 
-    /// <summary>是否显示状态角标；缺省（null）表示"由功能自己的运行状态决定"（P2 使用）。</summary>
-    [JsonProperty("badge", NullValueHandling = NullValueHandling.Ignore)]
-    public bool? Badge { get; set; }
-
     /// <summary>功能参数（P3：物品 / 角色 / 星系的 ID 文本）。</summary>
     [JsonProperty("param", NullValueHandling = NullValueHandling.Ignore)]
     public string? Param { get; set; }
@@ -52,7 +48,6 @@ public sealed class HomeShortcutItem
     {
         Id = Id,
         Size = Size,
-        Badge = Badge,
         Param = Param,
         Label = Label,
     };
@@ -93,9 +88,9 @@ public sealed class HomeShortcutFile
     [JsonProperty("showRecent")]
     public bool ShowRecent { get; set; }
 
-    // showGrouped 字段已随阶段 101 移除（「磁贴按分组分段显示」功能取消）：
-    // System.Text.Json 反序列化默认忽略未知成员，旧配置文件里的该字段不会报错，
-    // 下次保存时自然消失。
+    // showGrouped 字段已随阶段 101 移除（「磁贴按分组分段显示」功能取消）；
+    // items 里的 badge 字段已随阶段 188 移除（磁贴状态角标功能取消）。
+    // 反序列化默认忽略未知成员，旧配置文件里的这些字段不会报错，下次保存时自然消失。
 
     /// <summary>最近打开过的功能 id（最新在前，容量 <see cref="DefaultRecentCapacity"/>）。</summary>
     [JsonProperty("recent")]

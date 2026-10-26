@@ -5,7 +5,7 @@ group: Nav.EveSettingsSync
 page: Views/Pages/EveSettingsSyncPage.xaml
 tools: []
 aliases: [配置同步, 客户端设置, EVE设置, 设置文件, 备份, 还原, 覆盖, 配置文件, core_char, core_user, settings sync, backup, profile]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 配置同步
@@ -60,7 +60,7 @@ updated: 2026-10-16
 | 文件数 / 大小 / 创建时间 | 备份的规模 | 备份创建时的实际值 |
 
 ## AI 能替你做什么 {#ai}
-- 本功能**没有开放任何 AI 工具**（`tools: []`）。
+- **可以读 / 改同步设置**：`config_read` / `config_write`（name=`evesettings`）读写白名单里的 `EveSettingsSyncSetting.json`（游戏设置目录、自动备份开关、运行中警告开关），写入需确认、旧内容自动备份、可用 `config_restore` 回滚；改完用 `feature_restart`（name=`evesettings`）在下次进入本页时生效。
 - **做不到**：AI 不能读取、写入、同步或备份 EVE 客户端设置文件，不能新建 / 复制 / 重命名 / 删除配置文件，也不能替你还原备份——这些都是覆盖式的破坏性文件操作，没有开放给助手，只能在本页手动完成。助手至多能讲解本手册里的步骤与风险，不会替你动任何文件。
 
 ## 常见失败与处置 {#errors}

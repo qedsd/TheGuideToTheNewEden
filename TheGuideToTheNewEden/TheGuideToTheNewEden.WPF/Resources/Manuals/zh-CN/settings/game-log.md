@@ -5,7 +5,7 @@ group: Nav.Settings
 page: Views/Pages/Settings/GameLogSettingPage.xaml
 tools: []
 aliases: [游戏日志设置, 日志路径, 日志目录, 聊天日志, 聊天频道, 有效天数, 显示数量, 频道预警前置, 日志监控, game log, logs path, chatlog, chat logs, channel logs]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 设置 · 游戏日志
@@ -58,10 +58,10 @@ updated: 2026-10-16
 - **频道翻译**：读 `Chatlogs` 里的频道日志做翻译。
 
 ## AI 能替你做什么 {#ai}
-- 本页**没有对应的 AI 工具**：AI 不能替你改路径、调天数或条数，也读不到你的聊天日志内容。
-- 频道类 AI 功能（如频道翻译相关问法）的取数也走本页配置的目录与天数——配置不对时先回本页检查再重试。
-- 推荐问法：「频道列表为什么是空的」「日志路径应该填什么」。
-- **做不到**：修改本页任何设置；读取或转发聊天日志正文。
+- **可以读 / 改本页设置**：`config_read`（name=`settings`）读 `settings.json` 里的 `EVELogsPath` / `EVELogsChannelDuration` / `MaxShowItems` 等键，`config_write` 只能改已存在的非密钥键；写入需确认、旧内容自动备份、可用 `config_restore` 回滚。**日志路径在进程启动时读取一次**，改完要重启应用才生效；`feature_restart`（name=`settings`）只重读键值字典，不会重扫日志目录。
+- 频道类 AI 功能的取数也走本页配置的目录与天数——配置不对时先回本页检查再重试。
+- 推荐问法：「频道列表为什么是空的」「日志路径应该填什么」「我现在的日志路径是什么」。
+- **做不到**：读取或转发聊天日志正文；替你点界面上的输入框或触发目录重扫。
 
 ## 常见失败与处置 {#errors}
 

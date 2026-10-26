@@ -4228,6 +4228,8 @@ bin 目录标签不可继承（探针实测：复制进 bin 的新文件 90 秒�
   - 刷新时机：进入主页 + 一个**只在主页可见期间运行**的 3 秒 `DispatcherTimer`（离开页面即停）。
     设计稿写的是"不轮询、只订阅事件"，但其中三处（预警 / 监控 / 多开）**没有可订阅的状态事件**，
     因此退一步用"可见期内轻量轮询"，并在代码注释里写明原因。
+  - **阶段 188 已按用户要求整体移除**：界面圆点、视图模型角标属性、3 秒定时器、`HomeFeatureStatusService`、
+    `HomeShortcutItem.Badge`、两个语言键，以及上面三处仅角标使用的只读计数（含各自的登记 `HashSet` / 静态弱引用表）。
 - **「最近使用」**：`HomeShortcuts.json` 的 `recent` 数组（容量 8，最新在前，去重），开关默认**关**（关闭时不记录、
   不占位置）；主页磁贴上方一行胶囊（图标 + 名称），右侧一个"清空"按钮。
 - **设置 → 主页**（`Views/Pages/Settings/HomeSettingPage`，注册进 `SettingsPage.BuildCategories`）：
@@ -9147,6 +9149,68 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
 - 首次运行判定只能看"根目录有没有旧配置"，无法区分那份配置是旧版本写的还是本版本早期开发版写的；
   开发机上第一次运行也会看到选择框（选一次即记住）。
 
+## 阶段 187：使用说明书与最新代码同步（2026-10-26）
+
+> 用户要求：按当前重构进度更新软件使用说明书，使手册与最新代码一致。本阶段**只改 `Resources/Manuals/zh-CN/**` 与本文**，没有改任何产品代码。
+
+### 187.1 数据目录（对齐阶段 186）
+
+- 重写 `settings/general.md`：新增「数据目录」步骤与字段（默认 `%LocalAppData%\TheGuideToTheNewEden\V4`、三种模式、打开 / 更改… / 恢复默认、复制旧配置、下次启动生效、首次运行选择框），并把「App配置文件」入口更正为「数据目录」。
+- `getting-started.md`、`concepts.md`、`troubleshooting.md`、`settings.md`、`settings/market.md` 同步更正配置目录路径（`…\V4\Configs`）与「旧版共用」的旧说法；明确只有主动选「沿用旧目录」才与旧版共用。
+- 更正日志路径旧描述：日志固定在 `%LocalAppData%\TheGuideToTheNewEden\Logs`（不随数据目录、多个版本共用），涉及 `concepts.md`、`getting-started.md`、`troubleshooting.md`、`settings/general.md`。
+- `home.md` 删除已退役的「手册 PDF 缺失」提示，改为内置 Markdown 手册的「找不到说明书」提示。
+
+### 187.2 AI 能力描述（对齐阶段 152–156）
+
+- 阶段 152–156 新增 `config_list` / `config_read` / `config_write` / `config_restore` 与 `feature_list` / `feature_restart`，原手册大量「本页没有 AI 工具 / 不能改设置」的说法已过期。逐页更新为：**可以读 / 改白名单配置（写入需确认、自动备份、可回滚）**，但**不能替你单独启停任务、点界面按钮或重启软件**；持续运行的功能可用 `feature_restart` 整体重启。
+- 覆盖：`assistant` 已先行更新；本轮同步 `concepts`、`getting-started`、`settings`、`settings/general`、`settings/ai`（工具数 46 → 52）、`settings/home`、`settings/game-log`、`settings/market`、`settings/keyboard-list`、`channel/{intel,monitor,scan,market,log-monitor}`、`map`、`map/intel`、`map/detail`、`scalper`、`links`、`appraisal`、`eve-settings-sync`、`translation/{ai,channel}`、`home`。
+- 明确边界：`datapath.json`、API Key、结构 / 权限文件、ZKB / 工业配置文件等不在白名单；AI 不能代点「保存 / 检测 / 清除缓存」。
+
+### 187.3 工业手册与阶段 157–186 对齐
+
+- `industry/plan.md`：修正结构（把发明成本、槽位与时间、已保存计划与仓库、自定义角色并入固定节，去掉顺序外的 H2；`limits` 2222 → 预算内），补充「生产详情 → 排程 / 步骤 / 工位 / 关系 / BOM·成本」的操作说明；删除「工业页仍是中文硬编码、英文待补」的过期限制（阶段 185 已完成中英文切换），改为「旧快照文本与本地化数据名不会因切语言重写」。
+- `industry/inventory.md`：把「与制造计划的关系」并入 `fields`，去掉顺序外的 H2。
+- `industry/blueprints.md` / `industry/plan.md` / `industry/planetary.md`：保留「回收 / 压缩入口当前未开放」（阶段 184）的一致说法。
+- 其余工业页（制造计划 / 行星开发 / 库存 / 蓝图浏览器）逐项核对阶段 157–186 的口径（详细订单默认、挂卖单默认、建筑档案、BPO/BPC、行星半径、候选行星、自动保存与保存计划、空隙占位标红等），未发现需要改写的其它过期内容。
+
+### 187.4 验证
+
+- `AssistantProbe manuals`：**58 PASS / 0 FAIL**（61 篇 / 538 个节；原「章节顺序」2 篇与「单节体量」1 处的问题清零）。
+- 每篇 `updated` 只在**实际改过内容**的文件上更新为 `2026-10-26`；未改内容的文件日期保持原值。
+- 本轮无 `dotnet build` 需求（产品代码未改）；手册为 `Content` 复制项，重新构建后随包输出。
+
+## 阶段 188：移除主页快捷方式的状态角标（2026-10-26）
+
+> 用户要求：主界面快捷方式右上角的黄色角标去掉，不再需要这个功能。
+
+### 188.1 界面与视图模型
+
+- `Views/Pages/HomePage.xaml`：磁贴模板删除右上角的 12px 圆点（`SystemFillColorCautionBrush` + `HasBadge` / `BadgeToolTip` 绑定），页面头注释同步去掉「状态角标」。
+- `ViewModels/Home/HomeShortcutTileViewModel.cs`：删除 `HasBadge` / `BadgeToolTip` 属性与 `RefreshBadge()`。
+- `ViewModels/Home/HomePageViewModel.cs`：删除为角标服务的 3 秒 `_statusTimer`、`RefreshBadges()` 及全部调用；`StartClock` / `StopClock` 只保留游戏时间时钟。
+
+### 188.2 数据、服务与语言键
+
+- 删除 `Services/Home/HomeFeatureStatusService.cs`（角标的运行态数据源）。
+- `Services/Home/HomeShortcutItem.cs`：删除 `Badge` 属性（JSON 字段 `badge`）与 `Clone()` 里的复制；`HomeShortcutService.Normalize` 同步不再复制。旧 `HomeShortcuts.json` 里的 `badge` 字段反序列化时被忽略，下次保存自然消失。
+- 删除仅角标使用的三个计数属性及其登记容器：
+  - `IntelWarningService.ListenerCount`（连同 `_listeners`）；
+  - `ChannelMonitorNotifyService.ItemCount`（连同 `_names`）；
+  - `PreviewWindowManager.TotalRunningCount`（连同静态弱引用实例表 `Instances`）。
+- 语言键 `Home.Quick.BadgeCount` / `Home.Quick.BadgeRunning` 中英同步删除。
+
+### 188.3 文档
+
+- `HOME_DESIGN.md`：§4.2 磁贴规格去掉角标行、§4.6 JSON 示例与规则去掉 `badge`、§4.9 标注为「阶段 188 移除」、§6 文件清单与 §7/§8 同步销账。
+- 内置手册：`Manuals/zh-CN/home.md` 删除角标步骤与字段行；`channel/intel.md`、`channel/monitor.md` 删除「主页磁贴带角标」说明。
+
+### 188.4 验证
+
+- `dotnet build .\TheGuideToTheNewEden.WPF\TheGuideToTheNewEden.WPF.csproj` → **0 错误**（56 个既有警告，与本次改动无关）。
+- 全仓检索 `HomeFeatureStatus|HasBadge|BadgeToolTip|RefreshBadge|Home.Quick.Badge|ListenerCount|TotalRunningCount`：产品代码中已无残留（仅剩虫洞等级徽章、预览窗名称角标等**同名但不同功能**的 `Badge` 标识）。
+- 实机启动核验：`TheGuideToTheNewEden.exe` 正常启动并停在主页，12 个快捷方式磁贴（日志监控 / 角色 / 估价 / 市场 / 倒货 / 频道监控 / 频道预警 / 订单 / 星图 / 多开…）右上角**均无黄色圆点**，主页其余区域（品牌条、最近使用、钱包卡、行情卡）渲染正常。
+- 旧配置兼容：`MissingMemberHandling.Ignore` 已开启，含 `"badge": true` 的旧 `HomeShortcuts.json` 可正常加载。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -10338,11 +10402,10 @@ Services/Home/HomeShortcutItem.cs       磁贴模型 + Configs/HomeShortcuts.jso
 Services/Home/HomeFeatureCatalog.cs     功能目录：42 项（26 导航叶子 + 5 系统动作 + 11 设置子页）的 id/图标/标题键(复用 Nav.* 与 SettingPage_*)/分组/描述键/动作类型 + DefaultSeed(12) + NavigationExclusions(主页自身)
 Services/Home/HomeShortcutService.cs    快捷方式读写（增删改排序/尺寸/显示策略/最近使用/Changed；丢弃未知 id、去重、上限 1..48、坏文件 .bak + 重建、临时文件落盘）
 Services/Home/HomeFeatureLauncher.cs    统一打开入口（功能页→Navigation；小工具→ToolWindowHost；动作项→日志/配置目录/检查更新/手册/关于/设置子页；**带参数→市场选物品 / 角色开工作区 / 星图定位星系**）
-Services/Home/HomeFeatureStatusService.cs  磁贴角标的运行态来源（预警角色数 / 监控角色数 / 预览窗口数 / 击杀流已连 / 收藏数）
 Services/Home/HomeWalletSummaryService.cs  钱包卡取数（按区间有界翻页、每角色上限 8 页、5 分钟缓存、逐角色容错、ref_type 归类）
-ViewModels/Home/HomeShortcutTileViewModel.cs  磁贴 VM（尺寸/编辑态/拖动与落位/角标/参数 label/语言刷新；IsAddSlot=末尾「＋ 添加功能」哨兵项）
+ViewModels/Home/HomeShortcutTileViewModel.cs  磁贴 VM（尺寸/拖动与落位/参数 label/语言刷新；阶段 188 去掉角标属性）
 ViewModels/Home/HomeShortcutGroupViewModel.cs 分段显示的一段（分组标题 + 段内磁贴）
-ViewModels/Home/HomePageViewModel.cs    主页 VM（磁贴/分段/最近使用/编辑模式、品牌条数据、两张数据卡、角标刷新）
+ViewModels/Home/HomePageViewModel.cs    主页 VM（磁贴/最近使用、品牌条数据、两张数据卡；阶段 188 去掉角标刷新定时器）
 ViewModels/Home/HomeWalletCardViewModel.cs 钱包卡 VM（四态 + 区间切换落盘）
 ViewModels/Home/HomeMarketCardViewModel.cs 行情卡 VM（收藏物品 + 历史统计 + 卡片级降级）
 ViewModels/Home/AddShortcutViewModel.cs 「添加功能」窗口 VM（分组 + 搜索 + 逐项添加/移除，改完即时落盘）
@@ -10359,9 +10422,9 @@ Views/Pages/MapPage.xaml(.cs)           + 顶栏「固定当前星系到主页�
 Views/Pages/MarketPage.xaml(.cs)        + 物品头「固定当前物品到主页」按钮
 Views/Pages/Characters/CharacterCardsPage.xaml(.cs)  + 卡片「⋯」菜单的「固定到主页」、公开 FindCard、CardsReloaded 事件
 Views/Pages/Characters/CharactersShellPage.xaml.cs   + 公开 OpenCharacterById、ApplyPendingCharacter（卡片重载后补开）
-Services/ChannelIntel/IntelWarningService.cs         + ListenerCount（只读，角标用）
-Services/ChannelIntel/ChannelMonitorNotifyService.cs + ItemCount（只读，角标用）
-Services/GamePreview/PreviewWindowManager.cs         + 静态 TotalRunningCount（弱引用登记实例求和，角标用）
+Services/ChannelIntel/IntelWarningService.cs         + ~~ListenerCount（只读，角标用）~~（阶段 188 随角标移除）
+Services/ChannelIntel/ChannelMonitorNotifyService.cs + ~~ItemCount（只读，角标用）~~（阶段 188 随角标移除）
+Services/GamePreview/PreviewWindowManager.cs         + ~~静态 TotalRunningCount（弱引用登记实例求和，角标用）~~（阶段 188 随角标移除）
 ```
 
 ### 配置同步模块（阶段 103：EVE 客户端设置文件的同步 / 备份 / 配置文件管理）

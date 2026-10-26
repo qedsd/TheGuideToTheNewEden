@@ -34,45 +34,9 @@ public sealed class PreviewWindowManager : IDisposable
         _global = global;
         _hotkeys = hotkeys;
         _hotkeys.Pressed += OnHotkeyPressed;
-
-        lock (Instances)
-        {
-            Instances.Add(new WeakReference<PreviewWindowManager>(this));
-        }
     }
 
     public int RunningCount => _running.Count;
-
-    /// <summary>
-    /// 所有存活实例上"正在预览"的窗口总数（主页磁贴角标用）。
-    /// 用弱引用登记实例再求和，而不是维护一个静态计数器——窗口的启停路径有好几条
-    /// （Start 失败回滚 / Stop / StopAll / Dispose），计数器容易漂移。
-    /// </summary>
-    public static int TotalRunningCount
-    {
-        get
-        {
-            lock (Instances)
-            {
-                var total = 0;
-                for (var i = Instances.Count - 1; i >= 0; i--)
-                {
-                    if (Instances[i].TryGetTarget(out var manager))
-                    {
-                        total += manager._running.Count;
-                    }
-                    else
-                    {
-                        Instances.RemoveAt(i);
-                    }
-                }
-
-                return total;
-            }
-        }
-    }
-
-    private static readonly List<WeakReference<PreviewWindowManager>> Instances = [];
 
     public IReadOnlyCollection<IPreviewWindow> Windows => _running.Values;
 

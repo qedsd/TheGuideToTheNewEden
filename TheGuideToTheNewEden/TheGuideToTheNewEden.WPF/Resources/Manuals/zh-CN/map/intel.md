@@ -5,7 +5,7 @@ group: Nav.Map
 page: Views/UserControls/Map/IntelToolView.xaml + Views/Windows/ToolWindow.xaml
 tools: [map_layer, zkb_entity]
 aliases: [情报, 情报面板, 实时情报, 过滤, 监听频道, intel, intel panel, live intel]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 星图 · 情报面板
@@ -69,7 +69,8 @@ updated: 2026-10-16
 ## AI 能替你做什么 {#ai}
 - 工具：`zkb_entity`（查角色 / 军团 / 联盟在 ZKB 的危险值、抱团比例、击杀 / 损失与 ISK 效率）、`map_layer`（把星图切到击杀 / 通行热度等着色，或开关跳桥层）。
 - 推荐问法：「情报里出现的 XXX 危险吗」「把星图切成击杀热度看看哪里最热」。
-- **做不到**：AI 读不到实时情报内容（表格与红圈不经 AI），不能替你开关监听、改过滤或改设置，也不会在收到情报时提醒你——要声音 / 弹窗报警请用频道预警。
+- **可以读 / 改情报面板设置**：`config_read` / `config_write`（name=`map`）读写 `MapSettings.json` 里的情报开关、保留时长、排除 / 包含项等；写入需确认、旧内容自动备份、可用 `config_restore` 回滚；改完用 `feature_restart`（name=`map`）在下次进入星图时生效。
+- **做不到**：AI 读不到实时情报内容（表格与红圈不经 AI），不能替你开关监听，也不会在收到情报时提醒你——要声音 / 弹窗报警请用频道预警。
 - 想评估某个实体：把表里看到的名字交给 `zkb_entity` 查危险度，再自行决定要不要接近。
 
 ## 常见失败与处置 {#errors}

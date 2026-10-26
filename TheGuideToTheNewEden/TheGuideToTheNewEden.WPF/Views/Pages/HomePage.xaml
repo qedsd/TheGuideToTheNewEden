@@ -10,7 +10,7 @@
     <!--
         主页（见 HOME_DESIGN.md）：
         · 品牌 / 状态条（104 → 品牌重设计）：纯矢量主题感知版（DynamicResource 随深浅主题切换），替代 home.jpg 固定深色图；
-        · 快捷方式（磁贴网格，可增删 / 拖动排序 / 小宽两档 / 分组分段 / 状态角标）；
+        · 快捷方式（磁贴网格，可增删 / 拖动排序 / 小宽两档）；
         · 数据卡：我的钱包 + 我的行情（左右两栏，窄窗口下自动上下堆叠）。
         顶层导航页不写页面标题（§10「UI 约定」），第一行直接是品牌条。
     -->
@@ -209,18 +209,6 @@
                                 TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                     </Grid>
-
-                    <!--  状态角标（运行态：预警中 / 监控中 / 多开中 / 击杀流已连 / 有收藏）  -->
-                    <Border
-                        Width="12"
-                        Height="12"
-                        Margin="0,8,8,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Background="{DynamicResource SystemFillColorCautionBrush}"
-                        CornerRadius="6"
-                        ToolTip="{Binding BadgeToolTip}"
-                        Visibility="{Binding HasBadge, Converter={StaticResource BoolToVisibility}}" />
                 </Grid>
             </Button>
         </DataTemplate>

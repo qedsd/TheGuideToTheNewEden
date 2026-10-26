@@ -5,7 +5,7 @@ group: Nav.Channel
 page: Views/Pages/ChannelMarketPage.xaml + Views/Windows/ChannelMarketWindow.xaml
 tools: []
 aliases: [频道查价, 自动查价, 物品价格弹窗, 价格弹窗, 聊天查价, channel market, price popup]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 频道 · 查价
@@ -53,8 +53,8 @@ updated: 2026-10-16
 | 本地位置 | 取价的市场星域 | 结果窗标题同此星域 |
 
 ## AI 能替你做什么 {#ai}
-- 工具：**无**（`tools: []`）。频道查价是长驻监听会话，AI 设计里明确这类订阅型功能不开放，AI 助手没有接入它的接口。
-- **做不到**：AI 不能替你开始 / 停止监听、勾选频道、改触发关键词或分隔符、选择市场星域，也读不到结果窗的内容与命中记录；更不能挂在你的聊天频道上自动弹窗。
+- **可以读 / 改查价配置**：`config_read` / `config_write`（name=`channelmarket`）读写白名单里的 `ChannelMarketSettings.json`（关键词、分隔符、市场星域等），写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完用 `feature_restart`（name=`channelmarket`，需确认）整体重启：停止全部会话 → 重读设置 → 重开原本在跑的角色（页面需已打开）。
+- **做不到**：替你**单独**开始 / 停止监听或勾选频道，也不能读取结果窗内容与命中记录；更不能挂在你的聊天频道上自动弹窗。
 - **绕道**：价格查询本身已被市场工具覆盖——直接问 AI「XX 在伏尔戈多少钱」可以用市场工具取实时订单与历史，但那是一次一答，不会持续盯频道。
 
 ## 常见失败与处置 {#errors}

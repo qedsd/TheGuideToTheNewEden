@@ -5,13 +5,13 @@ group: Nav.Settings
 page: Views/Pages/Settings/AiAssistantSettingPage.xaml + Views/UserControls/Settings/AiModelSettingView.xaml + Views/UserControls/Settings/AiTranslationSettingView.xaml + Views/UserControls/Settings/AiBehaviorSettingView.xaml + Views/UserControls/Settings/AiEsiSettingView.xaml + Views/UserControls/Settings/AiToolsSettingView.xaml
 tools: [esi_search, esi_describe, esi_read, esi_write, translate]
 aliases: [ai 设置, 模型设置, api key, 工具开关, 按需声明, esi 访问, ai settings, model, tools, 助手设置, 翻译设置]
-updated: 2026-10-18
+updated: 2026-10-26
 ---
 
 # 设置 · AI
 
 ## 一句话 {#tldr}
-AI 助手与 AI 翻译共用的全部配置，分五节钻取：**模型**（端点与生成参数）、**翻译**（术语库 / 分片 / 上下文预算 / 缓存 / 提示词）、**行为**（轮数 / 角色 / 确认 / 上下文窗口 / 摘要 / 单轮上限 / 快捷键 / 提示词）、**ESI 全量访问**（网关与安全边界）、**工具开关**（按需声明 + 46 个工具启停）。
+AI 助手与 AI 翻译共用的全部配置，分五节钻取：**模型**（端点与生成参数）、**翻译**（术语库 / 分片 / 上下文预算 / 缓存 / 提示词）、**行为**（轮数 / 角色 / 确认 / 上下文窗口 / 摘要 / 单轮上限 / 快捷键 / 提示词）、**ESI 全量访问**（网关与安全边界）、**工具开关**（按需声明 + 52 个工具启停）。
 
 ## 在哪打开 {#where}
 - 左侧导航「**设置**」→「**AI**」→ 分节列表：每行是「图标 + 标题 + 一行说明 + 箭头」，点整行进入该节详情。
@@ -62,7 +62,7 @@ AI 助手与 AI 翻译共用的全部配置，分五节钻取：**模型**（端
 
 ### 工具开关
 1. 「**按需声明（省 token）**」：开启后只把与本次提问相关的工具组发给模型；关闭则每次声明全部已启用工具。
-2. 「**全部启用 / 全部禁用**」批量按钮，旁边计数「已关闭 X / 46 个工具」。
+2. 「**全部启用 / 全部禁用**」批量按钮，旁边计数「已关闭 X / 52 个工具」。
 3. 分组列表（ESI 网关 / 角色 / 商业 / 星图 / 频道 / 通用与工具）逐个开关：关掉的工具不会下发给模型，模型硬要调也会被拒绝；新增工具默认开启。
 4. 改完点「保存」。
 
@@ -94,8 +94,9 @@ AI 助手与 AI 翻译共用的全部配置，分五节钻取：**模型**（端
 
 ## AI 能替你做什么 {#ai}
 - 工具：`esi_search`（按关键词 / 分组找端点）、`esi_describe`（看端点的参数与权限）、`esi_read`（调只读端点）、`esi_write`（调写端点，**需要你确认**）、`translate`（名词翻译）。前四个正是「ESI 全量访问」节的直接控制对象；`translate` 用「模型」节的端点与「翻译」节的术语库 / 缓存。
-- 推荐问法：「OpenAI 兼容协议该填什么地址」「esi_write 是干什么的」「为什么 AI 调不了我的邮件」。
-- **做不到**：设置本身没有开放任何 AI 工具——AI 不能替你改协议、填 Key、切开关、按「保存」或恢复默认；一切改动都要你手动完成。
+- **本页自己的设置也能交给 AI 读 / 改一部分**：`config_read`（name=`settings`）读 `settings.json` 里的 `Ai.*` / `Ai.Translation.*` 等键（API Key 属密钥，自动省略、不可写）；`config_write` 只能改已存在的非密钥键，写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完用 `feature_restart`（name=`settings` 或 `translation`）重读；主题 / 语言 / 快捷键等启动期设置仍需重启。
+- 推荐问法：「OpenAI 兼容协议该填什么地址」「esi_write 是干什么的」「为什么 AI 调不了我的邮件」「现在的历史摘要预算是多少」。
+- **做不到**：替你填写 API Key（密钥不读不写）；替你点「保存 / 测试连接 / 恢复默认」；不能让端点、Key 的改动在没有重启的情况下对已在跑的请求生效。
 
 ## 常见失败与处置 {#errors}
 

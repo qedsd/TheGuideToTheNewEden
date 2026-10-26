@@ -65,12 +65,6 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
         ? Feature?.GroupTitle ?? string.Empty
         : Feature?.Title ?? string.Empty;
 
-    /// <summary>是否显示状态角标（运行态由 <c>HomeFeatureStatusService</c> 提供）。</summary>
-    public bool HasBadge { get; private set; }
-
-    /// <summary>角标提示（"预警中：2 个角色"这类）。</summary>
-    public string BadgeToolTip { get; private set; } = string.Empty;
-
     /// <summary>参数化磁贴的提示（显示完整的"功能 + 参数"）。</summary>
     public string DetailToolTip => string.IsNullOrWhiteSpace(Item?.Label)
         ? $"{Feature?.Title} · {Feature?.Description}"
@@ -139,32 +133,6 @@ public sealed class HomeShortcutTileViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Subtitle));
         OnPropertyChanged(nameof(DetailToolTip));
         OnPropertyChanged(nameof(SizeToggleToolTip));
-    }
-
-    /// <summary>
-    /// 刷新状态角标。运行态只从各处<b>已有的</b>状态里读（见
-    /// <see cref="Services.Home.HomeFeatureStatusService"/>），不启动任何后台任务。
-    /// </summary>
-    public void RefreshBadge()
-    {
-        var status = Services.Home.HomeFeatureStatusService.Get(Id);
-
-        var hasBadge = status is not null;
-        var tooltip = status is null
-            ? string.Empty
-            : status.Count > 0
-                ? string.Format(Resolve("Home.Quick.BadgeCount"), Feature?.Title ?? Id, status.Count)
-                : string.Format(Resolve("Home.Quick.BadgeRunning"), Feature?.Title ?? Id);
-
-        if (HasBadge == hasBadge && BadgeToolTip == tooltip)
-        {
-            return;
-        }
-
-        HasBadge = hasBadge;
-        BadgeToolTip = tooltip;
-        OnPropertyChanged(nameof(HasBadge));
-        OnPropertyChanged(nameof(BadgeToolTip));
     }
 
     private static string Resolve(string key)

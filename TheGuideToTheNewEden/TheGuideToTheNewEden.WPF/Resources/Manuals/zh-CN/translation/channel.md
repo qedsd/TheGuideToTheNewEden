@@ -5,7 +5,7 @@ group: Nav.Translation
 page: Views/Pages/ChannelTranslationPage.xaml + Views/UserControls/ChannelTranslationResultView.xaml
 tools: [translate]
 aliases: [频道翻译, 聊天翻译, 实时翻译, 聊天频道翻译, 监听翻译, 自动翻译, channel translation, chat translation, realtime translation]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 翻译 · 频道翻译
@@ -63,7 +63,8 @@ updated: 2026-10-16
 ## AI 能替你做什么 {#ai}
 - 工具：`translate`（单条中英互译，本地词库优先、AI 源兜底；不需要确认）。
 - 推荐问法：「把这句频道发言翻成中文」「这句频道置顶信息是什么意思」。
-- **做不到**：频道翻译是长驻监听，助手不能替你开始 / 停止监听、勾选频道或改参数；结果列表也不作为助手的上下文。
+- **可以读 / 改频道翻译配置**：`config_read` / `config_write`（name=`channeltranslation`）读写白名单里的 `ChannelTranslationSettings.json`（每角色频道、上下文条数、跳过规则），写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完用 `feature_restart`（name=`channeltranslation`，需确认）整体重启：停止全部会话 → 重读设置 → 重开原本在跑的角色（页面需已打开）。
+- **做不到**：替你**单独**开始 / 停止监听或勾选频道；结果列表也不作为助手的上下文。
 
 ## 常见失败与处置 {#errors}
 

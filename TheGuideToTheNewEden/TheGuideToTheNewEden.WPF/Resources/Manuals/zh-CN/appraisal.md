@@ -5,7 +5,7 @@ group: Nav.Business
 page: Views/Pages/AppraisalPage.xaml
 tools: [appraisal]
 aliases: [估价, 估值, 清单, 粘贴清单, 值多少钱, 总价, appraisal, estimate, price check]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 商业 · 估价
@@ -61,7 +61,8 @@ updated: 2026-10-16
 ## AI 能替你做什么 {#ai}
 - `appraisal`（只读、无需确认）：把多行清单直接交给 AI 估价，返回总买价 / 中间价 / 总卖价 / 总体积与明细（最多前 15 行）、未识别与无报价的条数。参数：`text`（必填）、`regionName`（可选星域名，默认伏尔戈）。口径沿用估价页当前的设置。
 - 推荐问法：「帮我估价这份清单」「这船东西在伏尔戈值多少」。
-- **做不到**：只能按**星域**取价（不能指定星系 / 建筑）；不能替你改估价页的口径 / 百分比设置；清单超过 200 件会拒绝并要求分批；明细超过 15 行只给前 15 行，全量请在页面复制。
+- **可以读 / 改估价设置**：`config_read` / `config_write`（name=`appraisal`）读写白名单里的 `AppraisalSetting.json`（价格来源、买卖口径与百分比、历史天数、去极值等），写入需确认、旧内容自动备份、可用 `config_restore` 回滚；改完用 `feature_restart`（name=`appraisal`）在下次进入估价页时生效。
+- **做不到**：工具只能按**星域**取价（不能指定星系 / 建筑）；不能替你点「估价」按钮；清单超过 200 件会拒绝并要求分批；明细超过 15 行只给前 15 行，全量请在页面复制。
 
 ## 常见失败与处置 {#errors}
 

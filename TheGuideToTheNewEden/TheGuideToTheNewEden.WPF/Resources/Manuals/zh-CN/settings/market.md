@@ -5,7 +5,7 @@ group: Nav.Settings
 page: Views/Pages/Settings/MarketSettingPage.xaml
 tools: []
 aliases: [市场设置, 缓存时长, 订单有效时长, 历史记录有效时长, 线程数, 并发线程, 跳过公开建筑订单, 清除缓存, market settings, market cache, cache duration, history cache, thread count, skip public structure orders, clear cache]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 设置 · 市场
@@ -21,7 +21,7 @@ updated: 2026-10-16
 ## 前置条件 {#prereq}
 - **不需要登录角色**：星域 / 星系取数走匿名接口，这里的缓存与线程设置对所有市场生效。
 - **建筑（结构）市场本身**的授权与「设置 → 玩家建筑」有关（需要角色对该建筑有市场访问权），与本页设置无关。
-- 清除缓存要删配置目录（主页「打开配置目录」指向 `%LOCALAPPDATA%\TheGuideToTheNewEden\Configs`）里的缓存文件，运行位置需要对它有**写权限**；受限位置（低完整性、只读目录）下删除可能失败，而界面不会单独报错——同理，这里改的设置值写不进去时也是静默的，不会弹提示。
+- 清除缓存要删**数据目录**下 `Configs` 里的缓存文件（默认 `%LocalAppData%\TheGuideToTheNewEden\V4\Configs`；主页「打开配置目录」即指向这里），运行位置需要对它有**写权限**；受限位置（低完整性、只读目录）下删除可能失败，而界面不会单独报错——同理，这里改的设置值写不进去时也是静默的，不会弹提示。
 
 ## 操作步骤 {#steps}
 
@@ -62,10 +62,10 @@ updated: 2026-10-16
 - 两个"跳过"开关是**独立**的：倒货只看「倒货跳过公开建筑订单」，市场侧的说明写在「市场跳过公开建筑订单」上，互不联动。
 
 ## AI 能替你做什么 {#ai}
-- 本页**没有对应的 AI 工具**：AI 不能替你改上面任何一个数字框或开关，也不能替你清缓存（本页这些设置项没有开放为工具）。
-- AI 能读到 / 间接用到这里的设置：`scalper_settings`（只读，**无需确认**）会报出源市场、目的市场、目标物品数与**取数线程数**；`market_history`、`market_trend` 的历史统计走本页「历史记录有效时长」缓存，批量取数的并发受线程数影响；`market_orders`（以及 `market_trend` 的现价）是实时订单、**不读本页缓存**；`scalper_analyse`（**需要你确认**）与倒货页共用「倒货跳过公开建筑订单」的口径。
+- **可以读写这些设置项**：`config_read`（name=`settings`）读 `settings.json` 里的 `OrderDuration` / `HistoryDuration` / `Thread` / `ScalperSikpStructure` / `MarketSikpStructure` 等键，`config_write` 只能改已存在的非密钥键；写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完可用 `feature_restart`（name=`settings`）重读。
+- AI 能读到 / 间接用到这里的设置：`scalper_settings`（只读，**无需确认**）会报出源市场、目的市场、目标物品数与**取数线程数**；`market_history`、`market_trend` 的历史统计走本页「历史记录有效时长」缓存；`market_orders`（以及 `market_trend` 的现价）是实时订单、**不读本页缓存**；`scalper_analyse` 与倒货页共用「倒货跳过公开建筑订单」的口径。
 - 推荐问法：「现在的 ESI 查询线程数是多少」「倒货现在是什么配置」「为什么第一次查历史很慢」「清完缓存要等多久才出数据」。
-- **做不到**：不能替你修改设置、不能替你清缓存；AI 的 ESI 全量网关取数也**不经过本页缓存**（网关有自己的一套页数与配额口径，见「设置 → AI」的 ESI 全量访问一节）。
+- **做不到**：替你点「清除」清缓存（配置文件工具不删缓存目录）；AI 的 ESI 全量网关取数也**不经过本页缓存**（网关有自己的一套页数与配额口径，见「设置 → AI」的 ESI 全量访问一节）。
 
 ## 常见失败与处置 {#errors}
 本页**没有输入校验报错**：数字框最小值为 1，开关与按钮都是点一下就生效；唯一会弹出的提示是清除缓存后的「已清除缓存订单信息」。

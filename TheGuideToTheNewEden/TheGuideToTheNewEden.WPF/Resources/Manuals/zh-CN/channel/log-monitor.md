@@ -5,7 +5,7 @@ group: Nav.GameLogMonitor
 page: Views/Pages/GameLogMonitorPage.xaml
 tools: []
 aliases: [日志监控, 游戏日志, 日志关键词, 异常日志, log monitor, game log, keyword]
-updated: 2026-10-16
+updated: 2026-10-26
 ---
 
 # 频道 · 日志监控
@@ -58,8 +58,8 @@ updated: 2026-10-16
 | 实时日志行 | 命中行标红、最新行加粗 | 只保留最近若干条 |
 
 ## AI 能替你做什么 {#ai}
-- 工具：**无**（`tools: []`）。日志监控与频道监控一样是长驻订阅游戏日志的会话型功能，AI 设计里明确此类功能不开放，AI 助手没有接入它的接口。
-- **做不到**：AI 不能替你开始 / 停止监控、新建或删除配置、改关键词与通知方式，也**读不到实时日志与命中记录**——它不知道你监控到了什么、监控是否在跑。
+- **可以读 / 改监控配置**：`config_read` / `config_write`（name=`gamelog`）读写白名单里的 `GameLogInfoSettings.json`（配置、关键词、判定间隔、通知方式），写入需确认、旧内容自动备份、可用 `config_restore` 回滚。改完用 `feature_restart`（name=`gamelog`，需确认）整体重启：停止全部会话 → 重读设置 → 重开原本在跑的配置（页面需已打开）。
+- **做不到**：替你**单独**开始 / 停止某条配置，也**读不到实时日志与命中记录**——它不知道你监控到了什么、监控是否在跑；`feature_restart` 是整体停掉再按原运行项重开。
 - **绕道**：把日志内容手动粘贴给 AI 解读；或让 AI 处理别的频道相关需求（查价、名单统计）。
 
 ## 常见失败与处置 {#errors}

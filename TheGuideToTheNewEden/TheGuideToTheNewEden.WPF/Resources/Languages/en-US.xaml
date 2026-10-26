@@ -120,8 +120,6 @@
     <sys:String x:Key="Home.Quick.PinNeedSelection">Select a system on the map first</sys:String>
     <sys:String x:Key="Home.Quick.Pinned">Pinned to home: {0}</sys:String>
     <sys:String x:Key="Home.Quick.AlreadyPinned">“{0}” is already on the home page</sys:String>
-    <sys:String x:Key="Home.Quick.BadgeCount">{1} running · {0}</sys:String>
-    <sys:String x:Key="Home.Quick.BadgeRunning">{0} is running</sys:String>
     <sys:String x:Key="Home.Quick.GroupCount">{0} items</sys:String>
 
     <sys:String x:Key="Home.Wallet.Title">My wallet</sys:String>

@@ -20,28 +20,8 @@ public sealed class ChannelMonitorNotifyService
     private readonly Dictionary<string, GameLogMsgWindow> _windows = [];
     private readonly Dictionary<string, MediaPlayer> _players = [];
 
-    /// <summary>已登记监控的角色名（弹窗与声音都是可选的，所以单独记一份"谁在监控"）。</summary>
-    private readonly HashSet<string> _names = new(StringComparer.Ordinal);
-
-    /// <summary>正在监控的角色数（主页磁贴角标用）。</summary>
-    public int ItemCount
-    {
-        get
-        {
-            lock (_names)
-            {
-                return _names.Count;
-            }
-        }
-    }
-
     public bool Add(ChannelMonitorItem item)
     {
-        lock (_names)
-        {
-            _names.Add(item.Name);
-        }
-
         if (item.Setting.WindowNotify)
         {
             if (_windows.ContainsKey(item.Name))
@@ -144,11 +124,6 @@ public sealed class ChannelMonitorNotifyService
     /// <summary>移除角色的通知资源（停止监控时调用）。</summary>
     public void Remove(string name)
     {
-        lock (_names)
-        {
-            _names.Remove(name);
-        }
-
         if (_windows.TryGetValue(name, out var window))
         {
             window.Clear();
