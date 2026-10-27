@@ -125,6 +125,24 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 
     private async void OnStartClick(object sender, RoutedEventArgs e) => await _viewModel.StartAsync();
 
+    /// <summary>
+    /// WPF-UI NumberBox.Value 是 double?；除了绑定代理，这里再显式写回一次，
+    /// 避免只改文本/失去焦点顺序导致 Start 仍读到旧跳数。
+    /// </summary>
+    private void OnIntelJumpsChanged(object sender, Wpf.Ui.Controls.NumberBoxValueChangedEventArgs e)
+    {
+        if (sender is not FrameworkElement { IsLoaded: true } || _viewModel.Session is null)
+        {
+            return;
+        }
+
+        var value = (int)Math.Clamp(Math.Round(e.NewValue ?? 0), 0, 8);
+        if (_viewModel.Session.Setting.IntelJumps != value)
+        {
+            _viewModel.Session.Setting.IntelJumps = value;
+        }
+    }
+
     private void OnStopClick(object sender, RoutedEventArgs e) => _viewModel.StopSelected();
 
     private void OnStopSoundClick(object sender, RoutedEventArgs e) => _viewModel.StopSound();

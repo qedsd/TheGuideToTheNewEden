@@ -9566,6 +9566,165 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
   - 显式本地 `Foreground="Red"` 的 Primary 图标保持红色，行为不覆盖。
 - 不再使用隐式 `SymbolIcon` 样式，避免启动时重复键崩溃。
 
+## 阶段 199：频道预警小窗 UI 重设计（星图范围不变 + 频道抽屉 + 几何离群）（2026-10-27）
+
+> 用户要求：重做预警小窗 UI；频道内容也能在小窗查看（可展开/只看地图）；解决默认 2D 坐标下离群星系把其余星系挤成一团的问题。
+> 特别强调：**配置的 N 跳范围不能被视觉分层砍掉**。
+
+### 199.1 窗口布局（IntelWindow）
+
+- 改为五段式：标题栏 / 本地与范围信息条 / 星图 / 频道内容抽屉 / 操作栏。
+- 默认窗口 `640×620`（`MinWidth=560`、`MinHeight=500`）；仍可缩放，位置/尺寸/不透明度继续写回 `IntelSettingService`。
+- 标题：`频道预警 · 角色名` + 预警/待命状态；信息条显示本地星系、范围跳数、预警数、降级数。
+- 频道抽屉默认**收起**（43px），只显示最新摘要；点标题/「频道内容」展开（210px），支持 `全部 / 预警 / 解除 / 击杀` 过滤；「仅地图」把抽屉行高设为 0，地图右下角「频道」浮动按钮恢复。
+- 保留：清除全部预警、最新预警前置 EVE、停止声音、关闭即停止该角色、必要时显示/30 秒隐藏、自动解除/降级、声音与系统通知。
+- 新增 ZKB 击杀行：`IntelWarningService.Notify` 把 `channel` 传给窗口，`channel == "KB"` 时补一条「击杀」行（频道聊天行不重复）。
+
+### 199.2 星图：范围不变 + 视觉分层（IntelMapView）
+
+- **数据集合严格等于 `IntelJumps` 的 BFS 结果**；所有 N 跳内星系始终绘制（安静星系为暗色小点 + 细星门线，仍可悬停/右键）。
+- “重点”只影响视觉：本地/预警/降级/击杀及其直接相邻星系才显示标签、放大节点、加亮星门；**不删除任何星系，也不缩小范围**。
+- 新增滚轮缩放、拖拽平移、双击复位、右上角 +/−/复位按钮；缩放不改变数据集合。
+- 右侧「几何离群」卡片：只对 `ViewportOutlier` 且处于预警/降级的星系显示（最多 3 张，其余聚合 `+N`）；点击定位，仍在 N 跳范围内。
+- 悬停卡片显示星系名、跳数、最新预警内容；右键解除单个星系；相邻星门高亮。右键解除通过
+  `SystemClearRequested` 回到窗口，同步 `_startTimes` 与预警/降级计数，避免地图已清除但自动隐藏逻辑仍认为有预警。
+- `Core/Models/Map/SolarSystemPosition` 新增 `[JsonIgnore] ViewportOutlier`（只用于绘制提示，不参与序列化/范围）。
+
+### 199.3 坐标：2%–98% 分位 + 尾部软压缩（SolarSystemPosHelper.ResetXY）
+
+- 不再用全量 min/max 归一化；取范围内星系的 **2%–98% 分位**作为核心视口（保留纵横比、留 5% 外边距）。
+- 超出分位的尾部映射到外侧 **4% 边带**（保持方向/先后顺序），不是全部 clamp 成一条边；极端几何离群再由窗口贴边卡片呈现。
+- 标记 `ViewportOutlier`，但**不删除、不改变 N 跳集合**；样本 < 8 或范围退化时回退全量适配并清除标记。
+- 实测（临时探针，100 个核心点 + 1 个远点）：远点 `ViewportOutlier=True`、映射到 `0.990`；核心 X 范围 `0.010–0.950`，未被远点压扁。
+
+### 199.4 频道内容接线
+
+- `IntelChatContent` 增加 `SolarSystemId / SolarSystemName / Jumps`；`ChannelIntelObserver` 在 `AnalyzeContent` 后回填，并补 `ChannelName`。
+- `ChannelIntelSession.Observer_OnContentUpdate` 在原有 `ChatContentEvent` 之外调用
+  `IntelWarningService.ChatContent(listener, news)`；服务切回 UI 线程后转交窗口。
+- `IntelWindow.ChatContent` 追加 `IntelChatRow`，最多 200 条；抽屉标题/计数/最新摘要实时更新；展开时自动滚底。
+- `IntelChatRow` 分 `Alert / Clear / Kill / Info` 四类，颜色与地图一致；ZKB 行标为 Kill。
+
+### 199.5 语言与手册
+
+- 新增 `IntelWindow_*` 中英语言键：标题、本地、范围、预警/降级计数、频道、仅地图、全部/解除/击杀、无消息、几何离群、缩放/复位、地图操作提示、最新、待命等。
+- 手册 `channel/intel.md`：补充五段式小窗、频道抽屉/仅地图、范围不裁剪、几何离群、缩放平移、ZKB 击杀行；明确“重点只影响标签/亮度，不缩小 N 跳范围”。
+
+### 199.6 验证
+
+- `dotnet build` WPF：**0 错误**（52 个既有警告，无新增错误）。
+- `AssistantProbe manuals`：**58 PASS / 0 FAIL**；`AssistantProbe ui`：**121 PASS / 0 FAIL**（语言键对齐）。
+- 独立 WPF 冒烟程序：构造真实 `IntelWindow` + 合成 30 星系/离群点/8 条频道消息，`Show()` → 渲染快照 → `Close()` 无异常；
+  同时渲染展开频道与「仅地图」两种状态，确认抽屉/浮动按钮布局。
+- 未做真实 ESI/真实聊天日志联调；数据接线为现有 `ChatContentEvent` 的增量转发，未改监听层。
+
+## 阶段 200：按实机截图精简预警小窗（去重信息条 / 地图悬浮操作 / 频道行对齐）（2026-10-27）
+
+> 用户按实际运行截图反馈：标题下信息条与地图/抽屉信息重复；星图安静星系太暗；频道时间列被截断、无星系消息落到底部；底部操作栏占空间且“最新预警”按钮不需要。
+
+### 200.1 删除重复信息
+
+- 删除标题栏下方的整条信息栏：本地星系名、范围、预警数、降级数、仅地图、频道内容入口全部移除（对应 `HomeText / RangeText / AlertCountText / DowngradeCountText / MapOnlyButton / ChannelToggleButton`）。
+- 删除地图左上角的状态/操作提示（`MapStatusText / MapHintText`），只保留星图本身与右上角缩放/复位。
+- 删除底部操作栏与中间「最新预警信息」按钮（`LatestButton / LatestTitleText / LatestSubText`）。
+- 频道抽屉仍由底部标题栏展开/收起；不再有独立的「仅地图」模式，收起后只剩 43px 摘要条。
+- 标题栏保留角色名与「预警中 / 待命」状态。
+
+### 200.2 地图右下角悬浮操作
+
+- 清除、静音移到地图右下角竖排（透明图标按钮）。
+- 下方新增「**激活游戏窗口**」按钮，点击调用 `GameWindowHelper.BringGameToFront`；替代原「最新预警信息」的前置游戏功能。
+- 新增语言键 `IntelWindow_ActivateGame`（中/英）。
+- 删除 `SetMapOnly / OnMapOnlyClick / OnChannelToggleClick / OnChannelFabClick` 与 `ChannelFab`，避免保留不可达 UI。
+
+### 200.3 频道行
+
+- 时间列 `40 → 56`，`HH:mm:ss` 不再截断；频道列保持 44。
+- `IntelChatRow` 增加 `SystemVisibility`：无命中星系的消息隐藏空白的“星系 + 跳数”行。
+- 消息 StackPanel 改为 `VerticalAlignment=Center`；无星系消息现在单行垂直居中，不再落到底部。
+- 有星系的消息仍是「星系/跳数 + 正文」两行，整体居中。
+
+### 200.4 默认星点亮度
+
+- 安静星系：颜色 `#4C5F76 → #97A9C1`，尺寸 `3.0 → 3.4`，不透明度 `0.58 → 0.82`。
+- 安静星门：颜色提亮，线宽 `0.8 → 0.9`，不透明度 `0.62 → 0.78`。
+- 本地/预警/降级/击杀颜色不变；数据范围仍为完整 N 跳。
+
+### 200.5 验证
+
+- `dotnet build` WPF：**0 错误**（52 个既有警告）。
+- `AssistantProbe manuals`：**58 PASS / 0 FAIL**；`AssistantProbe ui`：**121 PASS / 0 FAIL**。
+- WPF 冒烟窗口重新渲染：确认标题下无信息条、底栏消失、右下角三按钮竖排、频道时间完整、无星系消息单行居中。
+
+## 阶段 201：预警小窗地图操作按钮整理（激活游戏图标 / 移除缩放 / 重置并入右下）（2026-10-27）
+
+- 「激活游戏窗口」按钮增加 `ArrowUpRight24` 图标 + 文本，保持 `GameWindowHelper.BringGameToFront` 行为。
+- 删除地图右上角「放大 / 缩小」按钮；滚轮缩放仍保留。
+- 「重置地图」按钮从右上角移到地图右下角竖排，顺序为：
+  **重置地图 → 清除所有预警 → 停止声音 → 激活游戏窗口**。
+- 右下角统一使用透明图标按钮（激活游戏为 Secondary + 图标/文字）。
+- 验证：`dotnet build` 0 错误；`manuals` 58 PASS；`ui` 121 PASS；冒烟窗口重新渲染确认按钮位置与图标。
+
+## 阶段 202：频道内容过滤按钮改用 WPF-UI 控件样式（2026-10-27）
+
+- 「全部 / 预警 / 解除 / 击杀」从标准 `Button` + 本地 `IntelFilterButton` 样式改为 `ui:Button`：
+  - 默认 `Appearance="Secondary"`；
+  - 当前选中项在代码中切换为 `ControlAppearance.Primary`，其余回到 `Secondary`。
+- 删除本地 `IntelFilterButton` 样式；过滤行现在完全由 WPF-UI 的按钮模板/主题色控制。
+- `OnFilterClick` 改为读取 `FrameworkElement.Tag`，不依赖具体 `Button` 子类，兼容 `ui:Button`。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS / `ui` 121 PASS；冒烟渲染确认选中项为 WPF-UI Primary 胶囊按钮。
+
+## 阶段 203：预警跳数写回修正 + 频道抽屉可拖动高度（2026-10-27）
+
+### 203.1 跳数修改不生效
+
+- 根因：WPF-UI `NumberBox.Value` 是 `double?`，页面直接 `TwoWay` 绑定 `int IntelJumps`，编辑值可能没有写回源属性，Start 仍读到旧跳数。
+- `ChannelIntelSetting` 增加 `double? IntelJumpsValue` 代理：
+  - 读取返回 `IntelJumps`；
+  - 写入时四舍五入并钳制到 0–8，同步 `IntelJumps`；
+  - 标 `[JsonIgnore]`，不写进 `IntelSettings.json`；
+  - `IntelJumps` 自身变化时通知 `IntelJumpsValue`，外部改设置也能刷新 NumberBox。
+- 页面绑定改为 `Session.Setting.IntelJumpsValue`，并加 `UpdateSourceTrigger=PropertyChanged`；同时监听 `NumberBox.ValueChanged` 显式写回，双重保证点击「开始预警」前值已落到 `Setting.IntelJumps`。
+- `ChannelIntelSession.Start` 使用 `Math.Clamp(Setting.IntelJumps, 0, 8)` 构建地图，并记录启动日志（位置 + 实际跳数），便于确认生效值。
+
+### 203.2 频道内容拖动高度
+
+- 地图与抽屉之间增加 `GridSplitter`（5px，`SizeNS`，悬停提示「拖动调整频道内容高度」）。
+- 仅抽屉展开时显示分隔条；展开/收起仍由抽屉标题控制。
+- 抽屉展开时 `MinHeight=80`，避免拖到不可用高度；收起时恢复 43px。
+- 记住本次窗口内最后一次展开高度：收起再展开不回到固定 210px。
+- 新增语言键 `IntelWindow_ResizeChannel`（中/英）。
+
+### 203.3 验证
+
+- `dotnet build` WPF：**0 错误**（52 个既有警告）。
+- `AssistantProbe manuals` / `ui`：58 PASS / 121 PASS。
+- 独立 WPF 冒烟：窗口构造与 Show/Close 正常；分隔条仅在展开抽屉时出现。
+
+## 阶段 204：频道预警角色列表兜底（日志目录缺失时不再全空）（2026-10-27）
+
+- 现场检查：`EVELogsPath` 未配置，默认目录 `Documents\EVE\logs\Chatlogs` 不存在/为空，而角色列表原本只从聊天日志扫描结果构建，因此整列空白。
+- `IntelSettingService` 增加 `GetListeners()`，读取 `IntelSettings.json` 中已保存配置的角色名。
+- `ChannelIntelViewModel.InitDicAsync`：
+  - 日志扫描完成后，把已保存配置的角色补进 `_listenerChannelDic`（空频道列表）；
+  - 这样日志目录暂时不可用时，左栏仍能看到以前配置过的角色；
+  - 日志恢复后刷新，正常角色和频道会重新出现。
+- `GetSession` 对没有日志频道的角色使用空列表，避免 `_listenerChannelDic[name]` 直接抛 `KeyNotFoundException`。
+- `ChannelIntelSession.Start` 在没有频道时不再静默返回，改为抛出带聊天日志路径的错误；页面提示去「设置 → 游戏日志」配置。
+- 新增语言键 `ChannelIntelPage_Error_NoChatlogs`（中/英）。
+- 手册补充“角色列表兜底”和“未找到聊天日志”的错误处置。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS；日志目录缺失下 WPF 页面构造/角色兜底逻辑通过。
+
+## 阶段 205：撤销频道预警角色列表兜底（严格只认聊天日志）（2026-10-27）
+
+- 用户明确要求：不需要从 `IntelSettings.json` 兜底显示角色。
+- 移除 `IntelSettingService.GetListeners()`。
+- `ChannelIntelViewModel.InitDicAsync` / `RefreshCharactersAsync` 恢复为只使用聊天日志扫描结果；日志目录不可用或没有聊天日志时，角色列表保持为空。
+- 保留日志目录不存在的警告日志，以及开始预警时“未找到聊天日志”的明确错误（含聊天日志路径），便于定位路径配置问题。
+- `GetSession` 对空频道列表的安全处理保留，避免异常，但不产生兜底角色。
+- 手册同步改为“角色列表只从聊天日志读取”。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

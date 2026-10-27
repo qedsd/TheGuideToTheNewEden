@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -253,34 +253,149 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         }
 
         /// <summary>
-        /// 将XY坐标缩放到[0,1]范围
+        /// 将范围内星系的 2D 坐标适配到 [0,1] 视口。
+        /// <para>
+        /// **不删除任何星系**：以 2%–98% 分位作为核心视口，超出分位的尾部映射到外侧 4% 边带做软压缩，
+        /// 保留方向和先后顺序；被标为 <see cref="SolarSystemPosition.ViewportOutlier"/> 的只是“几何离群”，
+        /// 数据仍属于当前 N 跳范围，由界面决定是否贴边显示。
+        /// </para>
         /// </summary>
-        /// <param name="all"></param>
         public static void ResetXY(List<IntelSolarSystemMap> all)
         {
-            // 找到原始数据的边界
-            double minX = all.Min(p => p.X2);
-            double maxX = all.Max(p => p.X2);
-            double minY = all.Min(p => p.Y2);
-            double maxY = all.Max(p => p.Y2);
+            if (all == null || all.Count == 0)
+            {
+                return;
+            }
 
-            // 计算原始数据的范围
-            double rangeX = maxX - minX;
-            double rangeY = maxY - minY;
+            var xs = all.Select(p => p.X2).OrderBy(p => p).ToArray();
+            var ys = all.Select(p => p.Y2).OrderBy(p => p).ToArray();
+            var minX = xs[0];
+            var maxX = xs[^1];
+            var minY = ys[0];
+            var maxY = ys[^1];
 
-            // 计算缩放比例（保持纵横比）
-            double scaleRatio = Math.Min(1.0 / rangeX, 1.0 / rangeY);
+            // 样本太少时分位没有意义，退回全量 min/max。
+            if (all.Count < 8 || maxX - minX < 1e-9 || maxY - minY < 1e-9)
+            {
+                ResetXYByBounds(all, minX, maxX, minY, maxY);
+                foreach (var point in all)
+                {
+                    point.ViewportOutlier = false;
+                }
+                return;
+            }
 
-            // 计算居中偏移量
-            double centerX = (1 - (rangeX * scaleRatio)) / 2;
-            double centerY = (1 - (rangeY * scaleRatio)) / 2;
+            var p2x = Percentile(xs, 0.02);
+            var p98x = Percentile(xs, 0.98);
+            var p2y = Percentile(ys, 0.02);
+            var p98y = Percentile(ys, 0.98);
+            if (p98x - p2x < 1e-9)
+            {
+                p2x = minX;
+                p98x = maxX;
+            }
+            if (p98y - p2y < 1e-9)
+            {
+                p2y = minY;
+                p98y = maxY;
+            }
 
-            // 缩放所有点
-            List<Point> scaledPoints = new List<Point>();
+            var rangeX = p98x - p2x;
+            var rangeY = p98y - p2y;
+            // 留出 5% 外边距；纵横比仍保持一致。
+            var scaleRatio = Math.Min(0.90 / rangeX, 0.90 / rangeY);
+            var offsetX = (1 - rangeX * scaleRatio) / 2;
+            var offsetY = (1 - rangeY * scaleRatio) / 2;
+
             foreach (var point in all)
             {
-                point.X2 = ((point.X2 - minX) * scaleRatio) + centerX;
-                point.Y2 = ((point.Y2 - minY) * scaleRatio) + centerY;
+                var rawX = point.X2;
+                var rawY = point.Y2;
+                point.ViewportOutlier =
+                    rawX < p2x - 1e-9 || rawX > p98x + 1e-9 ||
+                    rawY < p2y - 1e-9 || rawY > p98y + 1e-9;
+
+                point.X2 = MapAxis(rawX, minX, p2x, p98x, maxX, scaleRatio, offsetX);
+                point.Y2 = MapAxis(rawY, minY, p2y, p98y, maxY, scaleRatio, offsetY);
+            }
+        }
+
+        /// <summary>取排序数组的分位值（线性夹取，避免越界）。</summary>
+        private static double Percentile(double[] sorted, double percentile)
+        {
+            if (sorted.Length == 0)
+            {
+                return 0;
+            }
+
+            var index = (int)Math.Floor((sorted.Length - 1) * Math.Clamp(percentile, 0, 1));
+            return sorted[Math.Clamp(index, 0, sorted.Length - 1)];
+        }
+
+        /// <summary>
+        /// 单轴映射：核心段按比例展开；分位之外落在外侧 4% 边带（软压缩），而不是全部贴成一条边。
+        /// </summary>
+        private static double MapAxis(
+            double value,
+            double min,
+            double p2,
+            double p98,
+            double max,
+            double scale,
+            double offset)
+        {
+            if (value < p2)
+            {
+                var span = p2 - min;
+                if (span < 1e-9)
+                {
+                    return Math.Max(0.005, offset);
+                }
+
+                return Math.Max(0.005, offset - 0.04 * ((p2 - value) / span));
+            }
+
+            if (value > p98)
+            {
+                var span = max - p98;
+                var coreEnd = offset + (p98 - p2) * scale;
+                if (span < 1e-9)
+                {
+                    return Math.Min(0.995, coreEnd);
+                }
+
+                return Math.Min(0.995, coreEnd + 0.04 * ((value - p98) / span));
+            }
+
+            return offset + (value - p2) * scale;
+        }
+
+        /// <summary>全量 min/max 适配（小样本或退化范围使用）。</summary>
+        private static void ResetXYByBounds(
+            List<IntelSolarSystemMap> all,
+            double minX,
+            double maxX,
+            double minY,
+            double maxY)
+        {
+            var rangeX = maxX - minX;
+            var rangeY = maxY - minY;
+            if (rangeX < 1e-9)
+            {
+                rangeX = 1;
+            }
+            if (rangeY < 1e-9)
+            {
+                rangeY = 1;
+            }
+
+            var scaleRatio = Math.Min(0.96 / rangeX, 0.96 / rangeY);
+            var offsetX = (1 - rangeX * scaleRatio) / 2;
+            var offsetY = (1 - rangeY * scaleRatio) / 2;
+            foreach (var point in all)
+            {
+                point.X2 = ((point.X2 - minX) * scaleRatio) + offsetX;
+                point.Y2 = ((point.Y2 - minY) * scaleRatio) + offsetY;
             }
         }
 

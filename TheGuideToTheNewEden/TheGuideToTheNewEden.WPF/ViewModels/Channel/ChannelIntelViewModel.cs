@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -131,20 +131,28 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         _listenerChannelDic.Clear();
         if (!Directory.Exists(_logPath))
         {
+            Core.Log.Warn($"频道预警：聊天日志目录不存在：{_logPath}");
             return;
         }
 
         await Task.Run(() =>
         {
-            var dic = GameLogHelper.GetChatChanelInfos(_logPath, Math.Max(1, GameLogsSettingService.EVELogsChannelDurationValue));
-            if (dic is null)
+            try
             {
-                return;
-            }
+                var dic = GameLogHelper.GetChatChanelInfos(_logPath, Math.Max(1, GameLogsSettingService.EVELogsChannelDurationValue));
+                if (dic is null)
+                {
+                    return;
+                }
 
-            foreach (var item in dic)
+                foreach (var item in dic)
+                {
+                    _listenerChannelDic.Add(item.Key, item.Value.Select(p => new ChatChanelInfoItem(p)).ToList());
+                }
+            }
+            catch (Exception ex)
             {
-                _listenerChannelDic.Add(item.Key, item.Value.Select(p => new ChatChanelInfoItem(p)).ToList());
+                Core.Log.Error(ex);
             }
         });
     }
@@ -172,7 +180,11 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
             return session;
         }
 
-        var created = new ChannelIntelSession(name, _listenerChannelDic[name], MapSolarSystems, NameDbs);
+        var created = new ChannelIntelSession(
+            name,
+            _listenerChannelDic.TryGetValue(name, out var channels) ? channels : [],
+            MapSolarSystems,
+            NameDbs);
         created.WindowStopRequested += Session_WindowStopRequested;
         _sessions.Add(name, created);
         return created;
@@ -354,6 +366,7 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         try
         {
             await LoadListenerChannelDicAsync();
+
             foreach (var item in _listenerChannelDic)
             {
                 if (Characters.FirstOrDefault(p => p.Name == item.Key) is null)

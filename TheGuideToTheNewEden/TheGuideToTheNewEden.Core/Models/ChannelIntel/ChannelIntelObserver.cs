@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -65,6 +65,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                             if (chatContent != null)
                             {
                                 chatContent.Listener = ChatChanelInfo.Listener;
+                                chatContent.ChannelName = ChatChanelInfo.ChannelName;
                                 TrySetIntelType(chatContent);
                                 newContents.Add(chatContent);
                             }
@@ -78,6 +79,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                 var result = AnalyzeContent(newContent);
                                 if (result != null)
                                 {
+                                    newContent.SolarSystemId = result.SolarSystemId;
+                                    newContent.SolarSystemName = result.SolarSystemName;
+                                    newContent.Jumps = result.Jumps;
                                     if(result.Jumps != -1)
                                     {
                                         newWarning.Add(result);

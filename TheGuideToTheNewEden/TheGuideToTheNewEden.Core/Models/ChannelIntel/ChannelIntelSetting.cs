@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -57,7 +57,39 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         /// </summary>
         public int IntelJumps
         {
-            get => intelJumps; set => SetProperty(ref intelJumps, value);
+            get => intelJumps;
+            set
+            {
+                if (SetProperty(ref intelJumps, value))
+                {
+                    OnPropertyChanged(nameof(IntelJumpsValue));
+                }
+            }
+        }
+
+        /// <summary>
+        /// WPF-UI NumberBox 的 Value 是 double?，直接绑定 int 可能不写回；
+        /// 这个代理保证编辑后立即同步到 <see cref="IntelJumps"/>。不进入 JSON。
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore]
+        public double? IntelJumpsValue
+        {
+            get => IntelJumps;
+            set
+            {
+                if (!value.HasValue || double.IsNaN(value.Value) || double.IsInfinity(value.Value))
+                {
+                    return;
+                }
+
+                var next = (int)Math.Clamp(Math.Round(value.Value), 0, 8);
+                if (IntelJumps != next)
+                {
+                    IntelJumps = next;
+                }
+
+                OnPropertyChanged(nameof(IntelJumpsValue));
+            }
         }
 
         private int overlapType;

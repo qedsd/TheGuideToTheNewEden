@@ -318,16 +318,12 @@
                                                                 Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                                 Text="{Binding Meta}"
                                                                 Visibility="{Binding HasMeta, Converter={StaticResource BoolToVis}}" />
-                                                            <StackPanel
-                                                                Margin="0,4,0,0"
-                                                                Visibility="{Binding HasGlossary, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Margin="0,4,0,0" Visibility="{Binding HasGlossary, Converter={StaticResource BoolToVis}}">
                                                                 <TextBlock
                                                                     FontSize="11"
                                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                                     Text="{DynamicResource TranslationPage_GlossaryHits}" />
-                                                                <controls:RichTextPresenter
-                                                                    Style="{StaticResource ChatRichTextSecondary}"
-                                                                    Text="{Binding GlossaryText, Mode=OneWay}" />
+                                                                <controls:RichTextPresenter Style="{StaticResource ChatRichTextSecondary}" Text="{Binding GlossaryText, Mode=OneWay}" />
                                                             </StackPanel>
                                                         </StackPanel>
 
@@ -496,9 +492,9 @@
 
                         <ui:TextBox
                             Grid.Row="1"
-                            Margin="0,8,0,0"
                             MinHeight="70"
                             MaxHeight="160"
+                            Margin="0,8,0,0"
                             AcceptsReturn="True"
                             PlaceholderText="{DynamicResource TranslationPage_Ai_Input_Tip}"
                             PreviewKeyDown="OnInputPreviewKeyDown"

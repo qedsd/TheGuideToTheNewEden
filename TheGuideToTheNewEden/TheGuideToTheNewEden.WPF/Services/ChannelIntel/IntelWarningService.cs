@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -93,7 +94,7 @@ public sealed class IntelWarningService
                 if (_windows.TryGetValue(listener, out var window))
                 {
                     window.ShowWindow();
-                    window.Intel(content);
+                    window.Intel(content, channel);
                 }
 
                 // 不对自己的发言播放声音
@@ -124,6 +125,29 @@ public sealed class IntelWarningService
         if (_windows.TryGetValue(listener, out var window))
         {
             window.UpdateHome(intelMap);
+        }
+    }
+
+    /// <summary>把频道原文追加到该角色的预警小窗（不要求打开预警设置页）。</summary>
+    public void ChatContent(string listener, IEnumerable<IntelChatContent> contents)
+    {
+        var list = contents?.ToList();
+        if (list is not { Count: > 0 })
+        {
+            return;
+        }
+
+        // 会话的文件监听在线程池回调；窗口字典与 UI 列表都必须在 UI 线程访问。
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(() => ChatContent(listener, list));
+            return;
+        }
+
+        if (_windows.TryGetValue(listener, out var window))
+        {
+            window.ChatContent(list);
         }
     }
 

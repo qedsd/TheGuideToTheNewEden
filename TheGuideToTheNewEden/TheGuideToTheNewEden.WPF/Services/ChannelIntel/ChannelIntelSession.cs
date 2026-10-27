@@ -297,7 +297,8 @@ public sealed class ChannelIntelSession
 
         if (ChatChanelInfos is not { Count: > 0 })
         {
-            return;
+            throw new Exception(
+                $"{Listener}: {FindString("ChannelIntelPage_Error_NoChatlogs")}（{GameLogsSettingService.GetChatlogsPath()}）");
         }
 
         _observers.Clear();
@@ -307,7 +308,11 @@ public sealed class ChannelIntelSession
             throw new Exception($"{Listener}: {FindString("ChannelIntelPage_Error_UnselectedChatChanel")}");
         }
 
-        _intelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+        var jumps = Math.Clamp(Setting.IntelJumps, 0, 8);
+        Core.Log.Info($"频道预警启动 {Listener}：位置 {Setting.LocationID}，{jumps} 跳");
+        _intelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(
+            Setting.LocationID,
+            jumps);
         Core.EVEHelpers.SolarSystemPosHelper.ResetXY(_intelMap.GetAllSolarSystem());
         if (!IntelWarningService.Current.Add(Setting, _intelMap))
         {
@@ -414,7 +419,11 @@ public sealed class ChannelIntelSession
     }
 
     private void Observer_OnContentUpdate(ChannelIntelObserver observer, IEnumerable<IntelChatContent> news)
-        => ChatContentEvent?.Invoke(this, news);
+    {
+        ChatContentEvent?.Invoke(this, news);
+        // 预警小窗也显示频道原文；即使没有触发预警的普通消息也要能看到。
+        IntelWarningService.Current.ChatContent(observer.ChatChanelInfo.Listener, news);
+    }
 
     private void Observer_LocalChanged(ChannelIntelObserver observer, IEnumerable<IntelChatContent> news)
     {

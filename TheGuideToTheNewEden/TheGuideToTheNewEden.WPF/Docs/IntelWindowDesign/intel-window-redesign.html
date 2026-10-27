@@ -1,0 +1,1484 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>频道预警小窗 · UI 重设计</title>
+<style>
+  :root {
+    --bg: #090c11;
+    --bg-2: #0d1118;
+    --panel: #141922;
+    --panel-2: #10151d;
+    --panel-3: #171d27;
+    --line: #28303d;
+    --line-soft: #1d2531;
+    --text: #e9eef6;
+    --muted: #8c97a8;
+    --muted-2: #667183;
+    --accent: #ff8a4c;
+    --accent-soft: rgba(255, 138, 76, .14);
+    --red: #ff6262;
+    --red-soft: rgba(255, 98, 98, .13);
+    --green: #46d39b;
+    --green-soft: rgba(70, 211, 155, .12);
+    --yellow: #f2c65c;
+    --yellow-soft: rgba(242, 198, 92, .12);
+    --blue: #66a9ff;
+    --blue-soft: rgba(102, 169, 255, .12);
+    --shadow: 0 24px 70px rgba(0, 0, 0, .55), 0 2px 8px rgba(0, 0, 0, .35);
+    --radius: 14px;
+    --font: "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 480px at 14% -10%, rgba(255, 138, 76, .10), transparent 62%),
+      radial-gradient(800px 500px at 100% 0%, rgba(102, 169, 255, .08), transparent 58%),
+      linear-gradient(180deg, #0b0f15 0%, var(--bg) 50%, #07090d 100%);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font-family: inherit; }
+  .page {
+    width: min(1480px, calc(100% - 44px));
+    margin: 0 auto;
+    padding: 34px 0 60px;
+  }
+
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 26px;
+  }
+  .eyebrow {
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  h1 {
+    margin: 8px 0 8px;
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+  }
+  .subtitle {
+    margin: 0;
+    max-width: 650px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .demo-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    min-width: 290px;
+  }
+  .demo-btn {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: rgba(20, 25, 34, .82);
+    color: var(--text);
+    padding: 8px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color .16s, background .16s, color .16s;
+  }
+  .demo-btn:hover { border-color: #465164; background: #1a212c; }
+  .demo-btn.primary {
+    border-color: rgba(255, 138, 76, .45);
+    background: var(--accent-soft);
+    color: #ffd0b8;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 720px) minmax(360px, 1fr);
+    gap: 38px;
+    align-items: start;
+  }
+
+  /* ======================= 窗口 ======================= */
+  .window {
+    width: 100%;
+    height: 690px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(56, 66, 82, .9);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(180deg, rgba(24, 29, 38, .97) 0%, rgba(15, 19, 26, .985) 68%, rgba(12, 15, 21, .99) 100%);
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: height .22s ease;
+  }
+  .window.map-only { height: 610px; }
+
+  .titlebar {
+    height: 42px;
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 0 14px;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(20, 25, 34, .78);
+    position: relative;
+  }
+  .brand {
+    width: 22px; height: 22px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    background: linear-gradient(145deg, #ff9b5f, #c957ff 58%, #5b8cff);
+    box-shadow: 0 0 18px rgba(255, 138, 76, .22);
+    flex: 0 0 auto;
+  }
+  .brand svg { width: 13px; height: 13px; display: block; }
+  .window-title {
+    font-size: 13px;
+    font-weight: 650;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .window-title .sep { color: var(--muted-2); margin: 0 6px; font-weight: 400; }
+  .window-title .role { color: #cdd7e6; font-weight: 500; }
+  .title-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 4px;
+  }
+  .title-spacer { flex: 1; }
+  .win-btn {
+    width: 32px; height: 28px;
+    border: 0; border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .win-btn:hover { background: rgba(255,255,255,.07); color: var(--text); }
+  .win-btn.close:hover { background: #c42b1c; color: #fff; }
+  .win-btn svg { width: 14px; height: 14px; }
+
+  .infobar {
+    height: 50px;
+    flex: 0 0 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(15, 20, 27, .52);
+  }
+  .local-block {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+  }
+  .local-label {
+    font-size: 10px;
+    color: var(--muted-2);
+    letter-spacing: .08em;
+  }
+  .local-name {
+    font-size: 16px;
+    font-weight: 750;
+    letter-spacing: .01em;
+    white-space: nowrap;
+  }
+  .range-chip, .count-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    white-space: nowrap;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: rgba(255,255,255,.025);
+  }
+  .count-chip.alert { color: #ffc2a5; border-color: rgba(255,138,76,.34); background: var(--accent-soft); }
+  .count-chip.green { color: #9af0cf; border-color: rgba(70,211,155,.28); background: var(--green-soft); }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(70,211,155,.45);
+    animation: live 2.2s infinite;
+  }
+  @keyframes live {
+    70% { box-shadow: 0 0 0 5px rgba(70,211,155,0); }
+    100% { box-shadow: 0 0 0 0 rgba(70,211,155,0); }
+  }
+  .info-spacer { flex: 1; }
+  .view-switch {
+    display: flex;
+    padding: 2px;
+    gap: 2px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(8, 11, 16, .5);
+  }
+  .view-switch button {
+    height: 24px; padding: 0 9px;
+    border: 0; border-radius: 6px;
+    background: transparent; color: var(--muted);
+    font-size: 11px; cursor: pointer;
+  }
+  .view-switch button.active {
+    background: #232b38; color: #eaf0fa;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  }
+  .channel-toggle {
+    height: 28px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255,255,255,.03);
+    color: #dce5f2;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .channel-toggle:hover { border-color: #465164; }
+  .channel-toggle .badge {
+    min-width: 18px; height: 18px; border-radius: 5px;
+    display: grid; place-items: center;
+    background: #2a3546; color: #cfe0f7;
+    font-size: 10px; font-weight: 700;
+  }
+
+  /* ======================= 地图 ======================= */
+  .map {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 250px;
+    overflow: hidden;
+    background:
+      radial-gradient(700px 360px at 42% 52%, rgba(71, 99, 136, .13), transparent 68%),
+      radial-gradient(500px 300px at 78% 20%, rgba(255, 138, 76, .055), transparent 66%),
+      linear-gradient(180deg, #0b1017 0%, #0a0e14 100%);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .map::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(77, 91, 110, .055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77, 91, 110, .055) 1px, transparent 1px);
+    background-size: 38px 38px;
+    mask-image: radial-gradient(ellipse at 50% 52%, #000 20%, transparent 76%);
+    pointer-events: none;
+  }
+  .map::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 55%, transparent 42%, rgba(5,7,10,.56) 100%);
+    pointer-events: none;
+  }
+  .map-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .scene { transition: transform .3s ease, opacity .3s; transform-origin: 50% 52%; }
+  .map[data-mode="full"] .scene { transform: translate(8px, 4px) scale(.82); }
+
+  .gate {
+    stroke: #303a49;
+    stroke-width: 1;
+    opacity: .76;
+  }
+  .gate.active { stroke: rgba(255, 138, 76, .42); stroke-width: 1.2; }
+  .gate.faint { stroke: #242d39; opacity: .55; }
+  .density-dot { fill: #66778e; opacity: .16; }
+  .map[data-mode="full"] .density-dot { opacity: .25; }
+  .node { cursor: pointer; }
+  .node .halo { fill: transparent; }
+  .node .dot {
+    stroke: rgba(7, 10, 15, .65);
+    stroke-width: 1.4;
+    transition: transform .16s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .node:hover .dot { transform: scale(1.4); }
+  .node.home .dot { fill: var(--green); }
+  .node.alert .dot { fill: var(--accent); }
+  .node.downgraded .dot { fill: var(--yellow); }
+  .node.kill .dot { fill: var(--red); }
+  .node.quiet .dot { fill: #59687e; }
+  .node.outlier .dot { fill: #c3a4ff; }
+  .node .ring {
+    fill: none;
+    stroke-width: 1.5;
+    opacity: .9;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ring 2.4s infinite;
+  }
+  .node.alert .ring { stroke: var(--accent); }
+  .node.kill .ring { stroke: var(--red); }
+  .node.downgraded .ring { stroke: var(--yellow); }
+  .node.home .ring { stroke: var(--green); animation-duration: 3.2s; }
+  @keyframes ring {
+    0% { transform: scale(.7); opacity: .95; }
+    70% { transform: scale(2.1); opacity: 0; }
+    100% { transform: scale(2.1); opacity: 0; }
+  }
+  .node .label {
+    fill: #dbe5f3;
+    font-size: 10px;
+    font-weight: 550;
+    paint-order: stroke;
+    stroke: rgba(8, 11, 16, .86);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+  .node.quiet .label { display: none; }
+  .node.outlier .label { fill: #d9c7ff; }
+  .node .ship {
+    fill: var(--accent);
+    stroke: rgba(8, 11, 16, .8);
+    stroke-width: .8;
+  }
+  .node.kill .ship { fill: var(--red); }
+  .node .jump-label {
+    fill: #a7b4c6;
+    font-size: 8.5px;
+    paint-order: stroke;
+    stroke: rgba(8, 11, 16, .82);
+    stroke-width: 2.5px;
+  }
+  .outlier-link {
+    stroke: rgba(195, 164, 255, .5);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+    fill: none;
+  }
+
+  .map-top {
+    position: absolute; top: 10px; left: 10px; right: 10px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; pointer-events: none;
+  }
+  .map-top > * { pointer-events: auto; }
+  .map-status {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 26px; padding: 0 9px;
+    border-radius: 7px;
+    border: 1px solid rgba(255, 138, 76, .24);
+    background: rgba(16, 20, 28, .8);
+    color: #ffc3a7;
+    font-size: 10.5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+  }
+  .map-status .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: live 1.8s infinite;
+  }
+  .map-status .muted { color: var(--muted); }
+  .zoom-group {
+    display: flex; align-items: center; gap: 1px;
+    height: 28px;
+    padding: 2px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(16, 20, 28, .84);
+  }
+  .zoom-group button {
+    width: 25px; height: 22px;
+    border: 0; border-radius: 5px;
+    background: transparent; color: var(--muted);
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .zoom-group button:hover { background: rgba(255,255,255,.06); color: var(--text); }
+  .zoom-group svg { width: 12px; height: 12px; }
+  .zoom-value { width: 38px; text-align: center; color: #c6d2e1; font-size: 10px; }
+
+  .legend {
+    position: absolute; left: 10px; bottom: 10px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid rgba(40, 48, 61, .8);
+    border-radius: 7px;
+    background: rgba(13, 17, 23, .74);
+    color: var(--muted);
+    font-size: 9.5px;
+    pointer-events: none;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .legend i.home { background: var(--green); }
+  .legend i.alert { background: var(--accent); }
+  .legend i.down { background: var(--yellow); }
+  .legend i.kill { background: var(--red); }
+  .legend i.quiet { background: #59687e; }
+  .map-hint {
+    position: absolute; right: 10px; bottom: 10px;
+    color: rgba(150, 164, 182, .72);
+    font-size: 9.5px;
+    padding: 5px 7px;
+    border-radius: 6px;
+    background: rgba(13, 17, 23, .58);
+    pointer-events: none;
+  }
+
+  .outlier-dock {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 122px;
+    padding: 9px 10px 9px 12px;
+    border: 1px solid rgba(195, 164, 255, .28);
+    border-left: 2px solid rgba(195, 164, 255, .72);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(33, 29, 45, .9), rgba(20, 19, 29, .9));
+    box-shadow: 0 8px 24px rgba(0,0,0,.22);
+    cursor: pointer;
+  }
+  .outlier-dock::before {
+    content: "";
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 46px;
+    border-top: 1px dashed rgba(195, 164, 255, .45);
+  }
+  .outlier-dock .kicker {
+    color: #bda8e8;
+    font-size: 9px;
+    letter-spacing: .08em;
+    margin-bottom: 3px;
+  }
+  .outlier-dock .name {
+    color: #eee8ff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .outlier-dock .name::before {
+    content: "";
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #c3a4ff;
+    box-shadow: 0 0 8px rgba(195,164,255,.6);
+  }
+  .outlier-dock .meta { color: #9385ad; font-size: 9.5px; margin-top: 3px; }
+  .outlier-dock .go { color: #c9b9ee; font-size: 9.5px; margin-top: 5px; }
+
+  .map[data-mode="full"] .outlier-dock { top: 46%; }
+
+  .map-tip {
+    position: absolute;
+    z-index: 6;
+    min-width: 176px;
+    max-width: 240px;
+    padding: 8px 10px;
+    border: 1px solid #354154;
+    border-radius: 8px;
+    background: rgba(14, 18, 25, .97);
+    box-shadow: 0 12px 30px rgba(0,0,0,.4);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity .12s, transform .12s;
+  }
+  .map-tip.show { opacity: 1; transform: translateY(0); }
+  .map-tip .t-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .map-tip .t-meta { color: var(--muted); font-size: 10px; line-height: 1.55; }
+  .map-tip .t-msg { color: #cdd8e7; font-size: 10.5px; line-height: 1.55; margin-top: 5px; }
+  .map-tip .t-kind { display: inline-block; margin-top: 5px; font-size: 9.5px; color: #ffc1a4; }
+
+  /* ======================= 频道抽屉 ======================= */
+  .drawer {
+    flex: 0 0 43px;
+    min-height: 43px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(13, 17, 24, .88);
+    border-top: 1px solid var(--line-soft);
+    transition: flex-basis .22s ease;
+    overflow: hidden;
+  }
+  .window.expanded .drawer { flex-basis: 224px; }
+  .window.map-only .drawer { display: none; }
+  .drawer-head {
+    height: 43px;
+    flex: 0 0 43px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+  }
+  .drawer-head:hover { background: rgba(255,255,255,.025); }
+  .drawer-head .ico { color: var(--blue); display: grid; place-items: center; width: 17px; height: 17px; flex: 0 0 auto; }
+  .drawer-head .ico svg { width: 15px; height: 15px; }
+  .drawer-title { font-size: 11.5px; font-weight: 650; white-space: nowrap; }
+  .drawer-count { color: var(--muted); font-size: 10px; white-space: nowrap; }
+  .latest-snippet {
+    flex: 1;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 10.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .latest-snippet strong { color: #d7e2f0; font-weight: 600; }
+  .drawer-chevron { color: var(--muted-2); transition: transform .22s; display: grid; place-items: center; }
+  .window.expanded .drawer-chevron { transform: rotate(180deg); }
+  .drawer-chevron svg { width: 12px; height: 12px; }
+
+  .drawer-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--line-soft);
+    padding: 0 12px 8px;
+  }
+  .window:not(.expanded) .drawer-body { display: none; }
+  .feed-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 34px;
+    flex: 0 0 34px;
+  }
+  .feed-tab {
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .feed-tab:hover { color: #d9e3f0; background: rgba(255,255,255,.04); }
+  .feed-tab.active {
+    color: #eaf2ff;
+    border-color: #344052;
+    background: #202938;
+  }
+  .feed-spacer { flex: 1; }
+  .feed-live {
+    color: var(--green);
+    font-size: 9.5px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .feed-live::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--green);
+  }
+  .feed-list {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding-right: 2px;
+  }
+  .feed-list::-webkit-scrollbar { width: 6px; }
+  .feed-list::-webkit-scrollbar-thumb { background: #333f50; border-radius: 99px; }
+  .msg-row {
+    display: grid;
+    grid-template-columns: 39px 43px minmax(0, 1fr) auto;
+    gap: 7px;
+    align-items: baseline;
+    padding: 5px 6px 5px 8px;
+    border-left: 2px solid transparent;
+    border-radius: 4px;
+    font-size: 10.5px;
+    line-height: 1.45;
+    color: #bdc9d9;
+  }
+  .msg-row + .msg-row { margin-top: 1px; }
+  .msg-row:hover { background: rgba(255,255,255,.035); }
+  .msg-row.alert { border-left-color: var(--accent); background: rgba(255,138,76,.045); }
+  .msg-row.kill { border-left-color: var(--red); background: rgba(255,98,98,.04); }
+  .msg-row.clear { border-left-color: var(--green); }
+  .msg-row.info { border-left-color: var(--blue); }
+  .msg-row.dim { opacity: .48; }
+  .msg-time { color: var(--muted-2); font-variant-numeric: tabular-nums; font-size: 9.5px; }
+  .msg-channel {
+    color: #9eb4cf;
+    background: #1b2431;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 9px;
+    padding: 1px 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .msg-main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .msg-main > span { display: block; }
+  .msg-system { color: #f0f5fc; font-weight: 650; }
+  .msg-system .jumps { color: var(--accent); font-weight: 600; margin-left: 4px; }
+  .msg-text { color: #aebccd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .msg-text b { color: #eaf2ff; font-weight: 700; }
+  .msg-meta { color: var(--muted-2); font-size: 9px; white-space: nowrap; }
+  .msg-meta .ship { color: #c7b18e; }
+  .msg-row.kill .msg-system { color: #ffc1c1; }
+
+  /* ======================= 底部操作 ======================= */
+  .actionbar {
+    height: 54px;
+    flex: 0 0 54px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: rgba(18, 23, 31, .94);
+    border-top: 1px solid var(--line-soft);
+  }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(255,255,255,.025);
+    color: #c4d0df;
+    display: grid; place-items: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .icon-btn:hover { background: #202936; border-color: #3b485c; color: #fff; }
+  .icon-btn.danger:hover { background: rgba(196,43,28,.22); border-color: rgba(255,98,98,.45); color: #ffd3d3; }
+  .icon-btn svg { width: 15px; height: 15px; }
+  .latest-card {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid rgba(255,138,76,.22);
+    border-radius: 7px;
+    background: linear-gradient(180deg, rgba(255,138,76,.075), rgba(255,138,76,.025));
+    cursor: pointer;
+    text-align: left;
+    overflow: hidden;
+  }
+  .latest-card:hover { border-color: rgba(255,138,76,.45); background: rgba(255,138,76,.10); }
+  .latest-card .l-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 10px rgba(255,138,76,.7);
+    flex: 0 0 auto;
+  }
+  .latest-card .l-main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .latest-card .l-title {
+    color: #ffd0b9; font-size: 10.5px; font-weight: 650;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .latest-card .l-sub {
+    color: #a89b91; font-size: 9.5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .latest-card .l-time { color: #8c7f76; font-size: 9px; margin-left: auto; white-space: nowrap; flex: 0 0 auto; }
+
+  .channel-fab {
+    position: absolute;
+    right: 14px;
+    bottom: 66px;
+    z-index: 8;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid rgba(102,169,255,.35);
+    border-radius: 8px;
+    background: rgba(18, 25, 36, .94);
+    color: #cfe2ff;
+    font-size: 10.5px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .channel-fab:hover { border-color: rgba(102,169,255,.65); }
+  .channel-fab .badge {
+    min-width: 18px; height: 18px; border-radius: 5px;
+    display: grid; place-items: center;
+    background: #26384f; color: #cfe0f7; font-size: 9.5px;
+  }
+  .window.map-only .channel-fab { display: flex; }
+
+  /* ======================= 设计说明 ======================= */
+  .notes {
+    position: sticky;
+    top: 28px;
+    padding: 0 0 30px;
+  }
+  .note-block {
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    background: rgba(17, 22, 30, .72);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .note-block h2 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    letter-spacing: -.01em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .note-block h2 .n {
+    width: 19px; height: 19px; border-radius: 50%;
+    display: inline-grid; place-items: center;
+    font-size: 10px; color: #ffd2bd;
+    background: rgba(255,138,76,.16);
+    border: 1px solid rgba(255,138,76,.3);
+    flex: 0 0 auto;
+  }
+  .note-block p, .note-block li {
+    color: #9eabba;
+    font-size: 11.5px;
+    line-height: 1.75;
+  }
+  .note-block p { margin: 0; }
+  .note-block ul { margin: 0; padding-left: 17px; }
+  .note-block li + li { margin-top: 3px; }
+  .note-block b { color: #dbe5f1; font-weight: 650; }
+  .note-block code {
+    font-family: Consolas, "SFMono-Regular", monospace;
+    font-size: 10.5px;
+    color: #ffc7a9;
+    background: rgba(255,138,76,.08);
+    border: 1px solid rgba(255,138,76,.12);
+    border-radius: 4px;
+    padding: 0 4px;
+  }
+  .note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 8px; }
+  .mini-card {
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    background: rgba(10, 14, 20, .55);
+    padding: 8px 9px;
+    font-size: 10.5px;
+    color: #a9b6c6;
+    line-height: 1.55;
+  }
+  .mini-card b { display: block; color: #e1eaf6; font-size: 11px; margin-bottom: 2px; }
+  .compare {
+    margin-top: 14px;
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    background: rgba(17, 22, 30, .6);
+    padding: 14px 16px;
+  }
+  .compare h3 { margin: 0 0 10px; font-size: 12.5px; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .compare-grid figure { margin: 0; }
+  .compare-grid figcaption { color: var(--muted); font-size: 10px; margin-top: 5px; line-height: 1.5; }
+  .compare-grid svg { width: 100%; height: 105px; border-radius: 7px; background: #0a0e14; border: 1px solid #202835; display: block; }
+  .compare-grid .old-core { fill: #59687e; opacity: .8; }
+  .compare-grid .old-far { fill: #c3a4ff; }
+  .compare-grid .new-core { fill: #6b7e96; opacity: .9; }
+  .compare-grid .new-alert { fill: #ff8a4c; }
+  .compare-grid .new-far { fill: #c3a4ff; }
+
+  .window-footnote {
+    margin-top: 10px;
+    color: var(--muted-2);
+    font-size: 10.5px;
+    line-height: 1.6;
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  @media (max-width: 1180px) {
+    .layout { grid-template-columns: 1fr; }
+    .notes { position: static; }
+    .window { max-width: 720px; margin: 0 auto; }
+    .window-footnote { max-width: 720px; margin: 10px auto 0; }
+  }
+  @media (max-width: 720px) {
+    .page { width: calc(100% - 22px); padding-top: 20px; }
+    .page-head { flex-direction: column; align-items: flex-start; }
+    .demo-controls { justify-content: flex-start; }
+    .window { height: 660px; }
+    .window.map-only { height: 590px; }
+    .infobar { gap: 7px; padding: 0 10px; }
+    .local-name { font-size: 14px; }
+    .range-chip { display: none; }
+    .title-meta .count-chip.green { display: none; }
+    .channel-toggle span:not(.badge) { display: none; }
+    .msg-row { grid-template-columns: 36px 40px minmax(0, 1fr); }
+    .msg-meta { display: none; }
+    .legend { gap: 6px; font-size: 9px; }
+    .outlier-dock { width: 108px; padding: 8px; }
+    .actionbar { gap: 6px; padding: 6px 8px; }
+    .icon-btn { width: 31px; height: 31px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-head">
+    <div>
+      <div class="eyebrow">TheGuideToTheNewEden · WPF · Channel Intel</div>
+      <h1>频道预警小窗 · UI 重设计</h1>
+      <p class="subtitle">
+        保留现有关闭停止、最新预警、清除、停止声音、自动解除/降级、必要时显示与位置记忆；
+        新增可展开的频道内容，并把默认星图从“全量坐标硬压缩”改为“情报优先显示 + 离群星系边缘化”；
+        <b>配置的 N 跳范围不裁剪</b>，所有范围内星系仍然绘制。
+      </p>
+    </div>
+    <div class="demo-controls" aria-label="设计稿状态切换">
+      <button class="demo-btn primary" id="btnDrawer" type="button">收起频道内容</button>
+      <button class="demo-btn" id="btnMapOnly" type="button">仅地图</button>
+      <button class="demo-btn" id="btnMode" type="button">切到全量</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section>
+      <!-- ================= 窗口预览 ================= -->
+      <div class="window expanded" id="window">
+        <!-- 标题栏 -->
+        <div class="titlebar">
+          <div class="brand" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 12.5 12 4l8 8.5-8 7.5-8-7.5Z" stroke="white" stroke-width="1.6" opacity=".9"/>
+              <circle cx="12" cy="11" r="2.2" fill="white" opacity=".95"/>
+            </svg>
+          </div>
+          <div class="window-title">
+            频道预警<span class="sep">·</span><span class="role">Arya E Stark</span>
+          </div>
+          <div class="title-meta">
+            <span class="count-chip alert"><span class="live-dot" style="background:var(--accent);animation:none"></span>预警 3</span>
+            <span class="count-chip green">声音 开</span>
+          </div>
+          <div class="title-spacer"></div>
+          <button class="win-btn" type="button" title="最小化">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+          <button class="win-btn close" type="button" title="关闭并停止该角色预警">
+            <svg viewBox="0 0 16 16" fill="none"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <!-- 信息条 -->
+        <div class="infobar">
+          <div class="local-block">
+            <span class="local-label">本地</span>
+            <span class="local-name">塔玛</span>
+            <span class="range-chip">5 跳范围</span>
+          </div>
+          <span class="count-chip alert">3 预警</span>
+          <span class="count-chip">1 降级</span>
+          <div class="info-spacer"></div>
+          <div class="view-switch" role="group" aria-label="地图视图">
+            <button class="active" type="button" data-view="focus">重点</button>
+            <button type="button" data-view="full">全量</button>
+          </div>
+          <button class="channel-toggle" id="channelToggle" type="button" title="展开 / 收起频道内容">
+            <span>频道内容</span>
+            <span class="badge">12</span>
+          </button>
+        </div>
+
+        <!-- 地图 -->
+        <div class="map" id="map" data-mode="focus">
+          <svg class="map-svg" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid slice" aria-label="预警星图">
+            <g class="scene" id="scene">
+              <ellipse cx="344" cy="200" rx="188" ry="122" fill="none" stroke="#2a3443" stroke-width="1" stroke-dasharray="4 9" opacity=".48"/>
+              <g id="density"></g>
+              <g id="gates"></g>
+              <g id="nodes"></g>
+            </g>
+          </svg>
+
+          <div class="map-top">
+            <div class="map-status">
+              <span class="pulse"></span>
+              <span id="mapStatusText">3 个预警 · 1 个已降级 · 5 跳全量</span>
+              <span class="muted">· 12 秒前更新</span>
+            </div>
+            <div class="zoom-group" aria-label="地图缩放">
+              <button type="button" title="缩小"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+              <span class="zoom-value">100%</span>
+              <button type="button" title="放大"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3v10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+              <button type="button" title="适应屏幕"><svg viewBox="0 0 16 16" fill="none"><path d="M3 6V3h3M10 3h3v3M13 10v3h-3M6 13H3v-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><i class="home"></i>本地</span>
+            <span><i class="alert"></i>预警</span>
+            <span><i class="down"></i>已降级</span>
+            <span><i class="kill"></i>击杀</span>
+            <span><i class="quiet"></i>安静星系</span>
+          </div>
+          <div class="map-hint">拖拽平移 · 滚轮缩放 · 右键解除单个星系</div>
+
+          <div class="outlier-dock" id="outlierDock" title="几何位置远离视野中心的预警星系：贴边显示，跳数仍属于当前 N 跳范围">
+            <div class="kicker">几何离群</div>
+            <div class="name">席拉</div>
+            <div class="meta">4 跳 · 无畏 + 后勤</div>
+            <div class="go">点击定位到边缘 →</div>
+          </div>
+
+          <div class="map-tip" id="mapTip">
+            <div class="t-name" id="tipName">塔玛</div>
+            <div class="t-meta" id="tipMeta">3 跳 · 战列舰 + 2 后勤</div>
+            <div class="t-msg" id="tipMsg">朝向 欧加仑，速度较快</div>
+            <div class="t-kind" id="tipKind">预警 · 本地频道</div>
+          </div>
+
+          <button class="channel-fab" id="channelFab" type="button">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10v7H7l-3 2v-2H3v-7Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            频道内容 <span class="badge">12</span>
+          </button>
+        </div>
+
+        <!-- 频道抽屉 -->
+        <div class="drawer" id="drawer">
+          <button class="drawer-head" id="drawerHead" type="button" aria-expanded="true">
+            <span class="ico">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10v7H7l-3 2v-2H3v-7Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="drawer-title">频道内容</span>
+            <span class="drawer-count">12 条</span>
+            <span class="latest-snippet"><strong>塔玛 3 跳</strong> · 战列舰 + 2 后勤 朝向 欧加仑</span>
+            <span class="drawer-chevron">
+              <svg viewBox="0 0 16 16" fill="none"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+
+          <div class="drawer-body">
+            <div class="feed-tabs" role="tablist" aria-label="频道内容过滤">
+              <button class="feed-tab active" type="button" data-filter="all">全部</button>
+              <button class="feed-tab" type="button" data-filter="alert">预警</button>
+              <button class="feed-tab" type="button" data-filter="clear">解除</button>
+              <button class="feed-tab" type="button" data-filter="kill">击杀</button>
+              <span class="feed-spacer"></span>
+              <span class="feed-live">实时</span>
+            </div>
+
+            <div class="feed-list" id="feedList">
+              <div class="msg-row alert" data-kind="alert">
+                <span class="msg-time">14:02:11</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">塔玛<span class="jumps">3 跳</span></span>
+                  <span class="msg-text"><b>战列舰</b> + 2 后勤 朝向 欧加仑</span>
+                </span>
+                <span class="msg-meta"><span class="ship">战列舰</span></span>
+              </div>
+              <div class="msg-row alert" data-kind="alert">
+                <span class="msg-time">14:02:08</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">欧加仑<span class="jumps">3 跳</span></span>
+                  <span class="msg-text"><b>截击</b> + 侦察 高速接近</span>
+                </span>
+                <span class="msg-meta"><span class="ship">截击</span></span>
+              </div>
+              <div class="msg-row alert" data-kind="alert">
+                <span class="msg-time">14:01:57</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">姆沃腊<span class="jumps">4 跳</span></span>
+                  <span class="msg-text"><b>重突</b> + 隐轰 集结</span>
+                </span>
+                <span class="msg-meta"><span class="ship">重突</span></span>
+              </div>
+              <div class="msg-row clear" data-kind="clear">
+                <span class="msg-time">14:01:42</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">兰瑟<span class="jumps">5 跳</span></span>
+                  <span class="msg-text">已解除</span>
+                </span>
+                <span class="msg-meta">清除</span>
+              </div>
+              <div class="msg-row alert" data-kind="alert">
+                <span class="msg-time">14:01:30</span>
+                <span class="msg-channel">联盟</span>
+                <span class="msg-main">
+                  <span class="msg-system">席拉<span class="jumps">4 跳</span></span>
+                  <span class="msg-text"><b>无畏</b> + 后勤 出现在几何边缘</span>
+                </span>
+                <span class="msg-meta"><span class="ship">无畏</span></span>
+              </div>
+              <div class="msg-row kill" data-kind="kill">
+                <span class="msg-time">14:01:18</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">伊格贝<span class="jumps">2 跳</span></span>
+                  <span class="msg-text">ZKB：<b>3 击杀</b> · 战列舰</span>
+                </span>
+                <span class="msg-meta">ZKB</span>
+              </div>
+              <div class="msg-row clear" data-kind="clear">
+                <span class="msg-time">14:00:55</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">塔玛<span class="jumps">3 跳</span></span>
+                  <span class="msg-text">侦察 离开</span>
+                </span>
+                <span class="msg-meta">清除</span>
+              </div>
+              <div class="msg-row info" data-kind="info">
+                <span class="msg-time">14:00:40</span>
+                <span class="msg-channel">本地</span>
+                <span class="msg-main">
+                  <span class="msg-system">频道置顶</span>
+                  <span class="msg-text">情报频道规则：报点请带星系名与跳数</span>
+                </span>
+                <span class="msg-meta">MOTD</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部操作 -->
+        <div class="actionbar">
+          <button class="icon-btn danger" type="button" title="清除所有预警并停止声音">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 5h10M6 5V3h4v2M5 5l.6 8h4.8l.6-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="latest-card" type="button" title="前置 EVE 游戏窗口">
+            <span class="l-dot"></span>
+            <span class="l-main">
+              <span class="l-title">最新 · 塔玛 3 跳 · 战列舰 + 2 后勤</span>
+              <span class="l-sub">朝向 欧加仑 · 点击前置游戏</span>
+            </span>
+            <span class="l-time">2s</span>
+          </button>
+          <button class="icon-btn" type="button" title="停止报警声音">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 6h2l3-2.5v9L5 10H3V6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="m10.5 6.5 3 3m0-3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-btn" type="button" title="预警设置">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M8 5.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z" stroke="currentColor" stroke-width="1.2"/><path d="M8 2.2v1.4M8 12.4v1.4M2.2 8h1.4M12.4 8h1.4M3.9 3.9l1 1M11.1 11.1l1 1M12.1 3.9l-1 1M4.9 11.1l-1 1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="window-footnote">
+        <span>落地默认 640×620（展开抽屉 210），保留可缩放、位置与不透明度记忆。</span>
+        <span>本稿星图为布局示意；实际渲染包含 IntelJumps 内全部星系，视觉分层不删减范围。</span>
+      </div>
+
+      <!-- 旧/新布局对比 -->
+      <div class="compare">
+        <h3>星图布局：问题与处理</h3>
+        <div class="compare-grid">
+          <figure>
+            <svg viewBox="0 0 260 105" role="img" aria-label="旧布局示意">
+              <rect width="260" height="105" fill="#0a0e14"/>
+              <g class="old-core">
+                <circle cx="86" cy="65" r="15" opacity=".9"/>
+                <circle cx="102" cy="58" r="11" opacity=".75"/>
+                <circle cx="82" cy="82" r="12" opacity=".7"/>
+                <circle cx="111" cy="73" r="9" opacity=".7"/>
+                <circle cx="97" cy="86" r="8" opacity=".65"/>
+                <circle cx="119" cy="64" r="6" opacity=".6"/>
+              </g>
+              <circle class="old-far" cx="221" cy="24" r="4"/>
+              <text x="86" y="66" text-anchor="middle" fill="#10151d" font-size="8" font-weight="700">核心</text>
+              <text x="221" y="39" text-anchor="middle" fill="#b9a5e8" font-size="8">离群星系</text>
+              <path d="M128 58 210 29" stroke="#5b4b7c" stroke-width=".8" stroke-dasharray="2 3" fill="none"/>
+              <text x="8" y="14" fill="#7d8998" font-size="8">旧：全量 min/max</text>
+            </svg>
+            <figcaption>一个远处星系把 X/Y 范围拉大，核心区被压成一小团，节点重叠。</figcaption>
+          </figure>
+          <figure>
+            <svg viewBox="0 0 260 105" role="img" aria-label="新布局示意">
+              <rect width="260" height="105" fill="#0a0e14"/>
+              <g class="new-core">
+                <circle cx="96" cy="48" r="21" opacity=".9"/>
+                <circle cx="123" cy="38" r="15" opacity=".8"/>
+                <circle cx="82" cy="73" r="18" opacity=".8"/>
+                <circle cx="133" cy="69" r="14" opacity=".8"/>
+                <circle cx="105" cy="88" r="12" opacity=".75"/>
+                <circle cx="152" cy="55" r="9" opacity=".7"/>
+                <circle cx="66" cy="47" r="9" opacity=".65"/>
+              </g>
+              <circle class="new-alert" cx="123" cy="38" r="4"/>
+              <circle class="new-alert" cx="82" cy="73" r="4"/>
+              <rect x="193" y="20" width="56" height="20" rx="5" fill="#221d31" stroke="#655487" stroke-width=".8"/>
+              <text x="221" y="33" text-anchor="middle" fill="#d8c8f5" font-size="7">席拉 · 38 跳</text>
+              <path d="M174 35 192 30" stroke="#7f6aa0" stroke-width=".8" stroke-dasharray="2 3" fill="none"/>
+              <text x="8" y="14" fill="#7d8998" font-size="8">新：2–98% 分位 + 边缘外推</text>
+            </svg>
+            <figcaption>核心按 2–98% 视口适配、离群点贴边；<b>数据范围仍是配置的 N 跳</b>，没有删减。</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 说明栏 ================= -->
+    <aside class="notes">
+      <div class="note-block">
+        <h2><span class="n">1</span>信息层级</h2>
+        <p>
+          标题栏只保留品牌、角色名、预警/声音状态和窗口按钮；第二行固定显示<b>本地星系、跳数范围、预警数量</b>，
+          再把“重点 / 全量”和“频道内容”收进右侧，避免旧版底部一条按钮挤在一起。
+        </p>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">2</span>频道内容抽屉</h2>
+        <ul>
+          <li>默认<b>收起</b>：只保留一条最新消息摘要，地图占满，满足“只看地图报警”。</li>
+          <li>点标题或频道按钮展开：<b>地图 + 可滚动消息列表</b>；再点收起回到地图优先。</li>
+          <li>“仅地图”会完全隐藏抽屉，只留右下角“频道 12”浮动按钮，随时可恢复。</li>
+          <li>列表按 <b>全部 / 预警 / 解除 / 击杀</b> 过滤；预警橙、解除绿、击杀红、MOTD 蓝，和地图节点颜色一致。</li>
+          <li>消息来自 <code>ChannelIntelSession.ChatContentEvent</code>（已有事件），在窗口里追加到 <code>IntelChatContent</code> 列表，最多保留 200 条；ZKB 行单独标记。</li>
+        </ul>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">3</span>地图：范围不变 + 视觉分层</h2>
+        <p>
+          <b>配置的 N 跳范围是唯一数据范围</b>：范围内所有星系都绘制，绝不因为视图切换或“重点显示”删掉任何星系。
+          默认不再直接用全星图 <code>X2/Y2</code> 的 min/max，而是取范围内星系的 <b>2%–98% 分位</b>适配视口；
+          超出分位的尾部映射到外侧 <b>4% 边带</b>做软压缩（保留方向与先后顺序），而不是全部 clamp 成一条边。
+        </p>
+        <ul>
+          <li><b>所有 N 跳内星系</b>：安静星系画成低透明度密度点与细星门线，仍然可悬停、可右键、可点击。</li>
+          <li><b>高亮与标签</b>：只给本地、预警、已降级、击杀以及它们的直接相邻星系；这是<b>标注优先级</b>，不是范围过滤。</li>
+          <li><b>几何离群点</b>：跳数仍在 N 跳内、但 2D 坐标远离视野中心的星系，贴边显示为“几何离群”卡片；它仍属于当前范围，点击可定位。多个离群按方向分槽，最多展示 3 张，其余聚合为 <code>+N</code>。</li>
+          <li>滚轮缩放 / 拖拽平移只改视口，不改变数据范围；缩回或切“全量”后全部 N 跳星系仍在。</li>
+          <li>本稿星图是布局示意，实际渲染会包含 <code>IntelJumps</code> 内全部星系；安静星系只是降低亮度，不是删除。</li>
+        </ul>
+        <div class="mini-card" style="margin-top:9px;border-color:rgba(255,138,76,.25);background:rgba(255,138,76,.055)">
+          <b>范围红线</b>
+          <code>IntelJumps=N</code> 决定地图数据集合；视觉分层、缩放手势、离群点贴边都不允许减少 N 跳内的星系。
+        </div>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">4</span>操作栏</h2>
+        <p>
+          保留旧版三个动作：<b>清除预警、最新预警（前置游戏）、停止声音</b>；
+          中间的最新预警卡显示星系、跳数、舰船与时间，点击仍前置 EVE；右侧增加“设置”入口，
+          不必再回主页面找预警配置。
+        </p>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">5</span>状态与不打扰</h2>
+        <ul>
+          <li>“必要时显示”全部解除后延迟隐藏、隐藏即停声的现有逻辑保持不变。</li>
+          <li>自动解除 / 自动降级仍由 10 秒定时器驱动；降级节点变黄，解除后从地图与消息列表同步移除。</li>
+          <li>窗口尺寸、位置、不透明度继续写回 <code>IntelSettingService</code>；新增“频道内容默认状态”与“地图视图模式”两项状态。</li>
+        </ul>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">6</span>WPF 落地建议</h2>
+        <ul>
+          <li><code>IntelWindow.xaml</code> 改成标题 / 信息条 / 地图 / 抽屉 / 操作栏五段式；抽屉用 <code>Grid</code> 行高切换，不引入新窗口。</li>
+          <li><code>IntelMapView</code> 增加 <code>ViewportMode</code>、<code>HighlightIds</code>、<code>OutlierIds</code>；<b>数据集合始终是 <code>IntelJumps</code> 的 BFS 结果</b>，<code>HighlightIds</code> 只影响标签/线条亮度，不能用于过滤。把 <code>ResetXY</code> 改成分位视口适配，全量坐标用于密度点。</li>
+          <li>频道列表复用 <code>IntelChatContent</code> 与现有颜色语义；抽屉标题的“最新摘要”直接取最后一条预警。</li>
+          <li>地图控件不新增第三方依赖；保持 500–640 宽度下可用，展开抽屉时只压缩地图高度，不改窗口宽度。</li>
+        </ul>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">7</span>保留功能清单</h2>
+        <div class="note-grid">
+          <div class="mini-card"><b>窗口</b>置顶、最小化、关闭即停止该角色预警</div>
+          <div class="mini-card"><b>显示</b>必要时显示、全部解除后 30 秒隐藏、隐藏停声</div>
+          <div class="mini-card"><b>提醒</b>每跳声音、循环、音量、系统通知</div>
+          <div class="mini-card"><b>清理</b>自动解除、自动降级、右键解除单个星系</div>
+          <div class="mini-card"><b>内容</b>本地频道 / ZKB 击杀 / 最新预警前置游戏</div>
+          <div class="mini-card"><b>记忆</b>位置、尺寸、不透明度、频道抽屉状态</div>
+        </div>
+      </div>
+
+      <div class="note-block">
+        <h2><span class="n">8</span>需要确认的两点</h2>
+        <p>
+          ① 默认窗口尺寸是否接受 <b>640×560（仅地图）/ 640×700（展开频道）</b>？
+          ② 频道抽屉默认收起还是记住上次状态？设计稿默认收起，展开状态按角色记忆。
+        </p>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const windowEl = $("#window");
+  const mapEl = $("#map");
+  const drawerHead = $("#drawerHead");
+  const channelToggle = $("#channelToggle");
+  const btnDrawer = $("#btnDrawer");
+  const btnMapOnly = $("#btnMapOnly");
+  const btnMode = $("#btnMode");
+  const channelFab = $("#channelFab");
+  const mapTip = $("#mapTip");
+
+  function setDrawer(expanded) {
+    windowEl.classList.remove("map-only");
+    windowEl.classList.toggle("expanded", expanded);
+    drawerHead?.setAttribute("aria-expanded", String(expanded));
+    if (btnDrawer) btnDrawer.textContent = expanded ? "收起频道内容" : "展开频道内容";
+  }
+
+  function setMapOnly(mapOnly) {
+    windowEl.classList.toggle("map-only", mapOnly);
+    if (mapOnly) {
+      windowEl.classList.remove("expanded");
+      if (btnDrawer) btnDrawer.textContent = "展开频道内容";
+    } else {
+      setDrawer(true);
+    }
+  }
+
+  function setMapMode(mode) {
+    mapEl.dataset.mode = mode;
+    $$(".view-switch button").forEach(btn => btn.classList.toggle("active", btn.dataset.view === mode));
+    if (btnMode) btnMode.textContent = mode === "focus" ? "切到全量" : "切到重点";
+    $("#mapStatusText").textContent = mode === "focus" ? "3 个预警 · 1 个已降级 · 5 跳全量" : "全量 · 5 跳范围 · 2–98% 适配";
+    const dock = $("#outlierDock");
+    dock.style.opacity = mode === "full" ? ".82" : "1";
+  }
+
+  drawerHead?.addEventListener("click", () => {
+    if (windowEl.classList.contains("map-only")) {
+      setMapOnly(false);
+    } else {
+      setDrawer(!windowEl.classList.contains("expanded"));
+    }
+  });
+  channelToggle?.addEventListener("click", () => {
+    if (windowEl.classList.contains("map-only")) {
+      setMapOnly(false);
+    } else {
+      setDrawer(!windowEl.classList.contains("expanded"));
+    }
+  });
+  channelFab?.addEventListener("click", () => setMapOnly(false));
+  btnDrawer?.addEventListener("click", () => {
+    if (windowEl.classList.contains("map-only")) setMapOnly(false);
+    else setDrawer(!windowEl.classList.contains("expanded"));
+  });
+  btnMapOnly?.addEventListener("click", () => setMapOnly(!windowEl.classList.contains("map-only")));
+  btnMode?.addEventListener("click", () => setMapMode(mapEl.dataset.mode === "focus" ? "full" : "focus"));
+  $$(".view-switch button").forEach(btn => btn.addEventListener("click", () => setMapMode(btn.dataset.view)));
+
+  // 频道过滤
+  $$(".feed-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      $$(".feed-tab").forEach(t => t.classList.toggle("active", t === tab));
+      const filter = tab.dataset.filter;
+      $$("#feedList .msg-row").forEach(row => {
+        row.style.display = (filter === "all" || row.dataset.kind === filter) ? "" : "none";
+      });
+    });
+  });
+
+  // ================= 星图数据 =================
+  const systems = {
+    home:   { name: "塔玛",     x: 318, y: 186, type: "home",     jumps: 0,   label: true,  msg: "本地星系 · 战列舰 + 2 后勤", time: "刚刚" },
+    og:     { name: "欧加仑",   x: 378, y: 148, type: "alert",    jumps: 3,   label: true,  msg: "截击 + 侦察 高速接近", kind: "预警" },
+    mw:     { name: "姆沃腊",   x: 274, y: 142, type: "alert",    jumps: 4,   label: true,  msg: "重突 + 隐轰 集结", kind: "预警" },
+    lan:    { name: "兰瑟",     x: 346, y: 235, type: "downgraded", jumps: 5, label: true,  msg: "已解除", kind: "已降级" },
+    yig:    { name: "伊格贝",   x: 404, y: 208, type: "kill",     jumps: 2,   label: true,  msg: "ZKB：3 击杀 · 战列舰", kind: "击杀" },
+    hak:    { name: "哈克",     x: 303, y: 166, type: "quiet",    jumps: 1,   label: false },
+    kamo:   { name: "卡莫",     x: 368, y: 184, type: "quiet",    jumps: 1,   label: false },
+    ous:    { name: "欧斯蒙",   x: 418, y: 166, type: "quiet",    jumps: 2,   label: false },
+    tur:    { name: "图尔",     x: 328, y: 214, type: "quiet",    jumps: 1,   label: false },
+    ul:     { name: "乌尔",     x: 374, y: 224, type: "quiet",    jumps: 2,   label: false },
+    hek:    { name: "赫克",     x: 252, y: 170, type: "quiet",    jumps: 2,   label: false },
+    am:     { name: "阿姆",     x: 292, y: 238, type: "quiet",    jumps: 2,   label: false },
+    hil:    { name: "希尔",     x: 412, y: 136, type: "quiet",    jumps: 2,   label: false },
+    mia:    { name: "米亚尔加", x: 448, y: 196, type: "quiet",    jumps: 3,   label: false },
+    ota:    { name: "奥塔",     x: 232, y: 196, type: "quiet",    jumps: 3,   label: false },
+    vera:   { name: "维拉",     x: 422, y: 232, type: "quiet",    jumps: 3,   label: false },
+    kani:   { name: "卡尼",     x: 344, y: 124, type: "quiet",    jumps: 2,   label: false },
+    sar:    { name: "萨然",     x: 462, y: 166, type: "quiet",    jumps: 3,   label: false },
+    dit:    { name: "底特",     x: 216, y: 222, type: "quiet",    jumps: 4,   label: false },
+    yime:   { name: "伊梅",     x: 274, y: 262, type: "quiet",    jumps: 4,   label: false },
+    sou:    { name: "摄魂",     x: 442, y: 252, type: "quiet",    jumps: 4,   label: false },
+    hei:    { name: "黑渊",     x: 478, y: 218, type: "quiet",    jumps: 4,   label: false },
+    jing:   { name: "静寂",     x: 316, y: 272, type: "quiet",    jumps: 3,   label: false },
+    wei:    { name: "维纳尔",   x: 356, y: 288, type: "quiet",    jumps: 4,   label: false },
+    kac:    { name: "卡彻",     x: 398, y: 282, type: "quiet",    jumps: 4,   label: false },
+    teb:    { name: "特布特",   x: 204, y: 186, type: "quiet",    jumps: 3,   label: false },
+    out:    { name: "席拉",     x: 574, y: 92,  type: "outlier",  jumps: 4,   label: true,  msg: "无畏 + 后勤 出现在几何边缘", kind: "几何离群" }
+  };
+
+  const gates = [
+    ["home","hak"],["hak","og"],["og","mw"],["mw","hek"],["hek","ota"],["ota","dit"],
+    ["dit","yime"],["yime","am"],["am","tur"],["tur","home"],["tur","ul"],["ul","kamo"],
+    ["kamo","og"],["kamo","ous"],["ous","hil"],["hil","sar"],["sar","mia"],["mia","vera"],
+    ["vera","sou"],["sou","hei"],["hei","sar"],["home","kamo"],["home","tur"],["og","ous"],
+    ["mw","kani"],["kani","hil"],["yig","vera"],["yig","kamo"],["lan","ul"],["lan","am"],
+    ["jing","wei"],["wei","kac"],["kac","sou"],["jing","am"],["kac","vera"],["teb","hek"],
+    ["teb","ota"],["mia","hei"],["sar","ous"]
+  ];
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const gatesGroup = $("#gates");
+  const nodesGroup = $("#nodes");
+  const densityGroup = $("#density");
+
+  // 背景密度点：固定种子，避免每次刷新布局跳动
+  let seed = 20261027;
+  function rand() {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  }
+  for (let i = 0; i < 150; i++) {
+    const c = document.createElementNS(svgNS, "circle");
+    const x = 38 + rand() * 420;
+    const y = 48 + rand() * 230;
+    c.setAttribute("cx", x.toFixed(1));
+    c.setAttribute("cy", y.toFixed(1));
+    c.setAttribute("r", (rand() * 1.1 + .45).toFixed(2));
+    c.setAttribute("class", "density-dot");
+    densityGroup.appendChild(c);
+  }
+
+  for (const [a, b] of gates) {
+    const s1 = systems[a], s2 = systems[b];
+    if (!s1 || !s2) continue;
+    const line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1", s1.x);
+    line.setAttribute("y1", s1.y);
+    line.setAttribute("x2", s2.x);
+    line.setAttribute("y2", s2.y);
+    const active = [s1, s2].some(s => ["home","alert","kill","downgraded"].includes(s.type));
+    line.setAttribute("class", "gate" + (active ? " active" : " faint"));
+    gatesGroup.appendChild(line);
+  }
+
+  const outlierLink = document.createElementNS(svgNS, "path");
+  outlierLink.setAttribute("d", "M 500 118 Q 540 96 574 92");
+  outlierLink.setAttribute("class", "outlier-link");
+  gatesGroup.appendChild(outlierLink);
+
+  for (const [id, s] of Object.entries(systems)) {
+    const g = document.createElementNS(svgNS, "g");
+    g.setAttribute("class", `node ${s.type}`);
+    g.setAttribute("transform", `translate(${s.x} ${s.y})`);
+    g.dataset.name = s.name;
+    g.dataset.jumps = String(s.jumps || 0);
+    g.dataset.msg = s.msg || "";
+    g.dataset.kind = s.kind || (s.type === "home" ? "本地" : "安静");
+    g.dataset.time = s.time || "刚刚";
+
+    if (["home","alert","kill","downgraded"].includes(s.type)) {
+      const ring = document.createElementNS(svgNS, "circle");
+      ring.setAttribute("class", "ring");
+      ring.setAttribute("r", s.type === "home" ? 10 : 9);
+      g.appendChild(ring);
+    }
+
+    const halo = document.createElementNS(svgNS, "circle");
+    halo.setAttribute("class", "halo");
+    halo.setAttribute("r", 15);
+    g.appendChild(halo);
+
+    const dot = document.createElementNS(svgNS, "circle");
+    dot.setAttribute("class", "dot");
+    dot.setAttribute("r", s.type === "home" ? 5.2 : s.type === "alert" || s.type === "kill" ? 4.4 : 3.2);
+    g.appendChild(dot);
+
+    if (s.type === "alert" || s.type === "kill") {
+      const ship = document.createElementNS(svgNS, "path");
+      ship.setAttribute("class", "ship");
+      ship.setAttribute("d", "M 8 -10 l 5 3 -5 3 -1.4 -3 Z");
+      g.appendChild(ship);
+    }
+
+    if (s.label) {
+      const label = document.createElementNS(svgNS, "text");
+      label.setAttribute("class", "label");
+      label.setAttribute("x", s.type === "outlier" ? 8 : 8);
+      label.setAttribute("y", s.type === "outlier" ? -10 : -11);
+      label.textContent = s.name;
+      g.appendChild(label);
+      if (s.jumps) {
+        const jl = document.createElementNS(svgNS, "text");
+        jl.setAttribute("class", "jump-label");
+        jl.setAttribute("x", 8);
+        jl.setAttribute("y", 10);
+        jl.textContent = `${s.jumps} 跳`;
+        g.appendChild(jl);
+      }
+    }
+
+    g.addEventListener("mouseenter", event => showTip(event, s));
+    g.addEventListener("mousemove", event => moveTip(event));
+    g.addEventListener("mouseleave", hideTip);
+    nodesGroup.appendChild(g);
+  }
+
+  function showTip(event, s) {
+    $("#tipName").textContent = s.name;
+    $("#tipMeta").textContent = `${s.jumps || 0} 跳${s.msg ? " · " + s.msg : ""}`;
+    $("#tipMsg").textContent = s.type === "outlier" ? "几何位置远离视野中心，已贴边显示；跳数仍在配置的 5 跳范围内" : (s.msg || "暂无新的预警内容");
+    $("#tipKind").textContent = `${s.kind || "安静"} · 本地频道`;
+    mapTip.classList.add("show");
+    moveTip(event);
+  }
+  function moveTip(event) {
+    const rect = mapEl.getBoundingClientRect();
+    let x = event.clientX - rect.left + 14;
+    let y = event.clientY - rect.top + 14;
+    x = Math.min(x, rect.width - 248);
+    y = Math.min(y, rect.height - 100);
+    mapTip.style.left = `${Math.max(8, x)}px`;
+    mapTip.style.top = `${Math.max(8, y)}px`;
+  }
+  function hideTip() { mapTip.classList.remove("show"); }
+
+  $("#outlierDock")?.addEventListener("click", () => {
+    const outlierNode = $$(".node.outlier")[0];
+    if (outlierNode) {
+      outlierNode.querySelector(".dot")?.classList.add("flash");
+      const s = systems.out;
+      showTip({ clientX: 520, clientY: 160 }, s);
+    }
+  });
+
+  // 初始状态：展开频道，方便预览全部设计；用户可以立即收起
+  setDrawer(true);
+  setMapMode("focus");
+
+  // 静态截图 / 分享用：?state=map-only、?state=collapsed、?state=full
+  const params = new URLSearchParams(location.search);
+  const state = params.get("state");
+  if (state === "map-only") setMapOnly(true);
+  if (state === "collapsed") setDrawer(false);
+  if (state === "full" || params.get("mode") === "full") setMapMode("full");
+</script>
+</body>
+</html>
