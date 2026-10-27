@@ -50,6 +50,13 @@ public interface IPreviewWindow : IDisposable
 
     void SetSize(int width, int height);
 
+    /// <summary>
+    /// 立即完成"待处理"的尺寸校正（自动排列前调用，保证读到的尺寸就是最终尺寸，
+    /// 避免排完以后 80ms 的校正定时器再把某个窗口改大/改小造成重叠）。
+    /// 不锁比例的窗口实现应为空操作。
+    /// </summary>
+    void FlushLayout();
+
     Int32Rect GetRect();
 
     /// <summary>把该客户端切到前台。</summary>

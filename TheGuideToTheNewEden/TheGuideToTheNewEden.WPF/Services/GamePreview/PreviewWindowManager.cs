@@ -203,16 +203,20 @@ public sealed class PreviewWindowManager : IDisposable
             return false;
         }
 
-        // 比例未知（源窗口最小化/已关闭）时用 0 表示"别动高度"，而不是拿一个坏比例去压扁窗口
-        var aspect = windows[0].SourceAspect;
-        if (aspect > 0)
-        {
-            height = Math.Max(1, (int)Math.Round(width / aspect));
-        }
-
         foreach (var window in windows)
         {
-            window.SetSize(width, height);
+            var targetHeight = height;
+            if (window.Setting.LockAspectRatio)
+            {
+                // 锁比例时按各自的游戏画面比例反算高度；比例未知（源窗口最小化/已关闭）时保留传入高度
+                var aspect = window.SourceAspect;
+                if (aspect > 0)
+                {
+                    targetHeight = Math.Max(1, (int)Math.Round(width / aspect));
+                }
+            }
+
+            window.SetSize(width, targetHeight);
             Persist(window);
         }
 
@@ -228,13 +232,25 @@ public sealed class PreviewWindowManager : IDisposable
             return false;
         }
 
+        // 先把各窗口待处理的尺寸校正立即跑完，再读矩形参与排布：
+        // 否则排完 80ms 后校正定时器可能改变某个窗口尺寸，表现为"刚排好又重叠"。
+        foreach (var window in visible)
+        {
+            window.FlushLayout();
+        }
+
         var anchorWindow = (anchor is null ? null : Find(anchor));
         if (anchorWindow is null || !anchorWindow.Setting.ShowPreviewWindow)
         {
             anchorWindow = visible[0];
         }
 
-        var others = visible.Where(w => !ReferenceEquals(w, anchorWindow)).ToList();
+        // 排列顺序跟"切换顺序"保持一致；找不到的（标题变了/旧配置）排到最后，避免每次随机
+        var others = visible
+            .Where(w => !ReferenceEquals(w, anchorWindow))
+            .OrderBy(w => GetProcessOrderIndex(w.Process.WindowTitle))
+            .ThenBy(w => w.Setting.Name, StringComparer.Ordinal)
+            .ToList();
         if (others.Count == 0)
         {
             return false;
@@ -257,7 +273,8 @@ public sealed class PreviewWindowManager : IDisposable
             .ToList();
 
         var positions = PreviewLayoutCalculator.Compute(anchorRect, sizes, workArea, mode, align, span, count);
-        for (var i = 0; i < others.Count; i++)
+        var placeCount = Math.Min(others.Count, positions.Count);
+        for (var i = 0; i < placeCount; i++)
         {
             others[i].SetPosition(positions[i].X, positions[i].Y);
             Persist(others[i]);
@@ -285,6 +302,7 @@ public sealed class PreviewWindowManager : IDisposable
             item.RespondGlobalHotKey = source.RespondGlobalHotKey;
             item.ShowPreviewWindow = source.ShowPreviewWindow;
             item.ShowPreviewWindowMode = source.ShowPreviewWindowMode;
+            item.LockAspectRatio = source.LockAspectRatio;
 
             if (item.ProcessInfo is not { } process)
             {
@@ -326,11 +344,15 @@ public sealed class PreviewWindowManager : IDisposable
         var width = setting.WinW > 0 ? setting.WinW : 533;
         var height = setting.WinH > 0 ? setting.WinH : 300;
 
-        // 比例未知（源窗口最小化/已关闭）时保留存档高度，不要拿坏比例去压扁
-        var aspect = window.SourceAspect;
-        if (aspect > 0)
+        // 锁比例时高度交给源画面比例重算；关掉锁比例后按存档的原尺寸恢复。
+        if (setting.LockAspectRatio)
         {
-            height = Math.Max(1, (int)Math.Round(width / aspect));
+            // 比例未知（源窗口最小化/已关闭）时保留存档高度，不要拿坏比例去压扁
+            var aspect = window.SourceAspect;
+            if (aspect > 0)
+            {
+                height = Math.Max(1, (int)Math.Round(width / aspect));
+            }
         }
 
         window.SetSize(width, height);
@@ -376,6 +398,13 @@ public sealed class PreviewWindowManager : IDisposable
     }
 
     // ---------- 工具 ----------
+
+    /// <summary>窗口标题在"切换顺序"里的位置；不在列表里的排到最后。</summary>
+    private int GetProcessOrderIndex(string title)
+    {
+        var index = _global.ProcessOrder?.IndexOf(title) ?? -1;
+        return index >= 0 ? index : int.MaxValue;
+    }
 
     private IEnumerable<IPreviewWindow> VisibleWindows()
         => _running.Values.Where(w => w.Setting.ShowPreviewWindow && w.IsShowing);

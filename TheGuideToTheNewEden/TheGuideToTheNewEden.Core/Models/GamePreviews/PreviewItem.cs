@@ -57,6 +57,17 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref winH, value);
         }
 
+        private bool lockAspectRatio = true;
+        /// <summary>
+        /// 拖拽边框 / 滚轮缩放预览窗口时是否锁定画面区域的横纵比例（默认锁住）。
+        /// 关掉后窗口可自由改成任意宽高比，游戏画面按原比例居中留边。
+        /// </summary>
+        public bool LockAspectRatio
+        {
+            get => lockAspectRatio;
+            set => SetProperty(ref lockAspectRatio, value);
+        }
+
         private string hotKey;
         /// <summary>
         /// 快捷键

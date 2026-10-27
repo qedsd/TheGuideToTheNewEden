@@ -9307,6 +9307,165 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
 - 未填入真实凭据，因此未做真实授权链路回归；逻辑分支（内置为空、文件缺失）与编译期常量检查已通过代码审阅。
 - 安全边界：编译进程序集的 ClientSecret 可被逆向提取，这是“开箱即用”的固有代价；不要提交真实值到公开仓库。
 
+## 阶段 191：角色授权登录补全等待提示（2026-10-27）
+
+> 用户反馈：浏览器完成授权后，软件没有显示「正在校验授权」的等待提示；网络慢时毫无反应，过一段时间才出现新角色。
+
+### 191.1 登录阶段回调
+
+- `Services/Characters/CharacterAuthService.cs` 新增 `CharacterLoginStage`（`WaitingForBrowser` / `Verifying`）与
+  `LoginAsync(CancellationToken, Action<CharacterLoginStage>?)`：
+  - 打开授权页前触发 `WaitingForBrowser`；
+  - 收到浏览器回调、开始 `VerifyAuthorization` 换令牌前触发 `Verifying`；
+  - 用户取消时直接返回 `null` 且 `LastFailure = null`，不再把"取消"伪装成超时错误。
+- 说明：换令牌走 EVEStandard 的 `VerifyAuthorization`，没有可传入的取消令牌，因此"校验授权"阶段不可中断；
+  界面在该阶段**移除取消按钮**，避免点了取消仍继续校验并最终成功造成误解。
+
+### 191.2 角色卡片页等待态（页内遮罩）
+
+- `Views/Pages/Characters/CharacterCardsPage.xaml` 在页面根 `Grid` 里新增页内等待层 `LoginWaitMask`
+  （`Panel.ZIndex=100`，只盖住角色页内容，不挡左侧导航/标题栏）：
+  - 背景用 `ApplicationBackgroundBrush` + `Opacity=0.94` 的 `Border` 铺底（接近实色，不再透出下面的卡片）；
+  - 中央卡片含 `SpinnerIcon` 旋转指示、文案、可选的「取消」按钮；
+  - 遮罩 `Background=Transparent` 保证拦截页面点击。
+- `Views/Pages/Characters/CharacterCardsPage.xaml.cs` 的 `AddCharacterAsync`：
+  - 点「登录 EVE 账号 / 添加角色」后立即 `ShowLoginWaiting("正在等待浏览器授权…", 允许取消)`；
+  - 阶段回调切到「正在校验授权…」并隐藏取消按钮；
+  - `finally` 统一 `HideLoginWaiting()`；
+  - **不再调用 `PageNotifyService.ShowWaiting`**（登录不再使用全局遮罩）；
+  - 成功时右下角通知「登录成功: 角色名」；
+  - 用户取消时通知「已取消授权」，不弹错误框；
+  - 其他异常兜底 `PageNotifyService.Error("登录失败: …")`，不再只写日志。
+- 新增中英语言键：`Characters.WaitingForBrowser` / `Characters.VerifyingAuthorization` / `Characters.AuthorizationCanceled`。
+- 顺带把全局 `Controls/WaitingOverlay.xaml` 的底色从 `SmokeFillColorDefaultBrush` 改为
+  `ApplicationBackgroundBrush` + `Opacity=0.94`（仍保留 `Grid Background=Transparent` 拦截点击），
+  其它仍在用全局等待的页面观感一致、不再过度透明。
+
+### 191.3 文档
+
+- `Manuals/zh-CN/characters.md`：登录步骤补等待提示、校验阶段、取消行为与成功通知。
+- `Manuals/zh-CN/troubleshooting.md`：补「浏览器停在 login.eveonline.com/account/logoff 并报 Bad Request - Request Too Long / HTTP 400 请求头过大」的排查行（清 eveonline Cookie / 无痕 / 换浏览器），并说明此时应用停在「正在等待浏览器授权…」可取消。
+
+### 191.4 验证
+
+- `dotnet build` WPF：**0 错误**（56 个既有警告，无新增）。
+- `AssistantProbe manuals`：**58 PASS / 0 FAIL**；`AssistantProbe ui`：**121 PASS / 0 FAIL**（页面 XAML 与语言键）。
+- 真实浏览器授权链路需要人工在浏览器里完成，未在自动化探针中覆盖；等待/取消/成功/失败四个分支已按代码路径核对。
+
+## 阶段 192：行星开发把「CCU / 行星位」改成更直白的字段名（2026-10-27）
+
+> 用户反馈：行星功能界面里显示「CCU」「行星位」这样的名字有点奇怪。
+
+### 192.1 字段名与悬停说明
+
+- `Views/Pages/IndustryPlanetaryPage.xaml`：
+  - 两处硬编码 `CCU`（「我的殖民地」指标、「角色与产能」列头）改为语言键；
+  - 列头与默认参数、角色行 NumberBox、「我的殖民地」指标统一补 `ToolTip`。
+- 中文语言键：
+  - `IndustryPlanetary_Ccu` = **指挥中心等级**（替换 `CCU`）；
+  - `IndustryPlanetary_PlanetSlots` = **殖民地上限**（替换 `行星位`）；
+  - 新增 `IndustryPlanetary_CcuTip`：说明它对应「指挥中心升级理论」0–5 级，决定单殖民地 CPU/PG 容量；
+  - 新增 `IndustryPlanetary_PlanetSlotsTip`：说明它对应「行星统筹管理学」等级 +1，最多 1–6 个殖民地；
+  - `IndustryPlanetary_DefaultCcu` / `DefaultPlanetSlots` / `AutoCharacterTip` / `Summary` 与两条容量警告同步改用新名字。
+- 英文语言键同步为 `Command center level` / `Colony limit`，并补齐对应 ToolTip。
+- 内部字段（`CcuLevel` / `MaxPlanets` / 设置 JSON 键）保持不变，只改显示文案，避免旧配置失效。
+
+### 192.2 文档
+
+- `Manuals/zh-CN/industry/planetary.md`：操作步骤、字段口径、我的殖民地、保存内容与「殖民地上限不足」提示全部改用新名字；
+  并在操作步骤里注明两者对应的游戏技能（指挥中心升级理论 / 行星统筹管理学）。
+
+### 192.3 验证
+
+- `dotnet build` WPF：**0 错误**（56 个既有警告，无新增）。
+- 中英语言键各 **3225** 个、无重复且完全对齐。
+- 界面视觉效果由用户自行确认（本次未截图）。
+
+## 阶段 193：POCO 税改用游戏官方中文名「海关办公室税率」（2026-10-27）
+
+> 用户确认：POCO 就是海关税，中文界面要显示游戏官方中文名。
+
+- 术语：**POCO = Player Owned Customs Office = 玩家自建海关办公室**；本地 SDE 中文库（`Local/zh.db`）
+  里该建筑类型名为 **海关办公室**（ID 2233），技能描述也用「海关办公室的进出口税率」。因此中文统一用
+  **「海关办公室税率」**，比笼统的「海关税」更贴近游戏内名词，同时不再直接显示英文缩写 POCO。
+- 中文语言键（值改动，键名不变，避免影响绑定/Tooltip）：
+  - `IndustryPage_PlanetTax`：`行星出口税（POCO）%` → **`海关办公室税率 %`**；
+  - `IndustryPage_PlanetTaxTip`：改为「行星产物经由海关办公室进出口时收取的税率…」；
+  - `IndustryPlanetary_PocoTax`：`POCO 税 %` → **`海关办公室税率 %`**；
+  - `IndustryPlanetary_PriceTaxTip`：进口按**海关办公室税率**。
+- 英文语言键同步按官方英文名调整：`Customs office tax %`；Tooltip 保留 `(POCO)` 便于对照。
+- `IndustryPlanetaryPage` 的该标签补 `ToolTip` 指向 `IndustryPage_PlanetTaxTip`（悬停解释这是玩家海关办公室的进出口税）。
+- 手册：`industry/planetary.md` 的「价格与税」步骤、`industry/plan.md` 的「行星」限制条改为「海关办公室税率（POCO 出口税）」。
+- 验证：WPF `dotnet build` **0 错误**（56 个既有警告）；`AssistantProbe manuals` **58/0**、`ui` **121/0**。
+
+## 阶段 194：多开预览「锁定画面比例」开关 + 自动排列全面修正（2026-10-27）
+
+> 用户要求：① 多开功能选中项设置加一个开关，控制是否锁住小窗口横竖比例，默认锁住；关掉后拖拽改尺寸不限制比例。
+> ② 全局设置里的自动对齐几种模式都有 bug（方向不对；排完后角色名叠加窗留在原地；排完后窗口重叠），需要全面检查。
+
+### 194.1 每项「锁定画面比例」
+
+- `Core/Models/GamePreviews/PreviewItem.cs`：新增 `LockAspectRatio`（bool，默认 `true`），随
+  `GamePreviewSetting.json` 的每一项保存；旧配置缺该字段时按默认值 `true` 读取。
+- `Views/Pages/GamePreviewPage.xaml`：在「选中项设置 → 窗口 → 显示样式」下新增开关
+  「锁定画面比例」，并带 ToolTip；新增中英语言键 `GamePreviewPage_LockAspectRatio` / `...Tip`。
+- `Views/Windows/GamePreviewWindow`：
+  - `WM_SIZING` 的比例反算、`CorrectSizeToAspect`、`EnsureAspectSizeIfNeeded` 在开关关闭时全部短路；
+  - 滚轮缩放改为"宽高各自乘倍率"，不再按游戏画面比例反算另一条边；
+  - 新增 `FlushLayout()`（立即跑完防抖中的比例校正），供自动排列在测量前调用。
+- `PreviewWindowManager`：`ApplyToAll` 复制该开关；`ApplyUniformSize` 与 `RestorePosition` 仅在锁比例时反算高度；
+  `GamePreviewViewModel.CopyVisualSettings`（角色切换沿用设置）同步复制。
+- 效果：默认行为与旧版一致（画面永远按游戏比例、无黑边）；关掉后窗口可拖成任意宽高比，
+  游戏画面会**拉伸铺满整个窗口**（不再按源比例留边），也不会被 80ms 后的校正拉回去。
+
+### 194.2 自动排列（全面重写纯计算 + 修管理端）
+
+- `Services/GamePreview/PreviewLayoutCalculator.cs` 重写：
+  - **方向语义统一**：0 向左（锚点左侧）/ 1 向右 / 2 向下 / 3 向上；本地化文案同步改成
+    「向左排（从锚点左侧开始）」等，不再出现文字与行为相反；
+  - **向左/向上时减去窗口自身宽/高**：旧实现把"锚点边缘"当窗口左上角，第一列/行直接压住锚点，
+    是"排完就重叠"的主因；
+  - **修掉横向夹取用错工作区底边**的旧 bug；
+  - 先按主方向切行/列（考虑间隔、每行上限、工作区边界），再在交叉轴逐行铺开；
+  - 每行整体夹进工作区（保持行内间距），只有工作区根本放不下这么多窗口时才可能出现重叠；
+  - 锚点贴边导致选中方向一个窗口都放不下时，自动翻到反方向，避免把窗口硬夹回屏幕边缘压住锚点。
+- `PreviewWindowManager.ApplyAutoLayout`：
+  - 排布前对全部可见窗口 `FlushLayout()`，避免 80ms 后比例校正又改变尺寸、造成"刚排好又重叠"；
+  - 非锚点窗口按 `PreviewSetting.ProcessOrder`（切换顺序）排序，排列结果可预期；
+  - 位置数量做防御性 `Math.Min`。
+- 角色名叠加窗：`GamePreviewWindow.SetPosition` 现在移动后立即刷新叠加窗位置。
+  自动排列/恢复位置只调 `SetPosition`，旧实现不刷新叠加窗 → "画面移了、名字还在原地"。
+- 「每行/列最多」文案改为「每行/列最多（不含锚点）」，与实际算法口径一致。
+
+### 194.3 文档
+
+- `Manuals/zh-CN/game-preview.md`：补锁定画面比例开关、关闭后的表现、统一尺寸/恢复位置/自动排列的新口径，
+  并说明自动排列以选中项为锚点、贴边会自动翻方向、角色名叠加窗会跟随移动。
+
+### 194.4 验证
+
+- `dotnet build` WPF：**0 错误**（既有警告无新增）。
+- 中英语言键各 **3227** 个、无重复且完全对齐。
+- 纯计算用例（临时工程直接编译 `PreviewLayoutCalculator.cs`，四窗 200×150、锚点 400×300、工作区 1920×1080）：
+  - 四个方向 + 起始/居中/末尾对齐组合全部**不压锚点、窗口两两不重叠**；
+  - 锚点贴左/贴上时选"向左/向上"会自动翻到右侧/下方，不再压住锚点；
+  - 每行上限 2、六窗用例按两列铺开且不重叠；
+  - 只有"5 个窗口塞进 1000×700 工作区"这类容量不足用例仍会重叠（物理上排不下，属预期）。
+- 实机界面（真实 EVE 客户端 + 浮窗拖拽）由用户自行确认；本次未截图。
+
+## 阶段 195：解锁画面比例后，游戏画面也跟随拉伸铺满（2026-10-27）
+
+> 用户反馈：关闭「锁定画面比例」后，窗口尺寸不锁了，但里面的游戏画面仍保持原比例（四周留边）。
+> 需要画面本身也不锁比例、直接拉伸填满窗口。
+
+- `Views/Windows/GamePreviewWindow.UpdateThumbnailDestination`：
+  - 锁比例（默认）→ 仍走 `PreviewGeometry.FitAspect`，按游戏客户区比例居中摆放；
+  - 不锁比例 → DWM 缩略图目标矩形直接等于整个画面区，源画面被拉伸铺满（不再 letterbox / pillarbox）。
+- 同步更新：选中项「锁定画面比例」的 ToolTip、`Manuals/zh-CN/game-preview.md` 的说明与字段口径。
+- 页面内「选中进程」的实时预览（`SelectionPreview`）不跟该开关联动，保持按源比例留边（它的容器本来就跟源画面同比例）。
+- 验证：WPF `dotnet build` **0 错误**；实际拉伸效果由用户用运行中的客户端确认。
+  关键判断只有一句：**锁的是"窗口与画面同时按游戏比例"；解开后窗口与画面都自由，画面铺满**。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

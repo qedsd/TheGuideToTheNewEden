@@ -653,8 +653,8 @@
             <Grid Margin="0,4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="78" />
-                    <ColumnDefinition Width="78" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="120" />
                 </Grid.ColumnDefinitions>
                 <CheckBox
                     VerticalAlignment="Center"
@@ -663,16 +663,20 @@
                 <ui:NumberBox
                     Grid.Column="1"
                     Margin="4,0"
+                    ClearButtonEnabled="False"
                     Maximum="5"
                     Minimum="0"
                     SmallChange="1"
+                    ToolTip="{DynamicResource IndustryPlanetary_CcuTip}"
                     Value="{Binding CcuLevel, Mode=TwoWay}" />
                 <ui:NumberBox
                     Grid.Column="2"
                     Margin="4,0"
+                    ClearButtonEnabled="False"
                     Maximum="6"
                     Minimum="1"
                     SmallChange="1"
+                    ToolTip="{DynamicResource IndustryPlanetary_PlanetSlotsTip}"
                     Value="{Binding MaxPlanets, Mode=TwoWay}" />
             </Grid>
         </DataTemplate>
@@ -904,7 +908,10 @@
                                             </Border>
                                             <UniformGrid Margin="0,6,0,0" Columns="4">
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="CCU" />
+                                                    <TextBlock
+                                                        Style="{StaticResource PlanetaryMetricLabel}"
+                                                        Text="{DynamicResource IndustryPlanetary_Ccu}"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_CcuTip}" />
                                                     <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding SelectedLiveColony.UpgradeLevel}" />
                                                 </StackPanel>
                                                 <StackPanel>
@@ -938,286 +945,286 @@
                                             DataContext="{Binding SelectedLiveColony}">
                                             <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Capacity}">
                                                 <StackPanel Margin="0,10,0,0">
-                                                <controls:CardControl
-                                                    Padding="14,8"
-                                                    CornerRadius="8"
-                                                    Visibility="{Binding HasExtractorCapacity, Converter={StaticResource BoolToVisibility}}">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                                Symbol="ArrowDownload24" />
+                                                    <controls:CardControl
+                                                        Padding="14,8"
+                                                        CornerRadius="8"
+                                                        Visibility="{Binding HasExtractorCapacity, Converter={StaticResource BoolToVisibility}}">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                                    Symbol="ArrowDownload24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_ExtractionCapacity}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
+                                                        <StackPanel>
                                                             <TextBlock
-                                                                Margin="7,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_ExtractionCapacity}" />
+                                                                FontSize="9.5"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{Binding ExtractorCapacityHint}"
+                                                                ToolTip="{DynamicResource IndustryPlanetary_ExtractionCapacityTip}" />
+                                                            <uc:PlanetaryCapacityChart
+                                                                Height="150"
+                                                                Margin="0,4,0,0"
+                                                                Series="{Binding ExtractorCapacitySeries}" />
                                                         </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <StackPanel>
-                                                        <TextBlock
-                                                            FontSize="9.5"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{Binding ExtractorCapacityHint}"
-                                                            ToolTip="{DynamicResource IndustryPlanetary_ExtractionCapacityTip}" />
-                                                        <uc:PlanetaryCapacityChart
-                                                            Height="150"
-                                                            Margin="0,4,0,0"
-                                                            Series="{Binding ExtractorCapacitySeries}" />
-                                                    </StackPanel>
-                                                </controls:CardControl>
-                                                <controls:CardControl
-                                                    Margin="0,8,0,0"
-                                                    Padding="14,8"
-                                                    CornerRadius="8"
-                                                    ToolTip="{Binding FactoryCapacityHint}"
-                                                    Visibility="{Binding HasFactoryCapacity, Converter={StaticResource BoolToVisibility}}">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                Symbol="Settings24" />
+                                                    </controls:CardControl>
+                                                    <controls:CardControl
+                                                        Margin="0,8,0,0"
+                                                        Padding="14,8"
+                                                        CornerRadius="8"
+                                                        ToolTip="{Binding FactoryCapacityHint}"
+                                                        Visibility="{Binding HasFactoryCapacity, Converter={StaticResource BoolToVisibility}}">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                                    Symbol="Settings24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_FactoryTheoreticalOutput}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
+                                                        <uc:PlanetaryCapacityChart Height="150" Series="{Binding FactoryCapacitySeries}" />
+                                                    </controls:CardControl>
+                                                </StackPanel>
+                                            </TabItem>
+                                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Facilities}">
+                                                <Grid Margin="0,10,0,0">
+                                                    <controls:CardControl Padding="14,8" CornerRadius="8">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                                    Symbol="Settings24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_Tab_Facilities}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
+                                                        <Grid>
+                                                            <ListBox
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                ItemContainerStyle="{StaticResource PlanetaryListItem}"
+                                                                ItemTemplate="{StaticResource PlanetaryFacilityNodeTemplate}"
+                                                                ItemsSource="{Binding Facilities}"
+                                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                                ScrollViewer.VerticalScrollBarVisibility="Auto" />
                                                             <TextBlock
-                                                                Margin="7,0,0,0"
+                                                                Margin="10"
+                                                                HorizontalAlignment="Center"
                                                                 VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_FactoryTheoreticalOutput}" />
-                                                        </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <uc:PlanetaryCapacityChart Height="150" Series="{Binding FactoryCapacitySeries}" />
-                                                </controls:CardControl>
-                                            </StackPanel>
-                                        </TabItem>
-                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Facilities}">
-                                            <Grid Margin="0,10,0,0">
-                                                <controls:CardControl Padding="14,8" CornerRadius="8">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                Symbol="Settings24" />
-                                                            <TextBlock
-                                                                Margin="7,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_Tab_Facilities}" />
-                                                        </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <Grid>
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{DynamicResource IndustryPlanetary_NoFacilities}"
+                                                                Visibility="{Binding HasNoFacilities, Converter={StaticResource BoolToVisibility}}" />
+                                                        </Grid>
+                                                    </controls:CardControl>
+                                                </Grid>
+                                            </TabItem>
+                                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Production}">
+                                                <Grid Margin="0,10,0,0">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="*" />
+                                                    </Grid.RowDefinitions>
+                                                    <controls:CardControl
+                                                        Grid.Row="0"
+                                                        Padding="14,8"
+                                                        CornerRadius="8"
+                                                        Visibility="{Binding HasExtractors, Converter={StaticResource BoolToVisibility}}">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                                    Symbol="ArrowDownload24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_RoleExtractor}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
+                                                        <ListBox
+                                                            MaxHeight="240"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            ItemContainerStyle="{StaticResource PlanetaryListItem}"
+                                                            ItemTemplate="{StaticResource PlanetaryLiveExtractorTemplate}"
+                                                            ItemsSource="{Binding Extractors}" />
+                                                    </controls:CardControl>
+
+                                                    <controls:CardControl
+                                                        Grid.Row="1"
+                                                        Margin="0,8,0,0"
+                                                        Padding="14,8"
+                                                        CornerRadius="8"
+                                                        Visibility="{Binding HasFactories, Converter={StaticResource BoolToVisibility}}">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                                    Symbol="Settings24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_FactoryGroups}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
                                                         <ListBox
                                                             Background="Transparent"
                                                             BorderThickness="0"
                                                             ItemContainerStyle="{StaticResource PlanetaryListItem}"
-                                                            ItemTemplate="{StaticResource PlanetaryFacilityNodeTemplate}"
-                                                            ItemsSource="{Binding Facilities}"
-                                                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                                            ScrollViewer.VerticalScrollBarVisibility="Auto" />
-                                                        <TextBlock
-                                                            Margin="10"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="11"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{DynamicResource IndustryPlanetary_NoFacilities}"
-                                                            Visibility="{Binding HasNoFacilities, Converter={StaticResource BoolToVisibility}}" />
-                                                    </Grid>
-                                                </controls:CardControl>
-                                            </Grid>
-                                        </TabItem>
-                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Production}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
-                                                </Grid.RowDefinitions>
-                                                <controls:CardControl
-                                                    Grid.Row="0"
-                                                    Padding="14,8"
-                                                    CornerRadius="8"
-                                                    Visibility="{Binding HasExtractors, Converter={StaticResource BoolToVisibility}}">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
+                                                            ItemTemplate="{StaticResource PlanetaryLiveFactoryTemplate}"
+                                                            ItemsSource="{Binding Factories}" />
+                                                    </controls:CardControl>
+                                                </Grid>
+                                            </TabItem>
+                                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_StockLogistics}">
+                                                <Grid Margin="0,10,0,0">
+                                                    <controls:CardControl Padding="14,8" CornerRadius="8">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                                    Symbol="Database24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_Tab_StockLogistics}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="48" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{DynamicResource IndustryPlanetary_Stock}" />
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                FontSize="10.5"
+                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                Text="{Binding StorageText}"
+                                                                TextWrapping="Wrap" />
+                                                            <TextBlock
+                                                                Grid.Row="1"
+                                                                Margin="0,4,0,0"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{DynamicResource IndustryPlanetary_Import}" />
+                                                            <TextBlock
+                                                                Grid.Row="1"
+                                                                Grid.Column="1"
+                                                                Margin="0,4,0,0"
+                                                                FontSize="10.5"
+                                                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                                Text="{Binding ImportsText}"
+                                                                TextWrapping="Wrap" />
+                                                            <TextBlock
+                                                                Grid.Row="2"
+                                                                Margin="0,4,0,0"
+                                                                FontSize="10"
+                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                Text="{DynamicResource IndustryPlanetary_Export}" />
+                                                            <TextBlock
+                                                                Grid.Row="2"
+                                                                Grid.Column="1"
+                                                                Margin="0,4,0,0"
+                                                                FontSize="10.5"
                                                                 Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                                Symbol="ArrowDownload24" />
-                                                            <TextBlock
-                                                                Margin="7,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_RoleExtractor}" />
-                                                        </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <ListBox
-                                                        MaxHeight="240"
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        ItemContainerStyle="{StaticResource PlanetaryListItem}"
-                                                        ItemTemplate="{StaticResource PlanetaryLiveExtractorTemplate}"
-                                                        ItemsSource="{Binding Extractors}" />
-                                                </controls:CardControl>
-
-                                                <controls:CardControl
-                                                    Grid.Row="1"
-                                                    Margin="0,8,0,0"
-                                                    Padding="14,8"
-                                                    CornerRadius="8"
-                                                    Visibility="{Binding HasFactories, Converter={StaticResource BoolToVisibility}}">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                Symbol="Settings24" />
-                                                            <TextBlock
-                                                                Margin="7,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_FactoryGroups}" />
-                                                        </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <ListBox
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        ItemContainerStyle="{StaticResource PlanetaryListItem}"
-                                                        ItemTemplate="{StaticResource PlanetaryLiveFactoryTemplate}"
-                                                        ItemsSource="{Binding Factories}" />
-                                                </controls:CardControl>
-                                            </Grid>
-                                        </TabItem>
-                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_StockLogistics}">
-                                            <Grid Margin="0,10,0,0">
-                                                <controls:CardControl Padding="14,8" CornerRadius="8">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                Symbol="Database24" />
-                                                            <TextBlock
-                                                                Margin="7,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_Tab_StockLogistics}" />
-                                                        </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="48" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto" />
-                                                            <RowDefinition Height="Auto" />
-                                                            <RowDefinition Height="Auto" />
-                                                        </Grid.RowDefinitions>
-                                                        <TextBlock
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{DynamicResource IndustryPlanetary_Stock}" />
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            FontSize="10.5"
-                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Text="{Binding StorageText}"
-                                                            TextWrapping="Wrap" />
-                                                        <TextBlock
-                                                            Grid.Row="1"
-                                                            Margin="0,4,0,0"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{DynamicResource IndustryPlanetary_Import}" />
-                                                        <TextBlock
-                                                            Grid.Row="1"
-                                                            Grid.Column="1"
-                                                            Margin="0,4,0,0"
-                                                            FontSize="10.5"
-                                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                                            Text="{Binding ImportsText}"
-                                                            TextWrapping="Wrap" />
-                                                        <TextBlock
-                                                            Grid.Row="2"
-                                                            Margin="0,4,0,0"
-                                                            FontSize="10"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{DynamicResource IndustryPlanetary_Export}" />
-                                                        <TextBlock
-                                                            Grid.Row="2"
-                                                            Grid.Column="1"
-                                                            Margin="0,4,0,0"
-                                                            FontSize="10.5"
-                                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                            Text="{Binding ExportsText}"
-                                                            TextWrapping="Wrap" />
-                                                    </Grid>
-                                                </controls:CardControl>
-                                            </Grid>
-                                        </TabItem>
-                                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_PinDetail}">
-                                            <Grid Margin="0,10,0,0">
-                                                <controls:CardControl
-                                                    Padding="14,8"
-                                                    CornerRadius="8"
-                                                    Visibility="{Binding HasPins, Converter={StaticResource BoolToVisibility}}">
-                                                    <controls:CardControl.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:SymbolIcon
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                Symbol="AppsList24" />
-                                                            <TextBlock
-                                                                Margin="7,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{DynamicResource IndustryPlanetary_Tab_PinDetail}" />
-                                                        </StackPanel>
-                                                    </controls:CardControl.Header>
-                                                    <ListBox
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        ItemContainerStyle="{StaticResource PlanetaryListItem}"
-                                                        ItemsSource="{Binding Pins}">
-                                                        <ListBox.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Grid Margin="0,1">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="52" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <TextBlock
-                                                                        FontSize="10"
-                                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                        Text="{Binding Role, Converter={StaticResource IndustryRoleName}}" />
-                                                                    <TextBlock
-                                                                        Grid.Column="1"
-                                                                        FontSize="10.5"
-                                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                                        Text="{Binding TypeName}"
-                                                                        TextTrimming="CharacterEllipsis" />
-                                                                    <TextBlock
-                                                                        Grid.Column="2"
-                                                                        FontSize="9.5"
-                                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                                        Text="{Binding PinId}" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </ListBox.ItemTemplate>
-                                                    </ListBox>
-                                                </controls:CardControl>
-                                            </Grid>
-                                        </TabItem>
-                                    </TabControl>
+                                                                Text="{Binding ExportsText}"
+                                                                TextWrapping="Wrap" />
+                                                        </Grid>
+                                                    </controls:CardControl>
+                                                </Grid>
+                                            </TabItem>
+                                            <TabItem Header="{DynamicResource IndustryPlanetary_Tab_PinDetail}">
+                                                <Grid Margin="0,10,0,0">
+                                                    <controls:CardControl
+                                                        Padding="14,8"
+                                                        CornerRadius="8"
+                                                        Visibility="{Binding HasPins, Converter={StaticResource BoolToVisibility}}">
+                                                        <controls:CardControl.Header>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <ui:SymbolIcon
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="14"
+                                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                                    Symbol="AppsList24" />
+                                                                <TextBlock
+                                                                    Margin="7,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{DynamicResource IndustryPlanetary_Tab_PinDetail}" />
+                                                            </StackPanel>
+                                                        </controls:CardControl.Header>
+                                                        <ListBox
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            ItemContainerStyle="{StaticResource PlanetaryListItem}"
+                                                            ItemsSource="{Binding Pins}">
+                                                            <ListBox.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid Margin="0,1">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="52" />
+                                                                            <ColumnDefinition Width="*" />
+                                                                            <ColumnDefinition Width="Auto" />
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock
+                                                                            FontSize="10"
+                                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                            Text="{Binding Role, Converter={StaticResource IndustryRoleName}}" />
+                                                                        <TextBlock
+                                                                            Grid.Column="1"
+                                                                            FontSize="10.5"
+                                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                            Text="{Binding TypeName}"
+                                                                            TextTrimming="CharacterEllipsis" />
+                                                                        <TextBlock
+                                                                            Grid.Column="2"
+                                                                            FontSize="9.5"
+                                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                                            Text="{Binding PinId}" />
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ListBox.ItemTemplate>
+                                                        </ListBox>
+                                                    </controls:CardControl>
+                                                </Grid>
+                                            </TabItem>
+                                        </TabControl>
                                     </controls:CardControl>
                                 </Grid>
                             </Grid>
@@ -1253,7 +1260,7 @@
                                                         VerticalAlignment="Center"
                                                         FontSize="15"
                                                         Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                        Symbol="Planet24" />
+                                                        Symbol="Apps16" />
                                                     <TextBlock
                                                         Margin="8,0,0,0"
                                                         VerticalAlignment="Center"
@@ -1650,8 +1657,8 @@
                                             <Grid Grid.Row="0" Margin="0,2,0,4">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="78" />
-                                                    <ColumnDefinition Width="78" />
+                                                    <ColumnDefinition Width="120" />
+                                                    <ColumnDefinition Width="120" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock
                                                     FontSize="10.5"
@@ -1659,16 +1666,18 @@
                                                     Text="{DynamicResource IndustryPlanetary_Col_Character}" />
                                                 <TextBlock
                                                     Grid.Column="1"
-                                                    HorizontalAlignment="Center"
+                                                    HorizontalAlignment="Left"
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="CCU" />
+                                                    Text="{DynamicResource IndustryPlanetary_Ccu}"
+                                                    ToolTip="{DynamicResource IndustryPlanetary_CcuTip}" />
                                                 <TextBlock
                                                     Grid.Column="2"
-                                                    HorizontalAlignment="Center"
+                                                    HorizontalAlignment="Left"
                                                     FontSize="10.5"
                                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                    Text="{DynamicResource IndustryPlanetary_PlanetSlots}" />
+                                                    Text="{DynamicResource IndustryPlanetary_PlanetSlots}"
+                                                    ToolTip="{DynamicResource IndustryPlanetary_PlanetSlotsTip}" />
                                             </Grid>
                                             <ListBox
                                                 Grid.Row="1"
@@ -1708,19 +1717,27 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_DefaultCcu}" />
+                                                    <TextBlock
+                                                        Style="{StaticResource PlanetaryLabel}"
+                                                        Text="{DynamicResource IndustryPlanetary_DefaultCcu}"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_CcuTip}" />
                                                     <ui:NumberBox
                                                         Maximum="5"
                                                         Minimum="0"
                                                         SmallChange="1"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_CcuTip}"
                                                         Value="{Binding CcuLevel, Mode=TwoWay}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_DefaultPlanetSlots}" />
+                                                    <TextBlock
+                                                        Style="{StaticResource PlanetaryLabel}"
+                                                        Text="{DynamicResource IndustryPlanetary_DefaultPlanetSlots}"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_PlanetSlotsTip}" />
                                                     <ui:NumberBox
                                                         Maximum="6"
                                                         Minimum="1"
                                                         SmallChange="1"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_PlanetSlotsTip}"
                                                         Value="{Binding MaxPlanets, Mode=TwoWay}" />
                                                 </StackPanel>
                                             </Grid>
@@ -1731,7 +1748,10 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_PlanetRadius}" ToolTip="{DynamicResource IndustryPlanetary_PlanetRadiusTip}" />
+                                                    <TextBlock
+                                                        Style="{StaticResource PlanetaryLabel}"
+                                                        Text="{DynamicResource IndustryPlanetary_PlanetRadius}"
+                                                        ToolTip="{DynamicResource IndustryPlanetary_PlanetRadiusTip}" />
                                                     <ui:NumberBox
                                                         IsEnabled="{Binding IsRadiusEditable}"
                                                         MaxDecimalPlaces="0"
@@ -1764,8 +1784,8 @@
 
                                     <controls:CardControl
                                         Grid.Column="0"
-                                        VerticalAlignment="Top"
                                         Padding="16,10"
+                                        VerticalAlignment="Top"
                                         CornerRadius="8"
                                         ToolTip="{DynamicResource IndustryPlanetary_PriceTaxTip}">
                                         <controls:CardControl.Header>
@@ -1803,7 +1823,10 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Style="{StaticResource PlanetaryLabel}" Text="{DynamicResource IndustryPlanetary_PocoTax}" />
+                                                    <TextBlock
+                                                        Style="{StaticResource PlanetaryLabel}"
+                                                        Text="{DynamicResource IndustryPlanetary_PocoTax}"
+                                                        ToolTip="{DynamicResource IndustryPage_PlanetTaxTip}" />
                                                     <ui:NumberBox
                                                         Maximum="100"
                                                         Minimum="0"
@@ -1894,284 +1917,284 @@
                                 Background="Transparent"
                                 BorderThickness="0">
                                 <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Overview}">
-                            <StackPanel Margin="0,10,0,0">
-                                <controls:CardControl Padding="16,10" CornerRadius="8">
-                                    <controls:CardControl.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <ui:SymbolIcon
-                                                VerticalAlignment="Center"
-                                                FontSize="15"
-                                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                Symbol="DataUsage24" />
-                                            <TextBlock
-                                                Margin="8,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{DynamicResource IndustryPlanetary_Overview}" />
-                                        </StackPanel>
-                                    </controls:CardControl.Header>
-                                    <StackPanel>
-                                        <UniformGrid Margin="0,8,0,0" Columns="5">
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_TargetCompletion}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding TargetDaysText}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Colonies}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.TotalColonies}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Characters}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.CharacterCount}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_TargetPerDay}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.OutputPerDay, StringFormat={}{0:N1}}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_ProfitPerDay}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.ProfitPerDay, StringFormat={}{0:N0} ISK}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_P1Colonies}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.ExtractionColonies}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_P234Colonies}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.P234FactoryColonies}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_SetupCost}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.SetupCost, StringFormat={}{0:N0} ISK}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_RevenuePerDay}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.RevenuePerDay, StringFormat={}{0:N0} ISK}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,12,10">
-                                                <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_PaybackDays}" />
-                                                <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding PaybackDaysText}" />
-                                            </StackPanel>
-                                        </UniformGrid>
-                                        <TextBlock
-                                            Margin="0,4,0,0"
-                                            FontSize="10.5"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Text="{Binding CurrentPlan.Summary.TargetText}" />
-                                        <TextBlock
-                                            Margin="0,2,0,0"
-                                            FontSize="10.5"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Text="{Binding PlanetSourceText}"
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTip="{Binding PlanetSourceTooltip}" />
-                                    </StackPanel>
-                                </controls:CardControl>
-
-                                <controls:CardControl
-                                    Margin="0,10,0,0"
-                                    Padding="14,8"
-                                    CornerRadius="8"
-                                    Visibility="{Binding HasWarnings, Converter={StaticResource BoolToVisibility}}">
-                                    <controls:CardControl.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <ui:SymbolIcon
-                                                VerticalAlignment="Center"
-                                                FontSize="15"
-                                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                                Symbol="Warning24" />
-                                            <TextBlock
-                                                Margin="8,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{DynamicResource IndustryPlanetary_PlanHints}" />
-                                        </StackPanel>
-                                    </controls:CardControl.Header>
-                                    <ItemsControl ItemsSource="{Binding PlanWarnings}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
+                                    <StackPanel Margin="0,10,0,0">
+                                        <controls:CardControl Padding="16,10" CornerRadius="8">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                        Symbol="DataUsage24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{DynamicResource IndustryPlanetary_Overview}" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <StackPanel>
+                                                <UniformGrid Margin="0,8,0,0" Columns="5">
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_TargetCompletion}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding TargetDaysText}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Colonies}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.TotalColonies}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_Characters}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.CharacterCount}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_TargetPerDay}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.OutputPerDay, StringFormat={}{0:N1}}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_ProfitPerDay}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.ProfitPerDay, StringFormat={}{0:N0} ISK}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_P1Colonies}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.ExtractionColonies}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_P234Colonies}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.P234FactoryColonies}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_SetupCost}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.SetupCost, StringFormat={}{0:N0} ISK}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_RevenuePerDay}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding CurrentPlan.Summary.RevenuePerDay, StringFormat={}{0:N0} ISK}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricLabel}" Text="{DynamicResource IndustryPlanetary_PaybackDays}" />
+                                                        <TextBlock Style="{StaticResource PlanetaryMetricValue}" Text="{Binding PaybackDaysText}" />
+                                                    </StackPanel>
+                                                </UniformGrid>
                                                 <TextBlock
-                                                    Margin="0,1"
-                                                    FontSize="11"
-                                                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                                    Text="{Binding}"
-                                                    TextWrapping="Wrap" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </controls:CardControl>
+                                                    Margin="0,4,0,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding CurrentPlan.Summary.TargetText}" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding PlanetSourceText}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip="{Binding PlanetSourceTooltip}" />
+                                            </StackPanel>
+                                        </controls:CardControl>
 
-                            </StackPanel>
-                        </TabItem>
-                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Chain}">
-                            <Grid Margin="0,10,0,0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
+                                        <controls:CardControl
+                                            Margin="0,10,0,0"
+                                            Padding="14,8"
+                                            CornerRadius="8"
+                                            Visibility="{Binding HasWarnings, Converter={StaticResource BoolToVisibility}}">
+                                            <controls:CardControl.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        VerticalAlignment="Center"
+                                                        FontSize="15"
+                                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                        Symbol="Warning24" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                        Text="{DynamicResource IndustryPlanetary_PlanHints}" />
+                                                </StackPanel>
+                                            </controls:CardControl.Header>
+                                            <ItemsControl ItemsSource="{Binding PlanWarnings}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock
+                                                            Margin="0,1"
+                                                            FontSize="11"
+                                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                            Text="{Binding}"
+                                                            TextWrapping="Wrap" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </controls:CardControl>
 
-                                <Grid Grid.Row="0" Margin="2,0,2,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="10.5"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{DynamicResource IndustryPlanetary_ChainSubtitle}"
-                                        ToolTip="{DynamicResource IndustryPlanetary_ChainTip}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        HorizontalAlignment="Right"
-                                        Orientation="Horizontal">
-                                        <TextBlock
-                                            Margin="8,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="10.5"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Text="{Binding ProductNodeCountText}" />
-                                        <ui:Button
-                                            Height="24"
-                                            Padding="8,0"
-                                            Appearance="Transparent"
-                                            Click="OnExpandAllNodesClick"
-                                            Content="{DynamicResource IndustryPlanetary_ExpandAll}"
-                                            FontSize="10.5" />
-                                        <ui:Button
-                                            Height="24"
-                                            Margin="4,0,0,0"
-                                            Padding="8,0"
-                                            Appearance="Transparent"
-                                            Click="OnCollapseAllNodesClick"
-                                            Content="{DynamicResource IndustryPlanetary_CollapseAll}"
-                                            FontSize="10.5" />
                                     </StackPanel>
-                                </Grid>
+                                </TabItem>
+                                <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Chain}">
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
 
-                                <Grid Grid.Row="1">
-                                    <ListBox
-                                        HorizontalContentAlignment="Stretch"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        ItemContainerStyle="{StaticResource PlanetaryNodeListItem}"
-                                        ItemTemplate="{StaticResource PlanetaryProductNodeTemplate}"
-                                        ItemsSource="{Binding FlatProductNodes}"
-                                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                        SelectedItem="{Binding SelectedProductNode, Mode=TwoWay}" />
-                                    <TextBlock
-                                        Margin="18"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        FontSize="11.5"
-                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                        Text="{DynamicResource IndustryPlanetary_ChainEmpty}"
-                                        Visibility="{Binding HasNoProductNodes, Converter={StaticResource BoolToVisibility}}" />
-                                </Grid>
-                            </Grid>
-                        </TabItem>
-                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_ColonyAllocation}">
-                            <Grid Margin="0,10,0,0">
-                                <ui:DataGrid ItemsSource="{Binding CurrentPlan.Colonies}" Style="{StaticResource PlanetaryDataGrid}">
-                                    <ui:DataGrid.RowStyle>
-                                        <Style TargetType="DataGridRow" BasedOn="{StaticResource FluentDataGridRowStyle}">
-                                            <Style.Triggers>
-                                                <!--  候选行星里没有匹配类型：行星名留空、整行标红提示  -->
-                                                <DataTrigger Binding="{Binding MissingPlanet}" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ui:DataGrid.RowStyle>
-                                    <ui:DataGrid.CellStyle>
-                                        <Style TargetType="DataGridCell" BasedOn="{StaticResource FluentDataGridCellStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding MissingPlanet}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ui:DataGrid.CellStyle>
-                                    <ui:DataGrid.Columns>
-                                        <DataGridTextColumn
-                                            Width="Auto"
-                                            Binding="{Binding CharacterName, Converter={StaticResource IndustryCharacterName}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Character}" />
-                                        <DataGridTextColumn
-                                            Width="Auto"
-                                            Binding="{Binding PlanetName}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Planet}" />
-                                        <DataGridTextColumn
-                                            Width="Auto"
-                                            Binding="{Binding RadiusKm, StringFormat={}{0:N0}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Radius}" />
-                                        <DataGridTextColumn
-                                            Width="92"
-                                            Binding="{Binding PlanetType}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_PlanetType}" />
-                                        <DataGridTextColumn
-                                            Width="52"
-                                            Binding="{Binding Role, Converter={StaticResource IndustryRoleName}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Role}" />
-                                        <DataGridTextColumn
-                                            Width="*"
-                                            Binding="{Binding ProductName}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Product}" />
-                                        <DataGridTextColumn
-                                            Width="56"
-                                            Binding="{Binding Factories}"
-                                            Header="{DynamicResource IndustryPlanetary_RoleFactory}" />
-                                        <DataGridTextColumn
-                                            Width="56"
-                                            Binding="{Binding ExtractorHeads}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_ExtractorHeads}" />
-                                        <DataGridTextColumn
-                                            Width="80"
-                                            Binding="{Binding OutputPerDay, StringFormat={}{0:N1}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_OutputPerDay}" />
-                                        <DataGridTextColumn
-                                            Width="82"
-                                            Binding="{Binding InputsPerDay, StringFormat={}{0:N0}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_InputPerDay}" />
-                                        <DataGridTextColumn
-                                            Width="96"
-                                            Binding="{Binding SetupCost, StringFormat={}{0:N0}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_SetupIsk}" />
-                                    </ui:DataGrid.Columns>
-                                </ui:DataGrid>
-                            </Grid>
-                        </TabItem>
-                        <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Imports}">
-                            <Grid Margin="0,10,0,0">
-                                <ui:DataGrid ItemsSource="{Binding CurrentPlan.Imports}" Style="{StaticResource PlanetaryDataGrid}">
-                                    <ui:DataGrid.Columns>
-                                        <DataGridTextColumn
-                                            Width="Auto"
-                                            Binding="{Binding Tier}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Tier}" />
-                                        <DataGridTextColumn
-                                            Width="*"
-                                            Binding="{Binding Name}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_Item}" />
-                                        <DataGridTextColumn
-                                            Width="90"
-                                            Binding="{Binding QuantityPerDay, StringFormat={}{0:N1}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_QtyPerDay}" />
-                                        <DataGridTextColumn
-                                            Width="100"
-                                            Binding="{Binding UnitPrice, StringFormat={}{0:N0}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_UnitPrice}" />
-                                        <DataGridTextColumn
-                                            Width="110"
-                                            Binding="{Binding CostPerDay, StringFormat={}{0:N0}}"
-                                            Header="{DynamicResource IndustryPlanetary_Col_CostPerDay}" />
-                                    </ui:DataGrid.Columns>
-                                </ui:DataGrid>
-                            </Grid>
-                        </TabItem>
-                    </TabControl>
+                                        <Grid Grid.Row="0" Margin="2,0,2,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="10.5"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Text="{DynamicResource IndustryPlanetary_ChainSubtitle}"
+                                                TextTrimming="CharacterEllipsis"
+                                                ToolTip="{DynamicResource IndustryPlanetary_ChainTip}" />
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                Orientation="Horizontal">
+                                                <TextBlock
+                                                    Margin="8,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="10.5"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding ProductNodeCountText}" />
+                                                <ui:Button
+                                                    Height="24"
+                                                    Padding="8,0"
+                                                    Appearance="Transparent"
+                                                    Click="OnExpandAllNodesClick"
+                                                    Content="{DynamicResource IndustryPlanetary_ExpandAll}"
+                                                    FontSize="10.5" />
+                                                <ui:Button
+                                                    Height="24"
+                                                    Margin="4,0,0,0"
+                                                    Padding="8,0"
+                                                    Appearance="Transparent"
+                                                    Click="OnCollapseAllNodesClick"
+                                                    Content="{DynamicResource IndustryPlanetary_CollapseAll}"
+                                                    FontSize="10.5" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid Grid.Row="1">
+                                            <ListBox
+                                                HorizontalContentAlignment="Stretch"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                ItemContainerStyle="{StaticResource PlanetaryNodeListItem}"
+                                                ItemTemplate="{StaticResource PlanetaryProductNodeTemplate}"
+                                                ItemsSource="{Binding FlatProductNodes}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                SelectedItem="{Binding SelectedProductNode, Mode=TwoWay}" />
+                                            <TextBlock
+                                                Margin="18"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontSize="11.5"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Text="{DynamicResource IndustryPlanetary_ChainEmpty}"
+                                                Visibility="{Binding HasNoProductNodes, Converter={StaticResource BoolToVisibility}}" />
+                                        </Grid>
+                                    </Grid>
+                                </TabItem>
+                                <TabItem Header="{DynamicResource IndustryPlanetary_Tab_ColonyAllocation}">
+                                    <Grid Margin="0,10,0,0">
+                                        <ui:DataGrid ItemsSource="{Binding CurrentPlan.Colonies}" Style="{StaticResource PlanetaryDataGrid}">
+                                            <ui:DataGrid.RowStyle>
+                                                <Style BasedOn="{StaticResource FluentDataGridRowStyle}" TargetType="DataGridRow">
+                                                    <Style.Triggers>
+                                                        <!--  候选行星里没有匹配类型：行星名留空、整行标红提示  -->
+                                                        <DataTrigger Binding="{Binding MissingPlanet}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:DataGrid.RowStyle>
+                                            <ui:DataGrid.CellStyle>
+                                                <Style BasedOn="{StaticResource FluentDataGridCellStyle}" TargetType="DataGridCell">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding MissingPlanet}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:DataGrid.CellStyle>
+                                            <ui:DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="Auto"
+                                                    Binding="{Binding CharacterName, Converter={StaticResource IndustryCharacterName}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Character}" />
+                                                <DataGridTextColumn
+                                                    Width="Auto"
+                                                    Binding="{Binding PlanetName}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Planet}" />
+                                                <DataGridTextColumn
+                                                    Width="Auto"
+                                                    Binding="{Binding RadiusKm, StringFormat={}{0:N0}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Radius}" />
+                                                <DataGridTextColumn
+                                                    Width="92"
+                                                    Binding="{Binding PlanetType}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_PlanetType}" />
+                                                <DataGridTextColumn
+                                                    Width="52"
+                                                    Binding="{Binding Role, Converter={StaticResource IndustryRoleName}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Role}" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding ProductName}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Product}" />
+                                                <DataGridTextColumn
+                                                    Width="56"
+                                                    Binding="{Binding Factories}"
+                                                    Header="{DynamicResource IndustryPlanetary_RoleFactory}" />
+                                                <DataGridTextColumn
+                                                    Width="56"
+                                                    Binding="{Binding ExtractorHeads}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_ExtractorHeads}" />
+                                                <DataGridTextColumn
+                                                    Width="80"
+                                                    Binding="{Binding OutputPerDay, StringFormat={}{0:N1}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_OutputPerDay}" />
+                                                <DataGridTextColumn
+                                                    Width="82"
+                                                    Binding="{Binding InputsPerDay, StringFormat={}{0:N0}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_InputPerDay}" />
+                                                <DataGridTextColumn
+                                                    Width="96"
+                                                    Binding="{Binding SetupCost, StringFormat={}{0:N0}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_SetupIsk}" />
+                                            </ui:DataGrid.Columns>
+                                        </ui:DataGrid>
+                                    </Grid>
+                                </TabItem>
+                                <TabItem Header="{DynamicResource IndustryPlanetary_Tab_Imports}">
+                                    <Grid Margin="0,10,0,0">
+                                        <ui:DataGrid ItemsSource="{Binding CurrentPlan.Imports}" Style="{StaticResource PlanetaryDataGrid}">
+                                            <ui:DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="Auto"
+                                                    Binding="{Binding Tier}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Tier}" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding Name}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_Item}" />
+                                                <DataGridTextColumn
+                                                    Width="90"
+                                                    Binding="{Binding QuantityPerDay, StringFormat={}{0:N1}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_QtyPerDay}" />
+                                                <DataGridTextColumn
+                                                    Width="100"
+                                                    Binding="{Binding UnitPrice, StringFormat={}{0:N0}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_UnitPrice}" />
+                                                <DataGridTextColumn
+                                                    Width="110"
+                                                    Binding="{Binding CostPerDay, StringFormat={}{0:N0}}"
+                                                    Header="{DynamicResource IndustryPlanetary_Col_CostPerDay}" />
+                                            </ui:DataGrid.Columns>
+                                        </ui:DataGrid>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
                             <!--  保存按钮：贴在「概况/产物链/殖民地分配/外购」子页签 header 的最右侧  -->
                             <ui:Button
                                 Margin="0,0,6,0"
@@ -2191,9 +2214,7 @@
             <!--  ================= 已保存计划 =================  -->
             <TabItem Header="{DynamicResource IndustryPlanetary_Tab_SavedPlans}">
                 <Grid>
-                    <controls:CardControl
-                        Padding="14,8"
-                        CornerRadius="8">
+                    <controls:CardControl Padding="14,8" CornerRadius="8">
                         <controls:CardControl.Header>
                             <Grid>
                                 <Grid.ColumnDefinitions>

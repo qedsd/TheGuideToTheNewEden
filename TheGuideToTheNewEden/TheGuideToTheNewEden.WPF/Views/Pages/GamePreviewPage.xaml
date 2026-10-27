@@ -493,7 +493,10 @@
                         Click="OnOrderRemoveClick"
                         ToolTip="{DynamicResource GamePreviewPage_Order_Remove}"
                         Visibility="{Binding IsPresent, Converter={StaticResource InverseBoolToVis}}">
-                        <ui:SymbolIcon FontSize="12" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="Delete24" />
+                        <ui:SymbolIcon
+                            FontSize="12"
+                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                            Symbol="Delete24" />
                     </ui:Button>
                 </StackPanel>
             </Grid>
@@ -714,29 +717,34 @@
                     Padding="10,9"
                     BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="0,1,0,0">
-                    <Grid>
+                    <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <ui:Button
-                            HorizontalAlignment="Stretch"
+                            Width="80"
                             Appearance="Primary"
                             AutomationProperties.Name="{DynamicResource General_StartAll}"
-                            Click="OnStartAllClick"
-                            Content="{DynamicResource General_StartAll}"
-                            Icon="{ui:SymbolIcon Play24}" />
+                            Click="OnStartAllClick">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                         <ui:Button
                             Grid.Column="1"
+                            Width="80"
                             Margin="6,0,0,0"
                             Padding="10,6"
                             Appearance="Danger"
                             AutomationProperties.Name="{DynamicResource General_StopAll}"
                             Click="OnStopAllClick"
-                            Content="{DynamicResource General_StopAll}"
-                            Icon="{ui:SymbolIcon RecordStop24}"
                             ToolTip="{DynamicResource General_StopAll}"
-                            Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
+                            Visibility="{Binding Running, Converter={StaticResource BoolToVis}}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="RecordStop24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                     </Grid>
                 </Border>
             </Grid>
@@ -1201,17 +1209,34 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Style="{StaticResource RowLabel}"
+                                                Text="{DynamicResource GamePreviewPage_LockAspectRatio}"
+                                                ToolTip="{DynamicResource GamePreviewPage_LockAspectRatioTip}" />
+                                            <ui:ToggleSwitch
+                                                Grid.Column="1"
+                                                AutomationProperties.Name="{DynamicResource GamePreviewPage_LockAspectRatio}"
+                                                IsChecked="{Binding SelectedSetting.LockAspectRatio, Mode=TwoWay}"
+                                                ToolTip="{DynamicResource GamePreviewPage_LockAspectRatioTip}" />
+                                        </Grid>
+                                        <Border Style="{StaticResource RowDivider}" />
+
+                                        <Grid Style="{StaticResource Row}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="34" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_Opacity}" />
                                             <Slider
                                                 Grid.Column="1"
-                                                Width="110"
+                                                Width="160"
                                                 VerticalAlignment="Center"
                                                 IsSnapToTickEnabled="True"
                                                 Maximum="100"
-                                                Minimum="10"
-                                                TickFrequency="5"
+                                                Minimum="0"
+                                                TickFrequency="1"
                                                 Value="{Binding SelectedSetting.OverlapOpacity, Mode=TwoWay}" />
                                             <TextBlock
                                                 Grid.Column="2"
@@ -1337,37 +1362,41 @@
                                                 <ui:TextBox
                                                     Grid.Row="1"
                                                     Grid.Column="0"
-                                                    Width="42"
+                                                    Width="60"
                                                     MinHeight="28"
                                                     Margin="0,3,3,0"
                                                     Padding="4,2"
+                                                    ClearButtonEnabled="False"
                                                     Text="{Binding SelectedSetting.HighlightMarginLeft, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                     TextAlignment="Center" />
                                                 <ui:TextBox
                                                     Grid.Row="1"
                                                     Grid.Column="1"
-                                                    Width="42"
+                                                    Width="60"
                                                     MinHeight="28"
                                                     Margin="0,3,3,0"
                                                     Padding="4,2"
+                                                    ClearButtonEnabled="False"
                                                     Text="{Binding SelectedSetting.HighlightMarginTop, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                     TextAlignment="Center" />
                                                 <ui:TextBox
                                                     Grid.Row="1"
                                                     Grid.Column="2"
-                                                    Width="42"
+                                                    Width="60"
                                                     MinHeight="28"
                                                     Margin="0,3,3,0"
                                                     Padding="4,2"
+                                                    ClearButtonEnabled="False"
                                                     Text="{Binding SelectedSetting.HighlightMarginRight, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                     TextAlignment="Center" />
                                                 <ui:TextBox
                                                     Grid.Row="1"
                                                     Grid.Column="3"
-                                                    Width="42"
+                                                    Width="60"
                                                     MinHeight="28"
                                                     Margin="0,3,0,0"
                                                     Padding="4,2"
+                                                    ClearButtonEnabled="False"
                                                     Text="{Binding SelectedSetting.HighlightMarginBottom, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                     TextAlignment="Center" />
                                             </Grid>
@@ -1412,12 +1441,12 @@
                                             <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_NameOverlayFontSize}" />
                                             <ui:TextBox
                                                 Grid.Column="1"
-                                                Width="66"
-                                                MinHeight="30"
+                                                Width="120"
+                                                Height="32"
                                                 Padding="6,3"
                                                 HorizontalAlignment="Right"
-                                                Text="{Binding SelectedSetting.NameOverlayFontSize, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                TextAlignment="Center" />
+                                                ClearButtonEnabled="False"
+                                                Text="{Binding SelectedSetting.NameOverlayFontSize, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                         </Grid>
                                         <Border Style="{StaticResource RowDivider}" />
 
@@ -1444,13 +1473,13 @@
                                                 <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_NameOverlayScaleFactor}" />
                                                 <ui:TextBox
                                                     Grid.Column="1"
-                                                    Width="66"
-                                                    MinHeight="30"
+                                                    Width="120"
+                                                    Height="32"
                                                     Padding="6,3"
                                                     HorizontalAlignment="Right"
+                                                    ClearButtonEnabled="False"
                                                     IsEnabled="{Binding SelectedSetting.NameOverlayFollowScale}"
-                                                    Text="{Binding SelectedSetting.NameOverlayScaleFactor, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                    TextAlignment="Center" />
+                                                    Text="{Binding SelectedSetting.NameOverlayScaleFactor, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                             </Grid>
                                             <Border Style="{StaticResource RowDivider}" />
                                         </StackPanel>
@@ -1546,7 +1575,8 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_Forward}" />
                                         <pickers:HotkeyInput
                                             Grid.Column="1"
-                                            Width="154"
+                                            Width="200"
+                                            Height="32"
                                             Hotkey="{Binding ForwardHotkey, Mode=TwoWay}"
                                             PlaceholderText="{DynamicResource GamePreviewPage_HotkeyPlaceholder}" />
                                     </Grid>
@@ -1559,7 +1589,8 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_Backward}" />
                                         <pickers:HotkeyInput
                                             Grid.Column="1"
-                                            Width="154"
+                                            Width="200"
+                                            Height="32"
                                             Hotkey="{Binding BackwardHotkey, Mode=TwoWay}"
                                             PlaceholderText="{DynamicResource GamePreviewPage_HotkeyPlaceholder}" />
                                     </Grid>
@@ -1593,12 +1624,11 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_UniformWidth}" />
                                         <ui:TextBox
                                             Grid.Column="1"
-                                            Width="66"
-                                            MinHeight="30"
+                                            Width="140"
+                                            Height="32"
                                             Padding="6,3"
                                             HorizontalAlignment="Right"
-                                            Text="{Binding Setting.UniformWidth, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextAlignment="Center" />
+                                            Text="{Binding Setting.UniformWidth, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                     </Grid>
                                     <Border Style="{StaticResource RowDivider}" />
                                     <Grid Style="{StaticResource Row}">
@@ -1609,12 +1639,11 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_UniformHeight}" />
                                         <ui:TextBox
                                             Grid.Column="1"
-                                            Width="66"
-                                            MinHeight="30"
+                                            Width="140"
+                                            Height="32"
                                             Padding="6,3"
                                             HorizontalAlignment="Right"
-                                            Text="{Binding Setting.UniformHeight, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextAlignment="Center" />
+                                            Text="{Binding Setting.UniformHeight, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                     </Grid>
                                     <Border Style="{StaticResource RowDivider}" />
                                     <StackPanel
@@ -1650,7 +1679,7 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AutoLayout_Anchor}" />
                                         <ComboBox
                                             Grid.Column="1"
-                                            Width="132"
+                                            Width="140"
                                             SelectedIndex="{Binding Setting.AutoLayoutAnchor, Mode=TwoWay}">
                                             <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Anchor_0}" />
                                             <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Anchor_1}" />
@@ -1666,12 +1695,11 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AutoLayout_Span}" />
                                         <ui:TextBox
                                             Grid.Column="1"
-                                            Width="66"
-                                            MinHeight="30"
+                                            Width="140"
+                                            Height="32"
                                             Padding="6,3"
                                             HorizontalAlignment="Right"
-                                            Text="{Binding Setting.AutoLayoutSpan, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextAlignment="Center" />
+                                            Text="{Binding Setting.AutoLayoutSpan, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                     </Grid>
                                     <Border Style="{StaticResource RowDivider}" />
                                     <Grid Style="{StaticResource Row}">
@@ -1682,12 +1710,11 @@
                                         <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AutoLayout_Count}" />
                                         <ui:TextBox
                                             Grid.Column="1"
-                                            Width="66"
-                                            MinHeight="30"
+                                            Width="140"
+                                            Height="32"
                                             Padding="6,3"
                                             HorizontalAlignment="Right"
-                                            Text="{Binding Setting.AutoLayoutCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextAlignment="Center" />
+                                            Text="{Binding Setting.AutoLayoutCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                     </Grid>
                                     <Border Style="{StaticResource RowDivider}" />
                                     <StackPanel
@@ -1807,11 +1834,11 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <ComboBox
-                                        Height="36"
+                                        Height="32"
                                         HorizontalContentAlignment="Stretch"
                                         IsTextSearchEnabled="True"
-                                        ItemsSource="{Binding HotKeyGroupsView}"
                                         ItemTemplate="{StaticResource HotKeyGroupItemTemplate}"
+                                        ItemsSource="{Binding HotKeyGroupsView}"
                                         MaxDropDownHeight="320"
                                         SelectedItem="{Binding SelectedHotKeyGroup, Mode=TwoWay}"
                                         TextSearch.TextPath="GroupName" />
@@ -2012,16 +2039,16 @@
                                                     Padding="10,4"
                                                     Click="OnGroupOrderFillGlobalClick"
                                                     Content="{DynamicResource GamePreviewPage_GroupOrder_FromGlobal}"
-                                                    Icon="{ui:SymbolIcon ArrowDownload24}"
-                                                    FontSize="12" />
+                                                    FontSize="12"
+                                                    Icon="{ui:SymbolIcon ArrowDownload24}" />
                                                 <ui:Button
                                                     MinHeight="30"
                                                     Margin="0,0,8,6"
                                                     Padding="10,4"
                                                     Click="OnGroupOrderSortClick"
                                                     Content="{DynamicResource GamePreviewPage_Order_Sort}"
-                                                    Icon="{ui:SymbolIcon ArrowSort24}"
-                                                    FontSize="12" />
+                                                    FontSize="12"
+                                                    Icon="{ui:SymbolIcon ArrowSort24}" />
                                             </WrapPanel>
 
                                             <ListBox

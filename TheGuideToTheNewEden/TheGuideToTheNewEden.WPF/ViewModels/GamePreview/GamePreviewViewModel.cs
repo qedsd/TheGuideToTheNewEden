@@ -983,6 +983,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         RespondGlobalHotKey = source.RespondGlobalHotKey,
         ShowPreviewWindow = source.ShowPreviewWindow,
         ShowPreviewWindowMode = source.ShowPreviewWindowMode,
+        LockAspectRatio = source.LockAspectRatio,
         HotKey = source.HotKey,
     };
 

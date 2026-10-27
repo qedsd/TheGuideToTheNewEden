@@ -5,7 +5,7 @@ group: Nav.Characters
 page: Views/Pages/Characters/CharactersShellPage.xaml + Views/Pages/Characters/CharacterCardsPage.xaml + Views/Pages/Characters/CharacterWorkspacePage.xaml
 tools: [character_list, character_location, character_navigate]
 aliases: [角色, 添加角色, 登录角色, 角色卡片, 移除角色, 授权, 国服, 欧服, characters, add character, login, auth, cards]
-updated: 2026-10-16
+updated: 2026-10-27
 children: [characters/overview, characters/skills, characters/clone, characters/wallet, characters/mail, characters/contract, characters/industry]
 ---
 
@@ -32,9 +32,10 @@ children: [characters/overview, characters/skills, characters/clone, characters/
 
 ### 添加角色（国际服）
 1. 在「全部角色」页点网格末尾的「**添加角色**」，或空态里的「**登录 EVE 账号**」。
-2. 软件用系统默认浏览器打开 EVE 授权页；选好角色并授权后，浏览器会停在本地回调页并提示已收到授权、可以关闭该页面返回应用。
-3. 回到软件，卡片页自动刷新并出现新角色的卡片（头像、SP、ISK、技能队列）。
-4. 若浏览器没打开、或迟迟没有结果，会弹窗提示（标题为「**登录 EVE 账号**」）：授权被拒绝、回调地址端口被占用、等待超时都走这一分支，弹窗正文会尽量给出具体原因。
+2. 软件用系统默认浏览器打开 EVE 授权页，同时在**角色页内部**显示等待遮罩（只盖住角色页内容，不挡左侧导航/标题栏）：先显示「**正在等待浏览器授权…**」，浏览器回调到达后自动变为「**正在校验授权…**」。网络慢时「校验授权」可能持续一会儿，请等待，不要重复点「登录」；点遮罩上的「**取消**」可在等待浏览器阶段中止（进入「正在校验授权」后按钮会隐藏）。
+3. 选好角色并授权后，浏览器会停在本地回调页并提示已收到授权、可以关闭该页面返回应用。
+4. 回到软件，卡片页自动刷新并出现新角色的卡片（头像、SP、ISK、技能队列），右下角会提示「登录成功: 角色名」。
+5. 若浏览器没打开、或迟迟没有结果，会弹窗提示（标题为「**登录 EVE 账号**」）：授权被拒绝、回调地址端口被占用、等待超时都走这一分支，弹窗正文会尽量给出具体原因；主动取消则不弹错误框，只提示「已取消授权」。
 
 ### 添加角色（国服）
 1. 先把「设置 → 一般 → 游戏服务器」切到 **Serenity**；在别的服务器下走国服向导会被拒绝并提示先切服。

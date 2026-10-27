@@ -15,6 +15,9 @@ public partial class CharacterCardsPage : Page
 {
     private readonly CharactersViewModel _viewModel = new();
 
+    /// <summary>当前登录等待的取消源；仅用于页面内遮罩的「取消」按钮。</summary>
+    private CancellationTokenSource? _loginCts;
+
     /// <summary>点击角色卡片时触发（由壳页打开对应标签）。</summary>
     public event EventHandler<CharacterCardViewModel>? CharacterActivated;
 
@@ -169,29 +172,104 @@ public partial class CharacterCardsPage : Page
                 // 国际服：起本地回环监听并等待浏览器回调。
                 // 返回 null 的几种情况（回调地址没配好 / 端口被占用 / 用户拒绝 / 超时 / 换码失败）
                 // 都要给用户反馈，否则表现为"点了添加角色没反应"（等待已在上限时间内自动结束）。
-                reloadNeeded = await CharacterAuthService.LoginAsync() is not null;
+                var waitingText = FindString("Characters.WaitingForBrowser");
+                var verifyingText = FindString("Characters.VerifyingAuthorization");
+
+                using var cts = new CancellationTokenSource();
+                _loginCts = cts;
+                ShowLoginWaiting(waitingText, allowCancel: true);
+                try
+                {
+                    var character = await CharacterAuthService.LoginAsync(
+                        cts.Token,
+                        stage =>
+                        {
+                            // 回调到达后进入"校验授权"：换令牌是网络请求，无法取消，因此去掉取消按钮，
+                            // 避免用户点了取消却仍在校验、最后又成功造成误解。
+                            ShowLoginWaiting(
+                                stage == CharacterAuthService.CharacterLoginStage.Verifying
+                                    ? verifyingText
+                                    : waitingText,
+                                allowCancel: stage != CharacterAuthService.CharacterLoginStage.Verifying);
+                        });
+
+                    reloadNeeded = character is not null;
+                    if (character is not null)
+                    {
+                        PageNotifyService.Success($"{FindString("Characters.LoginSuccess")}: {character.CharacterName}");
+                    }
+                }
+                finally
+                {
+                    _loginCts = null;
+                    HideLoginWaiting();
+                }
+
                 if (!reloadNeeded)
                 {
-                    // 优先显示具体原因——只有"登录失败"四个字时，用户既不知道是拒绝授权还是配置有问题。
-                    MessageBox.Show(
-                        string.IsNullOrWhiteSpace(CharacterAuthService.LastFailure)
-                            ? FindString("Characters.LoginFailed")
-                            : CharacterAuthService.LastFailure,
-                        FindString("Characters.Login"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                    if (cts.IsCancellationRequested)
+                    {
+                        PageNotifyService.Info(FindString("Characters.AuthorizationCanceled"));
+                    }
+                    else
+                    {
+                        // 优先显示具体原因——只有"登录失败"四个字时，用户既不知道是拒绝授权还是配置有问题。
+                        MessageBox.Show(
+                            string.IsNullOrWhiteSpace(CharacterAuthService.LastFailure)
+                                ? FindString("Characters.LoginFailed")
+                                : CharacterAuthService.LastFailure,
+                            FindString("Characters.Login"),
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
+            PageNotifyService.Error($"{FindString("Characters.LoginFailed")}: {ex.Message}");
         }
 
         if (reloadNeeded)
         {
             await ReloadAsync(forceRefresh: true);
         }
+    }
+
+    /// <summary>显示/更新页面内登录等待层；<paramref name="allowCancel"/> = 是否显示「取消」。</summary>
+    private void ShowLoginWaiting(string message, bool allowCancel)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(() => ShowLoginWaiting(message, allowCancel));
+            return;
+        }
+
+        LoginWaitText.Text = message;
+        LoginWaitCancelButton.Visibility = allowCancel ? Visibility.Visible : Visibility.Collapsed;
+        LoginWaitCancelButton.IsEnabled = allowCancel;
+        LoginWaitSpinner.IsActive = true;
+        LoginWaitMask.Visibility = Visibility.Visible;
+    }
+
+    private void HideLoginWaiting()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(HideLoginWaiting);
+            return;
+        }
+
+        LoginWaitMask.Visibility = Visibility.Collapsed;
+        LoginWaitSpinner.IsActive = false;
+    }
+
+    private void OnLoginWaitCancelClick(object sender, RoutedEventArgs e)
+    {
+        // 只取消"等浏览器"这一段；进入换令牌后按钮已被隐藏。
+        LoginWaitCancelButton.IsEnabled = false;
+        _loginCts?.Cancel();
     }
 
     private static string FindString(string key) =>

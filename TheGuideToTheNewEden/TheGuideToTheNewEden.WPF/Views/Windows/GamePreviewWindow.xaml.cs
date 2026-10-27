@@ -30,6 +30,9 @@ namespace TheGuideToTheNewEden.WPF.Views.Windows;
 /// （尺寸里的标题栏/名称条/高亮边距等固定装饰由窗口自己补足），因此画面始终铺满内容区、不出现黑边。
 /// 校正在"尺寸稳定后"执行一次（防抖定时器 + 重入保护），可调维度按显示样式区分：
 /// 样式 0 保持窗口高度、反算客户区宽度，样式 1 保持宽度、反算高度。想要别的比例就改游戏窗口的宽高比。
+/// <para>
+/// 每项的 <see cref="PreviewItem.LockAspectRatio"/> 默认打开；关掉后拖拽/滚轮缩放不再反算另一条边，
+/// 窗口可以自由改成任意宽高比，画面也会拉伸铺满整个窗口（不再按源比例留边）。
 /// </para>
 /// </summary>
 public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IPreviewWindow
@@ -317,6 +320,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// </summary>
     private RECT32? LockClientAspect(RECT32 rect, int edge)
     {
+        // 用户关掉"锁定画面比例"后，拖拽边框就是自由改变宽高，不做任何反算
+        if (!Setting.LockAspectRatio)
+        {
+            return null;
+        }
+
         // WM_SIZING 的 wParam：1 左 / 2 右 / 3 上 / 4 左上 / 5 右上 / 6 下 / 7 左下 / 8 右下
         const int WMSZ_LEFT = 1;
         const int WMSZ_TOP = 3;
@@ -650,7 +659,14 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         UpdateNameOverlayBounds();
     }
 
-    public void SetPosition(int x, int y) => NativeMethods.MoveWindow(_hwnd, x, y);
+    public void SetPosition(int x, int y)
+    {
+        NativeMethods.MoveWindow(_hwnd, x, y);
+
+        // 角色名是独立的叠加窗，不会跟着 Owner 自动移动。自动排列/恢复位置都是只调 SetPosition，
+        // 不刷新这里就会出现"画面移过去了、名字还留在原地"（用户反馈）。
+        UpdateNameOverlayBounds();
+    }
 
     /// <summary>
     /// 设置尺寸。带的宽高是<b>画面区域</b>的尺寸（窗口会给标题栏/名称条/高亮留白补足差额），
@@ -672,6 +688,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     {
         NativeMethods.GetWindowRect(_hwnd, out var rect);
         return new Int32Rect(rect.Left, rect.Top, rect.Width, rect.Height);
+    }
+
+    /// <summary>自动排列前调用：把防抖中的尺寸校正立即跑完，避免排好之后尺寸又变。</summary>
+    public void FlushLayout()
+    {
+        _aspectCorrectionTimer.Stop();
+        CorrectWindowSizeToAspect();
     }
 
     public void ActivateSource() => GameClientService.Activate(Process.MainWindowHandle, _globalSetting.SetForegroundWindowMode);
@@ -1025,12 +1048,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        // 按源画面纵横比摆放目标矩形
+        // 按源画面纵横比摆放目标矩形；关闭"锁定画面比例"时直接铺满整个画面区，
+        // 让游戏画面跟随窗口拉伸（用户要求：锁的是窗口比例，不是只锁窗口外壳）。
         var container = new NativeMethods.RECT { Left = left, Top = top, Right = right, Bottom = bottom };
         int sourceWidth;
         int sourceHeight;
         var hasSource = TryGetSourceSize(out sourceWidth, out sourceHeight);
-        var destination = hasSource
+        var destination = hasSource && Setting.LockAspectRatio
             ? PreviewGeometry.FitAspect(container, sourceWidth, sourceHeight)
             : container;
 
@@ -1148,6 +1172,11 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// </summary>
     private void EnsureAspectSizeIfNeeded()
     {
+        if (!Setting.LockAspectRatio)
+        {
+            return;
+        }
+
         if (_hwnd == IntPtr.Zero || IsSourceMinimized() || !NativeMethods.GetWindowRect(_hwnd, out var window))
         {
             return;
@@ -1272,6 +1301,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// </summary>
     private (int Width, int Height)? CorrectSizeToAspect(int requestedWidth, int requestedHeight)
     {
+        // 关掉"锁定画面比例"后，窗口尺寸就是用户拖出来的尺寸，不再反算另一条边
+        if (!Setting.LockAspectRatio)
+        {
+            return null;
+        }
+
         // 源窗口最小化时**不要校正**：那时它的客户区是"任务栏缩略图"那种又宽又扁的小矩形
         // （实测最小化后 GetClientRect 给出的是很宽很矮的形状），拿它当比例依据会把预览窗
         // 压成很扁的一条——表现就是"最小化状态下启动预览，保存的尺寸没被沿用、高度明显变小"。
@@ -1398,6 +1433,18 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     {
         var rect = GetRect();
         var factor = e.Delta > 0 ? 1.05 : 1.0 / 1.05;
+
+        // 不锁比例时滚轮也是自由缩放：宽高各自乘倍率，不再按游戏画面比例反算另一条边。
+        if (!Setting.LockAspectRatio)
+        {
+            var scaledWidth = Math.Max(MinWindowWidth, (int)Math.Round(rect.Width * factor));
+            var scaledHeight = Math.Max(MinWindowHeight, (int)Math.Round(rect.Height * factor));
+            var (freeWidth, freeHeight) = ClampToWorkArea(scaledWidth, scaledHeight);
+            NativeMethods.SetWindowBounds(_hwnd, rect.X, rect.Y, freeWidth, freeHeight);
+            PersistBounds();
+            e.Handled = true;
+            return;
+        }
 
         if (!NativeMethods.GetClientRect(_hwnd, out var client)
             || !TryGetSourceSize(out var sourceWidth, out var sourceHeight))

@@ -24,7 +24,8 @@
         </Style>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MaxWidth="1100" />
@@ -417,4 +418,45 @@
             </StackPanel>
         </Grid>
     </ScrollViewer>
+
+        <!--  登录等待：只覆盖角色页内容（不挡导航栏/标题栏），底色接近实色，避免透出下面的卡片  -->
+        <Grid
+            x:Name="LoginWaitMask"
+            Panel.ZIndex="100"
+            Background="Transparent"
+            Visibility="Collapsed">
+            <Border Background="{DynamicResource ApplicationBackgroundBrush}" Opacity="0.94" />
+            <Border
+                Width="380"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel>
+                    <controls:SpinnerIcon
+                        x:Name="LoginWaitSpinner"
+                        HorizontalAlignment="Center"
+                        FontSize="34"
+                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                    <TextBlock
+                        x:Name="LoginWaitText"
+                        Margin="0,16,0,0"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <ui:Button
+                        x:Name="LoginWaitCancelButton"
+                        MinWidth="96"
+                        Margin="0,18,0,0"
+                        HorizontalAlignment="Center"
+                        Click="OnLoginWaitCancelClick"
+                        Content="{DynamicResource General_Cancel}"
+                        Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
 </Page>

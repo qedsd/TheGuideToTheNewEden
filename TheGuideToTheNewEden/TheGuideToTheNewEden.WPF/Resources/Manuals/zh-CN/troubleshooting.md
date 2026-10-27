@@ -4,7 +4,7 @@ title: 疑难排查
 group: Nav.Home
 tools: []
 aliases: [排查, 疑难, 报错, 打不开, 没反应, 日志位置, 托盘, 授权失败, troubleshooting, errors, logs]
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # 疑难排查
@@ -59,6 +59,7 @@ updated: 2026-10-26
 | 「回调地址里没有 code 参数」 | 收到的回调网址不完整 | 重新走一次授权 |
 | 「授权码校验失败（授权码可能已过期或已被使用）」 | 授权码已失效或被用过 | 重新授权，取一条新的网址 / code |
 | 浏览器授权页直接报英文错误（提示 redirect_uri 不匹配） | 配置的回调地址与开发者后台登记的不一致 | 「回环回调 → 复制」取当前地址，让开发者后台与它完全一致（发布版用内置地址，开发/覆盖时改 `Configs/ESILicense.txt` 第 2 行）；不支持通配端口 |
+| 浏览器停在 `login.eveonline.com/account/logoff...` 并显示「Bad Request - Request Too Long / HTTP Error 400 The size of the request headers is too long」 | 浏览器发给 EVE 登录服务器的请求头过大，常见为 `eveonline.com` 的 Cookie 太多/太大（多账号、长期未清理），或代理 / 扩展注入请求头 | 清除 `eveonline.com` / `login.eveonline.com` 的站点数据后重试；或改用无痕窗口 / 另一个浏览器；关闭代理与 Cookie 拦截扩展。应用此时会停在「正在等待浏览器授权…」，可点遮罩上的「取消」中止 |
 | 「当前游戏服务器不是国服（Serenity）：请先到"设置 → 一般"把服务器切换为国服，再进行国服授权。」 | 在非国服下走国服向导 | 先切服务器，再重新走向导 |
 | 「校验授权失败」（国服向导，下方附服务端错误详情） | 粘贴的内容不对，或当前服务器 / 凭据与目标服务器不一致 | 确认服务器是 Serenity；整条网址或纯 code 都可以粘，然后重新授权 |
 

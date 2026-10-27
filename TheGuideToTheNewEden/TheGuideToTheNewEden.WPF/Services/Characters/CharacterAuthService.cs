@@ -60,8 +60,15 @@ public static class CharacterAuthService
     /// <summary>
     /// 国际服完整登录：起本地回环监听 → 打开授权页 → 收回调 → 换令牌 → 落盘。
     /// </summary>
+    /// <param name="cancellationToken">取消等待（用户点等待遮罩上的「取消」）。</param>
+    /// <param name="stageChanged">
+    /// 阶段回调：等待浏览器授权 / 已拿到 code 正在校验。用于界面更新等待提示；
+    /// 回调可能来自线程池，调用方需自行切回 UI 线程。
+    /// </param>
     /// <returns>授权成功的角色；地址未配置 / 端口占用 / 用户拒绝 / 超时 / 换码失败时返回 null。</returns>
-    public static async Task<AuthorizedCharacterData?> LoginAsync(CancellationToken cancellationToken = default)
+    public static async Task<AuthorizedCharacterData?> LoginAsync(
+        CancellationToken cancellationToken = default,
+        Action<CharacterLoginStage>? stageChanged = null)
     {
         LastFailure = null;
 
@@ -92,9 +99,17 @@ public static class CharacterAuthService
         }
 
         // 3) 打开授权页，等浏览器把回调打回来（超时、拒绝都会正常返回，不会挂起）。
+        stageChanged?.Invoke(CharacterLoginStage.WaitingForBrowser);
         OpenAuthorizationPage();
 
         var result = await server.WaitForCallbackAsync(cancellationToken);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            // 用户主动取消：不写失败原因，界面按"已取消"处理，不要弹错误框。
+            LastFailure = null;
+            return null;
+        }
+
         if (!result.IsSuccess)
         {
             if (result.Outcome == AuthCallbackOutcome.Denied)
@@ -110,8 +125,19 @@ public static class CharacterAuthService
             return null;
         }
 
-        // 4) 换令牌并落盘。
+        // 4) 换令牌并落盘。网络慢时这一步可能持续数秒到数十秒，界面要显示"正在校验授权"。
+        stageChanged?.Invoke(CharacterLoginStage.Verifying);
         return await CompleteFromCallbackAsync(result.CallbackUri!);
+    }
+
+    /// <summary>登录阶段（供等待提示使用）。</summary>
+    public enum CharacterLoginStage
+    {
+        /// <summary>已打开授权页，正在等浏览器回调。</summary>
+        WaitingForBrowser,
+
+        /// <summary>已收到回调 code，正在向 ESI 换取令牌。</summary>
+        Verifying,
     }
 
     /// <summary>用授权回调地址换取令牌并保存。</summary>

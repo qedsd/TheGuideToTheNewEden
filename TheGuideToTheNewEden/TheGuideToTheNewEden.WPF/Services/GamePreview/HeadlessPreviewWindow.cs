@@ -73,6 +73,11 @@ public sealed class HeadlessPreviewWindow : IPreviewWindow
     {
     }
 
+    /// <summary>无窗口预览没有尺寸需要校正。</summary>
+    public void FlushLayout()
+    {
+    }
+
     public Int32Rect GetRect() => new(0, 0, 0, 0);
 
     public void ActivateSource() => GameClientService.Activate(Process.MainWindowHandle, _globalSetting.SetForegroundWindowMode);

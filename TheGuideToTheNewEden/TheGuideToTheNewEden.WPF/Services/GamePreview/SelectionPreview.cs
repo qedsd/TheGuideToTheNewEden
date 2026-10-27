@@ -158,7 +158,7 @@ public sealed class SelectionPreview : IDisposable
             return;
         }
 
-        // 与浮层预览一致：按源画面纵横比居中留边，不拉伸
+        // 页面内预览固定按源画面纵横比居中留边（不跟浮窗的"锁定画面比例"开关联动）
         var container = new NativeMethods.RECT { Left = left, Top = top, Right = right, Bottom = bottom };
         var destination = PreviewGeometry.TryGetSourceSize(_thumbnail.SourceWindow, out var sourceWidth, out var sourceHeight)
             ? PreviewGeometry.FitAspect(container, sourceWidth, sourceHeight)

@@ -6,8 +6,9 @@
     Background="Transparent"
     Visibility="Collapsed">
 
-    <!--  半透明遮罩：铺满内容区并拦截点击（对应 WinUI 版 ShowWaiting 的全屏等待态）  -->
-    <Grid Background="{DynamicResource SmokeFillColorDefaultBrush}">
+    <!--  接近实色的遮罩：铺满内容区并拦截点击（主题背景 94% 不透明，避免透出下面的界面）  -->
+    <Grid Background="Transparent">
+        <Border Background="{DynamicResource ApplicationBackgroundBrush}" Opacity="0.94" />
         <Border
             Width="360"
             Padding="24"
