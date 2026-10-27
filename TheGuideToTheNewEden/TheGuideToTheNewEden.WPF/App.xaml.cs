@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Threading;
+using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 
@@ -24,6 +25,9 @@ public partial class App : Application
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
+        // Primary / Danger 按钮的图标颜色统一（默认样式不会改 Icon.Foreground）
+        ButtonIconThemeBehavior.Initialize();
+
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
         // 后台线程/未观察的 Task 异常也要落到日志：否则"界面没报错、日志也什么都没有"，

@@ -9506,6 +9506,66 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
   - 顶边对齐后水平滑到远处，Y 仍保持吸附；垂直离开阈值后解除。
 - 实机拖拽手感由用户用正在运行的客户端确认；本次未截图。
 
+## 阶段 197：Primary 按钮的图标统一显式指定 TextOnAccentFillColorPrimaryBrush（2026-10-27）
+
+> 用户要求：整个 WPF 项目里，凡是 `Appearance="Primary"` 且启用了 `Icon` 的按钮，都必须显式给图标指定颜色
+> （默认 Primary 样式在深色模式下不会自动改图标颜色）。
+
+> **后续（阶段 198）已改成全局默认行为，本阶段逐个写的 `Foreground` 已全部移除**；以下保留为当时的排查记录。
+
+- 全项目扫描结果：**34 个** Primary + Icon 按钮。
+  - 26 个使用内联标记扩展 `Icon="{ui:SymbolIcon X}"`：标记扩展没有可写的 `Foreground`，全部改成属性元素：
+    ```xml
+    <ui:Button.Icon>
+        <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="X" />
+    </ui:Button.Icon>
+    ```
+  - 8 个原本就用 `<ui:Button.Icon>`：其中 4 个已有 `TextOnAccent...`，3 个漏写 `Foreground`（地图跳桥/一跳覆盖/行星资源），
+    1 个用成功绿（服务器测速迷你模式的开始图标）——本轮为统一 Primary 图标颜色，也改成 `TextOnAccentFillColorPrimaryBrush`。
+- 涉及文件：频道扫描/翻译、多开、IME、制造计划、键盘跨度、快速链接、KB 详情/击杀流、术语表、AI 助手/翻译聊天与设置、
+  比价、本地翻译、地图三个控件、关于窗口等（共 24 个 XAML）。
+- 验证：上述扫描脚本复跑后 **34/34** 均为 `TextOnAccentFillColorPrimaryBrush`；`dotnet build` **0 错误**。
+- 备注：~~以后新增 Primary + Icon 按钮时，按上面的属性元素写法写~~ —— **阶段 198 已改为全局默认行为**，
+  新增 Primary/Danger 按钮直接写 `Icon="{ui:SymbolIcon X}"` 也会自动获得正确图标颜色，不用再指定 Foreground。
+
+## 阶段 198：Primary/Danger 图标颜色改为全局默认，不再逐按钮指定（2026-10-27）
+
+> 用户要求：把阶段 197 的"逐个写图标 Foreground"改成默认样式，新增 Primary 按钮不用再管图标颜色。
+
+### 198.1 为什么不直接加隐式 `SymbolIcon` 样式
+
+先在 `Controls/GlobalControlStyles.xaml` 里加了一个隐式 `Style TargetType="{x:Type ui:SymbolIcon}"`（带
+`DataTrigger` 读祖先 `ui:Button.Appearance`）。启动时直接抛：
+
+```
+XamlParseException -> ArgumentException: Item has already been added.
+Key in dictionary: 'Wpf.Ui.Controls.SymbolIcon'
+```
+
+WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样式会在**应用启动**时崩溃（`dotnet build` 不报）。
+因此撤回隐式样式，改用应用级行为。
+
+### 198.2 全局行为
+
+- 新增 `Helpers/ButtonIconThemeBehavior.cs`：
+  - `Initialize()` 在 `App.OnStartup` 最前面调用，注册 `Wpf.Ui.Controls.Button` 的 `Loaded` 类处理器；
+  - 按钮 `Appearance` 是 **Primary / Danger**、`Icon` 是 `SymbolIcon`、且图标没有显式本地 `Foreground` 时，
+    对图标调用 `SetResourceReference(IconElement.ForegroundProperty, "TextOnAccentFillColorPrimaryBrush")`；
+  - 用 `SetResourceReference` 而非直接赋 Brush，深浅主题切换时图标颜色会自动跟随；
+  - 显式写在 `SymbolIcon` 上的 `Foreground` 仍然优先（`ReadLocalValue` 已有时不覆盖）。
+- 删除阶段 197 在 24 个 XAML 里逐个写的 35 处图标 `Foreground`；
+  现在新增 Primary/Danger 图标按钮**不用再写颜色**。
+
+### 198.3 验证
+
+- `dotnet build` WPF：**0 错误**。
+- 独立 WPF 探针（WPF-UI 4.3.0 + 本行为源码）：
+  - 浅色主题：Primary 按钮文字 `#FFFFFFFF`、图标 `#FFFFFFFF`；Danger 图标与按钮文字同为 `#E4000000`；
+  - 深色主题：Primary 按钮文字与图标同为 `#FF000000`（该主题的 TextOnAccent），不再出现"文字白、图标黑"；
+  - `Transparent` 按钮图标不受影响；
+  - 显式本地 `Foreground="Red"` 的 Primary 图标保持红色，行为不覆盖。
+- 不再使用隐式 `SymbolIcon` 样式，避免启动时重复键崩溃。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

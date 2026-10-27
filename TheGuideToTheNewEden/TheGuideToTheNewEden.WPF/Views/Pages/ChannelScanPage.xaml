@@ -76,8 +76,11 @@
                         Appearance="Primary"
                         AutomationProperties.Name="{DynamicResource ChannelScanPage_Start}"
                         Click="OnStartClick"
-                        Icon="{ui:SymbolIcon Play24}"
-                        ToolTip="{DynamicResource ChannelScanPage_Start}" />
+                        ToolTip="{DynamicResource ChannelScanPage_Start}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Play24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <ui:Button
                         AutomationProperties.Name="{DynamicResource General_Setting}"
                         Click="OnSettingClick"

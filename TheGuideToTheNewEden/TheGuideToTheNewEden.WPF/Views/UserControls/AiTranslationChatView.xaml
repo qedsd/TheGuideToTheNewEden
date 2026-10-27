@@ -111,8 +111,11 @@
                         HorizontalAlignment="Center"
                         Appearance="Primary"
                         Click="OnNewSessionClick"
-                        Content="{DynamicResource AiTranslation_Chat_New}"
-                        Icon="{ui:SymbolIcon Add24}" />
+                        Content="{DynamicResource AiTranslation_Chat_New}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Add24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                 </controls:CardControl.Footer>
             </controls:CardControl>
 
@@ -517,8 +520,11 @@
                                     Margin="4,0"
                                     Appearance="Primary"
                                     Click="OnTranslateClick"
-                                    Content="{DynamicResource TranslationPage_Translate}"
-                                    Icon="{ui:SymbolIcon Send24}" />
+                                    Content="{DynamicResource TranslationPage_Translate}">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Send24" />
+                                    </ui:Button.Icon>
+                                </ui:Button>
                                 <ui:Button
                                     Margin="4,0"
                                     Click="OnStopClick"
@@ -591,8 +597,11 @@
                         Margin="4,0"
                         Appearance="Primary"
                         Click="OnConfigureClick"
-                        Content="{DynamicResource TranslationPage_Ai_GoConfigure}"
-                        Icon="{ui:SymbolIcon Settings24}" />
+                        Content="{DynamicResource TranslationPage_Ai_GoConfigure}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Settings24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <ui:Button
                         Margin="4,0"
                         Click="OnRecheckClick"

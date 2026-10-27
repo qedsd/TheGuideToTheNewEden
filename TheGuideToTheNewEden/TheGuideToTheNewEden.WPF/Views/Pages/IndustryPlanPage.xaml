@@ -1613,7 +1613,7 @@
                                 </Style>
                             </ui:Button.Style>
                             <ui:Button.Icon>
-                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
+                                <ui:SymbolIcon Symbol="Play24" />
                             </ui:Button.Icon>
                         </ui:Button>
                         <ui:Button
@@ -2212,7 +2212,7 @@
                         Content="{DynamicResource IndustryPage_SavePlan}"
                         Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}">
                         <ui:Button.Icon>
-                            <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Save16" />
+                            <ui:SymbolIcon Symbol="Save16" />
                         </ui:Button.Icon>
                     </ui:Button>
                 </Grid>
@@ -2297,8 +2297,11 @@
                                 HorizontalAlignment="Stretch"
                                 Appearance="Primary"
                                 Click="OnSavePlanClick"
-                                Content="{DynamicResource IndustryPage_SaveAsNew}"
-                                Icon="{ui:SymbolIcon Save24}" />
+                                Content="{DynamicResource IndustryPage_SaveAsNew}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Save24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
                             <ui:Button
                                 Margin="0,8,0,0"
                                 HorizontalAlignment="Stretch"

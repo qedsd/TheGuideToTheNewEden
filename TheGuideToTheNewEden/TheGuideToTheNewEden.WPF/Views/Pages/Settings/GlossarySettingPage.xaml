@@ -56,8 +56,11 @@
                                     VerticalAlignment="Bottom"
                                     Appearance="Primary"
                                     Click="OnAddTermClick"
-                                    Content="{DynamicResource GlossarySettingPage_Add}"
-                                    Icon="{ui:SymbolIcon Add24}" />
+                                    Content="{DynamicResource GlossarySettingPage_Add}">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Add24" />
+                                    </ui:Button.Icon>
+                                </ui:Button>
                             </Grid>
                             <TextBlock
                                 x:Name="TermStatusText"

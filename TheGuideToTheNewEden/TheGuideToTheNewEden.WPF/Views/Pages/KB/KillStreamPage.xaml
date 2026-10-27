@@ -93,9 +93,12 @@
                     AutomationProperties.Name="{DynamicResource ZKBHomePage_Connect}"
                     Click="OnConnectClick"
                     FontSize="16"
-                    Icon="{ui:SymbolIcon Play24}"
                     ToolTip="{DynamicResource ZKBHomePage_Connect}"
-                    Visibility="{Binding ShowDisconnectedHint, Converter={StaticResource BoolToVis}}" />
+                    Visibility="{Binding ShowDisconnectedHint, Converter={StaticResource BoolToVis}}">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="Play24" />
+                    </ui:Button.Icon>
+                </ui:Button>
                 <ui:Button
                     Margin="0,0,6,0"
                     AutomationProperties.Name="{DynamicResource ZKBHomePage_Disconnect}"

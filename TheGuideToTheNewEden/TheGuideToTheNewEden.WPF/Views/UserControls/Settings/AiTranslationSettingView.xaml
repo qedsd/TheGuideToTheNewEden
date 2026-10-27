@@ -155,8 +155,11 @@
             <ui:Button
                 Appearance="Primary"
                 Click="OnSaveClick"
-                Content="{DynamicResource AssistantSettingPage_Save}"
-                Icon="{ui:SymbolIcon Save24}" />
+                Content="{DynamicResource AssistantSettingPage_Save}">
+                <ui:Button.Icon>
+                    <ui:SymbolIcon Symbol="Save24" />
+                </ui:Button.Icon>
+            </ui:Button>
         </StackPanel>
     </StackPanel>
 </UserControl>

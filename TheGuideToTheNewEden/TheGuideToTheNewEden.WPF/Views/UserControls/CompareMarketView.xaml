@@ -350,8 +350,11 @@
                 Appearance="Primary"
                 Click="OnCalculateClick"
                 Content="{DynamicResource CompareMarketPage_Start}"
-                Icon="{ui:SymbolIcon Play24}"
-                IsEnabled="{Binding IsNotBusy}" />
+                IsEnabled="{Binding IsNotBusy}">
+                <ui:Button.Icon>
+                    <ui:SymbolIcon Symbol="Play24" />
+                </ui:Button.Icon>
+            </ui:Button>
         </Grid>
 
         <!--  ============ 右：汇总 / 建议 / 警告 / 结果 ============  -->

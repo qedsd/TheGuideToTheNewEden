@@ -190,8 +190,11 @@
                     Appearance="Primary"
                     Click="OnAddClick"
                     Content="{DynamicResource LinksPage_Add}"
-                    Icon="{ui:SymbolIcon Add24}"
-                    ToolTip="{DynamicResource LinksPage_Add}" />
+                    ToolTip="{DynamicResource LinksPage_Add}">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="Add24" />
+                    </ui:Button.Icon>
+                </ui:Button>
                 <ui:Button
                     x:Name="MoreButton"
                     Margin="8,0,0,0"

@@ -76,8 +76,11 @@
                     <ui:Button
                         Appearance="Primary"
                         Click="OnGithubClick"
-                        Content="{DynamicResource Home.About.Github}"
-                        Icon="{ui:SymbolIcon Code24}" />
+                        Content="{DynamicResource Home.About.Github}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Code24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <ui:Button
                         Margin="8,0,0,0"
                         Click="OnQqGroupClick"

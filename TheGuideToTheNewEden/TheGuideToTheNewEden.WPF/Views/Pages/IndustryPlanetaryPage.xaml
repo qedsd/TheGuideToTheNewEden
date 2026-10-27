@@ -1880,7 +1880,7 @@
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Visibility="{Binding IsNotBusy, Converter={StaticResource BoolToVisibility}}">
                             <ui:Button.Icon>
-                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
+                                <ui:SymbolIcon Symbol="Play24" />
                             </ui:Button.Icon>
                         </ui:Button>
                         <ui:Button

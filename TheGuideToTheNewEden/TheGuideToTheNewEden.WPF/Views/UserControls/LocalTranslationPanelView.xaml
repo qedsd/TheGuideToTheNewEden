@@ -243,8 +243,11 @@
                             Margin="4,0"
                             Appearance="Primary"
                             Click="OnTranslateClick"
-                            Content="{DynamicResource TranslationPage_Translate}"
-                            Icon="{ui:SymbolIcon Search24}" />
+                            Content="{DynamicResource TranslationPage_Translate}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Search24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                         <ui:Button
                             Margin="4,0"
                             Click="OnClearClick"

@@ -153,8 +153,11 @@
                         HorizontalAlignment="Stretch"
                         Appearance="Primary"
                         Click="OnStartClick"
-                        Content="{DynamicResource General_Start}"
-                        Icon="{ui:SymbolIcon Play24}" />
+                        Content="{DynamicResource General_Start}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Play24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                 </controls:CardControl.Footer>
             </controls:CardControl>
 

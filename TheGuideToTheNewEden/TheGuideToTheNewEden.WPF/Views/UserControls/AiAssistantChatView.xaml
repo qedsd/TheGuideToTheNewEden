@@ -418,8 +418,11 @@
                                                             Margin="4,0"
                                                             Appearance="Primary"
                                                             Click="OnConfirmApplyClick"
-                                                            Content="{DynamicResource Assistant_Chat_Confirm_Apply}"
-                                                            Icon="{ui:SymbolIcon Checkmark24}" />
+                                                            Content="{DynamicResource Assistant_Chat_Confirm_Apply}">
+                                                            <ui:Button.Icon>
+                                                                <ui:SymbolIcon Symbol="Checkmark24" />
+                                                            </ui:Button.Icon>
+                                                        </ui:Button>
                                                         <ui:Button
                                                             Margin="4,0"
                                                             Click="OnConfirmRejectClick"
@@ -671,8 +674,11 @@
                                         Margin="6,0,0,0"
                                         Appearance="Primary"
                                         Click="OnSendClick"
-                                        Content="{DynamicResource Assistant_Chat_Send}"
-                                        Icon="{ui:SymbolIcon Send24}" />
+                                        Content="{DynamicResource Assistant_Chat_Send}">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="Send24" />
+                                        </ui:Button.Icon>
+                                    </ui:Button>
                                 </StackPanel>
                             </Grid>
                         </Grid>
@@ -729,8 +735,11 @@
                         Margin="4,0"
                         Appearance="Primary"
                         Click="OnConfigureClick"
-                        Content="{DynamicResource Assistant_GoConfigure}"
-                        Icon="{ui:SymbolIcon Settings24}" />
+                        Content="{DynamicResource Assistant_GoConfigure}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Settings24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <ui:Button
                         Margin="4,0"
                         Click="OnRecheckClick"

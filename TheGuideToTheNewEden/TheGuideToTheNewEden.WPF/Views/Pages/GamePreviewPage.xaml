@@ -728,7 +728,7 @@
                             AutomationProperties.Name="{DynamicResource General_StartAll}"
                             Click="OnStartAllClick">
                             <ui:Button.Icon>
-                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="Play24" />
+                                <ui:SymbolIcon Symbol="Play24" />
                             </ui:Button.Icon>
                         </ui:Button>
                         <ui:Button
@@ -742,7 +742,7 @@
                             ToolTip="{DynamicResource General_StopAll}"
                             Visibility="{Binding Running, Converter={StaticResource BoolToVis}}">
                             <ui:Button.Icon>
-                                <ui:SymbolIcon Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Symbol="RecordStop24" />
+                                <ui:SymbolIcon Symbol="RecordStop24" />
                             </ui:Button.Icon>
                         </ui:Button>
                     </Grid>
@@ -873,8 +873,11 @@
                                     AutomationProperties.Name="{DynamicResource GamePreviewPage_Start}"
                                     Click="OnStartClick"
                                     Content="{DynamicResource GamePreviewPage_Start}"
-                                    Icon="{ui:SymbolIcon Play24}"
-                                    Visibility="{Binding SelectedRunning, Converter={StaticResource InverseBoolToVis}}" />
+                                    Visibility="{Binding SelectedRunning, Converter={StaticResource InverseBoolToVis}}">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Play24" />
+                                    </ui:Button.Icon>
+                                </ui:Button>
                                 <ui:Button
                                     HorizontalAlignment="Stretch"
                                     Appearance="Danger"
@@ -1128,8 +1131,11 @@
                                         AutomationProperties.Name="{DynamicResource GamePreviewPage_Start}"
                                         Click="OnStartClick"
                                         Content="{DynamicResource GamePreviewPage_Start}"
-                                        Icon="{ui:SymbolIcon Play24}"
-                                        Visibility="{Binding SelectedRunning, Converter={StaticResource InverseBoolToVis}}" />
+                                        Visibility="{Binding SelectedRunning, Converter={StaticResource InverseBoolToVis}}">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="Play24" />
+                                        </ui:Button.Icon>
+                                    </ui:Button>
                                     <ui:Button
                                         MinHeight="34"
                                         Margin="0,0,8,8"

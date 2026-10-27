@@ -430,8 +430,11 @@
                     Appearance="Primary"
                     AutomationProperties.Name="{DynamicResource KB_CopyLink}"
                     Click="OnCopyLinkClick"
-                    Content="{DynamicResource KB_CopyLink}"
-                    Icon="{ui:SymbolIcon Copy24}" />
+                    Content="{DynamicResource KB_CopyLink}">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="Copy24" />
+                    </ui:Button.Icon>
+                </ui:Button>
                 <ui:Button
                     AutomationProperties.Name="{DynamicResource KB_OpenBrowser}"
                     Click="OnOpenBrowserClick"

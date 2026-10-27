@@ -226,9 +226,12 @@
                             Appearance="Primary"
                             AutomationProperties.Name="{DynamicResource General_Start}"
                             Click="OnStartClick"
-                            Icon="{ui:SymbolIcon Play24}"
                             ToolTip="{DynamicResource General_Start}"
-                            Visibility="{Binding SelectedNotRunning, Converter={StaticResource BoolToVis}}" />
+                            Visibility="{Binding SelectedNotRunning, Converter={StaticResource BoolToVis}}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Play24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                         <ui:Button
                             AutomationProperties.Name="{DynamicResource General_Stop}"
                             Click="OnStopClick"
@@ -326,8 +329,11 @@
                         Margin="4,0"
                         Appearance="Primary"
                         Click="OnGoConfigureClick"
-                        Content="{DynamicResource TranslationPage_Ai_GoConfigure}"
-                        Icon="{ui:SymbolIcon Settings24}" />
+                        Content="{DynamicResource TranslationPage_Ai_GoConfigure}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Settings24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <ui:Button
                         Margin="4,0"
                         Click="OnRecheckClick"
