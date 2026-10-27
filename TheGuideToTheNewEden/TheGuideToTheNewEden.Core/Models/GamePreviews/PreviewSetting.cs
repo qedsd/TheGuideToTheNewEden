@@ -100,6 +100,32 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
+        private bool snapEnabled = true;
+        /// <summary>
+        /// 拖动预览窗口时是否吸附到其它可见预览窗口（边/角对齐，可沿对齐边滑动）。
+        /// </summary>
+        public bool SnapEnabled
+        {
+            get => snapEnabled;
+            set
+            {
+                SetProperty(ref snapEnabled, value);
+            }
+        }
+
+        private int snapDistance = 12;
+        /// <summary>
+        /// 吸附距离（物理像素）：窗口边与目标边的距离小于等于它时吸附。
+        /// </summary>
+        public int SnapDistance
+        {
+            get => snapDistance;
+            set
+            {
+                SetProperty(ref snapDistance, value);
+            }
+        }
+
         private int uniformHeight = 300;
         /// <summary>
         /// 统一窗口长度

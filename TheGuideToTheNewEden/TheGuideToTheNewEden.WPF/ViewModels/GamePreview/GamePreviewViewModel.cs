@@ -413,6 +413,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             _setting.SetForegroundWindowMode, 0, GameClientService.MaxActivationMode);
         _setting.AutoLayout = Math.Clamp(_setting.AutoLayout, 0, 3);
         _setting.AutoLayoutAnchor = Math.Clamp(_setting.AutoLayoutAnchor, 0, 2);
+        _setting.SnapDistance = Math.Clamp(_setting.SnapDistance <= 0 ? 12 : _setting.SnapDistance, 1, 64);
     }
 
     private static IntPtr GetMainWindowHandle()

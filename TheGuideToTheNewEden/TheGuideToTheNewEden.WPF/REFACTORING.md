@@ -9466,6 +9466,46 @@ Core 是 UI 无关的共享库，之前把中文当作**数据**用（既显示�
 - 验证：WPF `dotnet build` **0 错误**；实际拉伸效果由用户用运行中的客户端确认。
   关键判断只有一句：**锁的是"窗口与画面同时按游戏比例"；解开后窗口与画面都自由，画面铺满**。
 
+## 阶段 196：多开预览窗口拖动吸附（吸附其它预览窗的边/角，可沿边滑动）（2026-10-27）
+
+> 用户要求：拖动预览浮窗时吸附到**其它多开预览窗口**，支持边对齐、角对齐，并且吸附后能沿对齐边继续移动；
+> 不吸屏幕边缘。
+
+### 196.1 纯计算与拖动状态
+
+- 新增 `Services/GamePreview/PreviewSnapCalculator.cs`：
+  - `PreviewSnapCalculator.Snap(...)`：无状态吸附。X 轴候选为「左对左 / 右对右 / 左贴右 / 右贴左」，
+    Y 轴候选为「上对上 / 下对下 / 上贴下 / 下贴上」；取阈值内最近的一条，两个轴同时命中即角对齐。
+  - 为避免隔着半屏也吸附，X 轴候选要求两窗垂直方向有交叠或相距不超过阈值，Y 轴同理。
+  - `PreviewSnapSession`：一次拖动内的吸附状态。某个轴吸附成功后**保持**该轴坐标，
+    因此鼠标沿对齐边移动（垂直方向仍保持在阈值内）时不会脱开；原始坐标离开阈值才解除。
+    这解决了"贴住顶边后左右一滑就散开"的问题。
+- `Views/Windows/GamePreviewWindow`：
+  - 构造参数新增 `snapTargets`（由管理器提供其它可见预览窗矩形）；
+  - `OnDragStart` / `OnDragEnd` 重置吸附会话；
+  - `OnDragMove` 用原始拖动坐标构造矩形 → 吸附 → 再 `MoveWindow` + 移动角色名叠加窗；
+  - 吸附只改位置，不改尺寸，与「锁定画面比例」互不影响。
+
+### 196.2 设置与目标来源
+
+- `Core/Models/GamePreviews/PreviewSetting.cs`：新增 `SnapEnabled`（默认 `true`）与 `SnapDistance`
+  （默认 12，物理像素），随 `GamePreviewSetting.json` 保存。
+- `GamePreviewViewModel.NormalizeSettings` 把 `SnapDistance` 夹到 1–64。
+- 多开页全局设置新增「窗口吸附」组：开关 + 吸附距离（1–64）。
+- `PreviewWindowManager.SnapshotSnapTargets(selfGuid)`：返回其它可见预览窗的当前矩形，排除自己。
+- 语言键：`GamePreviewPage_Snap` / `SnapEnabled` / `SnapEnabledTip` / `SnapDistance` / `SnapDistanceTip`。
+
+### 196.3 文档与验证
+
+- `Manuals/zh-CN/game-preview.md`：全局设置新增「窗口吸附」步骤，字段表补开关与距离口径。
+- `dotnet build` WPF：**0 错误**。
+- 中英语言键各 **3232** 个、无重复且对齐。
+- 纯计算用例（临时工程直接编译 `PreviewSnapCalculator.cs`）：
+  - 左边对齐、左边贴目标右边、顶边对齐、底边对齐、角对齐全部 PASS，远处窗口不误吸；
+  - 会话用例：左对齐后垂直滑到远处，X 仍保持吸附；横向离开阈值后解除；
+  - 顶边对齐后水平滑到远处，Y 仍保持吸附；垂直离开阈值后解除。
+- 实机拖拽手感由用户用正在运行的客户端确认；本次未截图。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

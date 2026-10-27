@@ -1238,6 +1238,11 @@
     <sys:String x:Key="GamePreviewPage_AutoLayout_Anchor_2">End</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoLayout_Span">Spacing</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoLayout_Count">Max per line (excluding anchor)</sys:String>
+    <sys:String x:Key="GamePreviewPage_Snap">Window snapping</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapEnabled">Snap to other preview windows while dragging</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapEnabledTip">While dragging a preview window, edges/corners near other visible preview windows snap into alignment; after snapping to an edge you can keep sliding along it. Only preview windows are used as snap targets, not screen edges.</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapDistance">Snap distance (px)</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapDistanceTip">Snap when an edge is within this distance of a target edge; 8–16 is recommended.</sys:String>
     <sys:String x:Key="GamePreviewPage_Behavior">Behavior</sys:String>
     <sys:String x:Key="GamePreviewPage_StartAllWithNoneSetting">Include processes without saved settings when starting all</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoStartNewProcess">Automatically start new processes</sys:String>

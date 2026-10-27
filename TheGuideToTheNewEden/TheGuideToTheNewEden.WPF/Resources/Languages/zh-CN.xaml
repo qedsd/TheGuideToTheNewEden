@@ -1254,6 +1254,11 @@
     <sys:String x:Key="GamePreviewPage_AutoLayout_Anchor_2">末尾对齐</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoLayout_Span">间隔</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoLayout_Count">每行/列最多（不含锚点）</sys:String>
+    <sys:String x:Key="GamePreviewPage_Snap">窗口吸附</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapEnabled">拖动时吸附到其它预览窗口</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapEnabledTip">拖动浮窗时，靠近其它可见预览窗的边/角会自动对齐；贴住一条边后仍可沿该边滑动。只吸附预览窗口，不吸屏幕边缘。</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapDistance">吸附距离（像素）</sys:String>
+    <sys:String x:Key="GamePreviewPage_SnapDistanceTip">窗口边与目标边的距离不超过该值时吸附；建议 8–16。</sys:String>
     <sys:String x:Key="GamePreviewPage_Behavior">行为</sys:String>
     <sys:String x:Key="GamePreviewPage_StartAllWithNoneSetting">开始全部时包含没有保存过配置的进程</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoStartNewProcess">自动开始新出现的进程</sys:String>

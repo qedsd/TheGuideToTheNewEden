@@ -96,6 +96,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     private readonly DwmThumbnail _thumbnail = new();
     private readonly PreviewSetting _globalSetting;
 
+    /// <summary>拖动时用于吸附的其它预览窗矩形（由管理器提供，排除自己）。</summary>
+    private readonly Func<IReadOnlyList<NativeMethods.RECT>>? _snapTargets;
+
+    /// <summary>本次拖动内的吸附状态（贴住一条边后可沿边滑动）。</summary>
+    private readonly PreviewSnapSession _snapSession = new();
+
     /// <summary>尺寸稳定后做一次比例校正的防抖定时器。</summary>
     private readonly DispatcherTimer _aspectCorrectionTimer;
 
@@ -148,11 +154,16 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     public event Action<PreviewItem>? StopRequested;
 
-    public GamePreviewWindow(ProcessInfo process, PreviewItem setting, PreviewSetting globalSetting)
+    internal GamePreviewWindow(
+        ProcessInfo process,
+        PreviewItem setting,
+        PreviewSetting globalSetting,
+        Func<IReadOnlyList<NativeMethods.RECT>>? snapTargets = null)
     {
         Process = process;
         Setting = setting;
         _globalSetting = globalSetting;
+        _snapTargets = snapTargets;
 
         InitializeComponent();
 
@@ -1382,6 +1393,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         NativeMethods.GetCursorPos(out _dragStartCursor);
         NativeMethods.GetWindowRect(_hwnd, out _dragStartRect);
+        _snapSession.Reset();
         _dragCandidate = true;
         _dragging = false;
         ((UIElement)sender).CaptureMouse();
@@ -1406,8 +1418,32 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         }
 
         _dragging = true;
-        NativeMethods.MoveWindow(_hwnd, _dragStartRect.Left + dx, _dragStartRect.Top + dy);
-        MoveNameOverlay(_dragStartRect.Left + dx, _dragStartRect.Top + dy);
+
+        var x = _dragStartRect.Left + dx;
+        var y = _dragStartRect.Top + dy;
+
+        // 拖动吸附：只吸其它预览窗。每个轴独立吸附，所以贴住顶边后仍可左右滑动。
+        if (_globalSetting.SnapEnabled && _globalSetting.SnapDistance > 0 && _snapTargets is not null)
+        {
+            var proposed = new NativeMethods.RECT
+            {
+                Left = x,
+                Top = y,
+                Right = x + _dragStartRect.Width,
+                Bottom = y + _dragStartRect.Height,
+            };
+
+            var snap = _snapSession.Snap(proposed, _snapTargets(), _globalSetting.SnapDistance);
+            x = snap.X;
+            y = snap.Y;
+        }
+        else
+        {
+            _snapSession.Reset();
+        }
+
+        NativeMethods.MoveWindow(_hwnd, x, y);
+        MoveNameOverlay(x, y);
         PersistBounds();
     }
 
@@ -1422,6 +1458,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         var wasDragging = _dragging;
         _dragCandidate = false;
         _dragging = false;
+        _snapSession.Reset();
 
         if (!wasDragging)
         {

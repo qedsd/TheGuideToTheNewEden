@@ -1729,6 +1729,47 @@
                                 </StackPanel>
                             </Border>
 
+                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_Snap}" />
+                            <Border Style="{StaticResource GroupCard}">
+                                <StackPanel>
+                                    <Grid Style="{StaticResource Row}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Style="{StaticResource RowLabel}"
+                                            Text="{DynamicResource GamePreviewPage_SnapEnabled}"
+                                            ToolTip="{DynamicResource GamePreviewPage_SnapEnabledTip}" />
+                                        <ui:ToggleSwitch
+                                            Grid.Column="1"
+                                            AutomationProperties.Name="{DynamicResource GamePreviewPage_SnapEnabled}"
+                                            IsChecked="{Binding Setting.SnapEnabled, Mode=TwoWay}"
+                                            ToolTip="{DynamicResource GamePreviewPage_SnapEnabledTip}" />
+                                    </Grid>
+                                    <Border Style="{StaticResource RowDivider}" />
+                                    <Grid Style="{StaticResource Row}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Style="{StaticResource RowLabel}"
+                                            Text="{DynamicResource GamePreviewPage_SnapDistance}"
+                                            ToolTip="{DynamicResource GamePreviewPage_SnapDistanceTip}" />
+                                        <ui:NumberBox
+                                            Grid.Column="1"
+                                            Width="140"
+                                            ClearButtonEnabled="False"
+                                            Maximum="64"
+                                            Minimum="1"
+                                            SmallChange="1"
+                                            ToolTip="{DynamicResource GamePreviewPage_SnapDistanceTip}"
+                                            Value="{Binding Setting.SnapDistance, Mode=TwoWay}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_Behavior}" />
                             <Border Style="{StaticResource GroupCard}">
                                 <StackPanel>

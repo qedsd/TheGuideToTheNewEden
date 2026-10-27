@@ -64,7 +64,7 @@ public sealed class PreviewWindowManager : IDisposable
         }
 
         IPreviewWindow window = setting.ShowPreviewWindow
-            ? new GamePreviewWindow(process, setting, _global)
+            ? new GamePreviewWindow(process, setting, _global, () => SnapshotSnapTargets(process.GUID))
             : new HeadlessPreviewWindow(process, setting, _global);
 
         window.SettingChanged += OnWindowSettingChanged;
@@ -404,6 +404,37 @@ public sealed class PreviewWindowManager : IDisposable
     {
         var index = _global.ProcessOrder?.IndexOf(title) ?? -1;
         return index >= 0 ? index : int.MaxValue;
+    }
+
+    /// <summary>拖动吸附的目标：其它可见预览窗的当前矩形（排除自己）。</summary>
+    private IReadOnlyList<NativeMethods.RECT> SnapshotSnapTargets(string selfGuid)
+    {
+        var targets = new List<NativeMethods.RECT>(_running.Count);
+        foreach (var (guid, window) in _running)
+        {
+            if (string.Equals(guid, selfGuid, StringComparison.Ordinal)
+                || !window.Setting.ShowPreviewWindow
+                || !window.IsShowing)
+            {
+                continue;
+            }
+
+            var rect = window.GetRect();
+            if (rect.Width <= 0 || rect.Height <= 0)
+            {
+                continue;
+            }
+
+            targets.Add(new NativeMethods.RECT
+            {
+                Left = rect.X,
+                Top = rect.Y,
+                Right = rect.X + rect.Width,
+                Bottom = rect.Y + rect.Height,
+            });
+        }
+
+        return targets;
     }
 
     private IEnumerable<IPreviewWindow> VisibleWindows()
