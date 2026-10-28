@@ -9737,6 +9737,122 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步说明新布局和百分比。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 207：频道预警页整体重排（三栏工作区 + 搜索/计数 + 卡片设置）（2026-10-28）
+
+- 参考多开预览页的面板语言，重排 `ChannelIntelPage`：
+  - 页头：标题/说明、全局运行计数、范围胶囊、同步全部设置、刷新角色；
+  - 左栏：角色搜索、数量、运行状态、角色列表、开始/停止全部；
+  - 中栏：频道来源、搜索、已选计数、全选/清空、频道列表、刷新频道；
+  - 右栏：选中角色摘要（本地星系/跳数/运行状态/重置位置/停止声音/开始·停止预警）+ 设置/频道内容页签。
+- 角色/频道列表均支持就地过滤；第一次加载/刷新后自动选中第一个角色。
+- 预警范围改成 `− / 数值 / +` 步进并直接写 `Setting.IntelJumps`；原 `NumberBox` 和 `OnIntelJumpsChanged` 移除。
+- 通知方式改为三张卡片；弹窗显示模式/样式/不透明度收在通知卡片内。
+- 预警声音使用每跳两行卡片（跳数 + 音量百分比 + 循环；文件 + 选择），宽屏自适应多列。
+- 关键词与自动化改为并排卡片；保留全部原绑定、`NameDbsList`、文件选择、自动解除/降级、ZKB。
+- 频道内容仍由 `RichTextBox` 按原逻辑着色/加粗；不改事件与内容管线。
+- 新增页头/搜索/计数/空态等语言键；手册同步新布局。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS；WPF 独立预览确认三栏、搜索框、声音卡片、页头计数与选中角色摘要正常。
+
+## 阶段 208：频道预警页按反馈收口（去页头 / ESI 头像 / 频道行精简 / 默认不勾选）（2026-10-28）
+
+- 删除页面顶部独立的标题/说明/运行计数/范围/同步刷新那一行；工作区直接顶到页面上沿。
+- 同步全部设置、刷新角色移到左栏「角色列表」标题右侧的图标按钮。
+- 角色头像改用 ESI portrait：
+  - `ChannelIntelListener` 增加 `CharacterId` / `AvatarUrl`；
+  - ViewModel 用 `CharacterStore` 按角色名匹配授权角色，再走 `GameImageHelper.BuildCharacterPortraitUrl`；
+  - 列表与选中角色头部都用 `AsyncImage`，`HideOnFailure=True`；未授权、URL 为空或下载失败时隐藏头像。
+- `AsyncImage` 新增 `HideOnFailure` 附加属性；只有显式开启时才改 Visibility，避免影响其他已有图片。
+- 频道行去掉 `#` 图标、右侧「已选」提示；频道栏去掉「全选 / 清空 / 日志路径正常」。
+- 空闲会话首次显示时默认把所有频道改为未勾选；运行中的会话保留实际监听频道；用户本次选择在切换角色再回来时保留。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS；WPF 页面预览确认无页头、角色头像失败隐藏、频道行精简。
+
+## 阶段 209：频道行勾选不再遮挡 + 关键词/自动化改垂直（2026-10-28）
+
+- 频道行第一列从固定 22 改为 `Auto`，复选框自己决定宽度；频道名从复选框之后开始，不再出现左侧勾选框被文字盖住。
+- 「关键词」「自动化」不再并排：改为纵向 `StackPanel`，各自占满设置区宽度；窄面板下表单和 `NameDbsList` 不再被挤压。
+- 仅调整布局，不改频道勾选、关键词/自动化绑定。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 210：预警声音单列铺满 + 小窗状态文案（2026-10-28）
+
+- 预警声音不再使用 `WrapPanel ItemWidth=370` 的固定列宽；改回默认纵向 `ItemsControl`，`SoundRowTemplate` 根卡片 `HorizontalAlignment=Stretch`、右边距归零，每跳卡片占满设置区宽度。
+- 预警小窗标题右侧空闲态由「待命」改为「无预警」：
+  - 新增 `IntelWindow_NoActiveAlert`（中/英）；
+  - 仅在 `MapView.ActiveCount == 0` 时显示，表示当前没有活动预警，不代表停止监控；
+  - 角色页的停止态仍用「待命」，避免混淆。
+- 手册补充「无预警」语义。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 211：SMT / Near2 预警样式真正生效（2026-10-28）
+
+- 原先 `OverlapStyle` 只保存设置，`IntelMapView` 仍按 2D 坐标绘制，所以三种样式看起来一样。
+- `IntelMapView` 增加 `_overlapStyle`，按设置切换布局：
+  - 默认（0）：沿用原 2D 坐标 + 2%–98% 视口；
+  - SMT（1）：`GroupByJump()` 分层，本地在顶部，按跳数逐层向下，每层横向均分；
+  - Near2（2）：SMT 的上下翻转，最外层在上、本地在下。
+- 数据集合仍是完整 N 跳，所有星系都绘制；只是位置算法不同。
+- SMT/Near2 不显示「几何离群」贴边卡片（它们本身按跳数分层，没有 2D 离群含义）。
+- 监听 `Setting.PropertyChanged(OverlapStyle)`：设置页改样式时若小窗已存在会立即重排。
+- 星门连线、悬停、右键、缩放/平移继续复用现有逻辑。
+- 手册更新「显示样式」说明与限制；`REFACTORING` 记录本阶段。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 212：显示样式通用命名 + 预警窗最小化行为（2026-10-28）
+
+- 显示样式下拉改为通用名称：
+  - `SMT` → **分层**（Layered）；
+  - `Near2` → **反向分层**（Reverse layered）；
+  - 内部枚举/配置值不变，只改界面文案与手册。
+- 预警小窗最小化到屏幕左下角的原因：窗口 `ShowInTaskbar=False`，WPF/Windows 按工具窗口处理，最小化后没有任务栏入口也会被放到桌面角落。
+- 处理方式：
+  - 最小化时临时 `ShowInTaskbar=true`，让任务栏出现可恢复按钮；
+  - 恢复为 Normal 后重新 `ShowInTaskbar=false`，保持平时不占任务栏；
+  - `ShowWindow()` 收到新预警时若处于最小化会自动恢复；
+  - 补充 `Window.Title`，任务栏显示「频道预警 · 角色名」。
+- 手册更新显示样式名称、分层说明和最小化行为。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 213：预警窗尺寸 / 频道勾选自动保存 / 启动前重扫最新日志（2026-10-28）
+
+### 213.1 预警小窗取消过大的最小尺寸
+
+- 删除 `IntelWindow` 的 `MinWidth=560 / MinHeight=500`；
+- 构造时不再用 `Math.Max(..., 560/520)` 夹取，保存过的尺寸按实际值恢复；
+- 仅保留 WPF/系统自身的最小窗口限制，用户可以拖到更小。
+
+### 213.2 频道勾选立即保存
+
+- `ChannelIntelSession` 新增 `SaveChannelSelection()`；
+- 页面监听 `ChatChanelInfoItem.IsChecked`，勾选/取消后立即写 `IntelSettings.json`，不再等开始预警；
+- 恢复已保存的频道选择；只有从未保存过选择时才默认全不勾选。
+
+### 213.3 启动前重扫最新日志文件
+
+- 新增 `ChatlogChannelRefreshService`：按当前日志目录重扫某个 listener 的聊天频道，把已有 `ChatChanelInfoItem.Info` 的 `FilePath / ChannelName / SessionStarted` 更新为最新日期的文件。
+- 接入四个启动点：
+  - 频道预警：`ChannelIntelSession.Start`；
+  - 频道监控：`ChannelMonitorViewModel.StartAsync`；
+  - 频道查价：`ChannelMarketViewModel.StartAsync`；
+  - 日志监控：`GameLogMonitorViewModel.Start` 重扫 `GetLatestGameLogInfos` 后更新角色日志路径。
+- 解决游戏中途关闭重开后，缓存仍指向旧聊天/游戏日志文件、开始后监听不到新内容的问题。
+- 手册同步四个功能及自动保存/尺寸说明。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 214：预警小窗状态胶囊按状态着色（2026-10-28）
+
+- `TitleStatusBorder` / `TitleStatusText` 在 `UpdateStatus()` 中按 `MapView.ActiveCount` 切换颜色：
+  - 有活动预警：橙色文字 + 橙色半透明背景；
+  - 无预警：绿色文字 + 绿色半透明背景。
+- 新增 `IntelGreenSoftBrush`（`#1846D39B`）；绿色沿用现有 `IntelGreenBrush`。
+- 手册补充「无预警」为绿色。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 215：预警设置标题栏去掉“自动更新本地位置”提示（2026-10-28）
+
+- 右侧选中角色摘要只保留：本地星系 · 跳数 · 运行状态；删除尾部的「自动更新本地位置」文字和多余分隔点。
+- 自动更新开关仍在「预警范围」卡片中，功能不变。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

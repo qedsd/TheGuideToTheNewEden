@@ -467,7 +467,7 @@
     <x:String x:Key="BusinessPage_ShoppingRecord_All">All Record</x:String>
     <x:String x:Key="BusinessPage_ShoppingRecord_Detail">Record Detail</x:String>
     <x:String x:Key="BusinessPage_ShoppingRecord_DeleteCount">Are you sure you want to delete {0} records?</x:String>
-    
+
     <x:String x:Key="MarketSettingPage_OrderDuration">Duration of order</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">Effective duration of historical records</x:String>
     <x:String x:Key="MarketSettingPage_MaxThread">ESI Thread count</x:String>
@@ -725,7 +725,7 @@
     <x:String x:Key="EarlyWarningItemPage_RestorePos">Reset position</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos_Desc">Reset the intel window position to the center of the screen</x:String>
     <x:String x:Key="EarlyWarningItemPage_SoundFilePath">Audio file</x:String>
-    <x:String x:Key="EarlyWarningItemPage_Jump">Jump</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Jump">Jumps</x:String>
     <x:String x:Key="EarlyWarningItemPage_Volume">Volume</x:String>
     <x:String x:Key="EarlyWarningItemPage_Loop">Loop</x:String>
     <x:String x:Key="EarlyWarningItemPage_DefaultFile">Default</x:String>

@@ -150,6 +150,13 @@ public sealed class ChannelIntelSession
         IntelSettingService.SetValue(Setting);
     }
 
+    /// <summary>勾选频道变化时立即写入 IntelSettings.json，不必等到开始预警。</summary>
+    public void SaveChannelSelection()
+    {
+        Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelID).ToList();
+        IntelSettingService.SetValue(Setting);
+    }
+
     private void Setting_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -294,6 +301,9 @@ public sealed class ChannelIntelSession
         {
             throw new Exception($"{Listener}: {FindString("ChannelIntelPage_Error_SystemNotSupport")}");
         }
+
+        // 游戏重开/跨天后聊天日志会换新文件；开始前把缓存里的旧文件路径更新到最新日志。
+        await ChatlogChannelRefreshService.RefreshAsync(Listener, ChatChanelInfos);
 
         if (ChatChanelInfos is not { Count: > 0 })
         {

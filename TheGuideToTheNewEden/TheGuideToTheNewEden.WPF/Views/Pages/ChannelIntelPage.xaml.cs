@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.DBModels;
@@ -10,25 +12,33 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WPF.Controls;
 using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
+using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
 /// <summary>
-/// 频道预警页（对齐 WinUI 版 Views/Channel/ChannelIntelPage）：
-/// 左角色列表、中频道勾选列表、右预警设置与频道内容。
-/// "频道内容"用只读 RichTextBox 按预警类型着色（预警=危险色并加粗舰船名、解除=成功色）。
+/// 频道预警页：顶部全局状态与刷新，左侧角色搜索/列表，中栏频道来源搜索/勾选，
+/// 右侧选中角色的卡片式设置与频道内容。频道内容仍用只读 RichTextBox 按类型着色。
 /// 页面缓存常驻，切走后监控继续运行；应用退出时统一释放（App.OnExit）。
 /// </summary>
 public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 {
     private readonly ChannelIntelViewModel _viewModel = new();
+    private ChannelIntelSession? _observedSession;
 
     public string FeatureKey => "channelintel";
 
     public Task<string> RestartAsync() => _viewModel.RestartFromSettingsAsync();
+
+    private static string FindString(string key) =>
+        Application.Current?.TryFindResource(key) as string ?? key;
+
+    private static Brush FindBrush(string key, Brush fallback) =>
+        Application.Current?.TryFindResource(key) as Brush ?? fallback;
 
     private sealed class NameDbItem
     {
@@ -42,13 +52,7 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         InitializeComponent();
         DataContext = _viewModel;
         AssistantFeatureRuntime.Register(this);
-        _viewModel.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(ChannelIntelViewModel.Session))
-            {
-                OnSessionChanged();
-            }
-        };
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         _viewModel.ChatContents.CollectionChanged += ChatContents_CollectionChanged;
         _viewModel.ZKBIntelContents.CollectionChanged += ZKBIntelContents_CollectionChanged;
         Loaded += OnLoaded;
@@ -56,7 +60,48 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        ShipNameCacheService.Current.Init(); // 舰船名匹配缓存（预警内容加粗用）
+        try
+        {
+            ShipNameCacheService.Current.Init(); // 舰名匹配缓存（频道内容加粗用）
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+        }
+
+        UpdateRoleCount();
+        UpdateSelectedHeader();
+        ApplyRoleFilter();
+        EnsureFirstCharacterSelected();
+        Dispatcher.BeginInvoke(() =>
+        {
+            AttachSession(_viewModel.Session);
+            ApplyChannelFilter();
+            UpdateChannelCount();
+        });
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ChannelIntelViewModel.Session):
+                OnSessionChanged();
+                break;
+            case nameof(ChannelIntelViewModel.Characters):
+                Dispatcher.BeginInvoke(() =>
+                {
+                    UpdateRoleCount();
+                    ApplyRoleFilter();
+                    EnsureFirstCharacterSelected();
+                    
+                });
+                break;
+            case nameof(ChannelIntelViewModel.Running):
+            case nameof(ChannelIntelViewModel.SelectedRunning):
+                UpdateSelectedHeader();
+                break;
+        }
     }
 
     // ---------- 角色与频道 ----------
@@ -93,6 +138,167 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         }
 
         NameDbsList.SelectionChanged += OnNameDbsSelectionChanged;
+
+        ChannelList.ItemsSource = _viewModel.Session?.ChatChanelInfos;
+        AttachSession(_viewModel.Session);
+        UpdateSelectedHeader();
+        UpdateChannelCount();
+        Dispatcher.BeginInvoke(ApplyChannelFilter);
+    }
+
+    private void UpdateSelectedHeader()
+    {
+        var session = _viewModel.Session;
+        if (session is null)
+        {
+            AsyncImage.SetSource(SelectedAvatarImage, null);
+            SelectedAvatarImage.Source = null;
+            SelectedAvatarImage.Visibility = Visibility.Collapsed;
+            SelectedRangeText.Text = string.Empty;
+            SelectedStatusText.Text = FindString("IntelWindow_Standby");
+            SelectedStatusText.Foreground = FindBrush("TextFillColorSecondaryBrush", Brushes.Gray);
+            SelectedStatusDot.Fill = FindBrush("TextFillColorSecondaryBrush", Brushes.Gray);
+            return;
+        }
+
+        var role = _viewModel.Characters.FirstOrDefault(p => p.Name == session.Listener);
+        AsyncImage.SetSource(SelectedAvatarImage, role?.AvatarUrl);
+        if (string.IsNullOrWhiteSpace(role?.AvatarUrl))
+        {
+            SelectedAvatarImage.Source = null;
+            SelectedAvatarImage.Visibility = Visibility.Collapsed;
+        }
+
+        SelectedRangeText.Text = $"{session.Setting.IntelJumps} {FindString("EarlyWarningPage_Jumps")}";
+        SelectedStatusText.Text = session.Running
+            ? FindString("ChannelIntelPage_RunningText")
+            : FindString("IntelWindow_Standby");
+        SelectedStatusText.Foreground = session.Running
+            ? FindBrush("SystemFillColorSuccessBrush", Brushes.LimeGreen)
+            : FindBrush("TextFillColorSecondaryBrush", Brushes.Gray);
+        SelectedStatusDot.Fill = session.Running
+            ? FindBrush("SystemFillColorSuccessBrush", Brushes.LimeGreen)
+            : FindBrush("TextFillColorSecondaryBrush", Brushes.Gray);
+    }
+
+    private void EnsureFirstCharacterSelected()
+    {
+        if (CharacterList.Items.Count == 0)
+        {
+            return;
+        }
+
+        if (_viewModel.SelectedCharacter is null && CharacterList.SelectedItem is not null)
+        {
+            CharacterList.SelectedItem = null;
+        }
+
+        if (CharacterList.SelectedItem is null)
+        {
+            CharacterList.SelectedIndex = 0;
+        }
+    }
+
+    private void UpdateRoleCount()
+    {
+        var count = _viewModel.Characters.Count;
+        RoleCountText.Text = count.ToString();
+        RoleEmptyText.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void UpdateChannelCount()
+    {
+        var session = _viewModel.Session;
+        var count = session?.ChatChanelInfos.Count(p => p.IsChecked) ?? 0;
+        SelectedChannelCountText.Text = string.Format(FindString("ChannelIntelPage_SelectedCount"), count);
+        ChannelEmptyText.Visibility = session is { ChatChanelInfos.Count: 0 }
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void AttachSession(ChannelIntelSession? session)
+    {
+        if (_observedSession is not null)
+        {
+            foreach (var item in _observedSession.ChatChanelInfos)
+            {
+                item.PropertyChanged -= ObservedChannel_PropertyChanged;
+            }
+        }
+
+        _observedSession = session;
+        if (session is not null)
+        {
+            foreach (var item in session.ChatChanelInfos)
+            {
+                item.PropertyChanged += ObservedChannel_PropertyChanged;
+            }
+        }
+
+        ChannelList.ItemsSource = session?.ChatChanelInfos;
+    }
+
+    private void ObservedChannel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ChatChanelInfoItem.IsChecked))
+        {
+            UpdateChannelCount();
+            _observedSession?.SaveChannelSelection();
+        }
+    }
+
+    private void ApplyRoleFilter()
+    {
+        if (CharacterList is null || CharacterList.ItemsSource is null)
+        {
+            return;
+        }
+
+        var keyword = RoleSearchBox.Text?.Trim();
+        var view = CollectionViewSource.GetDefaultView(CharacterList.ItemsSource);
+        view.Filter = item => string.IsNullOrEmpty(keyword)
+            || item is ChannelIntelListener role
+            && role.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true;
+        view.Refresh();
+    }
+
+    private void ApplyChannelFilter()
+    {
+        if (ChannelList is null || ChannelList.ItemsSource is null)
+        {
+            return;
+        }
+
+        var keyword = ChannelSearchBox.Text?.Trim();
+        var view = CollectionViewSource.GetDefaultView(ChannelList.ItemsSource);
+        view.Filter = item => string.IsNullOrEmpty(keyword)
+            || item is ChatChanelInfoItem channel
+            && channel.ChannelName?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true;
+        view.Refresh();
+    }
+
+    private void OnRoleSearchChanged(object sender, TextChangedEventArgs e) => ApplyRoleFilter();
+
+    private void OnChannelSearchChanged(object sender, TextChangedEventArgs e) => ApplyChannelFilter();
+
+    private void OnRangeMinusClick(object sender, RoutedEventArgs e) => ChangeJumps(-1);
+
+    private void OnRangePlusClick(object sender, RoutedEventArgs e) => ChangeJumps(1);
+
+    private void ChangeJumps(int delta)
+    {
+        if (_viewModel.Session is null)
+        {
+            return;
+        }
+
+        var value = Math.Clamp(_viewModel.Session.Setting.IntelJumps + delta, 0, 8);
+        if (_viewModel.Session.Setting.IntelJumps != value)
+        {
+            _viewModel.Session.Setting.IntelJumps = value;
+        }
+
+        UpdateSelectedHeader();
     }
 
     private void OnSystemSearchChanged(object sender, TextChangedEventArgs e)
@@ -123,39 +329,58 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 
     // ---------- 按钮 ----------
 
-    private async void OnStartClick(object sender, RoutedEventArgs e) => await _viewModel.StartAsync();
-
-    /// <summary>
-    /// WPF-UI NumberBox.Value 是 double?；除了绑定代理，这里再显式写回一次，
-    /// 避免只改文本/失去焦点顺序导致 Start 仍读到旧跳数。
-    /// </summary>
-    private void OnIntelJumpsChanged(object sender, Wpf.Ui.Controls.NumberBoxValueChangedEventArgs e)
+    private async void OnStartClick(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { IsLoaded: true } || _viewModel.Session is null)
-        {
-            return;
-        }
-
-        var value = (int)Math.Clamp(Math.Round(e.NewValue ?? 0), 0, 8);
-        if (_viewModel.Session.Setting.IntelJumps != value)
-        {
-            _viewModel.Session.Setting.IntelJumps = value;
-        }
+        await _viewModel.StartAsync();
+        
+        UpdateSelectedHeader();
     }
 
-    private void OnStopClick(object sender, RoutedEventArgs e) => _viewModel.StopSelected();
+    private void OnStopClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.StopSelected();
+        
+        UpdateSelectedHeader();
+    }
 
     private void OnStopSoundClick(object sender, RoutedEventArgs e) => _viewModel.StopSound();
 
     private void OnRestorePosClick(object sender, RoutedEventArgs e) => _viewModel.RestorePos();
 
-    private async void OnStartAllClick(object sender, RoutedEventArgs e) => await _viewModel.StartAllAsync();
+    private async void OnStartAllClick(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.StartAllAsync();
+        
+        UpdateSelectedHeader();
+    }
 
-    private void OnStopAllClick(object sender, RoutedEventArgs e) => _viewModel.StopAll();
+    private void OnStopAllClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.StopAll();
+        
+        UpdateSelectedHeader();
+    }
 
-    private async void OnRefreshChannelsClick(object sender, RoutedEventArgs e) => await _viewModel.RefreshChannelsAsync();
+    private async void OnRefreshChannelsClick(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.RefreshChannelsAsync();
+        AttachSession(_viewModel.Session);
+        ApplyChannelFilter();
+        UpdateChannelCount();
+    }
 
-    private async void OnRefreshCharactersClick(object sender, RoutedEventArgs e) => await _viewModel.RefreshCharactersAsync();
+    private async void OnRefreshCharactersClick(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.RefreshCharactersAsync();
+        UpdateRoleCount();
+        
+        ApplyRoleFilter();
+        EnsureFirstCharacterSelected();
+        AttachSession(_viewModel.Session);
+        ApplyChannelFilter();
+        UpdateSelectedHeader();
+        UpdateChannelCount();
+    }
 
     private void OnApplySettingToAllClick(object sender, RoutedEventArgs e) => _viewModel.ApplySettingToAll();
 

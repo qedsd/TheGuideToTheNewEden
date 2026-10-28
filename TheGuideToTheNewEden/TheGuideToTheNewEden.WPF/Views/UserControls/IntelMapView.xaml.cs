@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,6 +23,7 @@ public partial class IntelMapView : UserControl
 {
     private IntelSolarSystemMap? _intelMap;
     private ChannelIntelSetting? _setting;
+    private int _overlapStyle;
 
     private static readonly Brush DefaultBrush = Frozen(Color.FromRgb(151, 169, 193));
     private static readonly Brush HomeBrush = Frozen(Color.FromRgb(70, 211, 155));
@@ -86,6 +88,9 @@ public partial class IntelMapView : UserControl
     {
         _intelMap = intelMap;
         _setting = setting;
+        _overlapStyle = setting.OverlapStyle;
+        setting.PropertyChanged -= Setting_PropertyChanged;
+        setting.PropertyChanged += Setting_PropertyChanged;
         _intelings.Clear();
         _downgradeds.Clear();
         _intelContent.Clear();
@@ -97,6 +102,15 @@ public partial class IntelMapView : UserControl
 
     private static string FindString(string key) =>
         Application.Current?.TryFindResource(key) as string ?? key;
+
+    private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ChannelIntelSetting.OverlapStyle))
+        {
+            _overlapStyle = _setting?.OverlapStyle ?? 0;
+            UpdateUI();
+        }
+    }
 
     // ---------- 预警状态 ----------
 
@@ -232,8 +246,12 @@ public partial class IntelMapView : UserControl
         }
 
         _allSolarSystem.AddRange(all);
+        var centers = BuildCenters(width, height);
         foreach (var item in _allSolarSystem)
         {
+            var center = centers.TryGetValue(item.SolarSystemID, out var point)
+                ? point
+                : new Point(width * item.X2, height * item.Y2);
             var highlighted = IsHighlighted(item.SolarSystemID);
             var isHome = item.SolarSystemID == _setting?.LocationID;
             var size = isHome ? HomeSize : highlighted ? IntelSize : QuietSize;
@@ -254,8 +272,8 @@ public partial class IntelMapView : UserControl
             ellipse.MouseLeave += Ellipse_MouseLeave;
             ellipse.MouseRightButtonUp += Ellipse_RightClick;
 
-            var left = width * item.X2 - size;
-            var top = height * item.Y2 - size;
+            var left = center.X - size;
+            var top = center.Y - size;
             Canvas.SetLeft(ellipse, left);
             Canvas.SetTop(ellipse, top);
 
@@ -328,6 +346,51 @@ public partial class IntelMapView : UserControl
         UpdateOutlierPanel();
     }
 
+    /// <summary>
+    /// 默认样式按 2D 坐标；SMT/Near2 按跳数分层：
+    /// SMT 从本地开始向下逐跳，Near2 是 SMT 的纵向翻转（最外层在上、本地在下）。
+    /// </summary>
+    private Dictionary<int, Point> BuildCenters(double width, double height)
+    {
+        var centers = new Dictionary<int, Point>();
+        if (_overlapStyle == 0 || _intelMap is null)
+        {
+            foreach (var item in _allSolarSystem)
+            {
+                centers[item.SolarSystemID] = new Point(width * item.X2, height * item.Y2);
+            }
+
+            return centers;
+        }
+
+        var groups = _intelMap.GroupByJump();
+        if (groups.Count == 0)
+        {
+            return centers;
+        }
+
+        var perJumpHeight = height / groups.Count;
+        for (var i = 0; i < groups.Count; i++)
+        {
+            var layer = _overlapStyle == 1 ? i : groups.Count - 1 - i;
+            var layerItems = groups[i];
+            if (layerItems.Length == 0)
+            {
+                continue;
+            }
+
+            var perWidth = width / layerItems.Length;
+            for (var j = 0; j < layerItems.Length; j++)
+            {
+                centers[layerItems[j].SolarSystemID] = new Point(
+                    j * perWidth + perWidth / 2,
+                    layer * perJumpHeight + perJumpHeight / 2);
+            }
+        }
+
+        return centers;
+    }
+
     private void ShowLabel(int systemId, bool visible)
     {
         if (_labelDic.TryGetValue(systemId, out var label))
@@ -338,6 +401,14 @@ public partial class IntelMapView : UserControl
 
     private void UpdateOutlierPanel()
     {
+        if (_overlapStyle != 0)
+        {
+            // SMT / Near2 本身按跳数分层，不使用“几何离群”贴边卡片。
+            OutlierPanel.Children.Clear();
+            OutlierPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
         OutlierPanel.Children.Clear();
         var outliers = _allSolarSystem
             .Where(p => p.ViewportOutlier && (_intelings.Contains(p.SolarSystemID) || _downgradeds.Contains(p.SolarSystemID)))

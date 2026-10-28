@@ -9,7 +9,10 @@ using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.Core.Services;
+using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 
@@ -122,8 +125,23 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     private async Task InitDicAsync()
     {
         await LoadListenerChannelDicAsync();
-        Characters = [.. _listenerChannelDic.Keys.Select(p => new ChannelIntelListener(p))];
+        Characters = [.. _listenerChannelDic.Keys.Select(CreateListener)];
         OnPropertyChanged(nameof(Characters));
+    }
+
+    /// <summary>角色列表头像是 ESI portrait；找不到授权角色时 URL 留空，界面隐藏头像。</summary>
+    private static ChannelIntelListener CreateListener(string name)
+    {
+        var listener = new ChannelIntelListener(name);
+        var character = CharacterStore.Characters.FirstOrDefault(
+            p => string.Equals(p.CharacterName, name, StringComparison.OrdinalIgnoreCase));
+        if (character is not null)
+        {
+            listener.CharacterId = character.CharacterID;
+            listener.AvatarUrl = GameImageHelper.BuildCharacterPortraitUrl(character.CharacterID, 64);
+        }
+
+        return listener;
     }
 
     private async Task LoadListenerChannelDicAsync()
@@ -371,7 +389,7 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
             {
                 if (Characters.FirstOrDefault(p => p.Name == item.Key) is null)
                 {
-                    Characters.Add(new ChannelIntelListener(item.Key));
+                    Characters.Add(CreateListener(item.Key));
                 }
             }
 

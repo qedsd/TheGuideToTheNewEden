@@ -57,12 +57,13 @@ public partial class IntelWindow : Window
         ApplyBackdrop();
         ThemeService.ThemeChanged += ApplyBackdrop;
 
-        Width = setting.WinW > 0 ? Math.Max(setting.WinW, 560) : 640;
-        Height = setting.WinH > 0 ? Math.Max(setting.WinH, 520) : 620;
+        Width = setting.WinW > 0 ? setting.WinW : 640;
+        Height = setting.WinH > 0 ? setting.WinH : 620;
         Left = setting.WinX;
         Top = setting.WinY;
         EnsureOnScreen();
 
+        Title = $"{FindString("IntelWindow_Title")} · {setting.Listener}";
         TitleText.Text = $"{FindString("IntelWindow_Title")} · {setting.Listener}";
         TitleStatusText.Text = FindString("ChannelIntelPage_Running");
 
@@ -103,6 +104,11 @@ public partial class IntelWindow : Window
     {
         try
         {
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+            }
+
             if (!IsVisible)
             {
                 Show();
@@ -252,9 +258,16 @@ public partial class IntelWindow : Window
 
     private void UpdateStatus()
     {
-        TitleStatusText.Text = MapView.ActiveCount > 0
+        var active = MapView.ActiveCount > 0;
+        TitleStatusText.Text = active
             ? FindString("ChannelIntelPage_Running")
-            : FindString("IntelWindow_Standby");
+            : FindString("IntelWindow_NoActiveAlert");
+        TitleStatusText.Foreground = active
+            ? (Brush)FindResource("IntelCautionBrush")
+            : (Brush)FindResource("IntelGreenBrush");
+        TitleStatusBorder.Background = active
+            ? (Brush)FindResource("IntelCautionSoftBrush")
+            : (Brush)FindResource("IntelGreenSoftBrush");
     }
 
     private void OnSystemClearRequested(object? sender, int systemId)
@@ -411,7 +424,26 @@ public partial class IntelWindow : Window
     // ---------- 地图悬浮按钮 / 缩放 ----------
 
     private void OnMinimizeClick(object sender, RoutedEventArgs e)
-        => WindowState = WindowState.Minimized;
+    {
+        // 工具窗口 ShowInTaskbar=False 时，Windows 会把最小化窗口丢到屏幕左下角，
+        // 且任务栏没有恢复入口。最小化期间临时显示任务栏按钮，恢复后再隐藏。
+        ShowInTaskbar = true;
+        WindowState = WindowState.Minimized;
+    }
+
+    protected override void OnStateChanged(EventArgs e)
+    {
+        if (WindowState == WindowState.Minimized)
+        {
+            ShowInTaskbar = true;
+        }
+        else if (WindowState == WindowState.Normal)
+        {
+            ShowInTaskbar = false;
+        }
+
+        base.OnStateChanged(e);
+    }
 
     private void OnCloseClick(object sender, RoutedEventArgs e)
         => Close();

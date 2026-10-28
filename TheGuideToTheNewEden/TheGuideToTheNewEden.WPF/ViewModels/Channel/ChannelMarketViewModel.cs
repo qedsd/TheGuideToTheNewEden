@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -209,6 +209,7 @@ public sealed class ChannelMarketViewModel : INotifyPropertyChanged
             return;
         }
 
+        await ChatlogChannelRefreshService.RefreshAsync(SelectedCharacter.Name, ChatChanelInfos);
         Session.SetSelectedChannels(ChatChanelInfos.Where(p => p.IsChecked).Select(p => p.Info.FilePath));
         if (Session.Setting.Channels is not { Count: > 0 })
         {

@@ -7,8 +7,6 @@
     Title="IntelWindow"
     Width="640"
     Height="700"
-    MinWidth="560"
-    MinHeight="500"
     AllowsTransparency="True"
     Background="Transparent"
     ResizeMode="CanResize"
@@ -30,6 +28,7 @@
         <SolidColorBrush x:Key="IntelCautionBrush" Color="#FF8A4C" />
         <SolidColorBrush x:Key="IntelCautionSoftBrush" Color="#18FF8A4C" />
         <SolidColorBrush x:Key="IntelGreenBrush" Color="#46D39B" />
+        <SolidColorBrush x:Key="IntelGreenSoftBrush" Color="#1846D39B" />
         <SolidColorBrush x:Key="IntelKillBrush" Color="#FF6262" />
         <SolidColorBrush x:Key="IntelOutlierBrush" Color="#C3A4FF" />
 
@@ -89,6 +88,7 @@
                         Text="频道预警"
                         TextTrimming="CharacterEllipsis" />
                     <Border
+                        x:Name="TitleStatusBorder"
                         Margin="8,0,0,0"
                         Padding="7,2"
                         Background="{StaticResource IntelCautionSoftBrush}"

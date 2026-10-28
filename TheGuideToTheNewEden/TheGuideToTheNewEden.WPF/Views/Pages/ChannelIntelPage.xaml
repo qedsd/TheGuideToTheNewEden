@@ -12,15 +12,73 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
 
+        <Style x:Key="PanelSurface" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <Style x:Key="SectionCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+
+        <Style x:Key="PanelHeading" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="MutedText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="PillBorder" TargetType="Border">
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="PillText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="9.5" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="RoleStateText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Text" Value="待命" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Running}" Value="True">
+                    <Setter Property="Text" Value="运行中" />
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="IntelFieldLabel" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         </Style>
-        <!--  每跳声音行：两行卡片，避免跳数/滑条/循环/文件/按钮挤在一行  -->
+
+        <!--  每跳声音行：两行卡片  -->
         <DataTemplate x:Key="SoundRowTemplate">
             <Border
-                Margin="0,0,8,6"
+                Margin="0,0,0,6"
                 Padding="9,7"
+                HorizontalAlignment="Stretch"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -30,611 +88,892 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="72" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="44" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="42" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <StackPanel
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
+                        <StackPanel
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Id}" />
+                            <TextBlock
+                                Margin="2,0,0,0"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource EarlyWarningItemPage_Jump}" />
+                        </StackPanel>
+
+                        <Slider
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Maximum="100"
+                            Minimum="0"
+                            Value="{Binding Volume, Mode=TwoWay}" />
+
                         <TextBlock
-                            FontSize="11"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{Binding Id}" />
-                        <TextBlock
-                            Margin="2,0,0,0"
-                            FontSize="10"
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            FontFamily="Consolas"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource EarlyWarningItemPage_Jump}" />
-                    </StackPanel>
+                            Text="{Binding Volume, StringFormat={}{0}%}"
+                            TextAlignment="Right" />
 
-                    <Slider
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Margin="0,0,6,0"
-                        VerticalAlignment="Center"
-                        Maximum="100"
-                        Minimum="0"
-                        Value="{Binding Volume, Mode=TwoWay}" />
+                        <CheckBox
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Content="{DynamicResource EarlyWarningItemPage_Loop}"
+                            IsChecked="{Binding Loop, Mode=TwoWay}" />
+                    </Grid>
 
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        VerticalAlignment="Center"
-                        FontFamily="Consolas"
-                        FontSize="10.5"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{Binding Volume, StringFormat={}{0}%}"
-                        TextAlignment="Right" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource ChannelIntelPage_SoundFile}" />
 
-                    <CheckBox
-                        Grid.Row="0"
-                        Grid.Column="3"
-                        Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Content="{DynamicResource EarlyWarningItemPage_Loop}"
-                        IsChecked="{Binding Loop, Mode=TwoWay}" />
+                        <ui:TextBox
+                            Grid.Column="1"
+                            Margin="8,0,0,0"
+                            PlaceholderText="{DynamicResource EarlyWarningItemPage_DefaultFile}"
+                            Text="{Binding FilePath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
 
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Margin="0,7,0,0"
-                        VerticalAlignment="Center"
-                        FontSize="10.5"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource ChannelIntelPage_SoundFile}" />
+                        <ui:Button
+                            Grid.Column="2"
+                            Margin="4,0,0,0"
+                            Appearance="Secondary"
+                            Click="OnPickSoundFileClick"
+                            Content="{DynamicResource EarlyWarningItemPage_Pick}" />
+                    </Grid>
 
-                    <ui:TextBox
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Grid.ColumnSpan="2"
-                        Margin="0,6,8,0"
-                        PlaceholderText="{DynamicResource EarlyWarningItemPage_DefaultFile}"
-                        Text="{Binding FilePath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-
-                    <ui:Button
-                        Grid.Row="1"
-                        Grid.Column="3"
-                        Margin="0,6,0,0"
-                        Click="OnPickSoundFileClick"
-                        Content="{DynamicResource EarlyWarningItemPage_Pick}" />
                 </Grid>
             </Border>
         </DataTemplate>
-        <!--  角色项：名称 + 预警中指示条  -->
+
+        <!--  角色项：ESI 头像 + 角色名 + 运行状态  -->
         <DataTemplate x:Key="CharacterItemTemplate">
+            <Grid Height="32" Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image
+                    Width="30"
+                    Height="30"
+                    VerticalAlignment="Center"
+                    controls:AsyncImage.HideOnFailure="True"
+                    controls:AsyncImage.Source="{Binding AvatarUrl}"
+                    Stretch="UniformToFill"
+                    Visibility="Collapsed">
+                    <Image.Clip>
+                        <EllipseGeometry
+                            Center="15,15"
+                            RadiusX="15"
+                            RadiusY="15" />
+                    </Image.Clip>
+                </Image>
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            MaxWidth="180"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Name}"
+                            TextTrimming="CharacterEllipsis" />
+                        <Ellipse
+                            Width="5"
+                            Height="5"
+                            Margin="6,0,0,0"
+                            VerticalAlignment="Center"
+                            Fill="{DynamicResource SystemFillColorSuccessBrush}"
+                            Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="6,0,0,0"
+                    Style="{StaticResource RoleStateText}" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  频道项：勾选 + 频道名/时间（不显示 # 与“已选”提示）  -->
+        <DataTemplate x:Key="ChannelItemTemplate">
             <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Rectangle
-                    Width="3"
-                    Height="16"
-                    Margin="0,0,6,0"
-                    Fill="{DynamicResource SystemFillColorCautionBrush}"
-                    RadiusX="2"
-                    RadiusY="2"
-                    ToolTip="{DynamicResource ChannelIntelPage_Running}"
-                    Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
-                <TextBlock
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                <StackPanel
                     Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="{Binding Name}"
-                    TextTrimming="CharacterEllipsis" />
+                    Margin="8,0,4,0"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding ChannelName}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Margin="0,2,0,0"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding SessionStarted, StringFormat={}{0:MM-dd HH:mm:ss}}" />
+                </StackPanel>
             </Grid>
         </DataTemplate>
     </Page.Resources>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+    <Grid Margin="0,0,0,4">
+        <!--  ================= 三栏工作区 =================  -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="274" />
+                <ColumnDefinition Width="306" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <!--  ============ 左：角色列表 ============  -->
-        <controls:CardControl Grid.Column="0" Header="{DynamicResource ChannelIntelPage_Characters}">
-            <ListBox
-                x:Name="CharacterList"
-                IsSynchronizedWithCurrentItem="False"
-                ItemTemplate="{StaticResource CharacterItemTemplate}"
-                ItemsSource="{Binding Characters}"
-                ScrollViewer.CanContentScroll="True"
-                SelectionChanged="OnCharacterSelectionChanged" />
-            <controls:CardControl.Footer>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <ui:Button
-                        Margin="0,0,6,0"
-                        AutomationProperties.Name="{DynamicResource General_StartAll}"
-                        Click="OnStartAllClick"
-                        Icon="{ui:SymbolIcon Play24}"
-                        ToolTip="{DynamicResource General_StartAll}" />
-                    <ui:Button
-                        Margin="0,0,6,0"
-                        AutomationProperties.Name="{DynamicResource General_StopAll}"
-                        Click="OnStopAllClick"
-                        ToolTip="{DynamicResource General_StopAll}"
-                        Visibility="{Binding Running, Converter={StaticResource BoolToVis}}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button
-                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_RefreshChannels}"
-                        Click="OnRefreshCharactersClick"
-                        Icon="{ui:SymbolIcon ArrowSync24}"
-                        ToolTip="{DynamicResource ChannelIntelPage_RefreshChannels}" />
-                </StackPanel>
-            </controls:CardControl.Footer>
-        </controls:CardControl>
+            <!--  左：角色  -->
+            <Border
+                Grid.Column="0"
+                Margin="0,0,6,0"
+                Style="{StaticResource PanelSurface}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="48" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-        <!--  ============ 中：频道列表 ============  -->
-        <controls:CardControl
-            Grid.Column="1"
-            Width="290"
-            Margin="8,0"
-            Header="{DynamicResource ChannelIntelPage_Channels}"
-            Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
-            <ListBox
-                x:Name="ChannelList"
-                IsEnabled="{Binding SelectedNotRunning}"
-                ItemContainerStyle="{StaticResource StretchListItem}"
-                ItemsSource="{Binding Session.ChatChanelInfos}"
-                ScrollViewer.CanContentScroll="True"
-                VirtualizingStackPanel.IsVirtualizing="True"
-                VirtualizingStackPanel.VirtualizationMode="Recycling">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox
-                                MinWidth="32"
-                                VerticalAlignment="Center"
-                                IsChecked="{Binding IsChecked, Mode=TwoWay}" />
-                            <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                    <Grid Grid.Row="0" Margin="12,0,8,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_Characters}" />
+                        <Border
+                            Grid.Column="1"
+                            Margin="6,0,0,0"
+                            Style="{StaticResource PillBorder}">
+                            <TextBlock
+                                x:Name="RoleCountText"
+                                Style="{StaticResource PillText}"
+                                Text="0" />
+                        </Border>
+                        <ui:Button
+                            Grid.Column="3"
+                            Width="28"
+                            Height="28"
+                            Margin="0,0,2,0"
+                            Padding="0"
+                            Appearance="Transparent"
+                            Click="OnApplySettingToAllClick"
+                            Icon="{ui:SymbolIcon Copy24}"
+                            ToolTip="{DynamicResource ChannelIntelPage_ApplySettingToAll}" />
+                        <ui:Button
+                            Grid.Column="4"
+                            Width="28"
+                            Height="28"
+                            Padding="0"
+                            Appearance="Transparent"
+                            Click="OnRefreshCharactersClick"
+                            Icon="{ui:SymbolIcon ArrowSync24}"
+                            ToolTip="{DynamicResource ChannelIntelPage_RefreshCharacters}" />
+                    </Grid>
+
+                    <ui:TextBox
+                        x:Name="RoleSearchBox"
+                        Grid.Row="1"
+                        Margin="10,0,10,6"
+                        PlaceholderText="{DynamicResource ChannelIntelPage_RoleFilterPlaceholder}"
+                        TextChanged="OnRoleSearchChanged" />
+
+                    <Grid Grid.Row="2">
+                        <ListBox
+                            x:Name="CharacterList"
+                            Margin="6,0"
+                            Padding="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            IsSynchronizedWithCurrentItem="False"
+                            ItemContainerStyle="{StaticResource StretchListItem}"
+                            ItemTemplate="{StaticResource CharacterItemTemplate}"
+                            ItemsSource="{Binding Characters}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectionChanged="OnCharacterSelectionChanged" />
+                        <TextBlock
+                            x:Name="RoleEmptyText"
+                            Margin="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="10.5"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource ChannelIntelPage_NoCharacters}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
+                    </Grid>
+
+                    <Grid
+                        Grid.Row="3"
+                        Margin="10,8,10,9"
+                        HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <ui:Button
+                            Height="30"
+                            Appearance="Primary"
+                            Click="OnStartAllClick"
+                            Content="{DynamicResource General_StartAll}" />
+                        <ui:Button
+                            Grid.Column="2"
+                            Height="30"
+                            Appearance="Danger"
+                            Click="OnStopAllClick"
+                            Content="{DynamicResource General_StopAll}"
+                            Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!--  中：频道来源  -->
+            <Border
+                Grid.Column="1"
+                Margin="0,0,6,0"
+                Style="{StaticResource PanelSurface}"
+                Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="48" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="12,0,8,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_ChannelSource}" />
+                        <Border
+                            Grid.Column="1"
+                            Margin="6,0,0,0"
+                            Style="{StaticResource PillBorder}">
+                            <TextBlock x:Name="SelectedChannelCountText" Style="{StaticResource PillText}" />
+                        </Border>
+                        <ui:Button
+                            Grid.Column="3"
+                            Width="28"
+                            Height="28"
+                            Padding="0"
+                            Appearance="Transparent"
+                            Click="OnRefreshChannelsClick"
+                            Icon="{ui:SymbolIcon ArrowSync24}"
+                            IsEnabled="{Binding SelectedNotRunning}"
+                            ToolTip="{DynamicResource ChannelIntelPage_RefreshChannels}" />
+                    </Grid>
+
+                    <ui:TextBox
+                        x:Name="ChannelSearchBox"
+                        Grid.Row="1"
+                        Margin="10,0,10,6"
+                        PlaceholderText="{DynamicResource ChannelIntelPage_ChannelFilterPlaceholder}"
+                        TextChanged="OnChannelSearchChanged" />
+
+                    <Grid Grid.Row="2">
+                        <ListBox
+                            x:Name="ChannelList"
+                            Margin="6,0"
+                            Padding="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            IsEnabled="{Binding SelectedNotRunning}"
+                            ItemContainerStyle="{StaticResource StretchListItem}"
+                            ItemTemplate="{StaticResource ChannelItemTemplate}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            VirtualizingStackPanel.IsVirtualizing="True"
+                            VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                        <TextBlock
+                            x:Name="ChannelEmptyText"
+                            Margin="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="10.5"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource ChannelIntelPage_NoChannels}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!--  右：选中角色设置 / 内容  -->
+            <Border
+                Grid.Column="2"
+                Style="{StaticResource PanelSurface}"
+                Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="14,11,12,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Image
+                            x:Name="SelectedAvatarImage"
+                            Width="36"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            controls:AsyncImage.HideOnFailure="True"
+                            Stretch="UniformToFill"
+                            Visibility="Collapsed">
+                            <Image.Clip>
+                                <EllipseGeometry
+                                    Center="18,18"
+                                    RadiusX="18"
+                                    RadiusY="18" />
+                            </Image.Clip>
+                        </Image>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="10,0,8,0"
+                            VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
                                 <TextBlock
+                                    MaxWidth="260"
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="{Binding ChannelName}"
-                                    TextTrimming="CharacterEllipsis"
-                                    ToolTip="{DynamicResource ChannelIntelPage_ChannelName}" />
-                                <TextBlock
-                                    FontSize="11"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding SessionStarted}"
-                                    ToolTip="{DynamicResource ChannelIntelPage_LastUpdateTime}" />
+                                    Text="{Binding Session.Listener}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Border
+                                    Margin="7,0,0,0"
+                                    Padding="7,1"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                    CornerRadius="9">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse
+                                            x:Name="SelectedStatusDot"
+                                            Width="5"
+                                            Height="5"
+                                            Margin="0,0,4,0"
+                                            VerticalAlignment="Center"
+                                            Fill="{DynamicResource SystemFillColorSuccessBrush}" />
+                                        <TextBlock
+                                            x:Name="SelectedStatusText"
+                                            FontSize="9"
+                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                            Text="运行中" />
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <controls:CardControl.Footer>
-                <ui:Button
-                    HorizontalAlignment="Center"
-                    AutomationProperties.Name="{DynamicResource ChannelIntelPage_RefreshChannels}"
-                    Click="OnRefreshChannelsClick"
-                    Icon="{ui:SymbolIcon ArrowSync24}"
-                    IsEnabled="{Binding SelectedNotRunning}"
-                    ToolTip="{DynamicResource ChannelIntelPage_RefreshChannels}" />
-            </controls:CardControl.Footer>
-        </controls:CardControl>
+                            <StackPanel Margin="0,3,0,0" Orientation="Horizontal">
+                                <TextBlock
+                                    FontSize="10"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding Session.LocalSolarSystem.SolarSystemName}" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    FontSize="10"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Text="·" />
+                                <TextBlock
+                                    x:Name="SelectedRangeText"
+                                    Margin="4,0,0,0"
+                                    FontSize="10"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </StackPanel>
 
-        <!--  ============ 右：预警设置 / 频道内容 ============  -->
-        <controls:CardControl Grid.Column="2" Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
-            <TabControl>
-                <!--  预警设置  -->
-                <TabItem Header="{DynamicResource ChannelIntelPage_Setting}">
-                    <ScrollViewer
-                        Margin="0,6,0,0"
-                        HorizontalScrollBarVisibility="Disabled"
-                        VerticalScrollBarVisibility="Auto">
-                        <StackPanel IsEnabled="{Binding SelectedNotRunning}">
-                            <!--  预警范围  -->
-                            <Expander
-                                Margin="0,2"
-                                Background="Transparent"
-                                Header="{DynamicResource ChannelIntelPage_RangeSetting}"
-                                IsExpanded="True">
-                                <Grid Margin="12,4,0,4">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
+                        <StackPanel
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <ui:Button
+                                Height="28"
+                                Margin="0,0,4,0"
+                                Padding="9,0"
+                                Appearance="Transparent"
+                                Click="OnRestorePosClick"
+                                Content="{DynamicResource ChannelIntelPage_RestorePos}"
+                                Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}" />
+                            <ui:Button
+                                Height="28"
+                                Margin="0,0,4,0"
+                                Padding="9,0"
+                                Appearance="Transparent"
+                                Click="OnStopSoundClick"
+                                Content="{DynamicResource ChannelIntelPage_StopSound}"
+                                Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}" />
+                            <ui:Button
+                                Height="28"
+                                Padding="10,0"
+                                Appearance="Primary"
+                                Click="OnStartClick"
+                                Content="{DynamicResource ChannelIntelPage_Start}"
+                                Visibility="{Binding SelectedNotRunning, Converter={StaticResource BoolToVis}}" />
+                            <ui:Button
+                                Height="28"
+                                Padding="10,0"
+                                Appearance="Danger"
+                                Click="OnStopClick"
+                                Content="{DynamicResource ChannelIntelPage_Stop}"
+                                Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </Grid>
 
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_LocalSystem}" />
-                                    <ToggleButton
-                                        x:Name="LocalSystemToggle"
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        MinHeight="32"
-                                        HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Left"
-                                        Content="{Binding Session.LocalSolarSystem.SolarSystemName}" />
-                                    <Popup
-                                        AllowsTransparency="True"
-                                        IsOpen="{Binding IsChecked, ElementName=LocalSystemToggle, Mode=TwoWay}"
-                                        Placement="Bottom"
-                                        PlacementTarget="{Binding ElementName=LocalSystemToggle}"
-                                        PopupAnimation="Fade"
-                                        StaysOpen="False">
-                                        <Border
-                                            Width="300"
-                                            Height="420"
-                                            Style="{StaticResource AccentFlyoutBorder}">
-                                            <Grid Margin="6">
+                    <TabControl
+                        Grid.Row="1"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0">
+                        <TabItem Header="{DynamicResource ChannelIntelPage_Setting}">
+                            <ScrollViewer
+                                Margin="0,4,0,0"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="12,0,12,12" IsEnabled="{Binding SelectedNotRunning}">
+
+                                    <!--  预警范围  -->
+                                    <Border Style="{StaticResource SectionCard}">
+                                        <StackPanel>
+                                            <Grid Margin="0,0,0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_RangeSetting}" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="9.5"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{DynamicResource ChannelIntelPage_RangeHint}" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
-                                                <ui:TextBox
-                                                    x:Name="SystemSearchBox"
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="110" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock
                                                     Grid.Row="0"
-                                                    PlaceholderText="{DynamicResource MarketPage_SearchSolarSystem}"
-                                                    TextChanged="OnSystemSearchChanged" />
-                                                <ListBox
-                                                    x:Name="SystemList"
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_LocalSystem}" />
+                                                <ToggleButton
+                                                    x:Name="LocalSystemToggle"
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    MinHeight="30"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Left"
+                                                    Content="{Binding Session.LocalSolarSystem.SolarSystemName}" />
+                                                <Popup
+                                                    AllowsTransparency="True"
+                                                    IsOpen="{Binding IsChecked, ElementName=LocalSystemToggle, Mode=TwoWay}"
+                                                    Placement="Bottom"
+                                                    PlacementTarget="{Binding ElementName=LocalSystemToggle}"
+                                                    PopupAnimation="Fade"
+                                                    StaysOpen="False">
+                                                    <Border
+                                                        Width="300"
+                                                        Height="420"
+                                                        Style="{StaticResource AccentFlyoutBorder}">
+                                                        <Grid Margin="6">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" />
+                                                            </Grid.RowDefinitions>
+                                                            <ui:TextBox
+                                                                x:Name="SystemSearchBox"
+                                                                Grid.Row="0"
+                                                                PlaceholderText="{DynamicResource MarketPage_SearchSolarSystem}"
+                                                                TextChanged="OnSystemSearchChanged" />
+                                                            <ListBox
+                                                                x:Name="SystemList"
+                                                                Grid.Row="1"
+                                                                Margin="0,8,0,0"
+                                                                DisplayMemberPath="SolarSystemName"
+                                                                IsSynchronizedWithCurrentItem="False"
+                                                                ScrollViewer.CanContentScroll="True"
+                                                                SelectionChanged="OnSystemSelectionChanged"
+                                                                VirtualizingStackPanel.IsVirtualizing="True"
+                                                                VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                                                        </Grid>
+                                                    </Border>
+                                                </Popup>
+
+                                                <TextBlock
                                                     Grid.Row="1"
                                                     Margin="0,8,0,0"
-                                                    DisplayMemberPath="SolarSystemName"
-                                                    IsSynchronizedWithCurrentItem="False"
-                                                    ScrollViewer.CanContentScroll="True"
-                                                    SelectionChanged="OnSystemSelectionChanged"
-                                                    VirtualizingStackPanel.IsVirtualizing="True"
-                                                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_Jumps}" />
+                                                <StackPanel
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    Margin="0,8,0,0"
+                                                    Orientation="Horizontal">
+                                                    <ui:Button
+                                                        x:Name="RangeMinusButton"
+                                                        Width="30"
+                                                        Height="30"
+                                                        Padding="0"
+                                                        Appearance="Transparent"
+                                                        Click="OnRangeMinusClick"
+                                                        Content="−"
+                                                        FontSize="15" />
+                                                    <Border
+                                                        Width="54"
+                                                        Height="30"
+                                                        Margin="4,0"
+                                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="6">
+                                                        <TextBlock
+                                                            x:Name="RangeValueText"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="12"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                            Text="{Binding Session.Setting.IntelJumps}" />
+                                                    </Border>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        FontSize="9.5"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{DynamicResource EarlyWarningPage_Jumps}" />
+                                                    <ui:Button
+                                                        x:Name="RangePlusButton"
+                                                        Width="30"
+                                                        Height="30"
+                                                        Margin="4,0,0,0"
+                                                        Padding="0"
+                                                        Appearance="Transparent"
+                                                        Click="OnRangePlusClick"
+                                                        Content="+"
+                                                        FontSize="15" />
+                                                </StackPanel>
+
+                                                <CheckBox
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    Margin="-8,8,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Content="{DynamicResource ChannelIntelPage_AutoUpdateLocation}"
+                                                    IsChecked="{Binding Session.Setting.AutoUpdateLocaltion, Mode=TwoWay}" />
                                             </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!--  通知方式  -->
+                                    <Border Style="{StaticResource SectionCard}">
+                                        <StackPanel>
+                                            <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_NotifySetting}" />
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="6" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="6" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Border
+                                                    Grid.Column="0"
+                                                    Padding="9,7"
+                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                                    CornerRadius="6">
+                                                    <CheckBox
+                                                        VerticalAlignment="Center"
+                                                        Content="{DynamicResource ChannelIntelPage_Notify_Overlap}"
+                                                        IsChecked="{Binding Session.Setting.OverlapNotify, Mode=TwoWay}" />
+                                                </Border>
+                                                <Border
+                                                    Grid.Column="2"
+                                                    Padding="9,7"
+                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                                    CornerRadius="6">
+                                                    <CheckBox
+                                                        VerticalAlignment="Center"
+                                                        Content="{DynamicResource ChannelIntelPage_Notify_Sound}"
+                                                        IsChecked="{Binding Session.Setting.MakeSound, Mode=TwoWay}" />
+                                                </Border>
+                                                <Border
+                                                    Grid.Column="4"
+                                                    Padding="9,7"
+                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                                    CornerRadius="6">
+                                                    <CheckBox
+                                                        VerticalAlignment="Center"
+                                                        Content="{DynamicResource ChannelIntelPage_Notify_System}"
+                                                        IsChecked="{Binding Session.Setting.SystemNotify, Mode=TwoWay}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid Margin="0,9,0,0" Visibility="{Binding Session.Setting.OverlapNotify, Converter={StaticResource BoolToVis}}">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="110" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_OverlapShowType}" />
+                                                <ComboBox
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    HorizontalAlignment="Stretch"
+                                                    SelectedIndex="{Binding Session.Setting.OverlapType, Mode=TwoWay}">
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapType_Alwasys}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapType_WhenNeed}" />
+                                                </ComboBox>
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Margin="0,7,0,0"
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_OverlapStyle}" />
+                                                <ComboBox
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    Margin="0,7,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    SelectedIndex="{Binding Session.Setting.OverlapStyle, Mode=TwoWay}">
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapStyle_Default}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapStyle_SMT}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapStyle_Near2}" />
+                                                </ComboBox>
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Margin="0,7,0,0"
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_OverlapOpacity}" />
+                                                <Slider
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    Margin="0,7,20,0"
+                                                    VerticalAlignment="Center"
+                                                    Maximum="100"
+                                                    Minimum="1"
+                                                    Value="{Binding Session.Setting.OverlapOpacity, Mode=TwoWay}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!--  预警声音  -->
+                                    <Border Style="{StaticResource SectionCard}" Visibility="{Binding Session.Setting.MakeSound, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel>
+                                            <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_SoundSetting}" />
+                                            <ItemsControl
+                                                Margin="0,8,0,0"
+                                                ItemTemplate="{StaticResource SoundRowTemplate}"
+                                                ItemsSource="{Binding Session.Setting.Sounds}">
+                                                <ItemsControl.ItemContainerStyle>
+                                                    <Style TargetType="ContentPresenter">
+                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                                    </Style>
+                                                </ItemsControl.ItemContainerStyle>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!--  关键词 / 自动化：窄面板下保持垂直排布  -->
+                                    <StackPanel>
+                                        <Border Style="{StaticResource SectionCard}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_KeywordSetting}" />
+                                                <TextBlock
+                                                    Margin="0,2,0,2"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{DynamicResource ChannelIntelPage_KeywordHint}" />
+                                                <TextBlock
+                                                    Margin="0,16,0,2"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{DynamicResource ChannelIntelPage_IgnoreWords}" />
+                                                <ui:TextBox PlaceholderText="{DynamicResource ChannelIntelPage_IgnoreWords_Tips}" Text="{Binding Session.Setting.IgnoreWords, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                                <TextBlock
+                                                    Margin="0,16,0,2"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{DynamicResource ChannelIntelPage_ClearWords}" />
+                                                <ui:TextBox PlaceholderText="{DynamicResource ChannelIntelPage_ClearWords_Tips}" Text="{Binding Session.Setting.ClearWords, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                                <TextBlock
+                                                    Margin="0,16,0,2"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{DynamicResource ChannelIntelPage_SystemNameDbs}" />
+                                                <ListBox
+                                                    x:Name="NameDbsList"
+                                                    MaxHeight="96"
+                                                    DisplayMemberPath="Name"
+                                                    SelectionChanged="OnNameDbsSelectionChanged"
+                                                    SelectionMode="Multiple" />
+                                            </StackPanel>
                                         </Border>
-                                    </Popup>
 
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_Jumps}" />
-                                    <ui:NumberBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Width="160"
-                                        MaxHeight="32"
-                                        Margin="0,0,40,0"
-                                        HorizontalAlignment="Left"
-                                        ClearButtonEnabled="False"
-                                        Maximum="8"
-                                        Minimum="0"
-                                        SmallChange="1"
-                                        ValueChanged="OnIntelJumpsChanged"
-                                        Value="{Binding Session.Setting.IntelJumpsValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <Border Style="{StaticResource SectionCard}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_OtherSetting}" />
+                                                <Grid Margin="0,8,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox
+                                                        VerticalAlignment="Center"
+                                                        Content="{DynamicResource ChannelIntelPage_AutoClear}"
+                                                        IsChecked="{Binding Session.Setting.AutoClear, Mode=TwoWay}" />
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <ui:NumberBox
+                                                            Width="140"
+                                                            ClearButtonEnabled="False"
+                                                            Minimum="1"
+                                                            SmallChange="0.5"
+                                                            ToolTip="{DynamicResource ChannelIntelPage_AutoClear_Tip}"
+                                                            Visibility="{Binding Session.Setting.AutoClear, Converter={StaticResource BoolToVis}}"
+                                                            Value="{Binding Session.Setting.AutoClearMinute, Mode=TwoWay}" />
+                                                        <TextBlock
+                                                            Margin="4,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="min"
+                                                            Visibility="{Binding Session.Setting.AutoClear, Converter={StaticResource BoolToVis}}" />
+                                                    </StackPanel>
+                                                </Grid>
 
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_AutoUpdateLocation}" />
-                                    <CheckBox
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        Content="{DynamicResource General_Yes}"
-                                        IsChecked="{Binding Session.Setting.AutoUpdateLocaltion, Mode=TwoWay}" />
-                                </Grid>
-                            </Expander>
+                                                <Grid Margin="0,5,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox
+                                                        VerticalAlignment="Center"
+                                                        Content="{DynamicResource ChannelIntelPage_AutoDowngrade}"
+                                                        IsChecked="{Binding Session.Setting.AutoDowngrade, Mode=TwoWay}" />
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <ui:NumberBox
+                                                            Width="140"
+                                                            ClearButtonEnabled="False"
+                                                            Minimum="0.5"
+                                                            SmallChange="0.5"
+                                                            ToolTip="{DynamicResource ChannelIntelPage_AutoDowngrade_Tip}"
+                                                            Visibility="{Binding Session.Setting.AutoDowngrade, Converter={StaticResource BoolToVis}}"
+                                                            Value="{Binding Session.Setting.AutoDowngradeMinute, Mode=TwoWay}" />
+                                                        <TextBlock
+                                                            Margin="4,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="min"
+                                                            Visibility="{Binding Session.Setting.AutoDowngrade, Converter={StaticResource BoolToVis}}" />
+                                                    </StackPanel>
+                                                </Grid>
 
-                            <!--  通知方式  -->
-                            <Expander
-                                Margin="0,2"
-                                Background="Transparent"
-                                Header="{DynamicResource ChannelIntelPage_NotifySetting}"
-                                IsExpanded="True">
-                                <StackPanel Margin="12,4,0,4" Orientation="Horizontal">
-                                    <CheckBox
-                                        MinWidth="90"
-                                        Content="{DynamicResource ChannelIntelPage_Notify_Overlap}"
-                                        IsChecked="{Binding Session.Setting.OverlapNotify, Mode=TwoWay}" />
-                                    <CheckBox
-                                        MinWidth="90"
-                                        Content="{DynamicResource ChannelIntelPage_Notify_Sound}"
-                                        IsChecked="{Binding Session.Setting.MakeSound, Mode=TwoWay}" />
-                                    <CheckBox Content="{DynamicResource ChannelIntelPage_Notify_System}" IsChecked="{Binding Session.Setting.SystemNotify, Mode=TwoWay}" />
+                                                <Grid Margin="0,5,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox
+                                                        VerticalAlignment="Center"
+                                                        Content="{DynamicResource ChannelIntelPage_SubZKB}"
+                                                        IsChecked="{Binding Session.Setting.SubZKB, Mode=TwoWay}" />
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <ui:NumberBox
+                                                            Width="140"
+                                                            ClearButtonEnabled="False"
+                                                            Minimum="1"
+                                                            SmallChange="1"
+                                                            ToolTip="{DynamicResource ChannelIntelPage_SubZKB_Tip}"
+                                                            Visibility="{Binding Session.Setting.SubZKB, Converter={StaticResource BoolToVis}}"
+                                                            Value="{Binding Session.Setting.KBTime, Mode=TwoWay}" />
+                                                        <TextBlock
+                                                            Width="24"
+                                                            Margin="4,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="sec"
+                                                            Visibility="{Binding Session.Setting.SubZKB, Converter={StaticResource BoolToVis}}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
                                 </StackPanel>
-                            </Expander>
+                            </ScrollViewer>
+                        </TabItem>
 
-                            <!--  预警弹窗  -->
-                            <Expander
-                                Margin="0,2"
+                        <TabItem Header="{DynamicResource ChannelIntelPage_Contents}">
+                            <RichTextBox
+                                x:Name="ChatContentsBox"
+                                Margin="6,6,6,0"
+                                Padding="4"
                                 Background="Transparent"
-                                Header="{DynamicResource ChannelIntelPage_OverlapSetting}"
-                                IsExpanded="True"
-                                Visibility="{Binding Session.Setting.OverlapNotify, Converter={StaticResource BoolToVis}}">
-                                <Grid Margin="12,4,0,4">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_OverlapShowType}" />
-                                    <ComboBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        HorizontalAlignment="Stretch"
-                                        SelectedIndex="{Binding Session.Setting.OverlapType, Mode=TwoWay}">
-                                        <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapType_Alwasys}" />
-                                        <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapType_WhenNeed}" />
-                                    </ComboBox>
-
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_OverlapStyle}" />
-                                    <ComboBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        HorizontalAlignment="Stretch"
-                                        SelectedIndex="{Binding Session.Setting.OverlapStyle, Mode=TwoWay}">
-                                        <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapStyle_Default}" />
-                                        <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapStyle_SMT}" />
-                                        <ComboBoxItem Content="{DynamicResource ChannelIntelPage_OverlapStyle_Near2}" />
-                                    </ComboBox>
-
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_OverlapOpacity}" />
-                                    <Slider
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        Margin="8,0,40,0"
-                                        VerticalAlignment="Center"
-                                        Maximum="100"
-                                        Minimum="1"
-                                        Value="{Binding Session.Setting.OverlapOpacity, Mode=TwoWay}" />
-                                </Grid>
-                            </Expander>
-
-                            <!--  预警声音  -->
-                            <Expander
-                                Margin="0,2"
-                                Background="Transparent"
-                                Header="{DynamicResource ChannelIntelPage_SoundSetting}"
-                                IsExpanded="True"
-                                Visibility="{Binding Session.Setting.MakeSound, Converter={StaticResource BoolToVis}}">
-                                <ItemsControl
-                                    Margin="12,4,8,4"
-                                    ItemTemplate="{StaticResource SoundRowTemplate}"
-                                    ItemsSource="{Binding Session.Setting.Sounds}" />
-                            </Expander>
-
-                            <!--  关键词  -->
-                            <Expander
-                                Margin="0,2"
-                                Background="Transparent"
-                                Header="{DynamicResource ChannelIntelPage_KeywordSetting}"
-                                IsExpanded="True">
-                                <Grid Margin="12,4,0,4">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_IgnoreWords}" />
-                                    <ui:TextBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        PlaceholderText="{DynamicResource ChannelIntelPage_IgnoreWords_Tips}"
-                                        Text="{Binding Session.Setting.IgnoreWords, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_ClearWords}" />
-                                    <ui:TextBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        PlaceholderText="{DynamicResource ChannelIntelPage_ClearWords_Tips}"
-                                        Text="{Binding Session.Setting.ClearWords, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Margin="0,8,0,0"
-                                        VerticalAlignment="Top"
-                                        Style="{StaticResource IntelFieldLabel}"
-                                        Text="{DynamicResource ChannelIntelPage_SystemNameDbs}" />
-                                    <ListBox
-                                        x:Name="NameDbsList"
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        MaxHeight="120"
-                                        Margin="0,8,40,0"
-                                        DisplayMemberPath="Name"
-                                        SelectionChanged="OnNameDbsSelectionChanged"
-                                        SelectionMode="Multiple" />
-                                </Grid>
-                            </Expander>
-
-                            <!--  其他  -->
-                            <Expander
-                                Margin="0,2"
-                                Background="Transparent"
-                                Header="{DynamicResource ChannelIntelPage_OtherSetting}"
-                                IsExpanded="True">
-                                <Grid Margin="12,4,0,4">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                        <RowDefinition Height="42" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-
-                                    <CheckBox
-                                        VerticalAlignment="Center"
-                                        Content="{DynamicResource ChannelIntelPage_AutoClear}"
-                                        IsChecked="{Binding Session.Setting.AutoClear, Mode=TwoWay}" />
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <ui:NumberBox
-                                            Width="160"
-                                            MaxHeight="32"
-                                            ClearButtonEnabled="False"
-                                            Minimum="1"
-                                            SmallChange="0.5"
-                                            ToolTip="{DynamicResource ChannelIntelPage_AutoClear_Tip}"
-                                            Visibility="{Binding Session.Setting.AutoClear, Converter={StaticResource BoolToVis}}"
-                                            Value="{Binding Session.Setting.AutoClearMinute, Mode=TwoWay}" />
-                                        <TextBlock
-                                            Margin="4,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Text="min"
-                                            Visibility="{Binding Session.Setting.AutoClear, Converter={StaticResource BoolToVis}}" />
-                                    </StackPanel>
-
-                                    <CheckBox
-                                        Grid.Row="1"
-                                        VerticalAlignment="Center"
-                                        Content="{DynamicResource ChannelIntelPage_AutoDowngrade}"
-                                        IsChecked="{Binding Session.Setting.AutoDowngrade, Mode=TwoWay}" />
-                                    <StackPanel
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Orientation="Horizontal">
-                                        <ui:NumberBox
-                                            Width="160"
-                                            MaxHeight="32"
-                                            ClearButtonEnabled="False"
-                                            Minimum="0.5"
-                                            SmallChange="0.5"
-                                            ToolTip="{DynamicResource ChannelIntelPage_AutoDowngrade_Tip}"
-                                            Visibility="{Binding Session.Setting.AutoDowngrade, Converter={StaticResource BoolToVis}}"
-                                            Value="{Binding Session.Setting.AutoDowngradeMinute, Mode=TwoWay}" />
-                                        <TextBlock
-                                            Margin="4,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Text="min"
-                                            Visibility="{Binding Session.Setting.AutoDowngrade, Converter={StaticResource BoolToVis}}" />
-                                    </StackPanel>
-
-                                    <CheckBox
-                                        Grid.Row="2"
-                                        VerticalAlignment="Center"
-                                        Content="{DynamicResource ChannelIntelPage_SubZKB}"
-                                        IsChecked="{Binding Session.Setting.SubZKB, Mode=TwoWay}" />
-                                    <StackPanel
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        Orientation="Horizontal">
-                                        <ui:NumberBox
-                                            Width="160"
-                                            MaxHeight="32"
-                                            ClearButtonEnabled="False"
-                                            Minimum="1"
-                                            SmallChange="1"
-                                            ToolTip="{DynamicResource ChannelIntelPage_SubZKB_Tip}"
-                                            Visibility="{Binding Session.Setting.SubZKB, Converter={StaticResource BoolToVis}}"
-                                            Value="{Binding Session.Setting.KBTime, Mode=TwoWay}" />
-                                        <TextBlock
-                                            Margin="4,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Text="sec"
-                                            Visibility="{Binding Session.Setting.SubZKB, Converter={StaticResource BoolToVis}}" />
-                                    </StackPanel>
-                                </Grid>
-                            </Expander>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!--  频道内容  -->
-                <TabItem Header="{DynamicResource ChannelIntelPage_Contents}">
-                    <RichTextBox
-                        x:Name="ChatContentsBox"
-                        Margin="0,6,0,0"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        IsReadOnly="True"
-                        VerticalScrollBarVisibility="Auto">
-                        <FlowDocument />
-                        <RichTextBox.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Click="OnClearContentsClick" Header="{DynamicResource General_Clear}" />
-                            </ContextMenu>
-                        </RichTextBox.ContextMenu>
-                    </RichTextBox>
-                </TabItem>
-            </TabControl>
-
-            <!--  操作按钮（底栏）  -->
-            <controls:CardControl.Footer>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <ui:Button
-                        Margin="0,0,6,0"
-                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_Start}"
-                        Click="OnStartClick"
-                        Icon="{ui:SymbolIcon Play24}"
-                        ToolTip="{DynamicResource ChannelIntelPage_Start}"
-                        Visibility="{Binding SelectedNotRunning, Converter={StaticResource BoolToVis}}" />
-                    <ui:Button
-                        Margin="0,0,6,0"
-                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_Stop}"
-                        Click="OnStopClick"
-                        ToolTip="{DynamicResource ChannelIntelPage_Stop}"
-                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button
-                        Margin="0,0,6,0"
-                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_StopSound}"
-                        Click="OnStopSoundClick"
-                        Icon="{ui:SymbolIcon SpeakerMute24}"
-                        ToolTip="{DynamicResource ChannelIntelPage_StopSound}"
-                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}" />
-                    <ui:Button
-                        Margin="0,0,6,0"
-                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_RestorePos}"
-                        Click="OnRestorePosClick"
-                        Icon="{ui:SymbolIcon ArrowReset24}"
-                        ToolTip="{DynamicResource ChannelIntelPage_RestorePos}"
-                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}" />
-                    <ui:Button
-                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_ApplySettingToAll}"
-                        Click="OnApplySettingToAllClick"
-                        Icon="{ui:SymbolIcon Copy24}"
-                        IsEnabled="{Binding SelectedNotRunning}"
-                        ToolTip="{DynamicResource ChannelIntelPage_ApplySettingToAll}" />
-                </StackPanel>
-            </controls:CardControl.Footer>
-        </controls:CardControl>
+                                BorderThickness="0"
+                                IsReadOnly="True"
+                                VerticalScrollBarVisibility="Auto">
+                                <FlowDocument />
+                                <RichTextBox.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Click="OnClearContentsClick" Header="{DynamicResource General_Clear}" />
+                                    </ContextMenu>
+                                </RichTextBox.ContextMenu>
+                            </RichTextBox>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Page>

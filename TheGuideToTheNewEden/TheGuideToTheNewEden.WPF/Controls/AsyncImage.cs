@@ -42,6 +42,29 @@ public static class AsyncImage
 
     public static void SetSource(DependencyObject obj, string? value) => obj.SetValue(SourceProperty, value);
 
+    /// <summary>
+    /// 下载/解码失败或 URL 为空时是否隐藏目标 Image。
+    /// 角色头像这类“拿不到就不显示”的场景设为 true。
+    /// </summary>
+    public static readonly DependencyProperty HideOnFailureProperty = DependencyProperty.RegisterAttached(
+        "HideOnFailure",
+        typeof(bool),
+        typeof(AsyncImage),
+        new PropertyMetadata(false, OnHideOnFailureChanged));
+
+    public static bool GetHideOnFailure(DependencyObject obj) => (bool)obj.GetValue(HideOnFailureProperty);
+
+    public static void SetHideOnFailure(DependencyObject obj, bool value) => obj.SetValue(HideOnFailureProperty, value);
+
+    private static void OnHideOnFailureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is Image image)
+        {
+            // 属性设置顺序不固定：Source 先于 HideOnFailure 时也要重新应用一次。
+            Apply(image, GetSource(image));
+        }
+    }
+
     /// <summary>实体（角色/军团/联盟/物品）→ 按类别分派头像/徽标/图标。</summary>
     public static readonly DependencyProperty IdNameProperty = DependencyProperty.RegisterAttached(
         "IdName",
@@ -97,19 +120,43 @@ public static class AsyncImage
         }
 
         image.SetValue(UrlProperty, url);
+        var hideOnFailure = GetHideOnFailure(image);
 
         if (string.IsNullOrWhiteSpace(url))
         {
             image.Source = null;
+            if (hideOnFailure)
+            {
+                image.Visibility = Visibility.Collapsed;
+            }
             return;
+        }
+
+        if (hideOnFailure)
+        {
+            image.Visibility = Visibility.Visible;
         }
 
         AsyncImageCache.Load(url, bitmap =>
         {
             // 容器可能已被列表虚拟化复用（地址已变），地址不符就丢弃这次结果
-            if (bitmap is not null && ReferenceEquals(image.GetValue(UrlProperty) as string, url))
+            if (!ReferenceEquals(image.GetValue(UrlProperty) as string, url))
+            {
+                return;
+            }
+
+            if (bitmap is not null)
             {
                 image.Source = bitmap;
+                if (GetHideOnFailure(image))
+                {
+                    image.Visibility = Visibility.Visible;
+                }
+            }
+            else if (GetHideOnFailure(image))
+            {
+                image.Source = null;
+                image.Visibility = Visibility.Collapsed;
             }
         });
     }

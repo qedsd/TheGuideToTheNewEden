@@ -216,6 +216,28 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     // ---------- 监控控制 ----------
 
+    /// <summary>开始前把角色日志路径更新到当前最新一份，避免游戏重开后仍监听旧日志。</summary>
+    private void RefreshLatestGameLogFile(GameLogInfo info)
+    {
+        try
+        {
+            var latest = GameLogHelper.GetLatestGameLogInfos(_logPath);
+            var newest = latest?.FirstOrDefault(p => p.ListenerID == info.ListenerID);
+            if (newest is null)
+            {
+                return;
+            }
+
+            info.FilePath = newest.FilePath;
+            info.ListenerName = newest.ListenerName;
+            info.StartTime = newest.StartTime;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+        }
+    }
+
     /// <summary>开始监控"当前角色的当前配置"。</summary>
     public bool Start()
     {
@@ -230,6 +252,8 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             PageNotifyService.Error(FindString("GameLogMonitorPage_NoneKeyError"));
             return false;
         }
+
+        RefreshLatestGameLogFile(info);
 
         if (_sessions.ContainsKey(config.GUID))
         {

@@ -1058,8 +1058,8 @@
     <sys:String x:Key="ChannelIntelPage_OverlapType_WhenNeed">必要时显示</sys:String>
     <sys:String x:Key="ChannelIntelPage_OverlapStyle">显示样式</sys:String>
     <sys:String x:Key="ChannelIntelPage_OverlapStyle_Default">默认</sys:String>
-    <sys:String x:Key="ChannelIntelPage_OverlapStyle_SMT">SMT</sys:String>
-    <sys:String x:Key="ChannelIntelPage_OverlapStyle_Near2">Near2</sys:String>
+    <sys:String x:Key="ChannelIntelPage_OverlapStyle_SMT">分层</sys:String>
+    <sys:String x:Key="ChannelIntelPage_OverlapStyle_Near2">反向分层</sys:String>
     <sys:String x:Key="ChannelIntelPage_OverlapOpacity">不透明度</sys:String>
     <sys:String x:Key="ChannelIntelPage_AutoClear">自动解除预警</sys:String>
     <sys:String x:Key="ChannelIntelPage_AutoClear_Tip">触发预警多少分钟后自动解除相关星系预警</sys:String>
@@ -1084,6 +1084,7 @@
     <sys:String x:Key="IntelWindow_ActivateGame">激活游戏窗口</sys:String>
     <sys:String x:Key="IntelWindow_Map">地图</sys:String>
     <sys:String x:Key="IntelWindow_Standby">待命</sys:String>
+    <sys:String x:Key="IntelWindow_NoActiveAlert">无预警</sys:String>
     <sys:String x:Key="IntelWindow_All">全部</sys:String>
     <sys:String x:Key="IntelWindow_Clear">解除</sys:String>
     <sys:String x:Key="IntelWindow_Kill">击杀</sys:String>
@@ -1104,6 +1105,25 @@
     <sys:String x:Key="ChannelIntelPage_RangeSetting">预警范围</sys:String>
     <sys:String x:Key="ChannelIntelPage_SoundSetting">预警声音</sys:String>
     <sys:String x:Key="ChannelIntelPage_SoundFile">声音文件</sys:String>
+    <sys:String x:Key="ChannelIntelPage_HeaderTitle">频道预警</sys:String>
+    <sys:String x:Key="ChannelIntelPage_HeaderSubtitle">监听聊天频道，命中敌情后在置顶小窗、声音与系统通知中提醒。</sys:String>
+    <sys:String x:Key="ChannelIntelPage_NoCharacters">未发现角色，请先配置游戏日志路径。</sys:String>
+    <sys:String x:Key="ChannelIntelPage_NoChannels">没有可用的频道。</sys:String>
+    <sys:String x:Key="ChannelIntelPage_RoleFilterPlaceholder">搜索角色…</sys:String>
+    <sys:String x:Key="ChannelIntelPage_ChannelFilterPlaceholder">搜索频道…</sys:String>
+    <sys:String x:Key="ChannelIntelPage_SelectAll">全选</sys:String>
+    <sys:String x:Key="ChannelIntelPage_ClearSelection">清空</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LogPathOk">日志路径正常</sys:String>
+    <sys:String x:Key="ChannelIntelPage_SelectedShort">已选</sys:String>
+    <sys:String x:Key="ChannelIntelPage_ChannelHint">勾选要监听的频道</sys:String>
+    <sys:String x:Key="ChannelIntelPage_RangeHint">本地位置与 N 跳半径决定预警数据边界</sys:String>
+    <sys:String x:Key="ChannelIntelPage_KeywordHint">命中后忽略或解除</sys:String>
+    <sys:String x:Key="ChannelIntelPage_RefreshCharacters">刷新角色</sys:String>
+    <sys:String x:Key="ChannelIntelPage_RangeFormat">范围 {0} 跳</sys:String>
+    <sys:String x:Key="ChannelIntelPage_RunningCountFormat">{0} / {1} 运行中</sys:String>
+    <sys:String x:Key="ChannelIntelPage_SelectedCount">已选 {0}</sys:String>
+    <sys:String x:Key="ChannelIntelPage_ChannelSource">频道来源</sys:String>
+    <sys:String x:Key="ChannelIntelPage_RunningText">运行中</sys:String>
     <sys:String x:Key="ChannelIntelPage_NotifySetting">通知方式</sys:String>
     <sys:String x:Key="ChannelIntelPage_KeywordSetting">关键词</sys:String>
     <sys:String x:Key="ChannelIntelPage_OtherSetting">其他</sys:String>
@@ -2777,7 +2797,7 @@
     <sys:String x:Key="IndustryPage_StructureNotSelectedTip">未选择官方结构：仅使用手填设施税/rig。</sys:String>
     <sys:String x:Key="IndustryPage_NoStructure">未选择结构</sys:String>
     <sys:String x:Key="IndustryPage_NoStructureBonus">无官方结构加成</sys:String>
-    <sys:String x:Key="IndustryPage_RigOverrideSuffix"> · {0} 条分类/过滤覆盖</sys:String>
+    <sys:String x:Key="IndustryPage_RigOverrideSuffix">· {0} 条分类/过滤覆盖</sys:String>
     <sys:String x:Key="IndustryPage_DefaultBonus">默认 材料 -{0} / 时间 -{1}{2}</sys:String>
     <sys:String x:Key="IndustryPage_MaterialBonusTotal">材料总加成 -{0:0.##}%；与蓝图 ME 相乘，分类/过滤器不再单独区分。</sys:String>
     <sys:String x:Key="IndustryPage_TimeBonusTotal">时间总加成 -{0:0.##}%；与蓝图 TE 相乘。</sys:String>
@@ -2892,8 +2912,10 @@
     <sys:String x:Key="IndustryChain_SellBuy">卖 {0:N2} / 买 {1:N2}</sys:String>
     <sys:String x:Key="IndustryChain_NoDetailedOrders">无详细订单</sys:String>
     <sys:String x:Key="IndustryChain_UnfilledVolume">超出可见买单成交量 {0:N0} 件</sys:String>
-    <sys:String x:Key="IndustryChain_OrderBook">卖档 {0}
-买档 {1}</sys:String>
+    <sys:String x:Key="IndustryChain_OrderBook">
+        卖档 {0}
+        买档 {1}
+    </sys:String>
     <sys:String x:Key="IndustryChain_InventionText">成功率 {0:P1} · 尝试 {1:N0} 次 · BPC 需要 {2:N0} 张 × {3} 流程 · 期望成功 {4:0.##} 张 · ME{5}/TE{6}</sys:String>
     <sys:String x:Key="IndustryChain_InventionCostHint">成本按 {0:N0} 次尝试计：自动时尝试 = ceil(BPC 需求 / 成功率)；每次尝试消耗数据核心/解密器/T1 蓝图（未拥有时），失败同样消耗；另加发明任务费用。</sys:String>
     <sys:String x:Key="IndustryChain_InventionWarning">期望成功 {0:0.##} 张 &lt; 需要 {1:N0} 张，当前尝试次数可能不够。</sys:String>
@@ -2937,7 +2959,7 @@
     <sys:String x:Key="IndustrySchedule_OptimizerTip">优化器按最早完成 / 成本选择；技能快不代表一定选，线满时会比较排队。</sys:String>
     <sys:String x:Key="IndustrySchedule_NoResult">还没有排产结果</sys:String>
     <sys:String x:Key="IndustrySchedule_Empty">在「计划设置」添加目标并点击「计算制造计划」，这里会按角色技能槽位生成排程、步骤、工位和关系图。</sys:String>
-    <sys:String x:Key="IndustrySchedule_StepsSuffix"> 步</sys:String>
+    <sys:String x:Key="IndustrySchedule_StepsSuffix">步</sys:String>
     <sys:String x:Key="IndustrySchedule_StageInvention">发明</sys:String>
     <sys:String x:Key="IndustrySchedule_StageReaction">反应</sys:String>
     <sys:String x:Key="IndustrySchedule_StagePlanetary">行星</sys:String>
@@ -2947,13 +2969,17 @@
     <sys:String x:Key="IndustrySchedule_Attempts">{0:N0} 次尝试</sys:String>
     <sys:String x:Key="IndustrySchedule_Runs">{0:N0} 流程</sys:String>
     <sys:String x:Key="IndustrySchedule_TimeRange">开始 {0} · 结束 {1} · 耗时 {2}</sys:String>
-    <sys:String x:Key="IndustrySchedule_JobToolTip">{0}
-{1} · {2:N0} 流程 · {3}
-{4} · {5}</sys:String>
+    <sys:String x:Key="IndustrySchedule_JobToolTip">
+        {0}
+        {1} · {2:N0} 流程 · {3}
+        {4} · {5}
+    </sys:String>
     <sys:String x:Key="IndustrySchedule_JobToolTipInProgress">
-在制任务：占用当前槽位，完成前不会开始后续任务</sys:String>
+        在制任务：占用当前槽位，完成前不会开始后续任务
+    </sys:String>
     <sys:String x:Key="IndustrySchedule_JobToolTipCompressed">
-条形按时间轴压缩显示；真实起止见上</sys:String>
+        条形按时间轴压缩显示；真实起止见上
+    </sys:String>
     <sys:String x:Key="IndustrySchedule_BarInProgress">在制 · {0}</sys:String>
     <sys:String x:Key="IndustrySchedule_Queue">该产线还有 {0} 个任务排队</sys:String>
     <sys:String x:Key="IndustrySchedule_BusyHours">{0:0.0}h</sys:String>
@@ -3359,8 +3385,10 @@
     <sys:String x:Key="IndustryCustomCharacter_SkillAdvancedReactions">高级反应理论（Advanced Reactions）</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_LevelHint">等级 0–5：制造槽 = 1 + 批量生产 + 高级批量生产；发明/反应同理。时间修正按工业/反应理论每级 4%，高级每级 3%。</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_Preview">预估产能</sys:String>
-    <sys:String x:Key="IndustryCustomCharacter_PreviewText">制造 {0} 槽 · 发明 {1} 槽 · 反应 {2} 槽
-制造时间 ×{3:0.00} · 反应时间 ×{4:0.00}</sys:String>
+    <sys:String x:Key="IndustryCustomCharacter_PreviewText">
+        制造 {0} 槽 · 发明 {1} 槽 · 反应 {2} 槽
+        制造时间 ×{3:0.00} · 反应时间 ×{4:0.00}
+    </sys:String>
     <sys:String x:Key="IndustryCustomCharacter_Summary">制造 {0} · 发明 {1} · 反应 {2} · 制造×{3:0.00} · 反应×{4:0.00}</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteConfirm">删除自定义角色「{0}」？</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteTitle">删除自定义角色</sys:String>

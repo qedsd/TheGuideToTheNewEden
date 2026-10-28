@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -149,6 +149,8 @@ public sealed class ChannelMonitorViewModel : INotifyPropertyChanged
             PageNotifyService.Error(FindString("GameLogMonitorPage_NoneKeyError"));
             return false;
         }
+
+        await ChatlogChannelRefreshService.RefreshAsync(item.Name, ChatChanelInfos);
 
         var checkedChannels = ChatChanelInfos.Where(p => p.IsChecked).Select(p => p.Info).ToList();
         if (checkedChannels.Count == 0)
