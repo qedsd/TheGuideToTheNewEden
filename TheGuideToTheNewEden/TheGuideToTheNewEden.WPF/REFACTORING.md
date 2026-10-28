@@ -9853,6 +9853,20 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 自动更新开关仍在「预警范围」卡片中，功能不变。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 216：星图顶栏精简与「更多」聚合（2026-10-28）
+
+- 星图页顶栏从一排完整控件改为：**搜索 / 固定到主页 / 筛选 / 工具 / 更多**。
+- 常用入口改成紧凑图标按钮（Pin / Filter / Wrench / MoreHorizontal），搜索框宽度缩到 160，窄窗口不再横向溢出。
+- 新增 `MoreFlyout`，聚合：
+  - 星域定位 `RegionCombo`；
+  - 着色模式 `ColorModeCombo` + 行星资源类型 `ResourceKindCombo`；
+  - 跳桥 / 角色 / 势力图层开关；
+  - 显示设置、重置视图。
+- `FilterFlyout` / `ToolsFlyout` 保持独立；打开一个时关闭另外两个，避免浮层叠在一起。
+- 显示设置、重置视图点击后自动收起「更多」。
+- 手册同步新的顶栏层级（星图 / 跳桥）。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

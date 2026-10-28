@@ -1818,6 +1818,8 @@
     <sys:String x:Key="MapPage_ResourceSuperionicIce">超离子冰</sys:String>
     <sys:String x:Key="MapPage_Bridges">跳桥</sys:String>
     <sys:String x:Key="MapPage_Tools">工具</sys:String>
+    <sys:String x:Key="MapPage_More">更多</sys:String>
+    <sys:String x:Key="MapPage_ColorMode">着色模式</sys:String>
     <sys:String x:Key="MapPage_Detail">详情</sys:String>
     <sys:String x:Key="MapPage_IntelZkb">ZKB 击杀</sys:String>
     <sys:String x:Key="MapPage_IntelZkbMinutes">保留(分)</sys:String>

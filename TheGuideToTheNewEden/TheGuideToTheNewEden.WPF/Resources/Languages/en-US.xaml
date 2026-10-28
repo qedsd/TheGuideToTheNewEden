@@ -1795,6 +1795,8 @@
     <sys:String x:Key="MapPage_ResourceSuperionicIce">Superionic ice</sys:String>
     <sys:String x:Key="MapPage_Bridges">Jump bridges</sys:String>
     <sys:String x:Key="MapPage_Tools">Tools</sys:String>
+    <sys:String x:Key="MapPage_More">More</sys:String>
+    <sys:String x:Key="MapPage_ColorMode">Color mode</sys:String>
     <sys:String x:Key="MapPage_Detail">Details</sys:String>
     <sys:String x:Key="MapPage_IntelZkb">ZKB kills</sys:String>
     <sys:String x:Key="MapPage_IntelZkbMinutes">Keep (min)</sys:String>

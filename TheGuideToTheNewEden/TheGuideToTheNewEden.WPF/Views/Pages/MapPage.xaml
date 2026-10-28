@@ -55,73 +55,35 @@
             BorderThickness="0,0,0,1">
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal">
-                    <!--  星系搜索  -->
+                    <!--  常用入口：搜索、定位、筛选、工具、更多  -->
                     <ui:TextBox
                         x:Name="SearchBox"
-                        Width="220"
+                        Width="160"
+                        MinWidth="120"
                         ClearButtonEnabled="True"
                         PlaceholderText="{DynamicResource MapPage_SearchPlaceholder}"
                         TextChanged="SearchBox_TextChanged" />
-                    <ComboBox
-                        x:Name="RegionCombo"
-                        MinWidth="130"
-                        Margin="8,0,0,0"
-                        ItemsSource="{Binding Regions}"
-                        SelectedItem="{Binding SelectedLocateRegion, Mode=TwoWay}"
-                        SelectionChanged="RegionCombo_SelectionChanged">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding RegionName}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <!--  着色模式（索引 → MapColorMode 由 MapPageViewModel.ColorModes 显式映射）  -->
-                    <ComboBox
-                        x:Name="ColorModeCombo"
-                        MinWidth="120"
-                        Margin="8,0,0,0"
-                        SelectedIndex="0"
-                        SelectionChanged="ColorMode_SelectionChanged">
-                        <ComboBoxItem Content="{DynamicResource MapPage_ColorSecurity}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ColorSov}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ColorPlanetResource}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ColorKills}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ColorJumps}" />
-                    </ComboBox>
-                    <!--  行星资源类型（仅"行星资源"着色时显示）  -->
-                    <ComboBox
-                        x:Name="ResourceKindCombo"
-                        MinWidth="120"
-                        Margin="8,0,0,0"
-                        SelectionChanged="ResourceKind_SelectionChanged"
-                        Visibility="Collapsed">
-                        <ComboBoxItem Content="{DynamicResource MapPage_ResourcePower}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ResourceWorkforce}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ResourceMagmaticGas}" />
-                        <ComboBoxItem Content="{DynamicResource MapPage_ResourceSuperionicIce}" />
-                    </ComboBox>
                     <ui:Button
                         x:Name="PinSystemButton"
+                        Width="34"
+                        Height="30"
                         Margin="8,0,0,0"
+                        Padding="0"
                         Appearance="Secondary"
                         Click="PinSystemButton_Click"
-                        Content="{DynamicResource Home.Quick.PinCurrent}"
-                        ToolTip="{DynamicResource Home.Quick.PinSystemTip}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Pin24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                        Icon="{ui:SymbolIcon Pin24}"
+                        ToolTip="{DynamicResource Home.Quick.PinSystemTip}" />
                     <!--  星域 / 安等筛选  -->
                     <ui:Button
                         x:Name="FilterButton"
+                        Width="34"
+                        Height="30"
                         Margin="8,0,0,0"
+                        Padding="0"
                         Appearance="Secondary"
                         Click="FilterButton_Click"
-                        Content="{DynamicResource MapPage_Filter}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Filter24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                        Icon="{ui:SymbolIcon Filter24}"
+                        ToolTip="{DynamicResource MapPage_Filter}" />
                     <!--  筛选下拉（标准 WinUI3 风格：主题底色 + 主题化控件）  -->
                     <ui:Flyout
                         x:Name="FilterFlyout"
@@ -186,53 +148,27 @@
                             </StackPanel>
                         </StackPanel>
                     </ui:Flyout>
-                    <!--  跳桥  -->
-                    <CheckBox
-                        x:Name="BridgesToggle"
-                        Margin="12,0,0,0"
-                        VerticalAlignment="Center"
-                        Checked="BridgesToggle_Changed"
-                        Content="{DynamicResource MapPage_Bridges}"
-                        Unchecked="BridgesToggle_Changed" />
-                    <!--  角色标记  -->
-                    <CheckBox
-                        x:Name="CharactersToggle"
-                        Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Checked="CharactersToggle_Changed"
-                        Content="{DynamicResource MapPage_Characters}"
-                        Unchecked="CharactersToggle_Changed" />
-                    <!--  势力（圆点叠加联盟/势力徽标）  -->
-                    <CheckBox
-                        x:Name="LogosToggle"
-                        Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Checked="LogosToggle_Changed"
-                        Content="{DynamicResource MapPage_Logos}"
-                        Unchecked="LogosToggle_Changed" />
-                    <!--  显示设置（实时调参弹窗）  -->
-                    <ui:Button
-                        x:Name="DisplaySettingsButton"
-                        Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Appearance="Secondary"
-                        Click="DisplaySettingsButton_Click"
-                        Content="{DynamicResource MapPage_DisplaySettings}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Settings24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
                     <!--  工具（导航 / 情报等入口都在这个下拉里）  -->
                     <ui:Button
                         x:Name="ToolsButton"
+                        Width="34"
+                        Height="30"
                         Margin="8,0,0,0"
+                        Padding="0"
                         Appearance="Secondary"
                         Click="ToolsButton_Click"
-                        Content="{DynamicResource MapPage_Tools}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Wrench24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                        Icon="{ui:SymbolIcon Wrench24}"
+                        ToolTip="{DynamicResource MapPage_Tools}" />
+                    <ui:Button
+                        x:Name="MoreButton"
+                        Width="34"
+                        Height="30"
+                        Margin="8,0,0,0"
+                        Padding="0"
+                        Appearance="Secondary"
+                        Click="MoreButton_Click"
+                        Icon="{ui:SymbolIcon MoreHorizontal24}"
+                        ToolTip="{DynamicResource MapPage_More}" />
                     <!--  工具菜单（标准 WinUI3 风格下拉：主题底色 + 标准菜单项）  -->
                     <ui:Flyout
                         x:Name="ToolsFlyout"
@@ -302,18 +238,102 @@
                             </ui:Button>
                         </StackPanel>
                     </ui:Flyout>
+                    <!--  更多：星域定位 / 着色 / 图层开关 / 显示设置 / 重置视图  -->
+                    <ui:Flyout
+                        x:Name="MoreFlyout"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Placement="Bottom">
+                        <StackPanel Width="280">
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MapPage_More}" />
+                            <TextBlock
+                                Margin="0,10,0,4"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MapTool_Region}" />
+                            <ComboBox
+                                x:Name="RegionCombo"
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{Binding Regions}"
+                                SelectedItem="{Binding SelectedLocateRegion, Mode=TwoWay}"
+                                SelectionChanged="RegionCombo_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RegionName}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock
+                                Margin="0,10,0,4"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MapPage_ColorMode}" />
+                            <ComboBox
+                                x:Name="ColorModeCombo"
+                                HorizontalAlignment="Stretch"
+                                SelectedIndex="0"
+                                SelectionChanged="ColorMode_SelectionChanged">
+                                <ComboBoxItem Content="{DynamicResource MapPage_ColorSecurity}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ColorSov}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ColorPlanetResource}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ColorKills}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ColorJumps}" />
+                            </ComboBox>
+                            <ComboBox
+                                x:Name="ResourceKindCombo"
+                                Margin="0,6,0,0"
+                                HorizontalAlignment="Stretch"
+                                SelectionChanged="ResourceKind_SelectionChanged"
+                                Visibility="Collapsed">
+                                <ComboBoxItem Content="{DynamicResource MapPage_ResourcePower}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ResourceWorkforce}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ResourceMagmaticGas}" />
+                                <ComboBoxItem Content="{DynamicResource MapPage_ResourceSuperionicIce}" />
+                            </ComboBox>
+                            <Separator Margin="0,10" />
+                            <CheckBox
+                                x:Name="BridgesToggle"
+                                Margin="0,2"
+                                VerticalAlignment="Center"
+                                Checked="BridgesToggle_Changed"
+                                Content="{DynamicResource MapPage_Bridges}"
+                                Unchecked="BridgesToggle_Changed" />
+                            <CheckBox
+                                x:Name="CharactersToggle"
+                                Margin="0,2"
+                                VerticalAlignment="Center"
+                                Checked="CharactersToggle_Changed"
+                                Content="{DynamicResource MapPage_Characters}"
+                                Unchecked="CharactersToggle_Changed" />
+                            <CheckBox
+                                x:Name="LogosToggle"
+                                Margin="0,2"
+                                VerticalAlignment="Center"
+                                Checked="LogosToggle_Changed"
+                                Content="{DynamicResource MapPage_Logos}"
+                                Unchecked="LogosToggle_Changed" />
+                            <Separator Margin="0,10" />
+                            <ui:Button
+                                x:Name="DisplaySettingsButton"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="DisplaySettingsButton_Click"
+                                Content="{DynamicResource MapPage_DisplaySettings}"
+                                Icon="{ui:SymbolIcon Settings24}" />
+                            <ui:Button
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="ResetView_Click"
+                                Content="{DynamicResource MapPage_ResetView}"
+                                Icon="{ui:SymbolIcon ArrowClockwise24}" />
+                        </StackPanel>
+                    </ui:Flyout>
                 </StackPanel>
-                <!--  右侧：重置视图  -->
-                <ui:Button
-                    Appearance="Transparent"
-                    Click="ResetView_Click"
-                    Content="{DynamicResource MapPage_ResetView}"
-                    DockPanel.Dock="Right"
-                    ToolTip="{DynamicResource MapPage_ResetView}">
-                    <ui:Button.Icon>
-                        <ui:SymbolIcon Symbol="ArrowClockwise24" />
-                    </ui:Button.Icon>
-                </ui:Button>
             </DockPanel>
         </Border>
 

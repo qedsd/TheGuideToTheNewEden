@@ -489,6 +489,7 @@ public partial class MapPage : Page, IManualAware
 
     private void ResetView_Click(object sender, RoutedEventArgs e)
     {
+        MoreFlyout.Hide();
         MapCanvas.Fit();
     }
 
@@ -653,6 +654,7 @@ public partial class MapPage : Page, IManualAware
     /// </summary>
     private void DisplaySettingsButton_Click(object sender, RoutedEventArgs e)
     {
+        MoreFlyout.Hide();
         if (_displayWindow is null)
         {
             var view = new MapDisplaySettingsView(
@@ -685,6 +687,8 @@ public partial class MapPage : Page, IManualAware
         }
         else
         {
+            MoreFlyout.Hide();
+            ToolsFlyout.Hide();
             FilterFlyout.Show();
         }
     }
@@ -711,7 +715,23 @@ public partial class MapPage : Page, IManualAware
         }
         else
         {
+            MoreFlyout.Hide();
+            FilterFlyout.Hide();
             ToolsFlyout.Show();
+        }
+    }
+
+    private void MoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (MoreFlyout.IsOpen)
+        {
+            MoreFlyout.Hide();
+        }
+        else
+        {
+            FilterFlyout.Hide();
+            ToolsFlyout.Hide();
+            MoreFlyout.Show();
         }
     }
 
