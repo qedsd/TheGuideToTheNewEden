@@ -1,11 +1,9 @@
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.WPF.Services;
-using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.Services.Map;
 using TheGuideToTheNewEden.WPF.ViewModels.Map;
 using TheGuideToTheNewEden.WPF.Views.UserControls.Map;
@@ -44,7 +42,11 @@ public partial class MapPage : Page, IManualAware
         MapCanvas.HoveredChanged += MapCanvas_HoveredChanged;
 
         _viewModel.IntelMarkersChanged += (_, markers) => MapCanvas.SetIntel(markers);
-        _viewModel.ColorModeChanged += async (_, mode) => await ApplyColorModeAsync(mode);
+        _viewModel.ColorModeChanged += async (_, mode) =>
+        {
+            SyncColorModeCombo();
+            await ApplyColorModeAsync(mode);
+        };
         _viewModel.ResourceKindChanged += async (_, _) => await ApplyColorModeAsync(_viewModel.ColorMode);
         _viewModel.ShowCharactersChanged += (_, enabled) => SetCharactersEnabled(enabled);
         _viewModel.BridgesChanged += (_, _) => ApplyBridges();
@@ -78,30 +80,6 @@ public partial class MapPage : Page, IManualAware
         Services.Navigation.MapCommandRequested += OnMapCommandRequested;
         Loaded += MapPage_Loaded;
         Unloaded += MapPage_Unloaded;
-    }
-
-    /// <summary>
-    /// 把当前选中的星系固定到主页（P3 参数化磁贴：<c>map + 星系 ID</c>）——
-    /// 点主页磁贴会跳回星图并定位到该星系。
-    /// </summary>
-    private void PinSystemButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.SelectedSystem is not { } node)
-        {
-            PageNotifyService.Info(FindString("Home.Quick.PinNeedSelection"));
-            return;
-        }
-
-        if (HomeShortcutService.Add("map", node.Id.ToString(CultureInfo.InvariantCulture), node.Name))
-        {
-            PageNotifyService.Success(string.Format(FindString("Home.Quick.Pinned"), node.Name));
-        }
-        else
-        {
-            PageNotifyService.Info(HomeShortcutService.IsFull
-                ? string.Format(FindString("Home.Quick.LimitReached"), HomeShortcutService.MaxItems)
-                : string.Format(FindString("Home.Quick.AlreadyPinned"), node.Name));
-        }
     }
 
     /// <summary>外部请求"定位到某个星系"（主页参数化磁贴 / 其它页面）。</summary>
@@ -220,6 +198,7 @@ public partial class MapPage : Page, IManualAware
         }
 
         ApplyBridges();
+        SyncColorModeCombo();
         await ApplyColorModeAsync(_viewModel.ColorMode);
 
         // 数据就绪后再消费"待定位星系"（此时画布上已经有节点）
@@ -341,6 +320,16 @@ public partial class MapPage : Page, IManualAware
         }
 
         _viewModel.ColorMode = MapPageViewModel.ColorModes[index];
+    }
+
+    /// <summary>把下拉框同步到 VM 的着色模式：装载回填与 AI 星图命令都会绕过下拉框直接改 VM。</summary>
+    private void SyncColorModeCombo()
+    {
+        var index = Array.IndexOf(MapPageViewModel.ColorModes, _viewModel.ColorMode);
+        if (index >= 0 && ColorModeCombo.SelectedIndex != index)
+        {
+            ColorModeCombo.SelectedIndex = index;
+        }
     }
 
     private void ResourceKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -489,7 +478,6 @@ public partial class MapPage : Page, IManualAware
 
     private void ResetView_Click(object sender, RoutedEventArgs e)
     {
-        MoreFlyout.Hide();
         MapCanvas.Fit();
     }
 
@@ -654,7 +642,6 @@ public partial class MapPage : Page, IManualAware
     /// </summary>
     private void DisplaySettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        MoreFlyout.Hide();
         if (_displayWindow is null)
         {
             var view = new MapDisplaySettingsView(

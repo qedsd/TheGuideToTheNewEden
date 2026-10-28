@@ -116,8 +116,6 @@
     <sys:String x:Key="Home.Recent.Title">Recent</sys:String>
     <sys:String x:Key="Home.Quick.More">More</sys:String>
     <sys:String x:Key="Home.Quick.PinCurrent">Pin to home</sys:String>
-    <sys:String x:Key="Home.Quick.PinSystemTip">Pin the selected system to the home page</sys:String>
-    <sys:String x:Key="Home.Quick.PinNeedSelection">Select a system on the map first</sys:String>
     <sys:String x:Key="Home.Quick.Pinned">Pinned to home: {0}</sys:String>
     <sys:String x:Key="Home.Quick.AlreadyPinned">“{0}” is already on the home page</sys:String>
     <sys:String x:Key="Home.Quick.GroupCount">{0} items</sys:String>

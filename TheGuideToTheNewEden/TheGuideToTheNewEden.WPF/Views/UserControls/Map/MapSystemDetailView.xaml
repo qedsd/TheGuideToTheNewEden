@@ -49,18 +49,40 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <TextBlock
-                FontSize="18"
-                FontWeight="SemiBold"
-                Text="{Binding Name}" />
-            <TextBlock
-                Margin="8,0,0,0"
-                VerticalAlignment="Center"
-                FontSize="14"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{Binding SecurityText}" />
-        </StackPanel>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    Text="{Binding Name}" />
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding SecurityText}" />
+            </StackPanel>
+
+            <!--  固定该星系到主页（P3 参数化磁贴：map + 星系 ID）  -->
+            <ui:Button
+                Grid.Column="1"
+                MinWidth="34"
+                MinHeight="30"
+                Padding="0"
+                VerticalAlignment="Top"
+                AutomationProperties.Name="{DynamicResource Home.Quick.PinCurrent}"
+                Click="PinSystem_Click"
+                ToolTip="{DynamicResource Home.Quick.PinCurrent}">
+                <ui:Button.Icon>
+                    <ui:SymbolIcon FontSize="18" Symbol="Pin24" />
+                </ui:Button.Icon>
+            </ui:Button>
+        </Grid>
 
         <WrapPanel Grid.Row="1" Margin="0,8,0,0">
             <TextBlock Style="{StaticResource DetailLabel}" Text="{DynamicResource MapTool_Detail_Id}" />

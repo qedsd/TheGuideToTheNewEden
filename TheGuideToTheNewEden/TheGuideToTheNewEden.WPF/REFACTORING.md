@@ -9867,6 +9867,30 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步新的顶栏层级（星图 / 跳桥）。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 217：固定星系入口移入星系详情窗 + 星域/着色模式提到星图顶栏（2026-10-28）
+
+- 背景（用户要求）：① 把「将选中星系固定到主页」的按钮从星图顶栏移进**星系详情窗**；② 把「更多」里的**星域**与**着色模式**迁移到星图顶栏。
+- **星图顶栏**（`Views/Pages/MapPage.xaml(.cs)`）：
+  - 顶栏顺序改为 **搜索 / 星域 / 着色模式 /（行星资源类型）/ 筛选 / 工具 / 更多**；星域、着色模式下拉从「更多」浮层搬到顶栏（固定宽度 140 / 130，用 `ToolTip` 说明用途，省掉浮层里的文字标签）。
+  - **行星资源类型下拉跟随着色模式一起搬出**（它是着色模式的从属项，只在「行星资源」时出现）；留在「更多」里会变成没有上级的孤立选项。「更多」现在只放图层开关（跳桥 / 角色 / 势力）、显示设置与重置视图。
+  - 顺带补上**着色模式下拉与 VM 的双向同步**：此前该下拉从不回填（装载时按保存值着色、或 AI 星图命令直接改 `ColorMode` 时，下拉仍停在「安全等级」）；现在 `SyncColorModeCombo()` 在装载与 `ColorModeChanged` 时同步一次。
+  - 删除顶栏 `PinSystemButton` 与 `PinSystemButton_Click`，连带删掉不再需要的 `System.Globalization` / `Services.Home` using。
+- **星系详情窗**（`Views/UserControls/Map/MapSystemDetailView.xaml(.cs)`）：
+  - 标题行改为两列：左侧星系名 + 安等，右侧图钉按钮（`Pin24`，ToolTip / 无障碍名 `Home.Quick.PinCurrent`）。
+  - 点击把**该详情窗的星系**固定到主页（`map + 星系 ID` 参数化磁贴，点磁贴回星图并定位到该星系）；成功 / 重复固定 / 触顶三种结果走右下角通知，判定与市场页的固定按钮同一套。
+  - 详情窗本来就是按"当前星系"重建的，因此不再需要原顶栏按钮的"未选中星系"提示分支。
+- 语言键：删除随顶栏按钮一起失效的 `Home.Quick.PinSystemTip` / `Home.Quick.PinNeedSelection`（中英同步）；详情窗按钮复用 `Home.Quick.PinCurrent`。
+- 手册：`map.md` 更新工具条构成、星域 / 着色模式位置、固定入口（星系详情窗右上角），并删掉故障表里"请先在星图上选中一个星系"一行；`settings/home.md` 的固定入口说明改为"星图的星系详情窗"。
+- 验证：`dotnet build` **0 错误**（仅既有 warning）。`AssistantProbe ui / manuals` 在本机因 `%LocalAppData%\TheGuideToTheNewEden\V1\Configs` 创建被拒（沙箱写入限制，与阶段 96/97 记录的环境问题同源）**未能启动**，本轮没有探针结果；界面布局需实机目视确认。
+
+## 阶段 218：显示设置 / 重置视图改为顶栏图标按钮（2026-10-28）
+
+- 用户要求：把「更多」里的「显示设置」「重置视图」拎出来，顶栏只保留图标。
+- `MapPage.xaml`：两个入口从 `MoreFlyout` 移到星图顶栏（`Settings24` / `ArrowClockwise24`，34×30 纯图标按钮，`ToolTip` 与 `AutomationProperties.Name` 复用 `MapPage_DisplaySettings` / `MapPage_ResetView`）；「更多」只剩三个图层开关（跳桥 / 角色 / 势力）。
+- `MapPage.xaml.cs`：这两个入口不再需要先收起「更多」，删除各自的 `MoreFlyout.Hide()`；未再引用的 `DisplaySettingsButton` 名称一并去掉（处理函数保留）。
+- 手册：`map.md` 工具条构成改为搜索 / 星域 / 着色模式 / 筛选 / 工具 / 显示设置 / 重置视图 / 更多，并修正显示设置、重置视图的入口描述。
+- 验证：`dotnet build` **0 错误**；探针仍受本机 AppData 写入限制无法启动（同阶段 217）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -11074,7 +11098,8 @@ Helpers/VisualTreeSearch.cs             IsInsideChildButton：判断"按下的�
 外部接入（阶段 92 追加三）：
 ```
 Services/Navigation.cs                  + NavigateToSystem/TakePendingSystem/SetPendingSystem、NavigateToCharacter/TakePendingCharacter/SetPendingCharacter
-Views/Pages/MapPage.xaml(.cs)           + 顶栏「固定当前星系到主页」按钮、公开 LocateSystem、ApplyPendingSystem（装载后消费待办）
+Views/Pages/MapPage.xaml(.cs)           + 公开 LocateSystem、ApplyPendingSystem（装载后消费待办）（阶段 217 起顶栏不再有固定按钮）
+Views/UserControls/Map/MapSystemDetailView.xaml(.cs)  + 标题行「固定当前星系到主页」按钮（阶段 217，参数化磁贴 map + 星系 ID）
 Views/Pages/MarketPage.xaml(.cs)        + 物品头「固定当前物品到主页」按钮
 Views/Pages/Characters/CharacterCardsPage.xaml(.cs)  + 卡片「⋯」菜单的「固定到主页」、公开 FindCard、CardsReloaded 事件
 Views/Pages/Characters/CharactersShellPage.xaml.cs   + 公开 OpenCharacterById、ApplyPendingCharacter（卡片重载后补开）

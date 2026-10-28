@@ -131,8 +131,6 @@
     <sys:String x:Key="Home.Recent.Title">最近使用</sys:String>
     <sys:String x:Key="Home.Quick.More">更多</sys:String>
     <sys:String x:Key="Home.Quick.PinCurrent">固定到主页</sys:String>
-    <sys:String x:Key="Home.Quick.PinSystemTip">把当前选中的星系固定到主页</sys:String>
-    <sys:String x:Key="Home.Quick.PinNeedSelection">请先在星图上选中一个星系</sys:String>
     <sys:String x:Key="Home.Quick.Pinned">已固定到主页：{0}</sys:String>
     <sys:String x:Key="Home.Quick.AlreadyPinned">「{0}」已经在主页上了</sys:String>
     <sys:String x:Key="Home.Quick.GroupCount">{0} 个</sys:String>
