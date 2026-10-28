@@ -16,51 +16,96 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         </Style>
-        <!--  每跳声音行  -->
+        <!--  每跳声音行：两行卡片，避免跳数/滑条/循环/文件/按钮挤在一行  -->
         <DataTemplate x:Key="SoundRowTemplate">
-            <Grid Margin="0,2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="64" />
-                    <ColumnDefinition Width="110" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal">
+            <Border
+                Margin="0,0,8,6"
+                Padding="9,7"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="72" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="44" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Id}" />
+                        <TextBlock
+                            Margin="2,0,0,0"
+                            FontSize="10"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource EarlyWarningItemPage_Jump}" />
+                    </StackPanel>
+
+                    <Slider
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="{Binding Volume, Mode=TwoWay}" />
+
                     <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        FontFamily="Consolas"
+                        FontSize="10.5"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding Volume, StringFormat={}{0}%}"
+                        TextAlignment="Right" />
+
+                    <CheckBox
+                        Grid.Row="0"
+                        Grid.Column="3"
                         Margin="8,0,0,0"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{Binding Id}" />
+                        VerticalAlignment="Center"
+                        Content="{DynamicResource EarlyWarningItemPage_Loop}"
+                        IsChecked="{Binding Loop, Mode=TwoWay}" />
+
                     <TextBlock
-                        Margin="2,0,0,0"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{DynamicResource EarlyWarningItemPage_Jump}" />
-                </StackPanel>
-                <Slider
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Maximum="100"
-                    Minimum="0"
-                    Value="{Binding Volume, Mode=TwoWay}" />
-                <CheckBox
-                    Grid.Column="2"
-                    Margin="8,0"
-                    VerticalAlignment="Center"
-                    Content="{DynamicResource EarlyWarningItemPage_Loop}"
-                    IsChecked="{Binding Loop, Mode=TwoWay}" />
-                <ui:TextBox
-                    Grid.Column="3"
-                    Margin="0,0,4,0"
-                    PlaceholderText="{DynamicResource EarlyWarningItemPage_DefaultFile}"
-                    Text="{Binding FilePath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                <ui:Button
-                    Grid.Column="4"
-                    Click="OnPickSoundFileClick"
-                    Content="{DynamicResource EarlyWarningItemPage_Pick}" />
-            </Grid>
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="0,7,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="10.5"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource ChannelIntelPage_SoundFile}" />
+
+                    <ui:TextBox
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Margin="0,6,8,0"
+                        PlaceholderText="{DynamicResource EarlyWarningItemPage_DefaultFile}"
+                        Text="{Binding FilePath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+                    <ui:Button
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        Margin="0,6,0,0"
+                        Click="OnPickSoundFileClick"
+                        Content="{DynamicResource EarlyWarningItemPage_Pick}" />
+                </Grid>
+            </Border>
         </DataTemplate>
         <!--  角色项：名称 + 预警中指示条  -->
         <DataTemplate x:Key="CharacterItemTemplate">
@@ -265,14 +310,16 @@
                                     <ui:NumberBox
                                         Grid.Row="1"
                                         Grid.Column="1"
+                                        Width="160"
                                         MaxHeight="32"
                                         Margin="0,0,40,0"
                                         HorizontalAlignment="Left"
+                                        ClearButtonEnabled="False"
                                         Maximum="8"
                                         Minimum="0"
                                         SmallChange="1"
-                                        Value="{Binding Session.Setting.IntelJumpsValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        ValueChanged="OnIntelJumpsChanged" />
+                                        ValueChanged="OnIntelJumpsChanged"
+                                        Value="{Binding Session.Setting.IntelJumpsValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <TextBlock
                                         Grid.Row="2"
@@ -447,7 +494,7 @@
                                         <RowDefinition Height="42" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
 
@@ -457,8 +504,9 @@
                                         IsChecked="{Binding Session.Setting.AutoClear, Mode=TwoWay}" />
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <ui:NumberBox
-                                            Width="120"
+                                            Width="160"
                                             MaxHeight="32"
+                                            ClearButtonEnabled="False"
                                             Minimum="1"
                                             SmallChange="0.5"
                                             ToolTip="{DynamicResource ChannelIntelPage_AutoClear_Tip}"
@@ -467,7 +515,8 @@
                                         <TextBlock
                                             Margin="4,0,0,0"
                                             VerticalAlignment="Center"
-                                            Text="min" />
+                                            Text="min"
+                                            Visibility="{Binding Session.Setting.AutoClear, Converter={StaticResource BoolToVis}}" />
                                     </StackPanel>
 
                                     <CheckBox
@@ -480,8 +529,9 @@
                                         Grid.Column="1"
                                         Orientation="Horizontal">
                                         <ui:NumberBox
-                                            Width="120"
+                                            Width="160"
                                             MaxHeight="32"
+                                            ClearButtonEnabled="False"
                                             Minimum="0.5"
                                             SmallChange="0.5"
                                             ToolTip="{DynamicResource ChannelIntelPage_AutoDowngrade_Tip}"
@@ -490,7 +540,8 @@
                                         <TextBlock
                                             Margin="4,0,0,0"
                                             VerticalAlignment="Center"
-                                            Text="min" />
+                                            Text="min"
+                                            Visibility="{Binding Session.Setting.AutoDowngrade, Converter={StaticResource BoolToVis}}" />
                                     </StackPanel>
 
                                     <CheckBox
@@ -503,8 +554,9 @@
                                         Grid.Column="1"
                                         Orientation="Horizontal">
                                         <ui:NumberBox
-                                            Width="120"
+                                            Width="160"
                                             MaxHeight="32"
+                                            ClearButtonEnabled="False"
                                             Minimum="1"
                                             SmallChange="1"
                                             ToolTip="{DynamicResource ChannelIntelPage_SubZKB_Tip}"
@@ -513,7 +565,8 @@
                                         <TextBlock
                                             Margin="4,0,0,0"
                                             VerticalAlignment="Center"
-                                            Text="sec" />
+                                            Text="sec"
+                                            Visibility="{Binding Session.Setting.SubZKB, Converter={StaticResource BoolToVis}}" />
                                     </StackPanel>
                                 </Grid>
                             </Expander>

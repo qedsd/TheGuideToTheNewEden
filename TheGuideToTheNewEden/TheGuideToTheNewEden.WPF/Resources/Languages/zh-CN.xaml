@@ -1103,6 +1103,7 @@
     <sys:String x:Key="ChannelIntelPage_OverlapSetting">预警弹窗</sys:String>
     <sys:String x:Key="ChannelIntelPage_RangeSetting">预警范围</sys:String>
     <sys:String x:Key="ChannelIntelPage_SoundSetting">预警声音</sys:String>
+    <sys:String x:Key="ChannelIntelPage_SoundFile">声音文件</sys:String>
     <sys:String x:Key="ChannelIntelPage_NotifySetting">通知方式</sys:String>
     <sys:String x:Key="ChannelIntelPage_KeywordSetting">关键词</sys:String>
     <sys:String x:Key="ChannelIntelPage_OtherSetting">其他</sys:String>

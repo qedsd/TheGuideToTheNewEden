@@ -1087,6 +1087,7 @@
     <sys:String x:Key="ChannelIntelPage_OverlapSetting">Intel Window</sys:String>
     <sys:String x:Key="ChannelIntelPage_RangeSetting">Intel Range</sys:String>
     <sys:String x:Key="ChannelIntelPage_SoundSetting">Intel Sound</sys:String>
+    <sys:String x:Key="ChannelIntelPage_SoundFile">Sound file</sys:String>
     <sys:String x:Key="ChannelIntelPage_NotifySetting">Notification</sys:String>
     <sys:String x:Key="ChannelIntelPage_KeywordSetting">Keywords</sys:String>
     <sys:String x:Key="ChannelIntelPage_OtherSetting">Others</sys:String>

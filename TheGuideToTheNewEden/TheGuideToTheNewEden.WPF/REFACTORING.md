@@ -9725,6 +9725,18 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步改为“角色列表只从聊天日志读取”。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 206：预警声音设置 UI 重排（每跳卡片 + 音量百分比）（2026-10-28）
+
+- 原 `SoundRowTemplate` 把跳数、滑条、循环、文件框、选择按钮挤在一行，窄面板下非常拥挤，且音量没有数值反馈。
+- 改为每跳一张两行卡片：
+  - 上行：跳数 + 全宽音量滑条 + 百分比 + 循环；
+  - 下行：声音文件 + 选择按钮。
+- `Volume` 右侧显示 `StringFormat={}{0}%`，拖动滑条实时更新。
+- 卡片使用 `CardBackgroundFillColorDefaultBrush / CardStrokeColorDefaultBrush`，与 WPF-UI 卡片风格一致。
+- 新增语言键 `ChannelIntelPage_SoundFile`（中/英“声音文件”）。
+- 手册同步说明新布局和百分比。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
