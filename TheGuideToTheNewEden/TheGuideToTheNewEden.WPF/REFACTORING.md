@@ -9891,6 +9891,94 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册：`map.md` 工具条构成改为搜索 / 星域 / 着色模式 / 筛选 / 工具 / 显示设置 / 重置视图 / 更多，并修正显示设置、重置视图的入口描述。
 - 验证：`dotnet build` **0 错误**；探针仍受本机 AppData 写入限制无法启动（同阶段 217）。
 
+## 阶段 219：星图「工具」改用 WPF-UI 默认菜单并贴按钮弹出（2026-10-29）
+
+- 用户反馈：星图小工具 Flyout 离扳手按钮很远，且列表不是默认 WPF-UI 样式。
+- 原因：`ui:Flyout` 没有 PlacementTarget，弹出位置由它在顶栏 StackPanel 中的布局位置决定；工具菜单被排在按钮之后很远，且内容是用 `ui:Button` 堆出来的自定义列表。
+- 改为 `ToolsButton.ContextMenu`：
+  - 菜单项使用 `ui:MenuItem`（WPF-UI 默认菜单样式），保留导航 / 一跳覆盖 / 行星资源 / 跳桥 / 主权 / 情报及图标；
+  - 点击扳手时显式设置 `PlacementTarget=ToolsButton`、`Placement=Bottom`，菜单贴按钮弹出；
+  - 各工具入口的关闭逻辑统一走 `CloseToolsMenu()`。
+- `FilterFlyout` / `MoreFlyout` 保留，并在布局中紧跟各自按钮，避免同样的远端弹出。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 220：筛选/图层并入星图设置窗，重置视图移到顶栏最右（2026-10-29）
+
+- 用户要求：把顶栏「筛选」「更多」的内容收进设置窗口；重置视图放到标题栏最右侧；设置窗口不显示置顶按钮。
+- `MapPage.xaml`：
+  - 删除顶栏 `FilterButton` / `FilterFlyout`、`MoreButton` / `MoreFlyout`；
+  - 顶栏只保留搜索 / 星域 / 着色模式 /（行星资源类型）/ 工具 / 显示设置；
+  - `ResetView` 从左侧按钮组移出，作为 `DockPanel.Dock="Right"` 固定在顶栏最右侧。
+- 新增 `MapFilterLayerSettingsView`（`Views/UserControls/Map`）：
+  - 「筛选」：星域下拉、安等区间、「应用」「清除筛选」，直接绑定 `MapPageViewModel`；
+  - 「图层」：跳桥 / 角色 / 势力开关，回调 `MapPage` 的 `SetBridgesVisible` / `SetCharactersVisible` / `SetLogosVisible`；
+  - 首次显示时按当前页面状态回填，避免设置窗打开时开关跳动。
+- `MapDisplaySettingsView`：
+  - 首 tab 固定为「筛选与图层」，后面仍是原有节点 / 徽标与光晕 / 文字 / 连线与热力滑杆；
+  - 构造函数接收 `MapPage`，用于图层回调与绑定 DataContext。
+- `DisplaySettingsButton_Click`：
+  - `ShowTopmostButton = false`；
+  - 删除 `SetAlwaysOnTop()`，设置窗不再默认置顶。
+- 手册更新星图顶栏、显示设置窗入口与跳桥开关位置。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 221：一跳覆盖窗跟随星图选中星系（2026-10-29）
+
+- 问题：一跳覆盖窗口只在打开 / 再次点击工具入口时设置中心，之后在星图上切换选中星系，窗口中心仍停在旧星系。
+- `MapPage.MapCanvas_SelectedChanged` 在选中变化时同步：
+  - 若 `_coverWindow` 已打开，取 `OneJumpCoverView` 并调用 `SetCenter(node)`；
+  - 选中被清空时传 `null`，窗口中心回到「未选择」。
+- 打开 / 重新激活工具窗口时的原有 `SetCenter` 逻辑保留；计算仍由窗口里的「计算」按钮触发，避免浏览星图时反复自动重算。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 222：技能全名 + 关闭一跳覆盖窗清除星图覆盖（2026-10-29）
+
+- 语言键 `MapTool_Cover_Jdc` / `MapTool_Cover_Jfc` 改为技能全名：
+  - 中文：**跳跃引擎校准 / 跳跃燃料节约**；
+  - 英文：Jump Drive Calibration / Jump Fuel Conservation。
+  - 一跳覆盖窗与导航窗共用这两个键，两个窗口同时生效。
+- `MapPage.OneJumpCover_Click` 的窗口 `Closed` 回调增加：
+  - `MapCanvas.SetCover([])`，关闭窗口即抹掉星图上的虚线覆盖圈；
+  - 再清空 `_coverWindow`。
+- 手册同步技能全名（星图 / 星系详情）。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 223：Jump Freighters 技能全名（2026-10-29）
+
+- `MapTool_Cover_Jf` 由「货舰 / JF」改为技能全名：
+  - 中文：**战略货舰操作**；
+  - 英文：**Jump Freighters**。
+- 一跳覆盖窗与导航窗共用该键；手册中涉及该技能的「货舰」栏说明同步改名。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 224：一跳覆盖窗改为真关闭，关闭即清覆盖并丢弃旧结果（2026-10-29）
+
+- 根因：`MapPage.CreateToolWindow` 默认对工具窗调用 `SetCloseToHide()`，点 X 只是 `Hide()`，不会触发 `Closed`；因此阶段 222 的清理回调没有执行，窗口再次打开仍复用旧 `OneJumpCoverView` 的结果。
+- 修复：一跳覆盖窗创建时传 `reusable: false`，走真正的 `Close()`：
+  - `Closed` 触发 `MapCanvas.SetCover([])`，星图覆盖圈立即消失；
+  - `_coverWindow = null`，下次从工具菜单打开会新建空的 `OneJumpCoverView`；
+  - 不再显示上一次的中心 / 结果表。
+- 其他可复用工具窗（导航 / 资源 / 跳桥 / 主权 / 设置）行为不变。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 225：星图工具窗统一改为关闭即真关（2026-10-29）
+
+- 用户要求：其他工具窗口也统一「关闭就是关闭」，不要关闭后隐藏再复用旧界面。
+- `MapPage.CreateToolWindow`：
+  - 删除 `reusable` 参数与 `window.SetCloseToHide()`；
+  - 所有星图工具窗（导航 / 一跳覆盖 / 行星资源 / 跳桥 / 主权 / 情报 / 星系详情 / 显示设置）默认真正 `Close()`；
+  - 各自已有的 `Closed` 回调把字段置空，下次打开重建新实例。
+- 页面 `Unloaded` 仍统一 `AllowClose()` + `Close()` 兜底，行为不变。
+- 结果：关闭窗口后不会残留旧界面/旧状态；一跳覆盖的 `Closed` 清理（`SetCover([])`）也会稳定执行。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 226：一跳覆盖结果区删除 Summary 文本（2026-10-29）
+
+- `OneJumpCoverView.xaml` 删除结果区右侧的 `TextBlock`（原绑定 `Summary`），保留加载指示与「计算 / 清除」按钮。
+- 视图不再显示「以 X 为中心…共 Z 个可达星系」这类汇总文本。
+- `OneJumpCoverViewModel.Summary` 属性保留（用于内部错误/状态记录），只是不再绑定到界面。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

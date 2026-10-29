@@ -2,8 +2,8 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.MapPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:map="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.Map"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
@@ -108,81 +108,6 @@
                         <ComboBoxItem Content="{DynamicResource MapPage_ResourceMagmaticGas}" />
                         <ComboBoxItem Content="{DynamicResource MapPage_ResourceSuperionicIce}" />
                     </ComboBox>
-                    <!--  星域 / 安等筛选  -->
-                    <ui:Button
-                        x:Name="FilterButton"
-                        Width="34"
-                        Height="30"
-                        Margin="8,0,0,0"
-                        Padding="0"
-                        Appearance="Secondary"
-                        Click="FilterButton_Click"
-                        Icon="{ui:SymbolIcon Filter24}"
-                        ToolTip="{DynamicResource MapPage_Filter}" />
-                    <!--  筛选下拉（标准 WinUI3 风格：主题底色 + 主题化控件）  -->
-                    <ui:Flyout
-                        x:Name="FilterFlyout"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Placement="Bottom">
-                        <StackPanel Width="280">
-                            <TextBlock
-                                FontSize="13"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{DynamicResource MapPage_Filter}" />
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                FontSize="11"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{DynamicResource MapPage_Filter_Hint}"
-                                TextWrapping="Wrap" />
-                            <TextBlock
-                                Margin="0,10,0,4"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{DynamicResource MapTool_Region}" />
-                            <ComboBox
-                                DisplayMemberPath="RegionName"
-                                ItemsSource="{Binding FilterRegions}"
-                                SelectedItem="{Binding FilterRegion, Mode=TwoWay}" />
-                            <TextBlock
-                                Margin="0,10,0,4"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{DynamicResource MapTool_Security}" />
-                            <StackPanel Orientation="Horizontal">
-                                <ui:NumberBox
-                                    Width="100"
-                                    Maximum="1"
-                                    Minimum="-1"
-                                    SmallChange="0.1"
-                                    SpinButtonPlacementMode="Hidden"
-                                    Value="{Binding FilterSecMin, Mode=TwoWay}" />
-                                <TextBlock
-                                    Margin="8,0,8,0"
-                                    VerticalAlignment="Center"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    Text="~" />
-                                <ui:NumberBox
-                                    Width="100"
-                                    Maximum="1"
-                                    Minimum="-1"
-                                    SmallChange="0.1"
-                                    SpinButtonPlacementMode="Hidden"
-                                    Value="{Binding FilterSecMax, Mode=TwoWay}" />
-                            </StackPanel>
-                            <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
-                                <ui:Button
-                                    Appearance="Primary"
-                                    Click="FilterApply_Click"
-                                    Content="{DynamicResource MapPage_Filter_Apply}" />
-                                <ui:Button
-                                    Margin="8,0,0,0"
-                                    Appearance="Transparent"
-                                    Click="FilterClear_Click"
-                                    Content="{DynamicResource MapPage_Filter_Clear}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </ui:Flyout>
                     <!--  工具（导航 / 情报等入口都在这个下拉里）  -->
                     <ui:Button
                         x:Name="ToolsButton"
@@ -192,9 +117,44 @@
                         Padding="0"
                         Appearance="Secondary"
                         Click="ToolsButton_Click"
-                        Icon="{ui:SymbolIcon Wrench24}"
-                        ToolTip="{DynamicResource MapPage_Tools}" />
-                    <!--  显示设置（独立窗口，默认置顶）  -->
+                        Icon="{ui:SymbolIcon Apps16}"
+                        ToolTip="{DynamicResource MapPage_Tools}">
+                        <ui:Button.ContextMenu>
+                            <ContextMenu>
+                                <ui:MenuItem Click="NavButton_Click" Header="{DynamicResource MapPage_Tool_Navigate}">
+                                    <ui:MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Map24" />
+                                    </ui:MenuItem.Icon>
+                                </ui:MenuItem>
+                                <ui:MenuItem Click="OneJumpCover_Click" Header="{DynamicResource MapPage_Tool_Cover}">
+                                    <ui:MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Target24" />
+                                    </ui:MenuItem.Icon>
+                                </ui:MenuItem>
+                                <ui:MenuItem Click="PlanetResourceList_Click" Header="{DynamicResource MapPage_Tool_Resource}">
+                                    <ui:MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="DataUsage24" />
+                                    </ui:MenuItem.Icon>
+                                </ui:MenuItem>
+                                <ui:MenuItem Click="JumpBridgeSetting_Click" Header="{DynamicResource MapPage_Tool_Bridge}">
+                                    <ui:MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Branch16" />
+                                    </ui:MenuItem.Icon>
+                                </ui:MenuItem>
+                                <ui:MenuItem Click="SovGroupSetting_Click" Header="{DynamicResource MapPage_Tool_Sov}">
+                                    <ui:MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Globe24" />
+                                    </ui:MenuItem.Icon>
+                                </ui:MenuItem>
+                                <ui:MenuItem Click="IntelTool_Click" Header="{DynamicResource MapPage_Tool_Intel}">
+                                    <ui:MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Info24" />
+                                    </ui:MenuItem.Icon>
+                                </ui:MenuItem>
+                            </ContextMenu>
+                        </ui:Button.ContextMenu>
+                    </ui:Button>
+                    <!--  显示设置（独立窗口：筛选与图层 + 显示参数，不置顶）  -->
                     <ui:Button
                         Width="34"
                         Height="30"
@@ -205,133 +165,18 @@
                         Click="DisplaySettingsButton_Click"
                         Icon="{ui:SymbolIcon Settings24}"
                         ToolTip="{DynamicResource MapPage_DisplaySettings}" />
-                    <!--  重置视图  -->
-                    <ui:Button
-                        Width="34"
-                        Height="30"
-                        Margin="8,0,0,0"
-                        Padding="0"
-                        Appearance="Secondary"
-                        AutomationProperties.Name="{DynamicResource MapPage_ResetView}"
-                        Click="ResetView_Click"
-                        Icon="{ui:SymbolIcon ArrowClockwise24}"
-                        ToolTip="{DynamicResource MapPage_ResetView}" />
-                    <ui:Button
-                        x:Name="MoreButton"
-                        Width="34"
-                        Height="30"
-                        Margin="8,0,0,0"
-                        Padding="0"
-                        Appearance="Secondary"
-                        Click="MoreButton_Click"
-                        Icon="{ui:SymbolIcon MoreHorizontal24}"
-                        ToolTip="{DynamicResource MapPage_More}" />
-                    <!--  工具菜单（标准 WinUI3 风格下拉：主题底色 + 标准菜单项）  -->
-                    <ui:Flyout
-                        x:Name="ToolsFlyout"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Placement="Bottom">
-                        <StackPanel Width="220">
-                            <ui:Button
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Appearance="Transparent"
-                                Click="NavButton_Click"
-                                Content="{DynamicResource MapPage_Tool_Navigate}">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Map24" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Appearance="Transparent"
-                                Click="OneJumpCover_Click"
-                                Content="{DynamicResource MapPage_Tool_Cover}">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Target24" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Appearance="Transparent"
-                                Click="PlanetResourceList_Click"
-                                Content="{DynamicResource MapPage_Tool_Resource}">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="DataUsage24" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Appearance="Transparent"
-                                Click="JumpBridgeSetting_Click"
-                                Content="{DynamicResource MapPage_Tool_Bridge}">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Road24" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Appearance="Transparent"
-                                Click="SovGroupSetting_Click"
-                                Content="{DynamicResource MapPage_Tool_Sov}">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Globe24" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Appearance="Transparent"
-                                Click="IntelTool_Click"
-                                Content="{DynamicResource MapPage_Tool_Intel}">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Info24" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                        </StackPanel>
-                    </ui:Flyout>
-                    <!--  更多：图层开关 / 显示设置 / 重置视图  -->
-                    <ui:Flyout
-                        x:Name="MoreFlyout"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Placement="Bottom">
-                        <StackPanel Width="280">
-                            <TextBlock
-                                FontSize="13"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{DynamicResource MapPage_More}" />
-                            <Separator Margin="0,10" />
-                            <CheckBox
-                                x:Name="BridgesToggle"
-                                Margin="0,2"
-                                VerticalAlignment="Center"
-                                Checked="BridgesToggle_Changed"
-                                Content="{DynamicResource MapPage_Bridges}"
-                                Unchecked="BridgesToggle_Changed" />
-                            <CheckBox
-                                x:Name="CharactersToggle"
-                                Margin="0,2"
-                                VerticalAlignment="Center"
-                                Checked="CharactersToggle_Changed"
-                                Content="{DynamicResource MapPage_Characters}"
-                                Unchecked="CharactersToggle_Changed" />
-                            <CheckBox
-                                x:Name="LogosToggle"
-                                Margin="0,2"
-                                VerticalAlignment="Center"
-                                Checked="LogosToggle_Changed"
-                                Content="{DynamicResource MapPage_Logos}"
-                                Unchecked="LogosToggle_Changed" />
-                        </StackPanel>
-                    </ui:Flyout>
                 </StackPanel>
+                <!--  重置视图：固定在顶栏最右侧  -->
+                <ui:Button
+                    Width="34"
+                    Height="30"
+                    Padding="0"
+                    Appearance="Secondary"
+                    AutomationProperties.Name="{DynamicResource MapPage_ResetView}"
+                    Click="ResetView_Click"
+                    DockPanel.Dock="Right"
+                    Icon="{ui:SymbolIcon ArrowClockwise24}"
+                    ToolTip="{DynamicResource MapPage_ResetView}" />
             </DockPanel>
         </Border>
 
@@ -672,10 +517,10 @@
 
             <!--  主权装载中：页内轻量指示（不用全局遮罩——装载是后台增强，不挡缩放/平移/切换其他功能）  -->
             <Border
+                Margin="0,64,0,0"
                 Padding="14,8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                Margin="0,64,0,0"
                 Background="{DynamicResource HudBg}"
                 BorderBrush="{DynamicResource HudBorder}"
                 BorderThickness="1"

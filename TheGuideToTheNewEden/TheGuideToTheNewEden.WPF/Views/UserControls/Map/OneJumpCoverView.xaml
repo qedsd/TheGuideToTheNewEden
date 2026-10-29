@@ -40,109 +40,118 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <TextBlock
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Ship}" />
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Ship}" />
             <ComboBox
                 x:Name="ShipCombo"
                 Width="240"
-                Margin="6,0,0,0"
+                Margin="16,0,0,0"
                 DisplayMemberPath="Name"
                 ItemsSource="{Binding JumpShips}"
                 SelectedItem="{Binding Ship, Mode=TwoWay}" />
-            <TextBlock
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Jdc}" />
-            <ui:NumberBox
-                Width="64"
-                Margin="6,0,0,0"
-                Maximum="5"
-                Minimum="0"
-                Value="{Binding JumpDriveCalibration, Mode=TwoWay}" />
-            <TextBlock
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Jfc}" />
-            <ui:NumberBox
-                Width="64"
-                Margin="6,0,0,0"
-                Maximum="5"
-                Minimum="0"
-                Value="{Binding JumpFuelConservation, Mode=TwoWay}" />
-            <TextBlock
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Jf}"
-                Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
-            <ui:NumberBox
-                Width="64"
-                Margin="6,0,0,0"
-                Maximum="5"
-                Minimum="0"
-                Value="{Binding JumpFreighters, Mode=TwoWay}"
-                Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource MapTool_Cover_MaxJump}" />
+                <TextBlock
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Text="{Binding MaxJumpText}" />
+                <TextBlock
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource MapTool_Cover_PerLyFuel}" />
+                <TextBlock
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Text="{Binding PerLyFuelText}" />
+            </StackPanel>
         </StackPanel>
 
         <StackPanel
             Grid.Row="1"
             Margin="0,10,0,0"
             Orientation="Horizontal">
-            <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Center}" />
+            <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Skill}" />
             <TextBlock
+                Margin="16,0,0,0"
+                VerticalAlignment="Center"
+                Text="{DynamicResource MapTool_Cover_Jdc}" />
+            <ui:NumberBox
+                Width="140"
                 Margin="6,0,0,0"
-                VerticalAlignment="Center"
-                FontWeight="SemiBold"
-                Text="{Binding CenterText}" />
+                ClearButtonEnabled="False"
+                Maximum="5"
+                Minimum="0"
+                Value="{Binding JumpDriveCalibration, Mode=TwoWay}" />
             <TextBlock
-                Margin="12,0,0,0"
+                Margin="16,0,0,0"
                 VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{DynamicResource MapTool_Cover_MaxJump}" />
+                Text="{DynamicResource MapTool_Cover_Jfc}" />
+            <ui:NumberBox
+                Width="140"
+                Margin="6,0,0,0"
+                ClearButtonEnabled="False"
+                Maximum="5"
+                Minimum="0"
+                Value="{Binding JumpFuelConservation, Mode=TwoWay}" />
             <TextBlock
-                Margin="4,0,0,0"
+                Margin="16,0,0,0"
                 VerticalAlignment="Center"
-                FontWeight="SemiBold"
-                Text="{Binding MaxJumpText}" />
-            <TextBlock
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{DynamicResource MapTool_Cover_PerLyFuel}" />
-            <TextBlock
-                Margin="4,0,0,0"
-                VerticalAlignment="Center"
-                FontWeight="SemiBold"
-                Text="{Binding PerLyFuelText}" />
+                Text="{DynamicResource MapTool_Cover_Jf}"
+                Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
+            <ui:NumberBox
+                Width="140"
+                Margin="6,0,0,0"
+                ClearButtonEnabled="False"
+                Maximum="5"
+                Minimum="0"
+                Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}"
+                Value="{Binding JumpFreighters, Mode=TwoWay}" />
         </StackPanel>
 
-        <StackPanel
-            Grid.Row="2"
-            Margin="0,10,0,0"
-            Orientation="Horizontal">
-            <ui:Button
-                Appearance="Primary"
-                Click="Compute_Click"
-                Content="{DynamicResource MapTool_Cover_Compute}">
-                <ui:Button.Icon>
-                    <ui:SymbolIcon Symbol="Target24" />
-                </ui:Button.Icon>
-            </ui:Button>
-            <ui:Button
-                Margin="8,0,0,0"
-                Click="Clear_Click"
-                Content="{DynamicResource MapTool_Cover_Clear}" />
-            <controls:SpinnerIcon
-                x:Name="BusyIcon"
-                Margin="10,0,0,0"
-                IsActive="{Binding IsBusy}" />
-            <TextBlock
-                Margin="10,0,0,0"
-                VerticalAlignment="Center"
-                FontSize="12"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{Binding Summary}" />
-        </StackPanel>
+        <Grid Grid.Row="2" Margin="0,1,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <StackPanel
+                Grid.Row="2"
+                Margin="0,10,0,0"
+                Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Center}" />
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{Binding CenterText}" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <controls:SpinnerIcon
+                    x:Name="BusyIcon"
+                    Margin="10,0,0,0"
+                    IsActive="{Binding IsBusy}" />
+                <ui:Button
+                    Margin="16,0,0,0"
+                    Appearance="Primary"
+                    Click="Compute_Click"
+                    Content="{DynamicResource MapTool_Cover_Compute}" />
+                <ui:Button
+                    Margin="8,0,0,0"
+                    Click="Clear_Click"
+                    Content="{DynamicResource MapTool_Cover_Clear}" />
+            </StackPanel>
+        </Grid>
+
 
         <ui:DataGrid
             Grid.Row="3"

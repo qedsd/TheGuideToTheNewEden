@@ -1838,10 +1838,11 @@
     <sys:String x:Key="MapTool_Security">安等</sys:String>
     <sys:String x:Key="MapTool_Sov">主权</sys:String>
     <sys:String x:Key="MapTool_Name">名称</sys:String>
-    <sys:String x:Key="MapTool_Cover_Ship">旗舰</sys:String>
-    <sys:String x:Key="MapTool_Cover_Jdc">JDC</sys:String>
-    <sys:String x:Key="MapTool_Cover_Jfc">JFC</sys:String>
-    <sys:String x:Key="MapTool_Cover_Jf">货舰</sys:String>
+    <sys:String x:Key="MapTool_Cover_Ship">舰船</sys:String>
+    <sys:String x:Key="MapTool_Cover_Skill">技能</sys:String>
+    <sys:String x:Key="MapTool_Cover_Jdc">跳跃引擎校准</sys:String>
+    <sys:String x:Key="MapTool_Cover_Jfc">跳跃燃料节约</sys:String>
+    <sys:String x:Key="MapTool_Cover_Jf">战略货舰操作</sys:String>
     <sys:String x:Key="MapTool_Cover_Center">中心星系</sys:String>
     <sys:String x:Key="MapTool_Cover_MaxJump">最大跳距</sys:String>
     <sys:String x:Key="MapTool_Cover_PerLyFuel">每光年燃料</sys:String>
@@ -1911,6 +1912,8 @@
     <sys:String x:Key="MapTool_Bridge_SameSystem">两端不能是同一个星系</sys:String>
     <sys:String x:Key="MapTool_Bridge_Duplicate">该星系已有一组跳桥</sys:String>
     <sys:String x:Key="MapPage_Filter">筛选</sys:String>
+    <sys:String x:Key="MapPage_FilterAndLayers">筛选与图层</sys:String>
+    <sys:String x:Key="MapPage_Layers">图层</sys:String>
     <sys:String x:Key="MapPage_Filter_Hint">未命中的星系会灰化；只影响显示，不影响悬停、选中与导航。</sys:String>
     <sys:String x:Key="MapPage_Filter_AllRegions">全部星域</sys:String>
     <sys:String x:Key="MapPage_Filter_Apply">应用</sys:String>

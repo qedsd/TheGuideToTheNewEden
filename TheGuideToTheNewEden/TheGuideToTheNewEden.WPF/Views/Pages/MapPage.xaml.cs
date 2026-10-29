@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models.Map;
@@ -187,10 +188,6 @@ public partial class MapPage : Page, IManualAware
         //（磁盘缓存通常瞬时；首次无缓存才走 ESI）。不拉的话只有进过主权模式后徽标才亮。
         await _viewModel.ApplySovAsync();
         MapCanvas.SetHeatBySovereignty(heat.HeatBySovereignty);
-        BridgesToggle.IsChecked = _viewModel.ShowBridges;
-        _suppressLogos = true;
-        LogosToggle.IsChecked = heat.ShowLogos;
-        _suppressLogos = false;
         var kindIndex = Array.IndexOf(MapPageViewModel.ResourceKinds, _viewModel.ResourceKind);
         if (kindIndex >= 0)
         {
@@ -225,14 +222,19 @@ public partial class MapPage : Page, IManualAware
         }
 
         SearchPopup.IsOpen = false;
-        ToolsFlyout.Hide();
-        FilterFlyout.Hide();
+        CloseToolsMenu();
     }
 
     // ---------- 画布交互 ----------
 
     private void MapCanvas_SelectedChanged(object? sender, MapSystemNode? node)
     {
+        // 一跳覆盖窗打开时跟随星图当前选中星系，避免中心停在打开时的旧星系。
+        if (_coverWindow?.GetContent() is OneJumpCoverView cover)
+        {
+            cover.SetCenter(node);
+        }
+
         if (node is null)
         {
             _viewModel.SetSelectedSystem(null, []);
@@ -378,7 +380,6 @@ public partial class MapPage : Page, IManualAware
     /// <summary>程序化回显 <see cref="HeatSovToggle"/> 时置位（用户点击才落盘/切换）。</summary>
     private bool _suppressHeatSov;
     private bool _suppressSovShading;
-    private bool _suppressLogos;
 
     /// <summary>
     /// 更新左下角的色阶图例：标题取当前着色模式，色条与两端标签按模式的语义解释——
@@ -476,14 +477,36 @@ public partial class MapPage : Page, IManualAware
         _ => "MapPage_ResourcePower",
     };
 
+    // ---------- 设置窗（筛选 / 图层）回调 ----------
+
+    public MapPageViewModel ViewModel => _viewModel;
+
+    public bool IsLogosVisible => MapSettingService.Value.Canvas?.ShowLogos ?? true;
+
+    public void ApplyMapFilter() => _viewModel.ApplySystemFilter();
+
+    public void ClearMapFilter() => _viewModel.ClearSystemFilter();
+
+    public void SetBridgesVisible(bool visible) => _viewModel.ShowBridges = visible;
+
+    public void SetCharactersVisible(bool visible) => _viewModel.ShowCharacters = visible;
+
+    public void SetLogosVisible(bool visible)
+    {
+        if (MapCanvas is null)
+        {
+            return;
+        }
+
+        MapCanvas.SetLogosVisible(visible);
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        canvas.ShowLogos = visible;
+        MapSettingService.Save();
+    }
+
     private void ResetView_Click(object sender, RoutedEventArgs e)
     {
         MapCanvas.Fit();
-    }
-
-    private void BridgesToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ShowBridges = BridgesToggle.IsChecked == true;
     }
 
     /// <summary>
@@ -618,27 +641,9 @@ public partial class MapPage : Page, IManualAware
     }
 
     /// <summary>
-    /// 势力开关（顶栏，角色复选框右侧）：控制圆点是否叠加联盟/势力徽标。
-    /// 运行态由画布记忆并失效底图缓存重画，MapSettings.json 的 Canvas 节持久化。
-    /// </summary>
-    private void LogosToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        if (_suppressLogos || MapCanvas is null)
-        {
-            return;
-        }
-
-        var visible = LogosToggle.IsChecked == true;
-        MapCanvas.SetLogosVisible(visible);
-        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
-        canvas.ShowLogos = visible;
-        MapSettingService.Save();
-    }
-
-    /// <summary>
-    /// 显示设置弹窗（顶栏按钮）：分组滑杆实时调整星图显示参数（节点/徽标/光晕/文字/热力），
+    /// 显示设置弹窗（顶栏按钮）：筛选与图层、分组滑杆实时调整星图显示参数。
     /// 参数对象持久化在 MapSettings.json 的 Display 节；窗口实例复用（点 X 隐藏）。
-    /// 默认置顶（边看星图边调参），标题栏提供置顶切换按钮。
+    /// 设置窗不提供置顶按钮，也不强制置顶。
     /// </summary>
     private void DisplaySettingsButton_Click(object sender, RoutedEventArgs e)
     {
@@ -646,11 +651,11 @@ public partial class MapPage : Page, IManualAware
         {
             var view = new MapDisplaySettingsView(
                 MapSettingService.Value.Display ??= new MapDisplayConfig(),
+                this,
                 applyCallback: () => MapCanvas?.RefreshDisplayOptions(),
                 saveCallback: () => MapSettingService.Save());
-            _displayWindow = CreateToolWindow(view, "MapPage_DisplaySettings", 480, 640);
-            _displayWindow.ShowTopmostButton = true;   // 标题栏置顶切换按钮
-            _displayWindow.SetAlwaysOnTop();           // 默认置顶
+            _displayWindow = CreateToolWindow(view, "MapPage_DisplaySettings", 520, 680);
+            _displayWindow.ShowTopmostButton = false;
             _displayWindow.Closed += (_, _) => _displayWindow = null;
         }
 
@@ -660,78 +665,44 @@ public partial class MapPage : Page, IManualAware
 
     private void ApplyBridges()
     {
-        BridgesToggle.IsChecked = _viewModel.ShowBridges;
         MapCanvas.SetBridges(_viewModel.GetBridgePairs(), _viewModel.ShowBridges);
-    }
-
-    // ---------- 星域 / 安等筛选 ----------
-
-    private void FilterButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (FilterFlyout.IsOpen)
-        {
-            FilterFlyout.Hide();
-        }
-        else
-        {
-            MoreFlyout.Hide();
-            ToolsFlyout.Hide();
-            FilterFlyout.Show();
-        }
-    }
-
-    private void FilterApply_Click(object sender, RoutedEventArgs e)
-    {
-        FilterFlyout.Hide();
-        _viewModel.ApplySystemFilter();
-    }
-
-    private void FilterClear_Click(object sender, RoutedEventArgs e)
-    {
-        FilterFlyout.Hide();
-        _viewModel.ClearSystemFilter();
     }
 
     // ---------- 工具菜单 ----------
 
     private void ToolsButton_Click(object sender, RoutedEventArgs e)
     {
-        if (ToolsFlyout.IsOpen)
+        if (sender is FrameworkElement { ContextMenu: { } menu } element)
         {
-            ToolsFlyout.Hide();
-        }
-        else
-        {
-            MoreFlyout.Hide();
-            FilterFlyout.Hide();
-            ToolsFlyout.Show();
+            menu.PlacementTarget = element;
+            menu.Placement = PlacementMode.Bottom;
+            menu.IsOpen = !menu.IsOpen;
         }
     }
 
-    private void MoreButton_Click(object sender, RoutedEventArgs e)
+    private void CloseToolsMenu()
     {
-        if (MoreFlyout.IsOpen)
+        if (ToolsButton.ContextMenu is { } menu)
         {
-            MoreFlyout.Hide();
-        }
-        else
-        {
-            FilterFlyout.Hide();
-            ToolsFlyout.Hide();
-            MoreFlyout.Show();
+            menu.IsOpen = false;
         }
     }
 
     private void OneJumpCover_Click(object sender, RoutedEventArgs e)
     {
-        ToolsFlyout.Hide();
+        CloseToolsMenu();
         if (_coverWindow is null)
         {
             var view = new OneJumpCoverView();
             view.SetCenter(_viewModel.SelectedSystem);
             view.ViewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
             _coverWindow = CreateToolWindow(view, "MapPage_Tool_Cover", 900, 620);
-            _coverWindow.Closed += (_, _) => _coverWindow = null;
+            _coverWindow.Closed += (_, _) =>
+            {
+                // 关闭一跳覆盖窗后移除星图上的覆盖圈，避免残留。
+                MapCanvas.SetCover([]);
+                _coverWindow = null;
+            };
         }
         else if (_coverWindow.GetContent() is OneJumpCoverView existing)
         {
@@ -744,7 +715,7 @@ public partial class MapPage : Page, IManualAware
 
     private void PlanetResourceList_Click(object sender, RoutedEventArgs e)
     {
-        ToolsFlyout.Hide();
+        CloseToolsMenu();
         if (_resourceWindow is null)
         {
             _resourceWindow = CreateToolWindow(new PlanetResourceListView(), "MapPage_Tool_Resource", 1000, 680);
@@ -757,7 +728,7 @@ public partial class MapPage : Page, IManualAware
 
     private void JumpBridgeSetting_Click(object sender, RoutedEventArgs e)
     {
-        ToolsFlyout.Hide();
+        CloseToolsMenu();
         if (_bridgeWindow is null)
         {
             var view = new JumpBridgeSettingView();
@@ -776,7 +747,7 @@ public partial class MapPage : Page, IManualAware
 
     private void SovGroupSetting_Click(object sender, RoutedEventArgs e)
     {
-        ToolsFlyout.Hide();
+        CloseToolsMenu();
         if (_sovWindow is null)
         {
             var view = new SovGroupSettingView();
@@ -805,7 +776,7 @@ public partial class MapPage : Page, IManualAware
 
         // 详情窗口内容是"当前星系"，换星系要重建 → 不用 CloseToHide（真关 + 重建）
         _detailWindow?.Close();
-        _detailWindow = CreateToolWindow(new MapSystemDetailView(node, _viewModel), "MapPage_Detail", 900, 640, reusable: false);
+        _detailWindow = CreateToolWindow(new MapSystemDetailView(node, _viewModel), "MapPage_Detail", 900, 640);
         _detailWindow.Closed += (_, _) => _detailWindow = null;
         _detailWindow.Show();
         _detailWindow.Activate();
@@ -815,14 +786,12 @@ public partial class MapPage : Page, IManualAware
     /// 建工具窗（标题栏样式由 <see cref="ToolWindow"/> 自己定义，这里只给标题与尺寸）。
     /// **不设 Owner**：工具窗与主窗口相互独立——主窗口最小化不会连带最小化工具窗（设置 Owner 的话 Windows 会把它们绑在一起），
     /// 应用退出时统一由 Shutdown 关闭它们。
-    /// 默认 <see cref="ToolWindow.SetCloseToHide"/>：点 X 只是隐藏，**窗口实例复用**，不再每次点开都 new 一个；
-    /// 页面 <c>Unloaded</c> 时统一 <see cref="ToolWindow.AllowClose"/> 再真关。
-    /// 内容随对象变化的窗口（星系详情）传 <paramref name="reusable"/>=false，走"真关 + 重建"。
+    /// 所有星图工具窗都是**关闭即真关**：不再 SetCloseToHide，下次打开重建，避免残留上一次的界面状态。
     /// </summary>
-    private ToolWindow CreateToolWindow(object content, string titleKey, int width, int height, bool reusable = true)
+    private ToolWindow CreateToolWindow(object content, string titleKey, int width, int height)
     {
         var title = FindString(titleKey);
-        var window = new ToolWindow(
+        return new ToolWindow(
             content,
             ToolWindowTitleStyle.Default,
             showTopmostButton: false,
@@ -834,21 +803,9 @@ public partial class MapPage : Page, IManualAware
             DisplayTitle = title,
             SystemTitle = title,
         };
-
-        if (reusable)
-        {
-            window.SetCloseToHide();
-        }
-
-        return window;
     }
 
     // ---------- 角色标记 ----------
-
-    private void CharactersToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ShowCharacters = CharactersToggle.IsChecked == true;
-    }
 
     private void SetCharactersEnabled(bool enabled)
     {
@@ -890,7 +847,7 @@ public partial class MapPage : Page, IManualAware
     /// </summary>
     private void IntelTool_Click(object sender, RoutedEventArgs e)
     {
-        ToolsFlyout.Hide();
+        CloseToolsMenu();
         _viewModel.RefreshIntelAvailability();
         if (!_viewModel.IntelRunning)
         {
@@ -909,7 +866,7 @@ public partial class MapPage : Page, IManualAware
     {
         if (_intelWindow is null)
         {
-            _intelWindow = CreateToolWindow(new IntelToolView(_viewModel, Locate, LocateRegion), "MapPage_Intel", 1180, 700, reusable: false);
+            _intelWindow = CreateToolWindow(new IntelToolView(_viewModel, Locate, LocateRegion), "MapPage_Intel", 1180, 700);
             // 情报窗不需要最大化/置顶：只留最小化与关闭（ToolWindow 的精细按钮控制）
             _intelWindow.SetVisibleTitleBarButtons(ToolWindowButtons.Minimize | ToolWindowButtons.Close);
             _intelWindow.Closed += (_, _) =>
@@ -929,7 +886,7 @@ public partial class MapPage : Page, IManualAware
     /// <summary>工具菜单的"导航"入口：打开（或前置）导航工具窗口（顶栏那个按钮已按用户要求删除）。</summary>
     private void NavButton_Click(object sender, RoutedEventArgs e)
     {
-        ToolsFlyout.Hide();
+        CloseToolsMenu();
         ShowNavigation();
     }
 

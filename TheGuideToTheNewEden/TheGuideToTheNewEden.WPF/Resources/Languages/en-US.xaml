@@ -1242,7 +1242,7 @@
     <sys:String x:Key="GamePreviewPage_HotkeyTip">Join keys with '+'. Key names follow Settings - Key list</sys:String>
     <sys:String x:Key="HotkeyPicker_Open">Pick keys</sys:String>
     <sys:String x:Key="HotkeyPicker_Title">Select hotkey</sys:String>
-    <sys:String x:Key="HotkeyPicker_Preview">Current: </sys:String>
+    <sys:String x:Key="HotkeyPicker_Preview">Current:</sys:String>
     <sys:String x:Key="HotkeyPicker_Clear">Clear</sys:String>
     <sys:String x:Key="HotkeyPicker_Cancel">Cancel</sys:String>
     <sys:String x:Key="HotkeyPicker_Confirm">OK</sys:String>
@@ -1816,9 +1816,10 @@
     <sys:String x:Key="MapTool_Sov">Sov</sys:String>
     <sys:String x:Key="MapTool_Name">Name</sys:String>
     <sys:String x:Key="MapTool_Cover_Ship">Ship</sys:String>
-    <sys:String x:Key="MapTool_Cover_Jdc">JDC</sys:String>
-    <sys:String x:Key="MapTool_Cover_Jfc">JFC</sys:String>
-    <sys:String x:Key="MapTool_Cover_Jf">JF</sys:String>
+    <sys:String x:Key="MapTool_Cover_Skill">Skill</sys:String>
+    <sys:String x:Key="MapTool_Cover_Jdc">Jump Drive Calibration</sys:String>
+    <sys:String x:Key="MapTool_Cover_Jfc">Jump Fuel Conservation</sys:String>
+    <sys:String x:Key="MapTool_Cover_Jf">Jump Freighters</sys:String>
     <sys:String x:Key="MapTool_Cover_Center">Center</sys:String>
     <sys:String x:Key="MapTool_Cover_MaxJump">Max jump</sys:String>
     <sys:String x:Key="MapTool_Cover_PerLyFuel">Fuel / ly</sys:String>
@@ -1889,6 +1890,8 @@
     <sys:String x:Key="MapTool_Bridge_SameSystem">Both ends must differ</sys:String>
     <sys:String x:Key="MapTool_Bridge_Duplicate">That system already has a bridge</sys:String>
     <sys:String x:Key="MapPage_Filter">Filter</sys:String>
+    <sys:String x:Key="MapPage_FilterAndLayers">Filters &amp; layers</sys:String>
+    <sys:String x:Key="MapPage_Layers">Layers</sys:String>
     <sys:String x:Key="MapPage_Filter_Hint">Systems that don't match are dimmed. Display only — hover, selection and routing are unaffected.</sys:String>
     <sys:String x:Key="MapPage_Filter_AllRegions">All regions</sys:String>
     <sys:String x:Key="MapPage_Filter_Apply">Apply</sys:String>
@@ -2252,7 +2255,7 @@
     <sys:String x:Key="EveSettingsSyncPage_ProfileDuplicateTitle">Duplicate profile</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameLabel">Profile name</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNamePlaceholder">Enter a name…</sys:String>
-    <sys:String x:Key="EveSettingsSyncPage_ProfileCopySuffix"> - copy</sys:String>
+    <sys:String x:Key="EveSettingsSyncPage_ProfileCopySuffix">- copy</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameEmpty">Name cannot be empty</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameInvalid">Name cannot contain \ / : * ? " &lt; &gt; | or similar characters</sys:String>
     <sys:String x:Key="EveSettingsSyncPage_ProfileNameDuplicate">A profile with this name already exists</sys:String>
@@ -2382,9 +2385,9 @@
     <sys:String x:Key="Assistant_Chat_ContextUsage">Carrying {0} turn(s) · ~{1} tokens / {2} available</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextUsageTrimmed">Carrying {0} turn(s) · ~{1} tokens / {2} available · dropped {3}</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextUsageUnlimited">Carrying {0} turn(s) · ~{1} tokens (unlimited)</sys:String>
-    <sys:String x:Key="Assistant_Chat_ContextSummary"> · summary {0} chars</sys:String>
-    <sys:String x:Key="Assistant_Chat_CacheHit"> · cache hit {0} / input {1} ({2}%)</sys:String>
-    <sys:String x:Key="Assistant_Chat_Calibration"> · estimate calibration ×{0:0.00}</sys:String>
+    <sys:String x:Key="Assistant_Chat_ContextSummary">· summary {0} chars</sys:String>
+    <sys:String x:Key="Assistant_Chat_CacheHit">· cache hit {0} / input {1} ({2}%)</sys:String>
+    <sys:String x:Key="Assistant_Chat_Calibration">· estimate calibration ×{0:0.00}</sys:String>
     <sys:String x:Key="Assistant_Chat_Compacting">Compacting earlier context…</sys:String>
     <sys:String x:Key="Assistant_Chat_CompactingBatch">Compacting earlier context ({0}/{1})…</sys:String>
     <sys:String x:Key="Assistant_Chat_ContextOverflow">This request needs ~{0} tokens but only {1} input tokens are available; start a new chat, or lower the context window / per-turn tool budget in Settings → AI → Behavior.</sys:String>
@@ -2775,7 +2778,7 @@
     <sys:String x:Key="IndustryPage_StructureNotSelectedTip">No official structure selected: only the manual facility tax/rig values are used.</sys:String>
     <sys:String x:Key="IndustryPage_NoStructure">No structure selected</sys:String>
     <sys:String x:Key="IndustryPage_NoStructureBonus">No official structure bonus</sys:String>
-    <sys:String x:Key="IndustryPage_RigOverrideSuffix"> · {0} category/filter overrides</sys:String>
+    <sys:String x:Key="IndustryPage_RigOverrideSuffix">· {0} category/filter overrides</sys:String>
     <sys:String x:Key="IndustryPage_DefaultBonus">Default mat -{0} / time -{1}{2}</sys:String>
     <sys:String x:Key="IndustryPage_MaterialBonusTotal">Total material bonus -{0:0.##}%; multiplies with blueprint ME, categories/filters are no longer tracked separately.</sys:String>
     <sys:String x:Key="IndustryPage_TimeBonusTotal">Total time bonus -{0:0.##}%; multiplies with blueprint TE.</sys:String>
@@ -2819,7 +2822,7 @@
     <sys:String x:Key="IndustryPage_MarketAverageStatus">Average price (detailed orders not fetched)</sys:String>
     <sys:String x:Key="IndustryPage_CharacterStatus">{0} characters</sys:String>
     <sys:String x:Key="IndustryPage_NoCharacterStatus">No character selected</sys:String>
-    <sys:String x:Key="IndustryPage_InventionSuffix"> (invention)</sys:String>
+    <sys:String x:Key="IndustryPage_InventionSuffix">(invention)</sys:String>
     <sys:String x:Key="IndustryPage_RefreshMarket">Refreshing market prices and cost index...</sys:String>
     <sys:String x:Key="IndustryPage_MarketRefreshed">Market data refreshed · {0:HH:mm}</sys:String>
     <sys:String x:Key="IndustryPage_MarketRefreshedDone">Market data refreshed</sys:String>
@@ -2839,7 +2842,7 @@
     <sys:String x:Key="IndustryPage_WithResult">Result {0:MM-dd HH:mm}</sys:String>
     <sys:String x:Key="IndustryPage_EmptyPlan">Empty plan · {0}</sys:String>
     <sys:String x:Key="IndustryPage_PlanSummary">{0:N0} targets · {1}{2} · {3}</sys:String>
-    <sys:String x:Key="IndustryPage_NameListSeparator">, </sys:String>
+    <sys:String x:Key="IndustryPage_NameListSeparator">,</sys:String>
     <sys:String x:Key="IndustryPage_PlanNameRequired">Enter a plan name first</sys:String>
     <sys:String x:Key="IndustryPage_PlanSaved">Plan saved</sys:String>
     <sys:String x:Key="IndustryPage_PlanUpdated">Plan with the same name updated</sys:String>
@@ -2890,8 +2893,10 @@
     <sys:String x:Key="IndustryChain_SellBuy">Sell {0:N2} / buy {1:N2}</sys:String>
     <sys:String x:Key="IndustryChain_NoDetailedOrders">No detailed orders</sys:String>
     <sys:String x:Key="IndustryChain_UnfilledVolume">Exceeds visible bid volume by {0:N0} units</sys:String>
-    <sys:String x:Key="IndustryChain_OrderBook">Asks {0}
-Bids {1}</sys:String>
+    <sys:String x:Key="IndustryChain_OrderBook">
+        Asks {0}
+        Bids {1}
+    </sys:String>
     <sys:String x:Key="IndustryChain_InventionText">Chance {0:P1} · attempts {1:N0} · BPC copies {2:N0} × {3} runs · expected {4:0.##} · ME{5}/TE{6}</sys:String>
     <sys:String x:Key="IndustryChain_InventionCostHint">Cost is based on {0:N0} attempts: auto attempts = ceil(BPC demand / success rate). Each attempt consumes data cores/decryptors/T1 blueprints (when not owned), failures included; invention job cost is added on top.</sys:String>
     <sys:String x:Key="IndustryChain_InventionWarning">Expected output {0:0.##} is below the {1:N0} needed; the current attempt count may be insufficient.</sys:String>
@@ -2935,7 +2940,7 @@ Bids {1}</sys:String>
     <sys:String x:Key="IndustrySchedule_OptimizerTip">The optimizer picks by earliest finish / cost. Faster skills are not always chosen; queued lines are compared when they fill up.</sys:String>
     <sys:String x:Key="IndustrySchedule_NoResult">No schedule yet</sys:String>
     <sys:String x:Key="IndustrySchedule_Empty">Add targets under Plan settings and click Calculate plan of materials; the schedule, steps, stations and relation graph are generated from character skill slots.</sys:String>
-    <sys:String x:Key="IndustrySchedule_StepsSuffix"> steps</sys:String>
+    <sys:String x:Key="IndustrySchedule_StepsSuffix">steps</sys:String>
     <sys:String x:Key="IndustrySchedule_StageInvention">Invention</sys:String>
     <sys:String x:Key="IndustrySchedule_StageReaction">Reaction</sys:String>
     <sys:String x:Key="IndustrySchedule_StagePlanetary">Planetary</sys:String>
@@ -2945,13 +2950,17 @@ Bids {1}</sys:String>
     <sys:String x:Key="IndustrySchedule_Attempts">{0:N0} attempts</sys:String>
     <sys:String x:Key="IndustrySchedule_Runs">{0:N0} runs</sys:String>
     <sys:String x:Key="IndustrySchedule_TimeRange">Start {0} · end {1} · duration {2}</sys:String>
-    <sys:String x:Key="IndustrySchedule_JobToolTip">{0}
-{1} · {2:N0} runs · {3}
-{4} · {5}</sys:String>
+    <sys:String x:Key="IndustrySchedule_JobToolTip">
+        {0}
+        {1} · {2:N0} runs · {3}
+        {4} · {5}
+    </sys:String>
     <sys:String x:Key="IndustrySchedule_JobToolTipInProgress">
-In-progress job: occupies the current slot; later jobs wait for it to finish.</sys:String>
+        In-progress job: occupies the current slot; later jobs wait for it to finish.
+    </sys:String>
     <sys:String x:Key="IndustrySchedule_JobToolTipCompressed">
-The bar is compressed on the timeline; see the real start/end above.</sys:String>
+        The bar is compressed on the timeline; see the real start/end above.
+    </sys:String>
     <sys:String x:Key="IndustrySchedule_BarInProgress">In progress · {0}</sys:String>
     <sys:String x:Key="IndustrySchedule_Queue">{0} more jobs queued on this line</sys:String>
     <sys:String x:Key="IndustrySchedule_BusyHours">{0:0.0}h</sys:String>
@@ -3357,8 +3366,10 @@ The bar is compressed on the timeline; see the real start/end above.</sys:String
     <sys:String x:Key="IndustryCustomCharacter_SkillAdvancedReactions">Advanced Reactions</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_LevelHint">Levels 0-5: manufacturing slots = 1 + Mass Production + Advanced Mass Production; invention/reaction work the same way. Time modifier is 4% per level of Industry/Reactions, 3% per level of the advanced skills.</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_Preview">Estimated output</sys:String>
-    <sys:String x:Key="IndustryCustomCharacter_PreviewText">Manufacturing {0} slots · invention {1} slots · reaction {2} slots
-Manufacturing time ×{3:0.00} · reaction time ×{4:0.00}</sys:String>
+    <sys:String x:Key="IndustryCustomCharacter_PreviewText">
+        Manufacturing {0} slots · invention {1} slots · reaction {2} slots
+        Manufacturing time ×{3:0.00} · reaction time ×{4:0.00}
+    </sys:String>
     <sys:String x:Key="IndustryCustomCharacter_Summary">Mfg {0} · inv {1} · rxn {2} · mfg×{3:0.00} · rxn×{4:0.00}</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteConfirm">Delete custom character "{0}"?</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteTitle">Delete custom character</sys:String>
@@ -3366,8 +3377,8 @@ Manufacturing time ×{3:0.00} · reaction time ×{4:0.00}</sys:String>
     <sys:String x:Key="IndustryPage_ProductNothingToBuy">This product has nothing to buy</sys:String>
 
     <!--  制造 / 工业模块（阶段 185：整模块中英文切换）  -->
-    <sys:String x:Key="IndustryPlanetary_ListSeparator">, </sys:String>
-    <sys:String x:Key="IndustryPlanetary_ErrorSeparator">; </sys:String>
+    <sys:String x:Key="IndustryPlanetary_ListSeparator">,</sys:String>
+    <sys:String x:Key="IndustryPlanetary_ErrorSeparator">;</sys:String>
     <sys:String x:Key="IndustryPlanetary_ImportFailed">Failed to import the blueprint: {0}</sys:String>
     <sys:String x:Key="IndustryPlanetary_PriceRefreshFailed">Failed to refresh market prices: {0}</sys:String>
     <sys:String x:Key="IndustryBlueprint_PlanetaryIndustry">Planetary industry</sys:String>

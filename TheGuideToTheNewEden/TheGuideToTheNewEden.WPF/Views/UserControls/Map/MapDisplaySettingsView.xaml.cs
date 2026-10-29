@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.WPF.Views.Pages;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls.Map;
 
@@ -84,15 +85,17 @@ public partial class MapDisplaySettingsView : UserControl
     ];
 
     private readonly MapDisplayConfig _config;
+    private readonly MapPage _page;
     private readonly Action _applyCallback;
     private readonly Action _saveCallback;
     private readonly DispatcherTimer _saveTimer;   // 拖动滑杆高频触发，防抖后落盘
     private bool _updating;                        // 程序化赋值（初始回填/恢复默认）时跳过 ValueChanged
 
-    public MapDisplaySettingsView(MapDisplayConfig config, Action applyCallback, Action saveCallback)
+    public MapDisplaySettingsView(MapDisplayConfig config, MapPage page, Action applyCallback, Action saveCallback)
     {
         InitializeComponent();
         _config = config;
+        _page = page;
         _applyCallback = applyCallback;
         _saveCallback = saveCallback;
         _saveTimer = new DispatcherTimer(DispatcherPriority.Background)
@@ -110,6 +113,12 @@ public partial class MapDisplaySettingsView : UserControl
     private void BuildTabs()
     {
         GroupTabs.Items.Clear();
+        GroupTabs.Items.Add(new TabItem
+        {
+            Header = FindString("MapPage_FilterAndLayers"),
+            Content = new MapFilterLayerSettingsView(_page),
+        });
+
         foreach (var (groupKey, items) in Schema)
         {
             // 每组一个 Tab；标签列固定宽 → 各行滑杆左缘/长度对齐，数值列右对齐

@@ -1,0 +1,94 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.Map.MapFilterLayerSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="14">
+            <TextBlock
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource MapPage_Filter}" />
+            <TextBlock
+                Margin="0,4,0,0"
+                FontSize="11"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource MapPage_Filter_Hint}"
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                Margin="0,12,0,4"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource MapTool_Region}" />
+            <ComboBox
+                x:Name="FilterRegionCombo"
+                DisplayMemberPath="RegionName"
+                ItemsSource="{Binding FilterRegions}"
+                SelectedItem="{Binding FilterRegion, Mode=TwoWay}" />
+
+            <TextBlock
+                Margin="0,10,0,4"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource MapTool_Security}" />
+            <StackPanel Orientation="Horizontal">
+                <ui:NumberBox
+                    Width="120"
+                    Maximum="1"
+                    Minimum="-1"
+                    SmallChange="0.1"
+                    SpinButtonPlacementMode="Hidden"
+                    Value="{Binding FilterSecMin, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="8,0,8,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="~" />
+                <ui:NumberBox
+                    Width="120"
+                    Maximum="1"
+                    Minimum="-1"
+                    SmallChange="0.1"
+                    SpinButtonPlacementMode="Hidden"
+                    Value="{Binding FilterSecMax, Mode=TwoWay}" />
+            </StackPanel>
+            <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+                <ui:Button
+                    Appearance="Primary"
+                    Click="FilterApply_Click"
+                    Content="{DynamicResource MapPage_Filter_Apply}" />
+                <ui:Button
+                    Margin="8,0,0,0"
+                    Appearance="Transparent"
+                    Click="FilterClear_Click"
+                    Content="{DynamicResource MapPage_Filter_Clear}" />
+            </StackPanel>
+
+            <Separator Margin="0,14" />
+
+            <TextBlock
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource MapPage_Layers}" />
+            <CheckBox
+                x:Name="BridgesToggle"
+                Margin="0,8,0,0"
+                Checked="LayerToggle_Changed"
+                Content="{DynamicResource MapPage_Bridges}"
+                Unchecked="LayerToggle_Changed" />
+            <CheckBox
+                x:Name="CharactersToggle"
+                Margin="0,6,0,0"
+                Checked="LayerToggle_Changed"
+                Content="{DynamicResource MapPage_Characters}"
+                Unchecked="LayerToggle_Changed" />
+            <CheckBox
+                x:Name="LogosToggle"
+                Margin="0,6,0,0"
+                Checked="LayerToggle_Changed"
+                Content="{DynamicResource MapPage_Logos}"
+                Unchecked="LayerToggle_Changed" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
