@@ -35,127 +35,212 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Ship}" />
-            <ComboBox
-                x:Name="ShipCombo"
-                Width="240"
-                Margin="16,0,0,0"
-                DisplayMemberPath="Name"
-                ItemsSource="{Binding JumpShips}"
-                SelectedItem="{Binding Ship, Mode=TwoWay}" />
-            <StackPanel Orientation="Horizontal">
-                <TextBlock
-                    Margin="12,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{DynamicResource MapTool_Cover_MaxJump}" />
-                <TextBlock
-                    Margin="4,0,0,0"
-                    VerticalAlignment="Center"
-                    FontWeight="SemiBold"
-                    Text="{Binding MaxJumpText}" />
-                <TextBlock
-                    Margin="12,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{DynamicResource MapTool_Cover_PerLyFuel}" />
-                <TextBlock
-                    Margin="4,0,0,0"
-                    VerticalAlignment="Center"
-                    FontWeight="SemiBold"
-                    Text="{Binding PerLyFuelText}" />
-            </StackPanel>
-        </StackPanel>
+        <!--  中心星系：窗口内搜索 / 从星图取当前  -->
+        <Border
+            Grid.Row="0"
+            Padding="12"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-        <StackPanel
-            Grid.Row="1"
-            Margin="0,10,0,0"
-            Orientation="Horizontal">
-            <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Skill}" />
-            <TextBlock
-                Margin="16,0,0,0"
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Jdc}" />
-            <ui:NumberBox
-                Width="140"
-                Margin="6,0,0,0"
-                ClearButtonEnabled="False"
-                Maximum="5"
-                Minimum="0"
-                Value="{Binding JumpDriveCalibration, Mode=TwoWay}" />
-            <TextBlock
-                Margin="16,0,0,0"
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Jfc}" />
-            <ui:NumberBox
-                Width="140"
-                Margin="6,0,0,0"
-                ClearButtonEnabled="False"
-                Maximum="5"
-                Minimum="0"
-                Value="{Binding JumpFuelConservation, Mode=TwoWay}" />
-            <TextBlock
-                Margin="16,0,0,0"
-                VerticalAlignment="Center"
-                Text="{DynamicResource MapTool_Cover_Jf}"
-                Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
-            <ui:NumberBox
-                Width="140"
-                Margin="6,0,0,0"
-                ClearButtonEnabled="False"
-                Maximum="5"
-                Minimum="0"
-                Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}"
-                Value="{Binding JumpFreighters, Mode=TwoWay}" />
-        </StackPanel>
-
-        <Grid Grid.Row="2" Margin="0,1,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <StackPanel
-                Grid.Row="2"
-                Margin="0,10,0,0"
-                Orientation="Horizontal">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapTool_Cover_Center}" />
+                <StackPanel Grid.Column="0" Margin="0,0,10,0">
                     <TextBlock
-                        Margin="6,0,0,0"
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{Binding CenterText}" />
+                        Margin="0,0,0,5"
+                        FontSize="11"
+                        
+                        Text="{DynamicResource MapTool_Cover_Center}" />
+                    <Grid>
+                        <ui:TextBox
+                            x:Name="CenterSearchBox"
+                            Height="32"
+                            ClearButtonEnabled="True"
+                            GotKeyboardFocus="CenterSearchBox_GotKeyboardFocus"
+                            PlaceholderText="{DynamicResource MapTool_Cover_SearchPlaceholder}"
+                            TextChanged="CenterSearchBox_TextChanged" />
+                        <Popup
+                            x:Name="CenterSearchPopup"
+                            AllowsTransparency="True"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding ElementName=CenterSearchBox}"
+                            StaysOpen="False">
+                            <Border
+                                Width="380"
+                                MaxHeight="260"
+                                Margin="0,4,0,0"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                                <ListBox
+                                    x:Name="CenterSearchResultsList"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    SelectionChanged="CenterSearchResultsList_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="4,3">
+                                                <TextBlock FontSize="12" Text="{Binding Name}" />
+                                                <TextBlock
+                                                    Margin="0,1,0,0"
+                                                    FontSize="10"
+                                                    
+                                                    Text="{Binding RegionName}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
+                    </Grid>
                 </StackPanel>
-            </StackPanel>
-            <StackPanel
-                Grid.Column="1"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
-                <controls:SpinnerIcon
-                    x:Name="BusyIcon"
-                    Margin="10,0,0,0"
-                    IsActive="{Binding IsBusy}" />
-                <ui:Button
-                    Margin="16,0,0,0"
-                    Appearance="Primary"
-                    Click="Compute_Click"
-                    Content="{DynamicResource MapTool_Cover_Compute}" />
-                <ui:Button
-                    Margin="8,0,0,0"
-                    Click="Clear_Click"
-                    Content="{DynamicResource MapTool_Cover_Clear}" />
-            </StackPanel>
-        </Grid>
 
+                <ui:Button
+                    Grid.Column="1"
+                    Margin="0,17,14,0"
+                    VerticalAlignment="Top"
+                    Appearance="Secondary"
+                    Click="UseMapCenter_Click"
+                    Content="{DynamicResource MapTool_Cover_UseMapCenter}" />
+
+                <StackPanel
+                    Grid.Column="2"
+                    Margin="0,17,0,0"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="10"
+                            
+                            Text="{DynamicResource MapTool_Cover_MaxJump}" />
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="{Binding MaxJumpText}" />
+                    </StackPanel>
+                    <StackPanel Margin="18,0,0,0">
+                        <TextBlock
+                            FontSize="10"
+                            
+                            Text="{DynamicResource MapTool_Cover_PerLyFuel}" />
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="{Binding PerLyFuelText}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  舰船 / 技能 / 操作  -->
+        <Border
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            Padding="12"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal">
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock
+                            Margin="0,0,0,4"
+                            FontSize="10"
+                            
+                            Text="{DynamicResource MapTool_Cover_Ship}" />
+                        <ComboBox
+                            x:Name="ShipCombo"
+                            Width="200"
+                            DisplayMemberPath="Name"
+                            ItemsSource="{Binding JumpShips}"
+                            SelectedItem="{Binding Ship, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock
+                            Margin="0,0,0,4"
+                            FontSize="10"
+                            
+                            Text="{DynamicResource MapTool_Cover_Jdc}" />
+                        <ComboBox
+                            Width="96"
+                            IsTextSearchEnabled="False"
+                            ItemsSource="{Binding SkillLevels}"
+                            SelectedItem="{Binding JumpDriveCalibration, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock
+                            Margin="0,0,0,4"
+                            FontSize="10"
+                            
+                            Text="{DynamicResource MapTool_Cover_Jfc}" />
+                        <ComboBox
+                            Width="96"
+                            IsTextSearchEnabled="False"
+                            ItemsSource="{Binding SkillLevels}"
+                            SelectedItem="{Binding JumpFuelConservation, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,0" Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,0,0,4"
+                            FontSize="10"
+                            
+                            Text="{DynamicResource MapTool_Cover_Jf}"
+                            TextWrapping="Wrap" />
+                        <ComboBox
+                            Width="108"
+                            IsTextSearchEnabled="False"
+                            ItemsSource="{Binding SkillLevels}"
+                            SelectedItem="{Binding JumpFreighters, Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <controls:SpinnerIcon
+                        x:Name="BusyIcon"
+                        Margin="0,0,8,0"
+                        IsActive="{Binding IsBusy}" />
+                    <ui:Button
+                        Appearance="Primary"
+                        Click="Compute_Click"
+                        Icon="{ui:SymbolIcon Play24}"
+                        ToolTip="{DynamicResource MapTool_Cover_Compute}" />
+                    <ui:Button
+                        Margin="7,0,0,0"
+                        Appearance="Secondary"
+                        Click="Clear_Click"
+                        Icon="{ui:SymbolIcon SquareEraser20}"
+                        ToolTip="{DynamicResource MapTool_Cover_Clear}" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <ui:DataGrid
-            Grid.Row="3"
-            Margin="0,10,0,0"
+            Grid.Row="2"
+            Margin="0,8,0,0"
             ItemsSource="{Binding Items}"
             Style="{StaticResource CoverGridStyle}">
             <ui:DataGrid.Columns>
@@ -164,7 +249,7 @@
                     Binding="{Binding No}"
                     Header="{DynamicResource MapTool_No}" />
                 <DataGridTextColumn
-                    Width="200"
+                    Width="190"
                     Binding="{Binding Name}"
                     Header="{DynamicResource MapTool_System}" />
                 <DataGridTextColumn
@@ -172,7 +257,7 @@
                     Binding="{Binding RegionName}"
                     Header="{DynamicResource MapTool_Region}" />
                 <DataGridTextColumn
-                    Width="70"
+                    Width="80"
                     Binding="{Binding SecurityText}"
                     Header="{DynamicResource MapTool_Security}" />
                 <DataGridTextColumn

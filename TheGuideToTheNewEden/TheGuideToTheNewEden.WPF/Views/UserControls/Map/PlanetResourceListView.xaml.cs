@@ -16,6 +16,4 @@ public partial class PlanetResourceListView : UserControl
     }
 
     public PlanetResourceListViewModel ViewModel { get; }
-
-    private async void Reload_Click(object sender, RoutedEventArgs e) => await ViewModel.ReloadAsync();
 }

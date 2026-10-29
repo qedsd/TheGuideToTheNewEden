@@ -38,12 +38,15 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
     private bool _loaded;
     private bool _onlyWithResource = true;
     private string _summary = string.Empty;
+    private string _searchText = string.Empty;
 
     public ObservableCollection<RegionResourceRow> RegionRows { get; } = [];
     public ObservableCollection<SystemResourceRow> SystemRows { get; } = [];
     public ObservableCollection<UpgradeRow> UpgradeRows { get; } = [];
 
+    private List<RegionResourceRow> _allRegionRows = [];
     private List<SystemResourceRow> _allSystemRows = [];
+    private List<UpgradeRow> _allUpgradeRows = [];
 
     public bool IsLoading
     {
@@ -60,6 +63,19 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
             if (Set(ref _onlyWithResource, value))
             {
                 ApplySystemFilter();
+                UpdateSummary();
+            }
+        }
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (Set(ref _searchText, value ?? string.Empty))
+            {
+                ApplyFilters();
             }
         }
     }
@@ -98,19 +114,16 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
 
             var regionDic = await Task.Run(() => Core.Services.DB.MapRegionService.QueryAll().ToDictionary(p => p.RegionID, p => p.RegionName));
 
-            RegionRows.Clear();
-            foreach (var region in Services.Map.MapResourceService.RegionResources.Values
-                .OrderByDescending(p => p.Power + p.Workforce))
-            {
-                RegionRows.Add(new RegionResourceRow
+            _allRegionRows = [.. Services.Map.MapResourceService.RegionResources.Values
+                .OrderByDescending(p => p.Power + p.Workforce)
+                .Select(region => new RegionResourceRow
                 {
                     RegionName = region.Region?.RegionName ?? string.Empty,
                     Power = region.Power,
                     Workforce = region.Workforce,
                     MagmaticGas = region.MagmaticGas,
                     SuperionicIce = region.SuperionicIce,
-                });
-            }
+                })];
 
             _allSystemRows = [.. Services.Map.MapResourceService.SystemResources.Values.Select(p => new SystemResourceRow
             {
@@ -124,15 +137,9 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
                 SuperionicIce = p.SuperionicIce,
             })];
 
-            ApplySystemFilter();
+            _allUpgradeRows = [.. Services.Map.MapResourceService.GetUpgrades().Select(p => new UpgradeRow(p))];
 
-            UpgradeRows.Clear();
-            foreach (var upgrade in Services.Map.MapResourceService.GetUpgrades())
-            {
-                UpgradeRows.Add(new UpgradeRow(upgrade));
-            }
-
-            Summary = string.Format(FindString("MapTool_Resource_Summary"), RegionRows.Count, _allSystemRows.Count, UpgradeRows.Count);
+            ApplyFilters();
             _loaded = true;
         }
         catch (Exception ex)
@@ -146,6 +153,30 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
         }
     }
 
+    private void ApplyFilters()
+    {
+        ApplyRegionFilter();
+        ApplySystemFilter();
+        ApplyUpgradeFilter();
+        UpdateSummary();
+    }
+
+    private void ApplyRegionFilter()
+    {
+        RegionRows.Clear();
+        var query = _searchText.Trim();
+        IEnumerable<RegionResourceRow> rows = _allRegionRows;
+        if (query.Length > 0)
+        {
+            rows = rows.Where(p => p.RegionName.Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+
+        foreach (var row in rows)
+        {
+            RegionRows.Add(row);
+        }
+    }
+
     private void ApplySystemFilter()
     {
         SystemRows.Clear();
@@ -155,10 +186,44 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
             rows = rows.Where(p => p.Power != 0 || p.Workforce != 0 || p.MagmaticGas != 0 || p.SuperionicIce != 0);
         }
 
+        var query = _searchText.Trim();
+        if (query.Length > 0)
+        {
+            rows = rows.Where(p =>
+                p.Name.Contains(query, StringComparison.OrdinalIgnoreCase)
+                || p.RegionName.Contains(query, StringComparison.OrdinalIgnoreCase)
+                || p.SystemId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+
         foreach (var row in rows.OrderByDescending(p => p.Power + p.Workforce))
         {
             SystemRows.Add(row);
         }
+    }
+
+    private void ApplyUpgradeFilter()
+    {
+        UpgradeRows.Clear();
+        var query = _searchText.Trim();
+        IEnumerable<UpgradeRow> rows = _allUpgradeRows;
+        if (query.Length > 0)
+        {
+            rows = rows.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+
+        foreach (var row in rows)
+        {
+            UpgradeRows.Add(row);
+        }
+    }
+
+    private void UpdateSummary()
+    {
+        Summary = string.Format(
+            FindString("MapTool_Resource_Summary"),
+            RegionRows.Count,
+            SystemRows.Count,
+            UpgradeRows.Count);
     }
 
     private static string FindString(string key) =>

@@ -9979,6 +9979,162 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - `OneJumpCoverViewModel.Summary` 属性保留（用于内部错误/状态记录），只是不再绑定到界面。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 227：导航 / 一跳覆盖窗口重设计（2026-10-29）
+
+- 依据 `design/map-tools/index.html` 预览落地导航与一跳覆盖，其余星图工具窗保持原布局。
+- **导航 `MapNavigationView`**
+  - 改为左（航线节点）/ 中（概览 + 逐跳结果）/ 右（参数 / 计算 / 交付）三栏；
+  - 左侧「航点 / 规避」页签共用搜索框，支持按星系名或 ID 搜索并直接加入当前列表；
+  - 保留「从星图添加」；节点行可直接移除；
+  - 计算结果列表固定列头，点击行仍在星图定位；
+  - 航行参数、计算 / 清除、错误提示与在游戏中设置收进右栏卡片。
+- **一跳覆盖 `OneJumpCoverView`**
+  - 顶部中心星系改为窗口内搜索框，支持名称 / ID；保留「从星图取中心」；
+  - 舰船与三项技能（跳跃引擎校准 / 跳跃燃料节约 / 战略货舰操作）整理为参数卡；
+  - 结果 DataGrid 填满剩余空间；不恢复 Summary 文本。
+- `MapPageViewModel.Search` 同时匹配星系名与数字 ID，供两个窗口搜索使用。
+- 中英文语言键、星图 / 星系详情手册同步。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 228：一跳覆盖技能等级改为下拉框（2026-10-29）
+
+- `OneJumpCoverViewModel` 增加 `SkillLevels`（0–5）。
+- `OneJumpCoverView.xaml` 三个技能输入从 `ui:NumberBox` 改为 `ComboBox`：
+  - 跳跃引擎校准 `JumpDriveCalibration`；
+  - 跳跃燃料节约 `JumpFuelConservation`；
+  - 战略货舰操作 `JumpFreighters`（仅战略货舰显示）；
+  - 只允许选择 0–5，避免手动输入越界值。
+- 导航窗技能输入保持原样（本次只改一跳覆盖）。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 229：一跳覆盖参数改为“名称在上、下拉在下”四列并排（2026-10-29）
+
+- `OneJumpCoverView.xaml` 第二张参数卡重排：
+  - 舰船 + 三个技能字段都改为**标签在上、ComboBox 在下**；
+  - 四个字段放在同一个水平 StackPanel 中并排；
+  - 舰船下拉 200 宽，技能下拉 96/96/108 宽；
+  - 「战略货舰操作」仍只在战略货舰时显示。
+- 手册将“填技能”改为“选择等级”。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 230：一跳覆盖中心输入框不再预填提示文字（2026-10-29）
+
+- `OneJumpCoverView.SyncCenterBox()`：`Center is null` 时把 `CenterSearchBox.Text` 设为空字符串，而不是 `CenterText` 里的「请先在星图上选中一个星系」；提示语改由 Placeholder 显示。
+- 手册同步：未设置中心时输入框为空；同时删除已不存在的汇总行说明。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 231：导航列表去掉星系名前的装饰圆点（2026-10-29）
+
+- 用户询问导航里星系名前的圆点含义；确认它只是阶段 227 布局里的装饰元素，没有语义。
+- `MapNavigationView.xaml`：
+  - 删除「航点 / 规避」节点行与「逐跳路线」行里的 `Ellipse` 圆点；
+  - 节点行首列由 18px 圆点列改为名称列，安等 / 删除按钮列相应前移；
+  - 行内容更紧凑，不再暗示颜色 / 状态含义。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 232：导航工具去描述性文本，结果改为简约数据行（2026-10-29）
+
+- `MapNavigationView.xaml` 删除：
+  - 左栏标题下的「搜索添加 / 从星图取当前」；
+  - 左栏底部「在窗口内搜索添加…」提示；
+  - 中栏「至少设置两个航点后计算路线…」空状态说明；
+  - 「逐跳路线」标题右侧「点击行可在星图定位」。
+- 结果概览不再使用自然语言：
+  - `MapPage_Nav_Summary` 从「共 N 跳：星门 … · 旗舰距离 …」改为
+    `N 跳 · 星门 … · 旗舰跳 … · 跳桥 … · X.X ly · N 燃料`。
+- 仍保留功能性标签：搜索 Placeholder、航点/规避、路线概览、逐跳路线、参数与按钮。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 233：导航安等按安全色阶着色，概览拆成指标卡（2026-10-29）
+
+- 新增 `SecurityToBrushConverter`：复用 `StarMapCanvas.SecurityColor` 的 11 档安全色板（与市场 / WinUI 的 SystemSecurityForeground 一致）。
+  - 航点 / 规避行、逐跳路线的安等文字按安全等级着色。
+- `MapPageViewModel` 新增导航指标：
+  - `NavTotalHops`、`NavGateHops`、`NavCapitalHops`、`NavDistanceLy`、`NavFuel`；
+  - `BuildNavResult` 写入，开始计算 / 清除路线时先归零。
+- `MapNavigationView.xaml`：
+  - 删除单一 `NavSummary` 文本框；
+  - 概览改为 5 张并排指标卡：总跳数 / 星门 / 旗舰跳 / 距离 / 燃料；
+  - 指标卡使用 `UniformGrid Columns=5`，结果更易扫读。
+- 移除已无 XAML 载体的 `NavSummaryBadge` 代码引用。
+- 手册更新计算后的指标卡与安等着色说明。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 234：导航技能等级也改为下拉框（2026-10-29）
+
+- `MapPageViewModel` 增加 `SkillLevels`（0–5）。
+- `MapNavigationView` 旗舰参数里的三项技能由 `ui:NumberBox` 改为 `ComboBox`：
+  - 跳跃引擎校准 `JumpDriveCalibration`；
+  - 跳跃燃料节约 `JumpFuelConservation`；
+  - 战略货舰操作 `JumpFreighters`（仅战略货舰显示）。
+- 与一跳覆盖窗的技能选择保持一致，只允许 0–5。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 235：导航计算 / 在游戏中设置等待遮罩归属导航窗口（2026-10-29）
+
+- 原因：`PageNotifyService.ShowWaiting` 固定驱动 MainWindow 注册的全局遮罩，导航工具窗调用时遮罩出现在主窗口。
+- `MapNavigationView.xaml` 在自身根 Grid 内新增 `controls:WaitingOverlay x:Name="NavWaiting"`，覆盖导航窗口全部三栏。
+- `ComputeRoute_Click` / `SetAutopilot_Click` 改用：
+  - `NavWaiting.Show(...)`；
+  - `NavWaiting.UpdateText(...)`（逐跳写入进度）；
+  - `NavWaiting.Hide()`。
+- 成功 / 失败通知仍走全局 `PageNotifyService`；本次只修等待态归属。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 236：导航工具暗色主题文字前景修正（2026-10-29）
+
+- 现象：切到暗色主题后，导航工具里部分文字（航点/规避、表头、按钮、说明标签）仍是黑色。
+- 原因：工具窗是独立 `FluentWindow`，部分控件/模板里的文字前景没有跟随窗口根 Grid 的 `TextElement.Foreground`；`Window.Foreground` 在该窗口仍是 WPF 默认黑色，不能直接拿来绑定。
+- 处理：
+  - `MapNavigationView` 监听 `Loaded` / `ThemeChanged`；
+  - 遍历视觉树并挂 `FrameworkElement.LoadedEvent`，把实际为深色的 `TextBlock` / 非主按钮 / `TextBox` 前景绑定到窗口根 Grid 的 `(TextElement.Foreground)`；
+  - 安全等级文字（11 档色板）跳过，主按钮（浅色底）保留深色文字。
+- 结果：暗色主题下黑色文字跟随主题变亮，搜索 Placeholder、Tab 头、表头、按钮文字都覆盖。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 237：切换页面保留星图工具窗 + 一跳覆盖主题文字修正（2026-10-29）
+
+- **切换页面工具窗自动隐藏**
+  - 根因：`MapPage_Unloaded` 会遍历并 `Close()` 一跳覆盖 / 资源 / 跳桥 / 主权 / 详情 / 导航 / 显示设置窗口。
+  - 改为切走页面时只关闭页面内搜索浮层和工具菜单，不再关闭独立工具窗；工具窗由用户主动关闭或应用退出关闭。
+- **一跳覆盖暗色文字**
+  - 新增 `ThemeForegroundHelper`：监听工具窗 `Loaded` / `ThemeChanged` / 子元素 `Loaded`，把实际为深色的文字、非主按钮、TextBox 前景绑定到窗口根视觉树的 `(TextElement.Foreground)`。
+  - `OneJumpCoverView` 接入该 helper。
+  - `MapNavigationView` 删除 TextBlock/按钮/搜索框上的局部 `TextFillColor*` 前景引用，让文字继承工具窗根部的主题前景；helper 继续处理模板生成的文字与按钮。
+  - 安全等级色和浅色主按钮对比度保留。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 238：行星资源清单支持即时搜索（2026-10-29）
+
+- `PlanetResourceListViewModel`：
+  - 新增 `SearchText`，变化时立即重新过滤；
+  - 保留全量 `_allRegionRows` / `_allSystemRows` / `_allUpgradeRows`，当前表格只显示匹配行；
+  - 匹配口径：星域表按星域名；星系表按星系名、星域名、星系 ID；设施升级表按名称；
+  - 与「只显示有资源星系」叠加；
+  - 顶部汇总改为按过滤后的行数显示。
+- `PlanetResourceListView.xaml` 顶部新增「搜索星系 / 星域」输入框，`UpdateSourceTrigger=PropertyChanged`，输入即刷新当前页签。
+- 中英文语言键、星系详情手册同步。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 239：行星资源移除统计文本，搜索框右对齐（2026-10-29）
+
+- `PlanetResourceListView.xaml` 顶部由横向 StackPanel 改为 DockPanel：
+  - 删除绑定 `Summary` 的统计 TextBlock，不再显示「星域 X 个 · 星系 Y 个 · 设施升级 Z 项」；
+  - 搜索框 `DockPanel.Dock="Right"`，固定在顶栏最右侧，宽度 240。
+- 保留「重新载入」「只显示有资源星系」与加载指示；搜索过滤逻辑不变。
+- 手册同步为「顶部右侧搜索框」并删除汇总数量说明。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 240：行星资源删除“重新载入”按钮（2026-10-29）
+
+- `PlanetResourceListView.xaml` 顶栏删除「重新载入」按钮，只保留：
+  - 「只显示有资源星系」复选框；
+  - 加载指示；
+  - 右侧搜索框。
+- 删除代码隐藏的 `Reload_Click`；`ReloadAsync` 保留在 ViewModel 中备用。
+- 手册同步：需要重新计算时关闭窗口再重新打开。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

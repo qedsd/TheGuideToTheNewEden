@@ -357,6 +357,11 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     private int _jumpFreighters = 4;
     private AuthorizedCharacterData? _autopilotCharacter;
     private string _navSummary = string.Empty;
+    private int _navTotalHops;
+    private int _navGateHops;
+    private int _navCapitalHops;
+    private double _navDistanceLy;
+    private double _navFuel;
 
     private Dictionary<int, double> _killValues = [];
     private Dictionary<int, double> _jumpValues = [];
@@ -391,6 +396,9 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     public ObservableCollection<string> ActiveListeners { get; } = [];
     public ObservableCollection<JumpBridge> Bridges { get; } = [];
     public ObservableCollection<CapitalJumpShipInfo> JumpShips { get; } = [];
+
+    /// <summary>技能等级下拉选项（0–5）。</summary>
+    public IReadOnlyList<int> SkillLevels { get; } = [0, 1, 2, 3, 4, 5];
 
     public bool IsLoading
     {
@@ -654,6 +662,36 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     {
         get => _navSummary;
         private set => Set(ref _navSummary, value);
+    }
+
+    public int NavTotalHops
+    {
+        get => _navTotalHops;
+        private set => Set(ref _navTotalHops, value);
+    }
+
+    public int NavGateHops
+    {
+        get => _navGateHops;
+        private set => Set(ref _navGateHops, value);
+    }
+
+    public int NavCapitalHops
+    {
+        get => _navCapitalHops;
+        private set => Set(ref _navCapitalHops, value);
+    }
+
+    public double NavDistanceLy
+    {
+        get => _navDistanceLy;
+        private set => Set(ref _navDistanceLy, value);
+    }
+
+    public double NavFuel
+    {
+        get => _navFuel;
+        private set => Set(ref _navFuel, value);
     }
 
     public event EventHandler<MapColorMode>? ColorModeChanged;
@@ -1377,7 +1415,8 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
         var count = 0;
         foreach (var node in nodes)
         {
-            if (node.Name.Contains(text, StringComparison.OrdinalIgnoreCase))
+            if (node.Name.Contains(text, StringComparison.OrdinalIgnoreCase)
+                || node.Id.ToString().Contains(text, StringComparison.OrdinalIgnoreCase))
             {
                 SearchResults.Add(node);
                 if (++count >= maxCount)
@@ -2321,6 +2360,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
     public async Task<bool> NavigateAsync()
     {
+        ResetNavMetrics();
         if (Waypoints.Count < 2)
         {
             LastNavigationError = FindString("MapPage_Error_NeedWaypoints");
@@ -2476,6 +2516,11 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
         var bridgeHops = result.Count(p => p.NavType == 3);
         var jumpLy = result.Where(p => p.NavType == 2).Sum(p => p.DistanceLy);
         var fuelTotal = result.Sum(p => p.Fuel);
+        NavTotalHops = result.Count;
+        NavGateHops = gates;
+        NavCapitalHops = jumps;
+        NavDistanceLy = jumpLy;
+        NavFuel = fuelTotal;
         NavSummary = string.Format(
             FindString("MapPage_Nav_Summary"),
             result.Count,
@@ -2486,6 +2531,17 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
             fuelTotal);
     }
 
+    /// <summary>清空导航指标卡（开始计算 / 清除路线时都先归零）。</summary>
+    private void ResetNavMetrics()
+    {
+        NavTotalHops = 0;
+        NavGateHops = 0;
+        NavCapitalHops = 0;
+        NavDistanceLy = 0;
+        NavFuel = 0;
+        NavSummary = string.Empty;
+    }
+
     /// <summary>清除导航结果。</summary>
     public void ClearNavigation()
     {
@@ -2493,7 +2549,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
         LastPath = [];
         LastWaypointIndices = [];
         LastNavigationError = null;
-        NavSummary = string.Empty;
+        ResetNavMetrics();
         OnPropertyChanged(nameof(LastNavigationError));
     }
 

@@ -203,24 +203,11 @@ public partial class MapPage : Page, IManualAware
     }
 
     /// <summary>
-    /// 页面切走时关掉"跟着页面上下文"的工具窗（一跳覆盖 / 行星资源清单 / 跳桥 / 主权分组 / 星系详情——
-    /// 它们引用页面选中态，留着会陈旧）；可复用窗口先解除"关闭即隐藏"再关。
-    /// **情报窗不在这里关**：情报监听是后台能力，切页面要保留（用户要求），窗口与监听一并保留；
-    /// 只有用户主动关窗或取消顶栏勾选才会停止监听。
+    /// 页面切走时只收起页面内的搜索/工具菜单，**不关闭已打开的工具窗**：
+    /// 工具窗是独立窗口，切到其他页面后应继续可见；只有用户主动关窗或应用退出才关闭。
     /// </summary>
     private void MapPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        foreach (var window in new[] { _coverWindow, _resourceWindow, _bridgeWindow, _sovWindow, _detailWindow, _navWindow, _displayWindow })
-        {
-            if (window is null)
-            {
-                continue;
-            }
-
-            window.AllowClose();
-            window.Close();
-        }
-
         SearchPopup.IsOpen = false;
         CloseToolsMenu();
     }
@@ -693,7 +680,7 @@ public partial class MapPage : Page, IManualAware
         CloseToolsMenu();
         if (_coverWindow is null)
         {
-            var view = new OneJumpCoverView();
+            var view = new OneJumpCoverView(_viewModel);
             view.SetCenter(_viewModel.SelectedSystem);
             view.ViewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
             _coverWindow = CreateToolWindow(view, "MapPage_Tool_Cover", 900, 620);
@@ -894,7 +881,7 @@ public partial class MapPage : Page, IManualAware
     {
         if (_navWindow is null)
         {
-            _navWindow = CreateToolWindow(new MapNavigationView(_viewModel, Locate, ClearRouteOnCanvas), "MapPage_Tool_Navigate", 980, 720);
+            _navWindow = CreateToolWindow(new MapNavigationView(_viewModel, Locate, ClearRouteOnCanvas), "MapPage_Tool_Navigate", 1120, 760);
             _navWindow.Closed += (_, _) => _navWindow = null;
         }
 

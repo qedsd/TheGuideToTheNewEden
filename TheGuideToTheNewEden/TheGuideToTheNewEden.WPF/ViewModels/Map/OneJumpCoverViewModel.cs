@@ -41,6 +41,9 @@ public sealed class OneJumpCoverViewModel : INotifyPropertyChanged
     public ObservableCollection<CapitalJumpShipInfo> JumpShips { get; } = [];
     public ObservableCollection<CoverItem> Items { get; } = [];
 
+    /// <summary>技能等级下拉选项（0–5）。</summary>
+    public IReadOnlyList<int> SkillLevels { get; } = [0, 1, 2, 3, 4, 5];
+
     public OneJumpCoverViewModel()
     {
         foreach (var ship in Core.EVEHelpers.CapitalJumpShipInfoHelper.GetInfos() ?? [])

@@ -37,30 +37,27 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <ui:Button
-                Appearance="Primary"
-                Click="Reload_Click"
-                Content="{DynamicResource MapTool_Resource_Reload}">
-                <ui:Button.Icon>
-                    <ui:SymbolIcon Symbol="ArrowClockwise24" />
-                </ui:Button.Icon>
-            </ui:Button>
+        <DockPanel
+            Grid.Row="0"
+            LastChildFill="False">
             <CheckBox
-                Margin="12,0,0,0"
                 VerticalAlignment="Center"
                 Content="{DynamicResource MapTool_Resource_OnlyWithResource}"
                 IsChecked="{Binding OnlyWithResource, Mode=TwoWay}" />
             <controls:SpinnerIcon
                 Margin="10,0,0,0"
-                IsActive="{Binding IsLoading}" />
-            <TextBlock
-                Margin="10,0,0,0"
                 VerticalAlignment="Center"
-                FontSize="12"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{Binding Summary}" />
-        </StackPanel>
+                IsActive="{Binding IsLoading}" />
+            <ui:TextBox
+                Width="240"
+                Height="32"
+                Margin="12,0,0,0"
+                VerticalAlignment="Center"
+                ClearButtonEnabled="True"
+                DockPanel.Dock="Right"
+                PlaceholderText="{DynamicResource MapTool_Resource_Search}"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
 
         <Grid Grid.Row="1" Margin="0,10,0,0">
             <TabControl>

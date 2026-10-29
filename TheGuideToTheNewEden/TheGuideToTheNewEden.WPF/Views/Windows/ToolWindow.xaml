@@ -25,10 +25,11 @@
         </Grid.RowDefinitions>
 
         <!--  统一标题栏：左侧 logo + 窗口名称，右侧置顶按钮与系统标题按钮（可分别控制显隐）  -->
-        <ui:TitleBar Height="34"
+        <ui:TitleBar
             x:Name="TitleBarHost"
             Title="{DynamicResource AppDisplayName}"
-            Grid.Row="0">
+            Grid.Row="0"
+            Height="34">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
             </ui:TitleBar.Icon>
