@@ -10135,6 +10135,19 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步：需要重新计算时关闭窗口再重新打开。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 241：行星资源常驻有资源过滤 + 双击定位（2026-10-30）
+
+- 移除「只显示有资源星系」开关：`PlanetResourceListViewModel` 现在始终只装载有四项资源之一的星系，顶部只保留加载指示和右侧搜索框。
+- 双击定位：
+  - 星系汇总行双击 → `Navigation.NavigateToSystem`，切回星图并居中到该星系；
+  - 星域汇总行双击 → 新增 `Navigation.NavigateToRegion`（带 pending 回退），星图页 `ToRegion` 适配该星域；
+  - `RegionResourceRow` 增加 `RegionId`；
+  - 双击仅从实际 `DataGridRow` 触发，避免表头/滚动条误触。
+- 底部新增小字提示「双击星系 / 星域可在星图定位」。
+- `PlanetResourceListView` 接入 `ThemeForegroundHelper`，资源窗文字跟随主题。
+- 手册同步。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

@@ -1851,6 +1851,7 @@
     <sys:String x:Key="MapTool_Resource_Reload">Reload</sys:String>
     <sys:String x:Key="MapTool_Resource_OnlyWithResource">Only systems with resources</sys:String>
     <sys:String x:Key="MapTool_Resource_Search">Search system / region</sys:String>
+    <sys:String x:Key="MapTool_Resource_DoubleClickHint">Double-click a system or region to locate it on the map</sys:String>
     <sys:String x:Key="MapTool_Resource_Region">Region summary</sys:String>
     <sys:String x:Key="MapTool_Resource_System">System summary</sys:String>
     <sys:String x:Key="MapTool_Resource_Summary">{0} regions · {1} systems · {2} upgrades</sys:String>

@@ -128,6 +128,37 @@ public static class Navigation
     }
 
     // ==================================================================
+    //  带参数跳转到星图（星域定位）
+    // ==================================================================
+
+    private static int? _pendingRegionId;
+
+    public static event Action<int>? RegionLocationRequested;
+
+    /// <summary>跳转到星图页并按星域适配视图（同时把主窗口置前）。</summary>
+    public static void NavigateToRegion(int regionId)
+    {
+        if (regionId <= 0)
+        {
+            return;
+        }
+
+        _pendingRegionId = regionId;
+        Navigate(typeof(Views.Pages.MapPage));
+        RegionLocationRequested?.Invoke(regionId);
+        Activate();
+    }
+
+    public static void SetPendingRegion(int regionId) => _pendingRegionId = regionId;
+
+    public static int? TakePendingRegion()
+    {
+        var pending = _pendingRegionId;
+        _pendingRegionId = null;
+        return pending;
+    }
+
+    // ==================================================================
     //  带参数跳转到角色工作区（主页参数化磁贴）
     // ==================================================================
 

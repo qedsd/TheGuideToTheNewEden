@@ -1874,6 +1874,7 @@
     <sys:String x:Key="MapTool_Resource_Reload">重新载入</sys:String>
     <sys:String x:Key="MapTool_Resource_OnlyWithResource">只显示有资源星系</sys:String>
     <sys:String x:Key="MapTool_Resource_Search">搜索星系 / 星域</sys:String>
+    <sys:String x:Key="MapTool_Resource_DoubleClickHint">双击星系 / 星域可在星图定位</sys:String>
     <sys:String x:Key="MapTool_Resource_Region">星域汇总</sys:String>
     <sys:String x:Key="MapTool_Resource_System">星系汇总</sys:String>
     <sys:String x:Key="MapTool_Resource_Summary">星域 {0} 个 · 星系 {1} 个 · 设施升级 {2} 项</sys:String>

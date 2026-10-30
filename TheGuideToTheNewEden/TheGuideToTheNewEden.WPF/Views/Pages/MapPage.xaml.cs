@@ -78,6 +78,7 @@ public partial class MapPage : Page, IManualAware
 
         CharacterLocationService.Current.LocationsUpdated += CharacterLocationsUpdated;
         Services.Navigation.SystemLocationRequested += OnSystemLocationRequested;
+        Services.Navigation.RegionLocationRequested += OnRegionLocationRequested;
         Services.Navigation.MapCommandRequested += OnMapCommandRequested;
         Loaded += MapPage_Loaded;
         Unloaded += MapPage_Unloaded;
@@ -89,6 +90,18 @@ public partial class MapPage : Page, IManualAware
         // 事件路径已经把请求交到手里，清掉待办，避免下次进入星图时又定位一次。
         Services.Navigation.TakePendingSystem();
         LocateSystem(systemId);
+    }
+
+    /// <summary>外部请求按星域适配星图（行星资源清单双击星域）。</summary>
+    private void OnRegionLocationRequested(int regionId)
+    {
+        if (!_initialized)
+        {
+            return;
+        }
+
+        Services.Navigation.TakePendingRegion();
+        LocateRegion(regionId);
     }
 
     /// <summary>
@@ -159,6 +172,7 @@ public partial class MapPage : Page, IManualAware
         {
             // 已经装载过：直接消费"待定位星系"（参数化磁贴可能是重复进入本页）。
             ApplyPendingSystem();
+            ApplyPendingRegion();
             return;
         }
 
@@ -200,6 +214,15 @@ public partial class MapPage : Page, IManualAware
 
         // 数据就绪后再消费"待定位星系"（此时画布上已经有节点）
         ApplyPendingSystem();
+        ApplyPendingRegion();
+    }
+
+    private void ApplyPendingRegion()
+    {
+        if (_initialized && Services.Navigation.TakePendingRegion() is int regionId)
+        {
+            LocateRegion(regionId);
+        }
     }
 
     /// <summary>
@@ -781,7 +804,7 @@ public partial class MapPage : Page, IManualAware
         return new ToolWindow(
             content,
             ToolWindowTitleStyle.Default,
-            showTopmostButton: false,
+            showTopmostButton: true,
             showInTaskbar: true,
             width: width,
             height: height)
@@ -789,6 +812,7 @@ public partial class MapPage : Page, IManualAware
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             DisplayTitle = title,
             SystemTitle = title,
+            Topmost = true,
         };
     }
 
@@ -855,7 +879,7 @@ public partial class MapPage : Page, IManualAware
         {
             _intelWindow = CreateToolWindow(new IntelToolView(_viewModel, Locate, LocateRegion), "MapPage_Intel", 1180, 700);
             // 情报窗不需要最大化/置顶：只留最小化与关闭（ToolWindow 的精细按钮控制）
-            _intelWindow.SetVisibleTitleBarButtons(ToolWindowButtons.Minimize | ToolWindowButtons.Close);
+            _intelWindow.SetVisibleTitleBarButtons(ToolWindowButtons.Minimize | ToolWindowButtons.Close | ToolWindowButtons.Topmost);
             _intelWindow.Closed += (_, _) =>
             {
                 _intelWindow = null;

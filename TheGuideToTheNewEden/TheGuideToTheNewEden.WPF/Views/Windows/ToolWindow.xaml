@@ -44,7 +44,7 @@
                     x:Name="TopmostButton"
                     Width="44"
                     Height="30"
-                    Margin="0,0,6,0"
+                    Margin="0,0,0,0"
                     VerticalAlignment="Top"
                     Appearance="Transparent"
                     BorderThickness="0"
@@ -52,6 +52,7 @@
                     Visibility="Collapsed">
                     <ui:SymbolIcon
                         x:Name="TopmostIcon"
+                        Margin="0,2,0,0"
                         FontSize="14"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Symbol="Pin24" />

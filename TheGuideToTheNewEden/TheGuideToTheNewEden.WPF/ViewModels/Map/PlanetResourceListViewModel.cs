@@ -8,6 +8,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Map;
 /// <summary>行星资源清单：星域汇总行。</summary>
 public sealed class RegionResourceRow
 {
+    public int RegionId { get; init; }
     public string RegionName { get; init; } = string.Empty;
     public long Power { get; init; }
     public long Workforce { get; init; }
@@ -36,7 +37,6 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
 {
     private bool _isLoading;
     private bool _loaded;
-    private bool _onlyWithResource = true;
     private string _summary = string.Empty;
     private string _searchText = string.Empty;
 
@@ -54,20 +54,7 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
         private set => Set(ref _isLoading, value);
     }
 
-    /// <summary>只列出四项资源里至少有一项非 0 的星系。</summary>
-    public bool OnlyWithResource
-    {
-        get => _onlyWithResource;
-        set
-        {
-            if (Set(ref _onlyWithResource, value))
-            {
-                ApplySystemFilter();
-                UpdateSummary();
-            }
-        }
-    }
-
+    /// <summary>当前表格搜索文本（星系名 / 星域名 / 星系 ID）。</summary>
     public string SearchText
     {
         get => _searchText;
@@ -118,6 +105,7 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
                 .OrderByDescending(p => p.Power + p.Workforce)
                 .Select(region => new RegionResourceRow
                 {
+                    RegionId = region.Region?.RegionID ?? 0,
                     RegionName = region.Region?.RegionName ?? string.Empty,
                     Power = region.Power,
                     Workforce = region.Workforce,
@@ -180,11 +168,9 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
     private void ApplySystemFilter()
     {
         SystemRows.Clear();
-        IEnumerable<SystemResourceRow> rows = _allSystemRows;
-        if (OnlyWithResource)
-        {
-            rows = rows.Where(p => p.Power != 0 || p.Workforce != 0 || p.MagmaticGas != 0 || p.SuperionicIce != 0);
-        }
+        // 资源清单只展示有资源的星系，不再提供开关。
+        IEnumerable<SystemResourceRow> rows = _allSystemRows.Where(p =>
+            p.Power != 0 || p.Workforce != 0 || p.MagmaticGas != 0 || p.SuperionicIce != 0);
 
         var query = _searchText.Trim();
         if (query.Length > 0)

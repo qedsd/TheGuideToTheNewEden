@@ -31,151 +31,149 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+    <Grid>
+        <Grid Margin="12,0,12,12">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <TabControl>
+                    <TabItem Header="{DynamicResource MapTool_Resource_Region}">
+                        <ui:DataGrid
+                            x:Name="RegionGrid"
+                            Margin="0,10,0,0"
+                            ItemsSource="{Binding RegionRows}"
+                            MouseDoubleClick="RegionGrid_MouseDoubleClick"
+                            Style="{StaticResource ResourceGridStyle}">
+                            <ui:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="*"
+                                    Binding="{Binding RegionName}"
+                                    Header="{DynamicResource MapTool_Region}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding Power, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_Power}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding Workforce, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_Workforce}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding MagmaticGas, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_MagmaticGas}" />
+                                <DataGridTextColumn
+                                    Width="110"
+                                    Binding="{Binding SuperionicIce, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_SuperionicIce}" />
+                            </ui:DataGrid.Columns>
+                        </ui:DataGrid>
+                    </TabItem>
 
-        <DockPanel
-            Grid.Row="0"
-            LastChildFill="False">
-            <CheckBox
-                VerticalAlignment="Center"
-                Content="{DynamicResource MapTool_Resource_OnlyWithResource}"
-                IsChecked="{Binding OnlyWithResource, Mode=TwoWay}" />
-            <controls:SpinnerIcon
-                Margin="10,0,0,0"
-                VerticalAlignment="Center"
-                IsActive="{Binding IsLoading}" />
-            <ui:TextBox
-                Width="240"
-                Height="32"
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                ClearButtonEnabled="True"
-                DockPanel.Dock="Right"
-                PlaceholderText="{DynamicResource MapTool_Resource_Search}"
-                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-        </DockPanel>
+                    <TabItem Header="{DynamicResource MapTool_Resource_System}">
+                        <ui:DataGrid
+                            x:Name="SystemGrid"
+                            Margin="0,10,0,0"
+                            ItemsSource="{Binding SystemRows}"
+                            MouseDoubleClick="SystemGrid_MouseDoubleClick"
+                            Style="{StaticResource ResourceGridStyle}">
+                            <ui:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="200"
+                                    Binding="{Binding Name}"
+                                    Header="{DynamicResource MapTool_System}" />
+                                <DataGridTextColumn
+                                    Width="160"
+                                    Binding="{Binding RegionName}"
+                                    Header="{DynamicResource MapTool_Region}" />
+                                <DataGridTextColumn
+                                    Width="70"
+                                    Binding="{Binding SecurityText}"
+                                    Header="{DynamicResource MapTool_Security}" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding Power, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_Power}" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding Workforce, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_Workforce}" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding MagmaticGas, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_MagmaticGas}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding SuperionicIce, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_SuperionicIce}" />
+                            </ui:DataGrid.Columns>
+                        </ui:DataGrid>
+                    </TabItem>
 
-        <Grid Grid.Row="1" Margin="0,10,0,0">
-            <TabControl>
-                <TabItem Header="{DynamicResource MapTool_Resource_Region}">
-                    <ui:DataGrid
-                        Margin="0,10,0,0"
-                        ItemsSource="{Binding RegionRows}"
-                        Style="{StaticResource ResourceGridStyle}">
-                        <ui:DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding RegionName}"
-                                Header="{DynamicResource MapTool_Region}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding Power, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_Power}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding Workforce, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_Workforce}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding MagmaticGas, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_MagmaticGas}" />
-                            <DataGridTextColumn
-                                Width="110"
-                                Binding="{Binding SuperionicIce, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_SuperionicIce}" />
-                        </ui:DataGrid.Columns>
-                    </ui:DataGrid>
-                </TabItem>
-
-                <TabItem Header="{DynamicResource MapTool_Resource_System}">
-                    <ui:DataGrid
-                        Margin="0,10,0,0"
-                        ItemsSource="{Binding SystemRows}"
-                        Style="{StaticResource ResourceGridStyle}">
-                        <ui:DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="200"
-                                Binding="{Binding Name}"
-                                Header="{DynamicResource MapTool_System}" />
-                            <DataGridTextColumn
-                                Width="160"
-                                Binding="{Binding RegionName}"
-                                Header="{DynamicResource MapTool_Region}" />
-                            <DataGridTextColumn
-                                Width="70"
-                                Binding="{Binding SecurityText}"
-                                Header="{DynamicResource MapTool_Security}" />
-                            <DataGridTextColumn
-                                Width="90"
-                                Binding="{Binding Power, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_Power}" />
-                            <DataGridTextColumn
-                                Width="90"
-                                Binding="{Binding Workforce, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_Workforce}" />
-                            <DataGridTextColumn
-                                Width="90"
-                                Binding="{Binding MagmaticGas, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_MagmaticGas}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding SuperionicIce, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_SuperionicIce}" />
-                        </ui:DataGrid.Columns>
-                    </ui:DataGrid>
-                </TabItem>
-
-                <TabItem Header="{DynamicResource MapTool_Detail_Upgrade}">
-                    <ui:DataGrid
-                        Margin="0,10,0,0"
-                        ItemsSource="{Binding UpgradeRows}"
-                        Style="{StaticResource ResourceGridStyle}">
-                        <ui:DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Name}"
-                                Header="{DynamicResource MapTool_Name}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding Power, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_Power}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding Workforce, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_Workforce}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding MagmaticGas, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_MagmaticGas}" />
-                            <DataGridTextColumn
-                                Width="110"
-                                Binding="{Binding SuperionicIce, StringFormat={}{0:N0}}"
-                                Header="{DynamicResource MapTool_Resource_SuperionicIce}" />
-                        </ui:DataGrid.Columns>
-                    </ui:DataGrid>
-                </TabItem>
-            </TabControl>
-
-            <Border Background="{DynamicResource SmokeFillColorDefaultBrush}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
-                <Border
-                    Padding="20,14"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
-                    CornerRadius="8">
-                    <StackPanel Orientation="Horizontal">
-                        <controls:SpinnerIcon IsActive="{Binding IsLoading}" />
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="{DynamicResource MapPage_Loading}" />
-                    </StackPanel>
-                </Border>
-            </Border>
+                    <TabItem Header="{DynamicResource MapTool_Detail_Upgrade}">
+                        <ui:DataGrid
+                            Margin="0,10,0,0"
+                            ItemsSource="{Binding UpgradeRows}"
+                            Style="{StaticResource ResourceGridStyle}">
+                            <ui:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="*"
+                                    Binding="{Binding Name}"
+                                    Header="{DynamicResource MapTool_Name}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding Power, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_Power}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding Workforce, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_Workforce}" />
+                                <DataGridTextColumn
+                                    Width="100"
+                                    Binding="{Binding MagmaticGas, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_MagmaticGas}" />
+                                <DataGridTextColumn
+                                    Width="110"
+                                    Binding="{Binding SuperionicIce, StringFormat={}{0:N0}}"
+                                    Header="{DynamicResource MapTool_Resource_SuperionicIce}" />
+                            </ui:DataGrid.Columns>
+                        </ui:DataGrid>
+                    </TabItem>
+                </TabControl>
+                <ui:TextBox
+                    Width="240"
+                    Height="32"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    ClearButtonEnabled="True"
+                    DockPanel.Dock="Right"
+                    PlaceholderText="{DynamicResource MapTool_Resource_Search}"
+                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+            <TextBlock
+                Grid.Row="1"
+                Margin="0,6,0,0"
+                FontSize="10"
+                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                Text="{DynamicResource MapTool_Resource_DoubleClickHint}" />
         </Grid>
+        <Border Background="{DynamicResource SmokeFillColorDefaultBrush}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+            <Border
+                Padding="20,14"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
+                CornerRadius="8">
+                <StackPanel Orientation="Horizontal">
+                    <controls:SpinnerIcon IsActive="{Binding IsLoading}" />
+                    <TextBlock
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="{DynamicResource MapPage_Loading}" />
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </UserControl>
