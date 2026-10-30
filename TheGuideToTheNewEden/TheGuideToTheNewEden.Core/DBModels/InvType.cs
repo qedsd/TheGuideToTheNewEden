@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +11,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
     public class InvType: InvTypeBase
     {
         public int GroupID { get; set; }
+        public int MetaGroupID { get; set; }
         public double Volume { get; set; }
         public double PackagedVolume { get; set; }
         public int PortionSize { get; set; }

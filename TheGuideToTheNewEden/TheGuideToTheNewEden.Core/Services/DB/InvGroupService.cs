@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -108,6 +108,21 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             var groups = DBService.MainDb.Queryable<InvGroup>().Where(p => categories.Contains(p.CategoryID)).ToList();
             return groups.Select(p => p.GroupID).ToList();
+        }
+
+        /// <summary>查询舰船类别（CategoryID=6）的全部分组，并按当前语言本地化名称。</summary>
+        public static List<InvGroup> QueryShipGroups()
+        {
+            var groups = DBService.MainDb.Queryable<InvGroup>()
+                .Where(p => p.CategoryID == 6)
+                .OrderBy(p => p.GroupName)
+                .ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvGroups(groups);
+            }
+
+            return groups;
         }
 
         public static async Task<List<DataBaseSearchItem>> SearchAsync(string name)

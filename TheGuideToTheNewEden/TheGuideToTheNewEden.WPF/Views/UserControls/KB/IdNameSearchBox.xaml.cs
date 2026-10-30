@@ -24,6 +24,8 @@ public partial class IdNameSearchBox : UserControl
         InitializeComponent();
 
         ResultList.ItemsSource = _results;
+        PlaceholderText = Application.Current?.TryFindResource("ZKBPage_SearchTip") as string
+                          ?? "搜索角色、军团、联盟…";
 
         _debounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         _debounceTimer.Tick += async (_, _) =>
@@ -31,6 +33,16 @@ public partial class IdNameSearchBox : UserControl
             _debounceTimer.Stop();
             await SearchAsync();
         };
+    }
+
+    /// <summary>搜索框占位提示（不同过滤维度传入不同文案）。</summary>
+    public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
+        nameof(PlaceholderText), typeof(string), typeof(IdNameSearchBox), new PropertyMetadata(null));
+
+    public string? PlaceholderText
+    {
+        get => (string?)GetValue(PlaceholderTextProperty);
+        set => SetValue(PlaceholderTextProperty, value);
     }
 
     /// <summary>限定可选的实体类别（为空表示不限）。</summary>

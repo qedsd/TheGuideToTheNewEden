@@ -19,7 +19,7 @@
         <ui:TextBox
             x:Name="SearchTextBox"
             MinWidth="180"
-            PlaceholderText="{DynamicResource ZKBPage_SearchTip}"
+            PlaceholderText="{Binding PlaceholderText, RelativeSource={RelativeSource AncestorType=UserControl}}"
             TextChanged="OnTextChanged" />
 
         <!--  搜索结果（有结果时才占空间）  -->

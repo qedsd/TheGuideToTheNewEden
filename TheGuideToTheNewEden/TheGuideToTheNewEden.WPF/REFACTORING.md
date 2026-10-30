@@ -10302,6 +10302,95 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步虫洞与星系详情。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 254：ZKB 过滤设置去掉说明文字并撑满窗口（2026-10-30）
+
+- 过滤页签移除顶部「组合规则说明」大段文案，以及三个子过滤控件上的 `Tip` 说明；规则保留在 `manuals/zkb.md`。
+- `KillStreamSettingView` 去掉外层 `ScrollViewer`，由 `TabControl` 直接占满弹窗；设置页不再因滚动容器测量成无限高度而塌缩。
+- `KbFilterPairControl`：
+  - 根布局改为两列 `Grid`，不再用 `StackPanel`；
+  - 排除/包含两个 CardControl 内容改为 `Auto/Auto/*` 行，ListBox 放 `*` 行并去掉 `MaxHeight=240`；
+  - 搜索框与列表随窗口高度自动拉伸。
+- 删除不再使用的 `Tip` 依赖属性。
+- 手册注明规则以文档为准，弹窗不重复显示。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 255：ZKB 过滤改为“单维度单模式 + 单列表”（2026-10-30）
+
+- 配置模型重做（不兼容旧配置）：
+  - 维度：`Location`（星系/星域）、`Ship`（舰型）、`Victim`、`Attacker`；
+  - 每维一个 `ZkbFilterMode`：`None / Include / Exclude` + 一个实体列表；
+  - 删除旧的 `Common/Victim/Attacker` 双列表。
+- 过滤语义：
+  - 列表为空不限制；
+  - 同一维度列表内 OR（位置里的星系/星域、受害者/攻击者的角色/军团/联盟都按 OR）；
+  - 维度之间 AND；
+  - 攻击者任一名命中即可。
+- UI：
+  - 过滤页签拆为位置 / 舰船 / 受害者 / 攻击者；
+  - 每页顶部模式下拉，下面一个列表，不再有并排的“排除项 / 包含项”；
+  - 列表占满剩余高度；外层去掉 `ScrollViewer`，设置窗由 `TabControl` 撑满。
+- 手册同步新规则；旧配置不迁移。
+- 验证：过滤语义探针通过（include/exclude、victim OR、attacker exclude、ship、location、多个 victim 条件）；`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 256：过滤搜索框按维度显示占位词（2026-10-30）
+
+- `IdNameSearchBox` 新增 `PlaceholderText` 依赖属性；未传入时仍回退「搜索角色、军团、联盟…」，不影响 Intel 过滤等旧调用。
+- `KbFilterPairControl` 透传 `PlaceholderText`。
+- ZKB 过滤四个页签分别传：
+  - 位置：搜索星系或星域…
+  - 舰船：搜索舰船类型…
+  - 受害者 / 攻击者：搜索角色、军团或联盟…
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 257：ZKB 舰船过滤支持 SDE 分类层级（2026-10-30）
+
+- Core：
+  - `InvType` 增加 `MetaGroupID`；
+  - 新增 `InvMetaGroup` / `InvMetaGroupService`；
+  - `InvGroupService.QueryShipGroups()`、`InvTypeService.QueryShipTypeClasses()` 提供舰船分类数据。
+- 新增 `ZkbShipClass` / `ZkbShipClassCatalog`：
+  - 舰船（Category 6）；
+  - 分组（护卫舰、巡洋舰等）；
+  - MetaGroup（势力、科技 II 等）；
+  - 分组 + MetaGroup 组合（如「势力护卫舰」，来自实际存在的 SDE 组合，共 133 个选项）。
+- 舰船过滤改为分类解析：
+  - `Ships` 由 `IdName` 改为 `ObservableCollection<ZkbShipClass>`；
+  - `ZkbShipClassResolver` 把分类展开成 TypeID 集合，过滤仍按命中类型判断；
+  - 探针验证「势力护卫舰」只通过势力护卫舰、不通过 Tech I 护卫舰；「舰船」通过所有舰船。
+- 新 UI `KbShipFilterControl`：模式 + 分类搜索 + 已选列表；搜索/添加/删除均走本地 SDE，不依赖 ESI。
+- 手册补充分类层级说明。
+- 验证：Core / WPF 0 错误；分类探针通过；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 258：舰船过滤改为分类树勾选（配置仍存具体 TypeID）（2026-10-30）
+
+- 撤回阶段 257 的“分类条件”配置：`ZKBStreamConfig.Ships` 改回 `ObservableCollection<IdName>`，只保存具体舰船 TypeID。
+- 新增 `ShipFilterNode` + `ZkbShipTreeBuilder`：
+  - 树层级：舰船 → 分组 → MetaGroup（含“未分类”）→ 具体舰船；
+  - 父节点勾选级联到所有叶子；父节点根据叶子状态显示全选 / 半选 / 未选。
+- `KbShipFilterControl` 改为 TreeView：
+  - 勾选父节点时，叶子把各自 TypeID 写入 `Config.Ships`；
+  - 配置文件与过滤器仍只认具体 TypeID；
+  - TreeView 撑满过滤页，根节点默认展开。
+- 分级目录来自本地 SDE，不再需要 ESI 搜索。
+- 探针验证：
+  - 勾选「护卫舰 → 势力」后加入 29 个 TypeID，与 SDE 的势力护卫舰集合完全一致；
+  - 过滤通过势力护卫舰、拒绝 Tech I 护卫舰。
+- 验证：Core / WPF 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 259：舰船树本地化名称 + 搜索 + 已选列表删除（2026-10-30）
+
+- `InvTypeService.QueryShipTypeClasses` 改为先查 `InvType` 再走 `LocalDbService.TranInvTypes`，舰船名与分组名一起本地化。
+- 舰船树左侧新增名称搜索：
+  - 有输入时隐藏树、显示匹配的具体舰船列表；
+  - 列表项与树节点共享同一个 `ShipFilterNode`，勾选状态同步。
+- 舰船树右侧新增「已选舰船（N）」列表：
+  - 列出 `Config.Ships` 里的所有具体 TypeID；
+  - 支持逐条删除；
+  - 删除时反向同步叶子勾选，父节点自动变成半选/未选。
+- 勾选树节点写入配置时加 `_updatingFromTree` 防重入，避免集合通知反向覆盖树的级联状态。
+- 手册同步。
+- 验证：Core / WPF 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

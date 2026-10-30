@@ -13,6 +13,19 @@ public static class KbCategories
         IdName.CategoryEnum.InventoryType,
     ];
 
+    /// <summary>位置过滤（星系 / 星域）。</summary>
+    public static readonly IdName.CategoryEnum[] Location =
+    [
+        IdName.CategoryEnum.SolarSystem,
+        IdName.CategoryEnum.Region,
+    ];
+
+    /// <summary>被击杀舰船类型过滤。</summary>
+    public static readonly IdName.CategoryEnum[] Ship =
+    [
+        IdName.CategoryEnum.InventoryType,
+    ];
+
     /// <summary>角色相关过滤（受害者 / 攻击者的角色、军团、联盟）。</summary>
     public static readonly IdName.CategoryEnum[] Role =
     [

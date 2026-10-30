@@ -2,39 +2,52 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.KB;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls.KB;
 
 /// <summary>
-/// 一组"排除项 / 包含项"过滤器编辑器（左边排除、右边包含）：搜索添加 + 列表删除。
-/// 直接读写绑定的 <see cref="ObservableCollection{T}"/>（即 <c>ZKBStreamConfig</c> 里的集合），
-/// 改动会即时反映到 <c>ZkbKillStreamHub</c> 的过滤快照上，无需断开重连。
+/// 单个过滤维度：模式（不过滤 / 只保留 / 排除）+ 一个实体列表。
+/// 列表内实体是 OR；维度之间由 <see cref="ZkbStreamFilter"/> 做 AND。
 /// </summary>
 public partial class KbFilterPairControl : UserControl
 {
+    private bool _syncingMode;
+
     public KbFilterPairControl()
     {
         InitializeComponent();
+        ModeCombo.SelectionChanged += OnModeSelectionChanged;
+        UpdateModeCombo();
     }
 
-    /// <summary>排除项集合（命中即丢弃）。</summary>
-    public static readonly DependencyProperty ExclusionsProperty = DependencyProperty.Register(
-        nameof(Exclusions), typeof(ObservableCollection<IdName>), typeof(KbFilterPairControl), new PropertyMetadata(null));
+    /// <summary>过滤模式（双向绑定到配置）。</summary>
+    public static readonly DependencyProperty ModeProperty = DependencyProperty.Register(
+        nameof(Mode),
+        typeof(ZkbFilterMode),
+        typeof(KbFilterPairControl),
+        new FrameworkPropertyMetadata(
+            ZkbFilterMode.None,
+            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+            OnModeChanged));
 
-    public ObservableCollection<IdName>? Exclusions
+    public ZkbFilterMode Mode
     {
-        get => (ObservableCollection<IdName>?)GetValue(ExclusionsProperty);
-        set => SetValue(ExclusionsProperty, value);
+        get => (ZkbFilterMode)GetValue(ModeProperty);
+        set => SetValue(ModeProperty, value);
     }
 
-    /// <summary>包含项集合（非空时必须命中之一）。</summary>
-    public static readonly DependencyProperty InclusionsProperty = DependencyProperty.Register(
-        nameof(Inclusions), typeof(ObservableCollection<IdName>), typeof(KbFilterPairControl), new PropertyMetadata(null));
+    /// <summary>当前维度的过滤实体列表。</summary>
+    public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register(
+        nameof(Items),
+        typeof(ObservableCollection<IdName>),
+        typeof(KbFilterPairControl),
+        new PropertyMetadata(null));
 
-    public ObservableCollection<IdName>? Inclusions
+    public ObservableCollection<IdName>? Items
     {
-        get => (ObservableCollection<IdName>?)GetValue(InclusionsProperty);
-        set => SetValue(InclusionsProperty, value);
+        get => (ObservableCollection<IdName>?)GetValue(ItemsProperty);
+        set => SetValue(ItemsProperty, value);
     }
 
     /// <summary>限定可选的实体类别。</summary>
@@ -47,19 +60,42 @@ public partial class KbFilterPairControl : UserControl
         set => SetValue(CategoriesProperty, value);
     }
 
-    /// <summary>说明文字（为空则不显示）。</summary>
-    public static readonly DependencyProperty TipProperty = DependencyProperty.Register(
-        nameof(Tip), typeof(string), typeof(KbFilterPairControl), new PropertyMetadata(null));
+    /// <summary>搜索框占位提示。</summary>
+    public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
+        nameof(PlaceholderText), typeof(string), typeof(KbFilterPairControl), new PropertyMetadata(null));
 
-    public string? Tip
+    public string? PlaceholderText
     {
-        get => (string?)GetValue(TipProperty);
-        set => SetValue(TipProperty, value);
+        get => (string?)GetValue(PlaceholderTextProperty);
+        set => SetValue(PlaceholderTextProperty, value);
     }
 
-    private void OnExclusionSelected(IdName item) => Add(Exclusions, item);
+    private static void OnModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((KbFilterPairControl)d).UpdateModeCombo();
 
-    private void OnInclusionSelected(IdName item) => Add(Inclusions, item);
+    private void UpdateModeCombo()
+    {
+        if (ModeCombo is null)
+        {
+            return;
+        }
+
+        _syncingMode = true;
+        ModeCombo.SelectedIndex = (int)Mode;
+        _syncingMode = false;
+    }
+
+    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_syncingMode || ModeCombo.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        Mode = (ZkbFilterMode)ModeCombo.SelectedIndex;
+    }
+
+    private void OnItemSelected(IdName item) => Add(Items, item);
 
     private static void Add(ObservableCollection<IdName>? target, IdName item)
     {
@@ -78,31 +114,9 @@ public partial class KbFilterPairControl : UserControl
 
     private void OnRemoveClick(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { DataContext: IdName item } element)
+        if (sender is FrameworkElement { DataContext: IdName item } && Items is not null)
         {
-            return;
+            Items.Remove(item);
         }
-
-        // 通过祖先找到这一行属于哪个列表
-        if (FindOwner(element) is { } list)
-        {
-            list.Remove(item);
-        }
-    }
-
-    private ObservableCollection<IdName>? FindOwner(DependencyObject element)
-    {
-        var current = element;
-        while (current is not null)
-        {
-            if (current is ListBox { ItemsSource: ObservableCollection<IdName> list })
-            {
-                return list;
-            }
-
-            current = System.Windows.Media.VisualTreeHelper.GetParent(current);
-        }
-
-        return null;
     }
 }

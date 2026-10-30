@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -7,7 +7,18 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Models.KB
 {
-    public class ZKBStreamConfig: ObservableObject
+    /// <summary>ZKB 过滤器单个维度的模式。</summary>
+    public enum ZkbFilterMode
+    {
+        /// <summary>不过滤。</summary>
+        None = 0,
+        /// <summary>只保留命中列表的击杀；列表为空时不限制。</summary>
+        Include = 1,
+        /// <summary>排除命中列表的击杀；列表为空时不限制。</summary>
+        Exclude = 2,
+    }
+
+    public class ZKBStreamConfig : ObservableObject
     {
         private bool _autoConnect;
         public bool AutoConnect
@@ -15,6 +26,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
             get => _autoConnect;
             set => SetProperty(ref _autoConnect, value);
         }
+
         private bool _notify = true;
         public bool Notify
         {
@@ -28,12 +40,6 @@ namespace TheGuideToTheNewEden.Core.Models.KB
             get => _minNotifyValue;
             set => SetProperty(ref _minNotifyValue, value);
         }
-        public HashSet<int> Types { get; set; }
-        public HashSet<int> Systems { get; set; }
-        public HashSet<int> Regions { get; set; }
-        public HashSet<int> Characters { get; set; }
-        public HashSet<int> Corps { get; set; }
-        public HashSet<int> Alliances { get; set; }
 
         private int _maxKBItems = 100;
         public int MaxKBItems
@@ -41,7 +47,6 @@ namespace TheGuideToTheNewEden.Core.Models.KB
             get => _maxKBItems;
             set => SetProperty(ref _maxKBItems, value);
         }
-
 
         private int _sortWay = 0;
         /// <summary>
@@ -54,74 +59,76 @@ namespace TheGuideToTheNewEden.Core.Models.KB
             set => SetProperty(ref _sortWay, value);
         }
 
-        private ObservableCollection<IdName> _commonExclusions = new ObservableCollection<IdName>();
-        /// <summary>
-        /// 通用排除项（星系/星域/舰船）
-        /// </summary>
-        public ObservableCollection<IdName> CommonExclusions
+        private ZkbFilterMode _locationMode = ZkbFilterMode.None;
+        /// <summary>位置过滤模式（星系 / 星域）。</summary>
+        public ZkbFilterMode LocationMode
         {
-            get => _commonExclusions;
-            set => SetProperty(ref _commonExclusions, value);
+            get => _locationMode;
+            set => SetProperty(ref _locationMode, value);
         }
 
-        private ObservableCollection<IdName> _commonInclusions = new ObservableCollection<IdName>();
-        /// <summary>
-        /// 通用包含项（星系/星域/舰船）
-        /// </summary>
-        public ObservableCollection<IdName> CommonInclusions
+        private ObservableCollection<IdName> _locations = new ObservableCollection<IdName>();
+        /// <summary>位置过滤列表（星系 / 星域；列表内 OR）。</summary>
+        public ObservableCollection<IdName> Locations
         {
-            get => _commonInclusions;
-            set => SetProperty(ref _commonInclusions, value);
+            get => _locations;
+            set => SetProperty(ref _locations, value);
         }
 
-        private ObservableCollection<IdName> _victimExclusions = new ObservableCollection<IdName>();
-        /// <summary>
-        /// 受害者排除项（黑名单）
-        /// </summary>
-        public ObservableCollection<IdName> VictimExclusions
+        private ZkbFilterMode _shipMode = ZkbFilterMode.None;
+        /// <summary>被击杀舰船类型过滤模式。</summary>
+        public ZkbFilterMode ShipMode
         {
-            get => _victimExclusions;
-            set => SetProperty(ref _victimExclusions, value);
+            get => _shipMode;
+            set => SetProperty(ref _shipMode, value);
         }
 
-        private ObservableCollection<IdName> _victimInclusions = new ObservableCollection<IdName>();
-        /// <summary>
-        /// 受害者包含项（白名单）
-        /// </summary>
-        public ObservableCollection<IdName> VictimInclusions
+        private ObservableCollection<IdName> _ships = new ObservableCollection<IdName>();
+        /// <summary>被击杀舰船类型（具体 TypeID；列表内 OR，父分类由 UI 展开后加入）。</summary>
+        public ObservableCollection<IdName> Ships
         {
-            get => _victimInclusions;
-            set => SetProperty(ref _victimInclusions, value);
+            get => _ships;
+            set => SetProperty(ref _ships, value);
         }
 
-        private ObservableCollection<IdName> _attackerExclusions = new ObservableCollection<IdName>();
-        /// <summary>
-        /// 攻击者排除项（黑名单）
-        /// </summary>
-        public ObservableCollection<IdName> AttackerExclusions
+        private ZkbFilterMode _victimMode = ZkbFilterMode.None;
+        /// <summary>受害者过滤模式。</summary>
+        public ZkbFilterMode VictimMode
         {
-            get => _attackerExclusions;
-            set => SetProperty(ref _attackerExclusions, value);
+            get => _victimMode;
+            set => SetProperty(ref _victimMode, value);
         }
 
-        private ObservableCollection<IdName> _attackerInclusions = new ObservableCollection<IdName>();
-        /// <summary>
-        /// 攻击者包含项（白名单）
-        /// </summary>
-        public ObservableCollection<IdName> AttackerInclusions
+        private ObservableCollection<IdName> _victims = new ObservableCollection<IdName>();
+        /// <summary>受害者过滤列表（角色 / 军团 / 联盟；列表内 OR）。</summary>
+        public ObservableCollection<IdName> Victims
         {
-            get => _attackerInclusions;
-            set => SetProperty(ref _attackerInclusions, value);
+            get => _victims;
+            set => SetProperty(ref _victims, value);
+        }
+
+        private ZkbFilterMode _attackerMode = ZkbFilterMode.None;
+        /// <summary>攻击者过滤模式。</summary>
+        public ZkbFilterMode AttackerMode
+        {
+            get => _attackerMode;
+            set => SetProperty(ref _attackerMode, value);
+        }
+
+        private ObservableCollection<IdName> _attackers = new ObservableCollection<IdName>();
+        /// <summary>攻击者过滤列表（角色 / 军团 / 联盟；任一攻击者命中即可）。</summary>
+        public ObservableCollection<IdName> Attackers
+        {
+            get => _attackers;
+            set => SetProperty(ref _attackers, value);
         }
 
         public void EnsureRoleFiltersInitialized()
         {
-            if (VictimExclusions == null) VictimExclusions = new ObservableCollection<IdName>();
-            if (VictimInclusions == null) VictimInclusions = new ObservableCollection<IdName>();
-            if (AttackerExclusions == null) AttackerExclusions = new ObservableCollection<IdName>();
-            if (AttackerInclusions == null) AttackerInclusions = new ObservableCollection<IdName>();
-            if (CommonExclusions == null) CommonExclusions = new ObservableCollection<IdName>();
-            if (CommonInclusions == null) CommonInclusions = new ObservableCollection<IdName>();
+            Locations ??= new ObservableCollection<IdName>();
+            Ships ??= new ObservableCollection<IdName>();
+            Victims ??= new ObservableCollection<IdName>();
+            Attackers ??= new ObservableCollection<IdName>();
         }
     }
 }

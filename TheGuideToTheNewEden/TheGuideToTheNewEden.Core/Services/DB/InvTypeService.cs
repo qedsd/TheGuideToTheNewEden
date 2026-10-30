@@ -68,6 +68,35 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return types;
         }
 
+        /// <summary>查询全部舰船类型的 GroupID / MetaGroupID，用于分类过滤。</summary>
+        public static List<Models.KB.ShipTypeClass> QueryShipTypeClasses()
+        {
+            var groupIds = DBService.MainDb.Queryable<InvGroup>()
+                .Where(p => p.CategoryID == 6)
+                .Select(p => p.GroupID)
+                .ToList();
+            if (groupIds.Count == 0)
+            {
+                return new List<Models.KB.ShipTypeClass>();
+            }
+
+            var types = DBService.MainDb.Queryable<InvType>()
+                .Where(p => groupIds.Contains(p.GroupID))
+                .ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvTypes(types);
+            }
+
+            return types.Select(p => new Models.KB.ShipTypeClass
+            {
+                TypeID = p.TypeID,
+                Name = p.TypeName,
+                GroupID = p.GroupID,
+                MetaGroupID = p.MetaGroupID,
+            }).ToList();
+        }
+
         /// <summary>
         /// 按 ID 批量查舰船质量（虫洞过洞计算用）。
         /// Mass 列只有 <see cref="InvTypeMass"/> 映射，正常 <see cref="InvType"/> 查询拿不到。

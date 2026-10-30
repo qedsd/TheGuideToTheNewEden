@@ -6,11 +6,11 @@
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:kbControls="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.KB"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Background="Transparent">
+    Background="Transparent"
+    VerticalContentAlignment="Stretch">
 
     <UserControl.Resources>
         <converters:CategoryEnumToStringConverter x:Key="CategoryEnum" />
-        <converters:StringToVisibilityConverter x:Key="StringToVis" />
 
         <DataTemplate x:Key="FilterItemTemplate">
             <Grid Margin="0,2">
@@ -43,86 +43,56 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <StackPanel>
-        <!--  说明：用 Grid 限宽——横向 StackPanel 会给子元素无限宽度，TextWrapping 会失效（文字被裁切）  -->
-        <Grid
-            Margin="2,0,0,6"
-            Visibility="{Binding Tip, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource StringToVis}}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ui:SymbolIcon
-                Grid.Column="0"
-                FontSize="14"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Symbol="Info24" />
             <TextBlock
-                Grid.Column="1"
-                Margin="4,0,0,0"
+                Margin="0,0,10,0"
                 VerticalAlignment="Center"
-                FontSize="12"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{Binding Tip, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                TextWrapping="Wrap" />
+                Text="{DynamicResource ZKBHomePage_Setting_FilterMode}" />
+            <ComboBox
+                x:Name="ModeCombo"
+                Grid.Column="1"
+                Width="180"
+                SelectedIndex="0">
+                <ComboBoxItem Content="{DynamicResource ZKBHomePage_Setting_FilterMode_None}" />
+                <ComboBoxItem Content="{DynamicResource ZKBHomePage_Setting_FilterMode_Include}" />
+                <ComboBoxItem Content="{DynamicResource ZKBHomePage_Setting_FilterMode_Exclude}" />
+            </ComboBox>
         </Grid>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-
-            <!--  排除项  -->
-            <controls:CardControl Grid.Column="0" Header="{DynamicResource MapIntelTool_Exclusions}">
-                <StackPanel>
-                    <TextBlock
-                        Margin="0,0,0,6"
-                        VerticalAlignment="Center"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{DynamicResource General_Add}" />
-                    <kbControls:IdNameSearchBox
-                        x:Name="ExclusionSearchBox"
-                        Categories="{Binding Categories, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        ItemSelected="OnExclusionSelected" />
-                    <ListBox
-                        MinHeight="120"
-                        MaxHeight="240"
-                        Margin="0,8,0,0"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        ItemContainerStyle="{StaticResource StretchListItem}"
-                        ItemTemplate="{StaticResource FilterItemTemplate}"
-                        ItemsSource="{Binding Exclusions, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                </StackPanel>
-            </controls:CardControl>
-
-            <!--  包含项  -->
-            <controls:CardControl Grid.Column="2" Header="{DynamicResource MapIntelTool_Inclusions}">
-                <StackPanel>
-                    <TextBlock
-                        Margin="0,0,0,6"
-                        VerticalAlignment="Center"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{DynamicResource General_Add}" />
-                    <kbControls:IdNameSearchBox
-                        x:Name="InclusionSearchBox"
-                        Categories="{Binding Categories, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        ItemSelected="OnInclusionSelected" />
-                    <ListBox
-                        MinHeight="120"
-                        MaxHeight="240"
-                        Margin="0,8,0,0"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        ItemContainerStyle="{StaticResource StretchListItem}"
-                        ItemTemplate="{StaticResource FilterItemTemplate}"
-                        ItemsSource="{Binding Inclusions, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                </StackPanel>
-            </controls:CardControl>
-        </Grid>
-    </StackPanel>
+        <TextBlock
+            Grid.Row="1"
+            Margin="0,0,0,6"
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            Text="{DynamicResource General_Add}" />
+        <kbControls:IdNameSearchBox
+            x:Name="ItemSearchBox"
+            Grid.Row="2"
+            Categories="{Binding Categories, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            PlaceholderText="{Binding PlaceholderText, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            ItemSelected="OnItemSelected" />
+        <ListBox
+            Grid.Row="3"
+            MinHeight="120"
+            Margin="0,8,0,0"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            ItemContainerStyle="{StaticResource StretchListItem}"
+            ItemTemplate="{StaticResource FilterItemTemplate}"
+            ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+    </Grid>
 </UserControl>

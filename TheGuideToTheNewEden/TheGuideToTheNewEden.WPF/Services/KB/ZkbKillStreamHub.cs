@@ -286,12 +286,10 @@ public sealed class ZkbKillStreamHub
     private void HookConfig()
     {
         _config.PropertyChanged += (_, _) => MarkFilterDirty();
-        _config.CommonExclusions.CollectionChanged += (_, _) => MarkFilterDirty();
-        _config.CommonInclusions.CollectionChanged += (_, _) => MarkFilterDirty();
-        _config.VictimExclusions.CollectionChanged += (_, _) => MarkFilterDirty();
-        _config.VictimInclusions.CollectionChanged += (_, _) => MarkFilterDirty();
-        _config.AttackerExclusions.CollectionChanged += (_, _) => MarkFilterDirty();
-        _config.AttackerInclusions.CollectionChanged += (_, _) => MarkFilterDirty();
+        _config.Locations.CollectionChanged += (_, _) => MarkFilterDirty();
+        _config.Ships.CollectionChanged += (_, _) => MarkFilterDirty();
+        _config.Victims.CollectionChanged += (_, _) => MarkFilterDirty();
+        _config.Attackers.CollectionChanged += (_, _) => MarkFilterDirty();
     }
 
     private void MarkFilterDirty() => Interlocked.Exchange(ref _filterDirty, 1);

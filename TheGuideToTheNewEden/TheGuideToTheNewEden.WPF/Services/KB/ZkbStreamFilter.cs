@@ -6,48 +6,36 @@ using ZKB.NET.Models.KillStream;
 namespace TheGuideToTheNewEden.WPF.Services.KB;
 
 /// <summary>
-/// 击杀流过滤器：把 <see cref="ZKBStreamConfig"/> 里的 6 组黑白名单编译成不可变的匹配快照。
+/// 击杀流过滤器：把 <see cref="ZKBStreamConfig"/> 的四个维度编译成不可变匹配快照。
 ///
-/// 语义（与 WinUI 一致）：
+/// 语义：
 /// <list type="bullet">
-///   <item><b>排除项</b>命中即丢弃；</item>
-///   <item><b>包含项</b>非空时，必须命中其中之一才保留；为空则放行。</item>
+///   <item>每个维度单独选择 不过滤 / 只保留匹配 / 排除匹配；</item>
+///   <item>列表内实体是 OR（位置里星系与星域也是 OR）；</item>
+///   <item>维度之间是 AND；</item>
+///   <item>不过滤或列表为空时不限制；</item>
+///   <item>攻击者维度只要任一名攻击者命中即可。</item>
 /// </list>
-/// 三组分别作用于：通用（星系/星域/被击杀舰船类型）、受害者（角色/军团/联盟）、攻击者（角色/军团/联盟）。
-///
-/// 相对 WinUI 的修正：① 未配置星域过滤时<b>跳过</b> system→region 的 SQLite 查询
-/// （原实现对每条流消息都查一次库）；② 不复制"id &lt;= 0 且包含项为空也算不通过"的边界缺陷。
-/// 由于快照不可变，配置变更时应重新 <see cref="FromConfig"/> 并替换（由中枢负责），
-/// 从而修复 WinUI"过滤条件在连接期间修改不生效、必须断开重连"的问题。
 /// </summary>
 public sealed class ZkbStreamFilter
 {
     /// <summary>空过滤器（不做任何过滤）。</summary>
     public static readonly ZkbStreamFilter Empty = new();
 
-    private readonly FilterSet _commonSystemExclusions = new();
-    private readonly FilterSet _commonSystemInclusions = new();
-    private readonly FilterSet _commonRegionExclusions = new();
-    private readonly FilterSet _commonRegionInclusions = new();
-    private readonly FilterSet _commonTypeExclusions = new();
-    private readonly FilterSet _commonTypeInclusions = new();
-    private readonly FilterSet _victimCharacterExclusions = new();
-    private readonly FilterSet _victimCharacterInclusions = new();
-    private readonly FilterSet _victimCorporationExclusions = new();
-    private readonly FilterSet _victimCorporationInclusions = new();
-    private readonly FilterSet _victimAllianceExclusions = new();
-    private readonly FilterSet _victimAllianceInclusions = new();
-    private readonly FilterSet _attackerCharacterExclusions = new();
-    private readonly FilterSet _attackerCharacterInclusions = new();
-    private readonly FilterSet _attackerCorporationExclusions = new();
-    private readonly FilterSet _attackerCorporationInclusions = new();
-    private readonly FilterSet _attackerAllianceExclusions = new();
-    private readonly FilterSet _attackerAllianceInclusions = new();
+    private readonly ZkbFilterMode _locationMode;
+    private readonly ZkbFilterMode _shipMode;
+    private readonly ZkbFilterMode _victimMode;
+    private readonly ZkbFilterMode _attackerMode;
 
-    /// <summary>systemId → regionId 缓存（仅当配置了星域过滤时才会被填充）。</summary>
+    private readonly FilterSet _locationSystems = new();
+    private readonly FilterSet _locationRegions = new();
+    private readonly FilterSet _shipTypes = new();
+    private readonly FilterSet _victimIds = new();
+    private readonly FilterSet _attackerIds = new();
+
+    /// <summary>systemId → regionId 缓存（仅当位置过滤包含星域时才会被填充）。</summary>
     private readonly ConcurrentDictionary<int, int> _systemRegionCache = new();
 
-    /// <summary>是否配置了星域过滤（未配置时跳过 system→region 的库查询）。</summary>
     private bool _needRegionLookup;
 
     private ZkbStreamFilter()
@@ -64,18 +52,32 @@ public sealed class ZkbStreamFilter
 
         config.EnsureRoleFiltersInitialized();
 
-        var filter = new ZkbStreamFilter();
+        var filter = new ZkbStreamFilter(
+            config.LocationMode,
+            config.ShipMode,
+            config.VictimMode,
+            config.AttackerMode);
 
-        AddByCat(config.CommonExclusions, filter._commonSystemExclusions, filter._commonRegionExclusions, filter._commonTypeExclusions);
-        AddByCat(config.CommonInclusions, filter._commonSystemInclusions, filter._commonRegionInclusions, filter._commonTypeInclusions);
-        AddRoles(config.VictimExclusions, filter._victimCharacterExclusions, filter._victimCorporationExclusions, filter._victimAllianceExclusions);
-        AddRoles(config.VictimInclusions, filter._victimCharacterInclusions, filter._victimCorporationInclusions, filter._victimAllianceInclusions);
-        AddRoles(config.AttackerExclusions, filter._attackerCharacterExclusions, filter._attackerCorporationExclusions, filter._attackerAllianceExclusions);
-        AddRoles(config.AttackerInclusions, filter._attackerCharacterInclusions, filter._attackerCorporationInclusions, filter._attackerAllianceInclusions);
+        AddLocations(config.Locations, filter._locationSystems, filter._locationRegions);
+        AddShipTypes(config.Ships, filter._shipTypes);
+        AddRoles(config.Victims, filter._victimIds);
+        AddRoles(config.Attackers, filter._attackerIds);
 
-        // 只有"星域"参与过滤时才需要 system→region 的库查询（有排除项也需查，用于判断命中）。
-        filter._needRegionLookup = filter._commonRegionExclusions.Count > 0 || filter._commonRegionInclusions.Count > 0;
+        filter._needRegionLookup =
+            filter._locationMode != ZkbFilterMode.None && filter._locationRegions.Count > 0;
         return filter;
+    }
+
+    private ZkbStreamFilter(
+        ZkbFilterMode locationMode,
+        ZkbFilterMode shipMode,
+        ZkbFilterMode victimMode,
+        ZkbFilterMode attackerMode)
+    {
+        _locationMode = locationMode;
+        _shipMode = shipMode;
+        _victimMode = victimMode;
+        _attackerMode = attackerMode;
     }
 
     /// <summary>判断一条击杀流消息是否通过过滤。</summary>
@@ -86,46 +88,74 @@ public sealed class ZkbStreamFilter
             return false;
         }
 
-        // 通用：星系
-        if (!PassGroup(_commonSystemExclusions, _commonSystemInclusions, detail.SolarSystemId))
+        if (!PassLocation(detail.SolarSystemId)
+            || !PassShip(detail.Victim.ShipTypeId)
+            || !PassVictim(detail.Victim.CharacterId, detail.Victim.CorporationId, detail.Victim.AllianceId))
         {
             return false;
         }
 
-        // 通用：被击杀舰船类型
-        if (!PassGroup(_commonTypeExclusions, _commonTypeInclusions, detail.Victim.ShipTypeId))
+        var attackerIds = detail.Attackers?
+            .SelectMany(a => new[] { a.CharacterId, a.CorporationId, a.AllianceId })
+            ?? Enumerable.Empty<int>();
+        return PassAny(_attackerMode, _attackerIds, attackerIds);
+    }
+
+    private bool PassShip(int typeId)
+    {
+        if (_shipMode == ZkbFilterMode.None || _shipTypes.Count == 0)
         {
-            return false;
+            return true;
         }
 
-        // 通用：星域（仅在配置了星域过滤时才查库）
-        if (_needRegionLookup && !PassGroup(_commonRegionExclusions, _commonRegionInclusions, ResolveRegion(detail.SolarSystemId)))
+        var hit = _shipTypes.Contains(typeId);
+        return _shipMode == ZkbFilterMode.Include ? hit : !hit;
+    }
+
+    private bool PassLocation(int systemId)
+    {
+        if (_locationMode == ZkbFilterMode.None
+            || (_locationSystems.Count == 0 && _locationRegions.Count == 0))
         {
-            return false;
+            return true;
         }
 
-        // 受害者
-        if (!PassGroup(_victimCharacterExclusions, _victimCharacterInclusions, detail.Victim.CharacterId)
-            || !PassGroup(_victimCorporationExclusions, _victimCorporationInclusions, detail.Victim.CorporationId)
-            || !PassGroup(_victimAllianceExclusions, _victimAllianceInclusions, detail.Victim.AllianceId))
+        var regionId = _needRegionLookup ? ResolveRegion(systemId) : 0;
+        var hit = _locationSystems.Contains(systemId) || _locationRegions.Contains(regionId);
+        return _locationMode == ZkbFilterMode.Include ? hit : !hit;
+    }
+
+    private bool PassVictim(int characterId, int corporationId, int allianceId)
+    {
+        if (_victimMode == ZkbFilterMode.None || _victimIds.Count == 0)
         {
-            return false;
+            return true;
         }
 
-        // 攻击者：集合级判定——任一攻击者命中排除即否决；包含项非空时要求至少一名命中。
-        // **不能因 Attackers 为空就整组跳过**：空集合 + 已配攻击者包含项时应判为不通过（与 WinUI 对齐）。
-        var attackerCharacters = detail.Attackers?.Select(a => a.CharacterId) ?? Enumerable.Empty<int>();
-        var attackerCorporations = detail.Attackers?.Select(a => a.CorporationId) ?? Enumerable.Empty<int>();
-        var attackerAlliances = detail.Attackers?.Select(a => a.AllianceId) ?? Enumerable.Empty<int>();
+        var hit = _victimIds.Contains(characterId)
+                  || _victimIds.Contains(corporationId)
+                  || _victimIds.Contains(allianceId);
+        return _victimMode == ZkbFilterMode.Include ? hit : !hit;
+    }
 
-        if (!PassGroupAny(_attackerCharacterExclusions, _attackerCharacterInclusions, attackerCharacters)
-            || !PassGroupAny(_attackerCorporationExclusions, _attackerCorporationInclusions, attackerCorporations)
-            || !PassGroupAny(_attackerAllianceExclusions, _attackerAllianceInclusions, attackerAlliances))
+    private static bool PassAny(ZkbFilterMode mode, FilterSet set, IEnumerable<int> ids)
+    {
+        if (mode == ZkbFilterMode.None || set.Count == 0)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        var hit = false;
+        foreach (var id in ids)
+        {
+            if (set.Contains(id))
+            {
+                hit = true;
+                break;
+            }
+        }
+
+        return mode == ZkbFilterMode.Include ? hit : !hit;
     }
 
     private int ResolveRegion(int systemId)
@@ -149,38 +179,7 @@ public sealed class ZkbStreamFilter
         });
     }
 
-    private static bool PassGroup(FilterSet exclusions, FilterSet inclusions, int id)
-        => !exclusions.Contains(id) && (inclusions.Count == 0 || inclusions.Contains(id));
-
-    private static bool PassGroupAny(FilterSet exclusions, FilterSet inclusions, IEnumerable<int> ids)
-    {
-        var list = ids as IReadOnlyCollection<int> ?? ids.ToList();
-
-        foreach (var id in list)
-        {
-            if (exclusions.Contains(id))
-            {
-                return false;
-            }
-        }
-
-        if (inclusions.Count == 0)
-        {
-            return true;
-        }
-
-        foreach (var id in list)
-        {
-            if (inclusions.Contains(id))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static void AddByCat(IEnumerable<IdName>? items, FilterSet systems, FilterSet regions, FilterSet types)
+    private static void AddLocations(IEnumerable<IdName>? items, FilterSet systems, FilterSet regions)
     {
         if (items is null)
         {
@@ -197,14 +196,11 @@ public sealed class ZkbStreamFilter
                 case IdName.CategoryEnum.Region:
                     regions.Add(item.Id);
                     break;
-                case IdName.CategoryEnum.InventoryType:
-                    types.Add(item.Id);
-                    break;
             }
         }
     }
 
-    private static void AddRoles(IEnumerable<IdName>? items, FilterSet characters, FilterSet corporations, FilterSet alliances)
+    private static void AddShipTypes(IEnumerable<IdName>? items, FilterSet types)
     {
         if (items is null)
         {
@@ -213,17 +209,27 @@ public sealed class ZkbStreamFilter
 
         foreach (var item in items)
         {
-            switch (item.GetCategory())
+            if (item.GetCategory() == IdName.CategoryEnum.InventoryType)
             {
-                case IdName.CategoryEnum.Character:
-                    characters.Add(item.Id);
-                    break;
-                case IdName.CategoryEnum.Corporation:
-                    corporations.Add(item.Id);
-                    break;
-                case IdName.CategoryEnum.Alliance:
-                    alliances.Add(item.Id);
-                    break;
+                types.Add(item.Id);
+            }
+        }
+    }
+
+    private static void AddRoles(IEnumerable<IdName>? items, FilterSet ids)
+    {
+        if (items is null)
+        {
+            return;
+        }
+
+        foreach (var item in items)
+        {
+            if (item.GetCategory() is IdName.CategoryEnum.Character
+                or IdName.CategoryEnum.Corporation
+                or IdName.CategoryEnum.Alliance)
+            {
+                ids.Add(item.Id);
             }
         }
     }
