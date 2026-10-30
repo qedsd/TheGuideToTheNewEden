@@ -10391,6 +10391,25 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步。
 - 验证：Core / WPF 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 260：频道预警声音设置缺失导致 0 跳 / 索引越界修复（2026-10-30）
+
+- 反馈：频道预警可能不显示声音设置，预警被判断成 0 跳。
+- 根因：
+  - `ChannelIntelSetting.Sounds` 默认是空集合；旧配置/外部配置加载时没有按 `IntelJumps` 补齐；
+  - 页面声音区 `ItemsSource=Setting.Sounds`，于是显示为空；
+  - 预警取声 `if (Setting.Sounds.Count >= ch.Jumps) soundSetting = Sounds[ch.Jumps]`：
+    - `Jumps=0` 且列表为空时 `0 >= 0` 成立，`Sounds[0]` 直接越界；
+    - 跳数变化/未知跳数时也可能索引越界，表现成“按 0 跳处理”。
+- 修复：
+  - Core `ChannelIntelSetting.EnsureSounds()`：按 `IntelJumps` 保证 `0..IntelJumps` 共 `IntelJumps+1` 项，保留已有文件/音量/循环，补默认项并把 `Id` 重排为 0..N；兼容 `Sounds=null`。
+  - `ChannelIntelSession`：构造、`IntelJumps` 变化、`MakeSound` 变化、`SaveSetting` 都调用 `EnsureSounds()`；`ApplyToAll` 复制后也补齐。
+  - 新增 `GetSoundSetting(Jumps)`：负数/超出范围用最后一档，空列表返回 null，不再默认 0 跳、不再越界；频道预警和 ZKB 预警共用。
+  - `IntelWarningService.SetSoundEnabled`：运行中切换“预警声”立即启停声音通道；原来只在 Start 时按 MakeSound 创建一次，运行中改开关不生效。
+- 验证：
+  - Core 探针：空列表→4 跳得 5 项 Id 0..4；已有 2 项→5 跳保留前 2 项并补到 6 项；5 项→2 跳裁到 3 项；`Sounds=null` 也能补齐。**PASS**。
+  - WPF Rebuild：0 错误；新增代码无新警告。
+  - 当前用户 `IntelSettings.json` 三个角色均为 `Jumps=4 / Sounds=5 / Id 0..4`，未被修改。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

@@ -442,6 +442,8 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
                 target.Sounds.Add(sound.DepthClone<ChannelIntelSoundSetting>());
             }
 
+            target.EnsureSounds();
+
             target.SystemNotify = source.SystemNotify;
             target.NameDbs = [.. source.NameDbs];
             target.IgnoreWords = source.IgnoreWords;

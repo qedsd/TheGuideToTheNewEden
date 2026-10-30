@@ -102,6 +102,7 @@ public sealed class ChannelIntelSession
         }
 
         Setting = setting;
+        Setting.EnsureSounds();
         LoadSetting();
         Setting.PropertyChanged += Setting_PropertyChanged;
     }
@@ -145,6 +146,7 @@ public sealed class ChannelIntelSession
 
     private void SaveSetting()
     {
+        Setting.EnsureSounds();
         Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelID).ToList();
         Setting.NameDbs = SelectedNameDbs.ToList();
         IntelSettingService.SetValue(Setting);
@@ -170,32 +172,17 @@ public sealed class ChannelIntelSession
 
                 break;
             case nameof(EarlyWarningSetting.IntelJumps):
-            {
-                // 跳数变化时同步增删每跳的声音配置
-                if (!double.IsNaN(Setting.IntelJumps))
+                // 跳数变化时同步增删每跳的声音配置（0..IntelJumps 共 IntelJumps+1 项）
+                Setting.EnsureSounds();
+                break;
+            case nameof(EarlyWarningSetting.MakeSound):
+                Setting.EnsureSounds();
+                if (Running)
                 {
-                    var diff = (int)(Setting.IntelJumps - Setting.Sounds.Count + 1);
-                    if (diff < 0)
-                    {
-                        for (var i = 0; i < -diff; i++)
-                        {
-                            Setting.Sounds.RemoveAt(Setting.Sounds.Count - 1);
-                        }
-                    }
-                    else
-                    {
-                        for (var i = 0; i < diff; i++)
-                        {
-                            Setting.Sounds.Add(new ChannelIntelSoundSetting
-                            {
-                                Id = Setting.Sounds.Count,
-                            });
-                        }
-                    }
+                    IntelWarningService.Current.SetSoundEnabled(Setting.Listener, Setting.MakeSound);
                 }
 
                 break;
-            }
         }
     }
 
@@ -411,12 +398,7 @@ public sealed class ChannelIntelSession
             {
                 if (ch.IntelType == IntelChatType.Intel)
                 {
-                    ChannelIntelSoundSetting? soundSetting = null;
-                    if (Setting.Sounds.Count >= ch.Jumps)
-                    {
-                        soundSetting = Setting.Sounds[ch.Jumps];
-                    }
-
+                    var soundSetting = GetSoundSetting(ch.Jumps);
                     IntelWarningService.Current.Notify(observer.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, observer.ChatChanelInfo.ChannelName, ch);
                 }
                 else
@@ -426,6 +408,21 @@ public sealed class ChannelIntelSession
                 }
             }
         });
+    }
+
+    /// <summary>
+    /// 取对应跳数的声音设置。配置缺失/跳数超出当前列表时不要把 0 当默认：
+    /// 负数（未知）或超出范围一律用最后一档，避免 0 跳误配和索引越界。
+    /// </summary>
+    private ChannelIntelSoundSetting? GetSoundSetting(int jumps)
+    {
+        if (Setting.Sounds is not { Count: > 0 } sounds)
+        {
+            return null;
+        }
+
+        var index = jumps < 0 ? sounds.Count - 1 : Math.Min(jumps, sounds.Count - 1);
+        return sounds[index];
     }
 
     private void Observer_OnContentUpdate(ChannelIntelObserver observer, IEnumerable<IntelChatContent> news)
@@ -484,11 +481,7 @@ public sealed class ChannelIntelSession
                 ? $" {span.TotalMinutes:N1}{FindString("EarlyWarningPage_Befor_Min")}"
                 : $" {span.TotalSeconds:N0}{FindString("EarlyWarningPage_Befor_Sec")}";
             e.Content += desc;
-            ChannelIntelSoundSetting? soundSetting = null;
-            if (Setting.Sounds.Count >= e.Jumps)
-            {
-                soundSetting = Setting.Sounds[e.Jumps];
-            }
+            ChannelIntelSoundSetting? soundSetting = GetSoundSetting(e.Jumps);
 
             IntelWarningService.Current.Notify((sender as Core.Intel.ZKBIntel)?.GetListener() ?? Listener, soundSetting, Setting.SystemNotify, "KB", e);
         });

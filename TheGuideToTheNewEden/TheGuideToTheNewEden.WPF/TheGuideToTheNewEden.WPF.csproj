@@ -17,7 +17,7 @@
 		      既白加载一整套资源字典，又会在退出时触发 App.OnExit 的清理（含 SettingsService.Save()）。  -->
 		<StartupObject>TheGuideToTheNewEden.WPF.Program</StartupObject>
 		<UseWPF>true</UseWPF>
-		<Nullable>enable</Nullable>
+		<Nullable>enable</Nullable> 
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>

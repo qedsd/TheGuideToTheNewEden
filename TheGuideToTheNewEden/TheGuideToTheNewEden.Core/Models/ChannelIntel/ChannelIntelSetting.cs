@@ -139,6 +139,44 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
             set => SetProperty(ref sounds, value);
         }
 
+        /// <summary>
+        /// 确保每跳声音设置与 <see cref="IntelJumps"/> 对齐（0..IntelJumps，共 IntelJumps+1 项）。
+        /// 旧配置 / 外部写入的配置可能没有 Sounds，或数量与跳数不一致；这时界面会显示空列表，
+        /// 预警按 0 跳去索引还会越界。此方法保留已有条目（按顺序），补默认项并重新编号 Id。
+        /// </summary>
+        public void EnsureSounds()
+        {
+            if (Sounds is null)
+            {
+                Sounds = new ObservableCollection<ChannelIntelSoundSetting>();
+            }
+
+            var target = Math.Clamp(IntelJumps, 0, 8) + 1;
+            while (Sounds.Count < target)
+            {
+                Sounds.Add(new ChannelIntelSoundSetting
+                {
+                    Id = Sounds.Count,
+                    Volume = 100,
+                });
+            }
+
+            while (Sounds.Count > target)
+            {
+                Sounds.RemoveAt(Sounds.Count - 1);
+            }
+
+            for (var i = 0; i < Sounds.Count; i++)
+            {
+                if (Sounds[i] is null)
+                {
+                    Sounds[i] = new ChannelIntelSoundSetting { Volume = 100 };
+                }
+
+                Sounds[i].Id = i;
+            }
+        }
+
         private bool systemNotify = true;
         /// <summary>
         /// 系统消息通知

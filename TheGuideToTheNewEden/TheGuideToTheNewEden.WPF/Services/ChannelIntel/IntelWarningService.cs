@@ -80,6 +80,31 @@ public sealed class IntelWarningService
         return true;
     }
 
+    /// <summary>
+    /// 运行中切换“预警声”时立即启停声音通道，不必重启整个预警会话。
+    /// 原来只有 <see cref="Add"/> 在 Start 时按 MakeSound 创建一次，运行中改开关不会生效。
+    /// </summary>
+    public void SetSoundEnabled(string listener, bool enabled)
+    {
+        if (string.IsNullOrEmpty(listener))
+        {
+            return;
+        }
+
+        if (enabled)
+        {
+            if (!_sounds.ContainsKey(listener))
+            {
+                _sounds.Add(listener, new SoundNotifyItem(listener));
+            }
+        }
+        else if (_sounds.TryGetValue(listener, out var item))
+        {
+            item.Dispose();
+            _sounds.Remove(listener);
+        }
+    }
+
     public IntelWindow? GetIntelWindow(string listener)
         => _windows.TryGetValue(listener, out var window) ? window : null;
 
