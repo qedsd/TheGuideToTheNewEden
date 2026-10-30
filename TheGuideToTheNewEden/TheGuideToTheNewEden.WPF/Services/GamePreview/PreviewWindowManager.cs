@@ -59,6 +59,7 @@ public sealed class PreviewWindowManager : IDisposable
         {
             existing.Rebind(process, setting);
             existing.ApplySettings();
+            SetupProcess(process, setting);
             RegisterItemHotkey(process.GUID, setting);
             return true;
         }
@@ -90,12 +91,39 @@ public sealed class PreviewWindowManager : IDisposable
         return true;
     }
 
-    public void Stop(ProcessInfo process)
+    /// <summary>
+    /// 停止预览。
+    /// <para>
+    /// <paramref name="byUser"/> 表示"用户明确要停"（点了停止预览 / 关了预览窗）。
+    /// <b>只有用户主动停止才清 <see cref="ProcessInfo.PreviewExpected"/></b>：
+    /// 意外停掉（半途异常、窗口被顶掉、扫描抖动）保持 true，交给每轮对账把预览拉起来，
+    /// 否则该号会永久掉出快捷键轮次，用户只能重启软件（用户反馈）。
+    /// </para>
+    /// </summary>
+    public void Stop(ProcessInfo process, bool byUser = false)
     {
-        if (process is null || !_running.Remove(process.GUID, out var window))
+        if (process is null)
         {
             return;
         }
+
+        if (byUser)
+        {
+            process.PreviewExpected = false;
+        }
+
+        if (!_running.Remove(process.GUID, out var window))
+        {
+            // 没有窗口却还挂着"运行中"：顺手纠正，避免状态漂移后 Activate 永远找不到窗口
+            if (byUser)
+            {
+                process.Running = false;
+            }
+
+            return;
+        }
+
+        Core.Log.Info($"[多开] 停止预览：{process.WindowTitle} (pid={process.ProcessId}) byUser={byUser}");
 
         UnregisterItemHotkey(process.GUID);
         process.Running = false;
@@ -110,13 +138,13 @@ public sealed class PreviewWindowManager : IDisposable
         RunningChanged?.Invoke();
     }
 
-    public void StopAll()
+    public void StopAll(bool byUser = true)
     {
         foreach (var process in _running.Keys
                      .Select(guid => _running[guid].Process)
                      .ToList())
         {
-            Stop(process);
+            Stop(process, byUser);
         }
     }
 
@@ -142,6 +170,9 @@ public sealed class PreviewWindowManager : IDisposable
         setting.ProcessInfo = process;
         process.Setting = setting;
         process.Running = true;
+        // 走到这里就是"开始预览/换绑成功"：从现在起这个号被期望在轮次里，
+        // 只有用户主动停止才会撤销（见 Stop 的 byUser）。
+        process.PreviewExpected = true;
     }
 
     /// <summary>用户点预览窗口的关闭键 / Esc。</summary>
@@ -149,7 +180,8 @@ public sealed class PreviewWindowManager : IDisposable
     {
         if (setting.ProcessInfo is { } process)
         {
-            Stop(process);
+            // 用户主动关闭 → 不再对账拉起
+            Stop(process, byUser: true);
         }
     }
 

@@ -48,6 +48,9 @@ public static class GameClientService
                 result.Add(new ProcessInfo
                 {
                     Process = process,
+                    // PID 是稳定身份；MainWindowHandle 只是"这一轮读到的窗口"，
+                    // 每轮刷新都要跟着更新（见 GamePreviewViewModel.RefreshAsync），不能当键用。
+                    ProcessId = process.Id,
                     MainWindowHandle = process.MainWindowHandle,
                     ProcessName = process.ProcessName,
                     WindowTitle = NativeMethods.GetWindowTitle(process.MainWindowHandle),

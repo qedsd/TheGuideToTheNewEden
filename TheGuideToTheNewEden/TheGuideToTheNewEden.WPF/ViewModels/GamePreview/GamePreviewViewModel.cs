@@ -424,7 +424,17 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
     // ---------- 进程列表 ----------
 
-    /// <summary>刷新进程列表；同一窗口（句柄相同）复用原有条目与配置。</summary>
+    /// <summary>
+    /// 连续多少轮扫描没看到某个客户端才判定它已退出（1 秒一轮）。
+    /// <para>
+    /// 不能"这一轮没看到就拆"：游戏切前台、切全屏、改分辨率、换显示器、客户端重建窗口时，
+    /// `Process.MainWindowHandle` 可能一瞬间读不到或换成同进程的另一个窗口。
+    /// 旧实现把这种抖动当成"客户端退出"→ 关掉预览窗 + 从列表移除，该号随即永久掉出快捷键轮次。
+    /// </para>
+    /// </summary>
+    private const int MissingToleranceTicks = 3;
+
+    /// <summary>刷新进程列表；同一进程（PID 相同）复用原有条目与配置。</summary>
     public async Task RefreshAsync()
     {
         if (_refreshing || _disposed)
@@ -439,63 +449,74 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             var keywords = _setting.ProcessKeywords;
             var found = await Task.Run(() => GameClientService.FindClients(keywords));
 
+            var byPid = new Dictionary<int, ProcessInfo>();
             var byHandle = new Dictionary<IntPtr, ProcessInfo>();
             foreach (var process in found)
             {
+                if (process.ProcessId != 0)
+                {
+                    byPid.TryAdd(process.ProcessId, process);
+                }
+
+                // 仅作老条目（ProcessId 还没填）的兜底匹配，不再当主键
                 byHandle.TryAdd(process.MainWindowHandle, process);
             }
 
             var orderChanged = false;
             foreach (var existing in Processes.ToList())
             {
-                if (byHandle.Remove(existing.MainWindowHandle, out var fresh))
-                {
-                    var oldTitle = existing.WindowTitle;
-                    var renamed = oldTitle != fresh.WindowTitle;
-                    var hadCharacter = !string.IsNullOrEmpty(existing.GetCharacterName());
-                    var oldProcess = existing.Process;
-                    existing.WindowTitle = fresh.WindowTitle;
-                    existing.ProcessName = fresh.ProcessName;
-                    existing.Process = fresh.Process;
-                    DisposeProcess(oldProcess);
-                    if (renamed)
-                    {
-                        // 切换顺序存的是窗口标题：角色切换后把旧标题原位替换成新标题，
-                        // 否则顺序页签里会留下一条"未发现"的旧标题、新标题被追加到末尾。
-                        orderChanged |= ReplaceOrderTitle(oldTitle, fresh.WindowTitle);
-                        OnCharacterSwitched(existing);
+                // 身份 = PID：句柄会随窗口重建变化，拿它当键会把同一个客户端误判成
+                // "旧客户端退出 + 新客户端接入"，进而 Stop + Remove（预览窗被关、掉出轮次）。
+                ProcessInfo? fresh = null;
+                var matched = existing.ProcessId != 0
+                    ? byPid.Remove(existing.ProcessId, out fresh)
+                    : byHandle.Remove(existing.MainWindowHandle, out fresh);
 
-                        // "自动开始新出现的进程"原来只覆盖**新发现**的进程：EVE 刚启动时标题只有 "EVE"、
-                        // 解析不出角色名，于是不会被自动开始；等选中角色后标题才变成 "EVE - 角色名"，
-                        // 这时进程早就在列表里了（不属于"新发现"），就再也没有人开始它（用户反馈）。
-                        // 这里补一次"刚解析出角色名"的自动开始；角色**切换**（改名前已有角色名）不在此列——
-                        // 那种情况由"同进程切换角色后沿用设置"和 `OnCharacterSwitched` 负责。
-                        if (!hadCharacter
-                            && !existing.Running
-                            && _setting.AutoStartNewProcess
-                            && !string.IsNullOrEmpty(existing.GetCharacterName()))
-                        {
-                            StartProcess(existing);
-                        }
-                    }
-                }
-                else
+                if (matched && fresh is not null)
                 {
-                    _manager.Stop(existing);
-                    Processes.Remove(existing);
-                    existing.Setting = null;
-                    DisposeProcess(existing.Process);
+                    existing.MissingTicks = 0;
+                    // 同一份扫描结果必须从**两个**字典里都摘掉：否则它会在下面"新客户端"那一轮
+                    // 被当成新增条目再加一遍（表现为列表里同一个客户端重复出现）。
+                    byPid.Remove(fresh.ProcessId);
+                    byHandle.Remove(fresh.MainWindowHandle);
+                    UpdateExisting(existing, fresh, ref orderChanged);
+                    continue;
                 }
+
+                // 这一轮没看到：先宽限几轮，进程确实退出了才立即清掉
+                existing.MissingTicks++;
+                var exited = HasExited(existing);
+                if (!exited && existing.MissingTicks < MissingToleranceTicks)
+                {
+                    continue;
+                }
+
+                Core.Log.Warn($"[多开] 客户端已退出，从列表移除：{existing.WindowTitle} (pid={existing.ProcessId})，"
+                              + $"连续 {existing.MissingTicks} 轮未发现，进程已退出={exited}");
+                _manager.Stop(existing);
+                Processes.Remove(existing);
+                existing.Setting = null;
+                DisposeProcess(existing.Process);
             }
 
-            foreach (var fresh in byHandle.Values)
+            var added = new HashSet<ProcessInfo>();
+            foreach (var fresh in byPid.Values.Concat(byHandle.Values))
             {
+                // 同一进程可能同时命中两个字典，去重（引用比较）
+                if (!added.Add(fresh))
+                {
+                    continue;
+                }
+
                 orderChanged |= InsertByOrder(fresh);
                 if (_setting.AutoStartNewProcess && !string.IsNullOrEmpty(fresh.GetCharacterName()))
                 {
                     StartProcess(fresh);
                 }
             }
+
+            // 每轮对账：Running / 预览窗口 / 配置三者的漂移在这里收口
+            ReconcileRunningState();
 
             OnPropertyChanged(nameof(Running));
 
@@ -511,6 +532,133 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         finally
         {
             _refreshing = false;
+        }
+    }
+
+    /// <summary>
+    /// 把这一轮扫到的信息合并进已有条目（身份不变，只更新可变字段）。
+    /// <para>
+    /// <b>句柄必须每轮回写</b>：<c>ActivateSource</c>（激活游戏窗口）、预览窗的 DWM 缩略图、
+    /// 前台联动全都读 <see cref="ProcessInfo.MainWindowHandle"/>。旧实现只在"发现"时写一次，
+    /// 窗口一旦重建，这个号就会"按快捷键没反应、预览画面停在旧窗口上"，而且永远不会自愈。
+    /// </para>
+    /// </summary>
+    private void UpdateExisting(ProcessInfo existing, ProcessInfo fresh, ref bool orderChanged)
+    {
+        var oldTitle = existing.WindowTitle;
+        var oldHandle = existing.MainWindowHandle;
+        var hadCharacter = !string.IsNullOrEmpty(existing.GetCharacterName());
+
+        existing.WindowTitle = fresh.WindowTitle;
+        existing.ProcessName = fresh.ProcessName;
+        existing.ProcessId = fresh.ProcessId;
+        existing.MainWindowHandle = fresh.MainWindowHandle;
+        var oldProcess = existing.Process;
+        existing.Process = fresh.Process;
+        DisposeProcess(oldProcess);
+
+        // 窗口重建（句柄变了但进程没变）：把预览窗重新绑到新句柄，画面与前台状态才不会停在旧窗口
+        if (oldHandle != fresh.MainWindowHandle && _manager.Find(existing) is not null)
+        {
+            Core.Log.Info($"[多开] 客户端窗口句柄变化：{existing.WindowTitle} "
+                          + $"0x{oldHandle.ToInt64():X} -> 0x{fresh.MainWindowHandle.ToInt64():X}，已重新绑定预览");
+            _manager.Rebind(existing, existing.Setting ?? ResolveSetting(existing));
+        }
+
+        var renamed = oldTitle != fresh.WindowTitle;
+        if (!renamed)
+        {
+            return;
+        }
+
+        // 切换顺序存的是窗口标题：角色切换后把旧标题原位替换成新标题，
+        // 否则顺序页签里会留下一条"未发现"的旧标题、新标题被追加到末尾。
+        orderChanged |= ReplaceOrderTitle(oldTitle, fresh.WindowTitle);
+        OnCharacterSwitched(existing);
+
+        // "自动开始新出现的进程"原来只覆盖**新发现**的进程：EVE 刚启动时标题只有 "EVE"、
+        // 解析不出角色名，于是不会被自动开始；等选中角色后标题才变成 "EVE - 角色名"，
+        // 这时进程早就在列表里了（不属于"新发现"），就再也没有人开始它（用户反馈）。
+        // 这里补一次"刚解析出角色名"的自动开始；角色**切换**（改名前已有角色名）不在此列——
+        // 那种情况由"同进程切换角色后沿用设置"和 `OnCharacterSwitched` 负责。
+        if (!hadCharacter
+            && !existing.Running
+            && _setting.AutoStartNewProcess
+            && !string.IsNullOrEmpty(existing.GetCharacterName()))
+        {
+            StartProcess(existing);
+        }
+    }
+
+    /// <summary>进程是否真的已经退出（取不到状态时按"没退出"处理，交给宽限计数）。</summary>
+    private static bool HasExited(ProcessInfo process)
+    {
+        try
+        {
+            return process.Process?.HasExited ?? false;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 每轮刷新后对账：<see cref="ProcessInfo.Running"/>、管理器里的预览窗口、<see cref="ProcessInfo.Setting"/>
+    /// 三者必须一致；"用户期望在预览却丢了窗口"的条目在这里重新拉起。
+    /// <para>
+    /// 为什么必须有这一步：切换轮次是在按键时现场按 <c>Running + Setting.RespondGlobalHotKey</c> 筛出来的
+    /// （<see cref="GetSwitchTargets"/>）。只要某个号的 Running 被意外置 false 或 Setting 被清空，
+    /// 它就永久退出轮次；而"自动开始 / 标题变化"这两条恢复路径都是**变化驱动**的，
+    /// 号稳定在线时不会再触发，用户只能关掉软件重开（用户反馈"怎么按快捷键都不再激活那个号"）。
+    /// </para>
+    /// </summary>
+    private void ReconcileRunningState()
+    {
+        foreach (var process in Processes.ToList())
+        {
+            var window = _manager.Find(process);
+            if (window is not null)
+            {
+                process.Setting ??= window.Setting;
+                if (!process.Running)
+                {
+                    Core.Log.Warn($"[多开] 状态对账：{process.WindowTitle} 有预览窗口但没标记运行中，已纠正");
+                    process.Running = true;
+                }
+
+                continue;
+            }
+
+            if (process.Running)
+            {
+                Core.Log.Warn($"[多开] 状态对账：{process.WindowTitle} 标记运行中但没有预览窗口，已纠正");
+                process.Running = false;
+            }
+
+            process.Setting ??= ResolveSetting(process);
+
+            // 没人叫它停、预览却没了 → 当成异常丢失，重新拉起。
+            // 用户主动停止的条目 PreviewExpected=false，不会被打扰。
+            if (!process.PreviewExpected || process.Setting is not { } setting)
+            {
+                continue;
+            }
+
+            if (setting.ProcessInfo is not null && !ReferenceEquals(setting.ProcessInfo, process))
+            {
+                // 配置被已经不在列表里的旧条目占着：解绑后继续用这份配置，避免退化成默认配置
+                setting.ProcessInfo = null;
+            }
+
+            Core.Log.Warn($"[多开] 状态对账：{process.WindowTitle} 的预览意外丢失，已重新开始");
+            if (!StartProcess(process))
+            {
+                // 起不来就别每秒重试（会刷日志、反复建窗）：撤销期望，等用户手动开始
+                process.PreviewExpected = false;
+                Core.Log.Error($"[多开] 状态对账：重新开始 {process.WindowTitle} 的预览失败，已停止重试");
+            }
         }
     }
 
@@ -918,19 +1066,22 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         return new PreviewItem();
     }
 
-    /// <summary>角色切换（同一进程换了角色）：换绑设置，并把原配置解绑。</summary>
+    /// <summary>
+    /// 角色切换（同一进程换了角色）：换绑设置，并把原配置解绑。
+    /// <para>
+    /// <b>这里不再停止预览</b>。「同进程切换角色沿用设置」的语义是"新角色要不要沿用旧角色的外观"，
+    /// 而不是"把预览关掉"：旧实现在关掉该开关时直接 <c>_manager.Stop</c>，会让该号
+    /// <b>永久掉出快捷键轮次</b>——预览窗关掉、Running=false，而恢复入口（自动开始 / 标题刚解析出角色名）
+    /// 都是变化驱动的，号稳定在线时不会再触发，用户只能重启软件。
+    /// 实测复现：只把窗口标题从 <c>EVE - QEDSD3</c> 改成另一个角色名再改回来（窗口全程正常），
+    /// 该号就再也切不到。
+    /// </para>
+    /// </summary>
     private void OnCharacterSwitched(ProcessInfo process)
     {
         // 只有正在预览的进程才需要换绑；未运行时的标题变化等下一次刷新自行处理即可
         if (!process.Running || process.Setting is not { } previous)
         {
-            return;
-        }
-
-        if (!_setting.SwitchCharacterKeepSetting)
-        {
-            _manager.Stop(process);
-            previous.ProcessInfo = null;
             return;
         }
 
@@ -942,18 +1093,29 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         if (string.IsNullOrEmpty(name))
         {
             // 回到选择角色的界面：保留外观设置，标记为未识别名称（不参与持久化匹配）
-            if (!previous.Name.StartsWith('*'))
+            if (previous.Name?.StartsWith('*') != true)
             {
                 previous.Name = $"*Untitled[{previous.Name}]";
             }
 
             next = previous;
         }
-        else
+        else if (_setting.SwitchCharacterKeepSetting)
         {
             var saved = _setting.PreviewItems.FirstOrDefault(p => p.Name == name && p.ProcessInfo is null);
             next = saved ?? CopyVisualSettings(previous, name);
-            if (saved is null && !_setting.PreviewItems.Contains(next))
+            if (!_setting.PreviewItems.Contains(next))
+            {
+                _setting.PreviewItems.Add(next);
+            }
+        }
+        else
+        {
+            // 不沿用设置：改用"该角色自己的已保存配置"，没有就新建一份默认配置。
+            // 注意是**换绑**（Rebind），不是停止预览——窗口、Running、快捷键轮次都保持。
+            var saved = _setting.PreviewItems.FirstOrDefault(p => p.Name == name && p.ProcessInfo is null);
+            next = saved ?? new PreviewItem { Name = name };
+            if (!_setting.PreviewItems.Contains(next))
             {
                 _setting.PreviewItems.Add(next);
             }
@@ -1031,7 +1193,8 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        _manager.Stop(process);
+        // 用户主动停止：清掉"期望预览"标记，每轮对账不会把它又拉起来
+        _manager.Stop(process, byUser: true);
 
         // 停止后重新挂上"该角色的已保存配置"：否则设置面板会变成空白，
         // 用户会以为设置丢了（配置其实还在）。
@@ -1073,7 +1236,8 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
     public void StopAll()
     {
-        _manager.StopAll();
+        // 用户主动"停止全部"：清掉期望标记，避免每轮对账把它们又拉起来
+        _manager.StopAll(byUser: true);
         foreach (var process in Processes)
         {
             process.Running = false;
@@ -1093,8 +1257,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     {
         var running = _manager.RunningCount;
 
-        // 不走 StopAll()：它会 Save() 把旧内存设置写回，正好覆盖掉刚被 AI 改好的文件
-        _manager.StopAll();
+        // 不走 StopAll()：它会 Save() 把旧内存设置写回，正好覆盖掉刚被 AI 改好的文件。
+        // byUser:false —— 这不是"用户要停"，而是"要按新配置重来"，期望标记要保留（下面会重新开始）。
+        _manager.StopAll(byUser: false);
         foreach (var process in Processes)
         {
             process.Running = false;
