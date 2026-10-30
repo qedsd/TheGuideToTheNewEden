@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Home;
@@ -17,6 +19,10 @@ public partial class CharacterCardsPage : Page
 
     /// <summary>当前登录等待的取消源；仅用于页面内遮罩的「取消」按钮。</summary>
     private CancellationTokenSource? _loginCts;
+
+    private CharacterCardViewModel? _dragCard;
+    private Point _dragStart;
+    private bool _suppressClick;
 
     /// <summary>点击角色卡片时触发（由壳页打开对应标签）。</summary>
     public event EventHandler<CharacterCardViewModel>? CharacterActivated;
@@ -62,10 +68,19 @@ public partial class CharacterCardsPage : Page
         EmptyState.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
         SummaryCard.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
         CardList.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
+        DragHint.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void Card_Click(object sender, RoutedEventArgs e)
     {
+        // 拖拽结束后 Button 仍可能补一个 Click，不能让它同时打开工作区
+        if (_suppressClick)
+        {
+            _suppressClick = false;
+            e.Handled = true;
+            return;
+        }
+
         if (sender is not FrameworkElement { Tag: CharacterCardViewModel card })
         {
             return;
@@ -92,6 +107,165 @@ public partial class CharacterCardsPage : Page
             menu.IsOpen = true;
         }
     }
+
+    // ---------- 卡片拖拽排序 ----------
+
+    private void CardList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // 新的一次按下先清掉上次拖拽可能残留的"抑制点击"
+        _suppressClick = false;
+
+        var button = FindAncestor<Button>(e.OriginalSource as DependencyObject);
+        if (button?.Tag is CharacterCardViewModel card && !card.IsAdd)
+        {
+            _dragCard = card;
+            _dragStart = e.GetPosition(CardList);
+        }
+        else
+        {
+            // "···"按钮/添加卡片不参与拖拽
+            _dragCard = null;
+        }
+    }
+
+    private void CardList_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_dragCard is null || e.LeftButton != MouseButtonState.Pressed)
+        {
+            return;
+        }
+
+        var position = e.GetPosition(CardList);
+        if (Math.Abs(position.X - _dragStart.X) < SystemParameters.MinimumHorizontalDragDistance
+            && Math.Abs(position.Y - _dragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        var card = _dragCard;
+        _dragCard = null;
+        _suppressClick = true;
+        var data = new DataObject(typeof(CharacterCardViewModel), card);
+        DragDrop.DoDragDrop(CardList, data, DragDropEffects.Move);
+        e.Handled = true;
+    }
+
+    private void CardList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => _dragCard = null;
+
+    private void CardList_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(typeof(CharacterCardViewModel))
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void CardList_Drop(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(typeof(CharacterCardViewModel))
+            || e.Data.GetData(typeof(CharacterCardViewModel)) is not CharacterCardViewModel source
+            || source.IsAdd)
+        {
+            return;
+        }
+
+        var normal = _viewModel.Cards.Where(p => !p.IsAdd).ToList();
+        var sourceIndex = normal.IndexOf(source);
+        if (sourceIndex < 0 || normal.Count <= 1)
+        {
+            return;
+        }
+
+        var hit = FindCardButton(e.OriginalSource as DependencyObject);
+        var target = hit?.Card;
+        if (target is not null && ReferenceEquals(target, source))
+        {
+            return;
+        }
+
+        int finalIndex;
+        if (target is null || target.IsAdd)
+        {
+            // 拖到空白 / 末尾添加卡：放到最后一个真实角色之后
+            finalIndex = normal.Count - 1;
+        }
+        else
+        {
+            var targetIndex = normal.IndexOf(target);
+            if (targetIndex < 0)
+            {
+                finalIndex = normal.Count - 1;
+            }
+            else
+            {
+                // 删除源之后的列表里目标的新下标；按落点在卡片左/右半边决定插前/插后
+                var targetAfterRemoval = targetIndex > sourceIndex ? targetIndex - 1 : targetIndex;
+                var after = hit is { } cardHit
+                    && e.GetPosition(cardHit.Button).X > cardHit.Button.ActualWidth / 2;
+                finalIndex = Math.Clamp(
+                    targetAfterRemoval + (after ? 1 : 0),
+                    0,
+                    normal.Count - 1);
+            }
+        }
+
+        if (finalIndex != sourceIndex)
+        {
+            _viewModel.MoveCard(sourceIndex, finalIndex);
+        }
+
+        e.Handled = true;
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? source) where T : DependencyObject
+    {
+        var current = source;
+        while (current is not null)
+        {
+            if (current is T match)
+            {
+                return match;
+            }
+
+            current = GetParent(current);
+        }
+
+        return null;
+    }
+
+    /// <summary>向上找真正带角色 DataContext 的卡片 Button（跳过卡片里的"···"按钮）。</summary>
+    private static CardHit? FindCardButton(DependencyObject? source)
+    {
+        var current = source;
+        while (current is not null)
+        {
+            if (current is Button button && button.Tag is CharacterCardViewModel card)
+            {
+                return new CardHit(button, card);
+            }
+
+            current = GetParent(current);
+        }
+
+        return null;
+    }
+
+    private static DependencyObject? GetParent(DependencyObject child)
+    {
+        if (child is Visual)
+        {
+            return VisualTreeHelper.GetParent(child);
+        }
+
+        if (child is FrameworkContentElement contentElement)
+        {
+            return contentElement.Parent;
+        }
+
+        return LogicalTreeHelper.GetParent(child);
+    }
+
+    private readonly record struct CardHit(Button Button, CharacterCardViewModel Card);
 
     /// <summary>
     /// 把该角色固定到主页（P3 参数化磁贴：<c>characters + 角色 ID</c>）——

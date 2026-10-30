@@ -145,7 +145,22 @@
                 </Border>
 
                 <!--  角色卡片网格（与 WinUI3 卡片同构：头像 / 名称 / SP / ISK / 技能队列）  -->
-                <ItemsControl x:Name="CardList" Margin="0,20,0,0">
+                <TextBlock
+                    x:Name="DragHint"
+                    Margin="2,12,0,0"
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource CharacterPage_DragHint}" />
+                <ItemsControl
+                    x:Name="CardList"
+                    Margin="0,8,0,0"
+                    AllowDrop="True"
+                    Background="Transparent"
+                    DragOver="CardList_DragOver"
+                    Drop="CardList_Drop"
+                    PreviewMouseLeftButtonDown="CardList_PreviewMouseLeftButtonDown"
+                    PreviewMouseLeftButtonUp="CardList_PreviewMouseLeftButtonUp"
+                    PreviewMouseMove="CardList_PreviewMouseMove">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel />

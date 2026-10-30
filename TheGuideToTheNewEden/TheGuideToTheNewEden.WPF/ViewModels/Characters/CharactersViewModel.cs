@@ -77,6 +77,23 @@ public sealed class CharactersViewModel : INotifyPropertyChanged
         RaiseSummary();
     }
 
+    /// <summary>拖拽卡片后同时调整界面集合与角色存储顺序（CharacterStore.Move 会落盘）。</summary>
+    public void MoveCard(int oldIndex, int newIndex)
+    {
+        var normalCount = Cards.Count(p => !p.IsAdd);
+        if (oldIndex == newIndex
+            || oldIndex < 0 || newIndex < 0
+            || oldIndex >= normalCount || newIndex >= normalCount
+            || oldIndex >= CharacterStore.Characters.Count
+            || newIndex >= CharacterStore.Characters.Count)
+        {
+            return;
+        }
+
+        Cards.Move(oldIndex, newIndex);
+        CharacterStore.Move(oldIndex, newIndex);
+    }
+
     private void RaiseSummary()
     {
         foreach (var name in new[]

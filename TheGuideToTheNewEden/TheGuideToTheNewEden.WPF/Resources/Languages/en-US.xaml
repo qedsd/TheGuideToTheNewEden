@@ -753,6 +753,7 @@
     <sys:String x:Key="CharacterPage_Sp">SP</sys:String>
     <sys:String x:Key="CharacterPage_Birthday">Birthday</sys:String>
     <sys:String x:Key="CharacterPage_Characters">Characters</sys:String>
+    <sys:String x:Key="CharacterPage_DragHint">Drag character cards to reorder</sys:String>
     <sys:String x:Key="CharacterPage_Remove">Remove Character</sys:String>
     <sys:String x:Key="CharacterPage_TryUpdateTokenFailed">The token has expired and the refresh attempt fails</sys:String>
     <sys:String x:Key="CharacterPage_Online">Online</sys:String>

@@ -10410,6 +10410,23 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
   - WPF Rebuild：0 错误；新增代码无新警告。
   - 当前用户 `IntelSettings.json` 三个角色均为 `Jumps=4 / Sounds=5 / Id 0..4`，未被修改。
 
+## 阶段 261：角色管理页角色卡片拖拽排序（2026-10-30）
+
+- `CharacterCardsPage` 的角色卡片从普通 `ItemsControl + WrapPanel` 增加拖拽排序：
+  - `CardList` 开启 `AllowDrop`，接管 `PreviewMouseLeftButtonDown/Move/Up`、`DragOver`、`Drop`；
+  - 从卡片按下后超过系统拖拽阈值才启动 `DragDrop.DoDragDrop`，普通点击仍然打开工作区；
+  - “添加角色”卡片和卡片右上角“···”按钮不参与拖拽；
+  - 落点通过向上找 `Tag is CharacterCardViewModel` 的卡片 `Button` 判断，按鼠标落在卡片左/右半边决定插前/插后；拖到空白/添加卡则移到最后一个真实角色之后；
+  - 拖拽结束后抑制 Button 可能补发的 `Click`，避免同时打开角色工作区。
+- VM 新增 `CharactersViewModel.MoveCard(oldIndex,newIndex)`：
+  - 先 `Cards.Move(...)` 更新界面；
+  - 再 `CharacterStore.Move(...)` 调整持久化顺序（`Auth.json`），保留“添加角色”始终在末尾。
+- 卡片网格上方增加提示：“拖拽角色卡片可调整顺序”（中英）。
+- 验证：
+  - WPF 构建：0 错误。
+  - 页面当前只加载出 1 个真实角色，未能在本次会话做“双卡拖拽”的端到端实测；索引/落点/持久化逻辑已按现有 `CharacterStore.Move` 接好，需在含 2 个以上角色的配置上确认。
+  - 未修改用户 `Auth.json`（测试用的临时角色已恢复）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
