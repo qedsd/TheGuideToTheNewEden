@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +15,12 @@ namespace ZKB.NET
             string type = entityType.ToString();
             return $"{Config.ApiUrl.TrimEnd('/')}/stats/{ToStartLower(type)}/{id}/";
         }
-        public static async Task<EntityStatistic> GetStatisticAsync(EntityType entityType, int id)
+        public static Task<EntityStatistic> GetStatisticAsync(EntityType entityType, int id)
+            => GetStatisticAsync(entityType, id, default);
+
+        public static async Task<EntityStatistic> GetStatisticAsync(EntityType entityType, int id, System.Threading.CancellationToken cancellationToken)
         {
-            string json = await HttpHelper.GetZKBAsync(GetFormatUrl(entityType, id));
+            string json = await HttpHelper.GetZKBAsync(GetFormatUrl(entityType, id), cancellationToken);
             return JsonConvert.DeserializeObject<EntityStatistic>(json);
         }
     }

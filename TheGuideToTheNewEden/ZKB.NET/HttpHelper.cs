@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,7 +76,7 @@ namespace ZKB.NET
             }
         }
 
-        public static async Task<string> GetAsync(string url, string userAgent, bool useGzip, Dictionary<string, string> header = null)
+        public static async Task<string> GetAsync(string url, string userAgent, bool useGzip, Dictionary<string, string> header = null, System.Threading.CancellationToken cancellationToken = default)
         {
             header??=new Dictionary<string, string>();
             if (userAgent != null)
@@ -87,7 +87,7 @@ namespace ZKB.NET
             {
                 header.Add("Accept-Encoding", "gzip");
             }
-            return await GetAsync(url, header);
+            return await GetAsync(url, header, cancellationToken);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace ZKB.NET
         /// </summary>
         /// <param name="url">目标链接</param>
         /// <returns>返回的字符串</returns>
-        public static async Task<string> GetAsync(string url, Dictionary<string, string> header = null)
+        public static async Task<string> GetAsync(string url, Dictionary<string, string> header = null, System.Threading.CancellationToken cancellationToken = default)
         {
             HttpClient client = new HttpClient(new HttpClientHandler() { UseCookies = false });
             if (header != null)
@@ -106,7 +106,7 @@ namespace ZKB.NET
                     client.DefaultRequestHeaders.Add(item.Key, item.Value);
                 }
             }
-            HttpResponseMessage response = await client.GetAsync(url);
+            HttpResponseMessage response = await client.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
             string responseBody;
             if (client.DefaultRequestHeaders.TryGetValues("Accept-Encoding", out var encodes))
@@ -128,9 +128,9 @@ namespace ZKB.NET
             return responseBody;
         }
 
-        public static async Task<string> GetZKBAsync(string url)
+        public static async Task<string> GetZKBAsync(string url, System.Threading.CancellationToken cancellationToken = default)
         {
-            return await GetAsync(url, Config.UserAgent, Config.UseGZip);
+            return await GetAsync(url, Config.UserAgent, Config.UseGZip, cancellationToken: cancellationToken);
         }
     }
 }

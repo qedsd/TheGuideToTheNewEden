@@ -410,6 +410,7 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
     public string KbIskText { get => _kbIskText; private set => Set(ref _kbIskText, value); }
     public string KbSpanText { get => _kbSpanText; private set => Set(ref _kbSpanText, value); }
 
+    public ObservableCollection<ActiveEntityItem> TopCharacters { get; } = [];
     public ObservableCollection<ActiveEntityItem> TopCorporations { get; } = [];
     public ObservableCollection<ActiveEntityItem> TopAlliances { get; } = [];
     public ObservableCollection<ShipTypeStatItem> TopShips { get; } = [];
@@ -459,6 +460,7 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
         KbKillsText = string.Empty;
         KbIskText = string.Empty;
         KbSpanText = string.Empty;
+        TopCharacters.Clear();
         TopCorporations.Clear();
         TopAlliances.Clear();
         TopShips.Clear();
@@ -510,6 +512,11 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
                 return;
             }
 
+            TopCharacters.Clear();
+            foreach (var item in analysis.Characters)
+            {
+                TopCharacters.Add(item);
+            }
             TopCorporations.Clear();
             foreach (var item in analysis.Corporations)
             {
@@ -604,6 +611,7 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
         int TotalKills,
         double SpanDays,
         double TotalIsk,
+        List<ActiveEntityItem> Characters,
         List<ActiveEntityItem> Corporations,
         List<ActiveEntityItem> Alliances,
         List<ShipTypeStatItem> Ships,
@@ -616,12 +624,26 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
         var earliest = details.Min(p => p.KillmailTime);
         var spanDays = (nowUtc - earliest).TotalDays;
 
-        // 军团/联盟活跃度：受害方 + 全部攻击方各计一次（与 WinUI 口径一致）
+        // 角色/军团/联盟活跃度：受害方 + 全部攻击方各计一次（与 WinUI 口径一致）
+        var charCount = new Dictionary<int, int>();
+        var charLast = new Dictionary<int, System.DateTime>();
         var corpCount = new Dictionary<int, int>();
         var corpLast = new Dictionary<int, System.DateTime>();
         var allianceCount = new Dictionary<int, int>();
         var allianceLast = new Dictionary<int, System.DateTime>();
         var shipCount = new Dictionary<int, int>();
+
+        void TouchCharacter(int? id, System.DateTime time)
+        {
+            if (id is > 0)
+            {
+                charCount[id.Value] = charCount.TryGetValue(id.Value, out var c) ? c + 1 : 1;
+                if (!charLast.TryGetValue(id.Value, out var last) || time > last)
+                {
+                    charLast[id.Value] = time;
+                }
+            }
+        }
 
         void TouchCorp(int? id, System.DateTime time)
         {
@@ -660,6 +682,7 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
             var time = detail.KillmailTime;
             if (detail.Victim is not null)
             {
+                TouchCharacter(detail.Victim.CharacterId, time);
                 TouchCorp(detail.Victim.CorporationId, time);
                 TouchAlliance(detail.Victim.AllianceId, time);
                 TouchShip(detail.Victim.ShipTypeId);
@@ -669,6 +692,7 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
             {
                 foreach (var attacker in detail.Attackers)
                 {
+                    TouchCharacter(attacker.CharacterId, time);
                     TouchCorp(attacker.CorporationId, time);
                     TouchAlliance(attacker.AllianceId, time);
                 }
@@ -678,10 +702,14 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
         token.ThrowIfCancellationRequested();
 
         // 名称批量解析（本地库 + ESI）
-        var nameIds = corpCount.Keys.Concat(allianceCount.Keys).ToList();
+        var nameIds = charCount.Keys.Concat(corpCount.Keys).Concat(allianceCount.Keys).ToList();
         var names = await ZkbQueryService.ResolveNamesAsync(nameIds).ConfigureAwait(false);
 
-        List<ActiveEntityItem> BuildEntities(Dictionary<int, int> counts, Dictionary<int, System.DateTime> lasts, bool isAlliance) => counts
+        List<ActiveEntityItem> BuildEntities(
+            Dictionary<int, int> counts,
+            Dictionary<int, System.DateTime> lasts,
+            bool isAlliance,
+            bool isCharacter = false) => counts
             .OrderByDescending(p => p.Value)
             .Take(3)
             .Select(p =>
@@ -691,10 +719,13 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
                 {
                     EntityId = p.Key,
                     IsAlliance = isAlliance,
+                    IsCharacter = isCharacter,
                     Name = idName?.Name ?? p.Key.ToString(),
-                    ImageUrl = isAlliance
-                        ? Helpers.GameImageHelper.BuildAllianceLogoUrl(p.Key, 64) ?? string.Empty
-                        : Helpers.GameImageHelper.BuildCorporationLogoUrl(p.Key, 64) ?? string.Empty,
+                    ImageUrl = isCharacter
+                        ? Helpers.GameImageHelper.BuildCharacterPortraitUrl(p.Key, 64) ?? string.Empty
+                        : isAlliance
+                            ? Helpers.GameImageHelper.BuildAllianceLogoUrl(p.Key, 64) ?? string.Empty
+                            : Helpers.GameImageHelper.BuildCorporationLogoUrl(p.Key, 64) ?? string.Empty,
                     Count = p.Value,
                     LastActiveDays = (nowUtc - lasts[p.Key]).TotalDays,
                 };
@@ -732,6 +763,7 @@ public sealed class WormholeViewModel : INotifyPropertyChanged
             details.Count,
             spanDays,
             totalIsk,
+            BuildEntities(charCount, charLast, isAlliance: false, isCharacter: true),
             BuildEntities(corpCount, corpLast, isAlliance: false),
             BuildEntities(allianceCount, allianceLast, isAlliance: true),
             ships,

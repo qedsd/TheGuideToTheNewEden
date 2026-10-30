@@ -1,8 +1,10 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using TheGuideToTheNewEden.WPF.Models.Wormhole;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Home;
+using TheGuideToTheNewEden.WPF.Services.KB;
 using TheGuideToTheNewEden.WPF.ViewModels.Map;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls.Map;
@@ -16,9 +18,37 @@ public partial class MapSystemDetailView : UserControl
         ViewModel = new MapSystemDetailViewModel(node, map);
         DataContext = ViewModel;
         Loaded += async (_, _) => await ViewModel.LoadAsync();
+        Unloaded += (_, _) => ViewModel.Dispose();
     }
 
     public MapSystemDetailViewModel ViewModel { get; }
+
+    private void OnZkbEntityClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not ActiveEntityItem item)
+        {
+            return;
+        }
+
+        KbNavigation.OpenEntity(
+            item.EntityId,
+            item.IsCharacter
+                ? Core.DBModels.IdName.CategoryEnum.Character
+                : item.IsAlliance
+                    ? Core.DBModels.IdName.CategoryEnum.Alliance
+                    : Core.DBModels.IdName.CategoryEnum.Corporation,
+            item.Name);
+    }
+
+    private void OnShipButtonClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not ShipTypeStatItem item)
+        {
+            return;
+        }
+
+        KbNavigation.OpenEntity(item.TypeId, Core.DBModels.IdName.CategoryEnum.InventoryType, item.Name);
+    }
 
     /// <summary>
     /// 把详情窗当前星系固定到主页（P3 参数化磁贴：<c>map + 星系 ID</c>）——

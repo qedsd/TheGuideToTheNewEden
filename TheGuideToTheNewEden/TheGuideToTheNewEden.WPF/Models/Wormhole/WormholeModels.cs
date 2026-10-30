@@ -310,6 +310,9 @@ public sealed class ActiveEntityItem
 
     public bool IsAlliance { get; init; }
 
+    /// <summary>是否为角色（决定头像与 KB 跳转类别）。</summary>
+    public bool IsCharacter { get; init; }
+
     public string ImageUrl { get; init; } = string.Empty;
 
     public int Count { get; init; }

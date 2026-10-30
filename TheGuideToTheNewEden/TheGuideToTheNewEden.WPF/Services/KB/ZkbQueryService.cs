@@ -91,7 +91,7 @@ public static class ZkbQueryService
 
         try
         {
-            var statistic = await ZKB.NET.ZKB.GetStatisticAsync(entityType, id).ConfigureAwait(false);
+            var statistic = await ZKB.NET.ZKB.GetStatisticAsync(entityType, id, ct).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
 
             if (statistic is not null)

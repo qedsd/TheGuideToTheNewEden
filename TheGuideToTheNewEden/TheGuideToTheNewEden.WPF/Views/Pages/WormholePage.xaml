@@ -144,34 +144,41 @@
 
         <!--  ZKB 热门船型行  -->
         <DataTemplate x:Key="ShipStatTemplate" DataType="{x:Type models:ShipTypeStatItem}">
-            <Grid Margin="0,3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Image
-                    Grid.Column="0"
-                    Width="26"
-                    Height="26"
-                    Margin="0,0,10,0"
-                    controls:AsyncImage.Source="{Binding ImageUrl}" />
-                <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    FontSize="12.5"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="{Binding Name}"
-                    TextTrimming="CharacterEllipsis"
-                    ToolTip="{Binding Name}" />
-                <TextBlock
-                    Grid.Column="2"
-                    VerticalAlignment="Center"
-                    FontSize="12.5"
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="{Binding Count}" />
-            </Grid>
+            <Button
+                Margin="0,2"
+                Padding="4"
+                HorizontalAlignment="Stretch"
+                Click="OnShipButtonClick"
+                Style="{DynamicResource SettingsRowButton}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Grid.Column="0"
+                        Width="26"
+                        Height="26"
+                        Margin="0,0,10,0"
+                        controls:AsyncImage.Source="{Binding ImageUrl}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        FontSize="12.5"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Name}"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip="{Binding Name}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        FontSize="12.5"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Count}" />
+                </Grid>
+            </Button>
         </DataTemplate>
 
         <!--  天体行  -->
@@ -640,6 +647,15 @@
                                         Text="{Binding KbSpanText}" />
                                 </StackPanel>
                             </UniformGrid>
+
+                            <!--  最活跃角色  -->
+                            <TextBlock
+                                Margin="0,14,0,4"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource WormholePage_ZKB_MostActiveCharacters}" />
+                            <ItemsControl ItemTemplate="{StaticResource ActiveEntityTemplate}" ItemsSource="{Binding TopCharacters}" />
 
                             <!--  最活跃军团  -->
                             <TextBlock

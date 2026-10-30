@@ -46,6 +46,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
             await WriteTableAsync(db, GetMarketGroups(fileDatas, language));
             await WriteTableAsync(db, await GetTypes(fileDatas, language, getPackagedVolume));
             await WriteTableAsync(db, GetPlanetResources(fileDatas, language));
+            await WriteTableAsync(db, GetSovereigntyUpgrades(fileDatas), true);
             await WriteTableAsync(db, GetMapSecondarySuns(fileDatas));
             await WriteTableAsync(db, GetMapSolarSystemJumps(fileDatas));
 
@@ -396,6 +397,17 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 return null;
             }
             return datas.Select(p => new DBModels.PlanetResources(p)).ToList();
+        }
+
+        /// <summary>设施升级定义（SDE sovereigntyUpgrades.jsonl）。</summary>
+        public static List<DBModels.SovereigntyUpgrades> GetSovereigntyUpgrades(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            var datas = fileDatas
+                .FirstOrDefault(p => p.Key.Equals("sovereigntyUpgrades", StringComparison.OrdinalIgnoreCase))
+                .Value;
+            return datas == null
+                ? new List<DBModels.SovereigntyUpgrades>()
+                : datas.Select(p => new DBModels.SovereigntyUpgrades(p)).ToList();
         }
 
         public static List<DBModels.MapSecondarySuns> GetMapSecondarySuns(Dictionary<string, List<BaseModel>> fileDatas)

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,9 +59,15 @@ namespace ZKB.NET
         /// 返回模型是 <see cref="SKBDetail"/>（含 <c>zkb</c> 估价信息），可直接交给
         /// <c>KBHelpers.CreateKBItemInfo(SKBDetail)</c> 做本地库富化。
         /// </summary>
-        public static async Task<List<SKBDetail>> GetKillmailDetailsAsync(ParamModifierData[] paramModifiers, params TypeModifier[] typeModifiers)
+        public static Task<List<SKBDetail>> GetKillmailDetailsAsync(ParamModifierData[] paramModifiers, params TypeModifier[] typeModifiers)
+            => GetKillmailDetailsAsync(paramModifiers, typeModifiers, default);
+
+        public static async Task<List<SKBDetail>> GetKillmailDetailsAsync(
+            ParamModifierData[] paramModifiers,
+            TypeModifier[] typeModifiers,
+            System.Threading.CancellationToken cancellationToken)
         {
-            string json = await HttpHelper.GetZKBAsync(BuildKillsUrl(paramModifiers, typeModifiers));
+            string json = await HttpHelper.GetZKBAsync(BuildKillsUrl(paramModifiers, typeModifiers), cancellationToken);
             return JsonConvert.DeserializeObject<List<SKBDetail>>(json);
         }
 

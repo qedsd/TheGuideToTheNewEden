@@ -13,7 +13,7 @@ public enum ResourceKind
 }
 
 /// <summary>
-/// 星图行星资源数据：本地库 <c>planetResources</c> 的按星系/按星域聚合 + 设施升级表（UpgradeResources.csv）。
+/// 星图行星资源数据：本地库 <c>planetResources</c> 的按星系/按星域聚合 + SDE <c>sovereigntyUpgrades</c> 设施升级表。
 /// <para>
 /// 只统计 <c>Security &lt;= 0</c> 的星系（00 地区才有行星资源，与 WinUI 口径一致）。
 /// 首次访问时懒加载并缓存；<see cref="IsLoaded"/> 可用于决定要不要先 <see cref="LoadAsync"/>。
@@ -40,6 +40,7 @@ public static class MapResourceService
         _systemResources = [];
         _regionResources = [];
         _upgrades = [];
+        Core.Services.UpgradeService.Current.ClearCache();
         lock (Locker)
         {
             IsLoaded = false;
@@ -50,8 +51,16 @@ public static class MapResourceService
 
     public static Dictionary<int, RegionResources> RegionResources => _regionResources;
 
-    /// <summary>设施升级表（本地 csv，失败返回空表）。</summary>
-    public static List<Upgrade> GetUpgrades() => _upgrades ?? [];
+    /// <summary>设施升级表（SDE sovereigntyUpgrades）。缓存为空时按需从 SDE 懒加载。</summary>
+    public static List<Upgrade> GetUpgrades()
+    {
+        if (_upgrades.Count == 0)
+        {
+            _upgrades = Core.Services.UpgradeService.Current.GetUpgrades() ?? [];
+        }
+
+        return _upgrades;
+    }
 
     /// <summary>按资源种类取星系资源值。</summary>
     public static long GetValue(SolarSystemResources? resources, ResourceKind kind) => resources is null

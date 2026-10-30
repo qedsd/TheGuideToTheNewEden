@@ -163,7 +163,21 @@ public partial class WormholePage : Page
 
         KbNavigation.OpenEntity(
             item.EntityId,
-            item.IsAlliance ? Core.DBModels.IdName.CategoryEnum.Alliance : Core.DBModels.IdName.CategoryEnum.Corporation,
+            item.IsCharacter
+                ? Core.DBModels.IdName.CategoryEnum.Character
+                : item.IsAlliance
+                    ? Core.DBModels.IdName.CategoryEnum.Alliance
+                    : Core.DBModels.IdName.CategoryEnum.Corporation,
             item.Name);
+    }
+
+    private void OnShipButtonClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not ShipTypeStatItem item)
+        {
+            return;
+        }
+
+        KbNavigation.OpenEntity(item.TypeId, Core.DBModels.IdName.CategoryEnum.InventoryType, item.Name);
     }
 }

@@ -312,6 +312,8 @@ public class StarMapCanvas : SKElement
     public event EventHandler<MapSystemNode?>? HoveredChanged;
     /// <summary>单击选中节点变化（null = 点空白取消）。</summary>
     public event EventHandler<MapSystemNode?>? SelectedChanged;
+    /// <summary>双击星系节点（null 不会触发）。</summary>
+    public event EventHandler<MapSystemNode?>? NodeDoubleClicked;
 
     public MapSystemNode? Selected => _selected;
     public MapSystemNode? Hovered => _hovered;
@@ -841,6 +843,20 @@ public class StarMapCanvas : SKElement
 
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
     {
+        if (e.ClickCount == 2)
+        {
+            var hit = FindNodeAt(e.GetPosition(this));
+            if (hit is not null)
+            {
+                _selected = hit;
+                SelectedChanged?.Invoke(this, hit);
+                NodeDoubleClicked?.Invoke(this, hit);
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+        }
+
         _dragging = true;
         _dragMoved = false;
         _dragLast = e.GetPosition(this);

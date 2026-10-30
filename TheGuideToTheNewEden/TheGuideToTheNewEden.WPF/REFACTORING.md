@@ -10148,6 +10148,160 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 手册同步。
 - 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
 
+## 阶段 242：设施升级改读 SDE sovereigntyUpgrades，废弃 CSV（2026-10-30）
+
+- SDEBuilder：
+  - 新增 `DBModels/SovereigntyUpgrades`（表 `sovereigntyUpgrades`）；
+  - `Builder.GetSovereigntyUpgrades` 读取 SDE 文件 `sovereigntyUpgrades.jsonl`（文件名大小写忽略）；
+  - `WriteAllTablesAsync` 落表，空数据也建表。
+- Core：
+  - 新增 `DBModels.SovereigntyUpgrade` 与 `SovereigntyUpgradeService.QueryAll()`；
+  - 查询前 `CodeFirst.InitTables`，旧库缺表时补空表并返回空集合。
+- `UpgradeService`：
+  - 不再读 `Resources/Configs/UpgradeResources.csv`；
+  - 直接查 SDE 表并映射为 `Upgrade`：
+    - `Power = power_allocation`；
+    - `Workforce = workforce_allocation`；
+    - `FuelTypeID=81144` → 超离子冰，`81143` → 岩浆气，数值取 `fuel.hourly_upkeep`；
+    - 名称仍由 `TypeID` 查 `InvType`。
+- 删除 WPF / WinUI 的 `UpgradeResources.csv` 源文件及 WinUI csproj 的复制项；`MapResourceService.ClearCache()` 同步清 `UpgradeService` 缓存。
+- 手册注明设施升级数据依赖新 SDE 库，旧库列表为空。
+- 验证：SDEBuilder / Core / WPF 均 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 243：设施名称排序 + 星系详情拆分支持/不支持设施（2026-10-30）
+
+- `UpgradeService` 输出按设施名称 `StringComparer.CurrentCultureIgnoreCase` 排序，行星资源清单与详情页共用。
+- `UpgradeRow` 的 `Fit` 从只看 Power 改为同时比较系统 **Power / Workforce / SuperionicIce / MagmaticGas**；四项都满足才算支持。
+- 星系详情页：
+  - 原「设施升级」单页签拆成「**支持设施**」「**不支持设施**」两个页签；
+  - `SupportedUpgradeRows` / `UnsupportedUpgradeRows` 分别绑定；
+  - 两页都按名称排序。
+- 中英文语言键、手册同步（六页签）。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 244：支持/不支持设施并入行星资源页签（2026-10-30）
+
+- 星系详情顶层页签从六个收敛为四个：**统计 / 行星资源 / 天体 / 邻接**。
+- 「行星资源」页签内新增三个子页签：
+  - **支持设施**：`SupportedUpgradeRows`；
+  - **不支持设施**：`UnsupportedUpgradeRows`；
+  - **详细**：原行星资源列表 `PlanetRows`。
+- 新增语言键 `MapTool_Detail_PlanetDetail`（详细 / Details）。
+- 手册同步顶层页签与子页签结构。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 245：星图双击星系打开详情（2026-10-30）
+
+- `StarMapCanvas` 新增 `NodeDoubleClicked`：
+  - 在 `OnMouseLeftButtonDown` 检测 `ClickCount == 2` 并命中节点；
+  - 先同步选中，再抛事件；不会进入拖拽/缩放。
+- `MapPage` 订阅事件并复用 `OpenSystemDetail`：
+  - 双击直接打开星系详情窗；
+  - 已打开详情窗时先关闭，再按双击的星系重建；
+  - 原信息卡「详情」按钮改为调用同一个方法。
+- 手册更新打开方式。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 246：星系详情统计页改为指标卡 + 摘要卡（2026-10-30）
+
+- 统计页不再是一条四值横排：
+  - 顶部四张指标卡：舰船击杀 / 逃生舱击杀 / NPC 击杀 / 通行量；
+  - 下方三张摘要卡：
+    - **交战概况**：总击杀、击杀 / 通行、行星数量；
+    - **设施概况**：支持设施数 / 不支持设施数；
+    - **星系概况**：安等、星域、主权、天体数、邻接星系数。
+- `MapSystemDetailViewModel` 增加 `TotalKillsText`、`KillJumpRatioText`、`SovDisplay` 与各数量文本；装载完成后统一通知。
+- 新增 `DetailStatCard` 样式与中英文标签。
+- 手册同步统计页内容。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 247：修复星系详情设施列表全空（2026-10-30）
+
+- 根因：CSV 改为 SDE 后，`MapResourceService._upgrades` 只在完整 `LoadAsync`（打开行星资源清单 / 资源着色）时填充；星系详情只加载单个星系资源，没有触发完整加载，`GetUpgrades()` 返回空缓存，支持/不支持设施都为空。
+- `MapResourceService.GetUpgrades()` 改为懒加载：缓存为空时直接向 `UpgradeService`（SDE `sovereigntyUpgrades`）取数。
+- 行星资源清单 / 星系详情共用该入口；详情页无论先开哪个窗口都能拿到设施列表。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 248：星系详情统计页接入 ZKB 击杀统计（2026-10-30）
+
+- `MapSystemDetailViewModel` 新增异步 ZKB 统计：
+  - `ZkbQueryService.GetStatisticAsync(EntityType.SolarSystemID, Node.Id)`；
+  - 使用该服务已有的 2 分钟内存缓存；
+  - 失败/无数据时值显示「—」，顶部状态显示「ZKB 加载中… / ZKB 无数据 / 数据来源：ZKB」。
+- 统计页新增「ZKB 击杀统计」卡片：
+  - 击杀 / 损失；
+  - 摧毁价值 / 损失价值（ISK 缩写）；
+  - 危险系数 / 编队比例 / 独狼击杀。
+- 与 ESI 的四项小时统计并排展示，明确数据来源区别。
+- 手册同步。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 249：ZKB 最活跃玩家/势力 + 日期时段活跃（2026-10-30）
+
+- 复用 `EntityStatistic.TopLists`：
+  - `character` → 最活跃玩家 Top3；
+  - `corporation` → 最活跃军团 Top3；
+  - `alliance` → 最活跃联盟 Top3。
+- 复用 `EntityStatistic.Months`：最近 12 个月击杀数，按月份倒序取、再按时间正序展示。
+- 新增 ZKB 活跃时段图：
+  - 取系统最近最多 2 页（400 条）killmail；
+  - 按本地 `DayOfWeek × Hour` 构造 7×24 矩阵；
+  - LiveCharts 堆叠柱状图，星期一到星期日 7 个系列。
+- 详情统计页新增「最活跃玩家」「最活跃势力」「近期活跃（按月）」「活跃时段（本地时间）」四块。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 250：详情窗口关闭时取消 ZKB 请求（2026-10-30）
+
+- `MapSystemDetailViewModel` 实现 `IDisposable`，持有 `CancellationTokenSource`：
+  - 窗口 `Unloaded` 时 `Dispose()` → `Cancel()`；
+  - `LoadZkbAsync` 在统计请求、每页击杀请求、构建图表前后检查取消；
+  - 取消后不再回写 `IsZkbLoading`、Top 列表、月度或图表。
+- `ZKB.NET` 增加取消链路：
+  - `HttpHelper.GetAsync` / `GetZKBAsync` 支持 `CancellationToken`；
+  - `ZKB.GetStatisticAsync`、`ZKB.GetKillmailDetailsAsync` 增加带 token 的重载；
+  - `ZkbQueryService.GetStatisticAsync` 将 token 透传到 HTTP。
+- 窗口关闭会直接取消未完成的 `HttpClient` 请求，而不是只停止 `await`。
+- 验证：`dotnet build`（ZKB.NET / WPF）0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 251：ZKB 面板对齐虫洞，并给虫洞补最活跃角色（2026-10-30）
+
+- 虫洞 ZKB：
+  - `KbStatistics` 增加 `Characters`；
+  - 受害方 + 攻击方角色各计一次，取 Top3；
+  - `ActiveEntityItem` 增加 `IsCharacter`，头像用角色肖像，点击跳角色 KB；
+  - 右卡新增「最活跃角色」区块。
+- 星系详情 ZKB 直接改为虫洞同款布局：
+  - 概要三格：击杀数 / ISK / 统计范围；
+  - 最活跃角色 / 军团 / 联盟；
+  - 热门船型 Top5；
+  - 星期 × 本地小时活跃时段图；
+  - 数据改为最近最多 400 条 killmail 的同口径分析（不再使用系统 `TopLists` + 月度列表）。
+- 保留窗口关闭 `CancellationToken` 取消链路；ZKB 面板关闭不会再回写。
+- 手册同步虫洞与星系详情。
+- 验证：`dotnet build`（ZKB.NET / WPF）0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 252：统计页精简 + ESI 指标标注时间范围（2026-10-30）
+
+- 删除统计页的三张概况卡：交战概况 / 设施概况 / 星系概况。
+- 保留四个 ESI 指标卡：舰船击杀 / 逃生舱击杀 / NPC 击杀 / 通行量；
+  - 每张卡底部新增「近 1 小时」提示；
+  - 与 ESI `GetSystemKillsAsync` / `GetSystemJumpsAsync` 的小时级口径一致。
+- 清理只服务这三张概况卡的 VM 属性与通知。
+- 手册同步。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
+## 阶段 253：热门船型改为可点击列表 / 去掉 ZKB 来源提示（2026-10-30）
+
+- 虫洞与星系详情同步：
+  - `ShipStatTemplate` 从静态 Grid 改为 `SettingsRowButton` Button；
+  - 点击船型行调用 `KbNavigation.OpenEntity(typeId, InventoryType, name)`，进入 ZKB 舰船详情；
+  - 与角色 / 军团 / 联盟行的点击行为一致。
+- 星系详情 ZKB 卡不再显示「数据来源：ZKB」：
+  - 有数据时状态文字为空；
+  - 仅加载中 / 无数据时保留状态提示。
+- 手册同步虫洞与星系详情。
+- 验证：`dotnet build` 0 错误；`AssistantProbe manuals` 58 PASS；`ui` 121 PASS。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

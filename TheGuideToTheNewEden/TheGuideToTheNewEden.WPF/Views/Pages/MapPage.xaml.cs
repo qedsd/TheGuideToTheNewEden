@@ -40,6 +40,7 @@ public partial class MapPage : Page, IManualAware
         DataContext = _viewModel;
 
         MapCanvas.SelectedChanged += MapCanvas_SelectedChanged;
+        MapCanvas.NodeDoubleClicked += MapCanvas_NodeDoubleClicked;
         MapCanvas.HoveredChanged += MapCanvas_HoveredChanged;
 
         _viewModel.IntelMarkersChanged += (_, markers) => MapCanvas.SetIntel(markers);
@@ -257,6 +258,15 @@ public partial class MapPage : Page, IManualAware
             .Cast<MapSystemNode>()
             .ToList();
         _viewModel.SetSelectedSystem(node, neighbors);
+    }
+
+    /// <summary>双击星图节点直接打开星系详情窗。</summary>
+    private void MapCanvas_NodeDoubleClicked(object? sender, MapSystemNode? node)
+    {
+        if (node is not null)
+        {
+            OpenSystemDetail(node);
+        }
     }
 
     private void MapCanvas_HoveredChanged(object? sender, MapSystemNode? node)
@@ -779,12 +789,15 @@ public partial class MapPage : Page, IManualAware
 
     private void SystemDetail_Click(object sender, RoutedEventArgs e)
     {
-        if (_viewModel.SelectedSystem is not { } node)
+        if (_viewModel.SelectedSystem is { } node)
         {
-            return;
+            OpenSystemDetail(node);
         }
+    }
 
-        // 详情窗口内容是"当前星系"，换星系要重建 → 不用 CloseToHide（真关 + 重建）
+    /// <summary>打开指定星系的详情窗；已有详情窗先关闭，再按新星系重建。</summary>
+    private void OpenSystemDetail(MapSystemNode node)
+    {
         _detailWindow?.Close();
         _detailWindow = CreateToolWindow(new MapSystemDetailView(node, _viewModel), "MapPage_Detail", 900, 640);
         _detailWindow.Closed += (_, _) => _detailWindow = null;
