@@ -23,7 +23,7 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<!--  正式版：VersionSuffix 留空；测试版：alpha.1 / beta.1（构建时也可用 -p:VersionSuffix=... 覆盖）  -->
 		<VersionPrefix>4.0.0</VersionPrefix>
-		<VersionSuffix>alpha.1</VersionSuffix>
+		<VersionSuffix>alpha.2</VersionSuffix>
 		<Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
 		<Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
 		<!--  Windows 程序集/文件版本只能使用数字；测试版递增 FileVersion，展示版本走 InformationalVersion  -->
