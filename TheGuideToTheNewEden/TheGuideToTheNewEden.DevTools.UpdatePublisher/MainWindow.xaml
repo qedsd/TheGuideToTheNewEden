@@ -1,0 +1,315 @@
+<Window
+    x:Class="TheGuideToTheNewEden.DevTools.UpdatePublisher.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="更新发布工具"
+    Width="1040"
+    Height="860"
+    MinWidth="900"
+    MinHeight="700"
+    Closing="OnWindowClosing"
+    FontFamily="Microsoft YaHei UI"
+    FontSize="13"
+    WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="#666666" />
+        </Style>
+        <Style x:Key="FormInput" TargetType="TextBox">
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="FormButton" TargetType="Button">
+            <Setter Property="Margin" Value="0,4,0,4" />
+            <Setter Property="Padding" Value="10,4" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="220" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  标题  -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock
+                FontSize="20"
+                FontWeight="Bold"
+                Text="更新发布工具" />
+            <TextBlock
+                x:Name="ScriptPathText"
+                Margin="0,4,0,0"
+                FontSize="11"
+                Foreground="#777777"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!--  参数  -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Style="{StaticResource FormLabel}"
+                Text="版本" />
+            <TextBox
+                x:Name="VersionBox"
+                Grid.Row="0"
+                Grid.Column="1"
+                Style="{StaticResource FormInput}"
+                ToolTip="留空 = 读取 csproj 的 VersionPrefix/VersionSuffix" />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="2"
+                Style="{StaticResource FormLabel}"
+                Text="Tag" />
+            <TextBox
+                x:Name="TagBox"
+                Grid.Row="0"
+                Grid.Column="3"
+                Style="{StaticResource FormInput}"
+                ToolTip="留空 = v版本号；必须与 GitHub/Gitee Release tag 一致" />
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                Style="{StaticResource FormLabel}"
+                Text="输出目录" />
+            <Grid
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="0,4,8,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    x:Name="OutputDirBox"
+                    Margin="0"
+                    Padding="6,4"
+                    VerticalContentAlignment="Center"
+                    ToolTip="留空 = &lt;仓库根&gt;\update-package" />
+                <Button
+                    Grid.Column="1"
+                    Margin="6,0,0,0"
+                    Padding="10,4"
+                    Click="OnBrowseOutputDir"
+                    Content="浏览…" />
+            </Grid>
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="2"
+                Style="{StaticResource FormLabel}"
+                Text="分片大小 (MB)" />
+            <TextBox
+                x:Name="MaxPartBox"
+                Grid.Row="1"
+                Grid.Column="3"
+                Style="{StaticResource FormInput}"
+                Text="90"
+                ToolTip="Gitee 单附件上限 100 MB，建议 80–90" />
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                Style="{StaticResource FormLabel}"
+                Text="GitHub 仓库" />
+            <TextBox
+                x:Name="GitHubRepoBox"
+                Grid.Row="2"
+                Grid.Column="1"
+                Style="{StaticResource FormInput}" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="2"
+                Style="{StaticResource FormLabel}"
+                Text="Gitee 仓库" />
+            <TextBox
+                x:Name="GiteeRepoBox"
+                Grid.Row="2"
+                Grid.Column="3"
+                Style="{StaticResource FormInput}" />
+
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="0"
+                Style="{StaticResource FormLabel}"
+                Text="Gitee 地址前缀" />
+            <TextBox
+                x:Name="GiteeBaseUrlBox"
+                Grid.Row="3"
+                Grid.Column="1"
+                Grid.ColumnSpan="3"
+                Style="{StaticResource FormInput}"
+                ToolTip="留空 = https://gitee.com/&lt;Gitee 仓库&gt;/releases/download/&lt;Tag&gt;" />
+
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="0"
+                Style="{StaticResource FormLabel}"
+                Text="完整包名" />
+            <TextBox
+                x:Name="FullNameBox"
+                Grid.Row="4"
+                Grid.Column="1"
+                Grid.ColumnSpan="3"
+                Style="{StaticResource FormInput}"
+                ToolTip="留空 = 原名_版本.exe" />
+
+            <TextBlock
+                Grid.Row="5"
+                Grid.Column="0"
+                Style="{StaticResource FormLabel}"
+                Text="指定 exe" />
+            <Grid
+                Grid.Row="5"
+                Grid.Column="1"
+                Grid.ColumnSpan="3"
+                Margin="0,4,8,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    x:Name="ExePathBox"
+                    Margin="0"
+                    Padding="6,4"
+                    VerticalContentAlignment="Center"
+                    ToolTip="留空 = 自动发布到 artifacts\publish-single；填写则跳过编译" />
+                <Button
+                    Grid.Column="1"
+                    Margin="6,0,0,0"
+                    Padding="10,4"
+                    Click="OnBrowseExePath"
+                    Content="浏览…" />
+            </Grid>
+
+            <CheckBox
+                x:Name="SkipPublishCheck"
+                Grid.Row="6"
+                Grid.Column="1"
+                Grid.ColumnSpan="3"
+                Margin="0,6,0,0"
+                Content="跳过编译（直接用已有 exe / 指定 exe 重新生成分片和 update.json）" />
+        </Grid>
+
+        <!--  更新内容  -->
+        <Grid Grid.Row="2" Margin="0,12,0,4">
+            <TextBlock FontWeight="SemiBold" Text="更新内容（notes）" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button
+                    Margin="0,0,6,0"
+                    Padding="8,2"
+                    Click="OnImportNotes"
+                    Content="从文件导入…" />
+                <Button
+                    Padding="8,2"
+                    Click="OnClearNotes"
+                    Content="清空" />
+            </StackPanel>
+        </Grid>
+        <TextBox
+            x:Name="NotesBox"
+            Grid.Row="3"
+            MinHeight="120"
+            Padding="8"
+            AcceptsReturn="True"
+            FontSize="12"
+            TextWrapping="Wrap"
+            ToolTip="支持多行；写入 update.json 的 notes，软件更新页会显示"
+            VerticalScrollBarVisibility="Auto" />
+
+        <!--  操作  -->
+        <StackPanel
+            Grid.Row="4"
+            Margin="0,10,0,6"
+            Orientation="Horizontal">
+            <Button
+                x:Name="PublishButton"
+                Padding="16,6"
+                Background="#0078D4"
+                BorderThickness="0"
+                Click="OnPublishClick"
+                Content="一键发布并生成"
+                Foreground="White"
+                IsDefault="True" />
+            <Button
+                x:Name="GenerateButton"
+                Margin="8,0,0,0"
+                Padding="16,6"
+                Click="OnGenerateClick"
+                Content="仅生成（跳过编译）" />
+            <Button
+                x:Name="CancelButton"
+                Margin="8,0,0,0"
+                Padding="16,6"
+                Click="OnCancelClick"
+                Content="停止"
+                IsEnabled="False" />
+            <Button
+                Margin="24,0,0,0"
+                Padding="12,6"
+                Click="OnOpenOutput"
+                Content="打开发布目录" />
+            <Button
+                Margin="8,0,0,0"
+                Padding="12,6"
+                Click="OnOpenManifest"
+                Content="打开 update.json" />
+        </StackPanel>
+
+        <!--  日志  -->
+        <Grid Grid.Row="5" Margin="0,6,0,4">
+            <TextBlock FontWeight="SemiBold" Text="运行日志" />
+            <Button
+                Padding="8,2"
+                HorizontalAlignment="Right"
+                Click="OnClearLog"
+                Content="清空日志" />
+        </Grid>
+        <TextBox
+            x:Name="LogBox"
+            Grid.Row="6"
+            Padding="8"
+            BorderThickness="1"
+            FontFamily="Consolas, Microsoft YaHei UI"
+            FontSize="12"
+            HorizontalScrollBarVisibility="Auto"
+            IsReadOnly="True"
+            TextWrapping="NoWrap"
+            VerticalScrollBarVisibility="Auto" />
+
+        <TextBlock
+            x:Name="StatusText"
+            Grid.Row="7"
+            Margin="0,6,0,0"
+            Foreground="#777777"
+            Text="就绪" />
+    </Grid>
+</Window>

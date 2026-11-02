@@ -44,6 +44,7 @@
 | 依赖项目 | WPF 直接引用 **Core**（netstandard2.1，UI 无关） | 复用 ESI/DB/模型，不重复实现 |
 | 运行时资源 | `Resources/Configs`、`Resources/Database` 以**链接方式**引入，不复制进仓库 | 资源约 100MB，避免仓库重复存储 |
 | 设置存储 | 与 WinUI **共用** `Configs/settings.json` | 现有配置直接延续 |
+| 更新机制 | **应用自更新单文件 exe**：检查 → 从 **Gitee 镜像（分片）/ GitHub** 下载（可续传、SHA-256 校验）→ 改名替换当前 exe → 重启；**不再使用外部 Updater / 安装程序** | 绿色版只有一个 exe，没有安装器；Gitee 单附件 100 MB 限制用分片解决；用户数据在数据目录不受影响（阶段 262/263） |
 | 窗口位置 | Win32 `Get/SetWindowPlacement`，**物理像素** | 免疫跨不同 DPI 显示器的坐标换算错误 |
 | 托盘与通知 | **H.NotifyIcon.Wpf**（不再用 WPF-UI.Tray / Microsoft.Toolkit.Uwp.Notifications） | 与 WinUI 版一致（WinUI 用 H.NotifyIcon.WinUI）、维护活跃、无需 AUMID 注册 |
 | 邮件正文 | **HtmlRenderer.WPF**（`HtmlPanel`），不使用 WebView2 | 邮件是简单 HTML；零浏览器运行时依赖 |
@@ -10427,6 +10428,314 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
   - 页面当前只加载出 1 个真实角色，未能在本次会话做“双卡拖拽”的端到端实测；索引/落点/持久化逻辑已按现有 `CharacterStore.Move` 接好，需在含 2 个以上角色的配置上确认。
   - 未修改用户 `Auth.json`（测试用的临时角色已恢复）。
 
+## 阶段 262：绿色版单文件 exe 自更新（废弃外部 Updater）（2026-11-02）
+
+> 用户要求：新版本以**单个 exe 纯绿色运行**，内置更新机制需要重新设计。
+
+### 262.1 为什么必须重做
+
+- 阶段 189 起发布形态是 **单文件自包含 exe**（`PublishSingleFile` + `IncludeAllContentForSelfExtract`，
+  发布目录里只有一个 `TheGuideToTheNewEden.exe`），没有安装器、没有旁置 dll、没有注册表/开始菜单。
+- 旧「软件更新」页的链路是：下载 GitHub 附件 → `Process.Start` 启动**外部 Updater / 安装程序**。
+  这套链路依赖安装式发布：单文件绿色版既没有安装器，也不该为了更新重新引入安装；
+  仓库里的 `TheGuideToTheNewEden.Updater` 工程只有 `bin/obj`、**没有源码**，也不在解决方案里，WPF 侧从未引用它。
+- 结论：**更新必须由应用自己完成**——下载新的单文件 exe、校验、替换当前 exe、重启。
+
+### 262.2 新链路总览
+
+```
+检查   update.json（首选，带 SHA-256/说明）
+   ↓ 404/损坏
+       GitHub API（资产列表 + digest；匿名 60 次/小时）
+   ↓ 403/限流
+       releases/latest 重定向 + 约定文件名探测（绕开 API）
+
+下载   数据目录 Updates/<version>/<asset>.part → 续传（Range）→ 大小/PE/SHA-256 校验 → 改名完成
+
+安装   当前 exe 改名备份 → 新 exe 移到当前路径 → 等本进程退出后拉起
+       └ 改名失败：写 apply-update.cmd，等待本进程退出后替换并拉起（兜底）
+
+清理   启动时删 old-*.exe（旧版本备份）、超期分片、30 天前的更新包
+```
+
+关键决策与理由：
+
+1. **优先读清单**：GitHub 匿名 API 每小时只有 60 次；`releases/latest/download/update.json`
+   走普通下载、不限流，清单还能携带 SHA-256 与更新说明。
+2. **版本比较改为 SemVer**：旧实现把 `4.0.0-alpha.2` 截成 `4.0.0`，正式版发布后 alpha/beta 用户永远
+   "已是最新"。新的 `SemanticVersion` 支持 `4.0.0 > 4.0.0-rc.1 > 4.0.0-beta.10 > 4.0.0-alpha.2`。
+3. **更新包放数据目录**，不放 exe 旁边：`SettingsService.DataPath\Updates\<version>\`，不污染绿色版目录。
+4. **可断点续传、可取消**：`.part` + `Range`；取消/失败不写坏最终文件，哈希不匹配会删掉坏文件。
+5. **校验分层**：大小 → `MZ` 头（防代理返回 HTML）→ SHA-256（清单/API `digest` 提供时）。
+6. **自替换用"改名"而不是"覆盖"**：Windows 允许给运行中的 exe 改名、不允许覆盖；
+   先 `File.Move(current, backup)`，再把新文件放到原路径；失败回滚。
+7. **兜底脚本只做最后一道保险**：目录/安全软件连改名都拦时，写 `apply-update.cmd`，等本进程 PID
+   退出后重试 15 次替换，失败则把旧 exe 放回并拉起旧版。
+8. **自动检查与主页共用缓存**：成功 15 分钟、失败 1 分钟，主页与设置页不会各打一次远程。
+
+### 262.3 代码变更
+
+- 新增 `Services/Update/SemanticVersion.cs`：SemVer 2.0 比较。
+- 新增 `Services/Update/UpdateModels.cs`：`UpdateCheckStatus` / `UpdateErrorKind` / `UpdateFilePart` /
+  `UpdateDownloadSource` / `UpdateInfo` / `UpdateCheckResult` / `UpdateDownloadProgress` / `UpdateRelaunchMode` / `UpdateException`。
+- 新增 `Services/Update/UpdateService.cs`：检查（缓存/门闩/多渠道路回退/资产打分）、下载（续传/取消/进度/校验）、
+  安装（改名替换/兜底脚本/回滚）、启动清理、`FormatNotes` / `FormatBytes` / `FormatSpeed`。
+- 重写 `Views/Pages/Settings/UpdateSettingPage.xaml(.cs)`：当前版本/绿色版标记、自动检查开关、
+  发布说明（只读可复制）、进度/速度、取消/下载/安装并重启、打开发布页。
+- `ViewModels/Home/HomePageViewModel.cs`：主页静默检查改走 `UpdateService.CheckAsync`。
+- `App.xaml.cs`：`CoreInitializer.Init()` 之后 `UpdateService.CleanupOnStartup()`；新增
+  `RequestRestartAfterUpdate()` + 等待 PID 退出的重启脚本（原 `RequestRestart` 的固定 2 秒保留给改数据目录）。
+- 语言：中英各新增 **35 个** `Settings.Update.*` 键。
+- 手册：重写 `Resources/Manuals/zh-CN/settings/update.md`；`settings.md` / `settings/general.md` 同步措辞。
+
+### 262.4 验证
+
+- 构建：`dotnet build ... -p:OutDir=<临时目录>` → **0 错误**（54 个既有警告，新增文件无新警告）。
+- 探针 `probe/UpdateProbe`：**32 项断言全 PASS**（核对后删除）：SemVer 14 项、说明纯文本化 3 项、
+  本地 Range 服务器上的续传/校验/缓存复用 10 项、运行中的 exe 就地改名替换 5 项。
+- 未覆盖：真实 GitHub 网络链路（本机匿名 API 403 限流）、界面截图、`ByHelper` 兜底分支未实际触发。
+
+### 262.5 已知限制
+
+- 整包下载（约 130 MB），无增量更新。
+- 必须可写：exe 目录不可写时只能手动覆盖；无代码签名；旧临时解压目录不立即清理。
+- `releases/latest` 不含 prerelease；无静默升级（下载/安装都需用户确认）。
+
+## 阶段 263：Gitee 国内镜像（多源 + 分片下载）（2026-11-02）
+
+> 用户反馈：GitHub 在国内可能下载失败，希望在 Gitee 也提供下载。
+
+### 263.1 硬限制与结论
+
+- **Gitee 单个发行版附件上限 100 MB**（免费账号；GVP 200 MB，整仓附件 1 GB），而单文件 exe 约 **134 MB**，
+  不能直接上传；Gitee 镜像必须**分片**。
+- 因此本阶段把下载模型从"单文件"扩成 **多源 + 分片**：
+  - **多源**：清单里可列多条下载路径，按顺序尝试（Gitee 分片 → GitHub 整包）；
+  - **分片**：一条源可由多个 `*.001/*.002` 组成，下载后按顺序拼接，再校验整包 SHA-256。
+- 清单本身放 Gitee 仓库根目录：`https://gitee.com/<owner>/<repo>/raw/master/update.json`
+  （再试 `main`），**不经过 Gitee API**；这条路径不通才回退 GitHub 的 `update.json` / API / `releases/latest`。
+- 发布方需要创建同名 Gitee 仓库（当前 `https://gitee.com/qedsd/TheGuideToTheNewEden` 还返回 404，需实际创建）；
+  仓库名不同则改 `UpdateService.GiteeOwner/GiteeRepository` 两个常量。
+
+### 263.2 清单格式（向后兼容旧格式）
+
+旧格式（顶层 `file` + `url` + `size` + `sha256`）仍可用，会被当成"单源单文件"。新格式示例：
+
+```json
+{
+  "version": "4.0.0",
+  "tag": "v4.0.0",
+  "file": "TheGuideToTheNewEden_v4.0.0.exe",
+  "size": 140128244,
+  "sha256": "<整包 sha256>",
+  "publishedAt": "2026-11-02T12:00:00Z",
+  "notes": "## 更新内容\n- ...",
+  "sources": [
+    {
+      "name": "Gitee",
+      "parts": [
+        { "name": "TheGuideToTheNewEden_v4.0.0.exe.001", "url": "https://gitee.com/.../TheGuideToTheNewEden_v4.0.0.exe.001", "size": 94371840, "sha256": "<分片1 sha256>" },
+        { "name": "TheGuideToTheNewEden_v4.0.0.exe.002", "url": "https://gitee.com/.../TheGuideToTheNewEden_v4.0.0.exe.002", "size": 45756404, "sha256": "<分片2 sha256>" }
+      ]
+    },
+    {
+      "name": "GitHub",
+      "url": "https://github.com/qedsd/TheGuideToTheNewEden/releases/download/v4.0.0/TheGuideToTheNewEden_v4.0.0.exe",
+      "size": 140128244,
+      "sha256": "<整包 sha256>"
+    }
+  ]
+}
+```
+
+- `sources[].parts` = **顺序分片**；`sources[].url` / `urls` = **同一个完整文件的镜像**（每个 URL 单独成为一条源）。
+- 分片 `sha256` 可选（给了就逐片校验）；整包 `sha256` 建议必填，拼接后再校验一次。
+- 最终文件名从 `file` 取；分片名的 `.001` 后缀会被 `ResolveFileName` 去掉。
+
+### 263.3 代码变更
+
+- `UpdateModels.cs`：`UpdateInfo` 改为 `FileName / Size / Sha256 / Sources`；新增 `UpdateDownloadSource`
+  （一条完整下载路径）与 `UpdateFilePart`（分片）；删除 `UpdateAsset`；进度增加 `SourceName`。
+- `UpdateService.cs`：
+  - `GetManifestUrls()`：Gitee `raw/master` → Gitee `raw/main` → GitHub `update.json` → `latest.json`；
+    `ManifestUrlOverride` 仅供探针/调试。
+  - `ParseManifest` / `ParseSources` / `ParseSourceElement`：解析 `sources`、`parts`、`url/urls`，兼容旧格式。
+  - `DownloadAsync`：按源循环；逐片下载（Range 续传、逐片校验、进度按整包累计），`AssembleAsync` 拼接多片，
+    `ValidateFileAsync` 校验大小 + `MZ` + 整包 SHA-256；某源失败记录日志并自动换下一个源。
+  - 新增 `GiteeOwner` / `GiteeRepository` / `GiteeRepositoryUrl` 常量。
+  - 修复探针发现的真实缺陷：**分片写入句柄未释放就校验**（`FileShare.None`），`File.OpenRead` 报"文件被占用"，
+    被吞掉后表现为"分片校验失败"。现在 `Flush` 后先 `DisposeAsync` 再校验。
+- `UpdateSettingPage`：适配 `Sources` / `HasAsset`，进度显示下载源；新增 Gitee 说明文案。
+- 语言：中英各 **+4 键**（`DownloadingFrom` / `DownloadingFromPercent` / `OpenGitee` / `OpenGitHub`）。
+- 新增 `tools/packaging/make-update-package.ps1`（**一键发布**）：
+  - 默认**不需要参数**：脚本按自身位置定位仓库，读取 WPF csproj 的 `VersionPrefix`/`VersionSuffix`，
+    自动执行 `dotnet publish -p:PublishProfile=win-x64-single-file -p:Version=<Version>` 到
+    `<仓库根>\artifacts\publish-single\`，再生成发布物；
+  - **同时产出两种文件**——复制一份带版本号的**完整 exe**（给 GitHub），并按 `-MaxPartMB`（默认 90）
+    切出带版本号的**分片**（给 Gitee，至少 1 片）；
+  - 文件名默认 `<原名>_<Tag>.exe`（如 `TheGuideToTheNewEden_v4.0.0.exe`），分片为 `.001/.002/...`；
+    输入名里已有的版本后缀会先去掉，避免 `_v4.0.0_v4.0.0`；
+  - 计算整包/分片 SHA-256，生成 `update.json`（Gitee 分片 + GitHub 整包）；清单写 UTF-8 无 BOM；
+  - 仓库、Gitee 地址、输出目录、分片大小都有固定默认值：`-Tag` 默认 `v<Version>`、
+    `-OutputDir` 默认 `<仓库根>\update-package`、`-GiteeBaseUrl` 默认
+    `https://gitee.com/<GiteeRepo>/releases/download/<Tag>`；
+  - `-Version` 会**同时**传给 `dotnet publish`，保证 exe 的 ProductVersion 与清单一致；
+  - `-SkipPublish` 跳过编译、直接用 `artifacts\publish-single` 或 `-ExePath`；
+  - 生成前会检查 exe 的 `ProductVersion` 与清单 `Version`，不一致给 warning。
+- 手册：`settings/update.md` 补充 Gitee 源、100 MB 分片、源回退与失败处置；`settings.md` 同步一句。
+
+### 263.4 发布流程（Gitee 侧）
+
+1. 在 Gitee 创建公开仓库（建议同名 `qedsd/TheGuideToTheNewEden`，默认分支 `master` 或 `main`）。
+2. 一键发布（默认读 csproj 版本；发正式版时传 `-Version`）：
+   `./tools/packaging/make-update-package.ps1 -Version 4.0.0`
+   脚本会自己执行 `dotnet publish`，不需要先手动发布；`-GiteeBaseUrl` 也有默认值，正常不用传。
+3. 生成结果：
+   - **GitHub**：上传完整 exe（`TheGuideToTheNewEden_v4.0.0.exe`）+ `update.json` 到 Release；
+   - **Gitee**：上传分片（`TheGuideToTheNewEden_v4.0.0.exe.001/.002/...`，每个 <100 MB）+ 把 `update.json`
+     提交到 **Gitee 仓库根目录**（供 raw 读取）。
+4. 核对清单里的 Gitee 附件 URL 与页面上「复制链接」得到的地址一致；不一致时用 `-GiteeBaseUrl` 重跑。
+   Gitee 附件地址可能是 `/releases/download/<tag>/<file>` 或 `/attach_files/<id>/download`，以实际为准。
+
+### 263.5 验证
+
+- 构建：**0 错误**（54 个既有警告，无新增）。
+- 探针 `probe/UpdateProbe`：**24 项断言全 PASS**（核对后删除）：
+  - 清单解析：2 个源、Gitee 2 个分片、最终文件名；
+  - 多分片下载：预置 1 MB 分片 → Range 续传、拼接后逐字节一致、分片清理、进度含源名/百分比并累计到总大小；
+  - 源回退：第一源 404 → 自动改用 GitHub 源并成功，确认请求过失败源；
+  - 旧清单格式兼容：单 `url` 仍可检查与下载；
+  - 自替换：运行中的 exe 就地替换 + 备份。
+- 未覆盖：真实 Gitee 网络链路（目标仓库尚不存在，raw 返回 404）；Gitee 附件真实下载地址格式以页面为准；
+  界面截图按 §8 约定未做。
+
+### 263.6 已知限制
+
+- **Gitee 免费账号附件 100 MB**：exe 必须分片；建议 90 MB 一片（约 2 片）。
+- **Gitee raw 的可达性/登录策略可能变化**：若 raw 被要求登录，应把 `update.json` 也作为发行版附件并调整
+  `GetManifestUrls()`；应用已保留 GitHub 回退。
+- **分片串行下载**：同源分片按顺序下载，没有并发；为续传/进度简单可靠，后续可优化。
+- **清单地址写死在代码**：Gitee 仓库改名/换默认分支需要改常量或加设置项；当前未做 UI 配置。
+- **Gitee 与 GitHub 的版本可能不同步**：清单优先 Gitee，发版时必须同时更新两边的 `update.json`。
+
+## 阶段 264：软件更新页去掉页面级描述性文本（保留设置行描述）（2026-11-02）
+
+> 用户反馈：软件更新页有大量描述性文本，界面上尽量不要堆说明；但 `SettingCard` 标题下的描述是设置控件特意设计的，要保留。
+
+### 264.1 变更
+
+- `UpdateSettingPage.xaml`：
+  - 「当前版本」卡片删除 `Description`（版本号本身已说明，重复）与右侧「绿色版 · 单文件」标记；
+  - 「自动检查更新」卡片**保留** `Description`（`SettingCard` 的固定结构）；
+  - 页面底部两段长提示（`PortableHint` / `MirrorHint`）整段删除。
+- 保留：版本号、自动检查开关、检查状态、发布说明（更新正文属于内容，不是界面说明）、
+  进度/错误详情。功能说明与限制统一放手册 [settings/update.md]。
+- 语言键：中英各删除 4 个不再引用的键——`Settings.Update.Current.Description`、
+  `Settings.Update.Portable`、`Settings.Update.PortableHint`、`Settings.Update.MirrorHint`；
+  `AutoCheck.Description` **保留**。
+- 文档：§8「环境/协作注意」新增**界面文案约定**（见上）。
+
+### 264.2 约定
+
+- 页面默认只有"标题 + 控件 + 必要状态"；一段话能进手册就进手册。
+- **`SettingCard` 自带的 Title / Description 默认保留**：它是设置控件的固定结构，不属于页面级说明；
+  只有描述与右侧值重复、或完全没有信息量时才省略（例如「当前版本」右侧已经显示版本号）。
+- 要删的是页面里额外的长段落、重复说明和无信息量的标记；ToolTip / AutomationName 只放一句操作提示。
+- 更新说明、错误详情这类**用户需要读的内容**不受此限。
+
+### 264.3 验证
+
+- `dotnet build`：**0 错误**。
+- 全仓检索四个被删键：产品代码与语言文件中已无引用/定义。
+- 按 §8 约定未做界面截图核验。
+
+## 阶段 265：主页新版本提示移到版本号右侧、去掉具体版本号（2026-11-02）
+
+> 用户要求：新版本提示放在主标题右侧版本号的右侧；只提示"有新版本"，不显示详细版本号。
+
+### 265.1 变更
+
+- `HomePage.xaml`：
+  - 把新版本提示从品牌条**第二行状态胶囊**移到**标题行**，紧跟在版本号 `Border` 右侧；
+  - 样式改为与版本号同高的小胶囊（琥珀底、`CloudArrowDown24` 图标 + 「有新版本」文字），
+    仍可点击（`OnUpdatePillClick` → 设置 → 软件更新）；
+  - 第二行恢复为只放「在线人数 / 游戏时间」两个胶囊。
+- `HomePageViewModel.NewVersionText` 不再 `string.Format` 版本号，只返回
+  `Home.Status.NewVersion`。
+- 语言：`Home.Status.NewVersion` 由「有新版本 {0}」改为「有新版本」/ `Update available`；
+  `Home.Status.NewVersionTip` 不变。
+- 手册：`home.md`、`settings/update.md` 同步为"版本号右侧出现「有新版本」"。
+
+### 265.2 验证
+
+- `dotnet build`：**0 错误**。
+- 按 §8 约定未做界面截图核验。
+
+## 阶段 266：DevTools 更新发布 WPF 工具（多行 notes + 一键发布）（2026-11-02）
+
+> 用户反馈：`notes` 写在命令行里太麻烦、不能换行，希望在 DevTools 文件夹下有一个 WPF 界面配置并运行发布脚本。
+
+### 266.1 新增工程
+
+`TheGuideToTheNewEden.DevTools.UpdatePublisher\`（独立 WPF 工程，直接位于解决方案根目录、与 EVESimulation 同级）：
+
+```
+TheGuideToTheNewEden.DevTools.UpdatePublisher.csproj   net8.0-windows / UseWPF / 无第三方包
+App.xaml(.cs)
+MainWindow.xaml(.cs)
+```
+
+工程由 VS 的 `DevTools` 解决方案文件夹收纳（`NestedProjects` 映射），物理目录不再嵌套在
+`TheGuideToTheNewEden.DevTools\` 下面，因此不需要父工程做 `Compile Remove`。
+
+### 266.2 界面
+
+- 参数：版本、Tag、输出目录、分片大小、GitHub/Gitee 仓库、Gitee 地址前缀、完整包名、指定 exe、跳过编译；
+- **更新内容 notes 是多行 `TextBox`**（`AcceptsReturn` + 换行 + 滚动），支持「从文件导入…」「清空」；
+- 操作：「一键发布并生成」「仅生成（跳过编译）」「停止」「打开发布目录」「打开 update.json」「清空日志」；
+- 日志：实时显示脚本 stdout/stderr（UTF-8），退出码与成功/失败状态；
+- 参数自动保存到 `%LocalAppData%\TheGuideToTheNewEden\DevTools\update-publisher.json`，下次打开回填；
+- 指定 exe 时自动按 `-SkipPublish` 处理，避免"一键发布"又去编译。
+
+### 266.3 运行方式
+
+- 自动从 `AppContext.BaseDirectory` 向上找 `tools\packaging\make-update-package.ps1`；
+- 生成临时 PowerShell 包装脚本（UTF-8 BOM），把界面参数以单引号安全转义后传给脚本；
+- `notes` 写入临时 `.md`（UTF-8 **无 BOM**）并通过 `-NotesFile` 传入，彻底避开命令行换行/引号问题；
+- `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <包装脚本>`，工作目录 = 仓库根；
+- 停止时 `Kill(entireProcessTree: true)`；退出前若仍在运行会确认。
+
+### 266.4 验证
+
+- `dotnet build` 该 WPF 工程：**0 错误 0 警告**；
+- 窗口冒烟：启动后进程存活，主窗口标题「更新发布工具」；
+- 父 `TheGuideToTheNewEden.DevTools` 控制台工程仍 **0 错误**（36 个既有警告）；
+- 未做"在界面里点完整发布"的端到端操作；底层脚本的发布/分片/清单已在前面的阶段实测通过。
+
+## 阶段 267：下载中改为「停止」按钮、更新说明去掉底部边框（2026-11-02）
+
+> 用户反馈：下载途中仍显示「下载」按钮（应显示停止）；更新说明的 TextBox 底部有一条边框。
+
+### 267.1 下载按钮
+
+- `UpdateSettingPage.SetBusy` 在 `downloading=true` 时：
+  - `CancelButton` 显示，文案由「取消」改为「**停止**」（复用 `General_Stop`）；
+  - `DownloadButton` / `InstallButton` 直接 `Collapsed`，不再只是置灰；
+  - 下载结束/取消/失败后恢复显示。
+- 手册 `settings/update.md` 的「取消」措辞同步为「停止」，并说明下载中只显示停止。
+
+### 267.2 更新说明的边框
+
+- 根因：`ui:TextBox`（WPF-UI）的模板自带底部强调线/边框，`BorderThickness="0"` 只能改控件属性，
+  模板里的线仍然绘制。
+- 改为标准 `TextBox` + `Style="{x:Null}"` + `BorderThickness="0"` + `Background="Transparent"`，
+  保留 `IsReadOnly`、`TextWrapping`、滚动条与可选中复制；不再出现底部边框。
+
+### 267.3 验证
+
+- `dotnet build`：**0 错误**。
+- 按 §8 约定未做界面截图核验。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -10681,12 +10990,17 @@ WPF-UI 的 `ControlsDictionary` 已经带了这个键；再合并一个同键样
 - 玩家建筑页的"按角色搜索"（依赖 OAuth 授权链路打通后的 ESI 结构查询）。
 - ~~**结构名称解析**~~ → **阶段 27 已完成**（与「功能降级」第 5 条一致）。以下为历史描述：把 WinUI `StructureService.QueryStructureAsync`（`Universe.GetStructureInfoAsync` + `Structures.json` 缓存）移植到 WPF 版；这是"structure id 请走 StructureService"约定在 WPF 侧落地的前提（详见文末同名小节）。
 - ~~ZKB 页本身仍是导航占位（工作区 ZKB 卡的"ZKB"按钮跳到该占位页）~~ → **阶段 53 已完成**：ZKB 主页面、击杀流、实体统计（6 子页签）、KB 详情全部落地，工作区卡片改为直接打开该角色的实体统计标签。
-- 软件更新页"安装"仍交外部 Updater。
+- ~~软件更新页"安装"仍交外部 Updater。~~ → **阶段 262 已完成**：绿色版单文件 exe 由应用自己下载、校验、替换并重启；外部 Updater 不再参与。
 - **预览浮窗不跟随源窗口实时改变宽高比**（阶段 44）：窗口尺寸被锁定为游戏客户区比例，但只在启动/缩放/统一尺寸/恢复位置/布局变化时校正；游戏侧切全屏或改分辨率后，要等下一次这类时机才跟着变（未监听源窗口 `WM_SIZE`）。
 - **AI 助手**（阶段 105–132）的迁移与设计范围**已全部完成**（含 v1.5 P1/P2、ESI 全量网关、内置说明书接入与单对话记忆）；
   剩余可选项与边界见第 70 条，工具/文件的当前清单见 §10「AI 助手模块」。
 
 ### 环境/协作注意
+- **界面不要堆描述性文本**（阶段 264 起）：设置页 / 工具页只保留标题、控件、状态与错误；
+  功能说明、限制、长段落放**内置手册 / ToolTip / 「?」入口**，不要在页面正文重复。
+  新增或改页面时先自问"这段字能不能删掉、能不能挪进手册"，不要用整段文字解释界面自己。
+  注意：`SettingCard` 的 `Title` / `Description` 默认按设计保留（描述与右侧值重复时可省，如「当前版本」），
+  不要把它当成页面级说明一律删掉。
 - **代码调整不需要截图验证**：改动完成、构建通过后直接说明结果即可，由使用者自行查看界面效果。
 - **构建与运行由使用者自行执行**（2026-10 起的协作约定，阶段 102 期间确立）：改完代码直接说明结果即可，
   **不要反复请求"关掉应用让我构建"**——应用常驻时输出目录被锁（`MSB3027` / `MSB3021`，那不是编译错误），
@@ -11400,6 +11714,7 @@ Controls/SettingCard.cs + SettingCardStyles.xaml     Win11 设置行控件与样
 Controls/PagerControl.xaml(.cs)                      通用分页
 Views/Pages/SettingsPage.xaml(.cs)                   设置壳页（分类列表 + 子页 Frame）
 Views/Pages/Settings/{General,GameLog,Market,Structures,ESIScope,KeyboardList,Test,Update,Glossary}*.xaml(.cs)   （ZKB 子页已于阶段 53 删除，AI 翻译子页已于阶段 121 并入 AI 助手）
+Services/Update/{SemanticVersion,UpdateModels,UpdateService}.cs  单文件 exe 自更新（多源 / SemVer / 续传 / SHA-256 / 分片拼接 / 改名替换 + 兜底脚本 / 启动清理；阶段 262/263）
 Views/UserControls/Settings/AiTranslationSettingView.xaml(.cs)  模型端点 + 术语库 + 生成与缓存（阶段 121 从 AI 翻译设置页抽成，嵌在 AI 助手页里）
 Views/Pages/Settings/AiAssistantSettingPage.xaml(.cs)  AI 相关设置的唯一入口：模型与翻译 / 行为 / ESI 全量访问 / 工具开关
 Services/Settings/*.cs                               10 个设置子服务

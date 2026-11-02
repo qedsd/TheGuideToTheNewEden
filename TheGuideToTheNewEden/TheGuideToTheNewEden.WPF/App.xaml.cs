@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
+using TheGuideToTheNewEden.WPF.Services.Update;
 
 namespace TheGuideToTheNewEden.WPF;
 
@@ -16,9 +17,26 @@ public partial class App : Application
     /// <summary>本次退出后是否重新拉起自身（改数据目录等"需要重启"的设置会用到，阶段 186）。</summary>
     private static bool _restartPending;
 
+    /// <summary>
+    /// 自更新后的重启：必须**等本进程真正退出**再拉起新 exe（阶段 262）。
+    /// <para>
+    /// 固定延迟 2 秒在机器忙/退出清理慢时可能不够：新进程起来时旧进程还占着单实例命名事件，
+    /// 会被当成"第二个实例"转交命令行后直接退出，结果新旧都没了。因此更新走等待 PID 退出的脚本。
+    /// </para>
+    /// </summary>
+    private static bool _waitForExitBeforeRestart;
+
     /// <summary>请求退出并重新启动应用。</summary>
     public static void RequestRestart()
     {
+        _restartPending = true;
+        Current?.Shutdown();
+    }
+
+    /// <summary>自更新完成后请求重启：等本进程退出后再拉起（避免与单实例机制抢跑）。</summary>
+    public static void RequestRestartAfterUpdate()
+    {
+        _waitForExitBeforeRestart = true;
         _restartPending = true;
         Current?.Shutdown();
     }
@@ -80,6 +98,9 @@ public partial class App : Application
         CoreInitializer.Init();
         ThemeService.Initialize();
         LanguageService.Initialize();
+
+        // 清掉上次自更新留下的旧 exe / 失败分片（必须等 CoreInitializer 初始化数据目录之后）。
+        UpdateService.CleanupOnStartup();
 
         try
         {
@@ -167,8 +188,8 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// 延迟 2 秒后重新启动自身：必须等本进程**真正退出**（释放单实例命名事件、
-    /// 放开输出目录里的文件锁），否则新进程会被当成"第二个实例"直接转交命令行后退出。
+    /// 延迟重新启动自身：必须等本进程**真正退出**（释放单实例命名事件、放开输出目录里的文件锁），
+    /// 否则新进程会被当成"第二个实例"直接转交命令行后退出。
     /// </summary>
     private static void StartDetachedRestart()
     {
@@ -176,6 +197,11 @@ public partial class App : Application
         {
             var exe = Environment.ProcessPath;
             if (string.IsNullOrWhiteSpace(exe))
+            {
+                return;
+            }
+
+            if (_waitForExitBeforeRestart && TryStartRestartAfterExit(exe))
             {
                 return;
             }
@@ -193,4 +219,54 @@ public partial class App : Application
             Core.Log.Warn($"[重启] 启动新进程失败：{ex.Message}");
         }
     }
+
+    /// <summary>
+    /// 自更新专用：写一个等待本进程 PID 退出的脚本，退出后再启动 exe。
+    /// 退一步的兜底是 120 秒后无论旧进程是否还在都启动（总比永远不启动好）。
+    /// </summary>
+    private static bool TryStartRestartAfterExit(string exe)
+    {
+        try
+        {
+            var script = Path.Combine(Path.GetTempPath(), $"TheGuideToTheNewEden-restart-{Environment.ProcessId}.cmd");
+            var pid = Environment.ProcessId;
+            var escapedExe = EscapeBatchPath(exe);
+            var content = $"""
+                @echo off
+                setlocal
+                set tries=0
+                :wait
+                tasklist /FI "PID eq {pid}" 2>nul | find "{pid}" >nul
+                if errorlevel 1 goto start
+                set /a tries+=1
+                if %tries% GEQ 120 goto start
+                timeout /t 1 /nobreak >nul
+                goto wait
+                :start
+                start "" "{escapedExe}"
+                del /F /Q "%~f0" >nul 2>&1
+                endlocal
+                """;
+
+            File.WriteAllText(script, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{script}\"",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            });
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Warn($"[重启] 等待退出脚本启动失败，回退固定延迟：{ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>批处理里 <c>%</c> 会被当变量展开（路径含 % 时），转义成 %% 才能原样使用。</summary>
+    private static string EscapeBatchPath(string path) => path.Replace("%", "%%");
 }

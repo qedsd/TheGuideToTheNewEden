@@ -57,7 +57,7 @@ children: [settings/general, settings/home, settings/game-log, settings/market, 
 | 术语表 | 维护用户自定义术语与 AI 发现的新词（用户术语优先级高于 SDE 术语库） | 用户术语与 AI 新词候选的增删改 | — |
 | 按键列表 | 查看多开预览激活快捷键 | 多开预览激活快捷键名称一览 | — |
 | 测试 | 测试系统通知、声音播放 | 通知 / 声音测试项与回环回调检测 | — |
-| 软件更新 | 检查软件更新 | 检查 / 下载 / 安装更新 | — |
+| 软件更新 | 检查软件更新 | 检查版本 / 从 Gitee 或 GitHub 下载单文件 exe（Gitee 分片）/ 安装并重启（绿色版自更新） | — |
 
 ## AI 能替你做什么 {#ai}
 - 设置**可以部分交给 AI**：`config_read`（name=`settings`）能读 `settings.json`（密钥类键省略），`config_write` 只能改**已存在的非密钥键**（语言、主题、托盘、服务器、日志路径、市场缓存参数等，前提是该键已在文件里），写入前需你确认，旧内容自动备份、可用 `config_restore` 回滚。改完可用 `feature_restart`（name=`settings`）重读；主题 / 语言 / 快捷键等启动期设置仍需重启才完全生效。

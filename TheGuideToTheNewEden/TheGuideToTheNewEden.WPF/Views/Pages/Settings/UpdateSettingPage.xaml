@@ -8,61 +8,179 @@
     ScrollViewer.CanContentScroll="False">
 
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <StackPanel Margin="36,0,36,40">
+            <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Update}" />
 
-            <StackPanel Grid.Column="0" Margin="36,0,36,40">
-                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Update}" />
-                <Border Style="{StaticResource SettingsGroupBorder}">
-                    <StackPanel>
-                        <controls:SettingCard
-                            Title="{DynamicResource Settings.Update.Current}"
-                            Description="{DynamicResource SettingPage_Update_Desc}"
-                            Icon="Info24">
+            <!--  当前版本 / 自动检查 / 手动检查  -->
+            <Border Style="{StaticResource SettingsGroupBorder}">
+                <StackPanel>
+                    <controls:SettingCard
+                        Title="{DynamicResource Settings.Update.Current}"
+                        Icon="Info24">
+                        <TextBlock
+                            x:Name="CurrentVersionText"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    </controls:SettingCard>
+
+                    <Border Style="{StaticResource SettingsDivider}" />
+
+                    <controls:SettingCard
+                        Title="{DynamicResource Setting_Update_AutoUpdate}"
+                        Description="{DynamicResource Settings.Update.AutoCheck.Description}"
+                        Icon="ArrowSync24">
+                        <ui:ToggleSwitch x:Name="AutoCheckToggle" />
+                    </controls:SettingCard>
+
+                    <Border Style="{StaticResource SettingsDivider}" />
+
+                    <controls:SettingCard Title="{DynamicResource Settings.Update.Check}" Icon="ArrowSync24">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <TextBlock
-                                x:Name="CurrentVersionText"
+                                x:Name="StatusText"
+                                MaxWidth="360"
+                                Margin="0,0,12,0"
                                 VerticalAlignment="Center"
                                 FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
+                            <ui:Button
+                                x:Name="ReleasePageButton"
+                                MinWidth="104"
+                                Margin="0,0,8,0"
+                                Appearance="Secondary"
+                                Content="{DynamicResource Settings.Update.OpenReleasePage}" />
+                            <Button
+                                x:Name="CheckButton"
+                                MinWidth="112"
+                                Content="{DynamicResource Settings.Update.Check}" />
+                        </StackPanel>
+                    </controls:SettingCard>
+                </StackPanel>
+            </Border>
+
+            <!--  发现新版本后的详情（默认折叠）  -->
+            <Border
+                x:Name="UpdatePanel"
+                Margin="0,16,0,0"
+                Style="{StaticResource SettingsGroupBorder}"
+                Visibility="Collapsed">
+                <StackPanel Margin="16,14,16,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Settings.Update.LatestVersion}" />
+                            <TextBlock
+                                x:Name="LatestVersionText"
+                                Margin="0,2,0,0"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom">
+                            <TextBlock
+                                x:Name="PublishedText"
+                                HorizontalAlignment="Right"
+                                FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                        </controls:SettingCard>
+                            <TextBlock
+                                x:Name="SizeText"
+                                Margin="0,2,0,0"
+                                HorizontalAlignment="Right"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Grid>
 
-                        <Border Style="{StaticResource SettingsDivider}" />
+                    <TextBlock
+                        x:Name="NotesHeader"
+                        Margin="0,14,0,6"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Settings.Update.ReleaseNotes}" />
 
-                        <controls:SettingCard Title="{DynamicResource Settings.Update.Check}" Icon="ArrowSync24">
-                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                                <TextBlock
-                                    x:Name="StatusText"
-                                    MaxWidth="320"
-                                    Margin="0,0,12,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                    TextTrimming="CharacterEllipsis"
-                                    TextWrapping="Wrap" />
-                                <Button
-                                    x:Name="CheckButton"
-                                    MinWidth="112"
-                                    Content="{DynamicResource Settings.Update.Check}" />
-                                <Button
-                                    x:Name="DownloadButton"
-                                    MinWidth="96"
-                                    Margin="8,0,0,0"
-                                    Content="{DynamicResource Settings.Update.Download}"
-                                    IsEnabled="False" />
-                                <Button
-                                    x:Name="InstallButton"
-                                    MinWidth="96"
-                                    Margin="8,0,0,0"
-                                    Content="{DynamicResource Settings.Update.Install}"
-                                    IsEnabled="False" />
-                            </StackPanel>
-                        </controls:SettingCard>
+                    <TextBox
+                        x:Name="NotesText"
+                        MaxHeight="220"
+                        Padding="0"
+                        AcceptsReturn="True"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        FocusVisualStyle="{x:Null}"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto"
+                        Style="{x:Null}" />
+
+                    <StackPanel x:Name="ProgressPanel" Margin="0,14,0,0" Visibility="Collapsed">
+                        <controls:RatioBar
+                            x:Name="ProgressBar"
+                            Height="6"
+                            BarBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            TrackBrush="{DynamicResource ControlFillColorSecondaryBrush}" />
+                        <Grid Margin="0,6,0,0">
+                            <TextBlock
+                                x:Name="ProgressText"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <TextBlock
+                                x:Name="SpeedText"
+                                HorizontalAlignment="Right"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Grid>
                     </StackPanel>
-                </Border>
-            </StackPanel>
-        </Grid>
+
+                    <StackPanel
+                        Margin="0,16,0,0"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <ui:Button
+                            x:Name="CancelButton"
+                            MinWidth="88"
+                            Margin="0,0,8,0"
+                            Appearance="Secondary"
+                            Content="{DynamicResource General_Stop}"
+                            Visibility="Collapsed" />
+                        <Button
+                            x:Name="DownloadButton"
+                            MinWidth="96"
+                            Content="{DynamicResource Settings.Update.Download}"
+                            IsEnabled="False" />
+                        <Button
+                            x:Name="InstallButton"
+                            MinWidth="120"
+                            Margin="8,0,0,0"
+                            Content="{DynamicResource Settings.Update.InstallAndRestart}"
+                            IsEnabled="False" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock
+                x:Name="DetailText"
+                Margin="2,4,0,0"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+        </StackPanel>
     </ScrollViewer>
 </Page>

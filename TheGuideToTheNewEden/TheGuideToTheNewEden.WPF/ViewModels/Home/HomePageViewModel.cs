@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Services.Update;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Home;
 
@@ -95,8 +96,9 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
     public bool HasNewVersion => _latestVersion is not null;
 
+    /// <summary>主页只提示"有新版本"，不展示具体版本号（版本详情在软件更新页）。</summary>
     public string NewVersionText =>
-        _latestVersion is null ? string.Empty : string.Format(Resolve("Home.Status.NewVersion"), _latestVersion);
+        _latestVersion is null ? string.Empty : Resolve("Home.Status.NewVersion");
 
     // ---------- 快捷方式卡 ----------
 
@@ -298,7 +300,7 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>启动时静默检查新版本（与"设置 → 软件更新"同一数据源，弹窗留给该页面）。</summary>
+    /// <summary>启动时静默检查新版本（与"设置 → 软件更新"共用 <see cref="UpdateService"/> 的缓存与版本比较）。</summary>
     private async Task CheckUpdateAsync()
     {
         if (!AutoUpdateService.Value)
@@ -308,15 +310,10 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
         try
         {
-            var release = await Core.Helpers.GithubHelper.GetLastReleaseInfoAsync();
-            var latest = release.TagName.TrimStart('v', 'V');
-            var current = AppVersion.Current.Split('-', '+')[0];
-
-            if (Version.TryParse(latest, out var latestVersion)
-                && Version.TryParse(current, out var currentVersion)
-                && latestVersion > currentVersion)
+            var result = await UpdateService.CheckAsync(force: false);
+            if (result.HasUpdate && result.Info is not null)
             {
-                _latestVersion = latest;
+                _latestVersion = result.Info.Version;
                 OnPropertyChanged(nameof(HasNewVersion));
                 OnPropertyChanged(nameof(NewVersionText));
             }

@@ -397,6 +397,33 @@
                                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Text="{Binding VersionText}" />
                                     </Border>
+
+                                    <!--  有新版本：只提示存在更新，不显示具体版本号  -->
+                                    <Border
+                                        Margin="8,0,0,0"
+                                        Padding="8,2"
+                                        VerticalAlignment="Center"
+                                        Background="#59FFB900"
+                                        BorderThickness="0"
+                                        CornerRadius="10"
+                                        Cursor="Hand"
+                                        MouseLeftButtonUp="OnUpdatePillClick"
+                                        ToolTip="{DynamicResource Home.Status.NewVersionTip}"
+                                        Visibility="{Binding HasNewVersion, Converter={StaticResource BoolToVisibility}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Symbol="CloudArrowDown24" />
+                                            <TextBlock
+                                                Margin="4,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontFamily="{StaticResource BrandFontFamily}"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding NewVersionText}" />
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
 
                                 <TextBlock
@@ -432,24 +459,6 @@
                                             FontSize="12"
                                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Text="{Binding GameTimeText}" />
-                                    </StackPanel>
-                                </Border>
-
-                                <Border
-                                    Background="#59FFB900"
-                                    Cursor="Hand"
-                                    MouseLeftButtonUp="OnUpdatePillClick"
-                                    Style="{StaticResource BannerPill}"
-                                    ToolTip="{DynamicResource Home.Status.NewVersionTip}"
-                                    Visibility="{Binding HasNewVersion, Converter={StaticResource BoolToVisibility}}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Style="{StaticResource BannerIcon}" Symbol="CloudArrowDown24" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                            Text="{Binding NewVersionText}" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
