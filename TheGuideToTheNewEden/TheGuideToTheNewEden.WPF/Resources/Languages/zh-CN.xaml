@@ -598,6 +598,10 @@
     <sys:String x:Key="Settings.Update.Failed">检查更新失败</sys:String>
     <sys:String x:Key="Settings.Update.DownloadFailed">下载失败</sys:String>
     <sys:String x:Key="Settings.Update.InstallFailed">安装失败</sys:String>
+    <sys:String x:Key="Settings.Update.SourceFailed">下载源 {0} 下载失败</sys:String>
+    <sys:String x:Key="Settings.Update.SourceChecksumFailed">下载源 {0} 文件校验失败</sys:String>
+    <sys:String x:Key="Settings.Update.TryingNextSource">，正在尝试下一个下载源</sys:String>
+    <sys:String x:Key="Settings.Update.AllSourcesFailed">所有下载源都失败，请检查网络或手动下载</sys:String>
     <sys:String x:Key="Settings.Update.Error.Network">网络不可用或无法访问 GitHub</sys:String>
     <sys:String x:Key="Settings.Update.Error.RateLimited">GitHub 接口限流，请稍后再试</sys:String>
     <sys:String x:Key="Settings.Update.Error.NoAsset">该版本没有可用的单文件更新包</sys:String>

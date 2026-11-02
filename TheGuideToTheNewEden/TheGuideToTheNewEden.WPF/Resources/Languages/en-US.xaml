@@ -582,6 +582,10 @@
     <sys:String x:Key="Settings.Update.Failed">Failed to check for updates</sys:String>
     <sys:String x:Key="Settings.Update.DownloadFailed">Download failed</sys:String>
     <sys:String x:Key="Settings.Update.InstallFailed">Install failed</sys:String>
+    <sys:String x:Key="Settings.Update.SourceFailed">Download source {0} failed</sys:String>
+    <sys:String x:Key="Settings.Update.SourceChecksumFailed">Verification failed for download source {0}</sys:String>
+    <sys:String x:Key="Settings.Update.TryingNextSource">; trying the next source</sys:String>
+    <sys:String x:Key="Settings.Update.AllSourcesFailed">All download sources failed. Check your network or download manually</sys:String>
     <sys:String x:Key="Settings.Update.Error.Network">Network unavailable or GitHub cannot be reached</sys:String>
     <sys:String x:Key="Settings.Update.Error.RateLimited">GitHub API is rate limited, please try again later</sys:String>
     <sys:String x:Key="Settings.Update.Error.NoAsset">This release has no single-file update package</sys:String>

@@ -10736,6 +10736,39 @@ MainWindow.xaml(.cs)
 - `dotnet build`：**0 错误**。
 - 按 §8 约定未做界面截图核验。
 
+## 阶段 268：下载源失败 / SHA 校验失败改为右下角通知（2026-11-02）
+
+> 用户反馈：SHA 校验失败时应用直接静默切换源重新下载，应该在右下角通知之类的提示。
+
+### 268.1 行为
+
+- `UpdateService` 新增 `SourceFailed` 事件（`UpdateSourceFailedEventArgs`：源名、序号、总数、错误类型、详情）；
+- `DownloadAsync` 在某个源失败（含分片/整包 SHA-256 校验失败、HTTP 404、超时）时：
+  1. 记录该源的错误（含分片名/URL）；
+  2. 触发 `SourceFailed`；
+  3. 继续尝试下一个源（自动回退逻辑不变）；
+- 页面 `UpdateSettingPage` 在下载期间订阅该事件：
+  - **校验失败**用 `PageNotifyService.Error`（红色）通知；
+  - **网络/404 失败**用 `PageNotifyService.Warning`（黄色）通知；
+  - 文案形如「下载源 Gitee 文件校验失败，正在尝试下一个下载源」；
+  - 同时更新页面状态行与底部详情（详情含具体分片/URL）；
+- 所有源都失败时，页面再弹一条「所有下载源都失败，请检查网络或手动下载」。
+- 事件可能来自线程池，本地化资源查找与通知都 `Dispatcher.BeginInvoke` 回 UI 线程。
+
+### 268.2 错误信息
+
+- 分片 HTTP 错误：`HTTP 404 Not Found（TheGuide...exe.002：https://...）`；
+- 分片校验：`分片 SHA-256 校验失败：...` / `分片大小不符：...`；
+- 整包校验：`整包 SHA-256 校验失败`；
+- 多源全失败：`所有下载源都失败：Gitee: ...；GitHub: ...`，保留最后一个异常作 InnerException。
+- 语言：中英各 **+4 键**（`SourceFailed` / `SourceChecksumFailed` / `TryingNextSource` / `AllSourcesFailed`）。
+- 手册 `settings/update.md` 的失败表同步为「右下角通知并自动换源」与「所有下载源都失败」。
+
+### 268.3 验证
+
+- `dotnet build`：**0 错误**。
+- 按 §8 约定未做界面截图核验。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

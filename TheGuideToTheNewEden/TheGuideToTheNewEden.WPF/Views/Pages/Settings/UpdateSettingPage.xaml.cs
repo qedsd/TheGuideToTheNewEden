@@ -219,6 +219,7 @@ public partial class UpdateSettingPage : Page
 
         var progress = new Progress<UpdateDownloadProgress>(OnDownloadProgress);
 
+        UpdateService.SourceFailed += OnDownloadSourceFailed;
         try
         {
             _downloadedPath = await UpdateService.DownloadAsync(_latest, progress, token);
@@ -243,6 +244,7 @@ public partial class UpdateSettingPage : Page
             StatusText.Text = DescribeError(new UpdateError(ex.Kind, ex.Message), "Settings.Update.DownloadFailed");
             DetailText.Text = ex.Message;
             DetailText.Visibility = Visibility.Visible;
+            PageNotifyService.Error(FindString("Settings.Update.AllSourcesFailed"));
         }
         catch (Exception ex)
         {
@@ -250,14 +252,46 @@ public partial class UpdateSettingPage : Page
             StatusText.Text = DescribeError(new UpdateError(UpdateErrorKind.DownloadFailed, ex.Message), "Settings.Update.DownloadFailed");
             DetailText.Text = ex.Message;
             DetailText.Visibility = Visibility.Visible;
+            PageNotifyService.Error(FindString("Settings.Update.AllSourcesFailed"));
         }
         finally
         {
+            UpdateService.SourceFailed -= OnDownloadSourceFailed;
             _downloadCts?.Dispose();
             _downloadCts = null;
             SetBusy(false, downloading: false);
             CancelButton.Visibility = Visibility.Collapsed;
         }
+    }
+
+    /// <summary>某个源失败（含 SHA 校验失败）时，右下角提示，再自动换下一个源。</summary>
+    private void OnDownloadSourceFailed(object? sender, UpdateSourceFailedEventArgs e)
+    {
+        // 事件可能来自线程池；本地化资源查找/通知都放回 UI 线程。
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            var key = e.IsChecksumFailure
+                ? "Settings.Update.SourceChecksumFailed"
+                : "Settings.Update.SourceFailed";
+            var text = string.Format(FindString(key), e.SourceName);
+            if (e.HasNextSource)
+            {
+                text += FindString("Settings.Update.TryingNextSource");
+            }
+
+            if (e.IsChecksumFailure)
+            {
+                PageNotifyService.Error(text);
+            }
+            else
+            {
+                PageNotifyService.Warning(text);
+            }
+
+            StatusText.Text = text;
+            DetailText.Text = e.Message;
+            DetailText.Visibility = Visibility.Visible;
+        }));
     }
 
     private void OnDownloadProgress(UpdateDownloadProgress progress)

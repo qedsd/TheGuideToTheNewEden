@@ -198,3 +198,23 @@ public sealed class UpdateException : Exception
 
     public UpdateErrorKind Kind { get; }
 }
+
+/// <summary>某个下载源失败（界面据此弹右下角通知，再自动尝试下一个源）。</summary>
+public sealed class UpdateSourceFailedEventArgs : EventArgs
+{
+    public required string SourceName { get; init; }
+
+    public required int SourceIndex { get; init; }
+
+    public required int SourceCount { get; init; }
+
+    public required UpdateErrorKind Kind { get; init; }
+
+    public required string Message { get; init; }
+
+    /// <summary>后面还有没有源可试。</summary>
+    public bool HasNextSource => SourceIndex + 1 < SourceCount;
+
+    /// <summary>是否属于"文件内容不对"（SHA-256 / 大小），而不是网络失败。</summary>
+    public bool IsChecksumFailure => Kind is UpdateErrorKind.HashMismatch or UpdateErrorKind.SizeMismatch;
+}

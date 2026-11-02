@@ -87,6 +87,12 @@ public static class UpdateService
     /// <summary>调试/探针用：非空时只读这一条清单地址（不参与正常发布）。</summary>
     public static string? ManifestUrlOverride { get; set; }
 
+    /// <summary>
+    /// 某个下载源失败（含 SHA-256 校验失败）。下载会继续尝试下一个源；
+    /// 界面订阅它做右下角通知，避免"静默换源"。
+    /// </summary>
+    public static event EventHandler<UpdateSourceFailedEventArgs>? SourceFailed;
+
     /// <summary>当前进程实际运行的 exe 路径（单文件发布下是原始 exe，不是临时解压目录里的 apphost）。</summary>
     public static string? CurrentExecutablePath => Environment.ProcessPath;
 
@@ -764,6 +770,7 @@ public static class UpdateService
         EnsureFreeSpace(folder, info.Size > 0 ? info.Size : info.Sources.Max(s => s.KnownSize));
 
         UpdateException? lastError = null;
+        var sourceErrors = new List<string>();
 
         for (var sourceIndex = 0; sourceIndex < info.Sources.Count; sourceIndex++)
         {
@@ -795,7 +802,7 @@ public static class UpdateService
                     TryDelete(assembled);
                     throw new UpdateException(
                         info.Sha256 is not null ? UpdateErrorKind.HashMismatch : UpdateErrorKind.InvalidFile,
-                        "下载的 exe 未通过校验");
+                        info.Sha256 is not null ? "整包 SHA-256 校验失败" : "下载的 exe 未通过校验（大小/MZ 头）");
                 }
 
                 if (!string.Equals(assembled, finalPath, StringComparison.OrdinalIgnoreCase))
@@ -817,16 +824,53 @@ public static class UpdateService
             catch (UpdateException ex)
             {
                 lastError = ex;
+                sourceErrors.Add($"{source.Name}: {ex.Message}");
                 Core.Log.Warn($"[更新] 下载源 {source.Name} 失败：{ex.Message}；尝试下一个源");
+                RaiseSourceFailed(source, sourceIndex, info.Sources.Count, ex.Kind, ex.Message);
             }
             catch (Exception ex)
             {
                 lastError = new UpdateException(UpdateErrorKind.DownloadFailed, ex.Message, ex);
+                sourceErrors.Add($"{source.Name}: {ex.Message}");
                 Core.Log.Warn($"[更新] 下载源 {source.Name} 异常：{ex.Message}；尝试下一个源");
+                RaiseSourceFailed(source, sourceIndex, info.Sources.Count, UpdateErrorKind.DownloadFailed, ex.Message);
             }
         }
 
+        if (sourceErrors.Count > 1)
+        {
+            throw new UpdateException(
+                UpdateErrorKind.DownloadFailed,
+                "所有下载源都失败：" + string.Join("；", sourceErrors),
+                lastError);
+        }
+
         throw lastError ?? new UpdateException(UpdateErrorKind.DownloadFailed, "所有下载源都失败了");
+    }
+
+    private static void RaiseSourceFailed(
+        UpdateDownloadSource source,
+        int sourceIndex,
+        int sourceCount,
+        UpdateErrorKind kind,
+        string message)
+    {
+        try
+        {
+            SourceFailed?.Invoke(null, new UpdateSourceFailedEventArgs
+            {
+                SourceName = source.Name,
+                SourceIndex = sourceIndex,
+                SourceCount = sourceCount,
+                Kind = kind,
+                Message = message,
+            });
+        }
+        catch (Exception ex)
+        {
+            // 订阅方的异常不能把下载带崩。
+            Core.Log.Warn($"[更新] 处理下载源失败通知时异常：{ex.Message}");
+        }
     }
 
     private static async Task DownloadPartAsync(
@@ -882,7 +926,9 @@ public static class UpdateService
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new UpdateException(UpdateErrorKind.DownloadFailed, $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}");
+            throw new UpdateException(
+                UpdateErrorKind.DownloadFailed,
+                $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}（{part.Name}：{uri}）");
         }
 
         var append = existing > 0 && response.StatusCode == HttpStatusCode.PartialContent;
@@ -945,7 +991,9 @@ public static class UpdateService
             TryDelete(partPath);
             throw new UpdateException(
                 part.Sha256 is not null ? UpdateErrorKind.HashMismatch : UpdateErrorKind.SizeMismatch,
-                $"分片校验失败：{part.Name}");
+                part.Sha256 is not null
+                    ? $"分片 SHA-256 校验失败：{part.Name}"
+                    : $"分片大小不符：{part.Name}");
         }
     }
 
