@@ -10769,6 +10769,25 @@ MainWindow.xaml(.cs)
 - `dotnet build`：**0 错误**。
 - 按 §8 约定未做界面截图核验。
 
+## 阶段 269：预览窗窄窗口尺寸对账死循环修复（方案 A，2026-11-03）
+
+- 现场日志：`20261103.txt` 约 69,845 条 `[预览窗] WPF 尺寸与实际窗口不一致` WARN，20:20–20:57 约 31 条/秒，日志约 10MB。
+- 根因：
+  - `SystemParameters.MinimumWindowWidth` 在当前系统为 **136 DIP**（最小高度约 37.6 DIP），WPF 顶层 Window 布局不会低于这个宽度；
+  - 旧代码把 `MinWindowWidth/MinWindowHeight` 设为 **1**，并在 `WM_GETMINMAXINFO` 放开最小跟踪尺寸，允许 Win32 把窗口压到 82/100/110px；
+  - 锁定比例后，按高度反算出的宽度（46→82、56→100、62→110）低于 136；WPF `ActualWidth` 仍是 136，`Width = 110` 被 WPF 拉回 136；
+  - `_minimizeWatchTimer` 每 300ms 调 `SyncLayoutSizeIfStale`，每次重新判断 stale、重新设宽、重新报警，永不收敛；多个预览窗叠加成刷屏。
+- 修复（方案 A：接受系统最小尺寸）：
+  - `MinPreviewWidthPx/MinPreviewHeightPx` 改为 `SystemParameters.MinimumWindowWidth/Height × DPI` 的物理像素下限。
+  - `ApplyWpfMinimumSize` 把 WPF `MinWidth/MinHeight` 对齐到系统下限（不再清 0）。
+  - `GetMinimumWindowSize` 在锁定比例时按源画面比例计算最小高度（无标题栏 16:9 约 77px；带标题栏再加 28px）。
+  - `WM_GETMINMAXINFO`、`ClampToWorkArea`、`SetSize`、`Start/ShowWindow`、`CorrectSizeToAspect`、滚轮缩放、自动排列统一使用该下限；110×62 会被保持比例夹到 136×77（带标题栏约 136×105），而不是只夹宽度。
+  - `SyncLayoutSizeIfStale` 遇到实际窗口低于系统下限时不再参与对账；同一组“布局/实际”尺寸只尝试/记录一次，避免重复 `Width=...` + `NotifyClientSize`。
+- 验证：
+  - WPF build：**0 错误**。
+  - 按当前系统 136 DIP/37.6 DIP 校准；原日志中的 110×62 → 136×77（无标题栏）/约 136×105（有标题栏），宽度不再低于 WPF 硬下限，300ms 对账应不再产生该 WARN。
+  - 未在受影响机器上实机复测，需用户把预览缩小到最小尺寸后确认不再刷日志。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
