@@ -10769,6 +10769,91 @@ MainWindow.xaml(.cs)
 - `dotnet build`：**0 错误**。
 - 按 §8 约定未做界面截图核验。
 
+## 阶段 269：角色页新增紧凑列表视图（卡片 / 列表可切换）（2026-11-03）
+
+> 用户需求：角色一多，卡片网格不好浏览，希望可以切成更紧凑的列表形式；但列表单行也不能太挤。
+
+### 269.1 交互与形态
+
+- 页面**不再显示大标题**（遵循「页面内不重复标题」的 UI 约定，左侧导航已高亮"角色"）；顶部工具栏为一行：
+  左侧"拖拽角色可调整顺序"提示，右侧依次是 **视图切换 → 刷新 → 添加角色**。
+  - **视图切换**：`Grid24` / `AppsList24` 两个互斥的图标 `ToggleButton`（分段控件外观，不带文字，名称走 Tooltip 与
+    `AutomationProperties.Name`）。选中态**只有浅底**（`SubtleFillColorSecondaryBrush`，即 WinUI 分段控件的默认观感）；
+    曾试过再叠一层 `SystemAccentColorPrimaryBrush` 描边，浅色主题下显得过重，已按要求去掉，只保留默认选中效果。
+  - **刷新**：图标按钮（`ArrowSync16`），与改造前语义相同。
+  - **添加角色**：`Appearance="Primary"` + `Add24` + 文字（复用 `CharacterPage_Add`），与卡片/列表末尾的"添加角色"、
+    空态的"登录 EVE 账号"走同一个 `AddCharacterAsync`（含国服向导），工具栏入口让"角色已经很多、卡片在下面"时也能直接加号。
+- **卡片视图保持原样**（200×305 竖卡、头像/名称/SP/ISK/技能队列、拖拽排序），不因为新增列表而改动观感。
+- **列表视图一行一个角色，行高 ≈ 68 DIP**（刻意不做成 20~30px 的表格式细行）：
+  44px 圆形头像 → 名称（14px 半粗）+ 在线/离线状态（红绿点；离线带时长）→ 技能点 → ISK → 忠诚点 →
+  技能队列块（百分比 / 3px 细进度条 / 剩余时间 / 已暂停 / 未完成·总数）→ 右侧「⋯」菜单（固定到主页 / 删除角色）。
+- **各列固定宽度**（技能点 100 / ISK 110 / 忠诚点 76 / 技能队列 200，名称列 `*` 且 `MinWidth=120`），因此多行之间**严格对齐**；
+  数值过长时用 `TextTrimming=CharacterEllipsis` 省略，不会换行把行撑高。
+- 不加表头：每列自带 11px 的小标签（技能点 / ISK / 忠诚点 / 技能队列）。这样列宽只在一处定义，
+  不必维护"表头列宽 + 行模板列宽"两份（也就不会出现两者不同步导致的错位）。
+- **窄窗口不硬挤**：列表外面套了一层只负责横向滚动的 `ScrollViewer`（`RowScrollHost`，`MinWidth` 绑 `ViewportWidth`，
+  与阶段 22 表格同一套做法）。1200×800 逻辑分辨率下不需要横向滚动条；窗口压到最小值（960 宽）时出现横向滚动条，
+  而不是把「⋯」和队列数字裁掉。
+- **添加角色只有工具栏一个入口**：卡片网格与列表末尾**都不再放"添加角色"占位卡/占位行**（原先各有一处，角色多了要点它还得先滚到底）。
+  集合 `CharactersViewModel.Cards` 因此只装真实角色，`CharacterCardViewModel.IsAdd` 这个"占位卡"标记连同它带的分支
+  （`LoadAsync` 早退、`Card_Click`/`PinCharacter_Click`/拖拽与落点判断、`Remove` 守卫、`IsEmpty`/`CharacterCount` 的过滤）
+  一并删除；空态仍由引导卡里的「登录 EVE 账号」兜住。
+- **拖拽排序两种视图共用同一套实现**（阶段 261 的机制不变）：事件挂在共同宿主 `ViewHost` 上，
+  卡片按落点**左右半边**决定插前/插后，列表行按**上下半边**；普通点击仍然打开工作区，拖拽结束后的补发 Click 仍被抑制。
+- 选择会持久化：`settings.json` 的 **`Characters.ListView`**（bool，缺省 = 卡片），切换即写盘，重启沿用；
+  一个角色都没有时仍是原来的空态引导，两种视图都不显示。
+
+### 269.2 代码变更
+
+- `Views/Pages/Characters/CharacterCardsPage.xaml`
+  - 顶部改成一行工具栏 `Grid`（`Auto`=拖拽提示 + `*`=右侧按钮组）：视图切换 / 刷新 / 添加角色；
+    页面去掉大标题与 1100px 限宽的两列布局，内容区只留 `Margin="16,0"`（使用者对本页布局的调整）；
+  - 卡片网格与列表共用一个 `Grid x:Name="ViewHost"`（`AllowDrop` + 4 个拖拽事件），原 `CardList` 上的事件移到宿主；
+  - 两个视图的模板里都删掉了"添加角色"占位项（卡片里那块 `StackPanel`、列表里那一行），列表行模板随之少了一层只为叠放两种内容而设的 Grid；
+  - 新增 `ScrollViewer x:Name="RowScrollHost"`（只横向滚动）+ `ItemsControl x:Name="RowList"`（`MinWidth` 绑 `ViewportWidth`）
+    与行模板（只渲染真实角色）；
+  - 新增 `ViewSwitchToggle`（分段按钮样式，无描边）、`RowStatLabelStyle` / `RowStatValueStyle`（列表行的"标签上、数值下"）；
+  - 新增 `AddCharacterButton`（`Appearance=Primary`），并给两个纯图标 `ToggleButton` 与刷新按钮补 `AutomationProperties.Name`；
+  - 卡片里两处字面量标签 `SP` / `ISK` 改为语言键（`CharacterPage_Sp` / 新增 `CharacterPage_Isk`）。
+- `Views/Pages/Characters/CharacterCardsPage.xaml.cs`
+  - 构造函数里 `AddCharacterButton.Click` 与 `LoginButton` 一样接到 `AddCharacterAsync()`；
+  - 新增 `ListViewSettingKey`、`_listView`、`ApplyViewMode(listView, persist)`（同步两个按钮选中态 + 两个容器 + 可选写盘）、
+    `CardViewToggle_Click` / `ListViewToggle_Click`；构造时先按存档套用一次（`persist: false`）；
+  - `UpdateEmptyState()` 现在同时考虑"空态"与"当前视图"（空态 → 两个容器都折叠，另 `ViewHost` 一并隐藏；
+    列表视图切换的是外层 `RowScrollHost` 而不是 `RowList` 自身）；
+  - 拖拽取坐标由 `CardList` 改为 `ViewHost`，落点半轴按 `_listView` 在 X / Y 之间切换。
+- `ViewModels/Characters/CharactersViewModel.cs` / `CharacterCardViewModel.cs`
+  - 集合只装真实角色：`LoadAsync` 不再 `Cards.Add(占位卡)`，`IsEmpty`/`CharacterCount`/三项汇总/`MoveCard`/`Remove`
+    都去掉了 `!p.IsAdd` 过滤；`CharacterCardViewModel.IsAdd` 与 `LoadAsync` 里的 `if (IsAdd) return;` 删除。
+- 语言（中英各 **+3 键**，键集仍严格一致 3396 = 3396、无重复）：
+  `CharacterPage_Isk`（ISK / ISK）、`CharacterPage_CardView`（卡片视图 / Card view）、
+  `CharacterPage_ListView`（列表视图 / List view）；`CharacterPage_DragHint` 文案由
+  「拖拽角色卡片可调整顺序」改为「拖拽角色可调整顺序」（两种视图通用）。
+
+### 269.3 验证
+
+- `dotnet build`：**0 错误、无新警告**（54 个既有警告，与阶段 262 基线一致）。
+- 静态自查：全项目 `grep IsAdd` 已无角色页相关命中（只剩 `ChannelScanViewModel.IsAddingIgnore` / `AddShortcutViewModel.IsAdded`
+  这类同名片段），`CharacterCardViewModel.IsAdd` 与 `CharactersViewModel` 里的过滤全部清干净。
+- 实机（真实账号 3 个角色；Debug 输出到临时目录启动，UIA 驱动点击 + `PrintWindow` 抓图，窗口 1200×800 逻辑分辨率）：
+  - 卡片视图 / 列表视图各一张截图：卡片视图只有 3 张角色卡（末尾不再有"添加角色"占位卡），
+    列表只有 3 行（末尾不再有"添加角色"行），末尾直接是页面留白；配色跟主题；
+  - **列位实测**（UIA 边界，三行逐行对比）：技能点 / ISK / 忠诚点 / 技能队列四列的起始 x 与文本宽 **三行完全一致**
+    （96/104/76/190 → 换算后 125/138/95/229 设备像素，DIP = 100/110/76/183）；行间距 98 设备像素 ≈ 78 DIP
+    （行高 68 + 8 间距 + 边框），符合"单行不要太挤"的目标；
+  - **切换即写盘**：点「列表视图」→ `settings.json` 写入 `"Characters.ListView": "true"`；点「卡片视图」→ `"false"`；
+    重启后按上次选择直接打开（实测以列表视图启动）。核验后已把该键从用户存档里删除，回到默认卡片视图；
+  - **窄窗口**：把窗口压到最小尺寸（960 宽）时，列表出现横向滚动条、内容不被裁掉（1200 宽时无滚动条）；
+  - **工具栏**：一行依次为 拖拽提示 / 视图切换（两个图标） / 刷新 / 添加角色（主题色实心按钮）；
+    逐像素核对分段控件区域：**主题色像素数 = 0**（描边已彻底移除，只剩浅底选中态），
+    而"添加角色"按钮区域 **148** 个主题色像素（`Appearance=Primary` 生效）；
+  - **选中态配色**：逐像素采样两个分段按钮的背景，选中段 = `244,244,245` / 未选中 = `253,253,254`，两种视图互斥切换正确；
+  - **可点击性**：两个纯图标切换按钮与刷新按钮补了 `AutomationProperties.Name`，UIA 能按「列表视图」找到并切换
+    （补之前 UIA 名称是空的，读屏/自动化都认不出这两个按钮）；
+  - 应用日志无新增错误（只有既有的"军团钱包无职位"报错）。
+- 未覆盖：本轮没有做**双卡/双行拖拽**的端到端实测（逻辑只改了宿主与半轴判定，`MoveCard` 未动）；
+  深色主题下未重复截图（列表行的颜色全部走 `DynamicResource` 主题画刷，无字面量颜色）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

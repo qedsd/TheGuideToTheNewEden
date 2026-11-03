@@ -807,9 +807,12 @@
     <sys:String x:Key="SkillPage_TrainedSkillLevel">已掌握的等级</sys:String>
     <sys:String x:Key="SkillPage_SkillpointsInSkill">已训练的技能点</sys:String>
     <sys:String x:Key="CharacterPage_Sp">技能点</sys:String>
+    <sys:String x:Key="CharacterPage_Isk">ISK</sys:String>
+    <sys:String x:Key="CharacterPage_CardView">卡片视图</sys:String>
+    <sys:String x:Key="CharacterPage_ListView">列表视图</sys:String>
     <sys:String x:Key="CharacterPage_Birthday">出生</sys:String>
     <sys:String x:Key="CharacterPage_Characters">角色列表</sys:String>
-    <sys:String x:Key="CharacterPage_DragHint">拖拽角色卡片可调整顺序</sys:String>
+    <sys:String x:Key="CharacterPage_DragHint">拖拽角色可调整顺序</sys:String>
     <sys:String x:Key="CharacterPage_Remove">删除角色</sys:String>
     <sys:String x:Key="CharacterPage_TryUpdateTokenFailed">Token已过期，尝试刷新失败</sys:String>
     <sys:String x:Key="CharacterPage_Online">在线</sys:String>

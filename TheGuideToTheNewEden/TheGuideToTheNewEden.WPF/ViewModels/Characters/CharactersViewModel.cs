@@ -1,18 +1,20 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
-/// <summary>角色卡片页视图模型：卡片集合 + 汇总统计。</summary>
+/// <summary>角色页视图模型：角色卡片集合（卡片视图与列表视图共用） + 汇总统计。</summary>
+/// <remarks>
+/// 集合里**只有真实角色**：末尾的"添加角色"入口从阶段 269 起只在工具栏出现，不再以占位卡/占位行的形式混进集合。
+/// </remarks>
 public sealed class CharactersViewModel : INotifyPropertyChanged
 {
     private bool _isLoading;
 
     public ObservableCollection<CharacterCardViewModel> Cards { get; } = [];
 
-    public bool IsEmpty => Cards.Count(p => !p.IsAdd) == 0;
+    public bool IsEmpty => Cards.Count == 0;
 
     public bool IsLoading
     {
@@ -20,15 +22,15 @@ public sealed class CharactersViewModel : INotifyPropertyChanged
         private set => Set(ref _isLoading, value);
     }
 
-    public int CharacterCount => Cards.Count(p => !p.IsAdd);
+    public int CharacterCount => Cards.Count;
 
     public string TotalSkillPointsText =>
-        CharacterCardViewModel.FormatIsk(Cards.Where(p => !p.IsAdd).Sum(p => (double)p.SkillPoints)).Replace(" ISK", string.Empty);
+        CharacterCardViewModel.FormatIsk(Cards.Sum(p => (double)p.SkillPoints)).Replace(" ISK", string.Empty);
 
     public string TotalWalletText =>
-        CharacterCardViewModel.FormatIsk(Cards.Where(p => !p.IsAdd).Sum(p => p.Wallet));
+        CharacterCardViewModel.FormatIsk(Cards.Sum(p => p.Wallet));
 
-    public long TotalLoyalty => Cards.Where(p => !p.IsAdd).Sum(p => p.Loyalty);
+    public long TotalLoyalty => Cards.Sum(p => p.Loyalty);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -38,7 +40,7 @@ public sealed class CharactersViewModel : INotifyPropertyChanged
         IsLoading = true;
         RaiseSummary();
 
-        var existing = Cards.Where(p => !p.IsAdd).ToDictionary(p => p.CharacterId);
+        var existing = Cards.ToDictionary(p => p.CharacterId);
         Cards.Clear();
 
         var characters = CharacterStore.Characters.ToList();
@@ -57,9 +59,7 @@ public sealed class CharactersViewModel : INotifyPropertyChanged
                 : new CharacterCardViewModel { Character = character });
         }
 
-        Cards.Add(new CharacterCardViewModel { Character = new AuthorizedCharacterData(), IsAdd = true });
-
-        await Task.WhenAll(Cards.Where(p => !p.IsAdd).Select(p => p.LoadAsync(forceRefresh)));
+        await Task.WhenAll(Cards.Select(p => p.LoadAsync(forceRefresh)));
 
         IsLoading = false;
         RaiseSummary();
@@ -67,11 +67,6 @@ public sealed class CharactersViewModel : INotifyPropertyChanged
 
     public void Remove(CharacterCardViewModel card)
     {
-        if (card.IsAdd)
-        {
-            return;
-        }
-
         CharacterStore.Remove(card.Character);
         Cards.Remove(card);
         RaiseSummary();
@@ -80,10 +75,9 @@ public sealed class CharactersViewModel : INotifyPropertyChanged
     /// <summary>拖拽卡片后同时调整界面集合与角色存储顺序（CharacterStore.Move 会落盘）。</summary>
     public void MoveCard(int oldIndex, int newIndex)
     {
-        var normalCount = Cards.Count(p => !p.IsAdd);
         if (oldIndex == newIndex
             || oldIndex < 0 || newIndex < 0
-            || oldIndex >= normalCount || newIndex >= normalCount
+            || oldIndex >= Cards.Count || newIndex >= Cards.Count
             || oldIndex >= CharacterStore.Characters.Count
             || newIndex >= CharacterStore.Characters.Count)
         {

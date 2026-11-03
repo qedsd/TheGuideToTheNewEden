@@ -8,7 +8,7 @@ using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
-/// <summary>角色卡片（也用于"添加角色"占位卡片）。字段与 WinUI3 卡片一致。</summary>
+/// <summary>角色卡片（卡片视图的一张竖卡，也用于列表视图的一行）。字段与 WinUI3 卡片一致。</summary>
 public sealed class CharacterCardViewModel : INotifyPropertyChanged
 {
     private static readonly HttpClient Http = new();
@@ -28,9 +28,6 @@ public sealed class CharacterCardViewModel : INotifyPropertyChanged
     private bool _loaded;
 
     public required AuthorizedCharacterData Character { get; init; }
-
-    /// <summary>true 表示这是末尾的"添加角色"卡片。</summary>
-    public bool IsAdd { get; init; }
 
     public long CharacterId => Character.CharacterID;
 
@@ -133,11 +130,6 @@ public sealed class CharacterCardViewModel : INotifyPropertyChanged
     /// <summary>加载卡片数据（总览 + 技能）。失败时保持占位显示。</summary>
     public async Task LoadAsync(bool forceRefresh = false)
     {
-        if (IsAdd)
-        {
-            return;
-        }
-
         await LoadAvatarAsync();
 
         var context = new Services.Characters.CharacterContext(Character);
