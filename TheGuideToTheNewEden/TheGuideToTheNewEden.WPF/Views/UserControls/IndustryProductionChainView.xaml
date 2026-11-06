@@ -250,6 +250,13 @@
                                     FontSize="10.5"
                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                     Text="{Binding MeTeText}" />
+                                <!--  阶段 276：行星节点的殖民地数短标记  -->
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    FontSize="10.5"
+                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                    Text="{Binding PlanetShortText}"
+                                    Visibility="{Binding HasPlanetShort, Converter={StaticResource BoolToVisibility}}" />
                             </StackPanel>
 
                             <controls:RatioBar
@@ -282,6 +289,12 @@
             </Grid>
 
             <DataTemplate.Triggers>
+                <!--  阶段 273：标记"不计入成本"的节点用中性色，成本列显示 —  -->
+                <DataTrigger Binding="{Binding DecisionKey}" Value="ignored">
+                    <Setter TargetName="Accent" Property="Background" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <Setter TargetName="DecisionBg" Property="Background" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <Setter TargetName="DecisionLabel" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                </DataTrigger>
                 <DataTrigger Binding="{Binding DecisionKey}" Value="buy">
                     <Setter TargetName="Accent" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
                     <Setter TargetName="DecisionBg" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
@@ -569,6 +582,29 @@
                             TextWrapping="Wrap" />
                     </StackPanel>
 
+                    <!--  阶段 276：行星产物按真实殖民地模型估算时的明细  -->
+                    <StackPanel Visibility="{Binding HasPlanetModel, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryDetail}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding PlanetSummaryText}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Margin="0,3,0,0"
+                            FontSize="10.5"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding PlanetCostText}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Margin="0,3,0,0"
+                            FontSize="10.5"
+                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                            Text="{Binding PlanetEstimatedText}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasPlanetEstimated, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+
                     <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_MarketReference}" />
                     <TextBlock
                         FontSize="11"
@@ -596,24 +632,29 @@
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                         Text="{Binding ReferencePriceText}" />
 
-                    <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_NodeActions}" />
-                    <WrapPanel>
-                        <ui:Button
-                            Margin="0,0,6,0"
-                            Appearance="Secondary"
-                            Click="OnForceBuildClick"
-                            Content="{DynamicResource IndustryPage_ForceBuild}" />
-                        <ui:Button
-                            Margin="0,0,6,0"
-                            Appearance="Secondary"
-                            Click="OnForceBuyClick"
-                            Content="{DynamicResource IndustryPage_ForceBuy}" />
-                        <ui:Button
-                            Appearance="Secondary"
-                            Click="OnBlacklistClick"
-                            Content="{DynamicResource IndustryPage_Blacklist}" />
-                    </WrapPanel>
-
+                    <!--
+                        阶段 273：原来的「强制制造 / 强制采购 / 黑名单」三个按钮收成一个下拉框，
+                        选中即重新计算（自动 / 制造 / 采购 / 不计入成本）。
+                    -->
+                    <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_NodeCostMode}" />
+                    <ComboBox
+                        Margin="0,2,0,0"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="{DynamicResource IndustryPage_NodeCostMode}"
+                        SelectedIndex="{Binding DataContext.SelectedNodeCostModeIndex, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Mode=TwoWay}"
+                        ToolTip="{DynamicResource IndustryPage_NodeCostModeTip}">
+                        <ComboBoxItem Content="{DynamicResource IndustryPage_CostModeAuto}" />
+                        <ComboBoxItem Content="{DynamicResource IndustryPage_ForceBuild}" />
+                        <ComboBoxItem Content="{DynamicResource IndustryPage_ForceBuy}" />
+                        <ComboBoxItem Content="{DynamicResource IndustryPage_CostModeIgnore}" />
+                    </ComboBox>
+                    <TextBlock
+                        Margin="2,4,2,0"
+                        FontSize="10.5"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Text="{Binding CostIgnoredHint}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding IsCostIgnored, Converter={StaticResource BoolToVisibility}}" />
                     <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_DirectInput}" />
                     <ui:DataGrid
                         MaxHeight="220"

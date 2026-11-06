@@ -45,7 +45,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Grid>
+                        <Grid ClipToBounds="True">
                             <Border
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="3"
@@ -536,7 +536,7 @@
                                                                         x:Name="LineKind"
                                                                         FontSize="12"
                                                                         Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                        Text="{Binding Kind}" />
+                                                                        Text="{Binding KindText}" />
                                                                     <TextBlock
                                                                         Margin="5,0,0,0"
                                                                         FontSize="11"

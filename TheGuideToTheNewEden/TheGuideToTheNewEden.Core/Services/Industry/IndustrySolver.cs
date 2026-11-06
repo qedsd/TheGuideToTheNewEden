@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
+using TheGuideToTheNewEden.Core.Models.Planetary;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.Core.Services.Planetary;
 
 namespace TheGuideToTheNewEden.Core.Services.Industry
 {
@@ -31,6 +33,17 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         private readonly Dictionary<long, List<BlueprintSkill>> _skillCache = new Dictionary<long, List<BlueprintSkill>>();
         private readonly Dictionary<long, int> _activityTimeCache = new Dictionary<long, int>();
         private readonly Dictionary<int, IndustryDecryptorInfo> _decryptorCache = new Dictionary<int, IndustryDecryptorInfo>();
+
+        /// <summary>行星规划结果缓存（阶段 276）：同一产物 + 同一需求量只规划一次。</summary>
+        private readonly Dictionary<(int TypeId, long Quantity), PlanetaryPlan> _planetaryPlanCache =
+            new Dictionary<(int TypeId, long Quantity), PlanetaryPlan>();
+
+        /// <summary>行星规划器（配方目录 + 行星类型表都是静态只读数据，全进程加载一次即可）。</summary>
+        private static readonly Lazy<PlanetaryPlanner> PlanetaryPlannerLazy = new Lazy<PlanetaryPlanner>(() =>
+        {
+            var recipes = PlanetaryRecipeCatalog.Load();
+            return new PlanetaryPlanner(recipes, new PlanetTypeCatalog(recipes));
+        });
 
         private readonly HashSet<int> _stack = new HashSet<int>();
         private readonly Dictionary<int, long> _assets;
@@ -119,7 +132,30 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 BuildNode(node, depth);
             }
+
+            // 用户手动"不计入成本"的物品：数量与流程照常，只把成本清零（不向上聚合）。
+            if (_options.IgnoredCostTypes != null && _options.IgnoredCostTypes.Contains(typeId))
+            {
+                IgnoreCost(node);
+            }
             return node;
+        }
+
+        /// <summary>
+        /// 把节点标成"不计入成本"：保留数量 / 流程 / 采购清单，只清掉成本字段，
+        /// 让父节点的成本汇总跳过它（<c>BuildCost</c> / <c>FullBuildCost</c> 是父节点累加用的字段）。
+        /// </summary>
+        internal static void IgnoreCost(IndustryBuildNode node)
+        {
+            if (node == null) return;
+            node.CostIgnored = true;
+            node.JobCost = 0;
+            node.JobCostKnown = false;
+            node.BuildCost = 0;
+            node.FullBuildCost = 0;
+            node.ReferenceCost = 0;
+            node.ReferenceCostFull = 0;
+            node.BuildCostKnown = true;
         }
 
         private IndustryDecision DetermineDecision(int typeId, int depth)
@@ -387,6 +423,32 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
             int outputQty = (int)Math.Max(1, recipe.OutputQuantity);
             node.Runs = IndustryCalculator.RunsNeeded(effectiveNeed, outputQty);
+            node.ME = 0;
+            node.TE = 0;
+
+            // 阶段 276：启用真实殖民地模型时，时间/成本/殖民地数交给 PlanetaryPlanner，
+            // 不再按"一条线串行跑完所有周期"估算，也不再递归展开 P0→P1 子节点（规划器已覆盖整链）。
+            var planetPlan = TryPlanetModel(node, effectiveNeed);
+            if (planetPlan != null)
+            {
+                ApplyPlanetModel(node, planetPlan);
+                // 殖民地模型是"按产能交付目标量"：产出按需求计，不产生上游剩余。
+                node.QuantityProduced = effectiveNeed;
+                node.QuantityToHangar = 0;
+                double planetCash = node.PlanetImportCost + node.PlanetTax
+                    + (_options.Planetary?.CountSetupCost == true ? node.PlanetSetupCost : 0);
+                node.BuildCost = planetCash;
+                node.FullBuildCost = planetCash;
+                node.BuildCostKnown = true;
+
+                double modeledReference = GetReferencePrice(node.TypeID);
+                node.ReferenceUnitPrice = modeledReference;
+                node.ReferenceCost = modeledReference > 0 ? modeledReference * node.QuantityNeeded : 0;
+                node.ReferenceCostFull = node.ReferenceCost;
+                ApplyMarketInfo(node);
+                return;
+            }
+
             node.QuantityProduced = (long)outputQty * node.Runs;
             node.QuantityToHangar = node.QuantityProduced - effectiveNeed;
             if (node.QuantityToHangar > 0)
@@ -394,8 +456,6 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 AddStock(_hangar, node.TypeID, node.QuantityToHangar);
             }
 
-            node.ME = 0;
-            node.TE = 0;
             node.JobTimeSeconds = Math.Max(0, recipe.CycleTime) * (double)node.Runs;
             node.JobCost = 0;
             node.JobCostKnown = false;
@@ -558,7 +618,14 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             long t1Need = t1Owned > 0 ? 0 : attempts;
             if (t1Need > 0)
             {
-                node.Inputs.Add(CreateBuyNode(t1BlueprintTypeId, t1Need));
+                var blueprintNode = CreateBuyNode(t1BlueprintTypeId, t1Need);
+                // 默认"发明用的 T1 蓝图不计入成本"：仍列在 BOM 里（提示需要这张蓝图），但不计入总成本。
+                // 需要按"全新买入蓝图"算成本时，在页面上打开「发明 T1 蓝图计入成本」开关。
+                if (!_options.CountInventionBlueprintCost)
+                {
+                    IgnoreCost(blueprintNode);
+                }
+                node.Inputs.Add(blueprintNode);
             }
 
             // 解密器：每次尝试消耗 1 个。
@@ -668,7 +735,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             node.SalesTax = node.Revenue * salesTaxRate;
             node.BrokerFee = node.Revenue * brokerFeeRate;
             node.NetRevenue = Math.Max(0, node.Revenue - node.SalesTax - node.BrokerFee);
-            if (node.ActivityID == IndustryActivity.Planetary && _options.PlanetTaxRate > 0)
+            // 简单口径才按"收入 × 出口税率"补一笔 POCO 税；殖民地模型已经带入了规划器的进口 + 出口税。
+            if (node.ActivityID == IndustryActivity.Planetary && !node.PlanetModeled && _options.PlanetTaxRate > 0)
             {
                 node.PlanetTax = node.Revenue * Math.Clamp(_options.PlanetTaxRate, 0, 1);
                 node.BuildCost += node.PlanetTax;
@@ -792,6 +860,130 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             blueprint = IndustryDbService.GetBlueprint(blueprintTypeId);
             _blueprintCache[blueprintTypeId] = blueprint;
             return blueprint;
+        }
+
+        /// <summary>
+        /// 用行星规划器（真实殖民地模型）估算一个行星产物节点（阶段 276）。
+        /// 返回 null 表示未启用 / 规划器不可用 / 规划失败——调用方回退到原来的简单配方口径。
+        /// </summary>
+        private PlanetaryPlan TryPlanetModel(IndustryBuildNode node, long quantity)
+        {
+            var options = _options.Planetary;
+            if (options == null || !options.Enabled || quantity <= 0)
+            {
+                return null;
+            }
+
+            var key = (node.TypeID, quantity);
+            if (_planetaryPlanCache.TryGetValue(key, out var cached))
+            {
+                return cached;
+            }
+
+            try
+            {
+                var plan = options.SizingMode == IndustryPlanetarySizingMode.AvailableColonies
+                    ? PlanWithAvailableColonies(node.TypeID, quantity)
+                    : PlanWithPeriod(node.TypeID, quantity, Math.Max(0.5, options.PeriodDays));
+                if (plan == null)
+                {
+                    return null;
+                }
+
+                _planetaryPlanCache[key] = plan;
+                return plan;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return null;
+            }
+        }
+
+        /// <summary>按指定周期让规划器凑产能（"在 N 天内出齐"口径）。</summary>
+        private PlanetaryPlan PlanWithPeriod(int typeId, long quantity, double periodDays)
+        {
+            var options = _options.Planetary;
+            var request = new PlanetaryPlanRequest
+            {
+                PeriodDays = Math.Clamp(periodDays, 0.5, 3650),
+                Mode = options.Mode,
+                CcuLevel = Math.Clamp(options.CcuLevel, 0, 5),
+                DefaultMaxPlanets = Math.Clamp(options.MaxPlanetsPerCharacter, 1, 6),
+                RadiusKm = Math.Max(0, options.RadiusKm),
+                PlanetTaxRate = Math.Clamp(_options.PlanetTaxRate, 0, 1),
+                SalesTaxRate = Math.Clamp(_options.SalesTaxRate, 0, 1),
+                BrokerFeeRate = _options.SellImmediately ? 0 : Math.Clamp(_options.BrokerFeeRate, 0, 1),
+                Characters = options.Characters?.ToList() ?? new List<PlanetaryCharacterInput>(),
+                Planets = options.Planets?.ToList() ?? new List<PlanetaryPlanetInput>(),
+                Price = GetReferencePrice,
+            };
+            request.Targets.Add(new PlanetaryTarget { TypeId = typeId, Quantity = quantity });
+            return PlanetaryPlannerLazy.Value.Plan(request);
+        }
+
+        /// <summary>
+        /// 按"可用殖民地"反推工期（阶段 277，默认口径）：
+        /// 先用 1 天周期探一次，得到每个殖民地的日产能，再用「角色数 × 每角色殖民地」能开出的殖民地数
+        /// 折算需要多少天——这样殖民地会被真正用满，而不是永远按 1 个殖民地拉长工期。
+        /// </summary>
+        private PlanetaryPlan PlanWithAvailableColonies(int typeId, long quantity)
+        {
+            var options = _options.Planetary;
+            var probe = PlanWithPeriod(typeId, quantity, 1.0);
+            var summary = probe?.Summary;
+            if (summary == null || summary.OutputPerDay <= 0 || summary.TotalColonies <= 0)
+            {
+                // 规划不出产能（缺价格/缺配方等）：直接把探针结果交回去，让上层按警告/0 产能处理。
+                return probe;
+            }
+
+            // 每个殖民地的日均产能（含整条 P0→目标链的提取与工厂殖民地）。
+            var perColony = summary.OutputPerDay / summary.TotalColonies;
+            if (perColony <= 0)
+            {
+                return probe;
+            }
+
+            var characters = options.Characters?.Count ?? 0;
+            var perCharacter = Math.Clamp(options.MaxPlanetsPerCharacter, 1, 6);
+            // 没有指定角色时按 1 个角色的行星位算（规划器自己也会按默认行星位生成占位角色）。
+            var available = Math.Max(1, characters > 0 ? characters * perCharacter : perCharacter);
+
+            // 1 天就够（探针的殖民地数已经 ≤ 可用数）：直接用 1 天口径。
+            if (summary.TotalColonies <= available)
+            {
+                return probe;
+            }
+
+            // 否则用可用殖民地数反推天数（不少于半天，防止极端小数量出现 0 天）。
+            var days = quantity / Math.Max(1e-6, available * perColony);
+            return PlanWithPeriod(typeId, quantity, Math.Clamp(days, 0.5, 3650));
+        }
+
+        /// <summary>把行星规划结果写回节点：殖民地数、日产量、生产天数、建造成本、进口成本与出口税。</summary>
+        private void ApplyPlanetModel(IndustryBuildNode node, PlanetaryPlan plan)
+        {
+            var summary = plan.Summary;
+            // 用**规划实际采用的周期**换算整笔成本（"按可用殖民地"口径下周期是反推出来的，不等于设置值）。
+            var periodDays = summary.PeriodDays > 0
+                ? summary.PeriodDays
+                : Math.Max(0.5, _options.Planetary?.PeriodDays ?? 7);
+
+            node.PlanetModeled = true;
+            node.PlanetColonies = Math.Max(0, summary.TotalColonies);
+            node.PlanetCharacterCount = Math.Max(0, summary.CharacterCount);
+            node.PlanetOutputPerDay = Math.Max(0, summary.OutputPerDay);
+            // 规划器按「周期内的日成本」给值，这里换算成这一单的整笔成本。
+            node.PlanetImportCost = Math.Max(0, summary.ImportCostPerDay) * periodDays;
+            node.PlanetSetupCost = Math.Max(0, summary.SetupCost);
+            node.PlanetTax = Math.Max(0, summary.PlanetTaxPerDay) * periodDays;
+            node.PlanetEstimated = summary.UsedEstimatedRadius;
+
+            // 目标数量的实际生产天数 = 目标量 / 日产量；拿不到时退回周期天数。
+            var days = summary.TargetDays > 0 ? summary.TargetDays : periodDays;
+            node.PlanetProductionDays = days;
+            node.JobTimeSeconds = days * 86400.0;
         }
 
         private IndustryPlanetaryRecipe GetPlanetaryRecipe(int typeId)

@@ -18,6 +18,10 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages;
 /// 全部收进 设置 → 主页；数据本身完全由 <see cref="HomeShortcutService"/> 持有，
 /// 任何入口改动后页面重建磁贴。
 /// </para>
+/// <para>
+/// 阶段 270：快捷方式卡片标题行右上角补了一个铅笔图标，点它直接跳到 设置 → 主页
+/// （只是入口，不进入编辑态）。
+/// </para>
 /// </summary>
 public partial class HomePage : Page, IManualAware
 {
@@ -189,6 +193,15 @@ public partial class HomePage : Page, IManualAware
     }
 
     private void OnClearRecentClick(object sender, RoutedEventArgs e) => HomeShortcutService.ClearRecent();
+
+    /// <summary>
+    /// 快捷方式卡片右上角「编辑」：跳到 设置 → 主页（快捷方式增删 / 拖动排序 / 宽窄 / 恢复默认的唯一入口）。
+    /// </summary>
+    private void OnManageShortcutsClick(object sender, RoutedEventArgs e)
+    {
+        SettingsPage.RequestCategory(typeof(Settings.HomeSettingPage));
+        Navigation.Navigate(typeof(SettingsPage));
+    }
 
     // ---------- 快捷方式磁贴 ----------
 

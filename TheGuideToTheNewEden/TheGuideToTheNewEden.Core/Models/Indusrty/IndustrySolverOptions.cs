@@ -132,6 +132,20 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         /// <summary>手动指定某物品制造/采购（优先级高于黑名单，低于深度/循环保护）。</summary>
         public Dictionary<int, IndustryDecision> Decisions { get; set; } = new Dictionary<int, IndustryDecision>();
 
+        /// <summary>
+        /// 不计入成本的物品 TypeID：节点仍在 BOM 里（数量、流程、采购清单都保留），
+        /// 但它的成本会被清零且不向上聚合——用于"蓝图/工具/家里的存货不该算进这一单"这类场景。
+        /// </summary>
+        public HashSet<int> IgnoredCostTypes { get; set; } = new HashSet<int>();
+
+        /// <summary>
+        /// 发明步骤里的 T1 蓝图是否计入成本。<para>
+        /// 默认 <c>false</c>：发明只需要一张蓝图 BPC 作为"引子"，把它按"全新买入"计价会让
+        /// T2 产物的成本虚高（用户反馈的口径）。开启后才把 T1 蓝图当采购计入。
+        /// </para>
+        /// </summary>
+        public bool CountInventionBlueprintCost { get; set; }
+
         /// <summary>角色资产（TypeID → 数量），用于抵扣。</summary>
         public Dictionary<int, long> Assets { get; set; } = new Dictionary<int, long>();
         /// <summary>在制工业任务最终产出（TypeID → 数量），用于抵扣。</summary>
@@ -152,6 +166,12 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double SccSurchargeRate { get; set; } = 0.04;
         /// <summary>行星产物出口税（POCO，0.05 = 5%）。</summary>
         public double PlanetTaxRate { get; set; } = 0.05;
+
+        /// <summary>
+        /// 行星开发口径（阶段 276）：启用后 BOM 里的行星产物按真实殖民地模型折算
+        /// （殖民地数量 / 每天产量 / 建造成本 / 进口成本 / 出口税 / 生产天数），排程也按殖民地产能展开。
+        /// </summary>
+        public IndustryPlanetaryOptions Planetary { get; set; } = new IndustryPlanetaryOptions();
         /// <summary>设施税（0.10 = 10%）。</summary>
         public double FacilityTax { get; set; } = 0.10;
         /// <summary>销售税（0.036 = 3.6%）。</summary>

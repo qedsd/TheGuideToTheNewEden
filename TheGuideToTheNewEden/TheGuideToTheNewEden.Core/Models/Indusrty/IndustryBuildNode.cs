@@ -15,6 +15,13 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         /// <summary>发明节点（数据核心 + T1 蓝图），用于 T2 产物。</summary>
         public bool IsInvention { get; set; }
 
+        /// <summary>
+        /// 该节点不计入成本：数量/流程照常展开，但成本字段被清零、不向上聚合。
+        /// 来源有两种——用户手动"不计入成本"，或发明步骤的 T1 蓝图（由
+        /// <see cref="IndustrySolverOptions.CountInventionBlueprintCost"/> 控制）。
+        /// </summary>
+        public bool CostIgnored { get; set; }
+
         public IndustryDecision Decision { get; set; }
         /// <summary>制造活动（1 制造 / 11 反应 / 8 发明）。</summary>
         public int ActivityID { get; set; }
@@ -45,6 +52,24 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public bool JobCostKnown { get; set; }
         /// <summary>行星产物 POCO 出口税（已计入 BuildCost/FullBuildCost）。</summary>
         public double PlanetTax { get; set; }
+
+        // ── 行星开发：真实殖民地模型（阶段 276；仅 ActivityID == Planetary 且启用时填充） ──
+        /// <summary>true = 该节点用了殖民地模型计算（时间/成本来自 PlanetaryPlanner，而不是简单配方估算）。</summary>
+        public bool PlanetModeled { get; set; }
+        /// <summary>需要几个殖民地（含 P0 提取与各级工厂殖民地）。</summary>
+        public int PlanetColonies { get; set; }
+        /// <summary>占用几个角色（殖民地按角色行星位上摊）。</summary>
+        public int PlanetCharacterCount { get; set; }
+        /// <summary>每天产出（目标产物）。</summary>
+        public double PlanetOutputPerDay { get; set; }
+        /// <summary>进口中间品的成本（仅 Import 模式 / 自给不满时可能非 0）。</summary>
+        public double PlanetImportCost { get; set; }
+        /// <summary>殖民地建造成本（CC 升级 + 设施），按 <c>CountSetupCost</c> 决定是否计入节点成本。</summary>
+        public double PlanetSetupCost { get; set; }
+        /// <summary>该节点目标数量的行星生产天数。</summary>
+        public double PlanetProductionDays { get; set; }
+        /// <summary>行星半径/行星类型是估算值（没有候选行星或半径缺失）。</summary>
+        public bool PlanetEstimated { get; set; }
 
         /// <summary>市场参考单价（优先最低卖价，回退平均价）。</summary>
         public double ReferenceUnitPrice { get; set; }

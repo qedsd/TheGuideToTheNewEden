@@ -118,6 +118,42 @@ public sealed class IndustrySetting
     /// <summary>是否生成可选的复制/研究蓝图任务（默认关闭，不进入 BOM 材料）。</summary>
     public bool IncludeBlueprintJobs { get; set; }
 
+    /// <summary>
+    /// 发明步骤里的 T1 蓝图是否计入成本（阶段 273，默认 <c>false</c>）。
+    /// <para>关闭时发明只把 T1 蓝图列为需求、不计价；开启后按"全新买入蓝图"计价。</para>
+    /// </summary>
+    public bool CountInventionBlueprintCost { get; set; }
+
+    /// <summary>手动标记"不计入成本"的物品 TypeID（阶段 273，与买/造决策正交）。</summary>
+    public List<int> IgnoredCostTypes { get; set; } = new();
+
+    // ── 行星开发（阶段 276）：BOM 里的行星产物按真实殖民地模型折算 ──
+    /// <summary>true（默认）= 使用 PlanetaryPlanner 的殖民地模型；false = 旧的单条行星线估算。</summary>
+    public bool PlanetaryColoniesEnabled { get; set; } = true;
+
+    /// <summary>
+    /// 产能口径（阶段 277）：0 = 按可用殖民地（默认，殖民地越多工期越短），1 = 按产出周期（凑够 N 天）。
+    /// </summary>
+    public int PlanetarySizingMode { get; set; }
+
+    /// <summary>产出周期（天）；仅"按产出周期"口径使用。默认 7。</summary>
+    public double PlanetaryPeriodDays { get; set; } = 7;
+
+    /// <summary>指挥中心等级 0–5。默认 5。</summary>
+    public int PlanetaryCcuLevel { get; set; } = 5;
+
+    /// <summary>每角色最多几个殖民地（1–6）。默认 6。</summary>
+    public int PlanetaryMaxPlanets { get; set; } = 6;
+
+    /// <summary>行星半径（km）；0 = 用规划器的保守估算。</summary>
+    public double PlanetaryRadiusKm { get; set; }
+
+    /// <summary>是否把殖民地建造成本计入节点成本。默认计入。</summary>
+    public bool PlanetaryCountSetupCost { get; set; } = true;
+
+    /// <summary>是否用「成本指数位置」所在星系的行星作为候选行星（勾选后按真实行星类型/半径规划）。</summary>
+    public bool PlanetaryUseLocationPlanets { get; set; }
+
     /// <summary>出货方式：true = 直接卖给买单；false = 挂卖单（默认）。</summary>
     public bool SellImmediately { get; set; }
     /// <summary>销售税（百分比，3.6 = 3.6%）。</summary>
@@ -187,6 +223,15 @@ public static class IndustrySettingService
             setting.UseMarketDepth = true;
             setting.SellImmediately = false;
             setting.PreferencesVersion = 1;
+            changed = true;
+        }
+
+        // 阶段 277 修正：产能口径的枚举/下拉顺序之前是反的（0 被当成"按产出周期"），
+        // 已保存的 0/1 语义不可信，统一重置成新默认 0 = 按可用殖民地（工期最短）。
+        if (setting.PreferencesVersion < 2)
+        {
+            setting.PlanetarySizingMode = 0;
+            setting.PreferencesVersion = 2;
             changed = true;
         }
 

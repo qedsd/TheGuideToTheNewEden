@@ -288,7 +288,7 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
         "target" or "总装" => "IndustrySchedule_StageTarget",
         "component" or "组件" => "IndustrySchedule_StageComponent",
         "inprogress" or "在制" => "IndustrySchedule_StageInProgress",
-        _ => "IndustrySchedule_StageComponent",
+        _ => "IndustrySchedule_StageManufacturing",
     });
     public int StageOrder { get; }
     public string RunsText => Model.IsInvention
@@ -352,7 +352,7 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
         "invention" => "IndustrySchedule_StageInvention",
         "reaction" => "IndustrySchedule_StageReaction",
         "planetary" => "IndustrySchedule_StagePlanetary",
-        _ => "IndustrySchedule_StageComponent",
+        _ => "IndustrySchedule_StageManufacturing",
     });
 }
 
@@ -378,6 +378,12 @@ public sealed class IndustryScheduleLineViewModel
             {
                 job.DisplayLeft = previousRight;
             }
+            // 同一条产线上出现时间重叠时（例如取整/人工置顶后），把后一个条推到前一个右边，
+            // 避免两条任务的文字叠在一起（悬浮提示里仍是真实时间）。
+            if (previousRight > 0 && job.DisplayLeft < previousRight)
+            {
+                job.DisplayLeft = previousRight;
+            }
             previousRight = job.DisplayLeft + job.Width;
         }
         BusyHours = model.BusyHours;
@@ -390,7 +396,7 @@ public sealed class IndustryScheduleLineViewModel
         "invention" or "发明" => "IndustrySchedule_StageInvention",
         "reaction" or "反应" => "IndustrySchedule_StageReaction",
         "planetary" or "行星" => "IndustrySchedule_StagePlanetary",
-        _ => "IndustrySchedule_StageComponent",
+        _ => "IndustrySchedule_StageManufacturing",
     });
     public string ActivityKey { get; }
     public ObservableCollection<IndustryScheduleJobViewModel> Jobs { get; }
@@ -1034,7 +1040,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
     {
         8 => "IndustrySchedule_StageInvention",
         11 => "IndustrySchedule_StageReaction",
-        _ => "IndustrySchedule_StageComponent",
+        _ => "IndustrySchedule_StageManufacturing",
     });
 
     private static string LocalizeActivity(string? activityKey) => LanguageService.Get(activityKey switch
@@ -1042,7 +1048,7 @@ public sealed class IndustryScheduleViewModel : INotifyPropertyChanged
         "invention" => "IndustrySchedule_StageInvention",
         "reaction" => "IndustrySchedule_StageReaction",
         "planetary" => "IndustrySchedule_StagePlanetary",
-        _ => "IndustrySchedule_StageComponent",
+        _ => "IndustrySchedule_StageManufacturing",
     });
 
     private static string FormatHours(double hours)

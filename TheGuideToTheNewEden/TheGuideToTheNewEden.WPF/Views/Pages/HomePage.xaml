@@ -613,19 +613,32 @@
                     <!--
                         阶段 101：标题行不再有「⋯」「编辑」「＋ 添加」——快捷方式编辑全部在
                         设置 → 主页（拖动排序 / 移除 / 添加 / 宽窄 / 恢复默认）。
+                        阶段 270：右上角补一个「编辑」图标，点它直接跳到 设置 → 主页（此前只能靠左侧导航逐级点进去）。
+                        阶段 271：按用户要求去掉「共 n 个 · 上限 24」计数，只保留标题「快捷方式」与右侧的编辑入口。
                     -->
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
                         <TextBlock
+                            VerticalAlignment="Center"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="{DynamicResource Home.Quick.Title}" />
-                        <TextBlock
-                            Margin="10,0,0,0"
+
+                        <ui:Button
+                            x:Name="ManageShortcutsButton"
+                            Grid.Column="1"
+                            Padding="6,2"
                             VerticalAlignment="Center"
-                            FontSize="11.5"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding CountText}" />
-                    </StackPanel>
+                            Appearance="Transparent"
+                            AutomationProperties.Name="{DynamicResource Home.Quick.Manage}"
+                            Click="OnManageShortcutsClick"
+                            Icon="{ui:SymbolIcon Edit24}"
+                            ToolTip="{DynamicResource Home.Quick.Manage}" />
+                    </Grid>
                 </controls:CardControl.Header>
 
                 <StackPanel>

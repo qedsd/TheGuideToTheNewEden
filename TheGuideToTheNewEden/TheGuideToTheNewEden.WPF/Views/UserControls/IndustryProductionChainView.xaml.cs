@@ -25,10 +25,4 @@ public partial class IndustryProductionChainView : UserControl
     private void OnCopyClick(object sender, RoutedEventArgs e) => ViewModel?.CopyPurchaseList();
 
     private void OnExportClick(object sender, RoutedEventArgs e) => ViewModel?.ExportCsv();
-
-    private void OnForceBuildClick(object sender, RoutedEventArgs e) => ViewModel?.ForceBuildSelected();
-
-    private void OnForceBuyClick(object sender, RoutedEventArgs e) => ViewModel?.ForceBuySelected();
-
-    private void OnBlacklistClick(object sender, RoutedEventArgs e) => ViewModel?.BlacklistSelected();
 }

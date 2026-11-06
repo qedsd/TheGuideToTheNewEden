@@ -24,6 +24,11 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int InventionSlots { get; set; } = 1;
         public int ReactionSlots { get; set; } = 1;
 
+        /// <summary>
+        /// 行星殖民地数（阶段 276）：游戏内每角色最多 6 个殖民地；排程把每个殖民地当作一条并行的「行星」线。
+        /// </summary>
+        public int PlanetSlots { get; set; } = 6;
+
         public double ManufacturingTimeMultiplier { get; set; } = 1.0;
         public double ReactionTimeMultiplier { get; set; } = 1.0;
         public double InventionTimeMultiplier { get; set; } = 1.0;
@@ -34,7 +39,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public bool SkillsLoaded { get; set; }
         public string Source { get; set; } = string.Empty;
 
-        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots;
+        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots + PlanetSlots;
 
         public int SlotsForActivity(int activityId)
         {
@@ -42,6 +47,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
             {
                 8 => InventionSlots,
                 11 => ReactionSlots,
+                100 => PlanetSlots,
                 _ => ManufacturingSlots,
             };
         }
@@ -52,6 +58,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
             {
                 8 => InventionTimeMultiplier,
                 11 => ReactionTimeMultiplier,
+                100 => 1.0,
                 _ => ManufacturingTimeMultiplier,
             };
         }
@@ -84,6 +91,8 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
 
         public int Runs { get; set; }
         public long QuantityProduced { get; set; }
+        /// <summary>该任务同时占用几条同类产线（行星殖民地数；其他活动恒为 1）。</summary>
+        public int Slots { get; set; } = 1;
         public double BaseHours { get; set; }
         public double DurationHours { get; set; }
         public double StartHours { get; set; }
@@ -125,6 +134,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int ManufacturingSlots { get; set; }
         public int InventionSlots { get; set; }
         public int ReactionSlots { get; set; }
+        public int PlanetSlots { get; set; }
         public double ManufacturingTimeMultiplier { get; set; } = 1.0;
         public double ReactionTimeMultiplier { get; set; } = 1.0;
         public double InventionTimeMultiplier { get; set; } = 1.0;
@@ -135,7 +145,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double UsedSlotHours { get; set; }
         public double AvailableSlotHours { get; set; }
         public double UtilizationPercent { get; set; }
-        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots;
+        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots + PlanetSlots;
     }
 
     /// <summary>一次排产结果：任务 = 聚合后的制造/发明/反应作业。</summary>

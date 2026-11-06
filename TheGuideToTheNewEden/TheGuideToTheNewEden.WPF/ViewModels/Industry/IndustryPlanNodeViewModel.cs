@@ -19,12 +19,14 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public IndustryPlanNodeViewModel(IndustryBuildNode model)
     {
         Model = model;
-        DecisionKey = IsAssetCovered
-            ? "stock"
-            : IsUpstreamCovered ? "surplus"
-            : IsJobCovered ? "jobs"
-            : IsMixedCovered ? "mixed"
-            : model.IsInvention ? "invention" : model.Decision == IndustryDecision.Buy ? "buy" : "build";
+        DecisionKey = model.CostIgnored
+            ? "ignored"
+            : IsAssetCovered
+                ? "stock"
+                : IsUpstreamCovered ? "surplus"
+                : IsJobCovered ? "jobs"
+                : IsMixedCovered ? "mixed"
+                : model.IsInvention ? "invention" : model.Decision == IndustryDecision.Buy ? "buy" : "build";
     }
 
     public IndustryBuildNode Model { get; }
@@ -72,18 +74,26 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
         && !IsUpstreamCovered
         && !IsJobCovered;
 
-    public string DecisionText => IsAssetCovered
-        ? LanguageService.Get("IndustryChain_CoverageStock")
-        : IsUpstreamCovered ? LanguageService.Get("IndustryChain_CoverageUpstream")
-        : IsJobCovered ? LanguageService.Get("IndustryChain_CoverageJob")
-        : IsMixedCovered ? LanguageService.Get("IndustryChain_CoverageMixed")
-        : DecisionKey switch
-        {
-            "invention" => LanguageService.Get("IndustryPage_Decision_Invention"),
-            "buy" => LanguageService.Get("IndustryPage_Decision_Buy"),
-            _ => LanguageService.Get("IndustryPage_Decision_Build"),
-        };
+    public string DecisionText => Model.CostIgnored
+        ? LanguageService.Get("IndustryPage_CostIgnored")
+        : IsAssetCovered
+            ? LanguageService.Get("IndustryChain_CoverageStock")
+            : IsUpstreamCovered ? LanguageService.Get("IndustryChain_CoverageUpstream")
+            : IsJobCovered ? LanguageService.Get("IndustryChain_CoverageJob")
+            : IsMixedCovered ? LanguageService.Get("IndustryChain_CoverageMixed")
+            : DecisionKey switch
+            {
+                "invention" => LanguageService.Get("IndustryPage_Decision_Invention"),
+                "buy" => LanguageService.Get("IndustryPage_Decision_Buy"),
+                _ => LanguageService.Get("IndustryPage_Decision_Build"),
+            };
     public string DecisionKey { get; }
+
+    /// <summary>该节点被设为"不计入成本"（数量与采购清单保留，成本不计入总成本）。</summary>
+    public bool IsCostIgnored => Model.CostIgnored;
+    public string CostIgnoredHint => IsCostIgnored
+        ? LanguageService.Get("IndustryPage_CostIgnoredHint")
+        : string.Empty;
 
     /// <summary>语言无关的活动代码：给 DataTrigger 用（不能用本地化文本比较）。</summary>
     public string ActivityKind => Model.ActivityID switch
@@ -219,6 +229,27 @@ public sealed class IndustryPlanNodeViewModel : INotifyPropertyChanged
     public bool HasBlueprintStockText => !string.IsNullOrEmpty(BlueprintStockText);
     public string MeTeText => !IsStockCovered && !IsPlanetary && Model.Decision == IndustryDecision.Build ? $"ME {ME} · TE {TE}" : string.Empty;
     public bool HasMeTe => !string.IsNullOrEmpty(MeTeText);
+
+    // ── 行星开发（阶段 276）：按殖民地模型估算时的展示 ──
+    /// <summary>true = 该行星节点按真实殖民地模型估算（PlanetaryPlanner）。</summary>
+    public bool HasPlanetModel => Model.PlanetModeled;
+    public string PlanetSummaryText => !Model.PlanetModeled
+        ? string.Empty
+        : LanguageService.Format("IndustryChain_PlanetSummary",
+            Model.PlanetColonies, Model.PlanetCharacterCount, Model.PlanetOutputPerDay, Model.PlanetProductionDays);
+    public string PlanetCostText => !Model.PlanetModeled
+        ? string.Empty
+        : LanguageService.Format("IndustryChain_PlanetCost",
+            Model.PlanetSetupCost, Model.PlanetImportCost, Model.PlanetTax);
+    public string PlanetEstimatedText => Model.PlanetModeled && Model.PlanetEstimated
+        ? LanguageService.Get("IndustryChain_PlanetEstimated")
+        : string.Empty;
+    public bool HasPlanetEstimated => !string.IsNullOrEmpty(PlanetEstimatedText);
+    /// <summary>BOM 行里的短标记（如「3 殖民地」）；非殖民地模型为空。</summary>
+    public string PlanetShortText => Model.PlanetModeled && Model.PlanetColonies > 0
+        ? LanguageService.Format("IndustryChain_PlanetShort", Model.PlanetColonies)
+        : string.Empty;
+    public bool HasPlanetShort => !string.IsNullOrEmpty(PlanetShortText);
     public string JobTimeText => Model.JobTimeSeconds > 0 ? FormatDuration(Model.JobTimeSeconds) : string.Empty;
     public string JobCostText => Model.JobCostKnown ? Model.JobCost.ToString("N2") : "—";
     public string FullBuildCostText => Model.FullBuildCost > 0 ? Model.FullBuildCost.ToString("N0") : "—";

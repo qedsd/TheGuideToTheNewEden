@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 制造计划 · Nav.IndustryPlan（夹板 + 柱状图：一条生产计划） -->
+  <rect x="22" y="16" width="84" height="96" rx="12" fill="none" stroke="#3B82F6" stroke-width="9"/>
+  <rect x="46" y="8" width="36" height="18" rx="8" fill="#F59E0B"/>
+  <rect x="36" y="64" width="14" height="32" rx="5" fill="#38BDF8"/>
+  <rect x="57" y="50" width="14" height="46" rx="5" fill="#5EEAD4"/>
+  <rect x="78" y="74" width="14" height="22" rx="5" fill="#F59E0B"/>
+</svg>

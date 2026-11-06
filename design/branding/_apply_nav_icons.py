@@ -16,6 +16,8 @@ MW = (r"D:\QEDSD\Code\TheGuideToTheNewEden\TheGuideToTheNewEden"
 SEQ = [
     "home", "characters", "business",
     "market", "order", "scalper", "compareMarket", "appraisal",
+    # 阶段 272：工业组（母项 + 四个子页各一枚图标）
+    "industry", "industryPlan", "industryPlanetary", "industryBlueprints", "industryInventory",
     "gamePreview", "assistant", "channel",
     "channelIntel", "channelMonitor", "channelScan", "channelMarket", "gameLogMonitor",
     "translation", "translationAi", "channelTranslation", "translationLocal",

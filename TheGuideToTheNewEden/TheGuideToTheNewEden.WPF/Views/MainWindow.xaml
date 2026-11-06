@@ -144,7 +144,7 @@
                                 <ui:ImageIcon
                                     Width="20"
                                     Height="20"
-                                    Source="{StaticResource NavIcon.industry}" />
+                                    Source="{StaticResource NavIcon.industryPlan}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
@@ -155,7 +155,7 @@
                                 <ui:ImageIcon
                                     Width="20"
                                     Height="20"
-                                    Source="{StaticResource NavIcon.industry}" />
+                                    Source="{StaticResource NavIcon.industryPlanetary}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
@@ -166,7 +166,7 @@
                                 <ui:ImageIcon
                                     Width="20"
                                     Height="20"
-                                    Source="{StaticResource NavIcon.industry}" />
+                                    Source="{StaticResource NavIcon.industryBlueprints}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
@@ -177,7 +177,7 @@
                                 <ui:ImageIcon
                                     Width="20"
                                     Height="20"
-                                    Source="{StaticResource NavIcon.industry}" />
+                                    Source="{StaticResource NavIcon.industryInventory}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <!--  「回收 / 压缩」入口已隐藏（页面与计算保留，暂不提供导航入口）  -->

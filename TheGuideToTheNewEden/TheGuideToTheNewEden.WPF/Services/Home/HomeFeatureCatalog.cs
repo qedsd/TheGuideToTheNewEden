@@ -104,13 +104,14 @@ public static class HomeFeatureCatalog
             "Home.Feature.AppraisalDesc", HomeFeatureKind.Page, typeof(Views.Pages.AppraisalPage)),
 
         // ---------- 工业 ----------
-        new("industry-plan", SymbolRegular.Building24, "industry", "Nav.IndustryPlan", "Nav.Industry",
+        // 阶段 272：四个子页各用自己的矢量图标（此前都借用母图标 "industry"，磁贴/列表里分不清）
+        new("industry-plan", SymbolRegular.Building24, "industryPlan", "Nav.IndustryPlan", "Nav.Industry",
             "Home.Feature.IndustryPlanDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryPlanPage)),
-        new("industry-planetary", SymbolRegular.Planet24, "industry", "Nav.IndustryPlanetary", "Nav.Industry",
+        new("industry-planetary", SymbolRegular.Planet24, "industryPlanetary", "Nav.IndustryPlanetary", "Nav.Industry",
             "Home.Feature.IndustryPlanetaryDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryPlanetaryPage)),
-        new("industry-blueprints", SymbolRegular.DocumentText24, "industry", "Nav.IndustryBlueprints", "Nav.Industry",
+        new("industry-blueprints", SymbolRegular.DocumentText24, "industryBlueprints", "Nav.IndustryBlueprints", "Nav.Industry",
             "Home.Feature.IndustryBlueprintsDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryBlueprintPage)),
-        new("industry-inventory", SymbolRegular.Database24, "industry", "Nav.IndustryInventory", "Nav.Industry",
+        new("industry-inventory", SymbolRegular.Database24, "industryInventory", "Nav.IndustryInventory", "Nav.Industry",
             "Home.Feature.IndustryInventoryDesc", HomeFeatureKind.Page, typeof(Views.Pages.IndustryInventoryPage)),
         // 「回收 / 压缩」入口已隐藏（页面与计算保留，暂不提供导航 / 主页入口）。
 

@@ -10854,6 +10854,385 @@ MainWindow.xaml(.cs)
 - 未覆盖：本轮没有做**双卡/双行拖拽**的端到端实测（逻辑只改了宿主与半轴判定，`MoveCard` 未动）；
   深色主题下未重复截图（列表行的颜色全部走 `DynamicResource` 主题画刷，无字面量颜色）。
 
+## 阶段 270：主页「快捷方式」卡片右上角补编辑入口（跳转 设置 → 主页）（2026-11-03）
+
+> 用户反馈：主页快捷方式卡片右上角应该有个编辑图标，点了要跳到设置界面。
+
+### 270.1 背景与取舍
+
+- 这个位置的「编辑」按钮在**阶段 101 已被整块删除**（当时应用户要求把编辑模式收进 设置 → 主页，
+  见 `HOME_DESIGN.md` §4.3），所以当前代码里该位置本没有控件；用户看到的应是旧版本的残留印象/旧构建。
+- 本轮按需求把它**加回来，但只做跳转入口**：点一下 = 打开「设置 → 主页」，**不进入任何编辑态**
+  （主页磁贴仍然只有"点击打开"一种交互，编辑动作依旧全在设置页）。
+
+### 270.2 实现
+
+- `Views/Pages/HomePage.xaml`：`QuickCard.Header` 由 `StackPanel` 改成两列 `Grid`（左＝标题+计数，右＝按钮），
+  右侧新增 `ui:Button x:Name="ManageShortcutsButton"`：`Appearance="Transparent"`、`Icon="{ui:SymbolIcon Edit24}"`、
+  `Padding="6,2"`，`ToolTip` 与 `AutomationProperties.Name` 都取既有键 **`Home.Quick.Manage`**（「管理快捷方式…」，
+  与左侧导航右键那条完全同文案，零新增键）。
+- `Views/Pages/HomePage.xaml.cs`：新增 `OnManageShortcutsClick` ——
+  `SettingsPage.RequestCategory(typeof(Settings.HomeSettingPage))` + `Navigation.Navigate(typeof(SettingsPage))`。
+  这与导航右键「管理快捷方式…」（`MainWindow.xaml.cs`）**走同一条路径**：设置页消费待打开分类（`Loaded` 时
+  `ApplyPendingCategory`），跨页跳转和"设置页是否已创建"都能正确落地。
+- 语言：`SettingPage_Home_Desc` 文案纠偏——原文还写着"快捷方式的增删与分组在主页「编辑」模式进行"（阶段 101 后已失效），
+  改为「主页卡片的显示开关；快捷方式的增删、排序与宽窄也在这里管理」（中英同步）。
+
+### 270.3 验证
+
+- `dotnet build`：**0 错误**。
+- 按用户要求（"不需要你验证，改完交给我"）**未做界面点击核验**；跳转链路与现成入口逐字相同，风险集中在
+  "设置页已创建时是否还能落到分类"——该分支早已被导航右键「管理快捷方式…」长期使用。
+- 手册同步：`home.md`（卡片标题行说明 + 限制段说明"只跳转、不进编辑态"）、`settings/home.md`（三处入口之一）；
+  `HOME_DESIGN.md` §4.3 补记阶段 270。
+
+## 阶段 271：主页快捷方式卡片去掉标题行计数（保留标题）（2026-11-03）
+
+> 用户要求：把「快捷方式 共 n 个 · 上限 24」这行删了；随后补充「保留「快捷方式」」。
+
+- `Views/Pages/HomePage.xaml`：`QuickCard.Header` 仍是两列 `Grid`——左边只留标题 `TextBlock`
+  （`Home.Quick.Title`，删除旁边的计数 `TextBlock`），右边是阶段 270 的编辑图标按钮。
+- `ViewModels/Home/HomePageViewModel.cs`：`CountText` 计算属性与两处 `OnPropertyChanged(nameof(CountText))` 删除
+  （页面已无绑定，留着等于死代码）；`IsEmpty` 等其它通知不动。
+- 语言：`Home.Quick.Title` **保留**（标题还在用）；`Home.Quick.Count` 保留给「设置 → 主页」顶部
+  （`HomeSettingPage` 的"共 n 个 · 上限 24"）。键集中英仍严格一致（3395 = 3395）、无重复。
+- 文档：`HOME_DESIGN.md` 语言键清单与 §4.3 按"只去计数、保留标题"改写；手册 `home.md` 的卡片说明同步。
+- `dotnet build`：**0 错误**。按用户要求未做界面核验。
+
+## 阶段 272：工业（制造）四个子页各配独立图标（2026-11-03）
+
+> 用户反馈：制造相关功能现在都用同一个图标，需要重新给每个功能配图标。
+
+### 272.1 问题与根因
+
+- 左侧导航「工业」组的四个子项（制造计划 / 行星开发 / 蓝图浏览器 / 库存）此前**全部借用母图标**
+  `NavIcon.industry`（橙色立方体），在导航里并排展开时四条完全一样，看不出区别。
+- 主页磁贴与「设置 → 主页」列表里的图标来自 `HomeFeatureCatalog` 的 `IconKey`，那四条同样都写的 `"industry"`，
+  所以主页上一固定工业类功能就也是同一个图标。
+- 附带发现：`NavIcons.xaml` 头部写着"自动生成，勿手改"，但 `NavIcon.industry` 本来是**手写**加进去的
+  （`design/branding/icons/` 里没有对应的 `nav_industry.svg`，生成脚本的 `ORDER` 里也没有它）——即"真源"缺一枚。
+
+### 272.2 新增图标（`design/branding/icons/` → `Resources/NavIcons.xaml`）
+
+沿用既有视觉规范：128×128 坐标空间、20px 显示、`ScaleTransform 0.15625`、描边统一 ×1.25、配色取现有四种
+（蓝 `#3B82F6`/`#38BDF8`、青 `#5EEAD4`、琥珀 `#F59E0B`）、全部 `round` 线帽。
+
+| 图标键 | 名称 | 图形 | 文件 |
+|---|---|---|---|
+| `NavIcon.industryPlan` | 制造计划 | 蓝色夹板 + 琥珀夹子 + 三根柱状图（"生产计划"） | `nav_industryPlan.svg` |
+| `NavIcon.industryPlanetary` | 行星开发 | 蓝色环形行星 + 青色行星环 + 一点琥珀卫星 | `nav_industryPlanetary.svg` |
+| `NavIcon.industryBlueprints` | 蓝图浏览器 | 琥珀图纸 + 蓝/青网格线（"技术图纸"） | `nav_industryBlueprints.svg` |
+| `NavIcon.industryInventory` | 库存 | 三只货箱（琥珀一上、蓝青两下） | `nav_industryInventory.svg` |
+| `NavIcon.industry` | 工业（母项） | 原橙色立方体，**回填成 SVG**（`nav_industry.svg`） | `nav_industry.svg` |
+
+- 生成脚本 `_svg_to_wpf_icons.py` 的 `ORDER` 末尾补上 5 个 id（工业母项 + 四个子页），
+  `_apply_nav_icons.py` 的 `SEQ` 也按 MainWindow 里的实际位置（估价之后、多开之前）补上——
+  两个脚本都是**按位置**对应导航项，漏掉工业组会让后续批量替换整体错位。
+- **`NavIcons.xaml` 是"脚本输出 + XAML 格式化器"的产物**（属性按字母序、`Pen` 多行）：
+  直接重跑脚本会带出 900 行纯格式差异，所以本轮只在文件末尾按既有格式**手工补了 4 段**，
+  图形数据与脚本输出语义一致；`nav_industry.svg` 则用来补齐"真源"缺口（将来重跑脚本不会丢工业母图标）。
+
+### 272.3 接线
+
+- `Views/MainWindow.xaml`：四个子项的 `ui:ImageIcon` 从 `NavIcon.industry` 分别改为上表四个键（母项保持不变）。
+- `Services/Home/HomeFeatureCatalog.cs`：四条工业功能的 `IconKey` 由 `"industry"` 分别改成
+  `"industryPlan"` / `"industryPlanetary"` / `"industryBlueprints"` / `"industryInventory"`，
+  因此**主页磁贴、设置页行、添加功能窗口**里的图标一并区分开（它们都走 `HomeFeature.IconResourceKey`）。
+
+### 272.4 验证
+
+- `dotnet build`：**0 错误**（18 个既有警告）。
+- `python design/branding/_audit_branding.py`：B 段全 OK，尤其是 **B4 数量 SVG 40 / xaml 40**（此前 35 / 36，
+  现在真源与产物终于一一对应）；颜色、opacity 折算、线帽检查均通过，无 `[X]`。
+- 实机（展开「工业」组抓图）：四个子项图标互不相同且在 20px 下可辨识——
+  夹板柱状图（制造计划）、带环行星（行星开发）、图纸网格（蓝图浏览器）、货箱堆（库存），母项仍是立方体。
+- 已知取舍：`design/branding/icons/preview.html` 与 `nav-icons.svg` 是**手工维护**的图标预览页，
+  本轮未补卡片（README 已注明"新增图标需自行补卡片"）。
+
+## 阶段 273：制造计划成本口径——发明 T1 蓝图可排除、节点可"不计入成本"、节点动作改下拉框（2026-11-03）
+
+> 用户反馈：制造计划算成本时会把"发明步骤要用的 T1 蓝图"按全新买入算进去（如生产「鞭挞狂乱超大型鱼雷」会把
+> 「鞭挞超大型鱼雷蓝图」也算一笔采购），希望在"全新买入蓝图"与"不计入成本"之间可选；
+> 并且要在 BOM 成本里能把某个节点（例如那张 T1 蓝图）设为**不计入成本**，
+> 同时把节点成本方式的几个按钮（制造 / 采购 / 忽略）改成**下拉框**，选中就重算该节点成本。
+
+### 273.1 口径与交互
+
+- **新选项「发明用的 T1 蓝图计入成本」**（默认**关**）：关闭时发明节点仍把 T1 蓝图列成需求（BOM 里看得到、采购清单里也有），
+  但它的成本不计入总成本；打开后才按"全新买入这张蓝图"计价。位置在「计划设置 → 角色与市场」的库存/市场数据卡里，
+  紧挨「使用角色自有蓝图」，改动即时保存并在已有结果时自动重算。
+- **节点「不计入成本」**：新增的第三种成本方式。语义是"数量/流程/采购清单照常，成本清零且不向上聚合"，
+  典型场景就是"蓝图、工具、家里已有的存货不该算进这一单"。列表里该节点的决策标签显示「不计入成本」、成本列显示 `—`，
+  节点详情多一行说明。
+- **节点动作改下拉框**：原来节点详情里的「强制制造 / 强制采购 / 加入黑名单」三个按钮收成一个
+  **成本计算方式**下拉框（自动 / 强制制造 / 强制采购 / 不计入成本），选中即重算；「清除手动成本设置」按钮把四类设置一起清空。
+  - 黑名单与"强制采购"在求解器里本来就等价（都强制 `IndustryDecision.Buy`），因此下拉框不再单独提供黑名单；
+    历史设置文件里已有的 `Blacklist` 仍然被读取与应用，只是不再有新增入口。
+
+### 273.2 代码变更
+
+- **Core**
+  - `Models/Indusrty/IndustryBuildNode.cs`：新增 `CostIgnored`（数量保留、成本清零）。
+  - `Models/Indusrty/IndustrySolverOptions.cs`：新增 `HashSet<int> IgnoredCostTypes` 与 `bool CountInventionBlueprintCost`（默认 false）。
+  - `Services/Industry/IndustrySolver.cs`：
+    - `SolveNodeInternal` 在节点算完后按 `IgnoredCostTypes` 调 `IgnoreCost(node)`；
+    - 新增 `IgnoreCost`：置 `CostIgnored`、清零 `JobCost/JobCostKnown/BuildCost/FullBuildCost/ReferenceCost/ReferenceCostFull`（父节点累加的是 `BuildCost`/`FullBuildCost`，因此自然不再向上聚合）；
+    - `TryBuildInventionNode` 里 T1 蓝图节点在 `CountInventionBlueprintCost == false` 时走 `IgnoreCost`（仍加入 `Inputs` 以便 BOM 显示）。
+- **WPF**
+  - `Services/Industry/IndustrySettingService.cs`：新增 `CountInventionBlueprintCost` 与 `List<int> IgnoredCostTypes`。
+  - `ViewModels/Industry/IndustryPlanPageViewModel.cs`：
+    - 字段 `_ignoredCostTypes`；构造与 `ApplySetting` 两条路径都读取新设置，`SaveSetting` 写回；
+    - `CountInventionBlueprintCost` 属性（改动即保存 + 有结果时重算）；
+    - 新增 `SelectedNodeCostModeIndex`（0 自动 / 1 制造 / 2 采购 / 3 不计入成本）：getter 按"忽略集合 → 手动决策 → 黑名单"推导，
+      setter 清掉三类设置后按选择写入，保存并重算；`SelectedNode` 变化时通知该属性；
+    - `CalculateAsync` 把 `IgnoredCostTypes` / `CountInventionBlueprintCost` 传给 `IndustrySolverOptions`；
+    - 删除 `ForceBuildSelected / ForceBuySelected / BlacklistSelected`（被下拉框取代），`ClearManualDecisions` 一并清空忽略集合。
+  - `ViewModels/Industry/IndustryPlanNodeViewModel.cs`：`CostIgnored` 优先级最高地参与 `DecisionKey`（`"ignored"`）与 `DecisionText`，
+    并新增 `IsCostIgnored` / `CostIgnoredHint`。
+  - `Views/UserControls/IndustryProductionChainView.xaml`（**真正在用的 BOM 视图**）：
+    节点行增加 `DecisionKey = ignored` 的触发器（中性色）；节点详情把三个按钮换成 `ComboBox`
+    （`SelectedIndex` 绑到页面 VM 的 `SelectedNodeCostModeIndex`，`RelativeSource AncestorType=UserControl`），
+    并加一行"该节点不计入成本"的说明；对应 code-behind 删掉三个按钮处理器。
+  - `Views/Pages/IndustryPlanPage.xaml`：库存/市场数据卡新增「发明用的 T1 蓝图计入成本」复选框；
+    顺带删掉该文件里**两份从未被引用的** `IndustryNodeTemplate` / `IndustryNodeDetailTemplate`
+    （阶段 269 之后 BOM 已迁到 `IndustryProductionChainView`，页面里这两份是旧版残留，
+    其中详情模板还引用着被我删掉的按钮处理器）。
+  - 语言：中英各 +9 键（`IndustryPage_NodeCostMode` / `NodeCostModeTip` / `CostModeAuto` / `CostModeIgnore` /
+    `CostIgnored` / `CostIgnoredHint` / `CountInventionBlueprintCost` / `CountInventionBlueprintCostTip` 等）；
+    删除随之失效的 `IndustryPage_NodeActions` 与 `IndustryPage_Blacklist`；`ClearDecisions` 文案改为「清除手动成本设置」。
+- 手册：`Resources/Manuals/zh-CN/industry/plan.md` 的 BOM/成本步骤、字段表与限制段同步（新增下拉框语义、默认不计价的 T1 蓝图、忽略只影响成本不影响数量）。
+
+### 273.3 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 按用户要求（"不要自己操作软件验证，改完交给我"）**未做实机界面核验**。
+  需要实机确认的三点：① 选项开关默认关闭时，T2 目标的发明子节点下那张 T1 蓝图成本为 `—`、总成本随之下降；
+  ② 把某节点设为「不计入成本」后重算，节点标签变「不计入成本」、父节点/总成本按差额下降，但采购清单数量不变；
+  ③ 下拉框切换四种方式都能触发重算（`Auto` 会清除该物品的人工设置）。
+
+## 阶段 274：制造计划「目标物品」列表改为卡片（2026-11-04）
+
+> 用户要求：目标物品列表的物品模板改成卡片式，去掉现在的「物品 / 数量」表头；
+> 卡片顶部是物品名称，下面第一行「数量 + 输入框」、第二行「发明解密器 + 下拉框」，右上角是删除按钮。
+
+- `Views/Pages/IndustryPlanPage.xaml`
+  - `IndustryTargetTemplate` 重写为卡片：`Border`（`CardBackgroundFillColorDefaultBrush` + `CardStrokeColorDefaultBrush` 描边、圆角 8、`Padding 10,8`），
+    内部三行 Grid——①名称（13px 半粗、单行省略）+ 右上角 `Dismiss24` 删除按钮（`Tag` 绑目标项，仍走 `OnRemoveTargetClick`）；
+    ②「数量」标签（`MinWidth=64` 对齐）+ 整宽 `ui:NumberBox`（保持原有 `Min 1 / Max 1000000 / 整数 / Compact` 设置）；
+    ③「发明解密器」标签 + 整宽 `ComboBox`（沿用 `TargetDecryptors` 数据源与 `SelectedDecryptor` 双向绑定）。
+  - 目标面板顶部那行「物品 / 数量」表头连同它占的行一起删掉（`Grid` 由 Auto/*/Auto 三行改为 */Auto 两行），
+    底部「清空全部目标」按钮位置不变。
+- 语言键：无新增（复用 `General_Quantity` / `IndustryPage_Decryptor` / `IndustryPage_DecryptorTargetTip` / `General_Remove`）；
+  `IndustryPage_Col_Item` 仍被 BOM 概览表格用，未删。
+- 手册：`industry/plan.md` 第 2 步改为描述卡片式目标（名称 / 数量 / 解密器 / 删除）。
+- `dotnet build`：**0 错误**（54 个既有警告）。按用户要求未做实机界面核验。
+
+## 阶段 275：改节点成本方式后只刷数据、不再跳回排程页（2026-11-04）
+
+> 用户反馈：改了某个节点的成本计算方式后会"重新刷新页面并跳到排程页"，希望只刷新数据、页面停留在操作前的位置。
+
+### 275.1 根因
+
+- 阶段 273 里下拉框选中即调 `CalculateAsync()`，而 `FillPlan` 结尾无条件执行
+  `SectionTabIndex = 1; ResultTabIndex = 0; DetailTabIndex = 0;`（再按有无排程补成 `ResultTabIndex = 1`）——
+  这是**点「执行计划」时应有的"跳到排程"行为**，但对"只改了一个节点的成本口径"这种增量重算就是副作用：
+  页签被拽回「计划详细 → 排程」，节点选中也被重置成第一个，用户还得自己点回 BOM。
+- 顺带发现：重算会重建全部节点实例，用户的**展开/收起状态**同样会丢（恢复成默认"前两层展开"）。
+
+### 275.2 修法
+
+- `IndustryPlanPageViewModel.CalculateAsync(bool preserveView = false)`：新增可选参数。
+  `preserveView = true` 时在重算开始前抓一份 `ViewState`（三个页签索引 + 选中节点 TypeID 与扁平下标 +
+  概览选中目标 + 展开节点的 TypeID 集合），重算完成后按它还原。
+- `FillPlan(..., ViewState? keepView = null)`：
+  - 有 `keepView` 时**跳过**三处页签重置（开头那组 + 结尾的 `ResultTabIndex = HasSchedule ? 1 : 0`），改为写回快照里的值；
+  - 节点重建后先按快照还原展开状态（`ApplyExpansion`，同时记了"重算前存在过的 TypeID"集合：
+    见过的节点按快照还原，重算后新冒出来的节点保留默认的"前两层展开"），再 `RestoreNode` 找回选中节点：
+    优先"同 TypeID 且扁平下标最接近"，其次"同 TypeID 的第一个"，最后退到第一个节点
+    （强制制造/采购会改变子树结构，下标不一定还能对上，所以有兜底）；
+  - 概览选中目标按 TypeID 还原（找不到回退第一个）。
+- `SelectedNodeCostModeIndex` 的 setter 补两道防回环：**重算进行中（`IsBusy`）直接忽略回写**
+  （节点集合重建时绑定会瞬时刷新，不代表用户操作），以及**值没变不重算**（下拉框刷新选中项也会走 setter）。
+- 调用点：三处"只改设置、需要重算"的地方改为 `CalculateAsync(preserveView: true)` ——
+  节点成本方式下拉框、『发明用的 T1 蓝图计入成本』开关、『清除手动成本设置』；
+  页面上的「执行计划」按钮仍走默认 `false`，保留"算完跳排程"的原行为。
+
+### 275.3 验证
+
+- `dotnet build`：**0 错误**（18 个警告，增量构建）。
+- 按用户要求未做实机界面核验。需要实机确认：在 BOM 页签选中某节点改成本方式后，
+  仍停留在「计划详细 → BOM」、同一节点仍选中、展开状态不变，只有成本数字/flags 变化；
+  点「执行计划」仍会跳到排程页。
+
+## 阶段 276：制造计划接入行星开发规划器（真实殖民地模型）（2026-11-04）
+
+> 用户反馈：制造计划里包含的行星产物似乎都按"一个殖民地"计算。确认确实如此后，用户选择**方案 3**——
+> 让制造计划的 PI 需求直接调用「工业 → 行星开发」的 `PlanetaryPlanner`，把殖民地数量、行星类型、
+> 每天产量、建造成本与进口/出口税带进 BOM 与排程。
+
+### 276.1 原来的口径（为什么像"一个殖民地"）
+
+- BOM：行星节点只用 SDE `planetSchematics` 配方——`流程 = ceil(需求 / 每周期产出)`、材料按 `流程 × 每周期输入`
+  递归、`时间 = CycleTime × 流程`、成本只累加子材料 + 一笔 `收入 × 出口税率`。**没有任何殖民地/容量概念**。
+- 排程：`ProfileState.PlanetFree = new double[1]`，每个角色**恒定 1 条行星线**，所有 PI 任务串行排在这一条线上
+  （制造/发明/反应是按技能 1–11 个槽位，行星却不是）。
+- 「工业 → 行星开发」页其实已有完整模型（`PlanetaryPlanner` + `PlanetaryCapacityCalculator` + `PlanetTypeCatalog`：
+  行星类型 P0 组成、按半径算 CPU/PG、工厂与提取头、每角色 6 殖民地、进口/出口税、按天产量），制造计划**从未接它**。
+
+### 276.2 Core 改动
+
+- 新增 `Models/Indusrty/IndustryPlanetaryOptions.cs`：`Enabled`（默认 true）/ `PeriodDays` / `CcuLevel` /
+  `MaxPlanetsPerCharacter` / `RadiusKm` / `CountSetupCost` / `Mode` / `Characters` / `Planets`。
+- `IndustrySolverOptions.Planetary`（新属性，默认启用）。
+- `IndustryBuildNode` 新增行星字段：`PlanetModeled` / `PlanetColonies` / `PlanetCharacterCount` /
+  `PlanetOutputPerDay` / `PlanetImportCost` / `PlanetSetupCost` / `PlanetProductionDays` / `PlanetEstimated`。
+- `IndustrySolver`：
+  - 静态 `Lazy<PlanetaryPlanner>`（配方目录 + 行星类型表全进程加载一次）；
+  - `TryPlanetModel(node, quantity)`：按节点产物与需求量组请求（周期、CCU、每角色殖民地、半径、税率、角色、候选行星、
+    参考价委托）→ 规划 → 按 `(TypeId, 数量)` 缓存，避免同一产物多次规划；
+  - `ApplyPlanetModel`：写回殖民地数、角色数、日产量、进口成本（× 周期天数）、建造成本、出口税（× 周期天数）、
+    `JobTimeSeconds = 目标量/日产量 × 86400`；`PlanetEstimated` 标记"类型/半径是估算"；
+  - 建模成功时节点**不再递归展开 P0→P1 配方**（规划器已覆盖整链），成本只由进口成本 + 出口税 +（可选）建造成本构成，
+    产出按需求计、不产生上游剩余；`ApplyMarketInfo` 的简单 `收入 × 出口税率` 改为仅在**未建模**时补。
+- 排程（`IndustryScheduler`）：
+  - `IndustryCharacterProfile.PlanetSlots`（默认 6，`SlotsForActivity(100)` / `TotalSlots` 计入），
+    `ProfileState.PlanetFree` 按该值开并发行星线；
+  - `JobWork.PlanetSlots`（取同产物节点的最大殖民地数）、`Assignment.Slots`、`IndustryScheduleJob.Slots`，
+    `IndustryScheduleCharacter.PlanetSlots`；
+  - `FindBest` 对行星任务改为**同时占用 N 条空档线**（取前 N 个空档的最晚时间作为开工时间），
+    分配后把这些线一起占用到结束；其它活动行为不变；
+  - `BuildResult` 按该角色实际占用的殖民地数展开 `P1..Pn` 线，占用时长按 `时长 × 槽数` 计入利用率。
+
+### 276.3 WPF 改动
+
+- `IndustrySetting` 新增 7 个行星字段（默认：启用、周期 7 天、CCU 5、每角色 6 殖民地、半径 0 = 估算、计入建造成本、
+  不用候选行星）；顺带修掉一个既有缺陷：**`PlanetTaxPercent` 此前只在"载入计划"时读入**，构造函数漏读，
+  导致每次启动都会把用户设的海关税率写回 5%。
+- `IndustryPlanPageViewModel`：7 个属性（开关 + 参数），ctor / 载入计划 / 保存三条路径都读写；
+  `CalculateAsync` 组装 `options.Planetary`（参与角色 + 全局 CCU / 殖民地数；勾选时把「成本指数位置」星系的真实行星
+  `MapDenormalizeService.QueryPlanetsBySolarSystemID` 作为候选行星），并把 `CharacterProfiles.PlanetSlots` 设成设置值。
+- `IndustryPlanPage.xaml`：建筑页「行星开发」小节——按殖民地模型估算（关闭后续参数禁用）、计入建造成本、
+  用成本指数位置的星系行星作候选、产出周期、指挥中心等级、每角色殖民地、行星半径。
+- `IndustryProductionChainView.xaml`：BOM 行增加「N 殖民地」短标记；节点详情新增「行星开发（殖民地模型）」小节
+  （殖民地/角色/每天产量/约 N 天 + 建造/进口/出口税），估算半径时给黄色提示。
+- 语言：中英各 +17 键（`IndustryPage_Planetary*` 12 个 + `IndustryChain_Planet*` 4 个 + `IndustryPage_PlanetaryDetail`）。
+- 手册：`industry/plan.md` 的行星限制段改写为新口径 + 开关位置 + 仍存在的简化。
+
+### 276.4 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告，全量构建基线未变）。
+- 语言键：中英各 3422，键集一致、无重复。
+- 按用户要求**未做界面/数据实机核验**。需要实机确认：
+  ① 目标产物含 P1/P2 时，BOM 里该行星节点显示「N 殖民地 / 每天 X / 约 Y 天」，总成本按 建造+进口+出口税 计入；
+  ② 排程里该角色出现 N 条并行「行星」线，工期明显短于旧的一条线串行；
+  ③ 关掉开关后回到旧口径（1 条线、`CycleTime × 流程`）；
+  ④ 勾选「用成本指数位置的星系行星作候选」时按该星系真实行星规划，行星不足会有警告。
+
+## 阶段 277：行星产能改「按可用殖民地」反推工期（默认），不再永远按一个殖民地拉长（2026-11-04）
+
+> 用户反馈：只有一个行星产物（火箭燃料）时，排程里却只用角色一个殖民地，工期被拉到 990+ 小时。
+
+### 277.1 根因（实测数据）
+
+- 阶段 276 的口径是**"把需求塞进产出周期"**：`需求 / 产出周期天数 = 每天要产多少`，规划器只为这个日产量凑殖民地数。
+  周期越长、需要的日产量越低，殖民地就越少。
+- 用探针（真实 SDB，`Rocket Fuel`(9830) × 856，CCU5 / 6 殖民地 / 1 角色）实测：
+
+  | 产出周期 | 殖民地（提取/工厂） | 日产 | 目标天数 |
+  |---|---|---|---|
+  | 1 天 | 5（4/1） | 960 | 0.89 |
+  | 7 天（旧默认） | 3（2/1） | 240 | 3.57 |
+  | 30 天 | 3（2/1） | 120 | 7.13 |
+
+  也就是说：**周期口径下"殖民地数"被压到刚好够用的最小值**，而不是"把手上的殖民地都用上"，
+  所以一批几百件要排好几天。另外阶段 276 的 `PlanetTax/ImportCost` 按设置里的周期换算，规划实际用了别的周期时会算错。
+
+### 277.2 修法
+
+- 新增产能口径 **`IndustryPlanetarySizingMode`**：`AvailableColonies`（按可用殖民地，**默认**）/
+  `FitPeriod`（按产出周期，即旧行为）；`IndustryPlanetaryOptions.SizingMode` 生效。
+- `IndustrySolver`：
+  - `PlanWithPeriod(typeId, qty, days)`：原逻辑抽成独立方法；
+  - `PlanWithAvailableColonies`：先用 **1 天周期**探一次，得到"每个殖民地的日产能 = 日产 / 殖民地数"，
+    再用 **角色数 × 每角色殖民地**（默认 6）作为可用量：
+    - 探针殖民地数 ≤ 可用量 → 直接用 1 天口径（即"一天内出齐"）；
+    - 否则按 `天数 = 数量 / (可用殖民地数 × 每殖民地日产能)` 反推天数，再用该天数规划一次（得到准确的殖民地组合/成本）；
+  - `ApplyPlanetModel` 的进口成本/出口税改用**规划实际周期**（`summary.PeriodDays`）换算，不再用设置值。
+- 排程：行星任务占用 N 条殖民地产线时，把同一条任务**同时挂到 P1..Pn 每一条线上**（甘特图能看出"并行 N 个殖民地"），
+  占用时长仍只按 `时长 × 槽数` 计一次。
+- WPF：设置「行星开发」加「产能口径」下拉框（按可用殖民地 / 按产出周期）；「产出周期」只在后者可编辑；
+  `IndustrySetting.PlanetarySizingMode`（1 = 按可用殖民地，默认）；语言中英各 +4 键（`IndustryPage_PlanetarySizing*`）。
+
+### 277.4 修正：口径下拉的索引方向反了（当晚追加）
+
+- 现象：改完 277 后用户实测行星仍占 90+ 小时（截图里 P1–P3 三条 95h、瓶颈「火箭燃料 · 85h36m」）。
+- 根因：**界面下拉顺序与枚举映射写反**——下拉第 1 项是「按可用殖民地」，代码却把索引 0 映射成 `FitPeriod`，
+  而保存下来的 `PlanetarySizingMode = 0` 于是走的是"按产出周期 7 天"的老口径；
+  探针复算 `Rocket Fuel` × 856 得 3 殖民地 / 3.57 天 / **85.6h**，与截图瓶颈时间完全对上。
+- 修正：
+  - 映射改为 `0 → AvailableColonies（默认）`、`1 → FitPeriod`；`PlanetaryPeriodEnabled` 改为索引 1 时可用；
+    `_planetarySizingModeIndex` 默认 0、`IndustrySetting.PlanetarySizingMode` 默认 0；
+  - `Migrate` 升到 **PreferencesVersion = 2**：把已保存的 0/1 一律重置成 0（旧值的语义不可信）；
+  - 未选角色时"可用殖民地"按 **1 个角色**的字行位算（之前会退化成 1 个殖民地）。
+- 端到端探针（真实 SDB，`Rocket Fuel`(9830) × 856，1 角色 × 6 殖民地）：
+
+  | 口径 | 殖民地 | 日产 | 天数 | 节点工期 |
+  |---|---|---|---|---|
+  | 按可用殖民地（修正后默认） | 5（4 提取 + 1 工厂） | 960 | 0.89 | **21.4h** |
+  | 按产出周期 7 天（旧，用户当前值） | 3（2 提取 + 1 工厂） | 240 | 3.57 | 85.6h |
+
+### 277.3 验证
+
+- 探针实测（真实 SDB）：`Rocket Fuel` × 856，1 天周期 → **5 个殖民地（4 提取 + 1 工厂）、日产 960、目标 0.89 天**；
+  换算到"按可用殖民地"口径即 **约 21 小时**（旧 7 天周期口径约 86 小时，数量更大时成比例变长）。
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 探针文件与临时分派已删除；未在界面上点验。
+
+## 阶段 278：排程甘特图产线名改中文、任务条文字不再重叠（2026-11-06）
+
+> 用户反馈：排程节点类型显示的是 `manufacturing / invention / reaction / planetary` 英文；R2 行文字叠在一起。
+
+### 278.1 产线名本地化
+
+- 甘特图左侧每一行的标签原来绑的是 `IndustryScheduleLineViewModel.Kind`（Core 原始 kind：`manufacturing` 等），
+  改为绑 **`KindText`**——它按 kind 取语言键：制造 / 发明 / 反应 / 行星。
+- 补了缺失的 **`IndustrySchedule_StageManufacturing`**（制造 / Manufacturing）：
+  原来 manufacturing 会落到默认键 `IndustrySchedule_StageComponent`（"组件"），
+  所以 `KindText`、`LocalizeActivity`、`SlotsName` 的默认分支一并改到新键；
+  `SlotsName` 同时补上 `100 => 行星`（工位页"行星槽"文案）。
+- 语言：中英各 +1 键（3427 = 3427，无重复）。
+
+### 278.2 任务条文字重叠
+
+- 三个原因叠在一起：
+  1. 任务条比文字窄时（0.x 小时的短条），`TextBlock` 的省略号没有硬约束，文字会画出条外压到相邻任务；
+  2. 同一条产线上两个任务时间重叠时（取整/人工置顶/并行殖民地摊派后可能出现），两条的文字互相压；
+  3. 行内布局会把间隙 ≤24px 的相邻任务吸到一起，进一步放大视觉重叠。
+- 修法：
+  - `ScheduleBarStyle` 的模板 `Grid` 加 **`ClipToBounds="True"`**：超出任务条的文字被裁掉，不再画到邻居身上；
+  - `IndustryScheduleLineViewModel` 在排布 DisplayLeft 时，若后一个任务与前一个**在像素上重叠**，
+    就把它推到前一个的右边缘（仅视觉；悬浮提示与任务详情仍是真实时间/时长）。
+
+### 278.3 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 语言键：中英各 3427，键集一致、无重复。
+- 按用户要求未做实机点验；需确认：甘特图左侧显示「M1 · 制造」「I1 · 发明」「R1 · 反应」「P1 · 行星」，
+  R2 那一行的两条任务文字不再叠字（窄条会被裁切，悬浮仍能看到完整名称）。
+
+## 阶段 279：计划详细页右上角「保存计划」按钮未接线（2026-11-06）
+
+> 用户反馈：计划详细页右上角的「保存计划」点了没反应。
+
+- 根因：那个按钮在 `IndustryPlanPage.xaml`（计划详细 TabItem 里）**根本没有 `Click`**——只有样式和图标，
+  真正接线的只有「已保存计划」页里的「保存为新计划」。
+- 修法：
+  - 补上 `Click="OnSavePlanClick"`（与「保存为新计划」同一个处理器）和 `AutomationProperties.Name`；
+  - `SaveCurrentPlan()` 改为**一键保存不再强制取名**：名称为空时自动生成「首个目标名 · MM-dd HH:mm」并回填到 `PlanName`
+    （「已保存计划」页仍可改名）；只有连目标都没有时才提示先加目标。
+- 语言键无新增（`IndustryPage_PlanNameRequired` 仍被"重命名"使用，未删）。
+- `dotnet build`：**0 错误**（54 个既有警告）。未实机点验。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
