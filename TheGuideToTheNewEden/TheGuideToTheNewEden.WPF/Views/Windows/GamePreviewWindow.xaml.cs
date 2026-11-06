@@ -66,12 +66,17 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     }
 
     /// <summary>
-    /// 尺寸下限（物理像素）。预览浮窗**不限制最小尺寸**（用户要求：小尺寸排布时 200×120 的下限挡事），
-    /// 取 1 只是兜住"算出 0 或负数"这种退化尺寸（0 宽的窗口会直接不可见/无法再拖回来）。
-    /// 系统的默认最小跟踪尺寸（约 112×27）在 <see cref="OnWindowMessage"/> 的 WM_GETMINMAXINFO 里一并放开。
+    /// 预览窗尺寸下限（物理像素）：跟随系统窗口最小尺寸（WPF <c>SystemParameters.MinimumWindowWidth</c>，
+    /// 当前系统为 136 DIP × 37.6 DIP），而不是以前的 1px。
+    /// 这样 Win32 窗口与 WPF 布局使用同一个下限，不会再出现“Win32 被压到 110px、WPF 布局仍是 136 DIP”的对账死循环。
     /// </summary>
-    private const int MinWindowWidth = 1;
-    private const int MinWindowHeight = 1;
+    private int MinPreviewWidthPx => Math.Max(
+        1,
+        (int)Math.Ceiling(SystemParameters.MinimumWindowWidth * VisualTreeHelper.GetDpi(this).DpiScaleX));
+
+    private int MinPreviewHeightPx => Math.Max(
+        1,
+        (int)Math.Ceiling(SystemParameters.MinimumWindowHeight * VisualTreeHelper.GetDpi(this).DpiScaleY));
     private const int DragThreshold = 4;
 
     /// <summary>
@@ -143,6 +148,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     private NativeMethods.RECT _dragStartRect;
 
     private bool _thumbnailUpdateQueued;
+
+    // 尺寸对账告警去重：同一组“布局/实际”尺寸只报一次，避免窄窗口时 300ms 刷屏。
+    private int _lastStaleLayoutWidth = -1;
+    private int _lastStaleLayoutHeight = -1;
+    private int _lastStaleClientWidth = -1;
+    private int _lastStaleClientHeight = -1;
 
     public ProcessInfo Process { get; private set; }
 
@@ -233,16 +244,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        // 放开最小尺寸：WPF-UI 的 FluentWindow 样式自带一个最小尺寸（实测 460×320 DIP）。
-        // 它会**卡住 WPF 的布局尺寸**——窗口用 Win32 缩小后布局不肯缩：高亮边框按大尺寸绘制
-        // （右侧/下侧画到窗口外 → "高亮时只有左跟上两个边框"），布局多出来的那圈是透明的洞
-        // （→ "有时候有白边"）。预览浮窗按用户要求不设最小尺寸。（WPF-UI 在显示窗口时可能再套一次样式，
-        // 所以 300ms 的兜底对账里也会重新清零。）
-        if (MinWidth > 0 || MinHeight > 0)
-        {
-            MinWidth = 0;
-            MinHeight = 0;
-        }
+        ApplyWpfMinimumSize();
 
         if (!ReferenceEquals(Background, Brushes.Transparent))
         {
@@ -256,6 +258,26 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         }
 
         NativeMethods.EnableTransparentClientArea(_hwnd);
+    }
+
+    /// <summary>
+    /// 把 WPF 的 MinWidth/MinHeight 对齐到系统窗口下限，而不是 0。
+    /// 0 绕不过 WPF 的硬下限，反而会和 Win32 的实际尺寸形成长期不一致；对齐后两套尺寸口径一致。
+    /// </summary>
+    private void ApplyWpfMinimumSize()
+    {
+        var minWidth = SystemParameters.MinimumWindowWidth;
+        var minHeight = SystemParameters.MinimumWindowHeight;
+
+        if (Math.Abs(MinWidth - minWidth) > 0.1)
+        {
+            MinWidth = minWidth;
+        }
+
+        if (Math.Abs(MinHeight - minHeight) > 0.1)
+        {
+            MinHeight = minHeight;
+        }
     }
 
     private IntPtr OnWindowMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -290,13 +312,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
             if (msg == WM_GETMINMAXINFO)
             {
-                // 预览浮窗不限制最小尺寸（用户要求）：系统默认按 SM_CXMINTRACK/SM_CYMINTRACK（约 112×27 物理像素）
-                // 兜底，WPF / WPF-UI 还会把最小跟踪尺寸按回"窗口当前尺寸"——实测只删掉 WPF 的 MinWidth/MinHeight，
-                // 窗口仍会卡在当前尺寸上拖不小（SetWindowPos 与拖动都被拒，查询到的 minTrackSize 恒为启动时的尺寸）。
-                // 因此这里**接管这条消息**（handled = true，不再往后传），只把最小跟踪尺寸放开、其余保持系统预填值。
+                // 预览浮窗不接受系统默认的最小拖拽尺寸，而是统一使用"系统最小窗口尺寸 + 当前画面比例"：
+                // 锁比例时宽度下限 136 DIP 对应的高度也要一起抬高，避免只卡宽度把画面压扁。
                 var info = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                info.ptMinTrackSize.X = MinWindowWidth;
-                info.ptMinTrackSize.Y = MinWindowHeight;
+                var min = GetMinimumWindowSize();
+                info.ptMinTrackSize.X = min.Width;
+                info.ptMinTrackSize.Y = min.Height;
                 Marshal.StructureToPtr(info, lParam, true);
                 handled = true;
                 return IntPtr.Zero;
@@ -427,12 +448,61 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         return result;
     }
 
+    /// <summary>
+    /// 当前窗口允许的最小物理尺寸。锁比例时不能只卡宽度：
+    /// 例如无标题栏 16:9，最小宽度 136px 对应最小高度约 77px；标题栏样式还要加上 28px 标题栏。
+    /// 这样 WM_GETMINMAXINFO、SetSize、比例校正和拖动共用同一套下限，不会把 110×62 单独夹成 136×62。
+    /// </summary>
+    private (int Width, int Height) GetMinimumWindowSize()
+    {
+        var minWidth = MinPreviewWidthPx;
+        var minHeight = MinPreviewHeightPx;
+
+        if (!Setting.LockAspectRatio
+            || IsSourceMinimized()
+            || !TryGetSourceSize(out var sourceWidth, out var sourceHeight)
+            || sourceWidth <= 0
+            || sourceHeight <= 0)
+        {
+            return (minWidth, minHeight);
+        }
+
+        var padding = GetHighlightPadding();
+        var paddingWidth = (int)Math.Round(padding.Horizontal);
+        var paddingHeight = (int)Math.Round(padding.Vertical);
+        var chromeHeight = GetChromeHeight();
+        var aspect = (double)sourceWidth / sourceHeight;
+        var areaWidth = Math.Max(1, minWidth - paddingWidth);
+        var aspectHeight = (int)Math.Round(areaWidth / aspect) + paddingHeight + chromeHeight;
+        return (minWidth, Math.Max(minHeight, aspectHeight));
+    }
+
     /// <summary>把尺寸夹进"当前窗口所在显示器的工作区"，保持自身比例，避免按比例放大后跑出屏幕。</summary>
     private (int Width, int Height) ClampToWorkArea(int width, int height)
     {
+        var min = GetMinimumWindowSize();
         if (!NativeMethods.TryGetMonitorWorkArea(_hwnd, out var workArea) || workArea.Width <= 0 || workArea.Height <= 0)
         {
-            return (Math.Max(MinWindowWidth, width), Math.Max(MinWindowHeight, height));
+            var minWidth = min.Width;
+            var minHeight = min.Height;
+            if (width <= 0 || height <= 0)
+            {
+                return (Math.Max(minWidth, width), Math.Max(minHeight, height));
+            }
+
+            if (width < minWidth)
+            {
+                height = Math.Max(minHeight, (int)Math.Round((double)height * minWidth / width));
+                width = minWidth;
+            }
+
+            if (height < minHeight)
+            {
+                width = Math.Max(minWidth, (int)Math.Round((double)width * minHeight / height));
+                height = minHeight;
+            }
+
+            return (width, height);
         }
 
         return PreviewGeometry.ScalePreservingAspect(
@@ -441,10 +511,10 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             width,
             height,
             1.0,
-            MinWindowWidth,
-            MinWindowHeight,
-            Math.Max(MinWindowWidth, workArea.Width),
-            Math.Max(MinWindowHeight, workArea.Height));
+            min.Width,
+            min.Height,
+            Math.Max(min.Width, workArea.Width),
+            Math.Max(min.Height, workArea.Height));
     }
 
     /// <summary>窗口带标准标题栏（样式 0）还是彩色细名称条（样式 1）。</summary>
@@ -500,7 +570,8 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         }
 
         WindowState = WindowState.Normal;
-        NativeMethods.SetWindowBounds(_hwnd, Setting.WinX, Setting.WinY, Setting.WinW, Setting.WinH);
+        var (width, height) = ClampToWorkArea(Setting.WinW, Setting.WinH);
+        NativeMethods.SetWindowBounds(_hwnd, Setting.WinX, Setting.WinY, width, height);
         ScheduleThumbnailUpdate();
     }
 
@@ -686,12 +757,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     public void SetSize(int width, int height)
     {
         var rect = GetRect();
+        var (clampedWidth, clampedHeight) = ClampToWorkArea(width, height);
         NativeMethods.SetWindowBounds(
             _hwnd,
             rect.X,
             rect.Y,
-            Math.Max(MinWindowWidth, width),
-            Math.Max(MinWindowHeight, height));
+            clampedWidth,
+            clampedHeight);
         PersistBounds();
     }
 
@@ -1147,24 +1219,51 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        // 兜底：放开窗口的最小尺寸。WPF-UI / 主题会给 FluentWindow 设一个固定的 MinWidth/MinHeight
-        // （实测见过 460×320 DIP），它会**卡住 WPF 的布局尺寸**：窗口用 Win32 缩小之后布局不肯缩，
-        // 于是高亮边框按"大尺寸"绘制（右侧/下侧画到窗口外 → 看起来"高亮时只有左跟上两个边框"），
-        // 布局多出来的那圈则是透明的洞（→ 看起来"有时候有白边"）。预览浮窗按用户要求不设最小尺寸。
-        if (MinWidth > 0 || MinHeight > 0)
-        {
-            MinWidth = 0;
-            MinHeight = 0;
-        }
+        // 对齐 WPF 硬下限（不是清零）：Win32 允许任意小，但 WPF 布局仍会按系统最小宽度排，
+        // 清成 0 并不能绕过，反而会持续产生“WPF 136 / 实际 110”的对账告警。
+        ApplyWpfMinimumSize();
 
         var dpi = VisualTreeHelper.GetDpi(this);
         var wantWidth = client.Width / dpi.DpiScaleX;
         var wantHeight = client.Height / dpi.DpiScaleY;
-        var stale = Math.Abs(ActualWidth - wantWidth) > 2 || Math.Abs(ActualHeight - wantHeight) > 2;
-        if (!stale)
+
+        // 正常路径下所有入口（启动/恢复/拖动/自动排列/滚轮）都不允许小于系统最小尺寸。
+        // 这里再兜一层：旧存档或外部 SetWindowPos 留下的“实际窗口小于 WPF 硬下限”不再参与对账，
+        // 否则又会回到“设置 Width 被 WPF 拉回 136、下一轮继续报”的死循环。
+        var min = GetMinimumWindowSize();
+        if (client.Width < min.Width || client.Height < min.Height)
         {
             return;
         }
+
+        var stale = Math.Abs(ActualWidth - wantWidth) > 2 || Math.Abs(ActualHeight - wantHeight) > 2;
+        if (!stale)
+        {
+            // 已经对齐：清掉去重状态，后续若再次出现同尺寸的不一致仍会重新尝试。
+            _lastStaleLayoutWidth = -1;
+            _lastStaleLayoutHeight = -1;
+            _lastStaleClientWidth = -1;
+            _lastStaleClientHeight = -1;
+            return;
+        }
+
+        // 同一组不一致尺寸只尝试/记录一次：
+        // 如果 WPF 已经把布局卡在硬下限，重复设 Width/NotifyClientSize 不会收敛，
+        // 只会每 300ms 触发一次重排。尺寸一旦变化，会得到新的组合并重新尝试。
+        var layoutWidth = (int)Math.Round(ActualWidth);
+        var layoutHeight = (int)Math.Round(ActualHeight);
+        if (layoutWidth == _lastStaleLayoutWidth
+            && layoutHeight == _lastStaleLayoutHeight
+            && client.Width == _lastStaleClientWidth
+            && client.Height == _lastStaleClientHeight)
+        {
+            return;
+        }
+
+        _lastStaleLayoutWidth = layoutWidth;
+        _lastStaleLayoutHeight = layoutHeight;
+        _lastStaleClientWidth = client.Width;
+        _lastStaleClientHeight = client.Height;
 
         Core.Log.Warn($"[预览窗] WPF 尺寸与实际窗口不一致，已按实际尺寸纠正：布局={ActualWidth}x{ActualHeight}(DIP) 实际={client.Width}x{client.Height}(px)");
         Width = wantWidth;
@@ -1361,7 +1460,9 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             height = (int)Math.Round(areaWidth / aspect) + paddingHeight + chromeHeight;
         }
 
-        return (Math.Max(MinWindowWidth, width), Math.Max(MinWindowHeight, height));
+        // 用“保持比例缩放到最小尺寸/工作区”的同一套逻辑，而不是分别 Math.Max：
+        // 分别夹会把 110×62 变成 136×62，破坏锁定比例；这里会得到 136×77。
+        return ClampToWorkArea(width, height);
     }
 
 
@@ -1474,8 +1575,8 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         // 不锁比例时滚轮也是自由缩放：宽高各自乘倍率，不再按游戏画面比例反算另一条边。
         if (!Setting.LockAspectRatio)
         {
-            var scaledWidth = Math.Max(MinWindowWidth, (int)Math.Round(rect.Width * factor));
-            var scaledHeight = Math.Max(MinWindowHeight, (int)Math.Round(rect.Height * factor));
+            var scaledWidth = Math.Max(MinPreviewWidthPx, (int)Math.Round(rect.Width * factor));
+            var scaledHeight = Math.Max(MinPreviewHeightPx, (int)Math.Round(rect.Height * factor));
             var (freeWidth, freeHeight) = ClampToWorkArea(scaledWidth, scaledHeight);
             NativeMethods.SetWindowBounds(_hwnd, rect.X, rect.Y, freeWidth, freeHeight);
             PersistBounds();
@@ -1513,10 +1614,10 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             sourceWidth,
             sourceHeight,
             factor,
-            MinWindowWidth,
-            MinWindowHeight,
-            Math.Max(MinWindowWidth, maxWidth - paddingWidth),
-            Math.Max(MinWindowHeight, maxHeight - chromeHeight - paddingHeight));
+            MinPreviewWidthPx,
+            MinPreviewHeightPx,
+            Math.Max(MinPreviewWidthPx, maxWidth - paddingWidth),
+            Math.Max(MinPreviewHeightPx, maxHeight - chromeHeight - paddingHeight));
 
         var (width, height) = ClampToWorkArea(
             targetAreaWidth + paddingWidth,
@@ -1559,8 +1660,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             }
 
             width = 480;
-            height = Math.Max(MinWindowHeight, (int)Math.Round(480.0 / aspect));
+            height = Math.Max(MinPreviewHeightPx, (int)Math.Round(480.0 / aspect));
         }
+
+        // 旧存档可能保存了窄于系统最小宽度的尺寸；启动时先按同一套最小尺寸/工作区规则夹一次，
+        // 否则会从第一帧就进入“实际 110 / WPF 136”的对账循环。
+        (width, height) = ClampToWorkArea(width, height);
 
         var x = Setting.WinX;
         var y = Setting.WinY;
