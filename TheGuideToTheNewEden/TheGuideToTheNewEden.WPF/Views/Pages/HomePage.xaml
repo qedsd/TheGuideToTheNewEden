@@ -735,6 +735,7 @@
                     Grid.Column="0"
                     Padding="16,8"
                     CornerRadius="8"
+                    ToolTip="{Binding Wallet.CardToolTip}"
                     Visibility="{Binding ShowWalletCard, Converter={StaticResource BoolToVisibility}}">
                     <controls:CardControl.Header>
                         <Grid>
@@ -868,14 +869,6 @@
                                 Margin="0,8,0,10"
                                 Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
-                            <!--  有余额但区间/窗口内无流水（角色长期未登录，journal 保留窗口已过）→ 提示而非报错  -->
-                            <TextBlock
-                                Margin="0,0,0,2"
-                                FontSize="11.5"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="{DynamicResource Home.Wallet.NoJournal}"
-                                TextWrapping="Wrap"
-                                Visibility="{Binding Wallet.HasNoSlices, Converter={StaticResource BoolToVisibility}}" />
 
                             <!--  收支构成：窄窗口下两列自动上下堆叠  -->
                             <WrapPanel>
@@ -970,12 +963,6 @@
                                 </StackPanel>
                             </WrapPanel>
 
-                            <TextBlock
-                                Margin="0,6,0,0"
-                                FontSize="11"
-                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                Text="{Binding Wallet.NoteText}"
-                                TextWrapping="Wrap" />
                         </StackPanel>
                     </StackPanel>
                 </controls:CardControl>
@@ -984,6 +971,7 @@
                 <controls:CardControl
                     Grid.Column="1"
                     Width="392"
+                    ToolTip="{Binding Market.CardToolTip}"
                     Margin="12,0,0,0"
                     Padding="16,8"
                     CornerRadius="8"
@@ -1133,12 +1121,6 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            FontSize="11"
-                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                            Text="{Binding Market.NoteText}"
-                            TextWrapping="Wrap" />
                     </StackPanel>
                 </controls:CardControl>
             </Grid>

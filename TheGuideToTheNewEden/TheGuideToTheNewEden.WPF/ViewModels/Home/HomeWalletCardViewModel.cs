@@ -89,6 +89,7 @@ public sealed class HomeWalletCardViewModel : INotifyPropertyChanged
 
             HomeShortcutService.WalletRangeDays = RangeValues[value];
             OnPropertyChanged(nameof(NoteText));
+            OnPropertyChanged(nameof(CardToolTip));
             _ = LoadAsync(forceRefresh: false);
         }
     }
@@ -156,6 +157,27 @@ public sealed class HomeWalletCardViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// 整卡悬浮提示（阶段 280）：原来卡片底部那行「口径：…」和"区间内没有钱包流水"提示都收进 ToolTip，
+    /// 卡片上不再占一行文字。都为空时返回 null，避免弹出空提示框。
+    /// </summary>
+    public string? CardToolTip
+    {
+        get
+        {
+            var parts = new List<string>();
+            var note = NoteText;
+            if (!string.IsNullOrWhiteSpace(note))
+            {
+                parts.Add(note);
+            }
+            if (HasNoSlices)
+            {
+                parts.Add(Resolve("Home.Wallet.NoJournal"));
+            }
+            return parts.Count == 0 ? null : string.Join(Environment.NewLine, parts);
+        }
+    }
     /// <summary>首次进入主页时调用（已加载过且未强制刷新时直接复用缓存）。</summary>
     public async Task LoadAsync(bool forceRefresh = false)
     {
@@ -248,6 +270,7 @@ public sealed class HomeWalletCardViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(OutcomeText));
         OnPropertyChanged(nameof(FailedText));
         OnPropertyChanged(nameof(NoteText));
+        OnPropertyChanged(nameof(CardToolTip));
     }
 
     private static string Resolve(string key)

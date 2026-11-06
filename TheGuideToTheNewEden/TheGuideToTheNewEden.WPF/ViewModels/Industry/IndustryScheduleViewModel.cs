@@ -306,7 +306,16 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
     public string ToolTip => LanguageService.Format("IndustrySchedule_JobToolTip",
             TypeName, ActivityText, Model.Runs, TimeText, LineText, DurationText)
         + (IsInProgress ? LanguageService.Get("IndustrySchedule_JobToolTipInProgress") : string.Empty)
-        + (HasCompressedGap ? LanguageService.Get("IndustrySchedule_JobToolTipCompressed") : string.Empty);
+        + (HasCompressedGap ? LanguageService.Get("IndustrySchedule_JobToolTipCompressed") : string.Empty)
+        + (HasInventionWindow ? Environment.NewLine + InventionWindowText : string.Empty);
+    // ── 发明与制造并行（阶段 281）：发明结束时制造是否已开工 ──
+    public bool HasInventionWindow => Model.HasInventionWindow;
+    public bool IsInventionLate => Model.IsInventionLate;
+    public string InventionWindowText => !Model.HasInventionWindow
+        ? string.Empty
+        : Model.IsInventionLate
+            ? LanguageService.Format("IndustrySchedule_InventionLate", -Model.InventionSlackHours)
+            : LanguageService.Format("IndustrySchedule_InventionFits", Model.InventionSlackHours);
 
     public bool IsInProgress => Model.IsInProgress;
     public string BarText => IsInProgress

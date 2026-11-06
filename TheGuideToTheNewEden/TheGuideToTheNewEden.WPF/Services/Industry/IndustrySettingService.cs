@@ -124,6 +124,12 @@ public sealed class IndustrySetting
     /// </summary>
     public bool CountInventionBlueprintCost { get; set; }
 
+    /// <summary>
+    /// 发明与制造并行（阶段 281，默认开）：制造不等发明完成（玩家可能已备好 BPC），
+    /// 发明仍计入成本与排程，只做"是否赶得上"的对比。
+    /// </summary>
+    public bool InventionParallel { get; set; } = true;
+
     /// <summary>手动标记"不计入成本"的物品 TypeID（阶段 273，与买/造决策正交）。</summary>
     public List<int> IgnoredCostTypes { get; set; } = new();
 

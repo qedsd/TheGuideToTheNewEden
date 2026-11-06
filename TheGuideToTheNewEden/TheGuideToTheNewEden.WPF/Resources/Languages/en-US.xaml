@@ -2762,6 +2762,8 @@
     <sys:String x:Key="IndustryPage_Decryptor">Decryptor</sys:String>
     <sys:String x:Key="IndustryPage_DecryptorTip">Decryptors are consumed per attempt; probability, ME/TE and run modifiers come from SDE typeDogma.</sys:String>
     <sys:String x:Key="IndustryPage_DecryptorTargetTip">Decryptor for this target; when set to follow global, the one on the Process tab is used.</sys:String>
+    <sys:String x:Key="IndustryPage_InventionParallel">Invention runs in parallel with manufacturing</sys:String>
+    <sys:String x:Key="IndustryPage_InventionParallelTip">On (default): manufacturing does not wait for invention — you may already own the invented BPCs, or invent while building. Invention still counts toward cost and schedule, and the job details compare whether it finished before manufacturing started. Off: strict dependency (manufacturing starts only after invention).</sys:String>
     <sys:String x:Key="IndustryPage_InventionCost">Custom invention cost (0 = auto)</sys:String>
     <sys:String x:Key="IndustryPage_Attempts">Attempts</sys:String>
     <sys:String x:Key="IndustryPage_SuccessRateOverride">Success rate override %</sys:String>
@@ -3086,6 +3088,9 @@
     <sys:String x:Key="IndustrySchedule_Empty">Add targets under Plan settings and click Calculate plan of materials; the schedule, steps, stations and relation graph are generated from character skill slots.</sys:String>
     <sys:String x:Key="IndustrySchedule_StepsSuffix">steps</sys:String>
     <sys:String x:Key="IndustrySchedule_StageManufacturing">Manufacturing</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionWindow">Invention window (parallel)</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionFits">Finished {0:0.#} h before manufacturing starts</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionLate">Finished {0:0.#} h after manufacturing already started (pre-made BPCs needed)</sys:String>
     <sys:String x:Key="IndustrySchedule_StageInvention">Invention</sys:String>
     <sys:String x:Key="IndustrySchedule_StageReaction">Reaction</sys:String>
     <sys:String x:Key="IndustrySchedule_StagePlanetary">Planetary</sys:String>

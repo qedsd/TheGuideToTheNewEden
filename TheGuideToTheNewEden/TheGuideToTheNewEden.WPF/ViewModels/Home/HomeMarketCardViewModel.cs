@@ -143,6 +143,17 @@ public sealed class HomeMarketCardViewModel : INotifyPropertyChanged
     /// <summary>底部口径说明：数据源是历史统计（最近一日），实时订单在点击后的市场页看。</summary>
     public string NoteText => Resolve("Home.Market.Note");
 
+    /// <summary>整卡悬浮提示（阶段 280）：原来卡片底部那行口径说明收进 ToolTip。</summary>
+    public string? CardToolTip
+    {
+        get
+        {
+            var note = NoteText;
+            return string.IsNullOrWhiteSpace(note) ? null : note;
+        }
+    }
+
+
     public async Task LoadAsync(bool forceRefresh = false)
     {
         if (_loaded && !forceRefresh)
@@ -211,6 +222,7 @@ public sealed class HomeMarketCardViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasMore));
         OnPropertyChanged(nameof(FavoriteCountText));
         OnPropertyChanged(nameof(NoteText));
+        OnPropertyChanged(nameof(CardToolTip));
     }
 
     public void RefreshTexts() => OnPropertyChanged(nameof(NoteText));

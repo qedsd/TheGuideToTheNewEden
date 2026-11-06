@@ -105,6 +105,12 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int LineIndex { get; set; }
         public double TimeMultiplier { get; set; } = 1.0;
 
+        /// <summary>并行口径下：作为发明作业，最早需要它的制造作业开始时间 - 自身结束时间（小时，可为负）。</summary>
+        public double InventionSlackHours { get; set; }
+        /// <summary>该发明作业是否有配对的制造作业（并行口径才可能为 true）。</summary>
+        public bool HasInventionWindow { get; set; }
+        /// <summary>发明没赶上：制造开始时发明还没做完（需要提前备 BPC）。</summary>
+        public bool IsInventionLate => HasInventionWindow && InventionSlackHours < 0;
         public bool IsCritical { get; set; }
         public bool IsPinned { get; set; }
 
@@ -159,6 +165,10 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double TotalJobCost { get; set; }
         public double TotalMaterialCost { get; set; }
         public IndustryScheduleObjective Objective { get; set; }
+        /// <summary>是否采用了「发明与制造并行」口径（阶段 281）。</summary>
+        public bool InventionParallel { get; set; }
+        /// <summary>并行口径下"发明结束时制造已开工"的发明作业数量。</summary>
+        public int LateInventionCount { get; set; }
         public DateTime GeneratedAt { get; set; } = DateTime.Now;
     }
 }

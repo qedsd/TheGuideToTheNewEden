@@ -1154,6 +1154,24 @@
                                                     <TextBlock FontSize="12" Text="{Binding TimeMultiplierText}" />
                                                 </StackPanel>
                                             </Grid>
+
+                                            <!--  阶段 281：并行口径下对比"发明结束时制造是否已开工"  -->
+                                            <StackPanel
+                                                Margin="0,5,0,0"
+                                                Visibility="{Binding HasInventionWindow, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_InventionWindow}" />
+                                                <TextBlock FontSize="12" Text="{Binding InventionWindowText}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsInventionLate}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
                                             <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="{DynamicResource IndustrySchedule_Input}" />
                                             <ItemsControl ItemTemplate="{StaticResource MaterialChipTemplate}" ItemsSource="{Binding Inputs}">
                                                 <ItemsControl.ItemsPanel>

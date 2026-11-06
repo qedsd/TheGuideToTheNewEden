@@ -34,7 +34,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             var jobs = new Dictionary<string, JobWork>(StringComparer.Ordinal);
             foreach (var target in plan.Targets)
             {
-                Collect(target, jobs, targetIds);
+                Collect(target, jobs, targetIds, options.InventionParallel);
             }
 
             foreach (var job in jobs.Values)
@@ -86,7 +86,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         private static void Collect(
             IndustryBuildNode node,
             Dictionary<string, JobWork> jobs,
-            HashSet<int> targetIds)
+            HashSet<int> targetIds,
+            bool inventionParallel)
         {
             if (node is null) return;
 
@@ -147,7 +148,16 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                         if (input.Decision == IndustryDecision.Build
                             && input.Runs > 0)
                         {
-                            job.DependencyKeys.Add(JobKey(input.TypeID, input.ActivityID));
+                            var inputKey = JobKey(input.TypeID, input.ActivityID);
+                            if (input.IsInvention && inventionParallel)
+                            {
+                                // 阶段 281：发明与制造并行，不建依赖（制造不等发明），只记下配对做对比。
+                                job.ParallelInventionKeys.Add(inputKey);
+                            }
+                            else
+                            {
+                                job.DependencyKeys.Add(inputKey);
+                            }
                         }
                     }
                 }
@@ -175,7 +185,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 foreach (var child in node.Inputs)
                 {
-                    Collect(child, jobs, targetIds);
+                    Collect(child, jobs, targetIds, inventionParallel);
                 }
             }
         }
@@ -536,6 +546,36 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             }
 
             var byKey = result.Jobs.ToDictionary(p => p.Key, StringComparer.Ordinal);
+
+            // 阶段 281：并行口径下，记录「发明作业结束时，最早需要它的制造作业是否已开始」。
+            var inventionNeededBy = new Dictionary<string, double>(StringComparer.Ordinal);
+            foreach (var pair in jobs)
+            {
+                if (pair.Value.ParallelInventionKeys.Count == 0) continue;
+                if (!best.Assignments.TryGetValue(pair.Key, out var consumerAssignment)) continue;
+                foreach (var inventionKey in pair.Value.ParallelInventionKeys)
+                {
+                    if (!inventionNeededBy.TryGetValue(inventionKey, out var earliest) || consumerAssignment.Start < earliest)
+                    {
+                        inventionNeededBy[inventionKey] = consumerAssignment.Start;
+                    }
+                }
+            }
+
+            if (inventionNeededBy.Count > 0)
+            {
+                result.InventionParallel = true;
+                foreach (var pair in inventionNeededBy)
+                {
+                    if (!byKey.TryGetValue(pair.Key, out var inventionJob)) continue;
+                    inventionJob.HasInventionWindow = true;
+                    inventionJob.InventionSlackHours = pair.Value - inventionJob.EndHours;
+                    if (inventionJob.InventionSlackHours < 0)
+                    {
+                        result.LateInventionCount++;
+                    }
+                }
+            }
             foreach (var job in result.Jobs)
             {
                 var latestEnd = LatestEnd(job, byKey, result.MakespanHours, new HashSet<string>(StringComparer.Ordinal));
@@ -834,6 +874,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             public HashSet<string> DependencyKeys { get; } = new HashSet<string>(StringComparer.Ordinal);
             public List<JobWork> Dependents { get; } = new List<JobWork>();
 
+            /// <summary>并行口径下与之配对的发明作业键（制造不等发明，但要对比发明是否赶得上）。</summary>
+            public HashSet<string> ParallelInventionKeys { get; } = new HashSet<string>(StringComparer.Ordinal);
             public int Depth { get; set; }
             public bool DepthComputed { get; set; }
             public double DownstreamHours { get; set; }

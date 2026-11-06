@@ -2784,6 +2784,8 @@
     <sys:String x:Key="IndustryPage_Decryptor">发明解密器</sys:String>
     <sys:String x:Key="IndustryPage_DecryptorTip">解密器会按尝试次数消耗；概率倍率、ME/TE 修正与 run 修正来自 SDE typeDogma。</sys:String>
     <sys:String x:Key="IndustryPage_DecryptorTargetTip">该目标的发明解密器；跟随全局时使用工艺页的解密器。</sys:String>
+    <sys:String x:Key="IndustryPage_InventionParallel">发明与制造并行（不等发明完成）</sys:String>
+    <sys:String x:Key="IndustryPage_InventionParallelTip">开启（默认）：制造不等待发明完成——玩家可能早已备好发明好的 BPC，或边发明边造；发明仍计入成本与排程，并在任务详情里对比"发明结束时制造是否已开工"。关闭：恢复严格依赖（发明完成才能开始制造）。</sys:String>
     <sys:String x:Key="IndustryPage_InventionCost">发明成本自定义（0 = 自动）</sys:String>
     <sys:String x:Key="IndustryPage_Attempts">尝试次数</sys:String>
     <sys:String x:Key="IndustryPage_SuccessRateOverride">成功率覆盖 %</sys:String>
@@ -3108,6 +3110,9 @@
     <sys:String x:Key="IndustrySchedule_Empty">在「计划设置」添加目标并点击「计算制造计划」，这里会按角色技能槽位生成排程、步骤、工位和关系图。</sys:String>
     <sys:String x:Key="IndustrySchedule_StepsSuffix">步</sys:String>
     <sys:String x:Key="IndustrySchedule_StageManufacturing">制造</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionWindow">发明窗口（并行口径）</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionFits">制造开工前已提前 {0:0.#} 小时完成发明</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionLate">制造已开工 {0:0.#} 小时后才完成发明（需要提前备好 BPC）</sys:String>
     <sys:String x:Key="IndustrySchedule_StageInvention">发明</sys:String>
     <sys:String x:Key="IndustrySchedule_StageReaction">反应</sys:String>
     <sys:String x:Key="IndustrySchedule_StagePlanetary">行星</sys:String>

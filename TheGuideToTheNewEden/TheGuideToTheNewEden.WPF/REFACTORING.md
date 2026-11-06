@@ -11233,6 +11233,43 @@ MainWindow.xaml(.cs)
 - 语言键无新增（`IndustryPage_PlanNameRequired` 仍被"重命名"使用，未删）。
 - `dotnet build`：**0 错误**（54 个既有警告）。未实机点验。
 
+## 阶段 280：主页两张数据卡的说明文字收进 ToolTip（2026-11-06）
+
+> 用户要求：把「我的钱包」里的"区间内没有钱包流水…"这类文字，和「我的行情」的"最近一日历史均价…"一样去掉，统一改成悬浮提示。
+
+- `Views/Pages/HomePage.xaml`：
+  - 我的钱包：删掉底部的口径说明（`Wallet.NoteText`）与"区间内没有钱包流水"提示块；整卡加 `ToolTip="{Binding Wallet.CardToolTip}"`。
+  - 我的行情：删掉底部的口径说明（`Market.NoteText`）；整卡加 `ToolTip="{Binding Market.CardToolTip}"`。
+- `ViewModels/Home/HomeWalletCardViewModel.cs`：新增 **`CardToolTip`** —— 由「口径：ESI 钱包流水（7 天）…」+（区间内无流水时）"区间内没有钱包流水…"两段用换行拼成，
+  都为空时返回 `null`（不弹空提示框）；`NoteText` / 区间切换 / 刷新时一并 `OnPropertyChanged`。
+- `ViewModels/Home/HomeMarketCardViewModel.cs`：新增 `CardToolTip`（即原口径说明，空则 `null`），刷新文本时通知。
+- 语言键无新增/删除（`Home.Wallet.Note*` / `Home.Wallet.NoJournal` / `Home.Market.Note` 继续被 ToolTip 使用）。
+- 卡片正文不再占用这两行文字，高度略收紧；提示仍在悬浮时可见。
+- `dotnet build`：**0 错误**（54 个既有警告）。未实机点验。
+
+## 阶段 281：发明与制造改为并行（默认），只对比时间、成本照算（2026-11-06）
+
+> 用户反馈：现在必须先发明完成才能制造，但实际可以边发明边造（或早就备好 BPC），
+> 只需要能对比"发明总时间是否赶得上"，发明成本仍要计入。
+
+- 根因：`IndustryScheduler.Collect` 把**所有**自制输入都加成硬依赖，包括发明节点（`ActivityID = 8`），
+  于是制造被排在发明结束之后。
+- 修法：
+  - `IndustrySolverOptions.InventionParallel`（默认 **true**）：为 true 时，Collect 对 `input.IsInvention` **不建依赖**，
+    只把配对键记到 `JobWork.ParallelInventionKeys`；为 false 时保持原来的严格依赖；
+  - 排程结果里做对比：对每个"制造作业 → 它的发明作业"配对，取制造**最早开工时间**，
+    算 `InventionSlackHours = 制造开工 - 发明结束`；
+    - `IndustryScheduleJob.HasInventionWindow` / `InventionSlackHours` / `IsInventionLate`；
+    - `IndustrySchedule.InventionParallel` / `LateInventionCount`；
+  - 界面：任务详情新增「发明窗口（并行口径）」一行（绿色无需警告 / 黄色表示制造已开工后才完成发明），
+    任务悬浮提示也会带上这句；设置「工艺 → 发明数据」新增复选框「发明与制造并行（不等发明完成）」，
+    写入 `IndustrySetting.InventionParallel`。
+  - 发明成本口径不变：发明作业仍参与成本/现金/利用率与甘特图（只是不再阻塞制造）。
+- 语言：中英各 +5 键（`IndustryPage_InventionParallel*` 2 + `IndustrySchedule_Invention*` 3）。
+- `dotnet build`：**0 错误**（54 个既有警告）；键集 3432 = 3432、无重复。未实机点验。
+- 需确认：勾选时甘特图里制造不再被排到发明之后（可并排），发明条悬浮/详情出现「发明窗口」对比；
+  取消勾选恢复"发明完成 → 制造开工"。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

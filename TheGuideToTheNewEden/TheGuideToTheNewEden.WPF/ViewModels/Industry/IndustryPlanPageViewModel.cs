@@ -280,6 +280,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _inventionProbabilityOverridePercent = _setting.InventionProbabilityOverridePercent ?? 0;
         _inventionBpcRunsOverride = _setting.InventionBpcRunsOverride ?? 0;
         _countInventionBlueprintCost = _setting.CountInventionBlueprintCost;
+        _inventionParallel = _setting.InventionParallel;
         // 阶段 276：行星开发口径（顺带补上此前 ctor 漏读的 PlanetTaxPercent——它本来只在载入计划时赋值）。
         _planetTaxPercent = _setting.PlanetTaxPercent;
         _planetaryColoniesEnabled = _setting.PlanetaryColoniesEnabled;
@@ -823,6 +824,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     private bool _useMarketDepth;
     public bool UseMarketDepth { get => _useMarketDepth; set => Set(ref _useMarketDepth, value); }
+
+    private bool _inventionParallel = true;
+    /// <summary>发明与制造并行（阶段 281，默认开）：制造不等发明；发明仍计成本，只做时间对比。</summary>
+    public bool InventionParallel
+    {
+        get => _inventionParallel;
+        set => Set(ref _inventionParallel, value);
+    }
 
     private bool _countInventionBlueprintCost;
     /// <summary>
@@ -1765,6 +1774,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 p => p.Value == 1 ? IndustryDecision.Buy : IndustryDecision.Build);
             options.Blacklist = new HashSet<int>(_blacklist);
             options.IgnoredCostTypes = new HashSet<int>(_ignoredCostTypes);
+            options.InventionParallel = InventionParallel;
             options.CountInventionBlueprintCost = CountInventionBlueprintCost;
             options.Hangar = _setting.VirtualHangar is null
                 ? new Dictionary<int, long>()
@@ -2974,6 +2984,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         UseCharacterSkills = _setting.UseCharacterSkills;
         UseMarketDepth = _setting.UseMarketDepth;
         CountInventionBlueprintCost = _setting.CountInventionBlueprintCost;
+        InventionParallel = _setting.InventionParallel;
         SellImmediately = _setting.SellImmediately;
         SalesTaxPercent = _setting.SalesTaxPercent;
         BrokerFeePercent = _setting.BrokerFeePercent;
@@ -3077,6 +3088,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.UseCharacterSkills = UseCharacterSkills;
         _setting.UseMarketDepth = UseMarketDepth;
         _setting.CountInventionBlueprintCost = CountInventionBlueprintCost;
+        _setting.InventionParallel = InventionParallel;
         _setting.IncludeBlueprintJobs = IncludeBlueprintJobs;
         _setting.SellImmediately = SellImmediately;
         _setting.SalesTaxPercent = SalesTaxPercent;

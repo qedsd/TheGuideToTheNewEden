@@ -228,5 +228,15 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int MaxDepth { get; set; } = 64;
         /// <summary>是否为 T2 产物生成发明节点。</summary>
         public bool IncludeInvention { get; set; } = true;
+
+        /// <summary>
+        /// 发明与制造是否并行（阶段 281，默认 <c>true</c>）。
+        /// <para>
+        /// 打开时：制造**不再等待**发明完成（玩家可能早已备好 BPC / 可以边发明边造），
+        /// 发明仍然作为独立作业参与排程与成本计算，并在结果里给出「发明结束时制造是否已开始」的对比；
+        /// 关闭时：恢复"发明完成 → 才能开始制造"的严格依赖。
+        /// </para>
+        /// </summary>
+        public bool InventionParallel { get; set; } = true;
     }
 }
