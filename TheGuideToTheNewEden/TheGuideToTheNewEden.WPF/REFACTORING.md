@@ -11270,6 +11270,39 @@ MainWindow.xaml(.cs)
 - 需确认：勾选时甘特图里制造不再被排到发明之后（可并排），发明条悬浮/详情出现「发明窗口」对比；
   取消勾选恢复"发明完成 → 制造开工"。
 
+## 阶段 282：执行计划后停在概况；制造业物品名统一可跳市场（2026-11-09）
+
+> 用户要求：① 执行计划后不要跳到「生产详情」，停在「概况」；② 制造功能里所有出现物品名称的地方都要能点击跳市场。
+
+### 282.1 执行计划后的落点
+
+- `IndustryPlanPageViewModel.FillPlan` 里"算出结果后自动跳转"的分支由
+  `SectionTabIndex = 1; ResultTabIndex = HasSchedule ? 1 : 0;` 改为
+  **`SectionTabIndex = 1; ResultTabIndex = 0; DetailTabIndex = 0;`**（= 计划详细 → 概况）。
+- 「保持页面位置」的重算（阶段 275 的 preserveView）逻辑不变：改节点成本/开关仍停在原页签。
+
+### 282.2 物品名 → 可跳转市场的链接
+
+- 新增附加行为 **`Controls/ItemLink.cs`**：给任意 `TextBlock` 挂
+  `controls:ItemLink.TypeId="{Binding TypeId}"` 即变成物品链接——鼠标变手型、悬停加下划线、
+  点击 `e.Handled = true` 后 `Navigation.NavigateToMarket(typeId)`（跳「商业 → 市场」并选中该物品）。
+  用行为而不是换成 Button，是为了不动各处排版（字号/字重/裁剪/换行）。
+- 已接入的位置：
+  - 制造计划：左侧产物树（物品行）、右侧目标卡片名称、概况的目标列表；
+  - 概况：**采购清单表格的物品列**（改成模板列，`IndustryOverviewBuyLine.TypeId` 本就有）；
+  - BOM / 成本（`IndustryProductionChainView`）：BOM 行名称、节点详情标题、详情「直接输入」表格的物品列（改成模板列）；
+  - 生产详情（`IndustryScheduleView`）：步骤表格的名称列、**工位页首任务的名称**、任务详情标题、投入/产出材料胶囊的名称；
+  - 蓝图浏览器：产物树物品行、配方行；
+  - 库存：已选物品标题、物品行、物品表格的物品列（改成模板列）。
+- 配套：`IndustryScheduleJobViewModel.TypeId`、`IndustryScheduleMaterialViewModel.TypeId` 新增（供上面两处绑定）。
+- 语言键无新增/删除。
+
+### 282.3 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 手册：`industry/plan.md` 的"执行计划"落点改为概况，并补一句"物品名可点击跳市场"。
+- 未实机点验；需确认：点执行计划后停在概况；上述各处点物品名能跳到市场并选中对应物品（悬停有下划线与手型）。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

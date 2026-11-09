@@ -2108,7 +2108,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanReassignSchedule));
         if (keepView is null)
         {
-            ResultTabIndex = HasSchedule ? 1 : 0;
+            // 阶段 282：执行计划后停在「计划详细 → 概况」，不再自动切到生产详情（用户要求）。
+            SectionTabIndex = 1;
+            ResultTabIndex = 0;
+            DetailTabIndex = 0;
         }
         else
         {

@@ -114,7 +114,6 @@
             <Setter Property="RowHeaderWidth" Value="0" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="RowHeight" Value="24" />
             <Setter Property="ColumnHeaderHeight" Value="24" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="SelectionMode" Value="Single" />
@@ -173,6 +172,7 @@
                         FontSize="13"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding Name}"
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextTrimming="CharacterEllipsis" />
                     <TextBlock
                         FontSize="12"
@@ -232,6 +232,7 @@
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding Name}"
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextTrimming="CharacterEllipsis" />
                     <ui:Button
                         Grid.Row="0"
@@ -1664,6 +1665,7 @@
                                                             FontWeight="SemiBold"
                                                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                             Text="{Binding Name}"
+                                                            controls:ItemLink.TypeId="{Binding TypeId}"
                                                             TextWrapping="Wrap" />
 
                                                         <UniformGrid Margin="0,12,0,0" Columns="4">
@@ -1815,10 +1817,17 @@
                                                             ItemsSource="{Binding DataContext.OverviewBuyItems, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                                             Style="{StaticResource IndustryDataGrid}">
                                                             <ui:DataGrid.Columns>
-                                                                <DataGridTextColumn
-                                                                    Width="*"
-                                                                    Binding="{Binding Name}"
-                                                                    Header="{DynamicResource IndustryPage_Col_Item}" />
+                                                                <DataGridTemplateColumn Width="*" Header="{DynamicResource IndustryPage_Col_Item}">
+                                                                    <DataGridTemplateColumn.CellTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock
+                                                                                VerticalAlignment="Center"
+                                                                                Text="{Binding Name}"
+                                                                                TextTrimming="CharacterEllipsis"
+                                                                                controls:ItemLink.TypeId="{Binding TypeId}" />
+                                                                        </DataTemplate>
+                                                                    </DataGridTemplateColumn.CellTemplate>
+                                                                </DataGridTemplateColumn>
                                                                 <DataGridTextColumn
                                                                     Width="80"
                                                                     Binding="{Binding QuantityText}"

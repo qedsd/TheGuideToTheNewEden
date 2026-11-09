@@ -209,6 +209,7 @@
                                     FontSize="13"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Name}"
+                                    controls:ItemLink.TypeId="{Binding TypeId}"
                                     TextTrimming="CharacterEllipsis" />
                                 <Grid
                                     x:Name="DecisionChip"
@@ -378,6 +379,7 @@
                         FontSize="16"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding Name}"
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextWrapping="Wrap" />
                     <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
                         <Border Style="{StaticResource IndustrySmallChip}">
@@ -661,10 +663,17 @@
                         ItemsSource="{Binding Children}"
                         Style="{StaticResource IndustryDataGrid}">
                         <ui:DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Name}"
-                                Header="{DynamicResource IndustryPage_Col_Item}" />
+                            <DataGridTemplateColumn Width="*" Header="{DynamicResource IndustryPage_Col_Item}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            controls:ItemLink.TypeId="{Binding TypeId}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn
                                 Width="180"
                                 Binding="{Binding QuantityText}"

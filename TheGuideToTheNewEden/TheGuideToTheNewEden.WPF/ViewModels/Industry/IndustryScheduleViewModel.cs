@@ -14,12 +14,14 @@ public sealed class IndustryScheduleMaterialViewModel
 {
     public IndustryScheduleMaterialViewModel(IndustryScheduleMaterial model)
     {
+        TypeId = model.TypeId;
         Name = model.Name;
         QuantityText = model.Quantity.ToString("N0");
         StateKey = model.StateKey;
         StateText = LocalizeState(model.StateKey);
     }
 
+    public int TypeId { get; }
     public string Name { get; }
     public string QuantityText { get; }
     public string StateKey { get; }
@@ -275,6 +277,7 @@ public sealed class IndustryScheduleJobViewModel : INotifyPropertyChanged
     }
 
     public IndustryScheduleJob Model { get; }
+    public int TypeId => Model.TypeId;
     public string Key => Model.Key;
     public string TypeName => Model.TypeName;
     public string ActivityKey => Model.ActivityKey;
