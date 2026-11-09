@@ -2768,6 +2768,7 @@
     <sys:String x:Key="IndustryPage_Tab_Result">计划详细</sys:String>
     <sys:String x:Key="IndustryPage_Tab_Overview">概况</sys:String>
     <sys:String x:Key="IndustryPage_Tab_Production">生产详情</sys:String>
+    <sys:String x:Key="IndustryPage_Tab_ShoppingList">采购清单</sys:String>
     <sys:String x:Key="IndustryPage_Tab_SavedPlans">已保存计划</sys:String>
     <sys:String x:Key="IndustryPage_BomCost">BOM / 成本</sys:String>
     <sys:String x:Key="IndustryPage_Manufacturable">可制造物品</sys:String>
@@ -2910,10 +2911,10 @@
     <sys:String x:Key="IndustryPage_ProductDetail">产物详情</sys:String>
     <sys:String x:Key="IndustryPage_SelectProductHint">选择左侧产物查看成本、利润和采购清单</sys:String>
     <sys:String x:Key="IndustryPage_RequestProduced">请求 / 产出</sys:String>
-    <sys:String x:Key="IndustryPage_CopyProductShopping">复制本产物采购</sys:String>
-    <sys:String x:Key="IndustryPage_ExportProductCsv">导出本产物 CSV</sys:String>
-    <sys:String x:Key="IndustryPage_ShoppingList">采购清单</sys:String>
-    <sys:String x:Key="IndustryPage_ShoppingListTip">本产物子树中需要直接购买的材料；已扣除库存/上游剩余。</sys:String>
+    <sys:String x:Key="IndustryPage_ShoppingFilterAll">全部</sys:String>
+    <sys:String x:Key="IndustryPage_ShoppingFilter">目标产物筛选</sys:String>
+    <sys:String x:Key="IndustryPage_CopyShoppingList">复制采购清单</sys:String>
+    <sys:String x:Key="IndustryPage_ExportShoppingCsv">导出采购清单 CSV</sys:String>
     <sys:String x:Key="IndustryPage_UnitPrice">单价</sys:String>
     <sys:String x:Key="IndustryPage_Amount">金额</sys:String>
     <sys:String x:Key="IndustryPage_Col_NeedProduceBuy">需要 / 产出 / 采购</sys:String>
@@ -3000,7 +3001,6 @@
     <sys:String x:Key="IndustryPage_RefreshCharacterProgress">刷新角色 {0}/{1}：{2}</sys:String>
     <sys:String x:Key="IndustryPage_CharacterRefreshed">角色数据已刷新 · {0:HH:mm}</sys:String>
     <sys:String x:Key="IndustryPage_CharacterRefreshedDone">角色数据已刷新</sys:String>
-    <sys:String x:Key="IndustryPage_SelectProduct">请先选择左侧产物</sys:String>
     <sys:String x:Key="IndustryPage_NothingToBuy">没有需要采购的物品</sys:String>
     <sys:String x:Key="IndustryPage_NothingToExport">没有可导出的计划</sys:String>
     <sys:String x:Key="IndustryPage_Exported">计划已导出</sys:String>
@@ -3546,7 +3546,6 @@
     <sys:String x:Key="IndustryCustomCharacter_DeleteConfirm">删除自定义角色「{0}」？</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteTitle">删除自定义角色</sys:String>
     <sys:String x:Key="IndustryPage_DeleteProfileConfirm">删除当前建筑档案？</sys:String>
-    <sys:String x:Key="IndustryPage_ProductNothingToBuy">该产物没有需要采购的物品</sys:String>
 
     <!--  制造 / 工业模块（阶段 185：整模块中英文切换）  -->
     <sys:String x:Key="IndustryPlanetary_ListSeparator">、</sys:String>
@@ -3583,4 +3582,25 @@
     <sys:String x:Key="Setting_DataPath_SetFailed">无法使用该目录（可能没有写入权限）。</sys:String>
     <sys:String x:Key="Setting_DataPath_Changed_Title">数据目录已更新</sys:String>
     <sys:String x:Key="Setting_DataPath_Changed_Message">新目录将在下次启动时生效：{0}{1}{1}是否立即重启应用？</sys:String>
+    <sys:String x:Key="ItemDetail_Title">物品详情</sys:String>
+    <sys:String x:Key="ItemDetail_TabOverview">概览</sys:String>
+    <sys:String x:Key="ItemDetail_TabAttributes">属性</sys:String>
+    <sys:String x:Key="ItemDetail_TabSkills">技能要求</sys:String>
+    <sys:String x:Key="ItemDetail_NoAttributes">该物品没有可显示的属性</sys:String>
+    <sys:String x:Key="ItemDetail_NoSkills">该物品没有技能要求</sys:String>
+    <sys:String x:Key="ItemDetail_MetaLevel">科技等级</sys:String>
+    <sys:String x:Key="ItemDetail_Volume">体积</sys:String>
+    <sys:String x:Key="ItemDetail_PackagedVolume">打包体积</sys:String>
+    <sys:String x:Key="ItemDetail_Mass">质量</sys:String>
+    <sys:String x:Key="ItemDetail_Capacity">容量</sys:String>
+    <sys:String x:Key="ItemDetail_Radius">半径</sys:String>
+    <sys:String x:Key="ItemDetail_PortionSize">分拣数</sys:String>
+    <sys:String x:Key="ItemDetail_BasePrice">基础价格</sys:String>
+    <sys:String x:Key="ItemDetail_MarketGroup">市场分组</sys:String>
+    <sys:String x:Key="ItemDetail_TypeId">类型 ID</sys:String>
+    <sys:String x:Key="ItemDetail_Published">已发布</sys:String>
+    <sys:String x:Key="ItemDetail_Unpublished">未发布</sys:String>
+    <sys:String x:Key="ItemDetail_GoMarket">查看市场详情</sys:String>
+    <sys:String x:Key="ItemDetail_NoItem">未找到该物品</sys:String>
+    <sys:String x:Key="ItemDetail_SkillLevel">等级 {0}</sys:String>
 </ResourceDictionary>

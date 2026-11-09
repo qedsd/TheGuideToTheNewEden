@@ -11303,7 +11303,151 @@ MainWindow.xaml(.cs)
 - 手册：`industry/plan.md` 的"执行计划"落点改为概况，并补一句"物品名可点击跳市场"。
 - 未实机点验；需确认：点执行计划后停在概况；上述各处点物品名能跳到市场并选中对应物品（悬停有下划线与手型）。
 
+## 阶段 283：物品详情窗口（数据库 → Core → UI 全链路）（2026-11-09）
+
+> 用户要求：像游戏里一样看物品属性（等级/体积/技能要求…）；中文只能放 zh.db，主库保持英文；
+> UI 入口用**左键**打开详情（取代原来的"左键跳市场"），窗口底部放「跳转到市场」按钮。
+
+### 283.1 数据核对结论（先说清楚可行性）
+
+- 现有 `main.db`（就是这份 SDE 构的）已经有：`types`（描述/体积/打包体积/质量/容量/半径/基础价格/MetaLevel…）、
+  `dogmaAttributes`（2,871 条英文显示名/描述/单位/分类/是否"越高越好"）、`typeDogma`（648,726 条属性值）、
+  `dogmaUnits`（60 条）、`dogmaAttributeCategories`（37 条）、`masteries`、蓝图/材料表。
+- 缺的只是**代码与本地化**：Core 没有这些表的模型/查询；`zh.db` 里没有属性名/单位/分组的中文。
+  另外 `typeDogma` 里的 **effects** 与 `certificates`（精通等级的技能映射）没有导入——本次未做，见 §8。
+
+### 283.2 本地化库（zh.db）新增三张表
+
+- `SDEBuilder/LocalDBModels/` 新增 `DogmaAttributes`（Id/DisplayName/Description）、`DogmaUnits`（Id/DisplayName）、
+  `DogmaAttributeCategories`（Id/Name，SDE 没有中文，内置 37 条人工中文表）。
+- `NewEdenBuilder.BuilderLocal` 在构建本地化库时一并写入这三张表；另加
+  **`NewEdenBuilder.PatchLocalDogmaAsync(localDbPath, sdeFiles, language)`**，可给已存在的 zh.db 增量补表，不必重建整库。
+- 本次用该接口把仓库里的 `Resources/Database/Local/zh.db` 就地补齐（`dogmaAttributes` 2,871 / `dogmaUnits` 60 /
+  `dogmaAttributeCategories` 37 行，均为 zh）。**main.db 未改动，仍是英文。**
+
+### 283.3 Core
+
+- `DBModels/DogmaInfo.cs`：主库 `DogmaAttribute` / `DogmaUnit` / `DogmaAttributeCategory`，以及本地化库同名表的
+  `LocalDogmaAttribute` / `LocalDogmaUnit` / `LocalDogmaAttributeCategory`（同表名、不同连接，SqlSugar 互不干扰）。
+- `DBModels/InvTypeFull.cs`：`types` 的完整列映射（`InvType` 只映射了工业要用的几列）。
+- `Services/DB/LocalDbService`：`TranDogmaAttributes/TranDogmaUnits/TranDogmaAttributeCategories`，
+  带"表是否存在"保护（老 zh.db 不会炸，自动回退英文）。
+- `Services/DB/TypeInfoService.GetTypeInfo(typeId)`：合并出 `TypeInfo`——
+  基本信息（名称/描述/组/类目/市场分组/科技等级/体积/打包体积/质量/容量/半径/分拣数/基础价格/是否发布）、
+  属性列表（显示名本地化优先、单位本地化、按 dogma 分类分组、`HighIsGood`、`IsPercent`/`IsTypeReference` 标记）、
+  技能要求（`requiredSkill1..6` + `requiredSkillNLevel`，技能名走本地化 types）。
+
+### 283.4 UI
+
+- 新增 `Views/Windows/ItemDetailWindow`（FluentWindow，单实例复用）：`概览`（描述 + 基础数据）/ `属性`
+  （搜索框 + 「显示全部属性」开关 + 按分类分组、值右对齐、悬浮显示说明与内部名）/ `技能要求`；底部 **「跳转到市场」+「关闭」**。
+- `ViewModels/ItemDetailViewModel`：数值格式化（百分比 ×100、typeID 型属性解析成名称、大数千分位）。
+- `Controls/ItemLink`：**左键不再跳市场，改为 `ItemDetailWindow.ShowItem(typeId)`**（悬停手型 + 下划线保持不变）；
+  跳市场统一走窗口底部按钮（`Navigation.NavigateToMarket`）。
+- 语言：中英各 +22 键（`ItemDetail_*`）。
+
+### 283.4.1 细节打磨（同日追加，按用户反馈）
+
+- **头部图标**：物品名称左侧加 56×56 图标（`Image` 绑 `IconUrl`，指向 `https://images.evetech.net/types/{id}/icon?size=64`；离线时为空占位，不报错）。
+- **去掉搜索属性**：属性页不再有搜索框；同时删掉「显示全部属性」开关——它原本只是把未发布属性（名字多为英文）也放出来，现在固定只显示**已发布**属性。
+- **单位显示规则**（`ItemDetailViewModel.ResolveValue`）：
+  1. `typeID` 型属性 → 显示解析后的名称，不显示单位；
+  2. 单位里带枚举说明的（如 unit 117 = `1=小型 2=中型 3=大型`、`1=True 0=False`）→ 直接显示枚举文字（大型 / 是 / 否），不再出现"3 1=小型 2=中型"；
+  3. 含空格的词组单位（如 `Fitting slots`、`Ore units`）→ 去掉单位只显数字；
+  4. 其余短单位（MW / m/s / % / GJ…）照常显示。
+- **技能要求可点击**：技能名加 `controls:ItemLink.TypeId="{Binding TypeId}"`，左键继续打开该技能的物品详情。
+- **底部**：只保留一个居中的主按钮，文案「查看市场详情」（en: View market details），右侧「关闭」按钮删除（标题栏仍有系统关闭）。
+- **跳市场不关窗**：底部「查看市场详情」原来跳完市场会 `Close()` 详情窗口，现在只做 `Navigation.NavigateToMarket(typeId)`，
+  窗口保持打开（方便对照），要关自己关。
+- **字体统一**：属性页的值列原来显式用了 `Cascadia Code, Consolas`（等宽，数字对齐但和全局字体不一致），
+  已去掉——现在标签/值都用全局默认字体（Segoe UI → 微软雅黑回退）。等宽只保留在排程甘特/工时这类本来就对齐数字的地方。
+- **外壳复用（修正）**：一开始自己画了标题栏 + 置顶 ToggleButton，属于重复造轮子——项目里已有统一的
+  **`Views/Windows/ToolWindow`** 外壳（阶段 25）：logo、`DisplayTitle`、最小化/最大化/关闭、
+  标题栏置顶图钉（`SymbolRegular.Pin24/PinOff24` + `ToolWindow.Topmost/TopmostOff` 提示 + 置顶时高亮）、
+  `ToolWindowButtons` 组合控制位都是现成的。现改为：
+  - 内容抽成 `Views/UserControls/ItemDetailView`；
+  - `ItemDetailWindow` 变成**静态入口**，内部 new `ToolWindow(内容, ToolWindowTitleStyle.Default, showTopmostButton: true)`，
+    设 `DisplayTitle/SystemTitle` 为 `ItemDetail_Title`（标题固定「物品详情」）、`Topmost = true`（Show 之前设，图钉状态才正确）、
+    单实例复用（再次打开只换 DataContext）。
+  - 自定义标题栏/图钉/`ItemDetail_Pin` 全部删除；置顶逻辑与其它工具窗完全一致。
+- 语言键：删 `ItemDetail_Search`、`ItemDetail_ShowAll`；`ItemDetail_GoMarket` 文案改为「查看市场详情 / View market details」。
+### 283.4.2 市场入口接线（同日追加）
+
+- 频道市场（`ChannelMarketWindow`）的「详细」按钮：原来跳「商业 → 市场」并选中物品，现在直接
+  `ItemDetailWindow.ShowItem(typeId, showMarketButton: false)`。
+- 市场页（`MarketPage`）的「物品说明」按钮：原来打开一个 440×520 的 `MarketTypeInfoView`（只有图标/名称/体积/简介），
+  现在同样打开统一的物品详情窗口，并**隐藏底部「查看市场详情」按钮**（入口就在市场里，没必要再跳）。
+  `MarketTypeInfoView.xaml(.cs)` 随之删除（功能被详情窗口完全覆盖）。
+- 实现：`ItemDetailView.ShowMarketButton` 依赖属性控制底部那一栏；`ItemDetailWindow.ShowItem(typeId, showMarketButton = true)`
+  在复用已有窗口时也会同步这个开关。
+- **不设 Owner（修正）**：`ToolWindow` 本身不设 `Owner`，`ToolWindowHost` 也刻意不设（注释：没有 Owner 时
+  `CenterOwner` 落点不明确，改显式 `CenterScreen`）。物品详情窗口原先自己设了 `Owner = App.MainWindow` +
+  `CenterOwner`，导致**主窗口最小化时它跟着最小化**。现已去掉 `Owner`、改成 `WindowStartupLocation.CenterScreen`，
+  与其它工具窗行为一致（独立窗口，主窗口最小化/关闭都不影响它）。
+
+### 283.5 验证
+
+- `dotnet build`：SDEBuilder 0 错误；WPF 0 错误（54 个既有警告）。
+- 临时探针（已删）跑真实库：`zh.db` 三表可读（属性 37 = 最大速度、分组 8 = 技能要求、单位 10 = m/s）；
+  `TypeInfoService` 对 587 裂谷级 / 12005 伊什塔级 / 34 三钛合金 均返回完整数据（90/89/0 条属性，
+  技能分别为「米玛塔尔护卫舰操作 Lv1」「盖伦特巡洋舰操作 Lv5 + 重型突击巡洋舰操作 Lv1」）。
+- 未实机点验窗口外观；需确认：左键物品名弹出详情、三个页签内容、底部跳市场。
+
+## 阶段 284：制造计划的「采购清单」独立成页签（2026-11-09）
+
+> 用户要求：把采购清单从「计划详细 → 概况」里拿出来，放在「生产详情」后面做独立 Tab。
+
+- `Views/Pages/IndustryPlanPage.xaml`：从概况页的选中产物详情卡里移除
+  「复制本产物采购 / 导出本产物 CSV」+ 采购清单标题/提示/表格；在 `ResultTabIndex` 的 TabControl 里
+  「生产详情」之后新增 **`IndustryPage_Tab_ShoppingList`（采购清单）** 页签：
+  - 顶部：标题 + 口径提示（`IndustryPage_ShoppingListTip`）+ 右侧「复制本产物采购 / 导出本产物 CSV」；
+  - 主体：占满剩余高度的采购清单表格（物品名仍是 `ItemLink` 可点开详情），数量/单价/金额四列加宽。
+  - 绑定改为 `{Binding OverviewBuyItems}`（页签 DataContext 就是页面 VM），不再需要 `RelativeSource AncestorType=Page`。
+- 「概况」顶部工具条的「复制全部采购 / 导出全部 BOM」保持不变（它们是对整个计划的操作）。
+- 语言：中英各 +1 键 `IndustryPage_Tab_ShoppingList`（采购清单 / Shopping list）。
+- 手册 `industry/plan.md`：第 8 步与字段说明改为「采购清单页签汇总整个计划」。
+- `dotnet build`：0 错误（临时输出目录编译——IDE/运行中的程序锁着 bin）。未实机点验。
+
+## 阶段 285：采购清单改为「全部目标统一列表 + 目标产物筛选」（2026-11-09）
+
+> 用户要求：别再按"某个产物"表达（"复制本产物采购"这种字眼要去掉），把全部制造目标的采购统一列出来，
+> DataGrid 增加「目标产物」列，再加一个下拉框筛选产物，默认「全部」；字体不要自己指定大小。
+
+- 数据层（`IndustryPlanPageViewModel`）：
+  - 旧模型 `IndustryOverviewBuyLine` + `OverviewBuyItems`（跟着"概况选中产物"变）换成
+    **`IndustryShoppingLine`**（TargetTypeId/TargetName + TypeId/Name/Quantity/UnitPrice/Total）
+    与 **`IndustryShoppingFilterOption`**（TargetTypeId=0 表示"全部"）。
+  - `RebuildShoppingList()`：遍历 `Roots`（每个目标产物根节点）`BuildBuyLines` 后按"目标产物 × 材料"生成行；
+    重建 `ShoppingFilters`（第一项固定「全部」，其余按产物名排序）。
+  - `SelectedShoppingFilter` → `ApplyShoppingFilter()` 刷新 `ShoppingItems`；计划算完默认选中「全部」。
+  - 新增 `CopyShoppingList()` / `ExportShoppingCsv()`：作用于**当前筛选结果**；
+    移除按产物的 `CopyTargetPurchaseList()` / `ExportTargetCsv()` 与对应按钮处理器。
+- UI（`IndustryPlanPage.xaml` 采购清单页签）：
+  - 顶部：标题 + 口径提示 + **目标产物下拉**（`ComboBox`，默认「全部」）+「复制采购清单 / 导出采购清单 CSV」；
+  - 表格列：**目标产物（180）** / 物品（*，仍可点开物品详情）/ 数量 / 单价 / 金额；
+  - 去掉页签内所有显式 `FontSize`（回到全局默认字号），标题只保留 `FontWeight=SemiBold`。
+- 语言：中英各 +5 键（`IndustryPage_Col_TargetProduct`、`IndustryPage_ShoppingFilterAll`、`IndustryPage_ShoppingFilter`、
+  `IndustryPage_CopyShoppingList`、`IndustryPage_ExportShoppingCsv`）；删 4 个不再使用的
+  `IndustryPage_CopyProductShopping` / `ExportProductCsv` / `SelectProduct` / `ProductNothingToBuy`；
+  `IndustryPage_ShoppingListTip` 文案改为"所有目标产物…按目标产物分行…可筛选"。
+- 手册 `industry/plan.md` 第 8 步与字段说明同步。
+### 285.1 只做汇总、不要「目标产物」列（同日追加）
+
+- 用户要求：去掉表格里的「目标产物」列，只按当前下拉的统计范围汇总物品。
+- `ApplyShoppingFilter()` 改为**按物品 TypeID 合并**：
+  - 选「全部」→ 把所有目标产物的采购行按物品合并数量（单价取第一个 >0 的值）；
+  - 选某个产物 → 只统计该产物子树，再按物品合并。
+  行里不再携带/显示目标产物；`TargetTypeId/TargetName` 只作为内部筛选依据保留。
+- 采购清单表格删除「目标产物」列；「复制采购清单 / 导出采购清单 CSV」也不再输出目标产物列。
+- 语言：删 `IndustryPage_Col_TargetProduct`；`IndustryPage_ShoppingListTip` 改为"同一物品跨产物合并数量"。
+- 手册第 8 步与字段说明同步改为"按物品汇总、下拉可只统计某个产物"。
+- `dotnet build`：0 错误（临时输出目录，bin 被运行中的程序占用）。未实机点验。
+
 ## 8. 已知限制与待办
+- **物品详情（阶段 283）还没做的两块**：
+  1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；
+  2. **精通等级（mastery）**：`masteries` 表已导入但存的是 certificate ID，`certificates` 表没导入，解析不出"精通 0–4 需要哪些技能"。
+  两者都要给 SDEBuilder 加表并重建 `main.db`；技能要求本身不受影响（走 `requiredSkill*`）。
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
 1. **邮件正文链接不可点击** —— `HtmlPanel.LinkClicked` 委托签名与本项目用法不匹配（阶段 8 起遗留）。

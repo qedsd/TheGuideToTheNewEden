@@ -2,14 +2,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Controls;
 
 /// <summary>
-/// 让任意文字元素（通常是 <see cref="TextBlock"/>）变成"物品链接"的附加行为（阶段 282）：
+/// 让任意文字元素（通常是 <see cref="TextBlock"/>）变成"物品链接"的附加行为（阶段 282/283）：
 /// 设置 <c>controls:ItemLink.TypeId="{Binding TypeId}"</c> 后，鼠标变成手型、悬停加下划线，
-/// 点击跳到市场页并选中该物品。
+/// **左键打开「物品详情」窗口**（阶段 283 起取代原来的"直接跳市场"，窗口底部有跳市场按钮）。
 /// <para>
 /// 用附加行为而不是换控件，是为了不动各处的排版（字号/字重/裁剪/换行），
 /// 制造业界面里所有"物品名称"都能一行 XAML 接上跳转。
@@ -69,7 +69,7 @@ public static class ItemLink
 
         // 标记已处理：不再让外层（列表项 / 整卡）把它当成选中或打开
         e.Handled = true;
-        Navigation.NavigateToMarket(typeId);
+        ItemDetailWindow.ShowItem((int)typeId);
     }
 
     /// <summary>悬停加下划线（不动颜色，避免覆盖各处的 DynamicResource 前景色）。</summary>

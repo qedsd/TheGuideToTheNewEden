@@ -140,8 +140,11 @@ public sealed class IndustryDecryptorOption
     public override string ToString() => Name;
 }
 
-public sealed class IndustryOverviewBuyLine
+/// <summary>采购清单的一行：某个目标产物子树里需要直接购买的材料（阶段 285：不再区分"当前产物"，而是带目标产物列）。</summary>
+public sealed class IndustryShoppingLine
 {
+    public int TargetTypeId { get; set; }
+    public string TargetName { get; set; } = string.Empty;
     public int TypeId { get; set; }
     public string Name { get; set; } = string.Empty;
     public long Quantity { get; set; }
@@ -150,6 +153,13 @@ public sealed class IndustryOverviewBuyLine
     public string QuantityText => $"{Quantity:N0}";
     public string UnitPriceText => UnitPrice > 0 ? $"{UnitPrice:N2}" : "—";
     public string TotalText => Total > 0 ? $"{Total:N0}" : "—";
+}
+
+/// <summary>采购清单的目标产物筛选项；<see cref="TargetTypeId"/> = 0 表示"全部"。</summary>
+public sealed class IndustryShoppingFilterOption
+{
+    public int TargetTypeId { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 public sealed class IndustryBlueprintJobItem
@@ -996,7 +1006,26 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public string RootsCountText => LanguageService.Format("IndustryPage_CountTotal", Roots.Count);
     public ObservableCollection<IndustryPlanNodeViewModel> FlatNodes { get; } = new();
     public ObservableCollection<IndustryCostSlice> CostSlices { get; } = new();
-    public ObservableCollection<IndustryOverviewBuyLine> OverviewBuyItems { get; } = new();
+    /// <summary>全部目标的采购行（未筛选）；<see cref="ShoppingItems"/> 是当前筛选项下的显示行。</summary>
+    private readonly List<IndustryShoppingLine> _allShoppingLines = new();
+
+    public ObservableCollection<IndustryShoppingLine> ShoppingItems { get; } = new();
+
+    /// <summary>目标产物筛选项，第一项固定是"全部"。</summary>
+    public ObservableCollection<IndustryShoppingFilterOption> ShoppingFilters { get; } = new();
+
+    private IndustryShoppingFilterOption? _selectedShoppingFilter;
+    public IndustryShoppingFilterOption? SelectedShoppingFilter
+    {
+        get => _selectedShoppingFilter;
+        set
+        {
+            if (Set(ref _selectedShoppingFilter, value))
+            {
+                ApplyShoppingFilter();
+            }
+        }
+    }
 
     // ───────────── 调度结果 ─────────────
 
@@ -1035,10 +1064,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         get => _selectedOverviewTarget;
         set
         {
-            if (Set(ref _selectedOverviewTarget, value))
-            {
-                RebuildOverviewBuyItems();
-            }
+            Set(ref _selectedOverviewTarget, value);
         }
     }
 
@@ -1833,7 +1859,11 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         Roots.Clear();
         FlatNodes.Clear();
         CostSlices.Clear();
-        OverviewBuyItems.Clear();
+        _allShoppingLines.Clear();
+        ShoppingItems.Clear();
+        ShoppingFilters.Clear();
+        _selectedShoppingFilter = null;
+        OnPropertyChanged(nameof(SelectedShoppingFilter));
         SelectedNode = null;
         SelectedOverviewTarget = null;
         HasPlan = false;
@@ -2025,6 +2055,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             ApplyExpansion(Roots, keepView.ExpandedTypeIds, keepView.KnownTypeIds);
         }
         RebuildFlatNodes();
+        RebuildShoppingList();
         // preserveView 时把选中节点还原回去（节点集合是新建的实例，不能直接复用旧引用）。
         SelectedNode = keepView is null ? FlatNodes.FirstOrDefault() : RestoreNode(keepView);
         SelectedOverviewTarget = keepView is null
@@ -2476,18 +2507,74 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     // ───────────── 导出 ─────────────
 
-    private void RebuildOverviewBuyItems()
+    /// <summary>按"目标产物 × 材料"汇总全部采购行，并重建筛选项（第一项"全部"）。</summary>
+    private void RebuildShoppingList()
     {
-        OverviewBuyItems.Clear();
-        foreach (var line in BuildBuyLines(SelectedOverviewTarget?.Model))
+        _allShoppingLines.Clear();
+        foreach (var root in Roots)
         {
-            OverviewBuyItems.Add(line);
+            foreach (var line in BuildBuyLines(root.Model))
+            {
+                _allShoppingLines.Add(new IndustryShoppingLine
+                {
+                    TargetTypeId = root.TypeId,
+                    TargetName = root.Name,
+                    TypeId = line.TypeId,
+                    Name = line.Name,
+                    Quantity = line.Quantity,
+                    UnitPrice = line.UnitPrice,
+                });
+            }
+        }
+
+        ShoppingFilters.Clear();
+        ShoppingFilters.Add(new IndustryShoppingFilterOption
+        {
+            TargetTypeId = 0,
+            Name = LanguageService.Get("IndustryPage_ShoppingFilterAll"),
+        });
+        foreach (var group in _allShoppingLines
+                     .GroupBy(p => new { p.TargetTypeId, p.TargetName })
+                     .OrderBy(p => p.Key.TargetName, StringComparer.CurrentCultureIgnoreCase))
+        {
+            ShoppingFilters.Add(new IndustryShoppingFilterOption
+            {
+                TargetTypeId = group.Key.TargetTypeId,
+                Name = group.Key.TargetName,
+            });
+        }
+
+        _selectedShoppingFilter = ShoppingFilters.FirstOrDefault();
+        OnPropertyChanged(nameof(SelectedShoppingFilter));
+        ApplyShoppingFilter();
+    }
+
+    /// <summary>
+    /// 按当前筛选项刷新显示行（0 = 全部）：同一物品跨目标产物合并数量，
+    /// 不再区分"这一行属于哪个产物"——筛选项只决定统计范围。
+    /// </summary>
+    private void ApplyShoppingFilter()
+    {
+        ShoppingItems.Clear();
+        var targetTypeId = SelectedShoppingFilter?.TargetTypeId ?? 0;
+        foreach (var group in _allShoppingLines
+                     .Where(p => targetTypeId == 0 || p.TargetTypeId == targetTypeId)
+                     .GroupBy(p => p.TypeId)
+                     .OrderBy(g => g.First().Name, StringComparer.CurrentCultureIgnoreCase))
+        {
+            ShoppingItems.Add(new IndustryShoppingLine
+            {
+                TypeId = group.Key,
+                Name = group.First().Name,
+                Quantity = group.Sum(p => p.Quantity),
+                UnitPrice = group.Select(p => p.UnitPrice).FirstOrDefault(p => p > 0),
+            });
         }
     }
 
-    private static List<IndustryOverviewBuyLine> BuildBuyLines(IndustryBuildNode? target)
+    private static List<IndustryShoppingLine> BuildBuyLines(IndustryBuildNode? target)
     {
-        var lines = new Dictionary<int, IndustryOverviewBuyLine>();
+        var lines = new Dictionary<int, IndustryShoppingLine>();
         void Visit(IndustryBuildNode? node)
         {
             if (node is null) return;
@@ -2495,7 +2582,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 if (!lines.TryGetValue(node.TypeID, out var line))
                 {
-                    line = new IndustryOverviewBuyLine
+                    line = new IndustryShoppingLine
                     {
                         TypeId = node.TypeID,
                         Name = node.TypeName,
@@ -2515,24 +2602,28 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             .OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
-
-    public void CopyTargetPurchaseList(IndustryPlanNodeViewModel? target)
+    /// <summary>复制当前筛选下的采购清单（制表符分隔，可直接粘进表格）。</summary>
+    public void CopyShoppingList()
     {
-        if (target is null)
+        if (ShoppingItems.Count == 0)
         {
-            PageNotifyService.Info(LanguageService.Get("IndustryPage_SelectProduct"));
-            return;
-        }
-        var lines = BuildBuyLines(target.Model);
-        if (lines.Count == 0)
-        {
-            PageNotifyService.Info(LanguageService.Get("IndustryPage_ProductNothingToBuy"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_NothingToBuy"));
             return;
         }
         try
         {
-            Clipboard.SetText(string.Join(Environment.NewLine,
-                lines.Select(p => $"{p.Name}\t{p.Quantity:N0}")));
+            var builder = new StringBuilder();
+            builder.AppendLine(string.Join("\t",
+                LanguageService.Get("IndustryPage_Col_Item"),
+                LanguageService.Get("General_Quantity"),
+                LanguageService.Get("IndustryPage_UnitPrice"),
+                LanguageService.Get("IndustryPage_Amount")));
+            foreach (var line in ShoppingItems)
+            {
+                builder.AppendLine(string.Join("\t",
+                    line.Name, line.QuantityText, line.UnitPriceText, line.TotalText));
+            }
+            Clipboard.SetText(builder.ToString());
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)
@@ -2542,11 +2633,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
     }
 
-    public void ExportTargetCsv(IndustryPlanNodeViewModel? target)
+    /// <summary>导出当前筛选下的采购清单为 CSV。</summary>
+    public void ExportShoppingCsv()
     {
-        if (target is null)
+        if (ShoppingItems.Count == 0)
         {
-            PageNotifyService.Info(LanguageService.Get("IndustryPage_SelectProduct"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_NothingToBuy"));
             return;
         }
         try
@@ -2554,13 +2646,17 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             var dialog = new SaveFileDialog
             {
                 Filter = "CSV (*.csv)|*.csv",
-                FileName = $"industry-target-{DateTime.Now:yyyyMMdd-HHmm}.csv",
+                FileName = $"industry-shopping-{DateTime.Now:yyyyMMdd-HHmm}.csv",
             };
             if (dialog.ShowDialog() != true) return;
 
             var builder = new StringBuilder();
-            builder.AppendLine("Target,Item,Decision,Activity,Needed,Produced,Runs,ToBuy,JobCost,UnitPrice,FullCost,CashCost,Revenue,Profit,Margin");
-            WriteNodeCsv(builder, target.Model, target.Name, 0);
+            builder.AppendLine("Item,Quantity,UnitPrice,Total");
+            foreach (var line in ShoppingItems)
+            {
+                builder.AppendLine(string.Join(",",
+                    CsvCell(line.Name), line.Quantity, line.UnitPriceText, line.TotalText));
+            }
             File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Exported"));
         }
@@ -2570,6 +2666,18 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             PageNotifyService.Error(LanguageService.Get("IndustryPage_ExportFailed"));
         }
     }
+
+    private static string CsvCell(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+        return value.IndexOf(',') >= 0 || value.IndexOf('"') >= 0
+            ? "\"" + value.Replace("\"", "\"\"") + "\""
+            : value;
+    }
+
 
     public void CopyPurchaseList()
     {

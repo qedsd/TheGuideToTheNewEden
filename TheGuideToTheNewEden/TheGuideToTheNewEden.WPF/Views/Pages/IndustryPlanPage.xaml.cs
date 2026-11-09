@@ -164,11 +164,9 @@ public partial class IndustryPlanPage : Page
 
     private void OnExportClick(object sender, RoutedEventArgs e) => _viewModel.ExportCsv();
 
-    private void OnCopySelectedTargetClick(object sender, RoutedEventArgs e)
-        => _viewModel.CopyTargetPurchaseList(_viewModel.SelectedOverviewTarget);
+    private void OnCopyShoppingClick(object sender, RoutedEventArgs e) => _viewModel.CopyShoppingList();
 
-    private void OnExportSelectedTargetClick(object sender, RoutedEventArgs e)
-        => _viewModel.ExportTargetCsv(_viewModel.SelectedOverviewTarget);
+    private void OnExportShoppingClick(object sender, RoutedEventArgs e) => _viewModel.ExportShoppingCsv();
 
     private void OnRefreshMarketClick(object sender, RoutedEventArgs e) => _ = _viewModel.RefreshMarketAsync();
 

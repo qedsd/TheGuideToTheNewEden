@@ -115,7 +115,6 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="ColumnHeaderHeight" Value="24" />
-            <Setter Property="FontSize" Value="11" />
             <Setter Property="SelectionMode" Value="Single" />
             <Setter Property="SelectionUnit" Value="FullRow" />
             <Setter Property="AlternatingRowBackground" Value="Transparent" />
@@ -169,10 +168,10 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         FontSize="13"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding Name}"
-                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextTrimming="CharacterEllipsis" />
                     <TextBlock
                         FontSize="12"
@@ -228,11 +227,11 @@
                         Grid.ColumnSpan="2"
                         Margin="0,0,6,0"
                         VerticalAlignment="Center"
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         FontSize="13"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding Name}"
-                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextTrimming="CharacterEllipsis" />
                     <ui:Button
                         Grid.Row="0"
@@ -839,86 +838,86 @@
                                                         IsChecked="{Binding PlanetaryColoniesEnabled, Mode=TwoWay}"
                                                         ToolTip="{DynamicResource IndustryPage_PlanetaryUseColoniesTip}" />
                                                     <StackPanel IsEnabled="{Binding PlanetarySettingsEnabled}">
-                                                    <!--  阶段 277：产能口径（默认按可用殖民地，殖民地越多工期越短）  -->
-                                                    <Grid Margin="0,4,0,0">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition Width="8" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock
-                                                            Grid.Column="0"
-                                                            VerticalAlignment="Center"
-                                                            Style="{StaticResource IndustryLabel}"
-                                                            Text="{DynamicResource IndustryPage_PlanetarySizingMode}" />
-                                                        <ComboBox
-                                                            Grid.Column="2"
-                                                            SelectedIndex="{Binding PlanetarySizingModeIndex, Mode=TwoWay}"
-                                                            ToolTip="{DynamicResource IndustryPage_PlanetarySizingModeTip}">
-                                                            <ComboBoxItem Content="{DynamicResource IndustryPage_PlanetarySizingAvailable}" />
-                                                            <ComboBoxItem Content="{DynamicResource IndustryPage_PlanetarySizingPeriod}" />
-                                                        </ComboBox>
-                                                    </Grid>
-                                                    <CheckBox
-                                                        Margin="0,2"
-                                                        Content="{DynamicResource IndustryPage_PlanetaryCountSetup}"
-                                                        IsChecked="{Binding PlanetaryCountSetupCost, Mode=TwoWay}"
-                                                        ToolTip="{DynamicResource IndustryPage_PlanetaryCountSetupTip}" />
-                                                    <CheckBox
-                                                        Margin="0,2"
-                                                        Content="{DynamicResource IndustryPage_PlanetaryUseLocationPlanets}"
-                                                        IsChecked="{Binding PlanetaryUseLocationPlanets, Mode=TwoWay}"
-                                                        ToolTip="{DynamicResource IndustryPage_PlanetaryUseLocationPlanetsTip}" />
-                                                    <Grid Margin="0,4,0,0">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="8" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <StackPanel Grid.Column="0" IsEnabled="{Binding PlanetaryPeriodEnabled}">
-                                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryPeriodDays}" />
-                                                            <ui:NumberBox
-                                                                Maximum="30"
-                                                                Minimum="1"
-                                                                SmallChange="1"
-                                                                ToolTip="{DynamicResource IndustryPage_PlanetaryPeriodDaysTip}"
-                                                                Value="{Binding PlanetaryPeriodDays, Mode=TwoWay}" />
-                                                        </StackPanel>
-                                                        <StackPanel Grid.Column="2">
-                                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryCcuLevel}" />
-                                                            <ui:NumberBox
-                                                                Maximum="5"
-                                                                Minimum="0"
-                                                                SmallChange="1"
-                                                                ToolTip="{DynamicResource IndustryPage_PlanetaryCcuLevelTip}"
-                                                                Value="{Binding PlanetaryCcuLevel, Mode=TwoWay}" />
-                                                        </StackPanel>
-                                                    </Grid>
-                                                    <Grid Margin="0,4,0,0">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="8" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <StackPanel Grid.Column="0">
-                                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryMaxPlanets}" />
-                                                            <ui:NumberBox
-                                                                Maximum="6"
-                                                                Minimum="1"
-                                                                SmallChange="1"
-                                                                ToolTip="{DynamicResource IndustryPage_PlanetaryMaxPlanetsTip}"
-                                                                Value="{Binding PlanetaryMaxPlanets, Mode=TwoWay}" />
-                                                        </StackPanel>
-                                                        <StackPanel Grid.Column="2">
-                                                            <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryRadius}" />
-                                                            <ui:NumberBox
-                                                                Maximum="100000"
-                                                                Minimum="0"
-                                                                SmallChange="100"
-                                                                ToolTip="{DynamicResource IndustryPage_PlanetaryRadiusTip}"
-                                                                Value="{Binding PlanetaryRadiusKm, Mode=TwoWay}" />
-                                                        </StackPanel>
-                                                    </Grid>
+                                                        <!--  阶段 277：产能口径（默认按可用殖民地，殖民地越多工期越短）  -->
+                                                        <Grid Margin="0,4,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="8" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock
+                                                                Grid.Column="0"
+                                                                VerticalAlignment="Center"
+                                                                Style="{StaticResource IndustryLabel}"
+                                                                Text="{DynamicResource IndustryPage_PlanetarySizingMode}" />
+                                                            <ComboBox
+                                                                Grid.Column="2"
+                                                                SelectedIndex="{Binding PlanetarySizingModeIndex, Mode=TwoWay}"
+                                                                ToolTip="{DynamicResource IndustryPage_PlanetarySizingModeTip}">
+                                                                <ComboBoxItem Content="{DynamicResource IndustryPage_PlanetarySizingAvailable}" />
+                                                                <ComboBoxItem Content="{DynamicResource IndustryPage_PlanetarySizingPeriod}" />
+                                                            </ComboBox>
+                                                        </Grid>
+                                                        <CheckBox
+                                                            Margin="0,2"
+                                                            Content="{DynamicResource IndustryPage_PlanetaryCountSetup}"
+                                                            IsChecked="{Binding PlanetaryCountSetupCost, Mode=TwoWay}"
+                                                            ToolTip="{DynamicResource IndustryPage_PlanetaryCountSetupTip}" />
+                                                        <CheckBox
+                                                            Margin="0,2"
+                                                            Content="{DynamicResource IndustryPage_PlanetaryUseLocationPlanets}"
+                                                            IsChecked="{Binding PlanetaryUseLocationPlanets, Mode=TwoWay}"
+                                                            ToolTip="{DynamicResource IndustryPage_PlanetaryUseLocationPlanetsTip}" />
+                                                        <Grid Margin="0,4,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="8" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0" IsEnabled="{Binding PlanetaryPeriodEnabled}">
+                                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryPeriodDays}" />
+                                                                <ui:NumberBox
+                                                                    Maximum="30"
+                                                                    Minimum="1"
+                                                                    SmallChange="1"
+                                                                    ToolTip="{DynamicResource IndustryPage_PlanetaryPeriodDaysTip}"
+                                                                    Value="{Binding PlanetaryPeriodDays, Mode=TwoWay}" />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="2">
+                                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryCcuLevel}" />
+                                                                <ui:NumberBox
+                                                                    Maximum="5"
+                                                                    Minimum="0"
+                                                                    SmallChange="1"
+                                                                    ToolTip="{DynamicResource IndustryPage_PlanetaryCcuLevelTip}"
+                                                                    Value="{Binding PlanetaryCcuLevel, Mode=TwoWay}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                        <Grid Margin="0,4,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="8" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0">
+                                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryMaxPlanets}" />
+                                                                <ui:NumberBox
+                                                                    Maximum="6"
+                                                                    Minimum="1"
+                                                                    SmallChange="1"
+                                                                    ToolTip="{DynamicResource IndustryPage_PlanetaryMaxPlanetsTip}"
+                                                                    Value="{Binding PlanetaryMaxPlanets, Mode=TwoWay}" />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="2">
+                                                                <TextBlock Style="{StaticResource IndustryLabel}" Text="{DynamicResource IndustryPage_PlanetaryRadius}" />
+                                                                <ui:NumberBox
+                                                                    Maximum="100000"
+                                                                    Minimum="0"
+                                                                    SmallChange="100"
+                                                                    ToolTip="{DynamicResource IndustryPage_PlanetaryRadiusTip}"
+                                                                    Value="{Binding PlanetaryRadiusKm, Mode=TwoWay}" />
+                                                            </StackPanel>
+                                                        </Grid>
                                                     </StackPanel>
                                                 </StackPanel>
                                             </StackPanel>
@@ -1661,11 +1660,11 @@
                                                     </ScrollViewer.Style>
                                                     <StackPanel DataContext="{Binding SelectedOverviewTarget}">
                                                         <TextBlock
+                                                            controls:ItemLink.TypeId="{Binding TypeId}"
                                                             FontSize="16"
                                                             FontWeight="SemiBold"
                                                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                             Text="{Binding Name}"
-                                                            controls:ItemLink.TypeId="{Binding TypeId}"
                                                             TextWrapping="Wrap" />
 
                                                         <UniformGrid Margin="0,12,0,0" Columns="4">
@@ -1789,59 +1788,6 @@
                                                                 Text="{Binding StockShare, StringFormat={}{0:0}%}" />
                                                         </Grid>
 
-                                                        <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                                                            <ui:Button
-                                                                Margin="0,0,8,0"
-                                                                Click="OnCopySelectedTargetClick"
-                                                                Content="{DynamicResource IndustryPage_CopyProductShopping}"
-                                                                Icon="{ui:SymbolIcon DocumentSettings16}" />
-                                                            <ui:Button
-                                                                Click="OnExportSelectedTargetClick"
-                                                                Content="{DynamicResource IndustryPage_ExportProductCsv}"
-                                                                Icon="{ui:SymbolIcon ArrowDown24}" />
-                                                        </StackPanel>
-
-                                                        <TextBlock
-                                                            Margin="0,14,0,0"
-                                                            FontWeight="SemiBold"
-                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                            Text="{DynamicResource IndustryPage_ShoppingList}" />
-                                                        <TextBlock
-                                                            Margin="0,2,0,0"
-                                                            FontSize="10.5"
-                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                            Text="{DynamicResource IndustryPage_ShoppingListTip}"
-                                                            TextWrapping="Wrap" />
-                                                        <ui:DataGrid
-                                                            MaxHeight="260"
-                                                            ItemsSource="{Binding DataContext.OverviewBuyItems, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                                                            Style="{StaticResource IndustryDataGrid}">
-                                                            <ui:DataGrid.Columns>
-                                                                <DataGridTemplateColumn Width="*" Header="{DynamicResource IndustryPage_Col_Item}">
-                                                                    <DataGridTemplateColumn.CellTemplate>
-                                                                        <DataTemplate>
-                                                                            <TextBlock
-                                                                                VerticalAlignment="Center"
-                                                                                Text="{Binding Name}"
-                                                                                TextTrimming="CharacterEllipsis"
-                                                                                controls:ItemLink.TypeId="{Binding TypeId}" />
-                                                                        </DataTemplate>
-                                                                    </DataGridTemplateColumn.CellTemplate>
-                                                                </DataGridTemplateColumn>
-                                                                <DataGridTextColumn
-                                                                    Width="80"
-                                                                    Binding="{Binding QuantityText}"
-                                                                    Header="{DynamicResource General_Quantity}" />
-                                                                <DataGridTextColumn
-                                                                    Width="80"
-                                                                    Binding="{Binding UnitPriceText}"
-                                                                    Header="{DynamicResource IndustryPage_UnitPrice}" />
-                                                                <DataGridTextColumn
-                                                                    Width="100"
-                                                                    Binding="{Binding TotalText}"
-                                                                    Header="{DynamicResource IndustryPage_Amount}" />
-                                                            </ui:DataGrid.Columns>
-                                                        </ui:DataGrid>
                                                     </StackPanel>
                                                 </ScrollViewer>
                                             </Grid>
@@ -1853,6 +1799,80 @@
                             <!--  生产详情：排程 / 步骤 / 工位 / 关系 / 生产链  -->
                             <TabItem Header="{DynamicResource IndustryPage_Tab_Production}">
                                 <uc:IndustryScheduleView />
+                            </TabItem>
+
+                            <!--  采购清单（阶段 284/285）：全部目标统一列表 + 目标产物筛选  -->
+                            <TabItem Header="{DynamicResource IndustryPage_Tab_ShoppingList}">
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid
+                                        Grid.Row="1"
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Right">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ComboBox
+                                                Grid.Column="1"
+                                                Width="220"
+                                                Margin="0,0,8,0"
+                                                VerticalAlignment="Center"
+                                                DisplayMemberPath="Name"
+                                                ItemsSource="{Binding ShoppingFilters}"
+                                                SelectedItem="{Binding SelectedShoppingFilter, Mode=TwoWay}"
+                                                ToolTip="{DynamicResource IndustryPage_ShoppingFilter}" />
+                                            <StackPanel
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <ui:Button
+                                                    Margin="0,0,8,0"
+                                                    Click="OnCopyShoppingClick"
+                                                    Content="{DynamicResource IndustryPage_CopyShoppingList}"
+                                                    Icon="{ui:SymbolIcon Copy16}" />
+                                                <ui:Button
+                                                    Click="OnExportShoppingClick"
+                                                    Content="{DynamicResource IndustryPage_ExportShoppingCsv}"
+                                                    Icon="{ui:SymbolIcon ArrowDown24}" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                    </Grid>
+
+                                    <ui:DataGrid
+                                        Grid.Row="0"
+                                        ItemsSource="{Binding ShoppingItems}"
+                                        Style="{StaticResource IndustryDataGrid}">
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTemplateColumn Width="*" Header="{DynamicResource IndustryPage_Col_Item}">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock
+                                                            Margin="16,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            controls:ItemLink.TypeId="{Binding TypeId}"
+                                                            Text="{Binding Name}"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTextColumn
+                                                Width="Auto"
+                                                Binding="{Binding QuantityText}"
+                                                Header="{DynamicResource General_Quantity}" />
+                                            <DataGridTextColumn
+                                                Width="Auto"
+                                                Binding="{Binding UnitPriceText}"
+                                                Header="{DynamicResource IndustryPage_UnitPrice}" />
+                                            <DataGridTextColumn
+                                                Width="Auto"
+                                                Binding="{Binding TotalText}"
+                                                Header="{DynamicResource IndustryPage_Amount}" />
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
+                                </Grid>
                             </TabItem>
                         </TabControl>
                     </controls:CardControl>

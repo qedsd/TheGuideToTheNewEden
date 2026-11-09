@@ -2746,6 +2746,7 @@
     <sys:String x:Key="IndustryPage_Tab_Result">Plan details</sys:String>
     <sys:String x:Key="IndustryPage_Tab_Overview">Overview</sys:String>
     <sys:String x:Key="IndustryPage_Tab_Production">Production</sys:String>
+    <sys:String x:Key="IndustryPage_Tab_ShoppingList">Shopping list</sys:String>
     <sys:String x:Key="IndustryPage_Tab_SavedPlans">Saved plans</sys:String>
     <sys:String x:Key="IndustryPage_BomCost">BOM / Cost</sys:String>
     <sys:String x:Key="IndustryPage_Manufacturable">Manufacturable items</sys:String>
@@ -2888,10 +2889,10 @@
     <sys:String x:Key="IndustryPage_ProductDetail">Product details</sys:String>
     <sys:String x:Key="IndustryPage_SelectProductHint">Select a product on the left to see its cost, profit and shopping list.</sys:String>
     <sys:String x:Key="IndustryPage_RequestProduced">Requested / produced</sys:String>
-    <sys:String x:Key="IndustryPage_CopyProductShopping">Copy product shopping list</sys:String>
-    <sys:String x:Key="IndustryPage_ExportProductCsv">Export product CSV</sys:String>
-    <sys:String x:Key="IndustryPage_ShoppingList">Shopping list</sys:String>
-    <sys:String x:Key="IndustryPage_ShoppingListTip">Materials in this product subtree that must be bought directly; stock/upstream leftovers already deducted.</sys:String>
+    <sys:String x:Key="IndustryPage_ShoppingFilterAll">All</sys:String>
+    <sys:String x:Key="IndustryPage_ShoppingFilter">Filter by target product</sys:String>
+    <sys:String x:Key="IndustryPage_CopyShoppingList">Copy shopping list</sys:String>
+    <sys:String x:Key="IndustryPage_ExportShoppingCsv">Export shopping CSV</sys:String>
     <sys:String x:Key="IndustryPage_UnitPrice">Unit price</sys:String>
     <sys:String x:Key="IndustryPage_Amount">Amount</sys:String>
     <sys:String x:Key="IndustryPage_Col_NeedProduceBuy">Need / Produce / Buy</sys:String>
@@ -2978,7 +2979,6 @@
     <sys:String x:Key="IndustryPage_RefreshCharacterProgress">Refreshing character {0}/{1}: {2}</sys:String>
     <sys:String x:Key="IndustryPage_CharacterRefreshed">Character data refreshed · {0:HH:mm}</sys:String>
     <sys:String x:Key="IndustryPage_CharacterRefreshedDone">Character data refreshed</sys:String>
-    <sys:String x:Key="IndustryPage_SelectProduct">Select a product on the left first</sys:String>
     <sys:String x:Key="IndustryPage_NothingToBuy">Nothing to buy</sys:String>
     <sys:String x:Key="IndustryPage_NothingToExport">No plan to export</sys:String>
     <sys:String x:Key="IndustryPage_Exported">Plan exported</sys:String>
@@ -3524,7 +3524,6 @@
     <sys:String x:Key="IndustryCustomCharacter_DeleteConfirm">Delete custom character "{0}"?</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteTitle">Delete custom character</sys:String>
     <sys:String x:Key="IndustryPage_DeleteProfileConfirm">Delete the current structure profile?</sys:String>
-    <sys:String x:Key="IndustryPage_ProductNothingToBuy">This product has nothing to buy</sys:String>
 
     <!--  制造 / 工业模块（阶段 185：整模块中英文切换）  -->
     <sys:String x:Key="IndustryPlanetary_ListSeparator">,</sys:String>
@@ -3561,4 +3560,25 @@
     <sys:String x:Key="Setting_DataPath_SetFailed">Cannot use that folder (write access may be denied).</sys:String>
     <sys:String x:Key="Setting_DataPath_Changed_Title">Data folder updated</sys:String>
     <sys:String x:Key="Setting_DataPath_Changed_Message">The new folder takes effect on the next start:{0}{1}{1}Restart the app now?</sys:String>
+    <sys:String x:Key="ItemDetail_Title">Item details</sys:String>
+    <sys:String x:Key="ItemDetail_TabOverview">Overview</sys:String>
+    <sys:String x:Key="ItemDetail_TabAttributes">Attributes</sys:String>
+    <sys:String x:Key="ItemDetail_TabSkills">Required skills</sys:String>
+    <sys:String x:Key="ItemDetail_NoAttributes">No attributes to display</sys:String>
+    <sys:String x:Key="ItemDetail_NoSkills">No skill requirements</sys:String>
+    <sys:String x:Key="ItemDetail_MetaLevel">Meta level</sys:String>
+    <sys:String x:Key="ItemDetail_Volume">Volume</sys:String>
+    <sys:String x:Key="ItemDetail_PackagedVolume">Packaged volume</sys:String>
+    <sys:String x:Key="ItemDetail_Mass">Mass</sys:String>
+    <sys:String x:Key="ItemDetail_Capacity">Capacity</sys:String>
+    <sys:String x:Key="ItemDetail_Radius">Radius</sys:String>
+    <sys:String x:Key="ItemDetail_PortionSize">Portion size</sys:String>
+    <sys:String x:Key="ItemDetail_BasePrice">Base price</sys:String>
+    <sys:String x:Key="ItemDetail_MarketGroup">Market group</sys:String>
+    <sys:String x:Key="ItemDetail_TypeId">Type ID</sys:String>
+    <sys:String x:Key="ItemDetail_Published">Published</sys:String>
+    <sys:String x:Key="ItemDetail_Unpublished">Unpublished</sys:String>
+    <sys:String x:Key="ItemDetail_GoMarket">View market details</sys:String>
+    <sys:String x:Key="ItemDetail_NoItem">Item not found</sys:String>
+    <sys:String x:Key="ItemDetail_SkillLevel">Level {0}</sys:String>
 </ResourceDictionary>
