@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.DBModels;
@@ -34,7 +35,8 @@ public partial class KbDetailPage : Page
     {
         try
         {
-            Clipboard.SetText(ZkbMapping.BuildKillWebUrl(_viewModel.KillmailId));
+            if (!ClipboardHelper.CopyOrNotify(ZkbMapping.BuildKillWebUrl(_viewModel.KillmailId)))
+                return;
             PageNotifyService.Success(Application.Current?.TryFindResource("KB_Copied") as string ?? "OK");
         }
         catch (Exception ex)

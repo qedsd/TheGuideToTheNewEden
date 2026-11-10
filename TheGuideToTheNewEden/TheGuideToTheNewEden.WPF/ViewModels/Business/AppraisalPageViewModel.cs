@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -394,7 +395,8 @@ public sealed class AppraisalPageViewModel : INotifyPropertyChanged
 
         try
         {
-            Clipboard.SetText(string.Join(Environment.NewLine, lines));
+            if (!ClipboardHelper.CopyOrNotify(string.Join(Environment.NewLine, lines)))
+                return;
             PageNotifyService.Success(FindString("AppraisalPage_Copied"));
         }
         catch (Exception ex)

@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -116,7 +117,8 @@ public partial class WormholePage : Page
 
         try
         {
-            Clipboard.SetText(_viewModel.Detail.Name);
+            if (!ClipboardHelper.CopyOrNotify(_viewModel.Detail.Name))
+                return;
             PageNotifyService.Success(WormholeViewModel.FindString("WormholePage_CopyDone"));
         }
         catch (System.Exception ex)

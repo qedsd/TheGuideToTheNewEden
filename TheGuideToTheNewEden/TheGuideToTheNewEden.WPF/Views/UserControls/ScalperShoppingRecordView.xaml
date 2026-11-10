@@ -62,9 +62,7 @@
                     SelectionMode="Extended">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{Binding Converter={StaticResource FileName}}" />
+                            <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding Converter={StaticResource FileName}}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -94,62 +92,50 @@
                         ToolTip="{DynamicResource BusinessPage_AddSelectedToShoppingCart}" />
                 </Grid>
 
-                <ScrollViewer
+                <ui:DataGrid
+                    x:Name="RecordItemsGrid"
                     Grid.Row="1"
-                    HorizontalScrollBarVisibility="Auto"
-                    VerticalScrollBarVisibility="Auto">
-                    <ui:DataGrid
-                        x:Name="RecordItemsGrid"
-                        AutoGenerateColumns="False"
-                        CanUserAddRows="False"
-                        CanUserDeleteRows="False"
-                        GridLinesVisibility="Horizontal"
-                        HeadersVisibility="Column"
-                        IsReadOnly="True"
-                        ItemsSource="{Binding Items}"
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
-                        ScrollViewer.CanContentScroll="True"
-                        SelectionMode="Extended"
-                        SelectionUnit="FullRow">
-                        <ui:DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="180"
-                                Binding="{Binding InvType.TypeName}"
-                                ElementStyle="{StaticResource RecordCellStyle}"
-                                Header="{DynamicResource BusinessPage_Type}" />
-                            <DataGridTextColumn
-                                Width="100"
-                                Binding="{Binding ROI, StringFormat={}{0:N2}}"
-                                ElementStyle="{StaticResource RecordNumberCellStyle}"
-                                Header="{DynamicResource BusinessPage_ROIPercent}" />
-                            <DataGridTextColumn
-                                Width="130"
-                                Binding="{Binding NetProfit, StringFormat={}{0:N2}}"
-                                ElementStyle="{StaticResource RecordNumberCellStyle}"
-                                Header="{DynamicResource BusinessPage_NetProfit}" />
-                            <DataGridTextColumn
-                                Width="120"
-                                Binding="{Binding BuyPrice, StringFormat={}{0:N2}}"
-                                ElementStyle="{StaticResource RecordNumberCellStyle}"
-                                Header="{DynamicResource BusinessPage_SourceBuyPrice}" />
-                            <DataGridTextColumn
-                                Width="120"
-                                Binding="{Binding SellPrice, StringFormat={}{0:N2}}"
-                                ElementStyle="{StaticResource RecordNumberCellStyle}"
-                                Header="{DynamicResource BusinessPage_DestinationSellPrice}" />
-                            <DataGridTextColumn
-                                Width="110"
-                                Binding="{Binding Quantity, StringFormat={}{0:N0}}"
-                                ElementStyle="{StaticResource RecordNumberCellStyle}"
-                                Header="{DynamicResource General_Quantity}" />
-                            <DataGridTextColumn
-                                Width="130"
-                                Binding="{Binding Volume, StringFormat={}{0:N2}}"
-                                ElementStyle="{StaticResource RecordNumberCellStyle}"
-                                Header="{DynamicResource BusinessPage_Volume}" />
-                        </ui:DataGrid.Columns>
-                    </ui:DataGrid>
-                </ScrollViewer>
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    GridLinesVisibility="Horizontal"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Items}"
+                    ScrollViewer.CanContentScroll="True"
+                    SelectionMode="Extended"
+                    SelectionUnit="FullRow">
+                    <ui:DataGrid.Columns>
+                        <DataGridTextColumn
+                            Binding="{Binding InvType.TypeName}"
+                            ElementStyle="{StaticResource RecordCellStyle}"
+                            Header="{DynamicResource BusinessPage_Type}" />
+                        <DataGridTextColumn
+                            Binding="{Binding ROI, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource RecordNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_ROIPercent}" />
+                        <DataGridTextColumn
+                            Binding="{Binding NetProfit, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource RecordNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_NetProfit}" />
+                        <DataGridTextColumn
+                            Binding="{Binding BuyPrice, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource RecordNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_SourceBuyPrice}" />
+                        <DataGridTextColumn
+                            Binding="{Binding SellPrice, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource RecordNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_DestinationSellPrice}" />
+                        <DataGridTextColumn
+                            Binding="{Binding Quantity, StringFormat={}{0:N0}}"
+                            ElementStyle="{StaticResource RecordNumberCellStyle}"
+                            Header="{DynamicResource General_Quantity}" />
+                        <DataGridTextColumn
+                            Binding="{Binding Volume, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource RecordNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_Volume}" />
+                    </ui:DataGrid.Columns>
+                </ui:DataGrid>
             </Grid>
         </controls:CardControl>
     </Grid>

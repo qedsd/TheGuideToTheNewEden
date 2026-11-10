@@ -1,7 +1,9 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Models.Market;
+using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.ViewModels.Business;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -24,15 +26,19 @@ public partial class ScalperShoppingCartView : UserControl
             return;
         }
 
-        try
+        // 超过游戏单次 100 行上限：单独弹窗，让用户自己选复制哪一批（阶段 290）
+        if (vm.GameOrderBatches.Count > 1)
         {
-            Clipboard.SetText(vm.BuildGameOrderText());
-            vm.NotifyCopied();
+            new GameOrderBatchWindow(vm).ShowDialog();
+            return;
         }
-        catch (Exception ex)
+
+        if (!ClipboardHelper.CopyOrNotify(vm.BuildGameOrderText()))
         {
-            Core.Log.Error(ex);
+            return;
         }
+
+        vm.NotifyCopied();
     }
 
     private void OnPasteClick(object sender, RoutedEventArgs e)
@@ -42,7 +48,7 @@ public partial class ScalperShoppingCartView : UserControl
             return;
         }
 
-        var text = Clipboard.ContainsText() ? Clipboard.GetText() : null;
+        var text = ClipboardHelper.TryGetText();
         vm.PasteFromGameOrderText(text);
     }
 

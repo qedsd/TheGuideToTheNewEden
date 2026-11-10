@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -72,7 +73,8 @@ public partial class ChannelTranslationResultView : UserControl
     {
         try
         {
-            Clipboard.SetText(text);
+            if (!ClipboardHelper.CopyOrNotify(text))
+                return;
             PageNotifyService.Success(FindString("TranslationPage_CopySuccess"));
         }
         catch (Exception ex)

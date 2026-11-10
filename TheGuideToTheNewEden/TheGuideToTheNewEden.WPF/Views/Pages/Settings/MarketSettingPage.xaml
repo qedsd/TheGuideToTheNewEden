@@ -22,7 +22,8 @@
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <ui:NumberBox
                                     x:Name="OrderDurationBox"
-                                    Width="140"
+                                    Width="160"
+                                    ClearButtonEnabled="False"
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Inline" />
@@ -41,7 +42,8 @@
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <ui:NumberBox
                                     x:Name="HistoryDurationBox"
-                                    Width="140"
+                                    Width="160"
+                                    ClearButtonEnabled="False"
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Inline" />
@@ -62,8 +64,9 @@
                             Icon="Settings24">
                             <ui:NumberBox
                                 x:Name="MaxThreadBox"
-                                Width="140"
+                                Width="160"
                                 HorizontalAlignment="Right"
+                                ClearButtonEnabled="False"
                                 Minimum="1"
                                 SmallChange="1"
                                 SpinButtonPlacementMode="Inline" />

@@ -1,5 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.WPF.ViewModels.Business;
@@ -15,6 +18,20 @@ public partial class ScalperAnalyseView : UserControl
     public ScalperAnalyseView()
     {
         InitializeComponent();
+
+        // 阶段 286：选择树（复用目标物品那套）勾选变化 → 同步到排除列表
+        FilterTypeTree.SelectedTypesChanged += OnFilterTypeSelectionChanged;
+
+        // 阶段 290/293：右键菜单自己接管，并预建（避免首次打开时加载模板/主题造成卡顿）
+    }
+
+    private void OnCancelBusyClick(object sender, RoutedEventArgs e) => Vm?.Cancel();
+    private void OnFilterTypeSelectionChanged(IReadOnlyList<int> ids)
+    {
+        if (Vm is { } vm)
+        {
+            vm.SyncFilterTypesFromSelection(ids);
+        }
     }
 
     private ScalperPageViewModel? Vm => DataContext as ScalperPageViewModel;
@@ -59,6 +76,7 @@ public partial class ScalperAnalyseView : UserControl
         vm.AddToCart(items);
     }
 
+
     private void OnResultGridDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (ResultGrid.SelectedItem is ScalperItem item)
@@ -78,4 +96,7 @@ public partial class ScalperAnalyseView : UserControl
         _detailWindow.SetItem(item);
         _detailWindow.Activate();
     }
+
+    private static string FindString(string key)
+        => Application.Current?.TryFindResource(key) as string ?? key;
 }

@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -395,7 +396,8 @@ public sealed class LocalTranslationViewModel : INotifyPropertyChanged, IDisposa
     {
         try
         {
-            Clipboard.SetText(text);
+            if (!ClipboardHelper.CopyOrNotify(text))
+                return;
             PageNotifyService.Success(FindString("TranslationPage_CopySuccess"));
         }
         catch (Exception ex)

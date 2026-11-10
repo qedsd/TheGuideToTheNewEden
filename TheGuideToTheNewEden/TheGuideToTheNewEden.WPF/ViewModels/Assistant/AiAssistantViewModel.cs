@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -738,7 +739,8 @@ public sealed class AiAssistantViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            Clipboard.SetText(text);
+            if (!ClipboardHelper.CopyOrNotify(text))
+                return;
             PageNotifyService.Success(FindString("Assistant_Chat_CopySuccess"));
         }
         catch (Exception ex)

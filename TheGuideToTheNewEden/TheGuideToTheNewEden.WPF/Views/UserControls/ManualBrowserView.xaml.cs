@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services;
@@ -186,7 +187,8 @@ public partial class ManualBrowserView : UserControl
 
         try
         {
-            Clipboard.SetText(markdown);
+            if (!ClipboardHelper.CopyOrNotify(markdown))
+                return;
             PageNotifyService.Success(Resolve("Manual.Copied"));
         }
         catch (Exception ex)

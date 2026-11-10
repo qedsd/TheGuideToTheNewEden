@@ -113,19 +113,13 @@
                             Icon="{ui:SymbolIcon Save24}"
                             ToolTip="{DynamicResource BusinessPage_SaveOrder}" />
                     </StackPanel>
-                    <TextBlock
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{Binding Message}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}" />
+
                 </StackPanel>
             </Grid>
         </controls:CardControl>
 
         <!--  右：明细  -->
         <Grid Grid.Column="1" Margin="6,12,12,12">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <ui:DataGrid
                     x:Name="ItemsGrid"
                     AutoGenerateColumns="False"
@@ -135,7 +129,6 @@
                     HeadersVisibility="Column"
                     IsReadOnly="True"
                     ItemsSource="{Binding Items}"
-                    MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                     MouseDoubleClick="OnItemsGridDoubleClick"
                     ScrollViewer.CanContentScroll="True"
                     SelectionMode="Extended"
@@ -148,43 +141,35 @@
                     </ui:DataGrid.ContextMenu>
                     <ui:DataGrid.Columns>
                         <DataGridTextColumn
-                            Width="180"
                             Binding="{Binding InvType.TypeName}"
                             ElementStyle="{StaticResource CartCellStyle}"
                             Header="{DynamicResource BusinessPage_Type}" />
                         <DataGridTextColumn
-                            Width="100"
                             Binding="{Binding ROI, StringFormat={}{0:N2}}"
                             ElementStyle="{StaticResource CartNumberCellStyle}"
                             Header="{DynamicResource BusinessPage_ROIPercent}" />
                         <DataGridTextColumn
-                            Width="130"
                             Binding="{Binding NetProfit, StringFormat={}{0:N2}}"
                             ElementStyle="{StaticResource CartNumberCellStyle}"
                             Header="{DynamicResource BusinessPage_NetProfit}" />
                         <DataGridTextColumn
-                            Width="120"
                             Binding="{Binding BuyPrice, StringFormat={}{0:N2}}"
                             ElementStyle="{StaticResource CartNumberCellStyle}"
                             Header="{DynamicResource BusinessPage_SourceBuyPrice}" />
                         <DataGridTextColumn
-                            Width="120"
                             Binding="{Binding SellPrice, StringFormat={}{0:N2}}"
                             ElementStyle="{StaticResource CartNumberCellStyle}"
                             Header="{DynamicResource BusinessPage_DestinationSellPrice}" />
                         <DataGridTextColumn
-                            Width="110"
                             Binding="{Binding Quantity, StringFormat={}{0:N0}}"
                             ElementStyle="{StaticResource CartNumberCellStyle}"
                             Header="{DynamicResource General_Quantity}" />
                         <DataGridTextColumn
-                            Width="130"
                             Binding="{Binding Volume, StringFormat={}{0:N2}}"
                             ElementStyle="{StaticResource CartNumberCellStyle}"
                             Header="{DynamicResource BusinessPage_Volume}" />
                     </ui:DataGrid.Columns>
                 </ui:DataGrid>
-            </ScrollViewer>
         </Grid>
     </Grid>
 </UserControl>

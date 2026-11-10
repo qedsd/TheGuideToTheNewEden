@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -148,8 +149,7 @@ public static class ShellHelper
     {
         try
         {
-            Clipboard.SetText(text);
-            return true;
+            return ClipboardHelper.TrySetText(text);
         }
         catch (Exception ex)
         {

@@ -93,6 +93,42 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
 
     public ObservableCollection<InvType> FilterTypes { get; } = [];
 
+    // ---------- 排除列表（阶段 286）：复用市场物品选择树 ----------
+
+    /// <summary>选择树与排除列表同步用的 TypeId 列表（控件就地增删，TwoWay 绑定）。</summary>
+    public List<int> FilterTypeSelection { get; set; } = [];
+
+    /// <summary>选择树勾选变化 → 同步到排除列表（新增/移除）。</summary>
+    public void SyncFilterTypesFromSelection(IReadOnlyList<int>? selectedIds)
+    {
+        var ids = selectedIds is null ? new HashSet<int>() : selectedIds.Where(p => p > 0).ToHashSet();
+
+        var toRemove = FilterTypes.Where(p => !ids.Contains(p.TypeID)).ToList();
+        if (toRemove.Count > 0)
+        {
+            RemoveFilterTypes(toRemove);
+        }
+
+        var existing = FilterTypes.Select(p => p.TypeID).ToHashSet();
+        var toAddIds = ids.Where(p => !existing.Contains(p)).ToList();
+        if (toAddIds.Count > 0)
+        {
+            var types = Core.Services.DB.InvTypeService.QueryTypes(toAddIds);
+            if (types.Count > 0)
+            {
+                AddFilterTypes(types);
+                BusinessService.Current.AddToFilter(types);
+            }
+        }
+    }
+
+    /// <summary>把当前排除列表回写成选择树的选中集合（列表里删除后同步过去）。</summary>
+    private void RefreshFilterSelection()
+    {
+        FilterTypeSelection = FilterTypes.Select(p => p.TypeID).ToList();
+        OnPropertyChanged(nameof(FilterTypeSelection));
+    }
+
     // ---------- 结果 ----------
 
     private List<ScalperItem> _scalperItems = [];
@@ -112,6 +148,29 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
     /// <summary>是否正在取数/分析（用于界面态；等待文案与结果提示走 <see cref="PageNotifyService"/>）。</summary>
     public bool IsBusy { get => _isBusy; private set => Set(ref _isBusy, value); }
 
+    // ---------- 页面内等待态（阶段 292：不再使用全局等待遮罩，避免阻塞其它功能） ----------
+
+    private string _busyText = string.Empty;
+    public string BusyText { get => _busyText; private set => Set(ref _busyText, value); }
+
+    private bool _canCancelBusy;
+    public bool CanCancelBusy { get => _canCancelBusy; private set => Set(ref _canCancelBusy, value); }
+
+    private void BeginBusy(string text, bool canCancel)
+    {
+        BusyText = text;
+        CanCancelBusy = canCancel;
+        IsBusy = true;
+    }
+
+    private void UpdateBusy(string text) => BusyText = text;
+
+    private void EndBusy()
+    {
+        IsBusy = false;
+        CanCancelBusy = false;
+    }
+
     // ---------- 初始化 ----------
 
     public void Init()
@@ -130,6 +189,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         {
             FilterTypes.Add(type);
         }
+        RefreshFilterSelection();
 
         BusinessService.Current.FilterChanged -= OnFilterChanged;
         BusinessService.Current.FilterChanged += OnFilterChanged;
@@ -156,6 +216,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
                 FilterTypes.Add(type);
             }
         }
+        RefreshFilterSelection();
     }
 
     public void AddFilterTypes(IEnumerable<InvType> types)
@@ -167,6 +228,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
                 FilterTypes.Add(type);
             }
         }
+        RefreshFilterSelection();
     }
 
     public void RemoveFilterTypes(IEnumerable<InvType> types)
@@ -182,6 +244,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         }
 
         BusinessService.Current.RemoveFromFilter(list);
+        RefreshFilterSelection();
     }
 
     public void SaveSetting()
@@ -228,7 +291,6 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         }
 
         SaveSetting();
-        IsBusy = true;
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
@@ -236,8 +298,8 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         var info = Core.Log.GetInfoCount();
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-        // 全屏等待遮罩 + 取消（对应 WinUI 的 ShowWaiting(..., CancelCallback)）
-        PageNotifyService.ShowWaiting(FindString("BusinessPage_GettingSourceMarketOrder"), Cancel);
+        // 页面内等待态（阶段 292：只遮倒货页，不阻塞其它功能），可取消
+        BeginBusy(FindString("BusinessPage_GettingSourceMarketOrder"), canCancel: true);
 
         try
         {
@@ -258,7 +320,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
                 return;
             }
 
-            PageNotifyService.UpdateWaiting(FindString("BusinessPage_GettingTargetMarketOrder"));
+            UpdateBusy(FindString("BusinessPage_GettingTargetMarketOrder"));
             List<MarketOrder>? allDestinationOrders;
             try
             {
@@ -297,10 +359,10 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
             var destinationNoHistory = -1;
             if (typeIds.Count > 0)
             {
-                PageNotifyService.UpdateWaiting(FindString("BusinessPage_GettingSourceMarketHistyory"));
+                UpdateBusy(FindString("BusinessPage_GettingSourceMarketHistyory"));
                 var sourceHistory = await MarketOrderService.Current.GetHistoryBatchAsync(
                     typeIds, Setting.SourceMarketLocation.RegionId, token,
-                    (done, _) => PageNotifyService.UpdateWaiting($"{FindString("BusinessPage_GettingSourceMarketHistyory")}（{done}/{_typeCount}）"));
+                    (done, _) => UpdateBusy($"{FindString("BusinessPage_GettingSourceMarketHistyory")}（{done}/{_typeCount}）"));
                 if (IsCancelled(token))
                 {
                     return;
@@ -308,10 +370,10 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
 
                 sourceNoHistory = typeIds.Count - sourceHistory.Count;
 
-                PageNotifyService.UpdateWaiting(FindString("BusinessPage_GettingTargetMarketHistyory"));
+                UpdateBusy(FindString("BusinessPage_GettingTargetMarketHistyory"));
                 var destinationHistory = await MarketOrderService.Current.GetHistoryBatchAsync(
                     typeIds, Setting.DestinationMarketLocation.RegionId, token,
-                    (done, _) => PageNotifyService.UpdateWaiting($"{FindString("BusinessPage_GettingTargetMarketHistyory")}（{done}/{_typeCount}）"));
+                    (done, _) => UpdateBusy($"{FindString("BusinessPage_GettingTargetMarketHistyory")}（{done}/{_typeCount}）"));
                 if (IsCancelled(token))
                 {
                     return;
@@ -319,7 +381,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
 
                 destinationNoHistory = typeIds.Count - destinationHistory.Count;
 
-                PageNotifyService.UpdateWaiting(FindString("BusinessPage_MatchinOorderHistory"));
+                UpdateBusy(FindString("BusinessPage_MatchinOorderHistory"));
                 items = await Task.Run(() =>
                 {
                     ScalperCalculator.SetHistory(items, sourceHistory, destinationHistory);
@@ -338,6 +400,9 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
                 Core.Log.GetInfoCount() - info,
                 sourceNoHistory,
                 destinationNoHistory));
+            // 阶段 291：取完订单直接自动分析推荐（分析失败会走外层 catch）
+            UpdateBusy(FindString("BusinessPage_Analyzing"));
+            await RunAnalysisCoreAsync();
         }
         catch (Exception ex)
         {
@@ -346,8 +411,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         }
         finally
         {
-            IsBusy = false;
-            PageNotifyService.HideWaiting();
+                EndBusy();
         }
     }
 
@@ -364,12 +428,12 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
             case MarketLocationType.Region:
                 return await MarketOrderService.Current.GetAllRegionOrdersAsync(
                     location.Id, skipStructure, token,
-                    (page, total) => PageNotifyService.UpdateWaiting($"{statusPrefix}:{page}/{total}"));
+                    (page, total) => UpdateBusy($"{statusPrefix}:{page}/{total}"));
 
             case MarketLocationType.SolarSystem:
                 return await MarketOrderService.Current.GetSolarSystemOrdersAsync(
                     (int)location.Id, skipStructure, token,
-                    (page, total) => PageNotifyService.UpdateWaiting($"{statusPrefix}:{page}/{total}"));
+                    (page, total) => UpdateBusy($"{statusPrefix}:{page}/{total}"));
 
             case MarketLocationType.Structure:
                 return await MarketOrderService.Current.GetStructureOrdersAsync(location.Id, token);
@@ -380,6 +444,15 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
     }
 
     // ---------- 分析 ----------
+
+    /// <summary>分析推荐（不管理等待遮罩）；"获取订单"末尾会自动调用一次。</summary>
+    private async Task RunAnalysisCoreAsync()
+    {
+        var items = await Task.Run(() => ScalperCalculator.Calculate(ScalperItems.ToList(), Setting));
+        ScalperItems = items;
+        OnPropertyChanged(nameof(HasResult));
+        PageNotifyService.Success($"{FindString("BusinessPage_Analysed")}: {items.Count}");
+    }
 
     public async Task AnalyseAsync()
     {
@@ -395,14 +468,10 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         }
 
         SaveSetting();
-        IsBusy = true;
-        PageNotifyService.ShowWaiting(FindString("BusinessPage_Analyzing"));
+        BeginBusy(FindString("BusinessPage_Analyzing"), canCancel: false);
         try
         {
-            var items = await Task.Run(() => ScalperCalculator.Calculate(ScalperItems.ToList(), Setting));
-            ScalperItems = items;
-            OnPropertyChanged(nameof(HasResult));
-            PageNotifyService.Success($"{FindString("BusinessPage_Analysed")}: {items.Count}");
+            await RunAnalysisCoreAsync();
         }
         catch (Exception ex)
         {
@@ -411,8 +480,7 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         }
         finally
         {
-            IsBusy = false;
-            PageNotifyService.HideWaiting();
+                EndBusy();
         }
     }
 

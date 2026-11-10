@@ -426,6 +426,7 @@
     <sys:String x:Key="General_No">No</sys:String>
     <sys:String x:Key="General_Yes">Yes</sys:String>
     <sys:String x:Key="General_Close">Close</sys:String>
+    <sys:String x:Key="General_ClipboardBusy">Clipboard is busy (another program is holding it), please try again</sys:String>
     <sys:String x:Key="General_Sec">Sec</sys:String>
     <sys:String x:Key="General_Add">Add</sys:String>
     <sys:String x:Key="General_Save">Save</sys:String>
@@ -945,6 +946,7 @@
     <sys:String x:Key="BusinessPage_BaseSetting">Base Setting</sys:String>
     <sys:String x:Key="BusinessPage_AdvancedSetting">Advanced Setting</sys:String>
     <sys:String x:Key="BusinessPage_FilterList">Filter List</sys:String>
+    <sys:String x:Key="BusinessPage_ExcludePick">Select items</sys:String>
     <sys:String x:Key="BusinessPage_SourceMarket">Source Market</sys:String>
     <sys:String x:Key="BusinessPage_DestinationMarket">Destination Market</sys:String>
     <sys:String x:Key="BusinessPage_TargetItems">Target Items</sys:String>
@@ -1027,6 +1029,11 @@
     <sys:String x:Key="BusinessPage_AddSelectedToShoppingCart">Add selected items to shopping cart</sys:String>
     <sys:String x:Key="BusinessPage_CopyToGameOrder">Copy as game bulk purchase order</sys:String>
     <sys:String x:Key="BusinessPage_CopyToGameOrder_Success">The list has been copied and pasted in the game's bulk buy screen</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchWindowTitle">Copy game order (batches)</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchHint">The cart has more than 100 items, but the in-game multi-buy accepts at most 100 per paste. Batches are listed below; click the button on the right to copy that batch and paste them separately.</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopy">Copy this batch</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopiedMark">√</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopied">Copied batch {0} (items {1}–{2})</sys:String>
     <sys:String x:Key="BusinessPage_PasteFromGameOrder">Import and update the quantity of related items from individual orders in the game</sys:String>
     <sys:String x:Key="BusinessPage_SaveOrder">Save shopping cart list</sys:String>
     <sys:String x:Key="BusinessPage_Edit">Edit</sys:String>

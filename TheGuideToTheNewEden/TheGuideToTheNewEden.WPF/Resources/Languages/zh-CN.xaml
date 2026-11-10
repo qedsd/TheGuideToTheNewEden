@@ -441,6 +441,7 @@
     <sys:String x:Key="General_No">否</sys:String>
     <sys:String x:Key="General_Yes">是</sys:String>
     <sys:String x:Key="General_Close">关闭</sys:String>
+    <sys:String x:Key="General_ClipboardBusy">剪贴板被其它程序占用，请稍后重试</sys:String>
     <sys:String x:Key="General_Retry">重试</sys:String>
     <sys:String x:Key="General_Sec">安等</sys:String>
     <sys:String x:Key="General_Add">添加</sys:String>
@@ -961,6 +962,7 @@
     <sys:String x:Key="BusinessPage_BaseSetting">基本设置</sys:String>
     <sys:String x:Key="BusinessPage_AdvancedSetting">进阶设置</sys:String>
     <sys:String x:Key="BusinessPage_FilterList">排除列表</sys:String>
+    <sys:String x:Key="BusinessPage_ExcludePick">选择物品</sys:String>
     <sys:String x:Key="BusinessPage_SourceMarket">源市场</sys:String>
     <sys:String x:Key="BusinessPage_DestinationMarket">目的市场</sys:String>
     <sys:String x:Key="BusinessPage_TargetItems">目标物品</sys:String>
@@ -1043,6 +1045,11 @@
     <sys:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</sys:String>
     <sys:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</sys:String>
     <sys:String x:Key="BusinessPage_CopyToGameOrder_Success">已复制列表，在游戏批量购买界面粘贴即可</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchWindowTitle">复制游戏订单（分批）</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchHint">购物车超过 100 个物品，游戏内一次批量购买最多识别 100 个。下面按批展示，点右侧按钮复制对应批次，并分多次粘贴到游戏里。</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopy">复制这一批</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopiedMark">√</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopied">已复制第 {0} 批（第 {1}–{2} 个物品）</sys:String>
     <sys:String x:Key="BusinessPage_PasteFromGameOrder">从游戏个人订单导入并更新相关物品数量</sys:String>
     <sys:String x:Key="BusinessPage_SaveOrder">保存购物车列表</sys:String>
     <sys:String x:Key="BusinessPage_Edit">编辑</sys:String>

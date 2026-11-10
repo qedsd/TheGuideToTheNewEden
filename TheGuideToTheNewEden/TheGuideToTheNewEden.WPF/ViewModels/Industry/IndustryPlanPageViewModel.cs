@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -2623,7 +2624,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                 builder.AppendLine(string.Join("\t",
                     line.Name, line.QuantityText, line.UnitPriceText, line.TotalText));
             }
-            Clipboard.SetText(builder.ToString());
+            if (!ClipboardHelper.CopyOrNotify(builder.ToString()))
+                return;
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)
@@ -2698,7 +2700,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                     : pair.Key.ToString();
                 builder.AppendLine(name + "\t" + pair.Value);
             }
-            Clipboard.SetText(builder.ToString());
+            if (!ClipboardHelper.CopyOrNotify(builder.ToString()))
+                return;
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)

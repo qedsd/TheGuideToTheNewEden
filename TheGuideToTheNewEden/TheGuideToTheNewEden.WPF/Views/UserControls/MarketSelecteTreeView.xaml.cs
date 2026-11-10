@@ -18,6 +18,9 @@ public partial class MarketSelecteTreeView : UserControl
     private bool _initDone;
     private bool _stopSelectedChanged;
 
+    /// <summary>已选物品集合发生变化（勾选/取消/搜索列表点击）；参数是当前 TypeId 快照。</summary>
+    public event Action<IReadOnlyList<int>>? SelectedTypesChanged;
+
     /// <summary>根分组（供树绑定）。</summary>
     public ObservableCollection<SelectableMarketItem> Roots { get; } = [];
 
@@ -123,6 +126,7 @@ public partial class MarketSelecteTreeView : UserControl
         }
 
         SelectedItemsCount = SelectedItems.Count;
+        SelectedTypesChanged?.Invoke(SelectedItems.ToList());
     }
 
     private void ApplySelectedItems(List<int>? types)
@@ -156,6 +160,7 @@ public partial class MarketSelecteTreeView : UserControl
         }
 
         SelectedItemsCount = types?.Count ?? 0;
+        SelectedTypesChanged?.Invoke(SelectedItems.ToList());
     }
 
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)

@@ -37,6 +37,7 @@
 |---|---|---|
 | UI 框架 | **.NET 8（LTS）** + WPF + **WPF-UI 4.3.0** | 默认样式/主题/导航控件开箱即用，避免自写控件模板；目标框架定 **net8** 而非 net10——.NET 9/10 的 WPF 在未更新的 Win10 21H1 上会启动即崩，改用 net8 后**已实机验证可正常运行**（见 §3「环境变更」与阶段 49） |
 | 表格控件 | **WPF-UI `DataGrid`**（不用 Syncfusion） | 用户明确不再使用 Syncfusion；行为可控 |
+| 表格滚动 | **让 DataGrid 自己滚**（不外包 `ScrollViewer`） | 外包 `ScrollViewer` 会让表头跟着滚、行虚拟化失效、行数一多右键/选择/布局明显变慢（阶段 294/295 实测确认）；横向滚动交给 DataGrid 自带滚动条 |
 | 图表控件 | **LiveCharts2**（`LiveChartsCore.SkiaSharpView.WPF`，不用 Syncfusion 图表） | 市场历史价格/销量图；开源、SkiaSharp 渲染、支持日期轴与缩放 |
 | 工具窗口 | 统一外壳 **`Views/Windows/ToolWindow`**（`ui:FluentWindow` + `ui:TitleBar`） | 标题栏样式统一（左上角 logo + 窗口名称）；标题按钮组合、置顶按钮、是否显示在任务栏均可配置；内容支持 Page/UserControl |
 | 页面承载 | 主内容用 `NavigationView` 内置 Frame；**壳页内的子页统一用 `Frame` 承载** | WPF 规定 `Page` 只能由 `Window`/`Frame` 承载（见 §9） |
@@ -48,6 +49,23 @@
 | 窗口位置 | Win32 `Get/SetWindowPlacement`，**物理像素** | 免疫跨不同 DPI 显示器的坐标换算错误 |
 | 托盘与通知 | **H.NotifyIcon.Wpf**（不再用 WPF-UI.Tray / Microsoft.Toolkit.Uwp.Notifications） | 与 WinUI 版一致（WinUI 用 H.NotifyIcon.WinUI）、维护活跃、无需 AUMID 注册 |
 | 邮件正文 | **HtmlRenderer.WPF**（`HtmlPanel`），不使用 WebView2 | 邮件是简单 HTML；零浏览器运行时依赖 |
+
+## 2.1 等待 / 加载效果约定（强制，阶段 292 起）
+
+> **后续所有功能都不得使用全局等待遮罩**；默认只用"页面内等待"。只有确实需要全局阻断的场景，才能使用全局等待，且**必须在该功能的设计说明与手册里写明理由**。
+
+- **默认：页面内等待** —— VM 暴露 `IsBusy` / `BusyText`（需要取消时再加 `CanCancelBusy` 与取消回调），
+  页面/子视图内嵌半透明遮罩（`SmokeFillColorDefaultBrush` + 卡片 + `controls:SpinnerIcon` + 文案 +〔可选〕取消按钮），
+  只盖住当前页面（或当前页签）并拦截该页面内的点击；**等待期间其它页面、其它功能必须照常可用**。
+- **禁止**调用 `PageNotifyService.ShowWaiting / UpdateWaiting / HideWaiting`：它驱动 `MainWindow` 注册的**全局全屏遮罩**，
+  会挡住整个应用，属于历史做法。
+- **唯一允许的例外**：进程级、必须阻止用户并发触发同一危险操作的一次性动作（例如：应用启动时的数据目录迁移、
+  自更新替换 exe、授权回调监听等）。使用前必须在该功能的 REFACTORING 阶段说明/手册里**显式写出"为什么必须是全局"**，
+  并保证同一时刻只有一个。
+- 进度之外的**结果提示**继续用右下角 `PageNotifyService.Success / Info / Warning / Error`（非阻塞，不遮挡界面）。
+- 同一页面内可能有多个并发操作时，等待态建议用**可重入计数**（全部结束才隐藏），避免先结束的把还在转的遮罩关掉。
+- 参考实现：`ScalperPageViewModel`（`IsBusy` / `BusyText` / `CanCancelBusy` + `BeginBusy/UpdateBusy/EndBusy`）
+  配 `ScalperAnalyseView` 里的本地遮罩；`EntityStatistPage`、`IndustryPlanPage`、`ChannelScanPage` 同一模式。
 
 ---
 
@@ -11443,6 +11461,185 @@ MainWindow.xaml(.cs)
 - 手册第 8 步与字段说明同步改为"按物品汇总、下拉可只统计某个产物"。
 - `dotnet build`：0 错误（临时输出目录，bin 被运行中的程序占用）。未实机点验。
 
+## 阶段 286：倒货排除列表改用共享物品选择树（2026-11-09）
+
+> 用户要求：排除列表要像"目标物品"那样用**同一个带搜索的树控件**挑物品；并且排除列表内部用两个子页签：
+> 一个放选择树、一个放完整排除列表（可删除选中）。
+
+- 复用现成控件 **`Views/UserControls/MarketSelecteTreeView`**（基础设置里"目标物品"用的市场物品树：分类→组→物品、三态勾选、自带搜索）。
+  - 给它加了一个事件 **`SelectedTypesChanged`**（勾选/取消/搜索列表点击后回调当前 TypeId 快照）；
+    原控件只暴露 `SelectedItems`（`List<int>`，就地增删）与 `SelectedItemsCount`，没有变更通知。
+- `ScalperPageViewModel`：
+  - `FilterTypeSelection`（`List<int>`，两路绑定到控件的 `SelectedItems`，`Init()` 时用已保存的排除列表初始化）；
+  - `SyncFilterTypesFromSelection(ids)`：与 `FilterTypes` 做差集——新增的用 `InvTypeService.QueryTypes` 补全后
+    `AddFilterTypes` + `BusinessService.AddToFilter`（持久化），移除的走 `RemoveFilterTypes`；
+  - `RefreshFilterSelection()`：列表侧增删后回写选择树（新 List 触发控件的 `ApplySelectedItems`），
+    保证"树勾选"与"列表"始终一致。
+- `ScalperAnalyseView` 的"排除列表"页签改为**嵌套 TabControl**：
+  - 子页签「**选择物品**」= `MarketSelecteTreeView`（`SelectedItems` 两路绑定 `FilterTypeSelection`）；
+  - 子页签「**排除列表**」= 完整清单（多选 +「删除选中」）。
+  代码后置只在构造函数里挂 `FilterTypeTree.SelectedTypesChanged → SyncFilterTypesFromSelection`；
+  之前那套自建树（`FilterTreeNodes`、Core `TypeBrowserService`、按组懒加载与搜索键）**全部删除**。
+- 语言：新增 `BusinessPage_ExcludePick`（选择物品 / Select items）；删除上一版临时加的
+  `BusinessPage_ExcludeSearch` / `ExcludeSearchResults` / `ExcludeAdd`（3453 = 3453）。
+- 手册 `scalper.md` 排除列表一节改为"两个子页签 + 勾选即增减"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 287：倒货购物车的操作反馈改走右下角通知（2026-11-09）
+
+> 用户反馈：购物车复制后在按钮下面显示文字，应改成 App 内右下角通知。
+
+- `ScalperShoppingCartViewModel`：删除 `Message` / `HasMessage` / `SetMessage` 这套"卡片内文本"，
+  复制、粘贴回填、保存购物车（含购物车为空）统一改调 `PageNotifyService`
+  （成功 `Success`、需要用户注意的 `Info`：未识别订单 / 无物品需要更新 / 购物车为空）。
+- `ScalperShoppingCartView.xaml`：统计卡片里按钮下方的提示 `TextBlock` 删除，按钮仍居中。
+- 手册 `scalper/cart.md`：复制/导入/保存的反馈说明改为"右下角通知"，统计卡片描述同步。
+- 资源键无增删；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 288：剪贴板写入统一重试，修 `CLIPBRD_E_CANT_OPEN`（2026-11-09）
+
+> 个别用户点「复制订单」弹「OpenClipboard 失败 (0x800401D0 (CLIPBRD_E_CANT_OPEN))」。
+
+- 原因：Windows 剪贴板是**全局独占**资源，`Clipboard.SetText`（OLE 的 `OpenClipboard`）在别的程序正持有剪贴板时会抛
+  `CLIPBRD_E_CANT_OPEN`。常见持有者：微信/QQ、输入法、剪贴板管理器（Ditto/PowerToys/Win+V 云剪贴板）、
+  远程桌面（cliprdr 重定向）、Office/浏览器、部分杀软的剪贴板保护；占用通常只有几十毫秒，但正好撞上就失败。
+  同一进程内多线程同时写剪贴板、或前一次复制还没被 OLE flush 完，也会撞上。
+- 修复：新增 **`Helpers/ClipboardHelper`**：
+  - `TrySetText(text)`：短重试（6 次，逐步加长到 ~150ms）+ `Clipboard.SetDataObject(text, true)` OLE 兜底，**不抛异常**；
+  - `TryGetText()`：读取同样重试，读不到返回 null；
+  - `CopyOrNotify(text)`：失败时右下角通知「剪贴板被其它程序占用，请稍后重试」（`General_ClipboardBusy`），返回 false。
+- 全仓 13 处 `Clipboard.SetText` 全部改走该 helper；展示"复制成功"的 11 处改成
+  `if (!ClipboardHelper.CopyOrNotify(...)) return;`，**失败时不再提示成功**（订单页之前直接把异常 message 弹 MessageBox，现已改成通知）。
+  购物车"导入"读取也换成 `TryGetText()`。
+- 语言：中英各 +1 键 `General_ClipboardBusy`（3454 = 3454）。
+- 手册 `troubleshooting.md`「环境与目录」表补一行说明。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 289：购物车按「游戏单次 100 行」分批，批次列表自选复制（2026-11-09）
+
+> 游戏限制一次批量购买最多 100 个物品；购物车原来一口气复制全部，超出部分游戏无法识别。
+> 用户要求：不要自动轮换"第几批"，而是把每一批列出来让用户自己选，复制过的批次显示 √。
+
+- `ScalperShoppingCartViewModel`：
+  - `GameOrderBatchSize = 100`；`BuildGameOrderLines()`（每行「物品名 数量」）、`BuildGameOrderText()`（全量拼接，≤100 时仍用它）；
+  - **`GameOrderBatches`**（`ObservableCollection<GameOrderBatchItem>`）：每次 `Recalculate()` 按 100 行切批重建，
+    每批带 `Index / Start / End / Text / IsCopied` 与显示文案 `Label`（「第 N 批 · 第 a–b 个物品」）；
+  - `HasMultipleBatches`：>1 批时界面切换成"批次列表"模式（顶部单按钮隐藏）。
+- `ScalperShoppingCartView`：单复制按钮始终只有一颗；`OnCopyClick` 在多批时打开
+  **`Views/Windows/GameOrderBatchWindow`**（弹窗），单批时仍直接复制。
+- 语言：`BusinessPage_GameOrderBatchPrompt` 删除；新增 `BusinessPage_GameOrderBatchHint` / `_Item` / `_Copy` / `_CopiedMark`，
+  `_Copied` 改为 3 参数（3457 = 3457）。
+- 手册 `scalper/cart.md` 复制小节改为"每批一行 + 自选复制 + √ 已复制"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 290：购物车分批改为独立弹窗；结果表右键菜单提速（2026-11-09）
+
+> 用户反馈：不要在购物车页面里放批次按钮，保持一个复制按钮，点开后单独弹窗选批次；
+> 另外倒货结果表选中多行后右键会卡顿一阵才出「添加到购物车」。
+
+### 290.1 分批复制弹窗
+
+- 购物车页恢复成**只有一个复制按钮**（去掉上一版内嵌的批次列表与按批按钮）。
+- 新增 `Views/Windows/GameOrderBatchWindow.xaml(.cs)`：标题「复制游戏订单（分批）」，
+  每批一行**只显示区间**（`[1,100]`、`[101,200]`…）+ 右侧「复制这一批」按钮 + 行尾绿色 **√ 已复制**；顶部说明保留，底部不再放「关闭」按钮（用标题栏关闭）。
+- `ScalperShoppingCartView.OnCopyClick`：`GameOrderBatches.Count > 1` 时 `ShowDialog()` 打开该窗口；
+  否则保持原来的直接复制 + 右下角通知。
+- `GameOrderBatchWindow` 复制单批：`ClipboardHelper.CopyOrNotify` → 置 `IsCopied` → 右下角通知「已复制第 N 批（第 a–b 个物品）」。
+- 语言 +1 键 `BusinessPage_GameOrderBatchWindowTitle`；批次行不再需要文案键（删 `BusinessPage_GameOrderBatchItem`，3459 = 3459）。
+
+### 290.2 结果表右键菜单
+
+- 原因：结果表用的是 XAML 里声明的 `DataGrid.ContextMenu`。WPF 默认的右键路径（`ContextMenuService`）
+  在多选（Extended/FullRow）时要先做命中测试/选择同步再开 Popup，行数多/列数多时明显卡顿。
+- 改法：删掉 XAML 里的 `ContextMenu`，改成在 `ScalperAnalyseView` 代码里**自己接管**：
+  - `ResultGrid.PreviewMouseRightButtonUp` 里先按鼠标位置找回 `DataGridRow`；
+  - 右键的行若不在当前选择里→ 清空选择并选中它；已在选择里→ 保住多选；
+  - 懒创建并复用一个 `ContextMenu`（只有一个「添加到购物车」项），`Placement=MousePoint` 直接 `IsOpen = true`，
+    绕过默认打开路径；`AddSelectedToCart()` 复用原来的入车逻辑。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验右键是否已不卡。
+
+## 阶段 291：获取订单后自动分析推荐（2026-11-09）
+
+> 用户要求：点「获取订单」后自动接上「分析推荐」，不用再手动点一次。
+
+- `ScalperPageViewModel`：把分析计算抽成 **`RunAnalysisCoreAsync()`**（不管理等待遮罩：算指标 → 更新 `ScalperItems` → 通知
+  「分析完成: 条数」）；`AnalyseAsync()` 变成"校验 + 遮罩 + 调用核心 + 异常/收尾"的薄壳。
+- `GetOrdersAsync()` 在成功通知「已获取到…」之后，把遮罩文案切到「分析中」并 `await RunAnalysisCoreAsync()`；
+  它仍在原 try 内，分析异常会被外层 catch 捕获并提示，`finally` 统一收遮罩。
+- 取消逻辑不变：取数阶段取消会提前 return，不会进入自动分析。
+- 语言键无增删；手册 `scalper.md` 的「获取订单 / 分析推荐」两节同步为"取完自动分析，手动按钮只用于改设置后重算"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 292：倒货等待改为页面内等待；新增全局强制约定（2026-11-09）
+
+> 用户要求：倒货的所有等待加载都只在当前页面内生效，不能阻塞其它功能；并把"默认禁止全局等待"写进重构文档。
+
+- `ScalperPageViewModel`：
+  - 新增 **`BusyText` / `CanCancelBusy`** 与 `BeginBusy(text, canCancel)` / `UpdateBusy(text)` / `EndBusy()`；
+  - 去掉全部 `PageNotifyService.ShowWaiting/UpdateWaiting/HideWaiting`（取订单各阶段进度、历史进度、自动分析都改走本地 `BusyText`）；
+  - `IsBusy` 仍用于按钮禁用/其它绑定，结束时统一 `EndBusy()`。
+- `ScalperAnalyseView`：新增**页面内等待遮罩**（半透明 `SmokeFillColorDefaultBrush` + 卡片 + `controls:SpinnerIcon` + `BusyText`
+  + 「取消」按钮，`CanCancelBusy` 时显示），只盖住倒货页；等待期间用户可切到其它页面/功能，不受影响。
+- `REFACTORING.md` 新增 **§2.1 等待 / 加载效果约定（强制）**：后续功能一律用页面内等待，
+  **禁止** `PageNotifyService.ShowWaiting`；仅"进程级、必须全局阻断"的场景可用，且必须在文档写明理由。
+  §9 第 39 条旧口径同步修正。
+- 语言键无增删；手册 `scalper.md` 的「获取订单」补一句"等待遮罩只覆盖倒货页，可切到其它功能"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 293：倒货右键菜单改为页面内自绘；修复取订单无等待效果（2026-11-09）
+
+### 293.1 取订单没有等待效果（阶段 292 的回归）
+
+- 现象：改成页面内等待后，点「获取订单」完全没有遮罩/进度。
+- 根因：阶段 292 用脚本批量删除 `IsBusy = true/false;` 时，把 `BeginBusy()` / `EndBusy()` **方法体内的赋值也删掉了**，
+  于是 `BusyText` 有变化但 `IsBusy` 永远 false，遮罩（`Visibility="{Binding IsBusy}"`）不会显示。
+- 修复：`BeginBusy` 补回 `IsBusy = true;`，`EndBusy` 补回 `IsBusy = false;`；取订单/自动分析都恢复正常显示页面内遮罩。
+
+### 293.2 多选后右键卡顿
+
+- 尝试过（阶段 290）：删掉 XAML `ContextMenu`，改为代码里 `PreviewMouseRightButtonUp` 打开自建 `ContextMenu`
+  ——用户实测**仍然卡**，说明慢在 WPF `ContextMenu`/`Popup` 这条路径本身（菜单主题/弹层创建），不是选择处理。
+- 最终改法（本阶段）：**不用 WPF ContextMenu**，改为**页面内自绘菜单**：
+  - `ScalperAnalyseView.xaml` 根部加一个 `RowContextMenu`（`Border` + 一个 `ui:Button`「添加到购物车」），默认 `Collapsed`，
+    `HorizontalAlignment/VerticalAlignment=Left/Top`；
+  - 右键 `PreviewMouseRightButtonUp`：命中 `DataGridRow` 后把菜单 `Margin` 设成鼠标在视图内的坐标并显示，`e.Handled=true`；
+  - 点菜单项：若右键的行未选中→清空并选中它，再 `AddSelectedToCart()`（已是多选就保留多选，一并加入）；
+  - 点别处（`PreviewMouseDown` 且鼠标不在菜单上）、滚轮、Esc 收起。
+  - 全程没有 `Popup`/`ContextMenu` 弹层，因此不会再有打开卡顿。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 294：倒货三个列表改用 DataGrid 自身滚动（表头不再跟着滚）（2026-11-09）
+
+> 用户反馈：推荐物品列表、购物车列表滚动时表头也跟着滚，怀疑外面套了 ScrollViewer。
+
+- 原因：`ScalperAnalyseView` / `ScalperShoppingCartView` / `ScalperShoppingRecordView` 的右侧表格都被
+  `<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MinWidth=ViewportWidth…>` 包了一层——
+  滚动发生在 ScrollViewer 上，DataGrid 只是被整体滚动，所以表头跟着走，列头固定/行虚拟化也失效。
+- 修复：三个视图都**去掉外层 ScrollViewer**（以及为它服务、绑定 `ScrollViewer.ViewportWidth` 的 `MinWidth`），
+  让 DataGrid 使用自身滚动条：表头固定、行虚拟化恢复、横向滚动由 DataGrid 自己处理；DataGrid 在父 Grid 里拉伸填满。
+- 插曲：`ScalperShoppingRecordView` 的 `<ScrollViewer` 标签是**多行属性**写法，删除时只删了首行，残留的
+  `Grid.Row="1" / HorizontalScrollBarVisibility / VerticalScrollBarVisibility>` 变成 Grid 的文本子节点，
+  运行时报 `XamlParseException: 无法将 String 添加到 UIElementCollection`（行 95）。已删除残留并把 `Grid.Row="1"` 补到 DataGrid 上。
+- 说明：购物车的右键"编辑/删除"菜单仍用 `DataGrid.ContextMenu`（少量行、未反馈卡顿，暂不动）；
+  结果表的"添加到购物车"仍是阶段 293 的页面内自绘菜单。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 295：验证"右键卡顿是否由 ScrollViewer 包 DataGrid 导致"——恢复标准 ContextMenu（2026-11-09）
+
+- 用户判断：阶段 290/293 的右键卡顿可能根因不是菜单，而是**结果表被 ScrollViewer 包住**导致 DataGrid 行虚拟化失效、
+  行数一多整体变慢（阶段 294 已把三张表改为 DataGrid 自身滚动）。
+- 处理：把阶段 293 的"页面内自绘菜单"**撤销**，恢复标准写法：
+  - `ScalperAnalyseView.xaml` 里重新使用 `<ui:DataGrid.ContextMenu>` + 单个 `MenuItem`（「添加到购物车」，`OnAddToCartClick`）；
+  - 删除 `RowContextMenu` 自绘 Border 与相关代码（`OnResultGridPreviewRightButtonUp`、`HideRowContextMenu`、
+    `OnViewPreviewMouseDown/KeyDown`、`OnAddToCartMenuClick`、`FindRow`、`_contextRow`），构造函数里的挂接一并去掉；
+  - `OnAddToCartClick` 直接读取 `ResultGrid.SelectedItems` 入车。
+- 目的：用现在的"DataGrid 自身滚动 + 标准 ContextMenu"再实测一次——若不再卡，说明根因就是阶段 294 的滚动层；
+  若仍卡，再回到自绘菜单/继续定位。
+- 修复了一次删除残留：等待遮罩的**内层卡片 Border 闭合标签**被误删（`XamlParseException` 的同类问题），已补回。
+- **用户实测（2026-11-10）：不卡了** —— 确认根因就是"DataGrid 被 ScrollViewer 包住导致行虚拟化失效"（阶段 294），
+  与右键菜单实现无关。阶段 293 的页面内自绘菜单**不需要恢复**，保持标准 `DataGrid.ContextMenu`。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；
@@ -11851,7 +12048,7 @@ MainWindow.xaml(.cs)
 36. **`DepthClone<T>` 跨模型拷贝会"拷出空壳"——命名策略不同的两个模型之间不能这么抄**（阶段 53 第三轮，ZKB 数据全空的根因）：`DepthClone` 是 `SerializeObject(obj)` → `DeserializeObject<T>(json)` 的 JSON 往返，**两边必须用同一套命名规则**。`EVEStandard` 的模型靠序列化设置里的 **snake_case 命名策略**解析（属性无 `[JsonProperty]`），而 `ZKB.NET` 的模型用显式 `[JsonProperty("killmail_id")]` —— 从前者拷到后者，键名全对不上，得到一个**字段全为默认值**的对象（`KillmailId=0`/`KillmailTime=default`），而且**不报错、不抛异常**，下游只能靠"id 匹配不上/显示全空"这类间接症状发现。两条教训：① 跨命名空间的模型转换不要用 JSON 往返，老老实实手写映射或用统一命名策略；② "接口响应里已经带了完整数据时，就不要再逐个去另一服务换取再拷贝"——`/kills/` 现在直接返回完整 killmail，`ZKB.GetKillmailDetailsAsync` 直取后本地富化即可（每页省 200 次 ESI 往返）。
 37. **Core 的本地库（SQLite）查询不是并发安全的，批量富化必须串行**（阶段 53 第三轮实测）：`KBHelpers` 注释原文"使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突"。实测同一批 50 条的富化，6 并发丢 16 条（单条异常/数据缺失被静默吞掉），串行 50/50。凡要并发调用 `IDNameService` / `MapSolarSystemService` / `InvTypeService` 等 Core DB 服务的，先确认线程安全性，默认**串行**。
 38. **zkillboard 有 IP 限流，"同 URL 直取+重试+兜底三连发"会把自己打死**（阶段 53 第三轮）：排障时连续探测后发现 `/kills/killID/<id>/` 从 200 条变成空——是限流，不是接口变更。日常使用频率不会触发，但写代码时注意：**不要让重试与兜底打同一个 URL**（本项目兜底走的是另一条数据通路），排障时探测间隔拉长、或换 IP 验证。
-39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
+39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩只留给"文档里明确写明理由的进程级阻断操作"（阶段 292 起；倒货取数已改为页面内等待，估价等也不再默认使用）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
 40. **`ui:FluentWindow` 也能做真透明（客户区逐像素透出后面的窗口），但四件事缺一不可**（阶段 54）：① **`AllowsTransparency` 用不了**（与 FluentWindow 冲突，实测抛 `InvalidOperationException`），只能走 Win32；② **`DwmExtendFrameIntoClientArea(hwnd, 四个 -1)` 才是开关**——把 DWM 玻璃框铺满客户区，客户区里的 alpha 才会被尊重；**只调 `DwmEnableBlurBehindWindow`（空模糊区域）没有任何视觉效果**，而且它的 HRESULT 还是 0（看起来"成功"），极易误判；③ **窗口背景必须真的透明**：WPF-UI 会把 `FluentWindow.Background` 设成主题底色（浅色主题=白），XAML 里的 `Background="Transparent"` 会被它覆盖，必须在 `OnSourceInitialized`/`Start`/`ShowWindow` 里重新按回来，`CompositionTarget.BackgroundColor` 也要一并置透明；④ **每块要实色的区域都得自己画底色**，而且**透明的子元素会透出父元素的底色**——给"洞"外面套一个填了高亮色的父元素，整幅画面会被染成高亮色（实测画面泛绿），所以边框要用 `BorderBrush`/`BorderThickness` 画，不能用"背景色 + Padding"。
 41. **"透明/半透明"类问题的验收必须用高对比背景做判据，不能只看"画面是不是变淡了"**（阶段 54）：本次"透明度没生效"的第一版修复看起来对（画面变淡、数值能存），实际画面区被一层实色填成了"泛白"——**透出白色窗口与透出任何东西长得都一样**，肉眼分不出"透明"与"实色填充"。可靠判据是**在目标窗口后面放一个红/蓝/黑/绿四色测试窗**，看颜色能不能逐像素透出来（本次正是靠它定位到缺 `DwmExtendFrameIntoClientArea`）。同族教训：涉及"透明度/遮罩/置顶叠加"的需求，先确认它要透出的是"窗口自己的底色"还是"窗口后面的内容"——前者调 opacity 就够，后者必须真的开洞。
 42. **在 WPF / WPF-UI 窗口上"放开最小尺寸"，光删 `MinWidth/MinHeight` 不够**（阶段 55）：`WM_GETMINMAXINFO` 会被 WPF / WPF-UI 的后续处理按回"窗口当前尺寸"——实测删掉 `MinWidth/MinHeight` 后窗口仍卡在当前尺寸，`SetWindowPos` 返回 True 但矩形不变、拖边框只能变大；在 `HwndSource` 钩子里写入 1×1 也会被覆盖。正确做法是**在这条消息上自己接管**：改写 `ptMinTrackSize` 后设 `handled = true`（其余字段保持系统预填），此后 1×1 才会被真正采纳（实测可把窗口拖到 175×101 甚至更小）。排查这类"设了没生效"的 Win32 消息问题，最有效的手段是**从另一个进程 `SendMessage(hwnd, WM_GETMINMAXINFO, 0, 缓冲区)` 读回窗口的答复**——它能直接指出"谁在把值按回去"；同族的还有 `GetWindowRect`/`IsWindowVisible` 之类的旁证查询。
