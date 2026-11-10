@@ -26,6 +26,15 @@ public partial class ScalperAnalyseView : UserControl
     }
 
     private void OnCancelBusyClick(object sender, RoutedEventArgs e) => Vm?.Cancel();
+
+    /// <summary>阶段 299：推荐权重预设（Tag = conservative / balanced / aggressive）。</summary>
+    private void OnWeightPresetClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string kind } && Vm is { } vm)
+        {
+            vm.ApplyWeightPreset(kind);
+        }
+    }
     private void OnFilterTypeSelectionChanged(IReadOnlyList<int> ids)
     {
         if (Vm is { } vm)

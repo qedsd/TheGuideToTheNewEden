@@ -11640,6 +11640,139 @@ MainWindow.xaml(.cs)
   与右键菜单实现无关。阶段 293 的页面内自绘菜单**不需要恢复**，保持标准 `DataGrid.ContextMenu`。
 - 语言键无增删；`dotnet build`：0 错误（临时输出目录）。
 
+## 阶段 296：倒货接入税费、走簿成交与 P1 指标（2026-11-09）
+
+> 用户要求：把费用（手动填、默认 3.6% 税）、走簿成交、P0/P1 指标都做进来；**不按现实时间/赶路**，每跳就是跳数；
+> 不需要货舱/预算，但保留"利润/体积"；新增指标全部可配置，并在推荐度里像旧指标一样可调权重。
+
+### 296.1 费用（可配置、持久化）
+
+- `ScalperSetting` 新增：`SalesTaxRate`（默认 **3.6%**）、`BrokerFeeRate`（默认 **1%**，买/卖各一次）、
+  `CompetitionBandPercent`（默认 5%）、`RiskAversion`（默认 1）。都在「进阶设置 → 费用与风险」里手填，
+  随 `ScalperSetting.json` 持久化；**不读取 ESI 技能/声望**。
+- 税后口径：`卖出均价×(1−税−经纪费) − 买入均价×(1+经纪费)`；旧的 `NetProfit/ROI` 保留，新增税后字段。
+
+### 296.2 走簿成交（按目标销量）
+
+- `ScalperCalculator.WalkBook`：按目标销量逐档吃单，买侧从低价卖单/高价买单开始，卖侧只在"吃买单"类价格口径下走目的市场买单。
+- 新增 `BuyAvgPrice / SellAvgPrice / FillRatio`：深度不够时 `FillRatio < 1`，利润只按**实际可成交量**算，
+  不再假装能全部成交；挂卖单/历史价格口径沿用所选价格（FillRatio=1）。
+
+### 296.3 新增 P1 指标（均为 `ScalperItem` 新字段）
+
+| 指标 | 口径 |
+|---|---|
+| `NetProfitAfterFees / TargetNetProfitAfterFees / ROIAfterFees` | 见 296.1，单位/整单/回报率 |
+| `CompetitionShare` | 目标销量 ÷（目标销量 + 与卖价相差 ≤「竞争统计价格带」的目的市场卖单量） |
+| `DaysToSell` | 实际可成交量 ÷（目的市场日销量 × 竞争份额）；**不计赶路时间** |
+| `ProfitPerHour` | 税后整单利润 ÷ max(卖完天数×24, 1) |
+| `RiskAdjustedProfit` | 税后整单利润 − 风险厌恶 × 历史价格波动 × 买入成本 |
+| `ProfitPerVolumeAfterFees` | 税后整单利润 ÷ 目标销量体积 |
+
+### 296.4 推荐度
+
+- `CalSuggestion` 仍是"各指标排名加权累加 → 归一到 0–100 分位"，沿用旧机制；
+- 新增 8 个权重（全部 0–100 滑条，默认值）：
+  `SuggestionNetProfitAfterFees=30`、`SuggestionROIAfterFees=30`、`SuggestionFillRatio=15`、
+  `SuggestionCompetitionShare=15`、`SuggestionDaysToSell=20`、`SuggestionProfitPerHour=25`、
+  `SuggestionRiskAdjustedProfit=10`、`SuggestionProfitPerVolumeAfterFees=10`；
+- 卖完天数越短越好（反向计分），其余越大越好。
+
+### 296.5 顺带修掉的算法问题
+
+- `BuildItems` 里**目的市场买单排序方向错误**（升序 → 取到最低买价），已改降序；
+- 买价选「历史…」口径时改用**源市场历史**（原来误用目的市场历史）；
+- 销量窗口从 `−day−2` 改为 `−day`；
+- 历史价去极值时增加 `Count > 1` 保护（原来只有 1 天会除零）；「历史最低」改为去掉一个最小值。
+
+### 296.6 UI / 文档 / 验证
+
+- 进阶设置新增「费用与风险」折叠项；推荐权重滑条从 9 条扩到 17 条，**每条滑条标题右侧实时显示当前权重值**（等宽字体，绑定同一个 `Setting.Suggestion*`）；
+- 注意：新增的 8 个权重与 4 个费用/风险设置必须用 `SetProperty(ref field, value)`（`ObservableObject`），否则滑条拖动时数字不会刷新——旧的权重就是这样写的，第一版误用自动属性，已修正。
+- 结果表新增 10 列（成交买入/卖出均价、税后净利、税后回报率、成交覆盖率、竞争份额、预计卖完天数、利润每小时、风险调整利润、利润体积比），共 28 列；
+- 手册 `scalper.md` 的进阶设置、结果列与字段口径表同步；
+- 临时探针（已删除）用合成订单簿验证 12 项：目的买单降序、走簿买/卖均价、税费公式、覆盖率、竞争份额 100%、
+  卖完天数 0.2 天、深度不足时 40% 覆盖率与 200 件加权价 10.5/17.5 —— **12 PASS / 0 FAIL**；
+- `dotnet build`：0 错误（临时输出目录，`bin` 被运行中的程序占用）。未实机点验。
+
+## 阶段 297：进阶设置全部控件加 ToolTip 说明（2026-11-10）
+
+> 用户要求：进阶设置的每一个设置都要有 ToolTip，解释"是什么、如何影响倒货推荐"。
+
+- 语言：中英各 +40 键（`BusinessPage_Tip_*`，3514 = 3514）：
+  - 每条解释都包含两层——**它是什么/怎么算** + **如何影响推荐**（影响哪些指标、调大调小的后果、与其它设置的关系）；
+  - 旧指标里"反向计分"的两项（本金、历史价格波动、当前价格波动）在 Tip 里明确标注并给出"想正向就设 0、改用税后/风险权重"的建议。
+- `ScalperAnalyseView.xaml`：进阶设置的**全部 41 个控件**挂上 `ToolTip="{DynamicResource BusinessPage_Tip_*}"`：
+  - 价格口径 ComboBox ×2、历史天数/缩放/去极值 NumberBox 与 CheckBox ×（买/卖各 3）、
+    源/目的销量（天数、统计方式、去极值）、目标销量百分比滑条、
+    历史/当前波动窗口、饱和度价格带、热力值（天数、阈值）、
+    费用与风险 4 项（销售税/经纪费/竞争价格带/风险厌恶）、推荐权重滑条 ×17。
+- 实现说明：文案直接放在语言字典（XAML），控件只引用键；脚本已删除。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 298：热力值改为「加热度占比」（可配置判定方式）（2026-11-10）
+
+> 用户确认按组合方案：A 占比 + B 强度加权 + C 自适应阈值 + E 数据置信度。
+
+- `ScalperItem.HeatRatio`（0~1）新字段；
+- `CalHeatValue` 重写：
+  - 判定线按 **`HeatThresholdMode`**（`ScalperSetting` 新枚举 `HeatThresholdKind`，因嵌套类型名与属性名冲突而改名）：
+    **Absolute**（兼容旧版：销量 ≥ 绝对阈值）/ **RelativeToAverage**（默认：销量 ≥ 物品日均 × `HeatRelativeFactor`，默认 0.5）；
+  - 每日强度 = min(销量 / 判定线, 3)（超卖封顶 3 倍，防单日异常污染）；冷天 0；
+  - **置信度**：有数据天数 / 窗口天数（下限 0.25）；`HeatRatio = Σ强度 / 窗口天数 × 置信度`；
+- `CalSuggestion` 的热力分组改用 **`HeatRatio`**（权重沿用 `SuggestionHeatValue`，不新增权重项）；旧 `HeatValue` 列保留显示；
+- UI：热力值 Expander 加「热天判定方式」下拉（`HeatThresholdModeIndex`）与「相对倍数」NumberBox（`ShowHeatRelativeFactor` 控制可见性，仅相对模式显示）；
+- 修掉一轮插入 XAML/VM 时的损坏（重复 `<StackPanel>`、坏行、空的括号），最终 **0 错误**；语言 +6 键；
+- 手册进阶设置与字段口径已更新（含 `HeatRatio` 公式与旧热力值对照行）。未实机点验。
+
+## 阶段 299：倒货 A/B/C 批优化——两阶段取数、订单净化、挂卖单截断、可解释推荐分（2026-11-10）
+
+> 按 296 后续分析落地 A/B/C 三批；D（策略矩阵/多市场/回程/组合）与 E（回测）按用户要求不做。
+
+### 299.1 A 批：数据层
+
+- **两阶段取数**：`ScalperCalculator.Prescreen(items, setting)` 静态预筛——两侧价格口径均为订单簿口径时，
+  用首档价差（扣税/费）> 0 且两侧订单簿存在来决定"要不要为该物品拉历史"；历史口径任一启用则返回 null（全量拉取）。
+  `GetOrdersAsync` 在拉历史前执行预筛，等待文案新增「订单簿静态预筛中…」。
+- **订单净化**：`SanitizeOrders`（BuildItems 增加重载带 `StaleOrderDays`）：
+  - 剩余时间 < `StaleOrderDays`（默认 2 天，0=关闭）的挂单剔除；
+  - 价格偏离本侧中位数 <1% 或 >100 倍的异常单剔除（1 ISK 墙/错价单）；
+  - 0 余量单剔除。
+- **缩放一致**：走簿的 `BuyAvgPrice/SellAvgPrice` 现在乘 `BuyPriceScale/SellPriceScale`，与挂单/历史口径可比。
+
+### 299.2 B 批：定价与执行
+
+- `CalPriceTop5` 改为**成交量加权**（累计到总挂单量 5% 为止的 VWAP），不再按订单条数；
+- 挂卖单/历史卖价策略：可成交量受 **`MaxSellDays`（默认 30 天）** 截断——
+  `executed = min(目标量, 目的日销量 × 竞争份额 × MaxSellDays)`，`FillRatio` 相应 <1，不再"挂单口径假设立刻全成交"；
+- 吃买单策略即时成交，天数按"实际成交量 ÷ 目的市场日销量"折算（吃掉的买单本身就是需求）。
+
+### 299.3 C 批：质量指标 + 可解释推荐分
+
+- 新字段/新指标：`PriceTrend`（目的市场历史均价线性回归斜率，%/天，带方向）、
+  `PriceCushion`（当前卖价 − 历史均价，带方向 %，只奖励"高于历史均价"的安全垫）、
+  `SalesCV`（目的市场日销量变异系数，越低越稳）、`Confidence`（目的市场历史天数 / 统计窗口）；
+- **`Score`（0~100 绝对分）**：全部 21 个有权重指标做中位数/MAD 稳健归一（z 截断 ±3）→ 按方向加权平均 →
+  0~100；`ScoreDetail` 给出正/负贡献最大的两项（悬浮提示）。结果表新增这 5 列；**排序改按 Score**，
+  旧「推荐度」百分位列保留对照；
+- 新权重（0–100 滑条，全部可配）：`SuggestionPriceTrend=15`、`SuggestionPriceCushion=10`、
+  `SuggestionSalesStability=15`、`SuggestionConfidence=15`；
+- **权重预设**：推荐值来源权重页签顶部新增「保守 / 均衡 / 激进」三键（`ApplyWeightPreset`），
+  一键写入全部 21 个权重并立即持久化。
+
+### 299.4 事故记录与恢复
+
+- 实施过程中一次 `git checkout -- ScalperAnalyseView.xaml` 把**未提交的 297/298 UI 增强**（41 条 ToolTip、热力值增强）
+  回退掉了；已通过脚本按阶段重放恢复（ToolTip 49 条、热力值判定方式/相对倍数、费用与风险 Expander、
+  8+4 条权重新滑条、结果 15 列）。教训：**不要对未提交文件使用 `git checkout --`**；改用先备份再操作。
+- 语言：中英各 +21 键（3539 = 3539）。
+
+### 299.5 验证
+
+- 临时探针（已删除）：订单净化滤过期低价单、Prescreen 保留正价差/剔除负价差、
+  吃买单 DaysToSell=目标/日销、挂卖单 MaxSellDays 截断 FillRatio<1、Score∈(0,100] 且 ScoreDetail 有摘要 —— **9 PASS / 0 FAIL**。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

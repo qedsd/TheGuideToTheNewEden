@@ -1025,6 +1025,52 @@
     <sys:String x:Key="BusinessPage_HeatValue">热力值</sys:String>
     <sys:String x:Key="BusinessPage_HeatValueDay">历史价格天数</sys:String>
     <sys:String x:Key="BusinessPage_HeatValueThreshold">销量阈值</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyPrice">买入价格口径：决定“源市场买入价”怎么取——吃卖单（SellTop5/SellTop）、按目标量吃单（SellAvailable）、直接吃买单（Buy 系列）还是用历史价；默认吃卖单前 5% 档均价。它直接决定净利润与回报率的高低，也影响成交覆盖率的统计方式。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyHistoryDay">买入侧选“历史…”口径时的统计天数：天数越多价格越稳，但反应越慢；适合长周期、低波动物品。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyPriceScale">买入价缩放系数：&lt;1 保守（按更低成本估算，利润更真实），&gt;1 激进（默认 1 = 不缩放）。只作用于买入价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellPrice">卖出价格口径：决定“目的市场卖出价”怎么取——挂卖单参考卖单价（Sell 系列）、直接吃买单（Buy 系列，会走订单簿并算覆盖率）、或历史价；默认吃买单前 5% 档均价。它决定卖价、税后利润与预计卖完天数的算法。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellHistoryDay">卖出侧选“历史…”口径时的统计天数；与买入侧相同，越多越稳。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellPriceScale">卖出价缩放系数：&lt;1 保守（宁可低估卖价），&gt;1 乐观；默认 1 = 不缩放。只作用于卖出价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceSalesDay">源市场日销量的统计天数：用于估算多快能收齐货（买入节奏）。窗口越长数据越稳，但对近期变化不敏感。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceSalesType">源市场日销量的统计方式：历史最低=按最差一天收货（最安全)；历史最高=假设天天大卖（容易高估)；历史平均=折中。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceRemoveExtremum">统计源市场日销量时去掉一个最小与一个最大的异常天，减少促销/事件造成的失真。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSales">目的市场日销量：倒货的“需求上限”，直接决定目标销量（乘以目标销量百分比）与预计卖完天数。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSalesDay">目的市场日销量的统计天数；越长越稳，越短越能反映当前热度。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSalesType">目的市场日销量的统计方式。想保守估算卖完天数就选历史最低。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationRemoveExtremum">统计目的市场日销量时去掉一个最小与一个最大的异常天。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesPercent">目标销量 = 目的市场日销量 × 该百分比（默认 20%）。比例越大利润上限越高，但吃单深度与竞争都会变差。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HistoryPriceFluctuationDay">历史价格波动的统计窗口：波动 = 该区间历史均价的标准差 ÷ 平均值。越小越稳，是风险指标的输入。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_NowPriceFluctuationDay">当前价格波动的参考均价窗口：当前卖价偏离该均价越多，波动越大（风险越高）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SaturationFluctuation">卖单饱和度只统计“卖价 ×（1 ± 该范围）”内的挂单量；范围越大统计的竞争对手越多，饱和度普遍越高。</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdMode">热天判定方式</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdAbsolute">绝对销量</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdRelative">自身日均的倍数</sys:String>
+    <sys:String x:Key="BusinessPage_HeatRelativeFactor">相对倍数（×自身日均）</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatThresholdMode">“热天”怎么判定：绝对销量（日销量 ≥ 销量阈值）或自身日均的倍数（销量 ≥ 该物品日均销量 × 相对倍数）。相对模式能自动适配高/低量级物品，推荐使用。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatRelativeFactor">相对模式下的“热天”线：销量 ≥ 该物品日均销量 × 此倍数。0.5 = 达到自身平均一半就算热天；调大要求更苛刻。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatValueDay">热力值的统计天数。天数越多越能体现持续热度（判定方式见“热天判定方式”）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatValueThreshold">热力值的销量阈值：日销量达到该值记 +1。按物品类别调整（高消耗品调大）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesTaxRate">卖出时扣的销售税（%）。直接从税后净利里扣：税后净利 = 卖出价×(1−税−经纪费) − 买入价×(1+经纪费)。默认 3.6%，按你的技能等级手填。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BrokerFeeRate">每次市场交易扣的经纪人费（%，买入、卖出各一次；NPC 站约 1–3%，有声望折扣后可低至约 0.4%）。计入税后成本。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_CompetitionBandPercent">统计竞争卖单的价格带：与你的卖价相差不超过该比例的其他玩家卖单量都算进竞争份额；数值越大越保守。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_RiskAversion">风险厌恶系数（默认 1）：风险调整利润 = 税后利润 − 系数 × 历史价格波动 × 买入成本。调大则高波动物品排得更靠后。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionROI">回报率在推荐度里的权重。调大后偏好“单位资金赚得多”的小而美物品。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNetProfit">目标销量净利润的权重：偏好“整单赚得多”的大生意。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionPrincipal">本金的权重：注意是反向计分——排名越靠前（分数越低）的本金加分越多，偏好低资金占用。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionSales">目标销量的权重：偏好需求量大的物品。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionHistoryPriceFluctuation">历史价格波动的权重（当前为反向：波动大排前）。想“越稳越好”就把该项设为 0，改用风险调整利润的权重。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNowPriceFluctuation">当前价格波动的权重（当前为反向）。同理，想“价格贴近历史均价”就设 0。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionSaturation">卖单饱和度的权重：饱和度低（挂单少）的物品加分多，意味着竞争小。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionHeatValue">热力值的权重：反映目的市场最近有没有持续大销量。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionIskPerVolume">ISK/单位体积的权重：体积小利润高的物品优先（船舱效率）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNetProfitAfterFees">税后净利的权重：扣掉税费后整单真正到手的利润，是“能不能赚钱”的底线指标。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionROIAfterFees">税后回报率的权重：每单位投入（含费）赚多少，衡量资金效率。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionFillRatio">成交覆盖率的权重：订单簿能不能吃下目标销量；低覆盖率意味着报价是“纸面利润”。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionCompetitionShare">竞争份额的权重：你能分到目的市场销量的比例，越高越好。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionDaysToSell">预计卖完天数的权重（反向计分）：天数越短资金周转越快、占款风险越小。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionProfitPerHour">利润每小时的权重：税后利润 ÷ 卖完时间，综合“量大”与“周转快”，通常作为主排序指标。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionRiskAdjustedProfit">风险调整利润的权重：像夏普比率一样把波动惩罚计入利润，偏好稳定收益。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionProfitPerVolumeAfterFees">利润/体积（税后）的权重：同样货舱能赚多少，大小船都适用的效率指标。</sys:String>
     <sys:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</sys:String>
     <sys:String x:Key="BusinessPage_ROI">回报率</sys:String>
     <sys:String x:Key="BusinessPage_ROIPercent">回报率(%)</sys:String>
@@ -1039,6 +1085,40 @@
     <sys:String x:Key="BusinessPage_Volume">体积</sys:String>
     <sys:String x:Key="BusinessPage_IskPerJump">ISK/跳</sys:String>
     <sys:String x:Key="BusinessPage_IskPerVolume">ISK/单位体积</sys:String>
+    <sys:String x:Key="BusinessPage_FeesAndRisk">费用与风险</sys:String>
+    <sys:String x:Key="BusinessPage_SalesTaxRate">销售税（%）</sys:String>
+    <sys:String x:Key="BusinessPage_BrokerFeeRate">经纪人费（%）</sys:String>
+    <sys:String x:Key="BusinessPage_CompetitionBandPercent">竞争统计价格带（%）</sys:String>
+    <sys:String x:Key="BusinessPage_RiskAversion">风险厌恶系数</sys:String>
+    <sys:String x:Key="BusinessPage_BuyAvgPrice">成交买入均价</sys:String>
+    <sys:String x:Key="BusinessPage_SellAvgPrice">成交卖出均价</sys:String>
+    <sys:String x:Key="BusinessPage_NetProfitAfterFees">税后净利</sys:String>
+    <sys:String x:Key="BusinessPage_ROIAfterFees">税后回报率</sys:String>
+    <sys:String x:Key="BusinessPage_FillRatio">成交覆盖率</sys:String>
+    <sys:String x:Key="BusinessPage_CompetitionShare">竞争份额</sys:String>
+    <sys:String x:Key="BusinessPage_DaysToSell">预计卖完天数</sys:String>
+    <sys:String x:Key="BusinessPage_ProfitPerHour">利润/小时</sys:String>
+    <sys:String x:Key="BusinessPage_RiskAdjustedProfit">风险调整利润</sys:String>
+    <sys:String x:Key="BusinessPage_ProfitPerVolumeAfterFees">利润/体积（税后）</sys:String>
+    <sys:String x:Key="BusinessPage_Prescreening">订单簿静态预筛中…</sys:String>
+    <sys:String x:Key="BusinessPage_PrescreenEmpty">静态预筛后没有税后价差为正的候选，请调整市场或目标物品</sys:String>
+    <sys:String x:Key="BusinessPage_StaleOrderDays">过期订单剔除（天）</sys:String>
+    <sys:String x:Key="BusinessPage_MaxSellDays">可接受卖完上限（天）</sys:String>
+    <sys:String x:Key="BusinessPage_PriceTrend">价格趋势</sys:String>
+    <sys:String x:Key="BusinessPage_PriceCushion">历史价安全垫</sys:String>
+    <sys:String x:Key="BusinessPage_SalesStability">需求稳定性</sys:String>
+    <sys:String x:Key="BusinessPage_Confidence">数据置信度</sys:String>
+    <sys:String x:Key="BusinessPage_Score">推荐分</sys:String>
+    <sys:String x:Key="BusinessPage_PresetConservative">保守</sys:String>
+    <sys:String x:Key="BusinessPage_PresetBalanced">均衡</sys:String>
+    <sys:String x:Key="BusinessPage_PresetAggressive">激进</sys:String>
+    <sys:String x:Key="BusinessPage_WeightPresetApplied">已应用「{0}」权重预设</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_StaleOrderDays">剩余时间不足该天数的挂单不参与定价与深度统计（0 = 不过滤）。快过期的清仓单不可靠，会污染买价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_MaxSellDays">挂卖单策略下，可成交量按“日销量 × 竞争份额 × 该天数”截断；超过该天数卖不完的部分不计入利润。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_PriceTrend">目的市场历史均价的线性回归斜率（%/天，带方向）。上涨=加分；下跌的物品要小心砸价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_PriceCushion">当前卖价高于历史均价的幅度（%）。正数=安全垫（卖价有历史支撑），负数=已经在砸价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesStability">目的市场日销量的变异系数（标准差÷均值）。越低=需求越稳定，风险越小。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_Confidence">数据置信度：目的市场历史天数占统计窗口的比例。低置信的物品不可靠，已按比例降权。</sys:String>
     <sys:String x:Key="BusinessPage_TypeVolume">数量</sys:String>
     <sys:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</sys:String>
     <sys:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</sys:String>

@@ -1009,6 +1009,52 @@
     <sys:String x:Key="BusinessPage_HeatValue">Thermal value</sys:String>
     <sys:String x:Key="BusinessPage_HeatValueDay">Days of historical prices</sys:String>
     <sys:String x:Key="BusinessPage_HeatValueThreshold">Sales threshold</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyPrice">Buy price type: how the source buy price is derived - take sell orders (SellTop5/SellTop), walk the book by volume (SellAvailable), take buy orders (Buy*) or use history; default = average of the top 5% lowest sell orders. Drives net profit, ROI and how fill ratio is measured.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyHistoryDay">Days of history when the buy side uses a history price type: more days = steadier but slower to react; suits long-cycle, low-volatility items.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyPriceScale">Buy price scale: below 1 is conservative (assumes a lower cost, more realistic profit), above 1 aggressive (1 = no scaling). Applies to the buy price only.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellPrice">Sell price type: how the destination sell price is derived - reference sell orders (Sell*), eat buy orders (Buy*, walks the order book and yields fill ratio), or history; default = average of the top 5% highest buy orders. Drives the sell price, after-fee profit and days-to-sell.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellHistoryDay">Days of history when the sell side uses a history price type; same trade-off as the buy side.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellPriceScale">Sell price scale: below 1 is conservative (understates the sell price), above 1 optimistic; 1 = no scaling. Applies to the sell price only.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceSalesDay">Days of history for source-market daily volume: estimates how fast you can accumulate stock. Longer windows are steadier but less sensitive to recent changes.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceSalesType">Source daily volume statistic: HistoryLowest = plan on the worst day (safest); HistoryHighest = assume every day is big (overestimates); HistoryAverage = middle ground.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceRemoveExtremum">When computing source daily volume, drop one lowest and one highest abnormal day to reduce distortion from promotions or events.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSales">Destination-market daily volume: the demand ceiling for hauling; drives target sales (times your percent) and days-to-sell.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSalesDay">Days of history for destination daily volume; longer = steadier, shorter = more responsive.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSalesType">Destination daily volume statistic. Pick HistoryLowest for a conservative days-to-sell estimate.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationRemoveExtremum">Drop one lowest and one highest abnormal day when computing destination daily volume.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesPercent">Target sales = destination daily volume times this percent (default 20). Higher percent = more profit at stake but worse book depth and competition.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HistoryPriceFluctuationDay">Window for historical price fluctuation = std dev of the average price divided by the mean in that window. Lower is steadier; feeds the risk metric.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_NowPriceFluctuationDay">Window of the reference average price for current fluctuation: the further the sell price is from this mean, the higher the risk.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SaturationFluctuation">Sell-order saturation counts only orders within sell price times (1 plus/minus this range). Larger range = more competitors counted.</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdMode">Hot-day rule</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdAbsolute">Absolute volume</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdRelative">Multiple of own average</sys:String>
+    <sys:String x:Key="BusinessPage_HeatRelativeFactor">Relative factor (x own average)</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatThresholdMode">How a hot day is decided: absolute volume (daily volume >= threshold) or a multiple of the item's own average (daily volume >= its own average x factor). Relative adapts to high/low-volume items automatically; recommended.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatRelativeFactor">Hot-day line in relative mode: volume >= the item's own average times this factor. 0.5 = half of its own average already counts as hot; raise for stricter.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatValueDay">Days for the heat value. More days = a better view of lasting demand (see hot-day rule).</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatValueThreshold">Threshold for a hot day: a day with volume at or above this counts +1. Tune per category (raise for consumables).</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesTaxRate">Sales tax charged on selling (%). Deducted from after-fee profit: sell x (1 - tax - broker) - buy x (1 + broker). Default 3.6%, enter per your skills.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BrokerFeeRate">Broker fee per market transaction (%), charged once on buy and once on sell; roughly 1-3% at NPC stations, down to about 0.4% with standing discounts. Part of the after-fee cost.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_CompetitionBandPercent">Price band for competitors: other players' sell orders within this percent of your price count toward competition share; larger = more conservative.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_RiskAversion">Risk aversion (default 1): risk-adjusted profit = after-fee profit - coefficient x history fluctuation x buy cost. Higher pushes volatile items down.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionROI">Weight of ROI in the suggestion score: favors high return per ISK.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNetProfit">Weight of target net profit: favors big one-shot profits.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionPrincipal">Weight of principal (inverted): lower capital ranks first, favoring cheap-to-run items.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionSales">Weight of target sales: favors high-demand items.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionHistoryPriceFluctuation">Weight of history fluctuation (currently inverted: higher volatility scores better). Set 0 and use risk-adjusted profit if you prefer stability.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNowPriceFluctuation">Weight of current fluctuation (inverted). Set 0 if you want prices near their historical mean.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionSaturation">Weight of sell saturation: lower saturation (fewer competing orders) scores higher.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionHeatValue">Weight of heat value: reflects sustained demand in the destination market.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionIskPerVolume">Weight of ISK per m3: favors small, high-value items (cargo efficiency).</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNetProfitAfterFees">Weight of after-fee net profit: the real take-home after taxes and fees - the bottom line.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionROIAfterFees">Weight of after-fee ROI: return per invested ISK including fees.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionFillRatio">Weight of fill ratio: whether the order book can absorb your target volume; low = paper profit.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionCompetitionShare">Weight of competition share: your slice of destination-market volume; higher is better.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionDaysToSell">Weight of days-to-sell (inverted): fewer days = faster capital turnover and less exposure.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionProfitPerHour">Weight of profit-per-hour: after-fee profit over sell-out time, combining size and turnover; a good primary sort.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionRiskAdjustedProfit">Weight of risk-adjusted profit: penalizes volatility like a Sharpe-style measure; favors steady returns.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionProfitPerVolumeAfterFees">Weight of profit per m3 (after fees): cargo efficiency regardless of ship size.</sys:String>
     <sys:String x:Key="BusinessPage_SuggestionWeight">Recommended Value Source Weight</sys:String>
     <sys:String x:Key="BusinessPage_ROI">Rate of return</sys:String>
     <sys:String x:Key="BusinessPage_ROIPercent">ROI(%)</sys:String>
@@ -1023,6 +1069,40 @@
     <sys:String x:Key="BusinessPage_Volume">Volume</sys:String>
     <sys:String x:Key="BusinessPage_IskPerJump">ISK/Jump</sys:String>
     <sys:String x:Key="BusinessPage_IskPerVolume">ISK/Volume</sys:String>
+    <sys:String x:Key="BusinessPage_FeesAndRisk">Fees &amp; risk</sys:String>
+    <sys:String x:Key="BusinessPage_SalesTaxRate">Sales tax (%)</sys:String>
+    <sys:String x:Key="BusinessPage_BrokerFeeRate">Broker fee (%)</sys:String>
+    <sys:String x:Key="BusinessPage_CompetitionBandPercent">Competition price band (%)</sys:String>
+    <sys:String x:Key="BusinessPage_RiskAversion">Risk aversion</sys:String>
+    <sys:String x:Key="BusinessPage_BuyAvgPrice">Avg buy price</sys:String>
+    <sys:String x:Key="BusinessPage_SellAvgPrice">Avg sell price</sys:String>
+    <sys:String x:Key="BusinessPage_NetProfitAfterFees">Net profit after fees</sys:String>
+    <sys:String x:Key="BusinessPage_ROIAfterFees">ROI after fees</sys:String>
+    <sys:String x:Key="BusinessPage_FillRatio">Fill ratio</sys:String>
+    <sys:String x:Key="BusinessPage_CompetitionShare">Competition share</sys:String>
+    <sys:String x:Key="BusinessPage_DaysToSell">Days to sell</sys:String>
+    <sys:String x:Key="BusinessPage_ProfitPerHour">Profit per hour</sys:String>
+    <sys:String x:Key="BusinessPage_RiskAdjustedProfit">Risk-adjusted profit</sys:String>
+    <sys:String x:Key="BusinessPage_ProfitPerVolumeAfterFees">Profit per m³ (after fees)</sys:String>
+    <sys:String x:Key="BusinessPage_Prescreening">Static prescreen of order books…</sys:String>
+    <sys:String x:Key="BusinessPage_PrescreenEmpty">No candidate with a positive after-fee spread after prescreen; adjust markets or target items</sys:String>
+    <sys:String x:Key="BusinessPage_StaleOrderDays">Stale order filter (days)</sys:String>
+    <sys:String x:Key="BusinessPage_MaxSellDays">Max acceptable sell-out days</sys:String>
+    <sys:String x:Key="BusinessPage_PriceTrend">Price trend</sys:String>
+    <sys:String x:Key="BusinessPage_PriceCushion">Price cushion vs history</sys:String>
+    <sys:String x:Key="BusinessPage_SalesStability">Demand stability</sys:String>
+    <sys:String x:Key="BusinessPage_Confidence">Data confidence</sys:String>
+    <sys:String x:Key="BusinessPage_Score">Score</sys:String>
+    <sys:String x:Key="BusinessPage_PresetConservative">Conservative</sys:String>
+    <sys:String x:Key="BusinessPage_PresetBalanced">Balanced</sys:String>
+    <sys:String x:Key="BusinessPage_PresetAggressive">Aggressive</sys:String>
+    <sys:String x:Key="BusinessPage_WeightPresetApplied">Applied the "{0}" weight preset</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_StaleOrderDays">Orders with less remaining time than this do not participate in pricing/depth (0 = off). About-to-expire dump orders pollute the buy price.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_MaxSellDays">For resting-sell strategy, sellable volume is capped by daily volume x competition share x this days; the rest does not count as profit.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_PriceTrend">Linear-regression slope of destination average price (% per day, signed). Rising = bonus; falling items risk being undercut.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_PriceCushion">How far the current sell price sits above the historical average (%). Positive = cushioned; negative = already undercutting history.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesStability">Coefficient of variation of destination daily volume (std/mean). Lower = steadier demand, less risk.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_Confidence">Data confidence: destination history days over the stats window. Low-confidence items are down-weighted proportionally.</sys:String>
     <sys:String x:Key="BusinessPage_TypeVolume">Count</sys:String>
     <sys:String x:Key="BusinessPage_ScalperItemDetail">Item Detail</sys:String>
     <sys:String x:Key="BusinessPage_AddToShoppingCart">Add To Shopping Cart</sys:String>

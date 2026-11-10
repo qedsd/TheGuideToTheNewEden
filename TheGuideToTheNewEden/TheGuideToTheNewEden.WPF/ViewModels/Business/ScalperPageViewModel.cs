@@ -34,6 +34,71 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>阶段 299：两侧价格口径都为订单簿口径时启用静态预筛（两阶段取数）。</summary>
+    public bool PrescreenEnabled => !Setting.IsHistoryBuyPrice && !Setting.IsHistorySellPrice;
+
+    /// <summary>热力值阈值模式下拉索引（0=绝对 / 1=相对自身日均）。</summary>
+    public int HeatThresholdModeIndex
+    {
+        get => Setting.HeatThresholdMode == Core.Models.Market.ScalperSetting.HeatThresholdKind.RelativeToAverage ? 1 : 0;
+        set
+        {
+            Setting.HeatThresholdMode = value == 1
+                ? Core.Models.Market.ScalperSetting.HeatThresholdKind.RelativeToAverage
+                : Core.Models.Market.ScalperSetting.HeatThresholdKind.Absolute;
+            OnPropertyChanged(nameof(ShowHeatRelativeFactor));
+        }
+    }
+
+    /// <summary>相对模式才显示"自身日均倍数"输入框。</summary>
+    public bool ShowHeatRelativeFactor => Setting.HeatThresholdMode == Core.Models.Market.ScalperSetting.HeatThresholdKind.RelativeToAverage;
+
+    /// <summary>阶段 299：推荐权重预设（保守/均衡/激进），应用到全部 25 个权重并立即持久化。</summary>
+    public void ApplyWeightPreset(string kind)
+    {
+        var (conservative, balanced, aggressive) = PresetWeights();
+        var values = kind == "conservative" ? conservative : kind == "aggressive" ? aggressive : balanced;
+        Setting.SuggestionROI = values.ROI;
+        Setting.SuggestionNetProfit = values.TargetNetProfit;
+        Setting.SuggestionPrincipal = values.Principal;
+        Setting.SuggestionSales = values.Sales;
+        Setting.SuggestionHistoryPriceFluctuation = values.HistoryFluctuation;
+        Setting.SuggestionNowPriceFluctuation = values.NowFluctuation;
+        Setting.SuggestionSaturation = values.Saturation;
+        Setting.SuggestionHeatValue = values.Heat;
+        Setting.SuggestionIskPerVolume = values.IskPerVolume;
+        Setting.SuggestionNetProfitAfterFees = values.NetProfitAfterFees;
+        Setting.SuggestionROIAfterFees = values.ROIAfterFees;
+        Setting.SuggestionFillRatio = values.FillRatio;
+        Setting.SuggestionCompetitionShare = values.CompetitionShare;
+        Setting.SuggestionDaysToSell = values.DaysToSell;
+        Setting.SuggestionProfitPerHour = values.ProfitPerHour;
+        Setting.SuggestionRiskAdjustedProfit = values.RiskAdjustedProfit;
+        Setting.SuggestionProfitPerVolumeAfterFees = values.ProfitPerVolume;
+        Setting.SuggestionPriceTrend = values.Trend;
+        Setting.SuggestionPriceCushion = values.Cushion;
+        Setting.SuggestionSalesStability = values.Stability;
+        Setting.SuggestionConfidence = values.Confidence;
+        PageNotifyService.Success(LanguageService.Format("BusinessPage_WeightPresetApplied", kind));
+        SaveSetting();
+    }
+
+    private static (PresetSet, PresetSet, PresetSet) PresetWeights()
+    {
+        PresetSet balanced = new(40, 30, 10, 5, 5, 5, 5, 30, 10, 30, 30, 15, 15, 20, 25, 10, 10, 15, 10, 15, 15);
+        PresetSet conservative = new(10, 10, 0, 5, 0, 0, 10, 10, 5, 25, 25, 25, 20, 25, 10, 35, 10, 5, 15, 20, 30);
+        PresetSet aggressive = new(30, 40, 0, 5, 0, 0, 5, 10, 15, 50, 10, 10, 10, 10, 40, 0, 15, 10, 5, 5, 10);
+        return (conservative, balanced, aggressive);
+    }
+
+    /// <summary>权重预设值（顺序见 ApplyWeightPreset）。</summary>
+    private sealed record PresetSet(
+        double ROI, double TargetNetProfit, double Principal, double Sales, double HistoryFluctuation,
+        double NowFluctuation, double Saturation, double Heat, double IskPerVolume,
+        double NetProfitAfterFees, double ROIAfterFees, double FillRatio, double CompetitionShare,
+        double DaysToSell, double ProfitPerHour, double RiskAdjustedProfit, double ProfitPerVolume,
+        double Trend, double Cushion, double Stability, double Confidence);
+
     public int SellPriceType
     {
         get => (int)Setting.SellPrice;
@@ -351,8 +416,26 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var items = await Task.Run(() => ScalperCalculator.BuildItems(allSourceOrders, allDestinationOrders, TargetMarketTypes.ToHashSet()));
-            var typeIds = items.Select(p => p.InvType.TypeID).Distinct().ToList();
+            var items = await Task.Run(() =>
+                ScalperCalculator.BuildItems(allSourceOrders, allDestinationOrders, TargetMarketTypes.ToHashSet(), Setting.StaleOrderDays));
+            // 阶段 299：两阶段取数——先用订单簿静态预筛，只对"税后价差为正"的候选拉历史
+            List<ScalperItem> prescreened;
+            if (PrescreenEnabled)
+            {
+                UpdateBusy(FindString("BusinessPage_Prescreening"));
+                prescreened = await Task.Run(() => ScalperCalculator.Prescreen(items, Setting));
+                if (prescreened is not { Count: > 0 })
+                {
+                    PageNotifyService.Error(FindString("BusinessPage_PrescreenEmpty"));
+                    return;
+                }
+            }
+            else
+            {
+                prescreened = items;
+            }
+
+            var typeIds = prescreened.Select(p => p.InvType.TypeID).Distinct().ToList();
             _typeCount = typeIds.Count;
 
             var sourceNoHistory = -1;
@@ -382,14 +465,14 @@ public sealed class ScalperPageViewModel : INotifyPropertyChanged
                 destinationNoHistory = typeIds.Count - destinationHistory.Count;
 
                 UpdateBusy(FindString("BusinessPage_MatchinOorderHistory"));
-                items = await Task.Run(() =>
+                prescreened = await Task.Run(() =>
                 {
-                    ScalperCalculator.SetHistory(items, sourceHistory, destinationHistory);
-                    return items.Where(p => p.SourceStatistics is { Count: > 0 } && p.DestinationStatistics is { Count: > 0 }).ToList();
+                    ScalperCalculator.SetHistory(prescreened, sourceHistory, destinationHistory);
+                    return prescreened.Where(p => p.SourceStatistics is { Count: > 0 } && p.DestinationStatistics is { Count: > 0 }).ToList();
                 });
             }
 
-            ScalperItems = items;
+            ScalperItems = prescreened;
             OnPropertyChanged(nameof(HasResult));
             stopwatch.Stop();
             PageNotifyService.Success(string.Format(
