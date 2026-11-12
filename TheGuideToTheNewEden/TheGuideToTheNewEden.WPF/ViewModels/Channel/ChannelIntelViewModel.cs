@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -28,6 +29,18 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     private readonly string _logPath;
     private readonly Dictionary<string, List<ChatChanelInfoItem>> _listenerChannelDic = [];
     private readonly Dictionary<string, ChannelIntelSession> _sessions = [];
+    private readonly object _chatQueueLock = new();
+    private readonly Queue<IntelChatContent> _pendingChatContents = new();
+    private readonly Queue<EarlyWarningContent> _pendingZkbContents = new();
+    private bool _chatFlushScheduled;
+    private bool _zkbFlushScheduled;
+
+    private const int MaxChatContents = 2000;
+    private const int MaxZkbIntelContents = 500;
+    private const int MaxPendingChatContents = 2000;
+    private const int MaxPendingZkbContents = 500;
+    private const int ChatFlushBatchSize = 500;
+    private const int ZkbFlushBatchSize = 200;
 
     private List<string> _nameDbs = [];
 
@@ -464,29 +477,188 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     private void Session_ChatContentEvent(object? sender, IEnumerable<IntelChatContent> e)
     {
         var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null)
+        if (dispatcher is null || e is null)
         {
             return;
         }
 
-        _ = dispatcher.BeginInvoke(() =>
+        lock (_chatQueueLock)
         {
             foreach (var content in e)
             {
-                ChatContents.Add(content);
+                if (_pendingChatContents.Count >= MaxPendingChatContents)
+                {
+                    _pendingChatContents.Dequeue();
+                }
+
+                _pendingChatContents.Enqueue(content);
             }
-        });
+
+            if (_chatFlushScheduled)
+            {
+                return;
+            }
+
+            _chatFlushScheduled = true;
+        }
+
+        _ = dispatcher.BeginInvoke(FlushPendingChatContents, System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    private void FlushPendingChatContents()
+    {
+        List<IntelChatContent> batch;
+        lock (_chatQueueLock)
+        {
+            _chatFlushScheduled = false;
+            if (_pendingChatContents.Count == 0)
+            {
+                return;
+            }
+
+            var count = Math.Min(_pendingChatContents.Count, ChatFlushBatchSize);
+            batch = new List<IntelChatContent>(count);
+            for (var i = 0; i < count; i++)
+            {
+                batch.Add(_pendingChatContents.Dequeue());
+            }
+
+            if (_pendingChatContents.Count > 0)
+            {
+                _chatFlushScheduled = true;
+            }
+        }
+
+        foreach (var content in batch)
+        {
+            ChatContents.Add(content);
+        }
+
+        while (ChatContents.Count > MaxChatContents)
+        {
+            ChatContents.RemoveAt(0);
+        }
+
+        if (!_chatFlushScheduled)
+        {
+            return;
+        }
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is not null)
+        {
+            _ = dispatcher.BeginInvoke(FlushPendingChatContents, System.Windows.Threading.DispatcherPriority.Background);
+        }
+        else
+        {
+            lock (_chatQueueLock)
+            {
+                _chatFlushScheduled = false;
+            }
+        }
+    }
+
+    /// <summary>清空频道内容显示，同时丢弃尚未批量刷新的队列。</summary>
+    public void ClearChatContents()
+    {
+        lock (_chatQueueLock)
+        {
+            _pendingChatContents.Clear();
+        }
+
+        ChatContents.Clear();
+    }
+
+    /// <summary>清空 ZKB 内容显示，同时丢弃尚未批量刷新的队列。</summary>
+    public void ClearZkbIntelContents()
+    {
+        lock (_chatQueueLock)
+        {
+            _pendingZkbContents.Clear();
+        }
+
+        ZKBIntelContents.Clear();
     }
 
     private void Session_ZKBIntelEvent(object? sender, EarlyWarningContent e)
     {
         var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null)
+        if (dispatcher is null || e is null)
         {
             return;
         }
 
-        _ = dispatcher.BeginInvoke(() => ZKBIntelContents.Add(e));
+        lock (_chatQueueLock)
+        {
+            if (_pendingZkbContents.Count >= MaxPendingZkbContents)
+            {
+                _pendingZkbContents.Dequeue();
+            }
+
+            _pendingZkbContents.Enqueue(e);
+
+            if (_zkbFlushScheduled)
+            {
+                return;
+            }
+
+            _zkbFlushScheduled = true;
+        }
+
+        _ = dispatcher.BeginInvoke(FlushPendingZkbContents, System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    private void FlushPendingZkbContents()
+    {
+        List<EarlyWarningContent> batch;
+        lock (_chatQueueLock)
+        {
+            _zkbFlushScheduled = false;
+            if (_pendingZkbContents.Count == 0)
+            {
+                return;
+            }
+
+            var count = Math.Min(_pendingZkbContents.Count, ZkbFlushBatchSize);
+            batch = new List<EarlyWarningContent>(count);
+            for (var i = 0; i < count; i++)
+            {
+                batch.Add(_pendingZkbContents.Dequeue());
+            }
+
+            if (_pendingZkbContents.Count > 0)
+            {
+                _zkbFlushScheduled = true;
+            }
+        }
+
+        foreach (var content in batch)
+        {
+            ZKBIntelContents.Add(content);
+        }
+
+        while (ZKBIntelContents.Count > MaxZkbIntelContents)
+        {
+            ZKBIntelContents.RemoveAt(0);
+        }
+
+        if (!_zkbFlushScheduled)
+        {
+            return;
+        }
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is not null)
+        {
+            _ = dispatcher.BeginInvoke(FlushPendingZkbContents, System.Windows.Threading.DispatcherPriority.Background);
+        }
+        else
+        {
+            lock (_chatQueueLock)
+            {
+                _zkbFlushScheduled = false;
+            }
+        }
     }
 
     private void Session_OnZKBError(object? sender, Exception e)

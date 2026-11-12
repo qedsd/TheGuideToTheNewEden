@@ -29,6 +29,10 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 {
     private readonly ChannelIntelViewModel _viewModel = new();
     private ChannelIntelSession? _observedSession;
+    private readonly List<IntelChatContent> _pendingChatAppends = [];
+    private readonly List<EarlyWarningContent> _pendingZkbAppends = [];
+    private bool _chatAppendScheduled;
+    private bool _zkbAppendScheduled;
 
     public string FeatureKey => "channelintel";
 
@@ -403,34 +407,109 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
 
     private void ChatContents_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+        if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Add || e.NewItems is null)
         {
             return;
         }
 
-        foreach (IntelChatContent content in e.NewItems!)
+        foreach (IntelChatContent content in e.NewItems)
+        {
+            _pendingChatAppends.Add(content);
+        }
+
+        while (_pendingChatAppends.Count > 2000)
+        {
+            _pendingChatAppends.RemoveAt(0);
+        }
+
+        if (_chatAppendScheduled)
+        {
+            return;
+        }
+
+        _chatAppendScheduled = true;
+        Dispatcher.BeginInvoke(FlushPendingChatAppends, System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    private void FlushPendingChatAppends()
+    {
+        _chatAppendScheduled = false;
+        if (_pendingChatAppends.Count == 0)
+        {
+            return;
+        }
+
+        var batch = _pendingChatAppends.ToArray();
+        _pendingChatAppends.Clear();
+
+        foreach (var content in batch)
         {
             AppendChatContent(content);
         }
 
         TrimChatContents();
-        ChatContentsBox.ScrollToEnd();
+        if (ShouldAutoScroll())
+        {
+            ChatContentsBox.ScrollToEnd();
+        }
     }
 
     private void ZKBIntelContents_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+        if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Add || e.NewItems is null)
         {
             return;
         }
 
-        foreach (TheGuideToTheNewEden.Core.Models.EarlyWarningContent content in e.NewItems!)
+        foreach (EarlyWarningContent content in e.NewItems)
         {
-            AppendLine(GetResourceBrush("SystemFillColorCriticalBrush", Brushes.OrangeRed), $"[{content.Time:HH:mm:ss}] ZKB > {content.Content}", null);
+            _pendingZkbAppends.Add(content);
+        }
+
+        while (_pendingZkbAppends.Count > 500)
+        {
+            _pendingZkbAppends.RemoveAt(0);
+        }
+
+        if (_zkbAppendScheduled)
+        {
+            return;
+        }
+
+        _zkbAppendScheduled = true;
+        Dispatcher.BeginInvoke(FlushPendingZkbAppends, System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    private void FlushPendingZkbAppends()
+    {
+        _zkbAppendScheduled = false;
+        if (_pendingZkbAppends.Count == 0)
+        {
+            return;
+        }
+
+        var batch = _pendingZkbAppends.ToArray();
+        _pendingZkbAppends.Clear();
+
+        foreach (var content in batch)
+        {
+            AppendLine(
+                GetResourceBrush("SystemFillColorCriticalBrush", Brushes.OrangeRed),
+                $"[{content.Time:HH:mm:ss}] ZKB > {content.Content}",
+                null);
         }
 
         TrimChatContents();
-        ChatContentsBox.ScrollToEnd();
+        if (ShouldAutoScroll())
+        {
+            ChatContentsBox.ScrollToEnd();
+        }
+    }
+
+    private bool ShouldAutoScroll()
+    {
+        var window = Window.GetWindow(this);
+        return IsVisible && (window is null || window.WindowState != WindowState.Minimized);
     }
 
     private void AppendChatContent(IntelChatContent content)
@@ -529,7 +608,10 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
     private void OnClearContentsClick(object sender, RoutedEventArgs e)
     {
         ChatContentsBox.Document.Blocks.Clear();
-        _viewModel.ChatContents.Clear();
+        _pendingChatAppends.Clear();
+        _pendingZkbAppends.Clear();
+        _viewModel.ClearChatContents();
+        _viewModel.ClearZkbIntelContents();
     }
 
     private static Brush GetResourceBrush(string key, Brush fallback)

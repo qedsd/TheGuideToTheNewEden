@@ -11882,6 +11882,21 @@ MainWindow.xaml(.cs)
   - 实机切换：预览运行中关闭/开启开关，标题栏均保持实色；开启后游戏区域能透出主窗口导航，关闭后回退旧路径；无崩溃。
   - 当前用户配置已保存 `UseNativeThumbnailOverlay=true`。
 
+## 阶段 273：频道预警长时运行的内存上限与批量刷新（2026-11-12）
+
+- 背景：多个多开预览 + 多个频道预警后台运行数小时后无响应；代码审计发现频道内容集合无上限，且每条消息都触发一次 UI 追加/裁剪/滚动。
+- 上限：
+  - `ChannelIntelObserver.Contents` 只保留最近 **2000** 条（原无限增长且 UI 未使用）。
+  - `ChannelIntelViewModel.ChatContents` 上限 **2000**，`ZKBIntelContents` 上限 **500**；
+  - 待刷新队列同样限制：聊天 2000、ZKB 500，超出丢弃最旧。
+- 批量刷新：
+  - `Session_ChatContentEvent` / `Session_ZKBIntelEvent` 不再直接逐条 `Dispatcher.BeginInvoke`；改为线程安全队列 + 单次调度；
+  - 每次 UI flush 最多 500 条聊天 / 200 条 ZKB，队列未清空时再调度下一批；
+  - 页面 `ChatContents_CollectionChanged` / `ZKBIntelContents_CollectionChanged` 再聚合一层，一次 Append + 一次 Trim + 一次 ScrollToEnd；
+  - 主窗口最小化或页面不可见时不再 `ScrollToEnd`（仍保留最近内容）。
+- 清空频道内容时同时清空 VM 队列和页面待追加列表，避免清空后旧消息又冒出来。
+- 验证：WPF build **0 错误**；未做数小时长跑复测，建议连续后台运行 4–8 小时观察内存/CPU。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

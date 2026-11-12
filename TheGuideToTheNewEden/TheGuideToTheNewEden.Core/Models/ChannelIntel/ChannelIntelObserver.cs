@@ -32,9 +32,10 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         public Map.IntelSolarSystemMap IntelMap { get; set; }
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>
-        /// 原始聊天内容
+        /// 原始聊天内容。仅保留最近一段，避免长时间后台运行无限增长。
         /// </summary>
         public List<IntelChatContent> Contents { get; private set; } = new List<IntelChatContent>();
+        private const int MaxStoredContents = 2000;
         public List<EarlyWarningContent> Warnings { get; private set; } = new List<EarlyWarningContent>();
         public WatcherChangeTypes WatcherChangeTypes { get; set; } = WatcherChangeTypes.Changed;
         public string FilePath
@@ -94,6 +95,11 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                 }
                             }
                             Contents.AddRange(newContents);
+                            if (Contents.Count > MaxStoredContents)
+                            {
+                                Contents.RemoveRange(0, Contents.Count - MaxStoredContents);
+                            }
+
                             OnContentUpdate?.Invoke(this, newContents);
                             if (newWarning.Count != 0)
                             {
