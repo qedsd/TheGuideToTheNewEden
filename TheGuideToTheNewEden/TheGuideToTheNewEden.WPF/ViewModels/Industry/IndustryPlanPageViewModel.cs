@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -15,6 +16,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.Models.Market;
+using TheGuideToTheNewEden.Core.Models.Planetary;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.Core.Services.Industry;
 using TheGuideToTheNewEden.WPF.Services;
@@ -139,8 +141,11 @@ public sealed class IndustryDecryptorOption
     public override string ToString() => Name;
 }
 
-public sealed class IndustryOverviewBuyLine
+/// <summary>采购清单的一行：某个目标产物子树里需要直接购买的材料（阶段 285：不再区分"当前产物"，而是带目标产物列）。</summary>
+public sealed class IndustryShoppingLine
 {
+    public int TargetTypeId { get; set; }
+    public string TargetName { get; set; } = string.Empty;
     public int TypeId { get; set; }
     public string Name { get; set; } = string.Empty;
     public long Quantity { get; set; }
@@ -149,6 +154,13 @@ public sealed class IndustryOverviewBuyLine
     public string QuantityText => $"{Quantity:N0}";
     public string UnitPriceText => UnitPrice > 0 ? $"{UnitPrice:N2}" : "—";
     public string TotalText => Total > 0 ? $"{Total:N0}" : "—";
+}
+
+/// <summary>采购清单的目标产物筛选项；<see cref="TargetTypeId"/> = 0 表示"全部"。</summary>
+public sealed class IndustryShoppingFilterOption
+{
+    public int TargetTypeId { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 public sealed class IndustryBlueprintJobItem
@@ -236,6 +248,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private IndustrySetting _setting;
     private readonly Dictionary<int, int> _manualDecisions = new();
     private readonly HashSet<int> _blacklist = new();
+    /// <summary>手动标记"不计入成本"的物品（阶段 273）；与买/造决策正交。</summary>
+    private readonly HashSet<int> _ignoredCostTypes = new();
     private IndustryBuildPlan? _lastPlan;
     private CancellationTokenSource? _operationCts;
     private DateTime? _resultSavedAt;
@@ -276,6 +290,18 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _inventionAttemptsOverride = _setting.InventionAttemptsOverride ?? 0;
         _inventionProbabilityOverridePercent = _setting.InventionProbabilityOverridePercent ?? 0;
         _inventionBpcRunsOverride = _setting.InventionBpcRunsOverride ?? 0;
+        _countInventionBlueprintCost = _setting.CountInventionBlueprintCost;
+        _inventionParallel = _setting.InventionParallel;
+        // 阶段 276：行星开发口径（顺带补上此前 ctor 漏读的 PlanetTaxPercent——它本来只在载入计划时赋值）。
+        _planetTaxPercent = _setting.PlanetTaxPercent;
+        _planetaryColoniesEnabled = _setting.PlanetaryColoniesEnabled;
+        _planetarySizingModeIndex = _setting.PlanetarySizingMode;
+        _planetaryPeriodDays = _setting.PlanetaryPeriodDays;
+        _planetaryCcuLevel = _setting.PlanetaryCcuLevel;
+        _planetaryMaxPlanets = _setting.PlanetaryMaxPlanets;
+        _planetaryRadiusKm = _setting.PlanetaryRadiusKm;
+        _planetaryCountSetupCost = _setting.PlanetaryCountSetupCost;
+        _planetaryUseLocationPlanets = _setting.PlanetaryUseLocationPlanets;
 
         foreach (var pair in _setting.ManualDecisions ?? new Dictionary<int, int>())
         {
@@ -284,6 +310,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         foreach (var id in _setting.Blacklist ?? new List<int>())
         {
             _blacklist.Add(id);
+        }
+        foreach (var id in _setting.IgnoredCostTypes ?? new List<int>())
+        {
+            _ignoredCostTypes.Add(id);
         }
         foreach (var rig in _setting.RigBonuses ?? new List<IndustryRigSetting>())
         {
@@ -442,6 +472,78 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     {
         get => _planetTaxPercent;
         set { if (Set(ref _planetTaxPercent, value)) OnPropertyChanged(nameof(EffectiveCostText)); }
+    }
+
+    // ── 行星开发（阶段 276）：BOM 里的行星产物按真实殖民地模型折算 ──
+    private bool _planetaryColoniesEnabled = true;
+    /// <summary>true（默认）= 用 PlanetaryPlanner 的殖民地模型；false = 旧的单条行星线估算。</summary>
+    public bool PlanetaryColoniesEnabled
+    {
+        get => _planetaryColoniesEnabled;
+        set { if (Set(ref _planetaryColoniesEnabled, value)) OnPropertyChanged(nameof(PlanetarySettingsEnabled)); }
+    }
+
+    /// <summary>行星口径是否生效（关闭时相关输入框禁用）。</summary>
+    public bool PlanetarySettingsEnabled => _planetaryColoniesEnabled;
+
+    private int _planetarySizingModeIndex;
+    /// <summary>产能口径：0 = 按可用殖民地（默认，殖民地越多工期越短）/ 1 = 按产出周期。</summary>
+    public int PlanetarySizingModeIndex
+    {
+        get => _planetarySizingModeIndex;
+        set
+        {
+            if (Set(ref _planetarySizingModeIndex, value))
+            {
+                OnPropertyChanged(nameof(PlanetaryPeriodEnabled));
+            }
+        }
+    }
+
+    /// <summary>「产出周期」只在"按产出周期"（下拉第 2 项，索引 1）下有意义。</summary>
+    public bool PlanetaryPeriodEnabled => _planetarySizingModeIndex == 1;
+
+    private double _planetaryPeriodDays = 7;
+    public double PlanetaryPeriodDays
+    {
+        get => _planetaryPeriodDays;
+        set => Set(ref _planetaryPeriodDays, value);
+    }
+
+    private double _planetaryCcuLevel = 5;
+    public double PlanetaryCcuLevel
+    {
+        get => _planetaryCcuLevel;
+        set => Set(ref _planetaryCcuLevel, value);
+    }
+
+    private double _planetaryMaxPlanets = 6;
+    public double PlanetaryMaxPlanets
+    {
+        get => _planetaryMaxPlanets;
+        set => Set(ref _planetaryMaxPlanets, value);
+    }
+
+    private double _planetaryRadiusKm;
+    public double PlanetaryRadiusKm
+    {
+        get => _planetaryRadiusKm;
+        set => Set(ref _planetaryRadiusKm, value);
+    }
+
+    private bool _planetaryCountSetupCost = true;
+    public bool PlanetaryCountSetupCost
+    {
+        get => _planetaryCountSetupCost;
+        set => Set(ref _planetaryCountSetupCost, value);
+    }
+
+    private bool _planetaryUseLocationPlanets;
+    /// <summary>用「成本指数位置」所在星系的行星当候选行星（勾选后按真实行星类型/半径规划）。</summary>
+    public bool PlanetaryUseLocationPlanets
+    {
+        get => _planetaryUseLocationPlanets;
+        set => Set(ref _planetaryUseLocationPlanets, value);
     }
 
     private double _materialBonusPercent;
@@ -734,6 +836,35 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     private bool _useMarketDepth;
     public bool UseMarketDepth { get => _useMarketDepth; set => Set(ref _useMarketDepth, value); }
 
+    private bool _inventionParallel = true;
+    /// <summary>发明与制造并行（阶段 281，默认开）：制造不等发明；发明仍计成本，只做时间对比。</summary>
+    public bool InventionParallel
+    {
+        get => _inventionParallel;
+        set => Set(ref _inventionParallel, value);
+    }
+
+    private bool _countInventionBlueprintCost;
+    /// <summary>
+    /// 发明步骤里的 T1 蓝图是否计入成本（阶段 273）。
+    /// <para>
+    /// 默认关闭：发明只是需要一张 T1 蓝图当"引子"，按"全新买入蓝图"计价会让 T2 产物成本虚高；
+    /// 开启后才把这张蓝图当采购计进总成本。改动后在已有结果时立即重算。
+    /// </para>
+    /// </summary>
+    public bool CountInventionBlueprintCost
+    {
+        get => _countInventionBlueprintCost;
+        set
+        {
+            if (Set(ref _countInventionBlueprintCost, value))
+            {
+                SaveSetting();
+                if (HasPlan) _ = CalculateAsync(preserveView: true);
+            }
+        }
+    }
+
     private bool _includeBlueprintJobs;
     public bool IncludeBlueprintJobs
     {
@@ -876,7 +1007,26 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public string RootsCountText => LanguageService.Format("IndustryPage_CountTotal", Roots.Count);
     public ObservableCollection<IndustryPlanNodeViewModel> FlatNodes { get; } = new();
     public ObservableCollection<IndustryCostSlice> CostSlices { get; } = new();
-    public ObservableCollection<IndustryOverviewBuyLine> OverviewBuyItems { get; } = new();
+    /// <summary>全部目标的采购行（未筛选）；<see cref="ShoppingItems"/> 是当前筛选项下的显示行。</summary>
+    private readonly List<IndustryShoppingLine> _allShoppingLines = new();
+
+    public ObservableCollection<IndustryShoppingLine> ShoppingItems { get; } = new();
+
+    /// <summary>目标产物筛选项，第一项固定是"全部"。</summary>
+    public ObservableCollection<IndustryShoppingFilterOption> ShoppingFilters { get; } = new();
+
+    private IndustryShoppingFilterOption? _selectedShoppingFilter;
+    public IndustryShoppingFilterOption? SelectedShoppingFilter
+    {
+        get => _selectedShoppingFilter;
+        set
+        {
+            if (Set(ref _selectedShoppingFilter, value))
+            {
+                ApplyShoppingFilter();
+            }
+        }
+    }
 
     // ───────────── 调度结果 ─────────────
 
@@ -915,10 +1065,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         get => _selectedOverviewTarget;
         set
         {
-            if (Set(ref _selectedOverviewTarget, value))
-            {
-                RebuildOverviewBuyItems();
-            }
+            Set(ref _selectedOverviewTarget, value);
         }
     }
 
@@ -926,7 +1073,57 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     public IndustryPlanNodeViewModel? SelectedNode
     {
         get => _selectedNode;
-        set => Set(ref _selectedNode, value);
+        set
+        {
+            if (Set(ref _selectedNode, value))
+            {
+                // 节点换了，下拉框要跟着显示新节点的成本方式
+                OnPropertyChanged(nameof(SelectedNodeCostModeIndex));
+            }
+        }
+    }
+
+    /// <summary>
+    /// 选中节点的成本计算方式（下拉框，选中即重算）：0 = 自动、1 = 制造、2 = 采购、3 = 不计入成本。
+    /// <para>
+    /// 读写映射：3 ↔ <see cref="_ignoredCostTypes"/>；1/2 ↔ <see cref="_manualDecisions"/>（0/1）；0 = 三者都清掉。
+    /// </para>
+    /// </summary>
+    public int SelectedNodeCostModeIndex
+    {
+        get => SelectedNode is null ? 0 : GetCostModeIndex(SelectedNode.TypeId);
+        set
+        {
+            if (SelectedNode is null) return;
+            // 重算进行中：节点集合正在重建，此时绑定回写不代表用户操作，忽略掉避免自激重算。
+            if (IsBusy) return;
+            // 值没变就不重算（下拉框刷新选中项也会走到这里）。
+            if (GetCostModeIndex(SelectedNode.TypeId) == value) return;
+
+            int typeId = SelectedNode.TypeId;
+            _ignoredCostTypes.Remove(typeId);
+            _manualDecisions.Remove(typeId);
+            _blacklist.Remove(typeId);
+            switch (value)
+            {
+                case 1: _manualDecisions[typeId] = 0; break;
+                case 2: _manualDecisions[typeId] = 1; break;
+                case 3: _ignoredCostTypes.Add(typeId); break;
+            }
+
+            SaveSetting();
+            OnPropertyChanged();
+            if (HasPlan) _ = CalculateAsync(preserveView: true);
+        }
+    }
+
+    /// <summary>某个物品当前的成本方式索引（0 自动 / 1 制造 / 2 采购 / 3 不计入成本）。</summary>
+    private int GetCostModeIndex(int typeId)
+    {
+        if (_ignoredCostTypes.Contains(typeId)) return 3;
+        if (_manualDecisions.TryGetValue(typeId, out var decision)) return decision == 1 ? 2 : 1;
+        if (_blacklist.Contains(typeId)) return 2;
+        return 0;
     }
 
     private string _summaryTargets = "—";
@@ -1485,7 +1682,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         BusyProgressPercent = total > 0 ? Math.Min(100, page * 100.0 / total) : 0;
     }
 
-    public async Task CalculateAsync()
+    /// <summary>
+    /// 重算 BOM。<paramref name="preserveView"/> = true 时**只刷数据不动页面**：
+    /// 保持当前页签（计划设置 / 计划详细、排程 / 步骤 / 工位 / 关系 / BOM、内层页签）与选中的节点，
+    /// 用于"改了某个节点的成本方式 / 开关后自动重算"这类场景；点「执行计划」仍走默认的"跳排程"行为。
+    /// </summary>
+    public async Task CalculateAsync(bool preserveView = false)
     {
         if (Targets.Count == 0)
         {
@@ -1496,6 +1698,19 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         {
             return;
         }
+
+        // 重算前的界面位置：FillPlan 会重建节点集合，这里先记下页签与选中节点（按 TypeID + 扁平下标双保险恢复）。
+        ViewState? viewState = preserveView
+            ? new ViewState(
+                SectionTabIndex,
+                ResultTabIndex,
+                DetailTabIndex,
+                SelectedNode?.TypeId,
+                SelectedNode is null ? -1 : FlatNodes.IndexOf(SelectedNode),
+                SelectedOverviewTarget?.TypeId,
+                FlatNodes.Where(p => p.IsExpanded).Select(p => p.TypeId).ToHashSet(),
+                FlatNodes.Select(p => p.TypeId).ToHashSet())
+            : null;
 
         BeginBusy(LanguageService.Get("IndustryPage_Prepare"));
         var cancellationToken = BeginOperation();
@@ -1573,11 +1788,21 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             options.StructureModifiers[IndustryActivity.Manufacturing] = building;
             options.StructureModifiers[IndustryActivity.Invention] = building;
             options.StructureModifiers[IndustryActivity.Reaction] = building;
+            options.Planetary = BuildPlanetaryOptions(contexts);
+            // 排程的行星产线按"每角色殖民地"展开。
+            var planetSlots = (int)Math.Round(Math.Clamp(PlanetaryMaxPlanets, 1, 6));
+            foreach (var profile in options.CharacterProfiles)
+            {
+                profile.PlanetSlots = planetSlots;
+            }
 
             options.Decisions = _manualDecisions.ToDictionary(
                 p => p.Key,
                 p => p.Value == 1 ? IndustryDecision.Buy : IndustryDecision.Build);
             options.Blacklist = new HashSet<int>(_blacklist);
+            options.IgnoredCostTypes = new HashSet<int>(_ignoredCostTypes);
+            options.InventionParallel = InventionParallel;
+            options.CountInventionBlueprintCost = CountInventionBlueprintCost;
             options.Hangar = _setting.VirtualHangar is null
                 ? new Dictionary<int, long>()
                 : new Dictionary<int, long>(_setting.VirtualHangar);
@@ -1592,6 +1817,10 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 options.CharacterProfiles.RemoveAll(p => p.CharacterId == 0);
                 options.CharacterProfiles.AddRange(customProfiles);
+                foreach (var profile in customProfiles)
+                {
+                    profile.PlanetSlots = planetSlots;
+                }
             }
 
             BusyText = LanguageService.Get("IndustryPage_Expanding");
@@ -1601,7 +1830,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             var plan = await Task.Run(() => new IndustrySolver(options, cancellationToken).Solve(targets), cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            FillPlan(plan, contexts.Count + customProfiles.Count, scheduleOptions: options);
+            FillPlan(plan, contexts.Count + customProfiles.Count, scheduleOptions: options, keepView: viewState);
             PageNotifyService.Success(LanguageService.Format("IndustryPage_CalcDone",
                 plan.Summary.BuildRuns.Values.Sum()));
         }
@@ -1631,7 +1860,11 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         Roots.Clear();
         FlatNodes.Clear();
         CostSlices.Clear();
-        OverviewBuyItems.Clear();
+        _allShoppingLines.Clear();
+        ShoppingItems.Clear();
+        ShoppingFilters.Clear();
+        _selectedShoppingFilter = null;
+        OnPropertyChanged(nameof(SelectedShoppingFilter));
         SelectedNode = null;
         SelectedOverviewTarget = null;
         HasPlan = false;
@@ -1794,7 +2027,18 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         return activity?.Time ?? 0;
     }
 
-    private void FillPlan(IndustryBuildPlan plan, int characterCount, DateTime? resultSavedAt = null, IndustrySolverOptions? scheduleOptions = null)
+    /// <summary>重算前的界面位置快照（仅 <see cref="CalculateAsync(bool)"/> 的 preserveView 路径用）。</summary>
+    private sealed record ViewState(
+        int SectionTab,
+        int ResultTab,
+        int DetailTab,
+        int? NodeTypeId,
+        int NodeIndex,
+        int? OverviewTypeId,
+        HashSet<int> ExpandedTypeIds,
+        HashSet<int> KnownTypeIds);
+
+    private void FillPlan(IndustryBuildPlan plan, int characterCount, DateTime? resultSavedAt = null, IndustrySolverOptions? scheduleOptions = null, ViewState? keepView = null)
     {
         _lastPlan = plan;
         _resultSavedAt = resultSavedAt ?? DateTime.Now;
@@ -1806,9 +2050,18 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         {
             Roots.Add(BuildNodeViewModel(target, 0, totalCost));
         }
+        if (keepView is not null)
+        {
+            // 保留用户操作前的展开/收起状态（节点是新建实例，只能按 TypeID 还原）。
+            ApplyExpansion(Roots, keepView.ExpandedTypeIds, keepView.KnownTypeIds);
+        }
         RebuildFlatNodes();
-        SelectedNode = FlatNodes.FirstOrDefault();
-        SelectedOverviewTarget = Roots.FirstOrDefault();
+        RebuildShoppingList();
+        // preserveView 时把选中节点还原回去（节点集合是新建的实例，不能直接复用旧引用）。
+        SelectedNode = keepView is null ? FlatNodes.FirstOrDefault() : RestoreNode(keepView);
+        SelectedOverviewTarget = keepView is null
+            ? Roots.FirstOrDefault()
+            : Roots.FirstOrDefault(p => p.TypeId == keepView.OverviewTypeId) ?? Roots.FirstOrDefault();
         HasPlan = Roots.Count > 0;
         OnPropertyChanged(nameof(HasBomTruncation));
         OnPropertyChanged(nameof(BomWarningText));
@@ -1857,9 +2110,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
         SetMarketStatus(UseMarketDepth ? "IndustryPage_MarketDepthStatus" : "IndustryPage_MarketAverageStatus", DateTime.Now);
         SetCharacterStatus(characterCount > 0 ? "IndustryPage_CharacterStatus" : "IndustryPage_NoCharacterStatus", characterCount);
-        SectionTabIndex = 1;
-        ResultTabIndex = 0;
-        DetailTabIndex = 0;
+        if (keepView is null)
+        {
+            SectionTabIndex = 1;
+            ResultTabIndex = 0;
+            DetailTabIndex = 0;
+        }
 
         if (scheduleOptions is not null)
         {
@@ -1882,7 +2138,124 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             Schedule = null;
         }
         OnPropertyChanged(nameof(CanReassignSchedule));
-        ResultTabIndex = HasSchedule ? 1 : 0;
+        if (keepView is null)
+        {
+            // 阶段 282：执行计划后停在「计划详细 → 概况」，不再自动切到生产详情（用户要求）。
+            SectionTabIndex = 1;
+            ResultTabIndex = 0;
+            DetailTabIndex = 0;
+        }
+        else
+        {
+            // 只刷数据：把用户操作前的页签位置原样放回去。
+            SectionTabIndex = keepView.SectionTab;
+            ResultTabIndex = keepView.ResultTab;
+            DetailTabIndex = keepView.DetailTab;
+        }
+    }
+
+    /// <summary>
+    /// 按重算前记录的 TypeID 集合还原展开状态：用户见过的节点按快照还原（含"仍然收起"），
+    /// 重算后新冒出来的节点保留默认的"前两层展开"，不至于因为切成本方式而把新子树全藏起来。
+    /// </summary>
+    private static void ApplyExpansion(IEnumerable<IndustryPlanNodeViewModel> nodes, HashSet<int> expandedTypeIds, HashSet<int> knownTypeIds)
+    {
+        foreach (var node in nodes)
+        {
+            if (node.HasChildren && knownTypeIds.Contains(node.TypeId))
+            {
+                node.IsExpanded = expandedTypeIds.Contains(node.TypeId);
+            }
+            ApplyExpansion(node.Children, expandedTypeIds, knownTypeIds);
+        }
+    }
+
+    /// <summary>
+    /// 在重建后的扁平节点表里找回原来的选中节点：优先"同一 TypeID 且下标最接近"，
+    /// 其次"同 TypeID 的第一个"（成本方式改变可能让子树结构变化，下标不再一致），最后退到第一个节点。
+    /// </summary>
+    private IndustryPlanNodeViewModel? RestoreNode(ViewState state)
+    {
+        if (FlatNodes.Count == 0)
+        {
+            return null;
+        }
+        if (state.NodeTypeId is not { } typeId)
+        {
+            return FlatNodes.FirstOrDefault();
+        }
+
+        var same = FlatNodes.Where(p => p.TypeId == typeId).ToList();
+        if (same.Count == 0)
+        {
+            // 目标节点整棵消失（例如强制采购后不再展开）：退到最近下标的节点。
+            return state.NodeIndex >= 0 && state.NodeIndex < FlatNodes.Count
+                ? FlatNodes[state.NodeIndex]
+                : FlatNodes.FirstOrDefault();
+        }
+        return state.NodeIndex < 0
+            ? same[0]
+            : same.OrderBy(p => Math.Abs(FlatNodes.IndexOf(p) - state.NodeIndex)).First();
+    }
+
+    /// <summary>
+    /// 把页面上的行星设置 + 参与角色 + 候选行星组装成求解参数（阶段 276）。
+    /// 候选行星只在勾选「用成本指数位置的星系行星」时提供；否则规划器按行星类型 + 半径估算。
+    /// </summary>
+    private IndustryPlanetaryOptions BuildPlanetaryOptions(IReadOnlyList<CharacterContext> contexts)
+    {
+        var options = new IndustryPlanetaryOptions
+        {
+            Enabled = PlanetaryColoniesEnabled,
+            // 下拉顺序：0 = 按可用殖民地（默认，工期最短）/ 1 = 按产出周期。
+            SizingMode = PlanetarySizingModeIndex == 0
+                ? IndustryPlanetarySizingMode.AvailableColonies
+                : IndustryPlanetarySizingMode.FitPeriod,
+            PeriodDays = Math.Clamp(PlanetaryPeriodDays, 1, 30),
+            CcuLevel = (int)Math.Round(Math.Clamp(PlanetaryCcuLevel, 0, 5)),
+            MaxPlanetsPerCharacter = (int)Math.Round(Math.Clamp(PlanetaryMaxPlanets, 1, 6)),
+            RadiusKm = Math.Max(0, PlanetaryRadiusKm),
+            CountSetupCost = PlanetaryCountSetupCost,
+            Mode = PlanetaryPlanMode.SelfSufficient,
+        };
+
+        foreach (var context in contexts)
+        {
+            options.Characters.Add(new PlanetaryCharacterInput
+            {
+                CharacterId = context.Character.CharacterID,
+                Name = context.Character.CharacterName,
+                CcuLevel = options.CcuLevel,
+                MaxPlanets = options.MaxPlanetsPerCharacter,
+            });
+        }
+
+        var systemId = SelectedLocation?.SolarSystemId ?? 0;
+        if (PlanetaryUseLocationPlanets && systemId > 0)
+        {
+            try
+            {
+                var planets = MapDenormalizeService.QueryPlanetsBySolarSystemID((int)systemId);
+                foreach (var planet in planets ?? new List<MapDenormalize>())
+                {
+                    options.Planets.Add(new PlanetaryPlanetInput
+                    {
+                        PlanetId = planet.ItemID,
+                        Name = planet.ItemName,
+                        TypeId = planet.TypeID,
+                        RadiusKm = planet.RadiusKm,
+                        SolarSystemId = planet.SolarSystemID,
+                        SolarSystemName = SelectedLocation?.Name,
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+        }
+
+        return options;
     }
 
     private void AddCostSlice(string kind, string name, double value, double total)
@@ -2024,36 +2397,16 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
     }
 
     // ───────────── 节点动作 ─────────────
+    // 阶段 273：原来的「强制制造 / 强制采购 / 黑名单」三个按钮收成一个下拉框
+    // （<see cref="SelectedNodeCostModeIndex"/>），选中即重算。
 
-    public void ForceBuySelected()
-    {
-        if (SelectedNode is null) return;
-        _manualDecisions[SelectedNode.TypeId] = 1;
-        _blacklist.Remove(SelectedNode.TypeId);
-        _ = CalculateAsync();
-    }
-
-    public void ForceBuildSelected()
-    {
-        if (SelectedNode is null) return;
-        _manualDecisions[SelectedNode.TypeId] = 0;
-        _blacklist.Remove(SelectedNode.TypeId);
-        _ = CalculateAsync();
-    }
-
-    public void BlacklistSelected()
-    {
-        if (SelectedNode is null) return;
-        _blacklist.Add(SelectedNode.TypeId);
-        _manualDecisions.Remove(SelectedNode.TypeId);
-        _ = CalculateAsync();
-    }
-
+    /// <summary>清掉所有手动成本设置：买/造决策、黑名单、以及"不计入成本"标记。</summary>
     public void ClearManualDecisions()
     {
         _manualDecisions.Clear();
         _blacklist.Clear();
-        if (HasPlan) _ = CalculateAsync();
+        _ignoredCostTypes.Clear();
+        if (HasPlan) _ = CalculateAsync(preserveView: true);
     }
 
     // ───────────── 刷新 ─────────────
@@ -2155,18 +2508,74 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
 
     // ───────────── 导出 ─────────────
 
-    private void RebuildOverviewBuyItems()
+    /// <summary>按"目标产物 × 材料"汇总全部采购行，并重建筛选项（第一项"全部"）。</summary>
+    private void RebuildShoppingList()
     {
-        OverviewBuyItems.Clear();
-        foreach (var line in BuildBuyLines(SelectedOverviewTarget?.Model))
+        _allShoppingLines.Clear();
+        foreach (var root in Roots)
         {
-            OverviewBuyItems.Add(line);
+            foreach (var line in BuildBuyLines(root.Model))
+            {
+                _allShoppingLines.Add(new IndustryShoppingLine
+                {
+                    TargetTypeId = root.TypeId,
+                    TargetName = root.Name,
+                    TypeId = line.TypeId,
+                    Name = line.Name,
+                    Quantity = line.Quantity,
+                    UnitPrice = line.UnitPrice,
+                });
+            }
+        }
+
+        ShoppingFilters.Clear();
+        ShoppingFilters.Add(new IndustryShoppingFilterOption
+        {
+            TargetTypeId = 0,
+            Name = LanguageService.Get("IndustryPage_ShoppingFilterAll"),
+        });
+        foreach (var group in _allShoppingLines
+                     .GroupBy(p => new { p.TargetTypeId, p.TargetName })
+                     .OrderBy(p => p.Key.TargetName, StringComparer.CurrentCultureIgnoreCase))
+        {
+            ShoppingFilters.Add(new IndustryShoppingFilterOption
+            {
+                TargetTypeId = group.Key.TargetTypeId,
+                Name = group.Key.TargetName,
+            });
+        }
+
+        _selectedShoppingFilter = ShoppingFilters.FirstOrDefault();
+        OnPropertyChanged(nameof(SelectedShoppingFilter));
+        ApplyShoppingFilter();
+    }
+
+    /// <summary>
+    /// 按当前筛选项刷新显示行（0 = 全部）：同一物品跨目标产物合并数量，
+    /// 不再区分"这一行属于哪个产物"——筛选项只决定统计范围。
+    /// </summary>
+    private void ApplyShoppingFilter()
+    {
+        ShoppingItems.Clear();
+        var targetTypeId = SelectedShoppingFilter?.TargetTypeId ?? 0;
+        foreach (var group in _allShoppingLines
+                     .Where(p => targetTypeId == 0 || p.TargetTypeId == targetTypeId)
+                     .GroupBy(p => p.TypeId)
+                     .OrderBy(g => g.First().Name, StringComparer.CurrentCultureIgnoreCase))
+        {
+            ShoppingItems.Add(new IndustryShoppingLine
+            {
+                TypeId = group.Key,
+                Name = group.First().Name,
+                Quantity = group.Sum(p => p.Quantity),
+                UnitPrice = group.Select(p => p.UnitPrice).FirstOrDefault(p => p > 0),
+            });
         }
     }
 
-    private static List<IndustryOverviewBuyLine> BuildBuyLines(IndustryBuildNode? target)
+    private static List<IndustryShoppingLine> BuildBuyLines(IndustryBuildNode? target)
     {
-        var lines = new Dictionary<int, IndustryOverviewBuyLine>();
+        var lines = new Dictionary<int, IndustryShoppingLine>();
         void Visit(IndustryBuildNode? node)
         {
             if (node is null) return;
@@ -2174,7 +2583,7 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             {
                 if (!lines.TryGetValue(node.TypeID, out var line))
                 {
-                    line = new IndustryOverviewBuyLine
+                    line = new IndustryShoppingLine
                     {
                         TypeId = node.TypeID,
                         Name = node.TypeName,
@@ -2194,24 +2603,29 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             .OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
-
-    public void CopyTargetPurchaseList(IndustryPlanNodeViewModel? target)
+    /// <summary>复制当前筛选下的采购清单（制表符分隔，可直接粘进表格）。</summary>
+    public void CopyShoppingList()
     {
-        if (target is null)
+        if (ShoppingItems.Count == 0)
         {
-            PageNotifyService.Info(LanguageService.Get("IndustryPage_SelectProduct"));
-            return;
-        }
-        var lines = BuildBuyLines(target.Model);
-        if (lines.Count == 0)
-        {
-            PageNotifyService.Info(LanguageService.Get("IndustryPage_ProductNothingToBuy"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_NothingToBuy"));
             return;
         }
         try
         {
-            Clipboard.SetText(string.Join(Environment.NewLine,
-                lines.Select(p => $"{p.Name}\t{p.Quantity:N0}")));
+            var builder = new StringBuilder();
+            builder.AppendLine(string.Join("\t",
+                LanguageService.Get("IndustryPage_Col_Item"),
+                LanguageService.Get("General_Quantity"),
+                LanguageService.Get("IndustryPage_UnitPrice"),
+                LanguageService.Get("IndustryPage_Amount")));
+            foreach (var line in ShoppingItems)
+            {
+                builder.AppendLine(string.Join("\t",
+                    line.Name, line.QuantityText, line.UnitPriceText, line.TotalText));
+            }
+            if (!ClipboardHelper.CopyOrNotify(builder.ToString()))
+                return;
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)
@@ -2221,11 +2635,12 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         }
     }
 
-    public void ExportTargetCsv(IndustryPlanNodeViewModel? target)
+    /// <summary>导出当前筛选下的采购清单为 CSV。</summary>
+    public void ExportShoppingCsv()
     {
-        if (target is null)
+        if (ShoppingItems.Count == 0)
         {
-            PageNotifyService.Info(LanguageService.Get("IndustryPage_SelectProduct"));
+            PageNotifyService.Info(LanguageService.Get("IndustryPage_NothingToBuy"));
             return;
         }
         try
@@ -2233,13 +2648,17 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             var dialog = new SaveFileDialog
             {
                 Filter = "CSV (*.csv)|*.csv",
-                FileName = $"industry-target-{DateTime.Now:yyyyMMdd-HHmm}.csv",
+                FileName = $"industry-shopping-{DateTime.Now:yyyyMMdd-HHmm}.csv",
             };
             if (dialog.ShowDialog() != true) return;
 
             var builder = new StringBuilder();
-            builder.AppendLine("Target,Item,Decision,Activity,Needed,Produced,Runs,ToBuy,JobCost,UnitPrice,FullCost,CashCost,Revenue,Profit,Margin");
-            WriteNodeCsv(builder, target.Model, target.Name, 0);
+            builder.AppendLine("Item,Quantity,UnitPrice,Total");
+            foreach (var line in ShoppingItems)
+            {
+                builder.AppendLine(string.Join(",",
+                    CsvCell(line.Name), line.Quantity, line.UnitPriceText, line.TotalText));
+            }
             File.WriteAllText(dialog.FileName, builder.ToString(), new UTF8Encoding(true));
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Exported"));
         }
@@ -2249,6 +2668,18 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
             PageNotifyService.Error(LanguageService.Get("IndustryPage_ExportFailed"));
         }
     }
+
+    private static string CsvCell(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+        return value.IndexOf(',') >= 0 || value.IndexOf('"') >= 0
+            ? "\"" + value.Replace("\"", "\"\"") + "\""
+            : value;
+    }
+
 
     public void CopyPurchaseList()
     {
@@ -2269,7 +2700,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
                     : pair.Key.ToString();
                 builder.AppendLine(name + "\t" + pair.Value);
             }
-            Clipboard.SetText(builder.ToString());
+            if (!ClipboardHelper.CopyOrNotify(builder.ToString()))
+                return;
             PageNotifyService.Success(LanguageService.Get("IndustryPage_Copied"));
         }
         catch (Exception ex)
@@ -2444,8 +2876,16 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         var name = PlanName?.Trim();
         if (string.IsNullOrEmpty(name))
         {
-            PageNotifyService.Warning(LanguageService.Get("IndustryPage_PlanNameRequired"));
-            return;
+            // 阶段 279：计划详细页右上角的「保存计划」是一键保存，不强迫先取名——
+            // 没名字就用「首个目标 · 时间」自动生成，仍可在「已保存计划」里改名。
+            if (Targets.Count == 0)
+            {
+                PageNotifyService.Warning(LanguageService.Get("IndustryPage_NoTargetForRun"));
+                return;
+            }
+
+            name = BuildDefaultPlanName();
+            PlanName = name;
         }
         if (Targets.Count == 0)
         {
@@ -2468,6 +2908,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         ReloadSavedPlans();
         SelectedSavedPlan = SavedPlans.FirstOrDefault(p => p.Id == plan.Id);
         PageNotifyService.Success(LanguageService.Get(existed ? "IndustryPage_PlanUpdated" : "IndustryPage_PlanSaved"));
+    }
+
+    /// <summary>给"一键保存"生成默认计划名：首个目标名 + 时间（如「火箭燃料 · 11-06 17:40」）。</summary>
+    private string BuildDefaultPlanName()
+    {
+        var first = Targets.Select(p => p.Name).FirstOrDefault(p => !string.IsNullOrWhiteSpace(p));
+        var stamp = DateTime.Now.ToString("MM-dd HH:mm", CultureInfo.CurrentCulture);
+        return string.IsNullOrWhiteSpace(first) ? stamp : $"{first} · {stamp}";
     }
 
     public void OverwriteSelectedPlan()
@@ -2624,6 +3072,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         FacilityTaxPercent = _setting.FacilityTaxPercent;
         SccSurchargePercent = _setting.SccSurchargePercent;
         PlanetTaxPercent = _setting.PlanetTaxPercent;
+        PlanetaryColoniesEnabled = _setting.PlanetaryColoniesEnabled;
+        PlanetarySizingModeIndex = _setting.PlanetarySizingMode;
+        PlanetaryPeriodDays = _setting.PlanetaryPeriodDays;
+        PlanetaryCcuLevel = _setting.PlanetaryCcuLevel;
+        PlanetaryMaxPlanets = _setting.PlanetaryMaxPlanets;
+        PlanetaryRadiusKm = _setting.PlanetaryRadiusKm;
+        PlanetaryCountSetupCost = _setting.PlanetaryCountSetupCost;
+        PlanetaryUseLocationPlanets = _setting.PlanetaryUseLocationPlanets;
         MaterialBonusPercent = _setting.MaterialBonusPercent;
         TimeBonusPercent = _setting.TimeBonusPercent;
         CostBonusPercent = _setting.CostBonusPercent;
@@ -2641,6 +3097,8 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         UseOwnedBlueprints = _setting.UseOwnedBlueprints;
         UseCharacterSkills = _setting.UseCharacterSkills;
         UseMarketDepth = _setting.UseMarketDepth;
+        CountInventionBlueprintCost = _setting.CountInventionBlueprintCost;
+        InventionParallel = _setting.InventionParallel;
         SellImmediately = _setting.SellImmediately;
         SalesTaxPercent = _setting.SalesTaxPercent;
         BrokerFeePercent = _setting.BrokerFeePercent;
@@ -2669,6 +3127,11 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         foreach (var id in _setting.Blacklist ?? new List<int>())
         {
             _blacklist.Add(id);
+        }
+        _ignoredCostTypes.Clear();
+        foreach (var id in _setting.IgnoredCostTypes ?? new List<int>())
+        {
+            _ignoredCostTypes.Add(id);
         }
 
         if (Decryptors.Count > 0)
@@ -2700,6 +3163,14 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.FacilityTaxPercent = FacilityTaxPercent;
         _setting.SccSurchargePercent = SccSurchargePercent;
         _setting.PlanetTaxPercent = PlanetTaxPercent;
+        _setting.PlanetaryColoniesEnabled = PlanetaryColoniesEnabled;
+        _setting.PlanetarySizingMode = PlanetarySizingModeIndex;
+        _setting.PlanetaryPeriodDays = PlanetaryPeriodDays;
+        _setting.PlanetaryCcuLevel = (int)Math.Round(Math.Clamp(PlanetaryCcuLevel, 0, 5));
+        _setting.PlanetaryMaxPlanets = (int)Math.Round(Math.Clamp(PlanetaryMaxPlanets, 1, 6));
+        _setting.PlanetaryRadiusKm = Math.Max(0, PlanetaryRadiusKm);
+        _setting.PlanetaryCountSetupCost = PlanetaryCountSetupCost;
+        _setting.PlanetaryUseLocationPlanets = PlanetaryUseLocationPlanets;
         _setting.DefaultME = (int)Math.Round(MeLevel);
         _setting.DefaultTE = (int)Math.Round(TeLevel);
         _setting.SpaceModifier = SpaceModifier;
@@ -2730,12 +3201,15 @@ public sealed class IndustryPlanPageViewModel : INotifyPropertyChanged
         _setting.UseOwnedBlueprints = UseOwnedBlueprints;
         _setting.UseCharacterSkills = UseCharacterSkills;
         _setting.UseMarketDepth = UseMarketDepth;
+        _setting.CountInventionBlueprintCost = CountInventionBlueprintCost;
+        _setting.InventionParallel = InventionParallel;
         _setting.IncludeBlueprintJobs = IncludeBlueprintJobs;
         _setting.SellImmediately = SellImmediately;
         _setting.SalesTaxPercent = SalesTaxPercent;
         _setting.BrokerFeePercent = BrokerFeePercent;
         _setting.ManualDecisions = new Dictionary<int, int>(_manualDecisions);
         _setting.Blacklist = _blacklist.ToList();
+        _setting.IgnoredCostTypes = _ignoredCostTypes.ToList();
         _setting.SelectedWarehouseIds = Warehouses.Where(p => p.IsSelected).Select(p => p.Id).ToList();
         _setting.SelectedCharacterIds = Characters.Where(p => p.IsSelected)
             .Select(p => p.Character.CharacterID)

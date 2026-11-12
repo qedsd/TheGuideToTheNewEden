@@ -45,7 +45,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Grid>
+                        <Grid ClipToBounds="True">
                             <Border
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="3"
@@ -106,6 +106,7 @@
                         FontSize="12"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Text="{Binding Name}"
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextTrimming="CharacterEllipsis" />
                     <TextBlock
                         Margin="4,0,0,0"
@@ -129,6 +130,7 @@
                         FontSize="12"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Text="{Binding Name}"
+                        controls:ItemLink.TypeId="{Binding TypeId}"
                         TextWrapping="Wrap" />
                     <StackPanel Margin="0,1,0,0" Orientation="Horizontal">
                         <TextBlock
@@ -536,7 +538,7 @@
                                                                         x:Name="LineKind"
                                                                         FontSize="12"
                                                                         Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                                                        Text="{Binding Kind}" />
+                                                                        Text="{Binding KindText}" />
                                                                     <TextBlock
                                                                         Margin="5,0,0,0"
                                                                         FontSize="11"
@@ -681,6 +683,7 @@
                                                         FontSize="12"
                                                         FontWeight="SemiBold"
                                                         Text="{Binding Job.TypeName}"
+                                                        controls:ItemLink.TypeId="{Binding Job.TypeId}"
                                                         TextWrapping="NoWrap" />
                                                     <TextBlock
                                                         FontSize="12"
@@ -873,6 +876,7 @@
                                                                             FontSize="12"
                                                                             FontWeight="SemiBold"
                                                                             Text="{Binding FirstJob.TypeName}"
+                                                                            controls:ItemLink.TypeId="{Binding FirstJob.TypeId}"
                                                                             TextTrimming="CharacterEllipsis" />
                                                                         <TextBlock
                                                                             FontFamily="Cascadia Code, Consolas"
@@ -1112,6 +1116,7 @@
                                                 FontSize="15"
                                                 FontWeight="SemiBold"
                                                 Text="{Binding TypeName}"
+                                                controls:ItemLink.TypeId="{Binding TypeId}"
                                                 TextWrapping="Wrap" />
                                             <TextBlock
                                                 Margin="0,2,0,0"
@@ -1154,6 +1159,24 @@
                                                     <TextBlock FontSize="12" Text="{Binding TimeMultiplierText}" />
                                                 </StackPanel>
                                             </Grid>
+
+                                            <!--  阶段 281：并行口径下对比"发明结束时制造是否已开工"  -->
+                                            <StackPanel
+                                                Margin="0,5,0,0"
+                                                Visibility="{Binding HasInventionWindow, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Style="{StaticResource ScheduleLabel}" Text="{DynamicResource IndustrySchedule_InventionWindow}" />
+                                                <TextBlock FontSize="12" Text="{Binding InventionWindowText}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsInventionLate}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
                                             <TextBlock Style="{StaticResource ScheduleSectionTitle}" Text="{DynamicResource IndustrySchedule_Input}" />
                                             <ItemsControl ItemTemplate="{StaticResource MaterialChipTemplate}" ItemsSource="{Binding Inputs}">
                                                 <ItemsControl.ItemsPanel>

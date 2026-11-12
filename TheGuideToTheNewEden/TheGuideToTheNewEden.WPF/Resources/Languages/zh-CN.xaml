@@ -441,6 +441,7 @@
     <sys:String x:Key="General_No">否</sys:String>
     <sys:String x:Key="General_Yes">是</sys:String>
     <sys:String x:Key="General_Close">关闭</sys:String>
+    <sys:String x:Key="General_ClipboardBusy">剪贴板被其它程序占用，请稍后重试</sys:String>
     <sys:String x:Key="General_Retry">重试</sys:String>
     <sys:String x:Key="General_Sec">安等</sys:String>
     <sys:String x:Key="General_Add">添加</sys:String>
@@ -487,7 +488,7 @@
     <sys:String x:Key="GeneralSettingPage_NeedLocalization">使用本地化数据库</sys:String>
     <sys:String x:Key="SettingPage_General_Desc">软件语言、主题颜色、服务器、数据库语言</sys:String>
     <sys:String x:Key="SettingPage_Home">主页</sys:String>
-    <sys:String x:Key="SettingPage_Home_Desc">主页卡片的显示开关；快捷方式的增删与分组在主页「编辑」模式进行</sys:String>
+    <sys:String x:Key="SettingPage_Home_Desc">主页卡片的显示开关；快捷方式的增删、排序与宽窄也在这里管理</sys:String>
     <sys:String x:Key="SettingPage_GameLog">游戏日志</sys:String>
     <sys:String x:Key="SettingPage_GameLog_Desc">日志路径、有效天数、显示数量</sys:String>
     <sys:String x:Key="SettingPage_Structures">玩家建筑</sys:String>
@@ -807,9 +808,12 @@
     <sys:String x:Key="SkillPage_TrainedSkillLevel">已掌握的等级</sys:String>
     <sys:String x:Key="SkillPage_SkillpointsInSkill">已训练的技能点</sys:String>
     <sys:String x:Key="CharacterPage_Sp">技能点</sys:String>
+    <sys:String x:Key="CharacterPage_Isk">ISK</sys:String>
+    <sys:String x:Key="CharacterPage_CardView">卡片视图</sys:String>
+    <sys:String x:Key="CharacterPage_ListView">列表视图</sys:String>
     <sys:String x:Key="CharacterPage_Birthday">出生</sys:String>
     <sys:String x:Key="CharacterPage_Characters">角色列表</sys:String>
-    <sys:String x:Key="CharacterPage_DragHint">拖拽角色卡片可调整顺序</sys:String>
+    <sys:String x:Key="CharacterPage_DragHint">拖拽角色可调整顺序</sys:String>
     <sys:String x:Key="CharacterPage_Remove">删除角色</sys:String>
     <sys:String x:Key="CharacterPage_TryUpdateTokenFailed">Token已过期，尝试刷新失败</sys:String>
     <sys:String x:Key="CharacterPage_Online">在线</sys:String>
@@ -958,6 +962,7 @@
     <sys:String x:Key="BusinessPage_BaseSetting">基本设置</sys:String>
     <sys:String x:Key="BusinessPage_AdvancedSetting">进阶设置</sys:String>
     <sys:String x:Key="BusinessPage_FilterList">排除列表</sys:String>
+    <sys:String x:Key="BusinessPage_ExcludePick">选择物品</sys:String>
     <sys:String x:Key="BusinessPage_SourceMarket">源市场</sys:String>
     <sys:String x:Key="BusinessPage_DestinationMarket">目的市场</sys:String>
     <sys:String x:Key="BusinessPage_TargetItems">目标物品</sys:String>
@@ -1020,6 +1025,52 @@
     <sys:String x:Key="BusinessPage_HeatValue">热力值</sys:String>
     <sys:String x:Key="BusinessPage_HeatValueDay">历史价格天数</sys:String>
     <sys:String x:Key="BusinessPage_HeatValueThreshold">销量阈值</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyPrice">买入价格口径：决定“源市场买入价”怎么取——吃卖单（SellTop5/SellTop）、按目标量吃单（SellAvailable）、直接吃买单（Buy 系列）还是用历史价；默认吃卖单前 5% 档均价。它直接决定净利润与回报率的高低，也影响成交覆盖率的统计方式。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyHistoryDay">买入侧选“历史…”口径时的统计天数：天数越多价格越稳，但反应越慢；适合长周期、低波动物品。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BuyPriceScale">买入价缩放系数：&lt;1 保守（按更低成本估算，利润更真实），&gt;1 激进（默认 1 = 不缩放）。只作用于买入价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellPrice">卖出价格口径：决定“目的市场卖出价”怎么取——挂卖单参考卖单价（Sell 系列）、直接吃买单（Buy 系列，会走订单簿并算覆盖率）、或历史价；默认吃买单前 5% 档均价。它决定卖价、税后利润与预计卖完天数的算法。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellHistoryDay">卖出侧选“历史…”口径时的统计天数；与买入侧相同，越多越稳。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SellPriceScale">卖出价缩放系数：&lt;1 保守（宁可低估卖价），&gt;1 乐观；默认 1 = 不缩放。只作用于卖出价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceSalesDay">源市场日销量的统计天数：用于估算多快能收齐货（买入节奏）。窗口越长数据越稳，但对近期变化不敏感。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceSalesType">源市场日销量的统计方式：历史最低=按最差一天收货（最安全)；历史最高=假设天天大卖（容易高估)；历史平均=折中。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SourceRemoveExtremum">统计源市场日销量时去掉一个最小与一个最大的异常天，减少促销/事件造成的失真。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSales">目的市场日销量：倒货的“需求上限”，直接决定目标销量（乘以目标销量百分比）与预计卖完天数。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSalesDay">目的市场日销量的统计天数；越长越稳，越短越能反映当前热度。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationSalesType">目的市场日销量的统计方式。想保守估算卖完天数就选历史最低。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_DestinationRemoveExtremum">统计目的市场日销量时去掉一个最小与一个最大的异常天。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesPercent">目标销量 = 目的市场日销量 × 该百分比（默认 20%）。比例越大利润上限越高，但吃单深度与竞争都会变差。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HistoryPriceFluctuationDay">历史价格波动的统计窗口：波动 = 该区间历史均价的标准差 ÷ 平均值。越小越稳，是风险指标的输入。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_NowPriceFluctuationDay">当前价格波动的参考均价窗口：当前卖价偏离该均价越多，波动越大（风险越高）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SaturationFluctuation">卖单饱和度只统计“卖价 ×（1 ± 该范围）”内的挂单量；范围越大统计的竞争对手越多，饱和度普遍越高。</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdMode">热天判定方式</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdAbsolute">绝对销量</sys:String>
+    <sys:String x:Key="BusinessPage_HeatThresholdRelative">自身日均的倍数</sys:String>
+    <sys:String x:Key="BusinessPage_HeatRelativeFactor">相对倍数（×自身日均）</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatThresholdMode">“热天”怎么判定：绝对销量（日销量 ≥ 销量阈值）或自身日均的倍数（销量 ≥ 该物品日均销量 × 相对倍数）。相对模式能自动适配高/低量级物品，推荐使用。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatRelativeFactor">相对模式下的“热天”线：销量 ≥ 该物品日均销量 × 此倍数。0.5 = 达到自身平均一半就算热天；调大要求更苛刻。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatValueDay">热力值的统计天数。天数越多越能体现持续热度（判定方式见“热天判定方式”）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatValueThreshold">热力值的销量阈值：日销量达到该值记 +1。按物品类别调整（高消耗品调大）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesTaxRate">卖出时扣的销售税（%）。直接从税后净利里扣：税后净利 = 卖出价×(1−税−经纪费) − 买入价×(1+经纪费)。默认 3.6%，按你的技能等级手填。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_BrokerFeeRate">每次市场交易扣的经纪人费（%，买入、卖出各一次；NPC 站约 1–3%，有声望折扣后可低至约 0.4%）。计入税后成本。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_CompetitionBandPercent">统计竞争卖单的价格带：与你的卖价相差不超过该比例的其他玩家卖单量都算进竞争份额；数值越大越保守。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_RiskAversion">风险厌恶系数（默认 1）：风险调整利润 = 税后利润 − 系数 × 历史价格波动 × 买入成本。调大则高波动物品排得更靠后。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionROI">回报率在推荐度里的权重。调大后偏好“单位资金赚得多”的小而美物品。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNetProfit">目标销量净利润的权重：偏好“整单赚得多”的大生意。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionPrincipal">本金的权重：注意是反向计分——排名越靠前（分数越低）的本金加分越多，偏好低资金占用。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionSales">目标销量的权重：偏好需求量大的物品。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionHistoryPriceFluctuation">历史价格波动的权重（当前为反向：波动大排前）。想“越稳越好”就把该项设为 0，改用风险调整利润的权重。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNowPriceFluctuation">当前价格波动的权重（当前为反向）。同理，想“价格贴近历史均价”就设 0。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionSaturation">卖单饱和度的权重：饱和度低（挂单少）的物品加分多，意味着竞争小。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionHeatValue">热力值的权重：反映目的市场最近有没有持续大销量。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionIskPerVolume">ISK/单位体积的权重：体积小利润高的物品优先（船舱效率）。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionNetProfitAfterFees">税后净利的权重：扣掉税费后整单真正到手的利润，是“能不能赚钱”的底线指标。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionROIAfterFees">税后回报率的权重：每单位投入（含费）赚多少，衡量资金效率。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionFillRatio">成交覆盖率的权重：订单簿能不能吃下目标销量；低覆盖率意味着报价是“纸面利润”。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionCompetitionShare">竞争份额的权重：你能分到目的市场销量的比例，越高越好。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionDaysToSell">预计卖完天数的权重（反向计分）：天数越短资金周转越快、占款风险越小。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionProfitPerHour">利润每小时的权重：税后利润 ÷ 卖完时间，综合“量大”与“周转快”，通常作为主排序指标。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionRiskAdjustedProfit">风险调整利润的权重：像夏普比率一样把波动惩罚计入利润，偏好稳定收益。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SuggestionProfitPerVolumeAfterFees">利润/体积（税后）的权重：同样货舱能赚多少，大小船都适用的效率指标。</sys:String>
     <sys:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</sys:String>
     <sys:String x:Key="BusinessPage_ROI">回报率</sys:String>
     <sys:String x:Key="BusinessPage_ROIPercent">回报率(%)</sys:String>
@@ -1034,12 +1085,54 @@
     <sys:String x:Key="BusinessPage_Volume">体积</sys:String>
     <sys:String x:Key="BusinessPage_IskPerJump">ISK/跳</sys:String>
     <sys:String x:Key="BusinessPage_IskPerVolume">ISK/单位体积</sys:String>
+    <sys:String x:Key="BusinessPage_FeesAndRisk">费用与风险</sys:String>
+    <sys:String x:Key="BusinessPage_SalesTaxRate">销售税（%）</sys:String>
+    <sys:String x:Key="BusinessPage_BrokerFeeRate">经纪人费（%）</sys:String>
+    <sys:String x:Key="BusinessPage_CompetitionBandPercent">竞争统计价格带（%）</sys:String>
+    <sys:String x:Key="BusinessPage_RiskAversion">风险厌恶系数</sys:String>
+    <sys:String x:Key="BusinessPage_BuyAvgPrice">成交买入均价</sys:String>
+    <sys:String x:Key="BusinessPage_SellAvgPrice">成交卖出均价</sys:String>
+    <sys:String x:Key="BusinessPage_NetProfitAfterFees">税后净利</sys:String>
+    <sys:String x:Key="BusinessPage_ROIAfterFees">税后回报率</sys:String>
+    <sys:String x:Key="BusinessPage_FillRatio">成交覆盖率</sys:String>
+    <sys:String x:Key="BusinessPage_CompetitionShare">竞争份额</sys:String>
+    <sys:String x:Key="BusinessPage_DaysToSell">预计卖完天数</sys:String>
+    <sys:String x:Key="BusinessPage_ProfitPerHour">利润/小时</sys:String>
+    <sys:String x:Key="BusinessPage_RiskAdjustedProfit">风险调整利润</sys:String>
+    <sys:String x:Key="BusinessPage_ProfitPerVolumeAfterFees">利润/体积（税后）</sys:String>
+    <sys:String x:Key="BusinessPage_Prescreening">订单簿静态预筛中…</sys:String>
+    <sys:String x:Key="BusinessPage_PrescreenEmpty">静态预筛后没有税后价差为正的候选，请调整市场或目标物品</sys:String>
+    <sys:String x:Key="BusinessPage_StaleOrderDays">过期订单剔除（天）</sys:String>
+    <sys:String x:Key="BusinessPage_MaxSellDays">可接受卖完上限（天）</sys:String>
+    <sys:String x:Key="BusinessPage_PriceTrend">价格趋势</sys:String>
+    <sys:String x:Key="BusinessPage_PriceCushion">历史价安全垫</sys:String>
+    <sys:String x:Key="BusinessPage_SalesStability">需求稳定性</sys:String>
+    <sys:String x:Key="BusinessPage_Confidence">数据置信度</sys:String>
+    <sys:String x:Key="BusinessPage_Score">推荐分</sys:String>
+    <sys:String x:Key="BusinessPage_HeatRatio">加热度占比</sys:String>
+    <sys:String x:Key="BusinessPage_TargetNetProfitAfterFees">税后整单利润</sys:String>
+    <sys:String x:Key="BusinessPage_OpenItemDetail">打开市场详情</sys:String>
+    <sys:String x:Key="BusinessPage_PresetConservative">保守</sys:String>
+    <sys:String x:Key="BusinessPage_PresetBalanced">均衡</sys:String>
+    <sys:String x:Key="BusinessPage_PresetAggressive">激进</sys:String>
+    <sys:String x:Key="BusinessPage_WeightPresetApplied">已应用「{0}」权重预设</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_StaleOrderDays">剩余时间不足该天数的挂单不参与定价与深度统计（0 = 不过滤）。快过期的清仓单不可靠，会污染买价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_MaxSellDays">挂卖单策略下，可成交量按“日销量 × 竞争份额 × 该天数”截断；超过该天数卖不完的部分不计入利润。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_PriceTrend">目的市场历史均价的线性回归斜率（%/天，带方向）。上涨=加分；下跌的物品要小心砸价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_PriceCushion">当前卖价高于历史均价的幅度（%）。正数=安全垫（卖价有历史支撑），负数=已经在砸价。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_SalesStability">目的市场日销量的变异系数（标准差÷均值）。越低=需求越稳定，风险越小。</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_Confidence">数据置信度：目的市场历史天数占统计窗口的比例。低置信的物品不可靠，已按比例降权。</sys:String>
     <sys:String x:Key="BusinessPage_TypeVolume">数量</sys:String>
     <sys:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</sys:String>
     <sys:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</sys:String>
     <sys:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</sys:String>
     <sys:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</sys:String>
     <sys:String x:Key="BusinessPage_CopyToGameOrder_Success">已复制列表，在游戏批量购买界面粘贴即可</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchWindowTitle">复制游戏订单（分批）</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchHint">购物车超过 100 个物品，游戏内一次批量购买最多识别 100 个。下面按批展示，点右侧按钮复制对应批次，并分多次粘贴到游戏里。</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopy">复制这一批</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopiedMark">√</sys:String>
+    <sys:String x:Key="BusinessPage_GameOrderBatchCopied">已复制第 {0} 批（第 {1}–{2} 个物品）</sys:String>
     <sys:String x:Key="BusinessPage_PasteFromGameOrder">从游戏个人订单导入并更新相关物品数量</sys:String>
     <sys:String x:Key="BusinessPage_SaveOrder">保存购物车列表</sys:String>
     <sys:String x:Key="BusinessPage_Edit">编辑</sys:String>
@@ -2768,6 +2861,7 @@
     <sys:String x:Key="IndustryPage_Tab_Result">计划详细</sys:String>
     <sys:String x:Key="IndustryPage_Tab_Overview">概况</sys:String>
     <sys:String x:Key="IndustryPage_Tab_Production">生产详情</sys:String>
+    <sys:String x:Key="IndustryPage_Tab_ShoppingList">采购清单</sys:String>
     <sys:String x:Key="IndustryPage_Tab_SavedPlans">已保存计划</sys:String>
     <sys:String x:Key="IndustryPage_BomCost">BOM / 成本</sys:String>
     <sys:String x:Key="IndustryPage_Manufacturable">可制造物品</sys:String>
@@ -2784,6 +2878,8 @@
     <sys:String x:Key="IndustryPage_Decryptor">发明解密器</sys:String>
     <sys:String x:Key="IndustryPage_DecryptorTip">解密器会按尝试次数消耗；概率倍率、ME/TE 修正与 run 修正来自 SDE typeDogma。</sys:String>
     <sys:String x:Key="IndustryPage_DecryptorTargetTip">该目标的发明解密器；跟随全局时使用工艺页的解密器。</sys:String>
+    <sys:String x:Key="IndustryPage_InventionParallel">发明与制造并行（不等发明完成）</sys:String>
+    <sys:String x:Key="IndustryPage_InventionParallelTip">开启（默认）：制造不等待发明完成——玩家可能早已备好发明好的 BPC，或边发明边造；发明仍计入成本与排程，并在任务详情里对比"发明结束时制造是否已开工"。关闭：恢复严格依赖（发明完成才能开始制造）。</sys:String>
     <sys:String x:Key="IndustryPage_InventionCost">发明成本自定义（0 = 自动）</sys:String>
     <sys:String x:Key="IndustryPage_Attempts">尝试次数</sys:String>
     <sys:String x:Key="IndustryPage_SuccessRateOverride">成功率覆盖 %</sys:String>
@@ -2794,8 +2890,8 @@
     <sys:String x:Key="IndustryPage_ReactionApplyRigs">反应材料套用建筑改装件</sys:String>
     <sys:String x:Key="IndustryPage_ReactionApplyRigsTip">勾选后反应输入材料再享受建筑改装件的材料加成；EVE 默认反应不享受材料改装件加成。</sys:String>
     <sys:String x:Key="IndustryPage_ReactionDefaultTip">反应默认不套用 ME / 建筑改装件；只有需要按自建规则模拟时才勾选。</sys:String>
-    <sys:String x:Key="IndustryPage_ClearDecisions">清除手动买/造决策</sys:String>
-    <sys:String x:Key="IndustryPage_ClearDecisionsTip">节点详情里可对单个物品强制制造 / 强制采购 / 加入黑名单。</sys:String>
+    <sys:String x:Key="IndustryPage_ClearDecisions">清除手动成本设置</sys:String>
+    <sys:String x:Key="IndustryPage_ClearDecisionsTip">节点详情里的「成本计算方式」下拉框可为单个物品选自动 / 强制制造 / 强制采购 / 不计入成本；这里一次清空所有手动设置。</sys:String>
     <sys:String x:Key="IndustryPage_BuildingProfiles">建筑档案</sys:String>
     <sys:String x:Key="IndustryPage_NewProfile">新建</sys:String>
     <sys:String x:Key="IndustryPage_NoProfileSelected">未选择档案</sys:String>
@@ -2810,6 +2906,30 @@
     <sys:String x:Key="IndustryPage_FacilityTaxTip">建筑所有者设置的设施税，直接加在任务安装费上。由玩家/军团在建筑上设定，不来自 SDE；不影响材料需求和作业时间。</sys:String>
     <sys:String x:Key="IndustryPage_SccSurchargeTip">CCP 的 SCC 附加费，默认 4%；按 EIV 直接加在任务安装费上。</sys:String>
     <sys:String x:Key="IndustryPage_PlanetTaxTip">行星产物经由海关办公室进出口时收取的税率，默认 5%；计入行星节点成本。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetarySection">行星开发</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryUseColonies">按殖民地模型估算行星产物</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryUseColoniesTip">开启后，BOM 里的行星产物交给行星规划器折算：需要几个殖民地、每天产多少、建造成本、进口成本与出口税；排程按殖民地产能展开行星产线。关闭则回到"一条行星线串行跑完所有周期"的旧估算。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryCountSetup">计入殖民地建造成本</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryCountSetupTip">殖民地的指挥中心升级与设施建造成本是否计入该行星节点的成本（一次性投入，默认计入）。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryUseLocationPlanets">用成本指数位置的星系行星作候选</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryUseLocationPlanetsTip">勾选后按该星系的实际行星（类型与真实半径）规划殖民地，行星不够时会给出警告；不勾选则按行星类型 + 下方半径估算。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetarySizingMode">产能口径</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetarySizingAvailable">按可用殖民地（推荐）</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetarySizingPeriod">按产出周期</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetarySizingModeTip">按可用殖民地：用「角色数 × 每角色殖民地」反推工期，殖民地越多工期越短（默认）；按产出周期：给定"多少天内出齐"，由规划器凑出所需殖民地数（周期越短所需殖民地越多）。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryPeriodDays">产出周期（天）</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryPeriodDaysTip">规划器按"在这个周期内产出需求数量"折算所需产能：周期越短，需要的殖民地越多。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryCcuLevel">指挥中心等级</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryCcuLevelTip">0–5 级，决定殖民地 CPU/PG 容量与可建设施数量。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryMaxPlanets">每角色殖民地</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryMaxPlanetsTip">每个角色最多几个殖民地（游戏上限 6）；排程按这个数展开行星产线。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryRadius">行星半径 km（0=估算）</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryRadiusTip">没有候选行星时用这个半径估算殖民地容量；0 表示使用规划器的保守默认值。</sys:String>
+    <sys:String x:Key="IndustryPage_PlanetaryDetail">行星开发（殖民地模型）</sys:String>
+    <sys:String x:Key="IndustryChain_PlanetSummary">{0} 个殖民地 / {1} 个角色 · 每天 {2:N0} · 约 {3:0.#} 天</sys:String>
+    <sys:String x:Key="IndustryChain_PlanetCost">建造 {0:N0} ISK · 进口 {1:N0} · 出口税 {2:N0}</sys:String>
+    <sys:String x:Key="IndustryChain_PlanetEstimated">行星类型/半径按估算值（勾选候选行星可精确到具体行星）</sys:String>
+    <sys:String x:Key="IndustryChain_PlanetShort">{0} 殖民地</sys:String>
     <sys:String x:Key="IndustryPage_ParticipatingCharacters">参与角色（可多选）</sys:String>
     <sys:String x:Key="IndustryPage_CustomCharacters">自定义角色</sys:String>
     <sys:String x:Key="IndustryPage_CustomCharacterHint">不读取 ESI，只按技能等级估算槽位与耗时</sys:String>
@@ -2884,17 +3004,23 @@
     <sys:String x:Key="IndustryPage_ProductDetail">产物详情</sys:String>
     <sys:String x:Key="IndustryPage_SelectProductHint">选择左侧产物查看成本、利润和采购清单</sys:String>
     <sys:String x:Key="IndustryPage_RequestProduced">请求 / 产出</sys:String>
-    <sys:String x:Key="IndustryPage_CopyProductShopping">复制本产物采购</sys:String>
-    <sys:String x:Key="IndustryPage_ExportProductCsv">导出本产物 CSV</sys:String>
-    <sys:String x:Key="IndustryPage_ShoppingList">采购清单</sys:String>
-    <sys:String x:Key="IndustryPage_ShoppingListTip">本产物子树中需要直接购买的材料；已扣除库存/上游剩余。</sys:String>
+    <sys:String x:Key="IndustryPage_ShoppingFilterAll">全部</sys:String>
+    <sys:String x:Key="IndustryPage_ShoppingFilter">目标产物筛选</sys:String>
+    <sys:String x:Key="IndustryPage_CopyShoppingList">复制采购清单</sys:String>
+    <sys:String x:Key="IndustryPage_ExportShoppingCsv">导出采购清单 CSV</sys:String>
     <sys:String x:Key="IndustryPage_UnitPrice">单价</sys:String>
     <sys:String x:Key="IndustryPage_Amount">金额</sys:String>
     <sys:String x:Key="IndustryPage_Col_NeedProduceBuy">需要 / 产出 / 采购</sys:String>
-    <sys:String x:Key="IndustryPage_NodeActions">节点操作</sys:String>
     <sys:String x:Key="IndustryPage_ForceBuild">强制制造</sys:String>
     <sys:String x:Key="IndustryPage_ForceBuy">强制采购</sys:String>
-    <sys:String x:Key="IndustryPage_Blacklist">加入黑名单</sys:String>
+    <sys:String x:Key="IndustryPage_NodeCostMode">成本计算方式</sys:String>
+    <sys:String x:Key="IndustryPage_NodeCostModeTip">选中即按该方式重新计算本节点：自动＝按蓝图与库存决定；强制制造＝自建；强制采购＝买入；不计入成本＝数量与采购清单保留，但成本不计入总成本。</sys:String>
+    <sys:String x:Key="IndustryPage_CostModeAuto">自动</sys:String>
+    <sys:String x:Key="IndustryPage_CostModeIgnore">不计入成本</sys:String>
+    <sys:String x:Key="IndustryPage_CostIgnored">不计入成本</sys:String>
+    <sys:String x:Key="IndustryPage_CostIgnoredHint">该节点不计入成本：数量与采购清单保留，成本已从总成本中排除。</sys:String>
+    <sys:String x:Key="IndustryPage_CountInventionBlueprintCost">发明用的 T1 蓝图计入成本</sys:String>
+    <sys:String x:Key="IndustryPage_CountInventionBlueprintCostTip">关闭（默认）时，发明步骤只把 T1 蓝图列为需求、不计入总成本；开启后按"全新买入这张蓝图"计价。单个节点也可以在节点详情里单独设为不计入成本。</sys:String>
     <sys:String x:Key="IndustryPage_DirectInput">直接输入</sys:String>
     <sys:String x:Key="IndustryPage_SavePlan">保存计划</sys:String>
     <sys:String x:Key="IndustryPage_SaveLoad">保存 / 载入</sys:String>
@@ -2968,7 +3094,6 @@
     <sys:String x:Key="IndustryPage_RefreshCharacterProgress">刷新角色 {0}/{1}：{2}</sys:String>
     <sys:String x:Key="IndustryPage_CharacterRefreshed">角色数据已刷新 · {0:HH:mm}</sys:String>
     <sys:String x:Key="IndustryPage_CharacterRefreshedDone">角色数据已刷新</sys:String>
-    <sys:String x:Key="IndustryPage_SelectProduct">请先选择左侧产物</sys:String>
     <sys:String x:Key="IndustryPage_NothingToBuy">没有需要采购的物品</sys:String>
     <sys:String x:Key="IndustryPage_NothingToExport">没有可导出的计划</sys:String>
     <sys:String x:Key="IndustryPage_Exported">计划已导出</sys:String>
@@ -3077,6 +3202,10 @@
     <sys:String x:Key="IndustrySchedule_NoResult">还没有排产结果</sys:String>
     <sys:String x:Key="IndustrySchedule_Empty">在「计划设置」添加目标并点击「计算制造计划」，这里会按角色技能槽位生成排程、步骤、工位和关系图。</sys:String>
     <sys:String x:Key="IndustrySchedule_StepsSuffix">步</sys:String>
+    <sys:String x:Key="IndustrySchedule_StageManufacturing">制造</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionWindow">发明窗口（并行口径）</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionFits">制造开工前已提前 {0:0.#} 小时完成发明</sys:String>
+    <sys:String x:Key="IndustrySchedule_InventionLate">制造已开工 {0:0.#} 小时后才完成发明（需要提前备好 BPC）</sys:String>
     <sys:String x:Key="IndustrySchedule_StageInvention">发明</sys:String>
     <sys:String x:Key="IndustrySchedule_StageReaction">反应</sys:String>
     <sys:String x:Key="IndustrySchedule_StagePlanetary">行星</sys:String>
@@ -3510,7 +3639,6 @@
     <sys:String x:Key="IndustryCustomCharacter_DeleteConfirm">删除自定义角色「{0}」？</sys:String>
     <sys:String x:Key="IndustryCustomCharacter_DeleteTitle">删除自定义角色</sys:String>
     <sys:String x:Key="IndustryPage_DeleteProfileConfirm">删除当前建筑档案？</sys:String>
-    <sys:String x:Key="IndustryPage_ProductNothingToBuy">该产物没有需要采购的物品</sys:String>
 
     <!--  制造 / 工业模块（阶段 185：整模块中英文切换）  -->
     <sys:String x:Key="IndustryPlanetary_ListSeparator">、</sys:String>
@@ -3547,4 +3675,25 @@
     <sys:String x:Key="Setting_DataPath_SetFailed">无法使用该目录（可能没有写入权限）。</sys:String>
     <sys:String x:Key="Setting_DataPath_Changed_Title">数据目录已更新</sys:String>
     <sys:String x:Key="Setting_DataPath_Changed_Message">新目录将在下次启动时生效：{0}{1}{1}是否立即重启应用？</sys:String>
+    <sys:String x:Key="ItemDetail_Title">物品详情</sys:String>
+    <sys:String x:Key="ItemDetail_TabOverview">概览</sys:String>
+    <sys:String x:Key="ItemDetail_TabAttributes">属性</sys:String>
+    <sys:String x:Key="ItemDetail_TabSkills">技能要求</sys:String>
+    <sys:String x:Key="ItemDetail_NoAttributes">该物品没有可显示的属性</sys:String>
+    <sys:String x:Key="ItemDetail_NoSkills">该物品没有技能要求</sys:String>
+    <sys:String x:Key="ItemDetail_MetaLevel">科技等级</sys:String>
+    <sys:String x:Key="ItemDetail_Volume">体积</sys:String>
+    <sys:String x:Key="ItemDetail_PackagedVolume">打包体积</sys:String>
+    <sys:String x:Key="ItemDetail_Mass">质量</sys:String>
+    <sys:String x:Key="ItemDetail_Capacity">容量</sys:String>
+    <sys:String x:Key="ItemDetail_Radius">半径</sys:String>
+    <sys:String x:Key="ItemDetail_PortionSize">分拣数</sys:String>
+    <sys:String x:Key="ItemDetail_BasePrice">基础价格</sys:String>
+    <sys:String x:Key="ItemDetail_MarketGroup">市场分组</sys:String>
+    <sys:String x:Key="ItemDetail_TypeId">类型 ID</sys:String>
+    <sys:String x:Key="ItemDetail_Published">已发布</sys:String>
+    <sys:String x:Key="ItemDetail_Unpublished">未发布</sys:String>
+    <sys:String x:Key="ItemDetail_GoMarket">查看市场详情</sys:String>
+    <sys:String x:Key="ItemDetail_NoItem">未找到该物品</sys:String>
+    <sys:String x:Key="ItemDetail_SkillLevel">等级 {0}</sys:String>
 </ResourceDictionary>

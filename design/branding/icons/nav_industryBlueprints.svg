@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 蓝图 · Nav.IndustryBlueprints（图纸 + 网格线，读作"技术图纸"） -->
+  <rect x="20" y="16" width="88" height="96" rx="10" fill="none" stroke="#F59E0B" stroke-width="9"/>
+  <path d="M64 40 V104" stroke="#38BDF8" stroke-width="6" stroke-linecap="round"/>
+  <path d="M30 72 H98" stroke="#38BDF8" stroke-width="6" stroke-linecap="round"/>
+  <path d="M30 40 H64" stroke="#5EEAD4" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -4,10 +4,39 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using TheGuideToTheNewEden.Core.Models.Market;
+using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Business;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Business;
 
+/// <summary>购物车复制的一批（游戏单次最多 100 行）；<see cref="IsCopied"/> 用来显示"√ 已复制"。</summary>
+public sealed class GameOrderBatchItem : INotifyPropertyChanged
+{
+    public int Index { get; init; }
+    /// <summary>该批第一个物品在购物车里的序号（1 起）。</summary>
+    public int Start { get; init; }
+    /// <summary>该批最后一个物品的序号（1 起，含）。</summary>
+    public int End { get; init; }
+    /// <summary>可直接粘贴进游戏的这一批文本。</summary>
+    public string Text { get; init; } = string.Empty;
+
+    /// <summary>只显示区间，如 [1,100]、[101,200]。</summary>
+    public string Label => $"[{Start},{End}]";
+
+    private bool _isCopied;
+    public bool IsCopied
+    {
+        get => _isCopied;
+        set
+        {
+            if (_isCopied == value) return;
+            _isCopied = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCopied)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
 /// <summary>
 /// 购物车页：统计合计、复制为游戏内多件物品订单、从剪贴板回填剩余数量、保存为购物记录。
 /// 数据源是 <see cref="BusinessService.ShoppingCart"/>（与倒货页/记录页共享）。
@@ -17,6 +46,10 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
     public ObservableCollection<ScalperShoppingItem> Items => BusinessService.Current.ShoppingCart;
 
     public bool HasItems => Items.Count > 0;
+
+    /// <summary>按游戏 100 行上限切好的批次；超过一批时界面用列表展示，用户自己选复制哪一批。</summary>
+    public ObservableCollection<GameOrderBatchItem> GameOrderBatches { get; } = new();
+
 
     private double _roi;
     private double _netProfit;
@@ -34,12 +67,12 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
     public double IskPerVolume { get => _iskPerVolume; private set => Set(ref _iskPerVolume, value); }
     public int TypeCount { get => _typeCount; private set => Set(ref _typeCount, value); }
 
-    private string? _message;
+
 
     /// <summary>最近一次操作的提示（复制/粘贴/保存结果）。</summary>
-    public string? Message { get => _message; private set => Set(ref _message, value); }
 
-    public bool HasMessage => !string.IsNullOrEmpty(Message);
+
+
 
     public void Init()
     {
@@ -95,6 +128,8 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
             IskPerJump = 0;
             IskPerVolume = 0;
             TypeCount = 0;
+            GameOrderBatches.Clear();
+    
             return;
         }
 
@@ -105,6 +140,7 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
         IskPerJump = Items.Average(p => p.IskPerJump);
         IskPerVolume = Items.Average(p => p.IskPerVolume);
         TypeCount = Items.Count;
+        RebuildGameOrderBatches();
     }
 
     public void Remove(IEnumerable<ScalperShoppingItem> items)
@@ -116,24 +152,40 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
     }
 
     /// <summary>复制为游戏内"多件物品"订单文本（每行"物品名 数量"）。</summary>
-    public string BuildGameOrderText()
+    /// <summary>游戏内一次批量购买最多识别 100 行物品。</summary>
+    public const int GameOrderBatchSize = 100;
+
+    /// <summary>每行"物品名 数量"的游戏批量购买文本行（未分批）。</summary>
+    public List<string> BuildGameOrderLines()
+        => Items.Select(item => $"{item.InvType.TypeName} {item.Quantity}").ToList();
+
+    /// <summary>复制为游戏内"多件物品"订单文本（每行"物品名 数量"）。</summary>
+    public string BuildGameOrderText() => string.Join(Environment.NewLine, BuildGameOrderLines());
+
+    /// <summary>按游戏单次 100 行上限重建批次列表（供界面逐批复制）。</summary>
+    private void RebuildGameOrderBatches()
     {
-        var builder = new StringBuilder();
-        foreach (var item in Items)
+        GameOrderBatches.Clear();
+        var lines = BuildGameOrderLines();
+        for (var start = 0; start < lines.Count; start += GameOrderBatchSize)
         {
-            builder.Append(item.InvType.TypeName);
-            builder.Append(' ');
-            builder.Append(item.Quantity);
-            builder.AppendLine();
+            var count = Math.Min(GameOrderBatchSize, lines.Count - start);
+            GameOrderBatches.Add(new GameOrderBatchItem
+            {
+                Index = GameOrderBatches.Count,
+                Start = start + 1,
+                End = start + count,
+                Text = string.Join(Environment.NewLine, lines.GetRange(start, count)),
+            });
         }
 
-        return builder.ToString();
+
     }
 
     /// <summary>复制成功提示。</summary>
     public void NotifyCopied()
     {
-        SetMessage(FindString("BusinessPage_CopyToGameOrder_Success"));
+        PageNotifyService.Success(FindString("BusinessPage_CopyToGameOrder_Success"));
     }
 
     /// <summary>
@@ -143,7 +195,7 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
     {
         if (string.IsNullOrEmpty(text))
         {
-            SetMessage(FindString("BusinessPage_NotPasteItem"));
+            PageNotifyService.Info(FindString("BusinessPage_NotPasteItem"));
             return;
         }
 
@@ -164,10 +216,16 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
             }
         }
 
-        SetMessage(remain.Count == 0 ? FindString("BusinessPage_NotPasteItem") : UpdateItems(remain));
+        if (remain.Count == 0)
+        {
+            PageNotifyService.Info(FindString("BusinessPage_NotPasteItem"));
+            return;
+        }
+
+        UpdateItems(remain);
     }
 
-    private string UpdateItems(Dictionary<int, long> remain)
+    private void UpdateItems(Dictionary<int, long> remain)
     {
         var updated = 0;
         var removed = new List<ScalperShoppingItem>();
@@ -189,31 +247,33 @@ public sealed class ScalperShoppingCartViewModel : INotifyPropertyChanged
             Items.Remove(item);
         }
 
-        return updated > 0
-            ? $"{FindString("BusinessPage_UpdatedScalperShoppingItem1")}{updated}{FindString("BusinessPage_UpdatedScalperShoppingItem2")}"
-            : FindString("BusinessPage_NoUpdatedScalperShoppingItem");
+        if (updated > 0)
+        {
+            PageNotifyService.Success(
+                $"{FindString("BusinessPage_UpdatedScalperShoppingItem1")}{updated}{FindString("BusinessPage_UpdatedScalperShoppingItem2")}");
+        }
+        else
+        {
+            PageNotifyService.Info(FindString("BusinessPage_NoUpdatedScalperShoppingItem"));
+        }
     }
 
     public void SaveToRecord()
     {
         if (!HasItems)
         {
-            SetMessage(FindString("BusinessPage_ShoppingCartEmpty"));
+            PageNotifyService.Info(FindString("BusinessPage_ShoppingCartEmpty"));
             return;
         }
 
         ShoppingRecordService.Current.Add(Items.ToList());
-        SetMessage(FindString("General_SaveSuccess"));
+        PageNotifyService.Success(FindString("General_SaveSuccess"));
     }
 
     /// <summary>编辑后刷新合计。</summary>
     public void OnItemEdited() => Recalculate();
 
-    private void SetMessage(string? text)
-    {
-        Message = text;
-        OnPropertyChanged(nameof(HasMessage));
-    }
+
 
     // ---------- INotifyPropertyChanged ----------
 

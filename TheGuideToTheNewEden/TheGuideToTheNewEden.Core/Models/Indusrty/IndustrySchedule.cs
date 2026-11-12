@@ -24,6 +24,11 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int InventionSlots { get; set; } = 1;
         public int ReactionSlots { get; set; } = 1;
 
+        /// <summary>
+        /// 行星殖民地数（阶段 276）：游戏内每角色最多 6 个殖民地；排程把每个殖民地当作一条并行的「行星」线。
+        /// </summary>
+        public int PlanetSlots { get; set; } = 6;
+
         public double ManufacturingTimeMultiplier { get; set; } = 1.0;
         public double ReactionTimeMultiplier { get; set; } = 1.0;
         public double InventionTimeMultiplier { get; set; } = 1.0;
@@ -34,7 +39,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public bool SkillsLoaded { get; set; }
         public string Source { get; set; } = string.Empty;
 
-        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots;
+        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots + PlanetSlots;
 
         public int SlotsForActivity(int activityId)
         {
@@ -42,6 +47,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
             {
                 8 => InventionSlots,
                 11 => ReactionSlots,
+                100 => PlanetSlots,
                 _ => ManufacturingSlots,
             };
         }
@@ -52,6 +58,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
             {
                 8 => InventionTimeMultiplier,
                 11 => ReactionTimeMultiplier,
+                100 => 1.0,
                 _ => ManufacturingTimeMultiplier,
             };
         }
@@ -84,6 +91,8 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
 
         public int Runs { get; set; }
         public long QuantityProduced { get; set; }
+        /// <summary>该任务同时占用几条同类产线（行星殖民地数；其他活动恒为 1）。</summary>
+        public int Slots { get; set; } = 1;
         public double BaseHours { get; set; }
         public double DurationHours { get; set; }
         public double StartHours { get; set; }
@@ -96,6 +105,12 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int LineIndex { get; set; }
         public double TimeMultiplier { get; set; } = 1.0;
 
+        /// <summary>并行口径下：作为发明作业，最早需要它的制造作业开始时间 - 自身结束时间（小时，可为负）。</summary>
+        public double InventionSlackHours { get; set; }
+        /// <summary>该发明作业是否有配对的制造作业（并行口径才可能为 true）。</summary>
+        public bool HasInventionWindow { get; set; }
+        /// <summary>发明没赶上：制造开始时发明还没做完（需要提前备 BPC）。</summary>
+        public bool IsInventionLate => HasInventionWindow && InventionSlackHours < 0;
         public bool IsCritical { get; set; }
         public bool IsPinned { get; set; }
 
@@ -125,6 +140,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public int ManufacturingSlots { get; set; }
         public int InventionSlots { get; set; }
         public int ReactionSlots { get; set; }
+        public int PlanetSlots { get; set; }
         public double ManufacturingTimeMultiplier { get; set; } = 1.0;
         public double ReactionTimeMultiplier { get; set; } = 1.0;
         public double InventionTimeMultiplier { get; set; } = 1.0;
@@ -135,7 +151,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double UsedSlotHours { get; set; }
         public double AvailableSlotHours { get; set; }
         public double UtilizationPercent { get; set; }
-        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots;
+        public int TotalSlots => ManufacturingSlots + InventionSlots + ReactionSlots + PlanetSlots;
     }
 
     /// <summary>一次排产结果：任务 = 聚合后的制造/发明/反应作业。</summary>
@@ -149,6 +165,10 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public double TotalJobCost { get; set; }
         public double TotalMaterialCost { get; set; }
         public IndustryScheduleObjective Objective { get; set; }
+        /// <summary>是否采用了「发明与制造并行」口径（阶段 281）。</summary>
+        public bool InventionParallel { get; set; }
+        /// <summary>并行口径下"发明结束时制造已开工"的发明作业数量。</summary>
+        public int LateInventionCount { get; set; }
         public DateTime GeneratedAt { get; set; } = DateTime.Now;
     }
 }

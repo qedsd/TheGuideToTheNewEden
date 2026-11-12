@@ -33,6 +33,9 @@ ORDER = [
     ("toolsIME", "快捷输入"), ("serverPing", "游戏延迟"),
     ("keyboardSpan", "键盘"), ("taskbar", "分屏"),
     ("settings", "设置"),
+    # 阶段 272：工业组（母图标 + 四个子页各一枚，此前四个子页共用母图标）
+    ("industry", "工业"), ("industryPlan", "制造计划"), ("industryPlanetary", "行星开发"),
+    ("industryBlueprints", "蓝图"), ("industryInventory", "库存"),
 ]
 
 TAG_RE = re.compile(r"<(path|circle|ellipse|rect|line|polygon)\b([^>]*?)/?>", re.S)

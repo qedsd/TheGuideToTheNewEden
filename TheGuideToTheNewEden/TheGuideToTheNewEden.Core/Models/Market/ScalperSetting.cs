@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -411,5 +411,90 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             [Description("历史平均")]
             HistoryAverage,
         }
+
+        /// <summary>热力值阈值的判定方式。</summary>
+        public enum HeatThresholdKind
+        {
+            /// <summary>绝对值：日销量 ≥ 阈值（兼容旧版）。</summary>
+            [Description("绝对销量")]
+            Absolute,
+            /// <summary>相对：日销量 ≥ 物品自身日均销量 × 倍数。</summary>
+            [Description("自身日均的倍数")]
+            RelativeToAverage,
+        }
+
+        #region 费用与新增推荐指标（阶段 296）
+
+        private double salesTaxRate = 3.6;
+        /// <summary>销售税（%，默认 3.6）。</summary>
+        public double SalesTaxRate { get => salesTaxRate; set => SetProperty(ref salesTaxRate, value); }
+
+        private double brokerFeeRate = 1.0;
+        /// <summary>经纪人费（%，买入/卖出各按一次计，默认 1）。</summary>
+        public double BrokerFeeRate { get => brokerFeeRate; set => SetProperty(ref brokerFeeRate, value); }
+
+        private double competitionBandPercent = 5.0;
+        /// <summary>竞争统计价格带（%）：统计"与你的卖价相差不超过该比例"的竞争挂单量。</summary>
+        public double CompetitionBandPercent { get => competitionBandPercent; set => SetProperty(ref competitionBandPercent, value); }
+
+        private double riskAversion = 1.0;
+        /// <summary>风险厌恶系数：风险调整利润 = 税后利润 − 系数 × 历史波动率 × 买入成本。</summary>
+        public double RiskAversion { get => riskAversion; set => SetProperty(ref riskAversion, value); }
+
+        private HeatThresholdKind heatThresholdMode = HeatThresholdKind.RelativeToAverage;
+        /// <summary>热力值阈值模式：绝对值（兼容旧版）/ 相对物品自身日均销量的倍数。</summary>
+        public HeatThresholdKind HeatThresholdMode { get => heatThresholdMode; set => SetProperty(ref heatThresholdMode, value); }
+
+        private double staleOrderDays = 2;
+        /// <summary>订单新鲜度过滤：剩余时间不足该天数（天）的挂单不参与定价与深度统计（0 = 不过滤）。</summary>
+        public double StaleOrderDays { get => staleOrderDays; set => SetProperty(ref staleOrderDays, value); }
+
+        private double maxSellDays = 30;
+        /// <summary>挂卖单策略的可接受卖完上限（天）：超过时按该天数截断可成交量。</summary>
+        public double MaxSellDays { get => maxSellDays; set => SetProperty(ref maxSellDays, value); }
+
+        private double suggestionPriceTrend = 15;
+        public double SuggestionPriceTrend { get => suggestionPriceTrend; set => SetProperty(ref suggestionPriceTrend, value); }
+
+        private double suggestionPriceCushion = 10;
+        public double SuggestionPriceCushion { get => suggestionPriceCushion; set => SetProperty(ref suggestionPriceCushion, value); }
+
+        private double suggestionSalesStability = 15;
+        public double SuggestionSalesStability { get => suggestionSalesStability; set => SetProperty(ref suggestionSalesStability, value); }
+
+        private double suggestionConfidence = 15;
+        public double SuggestionConfidence { get => suggestionConfidence; set => SetProperty(ref suggestionConfidence, value); }
+
+        private double heatRelativeFactor = 0.5;
+        /// <summary>相对模式下的系数：销量 ≥ 自身日均 × 该倍数 记为“热天”（默认 0.5）。</summary>
+        public double HeatRelativeFactor { get => heatRelativeFactor; set => SetProperty(ref heatRelativeFactor, value); }
+
+        // ---- 新增推荐度权重（与旧权重一样，可玩家自行调整；默认先给一组相对合理的比例）----
+
+        private double suggestionNetProfitAfterFees = 30;
+        public double SuggestionNetProfitAfterFees { get => suggestionNetProfitAfterFees; set => SetProperty(ref suggestionNetProfitAfterFees, value); }
+
+        private double suggestionROIAfterFees = 30;
+        public double SuggestionROIAfterFees { get => suggestionROIAfterFees; set => SetProperty(ref suggestionROIAfterFees, value); }
+
+        private double suggestionFillRatio = 15;
+        public double SuggestionFillRatio { get => suggestionFillRatio; set => SetProperty(ref suggestionFillRatio, value); }
+
+        private double suggestionCompetitionShare = 15;
+        public double SuggestionCompetitionShare { get => suggestionCompetitionShare; set => SetProperty(ref suggestionCompetitionShare, value); }
+
+        private double suggestionDaysToSell = 20;
+        public double SuggestionDaysToSell { get => suggestionDaysToSell; set => SetProperty(ref suggestionDaysToSell, value); }
+
+        private double suggestionProfitPerHour = 25;
+        public double SuggestionProfitPerHour { get => suggestionProfitPerHour; set => SetProperty(ref suggestionProfitPerHour, value); }
+
+        private double suggestionRiskAdjustedProfit = 10;
+        public double SuggestionRiskAdjustedProfit { get => suggestionRiskAdjustedProfit; set => SetProperty(ref suggestionRiskAdjustedProfit, value); }
+
+        private double suggestionProfitPerVolumeAfterFees = 10;
+        public double SuggestionProfitPerVolumeAfterFees { get => suggestionProfitPerVolumeAfterFees; set => SetProperty(ref suggestionProfitPerVolumeAfterFees, value); }
+
+        #endregion
     }
 }

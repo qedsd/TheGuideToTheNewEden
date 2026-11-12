@@ -37,6 +37,7 @@
 |---|---|---|
 | UI 框架 | **.NET 8（LTS）** + WPF + **WPF-UI 4.3.0** | 默认样式/主题/导航控件开箱即用，避免自写控件模板；目标框架定 **net8** 而非 net10——.NET 9/10 的 WPF 在未更新的 Win10 21H1 上会启动即崩，改用 net8 后**已实机验证可正常运行**（见 §3「环境变更」与阶段 49） |
 | 表格控件 | **WPF-UI `DataGrid`**（不用 Syncfusion） | 用户明确不再使用 Syncfusion；行为可控 |
+| 表格滚动 | **让 DataGrid 自己滚**（不外包 `ScrollViewer`） | 外包 `ScrollViewer` 会让表头跟着滚、行虚拟化失效、行数一多右键/选择/布局明显变慢（阶段 294/295 实测确认）；横向滚动交给 DataGrid 自带滚动条 |
 | 图表控件 | **LiveCharts2**（`LiveChartsCore.SkiaSharpView.WPF`，不用 Syncfusion 图表） | 市场历史价格/销量图；开源、SkiaSharp 渲染、支持日期轴与缩放 |
 | 工具窗口 | 统一外壳 **`Views/Windows/ToolWindow`**（`ui:FluentWindow` + `ui:TitleBar`） | 标题栏样式统一（左上角 logo + 窗口名称）；标题按钮组合、置顶按钮、是否显示在任务栏均可配置；内容支持 Page/UserControl |
 | 页面承载 | 主内容用 `NavigationView` 内置 Frame；**壳页内的子页统一用 `Frame` 承载** | WPF 规定 `Page` 只能由 `Window`/`Frame` 承载（见 §9） |
@@ -48,6 +49,23 @@
 | 窗口位置 | Win32 `Get/SetWindowPlacement`，**物理像素** | 免疫跨不同 DPI 显示器的坐标换算错误 |
 | 托盘与通知 | **H.NotifyIcon.Wpf**（不再用 WPF-UI.Tray / Microsoft.Toolkit.Uwp.Notifications） | 与 WinUI 版一致（WinUI 用 H.NotifyIcon.WinUI）、维护活跃、无需 AUMID 注册 |
 | 邮件正文 | **HtmlRenderer.WPF**（`HtmlPanel`），不使用 WebView2 | 邮件是简单 HTML；零浏览器运行时依赖 |
+
+## 2.1 等待 / 加载效果约定（强制，阶段 292 起）
+
+> **后续所有功能都不得使用全局等待遮罩**；默认只用"页面内等待"。只有确实需要全局阻断的场景，才能使用全局等待，且**必须在该功能的设计说明与手册里写明理由**。
+
+- **默认：页面内等待** —— VM 暴露 `IsBusy` / `BusyText`（需要取消时再加 `CanCancelBusy` 与取消回调），
+  页面/子视图内嵌半透明遮罩（`SmokeFillColorDefaultBrush` + 卡片 + `controls:SpinnerIcon` + 文案 +〔可选〕取消按钮），
+  只盖住当前页面（或当前页签）并拦截该页面内的点击；**等待期间其它页面、其它功能必须照常可用**。
+- **禁止**调用 `PageNotifyService.ShowWaiting / UpdateWaiting / HideWaiting`：它驱动 `MainWindow` 注册的**全局全屏遮罩**，
+  会挡住整个应用，属于历史做法。
+- **唯一允许的例外**：进程级、必须阻止用户并发触发同一危险操作的一次性动作（例如：应用启动时的数据目录迁移、
+  自更新替换 exe、授权回调监听等）。使用前必须在该功能的 REFACTORING 阶段说明/手册里**显式写出"为什么必须是全局"**，
+  并保证同一时刻只有一个。
+- 进度之外的**结果提示**继续用右下角 `PageNotifyService.Success / Info / Warning / Error`（非阻塞，不遮挡界面）。
+- 同一页面内可能有多个并发操作时，等待态建议用**可重入计数**（全部结束才隐藏），避免先结束的把还在转的遮罩关掉。
+- 参考实现：`ScalperPageViewModel`（`IsBusy` / `BusyText` / `CanCancelBusy` + `BeginBusy/UpdateBusy/EndBusy`）
+  配 `ScalperAnalyseView` 里的本地遮罩；`EntityStatistPage`、`IndustryPlanPage`、`ChannelScanPage` 同一模式。
 
 ---
 
@@ -10769,24 +10787,1049 @@ MainWindow.xaml(.cs)
 - `dotnet build`：**0 错误**。
 - 按 §8 约定未做界面截图核验。
 
-## 阶段 269：预览窗窄窗口尺寸对账死循环修复（方案 A，2026-11-03）
+## 阶段 269：角色页新增紧凑列表视图（卡片 / 列表可切换）（2026-11-03）
 
-- 现场日志：`20261103.txt` 约 69,845 条 `[预览窗] WPF 尺寸与实际窗口不一致` WARN，20:20–20:57 约 31 条/秒，日志约 10MB。
-- 根因：
-  - `SystemParameters.MinimumWindowWidth` 在当前系统为 **136 DIP**（最小高度约 37.6 DIP），WPF 顶层 Window 布局不会低于这个宽度；
-  - 旧代码把 `MinWindowWidth/MinWindowHeight` 设为 **1**，并在 `WM_GETMINMAXINFO` 放开最小跟踪尺寸，允许 Win32 把窗口压到 82/100/110px；
-  - 锁定比例后，按高度反算出的宽度（46→82、56→100、62→110）低于 136；WPF `ActualWidth` 仍是 136，`Width = 110` 被 WPF 拉回 136；
-  - `_minimizeWatchTimer` 每 300ms 调 `SyncLayoutSizeIfStale`，每次重新判断 stale、重新设宽、重新报警，永不收敛；多个预览窗叠加成刷屏。
-- 修复（方案 A：接受系统最小尺寸）：
-  - `MinPreviewWidthPx/MinPreviewHeightPx` 改为 `SystemParameters.MinimumWindowWidth/Height × DPI` 的物理像素下限。
-  - `ApplyWpfMinimumSize` 把 WPF `MinWidth/MinHeight` 对齐到系统下限（不再清 0）。
-  - `GetMinimumWindowSize` 在锁定比例时按源画面比例计算最小高度（无标题栏 16:9 约 77px；带标题栏再加 28px）。
-  - `WM_GETMINMAXINFO`、`ClampToWorkArea`、`SetSize`、`Start/ShowWindow`、`CorrectSizeToAspect`、滚轮缩放、自动排列统一使用该下限；110×62 会被保持比例夹到 136×77（带标题栏约 136×105），而不是只夹宽度。
-  - `SyncLayoutSizeIfStale` 遇到实际窗口低于系统下限时不再参与对账；同一组“布局/实际”尺寸只尝试/记录一次，避免重复 `Width=...` + `NotifyClientSize`。
-- 验证：
-  - WPF build：**0 错误**。
-  - 按当前系统 136 DIP/37.6 DIP 校准；原日志中的 110×62 → 136×77（无标题栏）/约 136×105（有标题栏），宽度不再低于 WPF 硬下限，300ms 对账应不再产生该 WARN。
-  - 未在受影响机器上实机复测，需用户把预览缩小到最小尺寸后确认不再刷日志。
+> 用户需求：角色一多，卡片网格不好浏览，希望可以切成更紧凑的列表形式；但列表单行也不能太挤。
+
+### 269.1 交互与形态
+
+- 页面**不再显示大标题**（遵循「页面内不重复标题」的 UI 约定，左侧导航已高亮"角色"）；顶部工具栏为一行：
+  左侧"拖拽角色可调整顺序"提示，右侧依次是 **视图切换 → 刷新 → 添加角色**。
+  - **视图切换**：`Grid24` / `AppsList24` 两个互斥的图标 `ToggleButton`（分段控件外观，不带文字，名称走 Tooltip 与
+    `AutomationProperties.Name`）。选中态**只有浅底**（`SubtleFillColorSecondaryBrush`，即 WinUI 分段控件的默认观感）；
+    曾试过再叠一层 `SystemAccentColorPrimaryBrush` 描边，浅色主题下显得过重，已按要求去掉，只保留默认选中效果。
+  - **刷新**：图标按钮（`ArrowSync16`），与改造前语义相同。
+  - **添加角色**：`Appearance="Primary"` + `Add24` + 文字（复用 `CharacterPage_Add`），与卡片/列表末尾的"添加角色"、
+    空态的"登录 EVE 账号"走同一个 `AddCharacterAsync`（含国服向导），工具栏入口让"角色已经很多、卡片在下面"时也能直接加号。
+- **卡片视图保持原样**（200×305 竖卡、头像/名称/SP/ISK/技能队列、拖拽排序），不因为新增列表而改动观感。
+- **列表视图一行一个角色，行高 ≈ 68 DIP**（刻意不做成 20~30px 的表格式细行）：
+  44px 圆形头像 → 名称（14px 半粗）+ 在线/离线状态（红绿点；离线带时长）→ 技能点 → ISK → 忠诚点 →
+  技能队列块（百分比 / 3px 细进度条 / 剩余时间 / 已暂停 / 未完成·总数）→ 右侧「⋯」菜单（固定到主页 / 删除角色）。
+- **各列固定宽度**（技能点 100 / ISK 110 / 忠诚点 76 / 技能队列 200，名称列 `*` 且 `MinWidth=120`），因此多行之间**严格对齐**；
+  数值过长时用 `TextTrimming=CharacterEllipsis` 省略，不会换行把行撑高。
+- 不加表头：每列自带 11px 的小标签（技能点 / ISK / 忠诚点 / 技能队列）。这样列宽只在一处定义，
+  不必维护"表头列宽 + 行模板列宽"两份（也就不会出现两者不同步导致的错位）。
+- **窄窗口不硬挤**：列表外面套了一层只负责横向滚动的 `ScrollViewer`（`RowScrollHost`，`MinWidth` 绑 `ViewportWidth`，
+  与阶段 22 表格同一套做法）。1200×800 逻辑分辨率下不需要横向滚动条；窗口压到最小值（960 宽）时出现横向滚动条，
+  而不是把「⋯」和队列数字裁掉。
+- **添加角色只有工具栏一个入口**：卡片网格与列表末尾**都不再放"添加角色"占位卡/占位行**（原先各有一处，角色多了要点它还得先滚到底）。
+  集合 `CharactersViewModel.Cards` 因此只装真实角色，`CharacterCardViewModel.IsAdd` 这个"占位卡"标记连同它带的分支
+  （`LoadAsync` 早退、`Card_Click`/`PinCharacter_Click`/拖拽与落点判断、`Remove` 守卫、`IsEmpty`/`CharacterCount` 的过滤）
+  一并删除；空态仍由引导卡里的「登录 EVE 账号」兜住。
+- **拖拽排序两种视图共用同一套实现**（阶段 261 的机制不变）：事件挂在共同宿主 `ViewHost` 上，
+  卡片按落点**左右半边**决定插前/插后，列表行按**上下半边**；普通点击仍然打开工作区，拖拽结束后的补发 Click 仍被抑制。
+- 选择会持久化：`settings.json` 的 **`Characters.ListView`**（bool，缺省 = 卡片），切换即写盘，重启沿用；
+  一个角色都没有时仍是原来的空态引导，两种视图都不显示。
+
+### 269.2 代码变更
+
+- `Views/Pages/Characters/CharacterCardsPage.xaml`
+  - 顶部改成一行工具栏 `Grid`（`Auto`=拖拽提示 + `*`=右侧按钮组）：视图切换 / 刷新 / 添加角色；
+    页面去掉大标题与 1100px 限宽的两列布局，内容区只留 `Margin="16,0"`（使用者对本页布局的调整）；
+  - 卡片网格与列表共用一个 `Grid x:Name="ViewHost"`（`AllowDrop` + 4 个拖拽事件），原 `CardList` 上的事件移到宿主；
+  - 两个视图的模板里都删掉了"添加角色"占位项（卡片里那块 `StackPanel`、列表里那一行），列表行模板随之少了一层只为叠放两种内容而设的 Grid；
+  - 新增 `ScrollViewer x:Name="RowScrollHost"`（只横向滚动）+ `ItemsControl x:Name="RowList"`（`MinWidth` 绑 `ViewportWidth`）
+    与行模板（只渲染真实角色）；
+  - 新增 `ViewSwitchToggle`（分段按钮样式，无描边）、`RowStatLabelStyle` / `RowStatValueStyle`（列表行的"标签上、数值下"）；
+  - 新增 `AddCharacterButton`（`Appearance=Primary`），并给两个纯图标 `ToggleButton` 与刷新按钮补 `AutomationProperties.Name`；
+  - 卡片里两处字面量标签 `SP` / `ISK` 改为语言键（`CharacterPage_Sp` / 新增 `CharacterPage_Isk`）。
+- `Views/Pages/Characters/CharacterCardsPage.xaml.cs`
+  - 构造函数里 `AddCharacterButton.Click` 与 `LoginButton` 一样接到 `AddCharacterAsync()`；
+  - 新增 `ListViewSettingKey`、`_listView`、`ApplyViewMode(listView, persist)`（同步两个按钮选中态 + 两个容器 + 可选写盘）、
+    `CardViewToggle_Click` / `ListViewToggle_Click`；构造时先按存档套用一次（`persist: false`）；
+  - `UpdateEmptyState()` 现在同时考虑"空态"与"当前视图"（空态 → 两个容器都折叠，另 `ViewHost` 一并隐藏；
+    列表视图切换的是外层 `RowScrollHost` 而不是 `RowList` 自身）；
+  - 拖拽取坐标由 `CardList` 改为 `ViewHost`，落点半轴按 `_listView` 在 X / Y 之间切换。
+- `ViewModels/Characters/CharactersViewModel.cs` / `CharacterCardViewModel.cs`
+  - 集合只装真实角色：`LoadAsync` 不再 `Cards.Add(占位卡)`，`IsEmpty`/`CharacterCount`/三项汇总/`MoveCard`/`Remove`
+    都去掉了 `!p.IsAdd` 过滤；`CharacterCardViewModel.IsAdd` 与 `LoadAsync` 里的 `if (IsAdd) return;` 删除。
+- 语言（中英各 **+3 键**，键集仍严格一致 3396 = 3396、无重复）：
+  `CharacterPage_Isk`（ISK / ISK）、`CharacterPage_CardView`（卡片视图 / Card view）、
+  `CharacterPage_ListView`（列表视图 / List view）；`CharacterPage_DragHint` 文案由
+  「拖拽角色卡片可调整顺序」改为「拖拽角色可调整顺序」（两种视图通用）。
+
+### 269.3 验证
+
+- `dotnet build`：**0 错误、无新警告**（54 个既有警告，与阶段 262 基线一致）。
+- 静态自查：全项目 `grep IsAdd` 已无角色页相关命中（只剩 `ChannelScanViewModel.IsAddingIgnore` / `AddShortcutViewModel.IsAdded`
+  这类同名片段），`CharacterCardViewModel.IsAdd` 与 `CharactersViewModel` 里的过滤全部清干净。
+- 实机（真实账号 3 个角色；Debug 输出到临时目录启动，UIA 驱动点击 + `PrintWindow` 抓图，窗口 1200×800 逻辑分辨率）：
+  - 卡片视图 / 列表视图各一张截图：卡片视图只有 3 张角色卡（末尾不再有"添加角色"占位卡），
+    列表只有 3 行（末尾不再有"添加角色"行），末尾直接是页面留白；配色跟主题；
+  - **列位实测**（UIA 边界，三行逐行对比）：技能点 / ISK / 忠诚点 / 技能队列四列的起始 x 与文本宽 **三行完全一致**
+    （96/104/76/190 → 换算后 125/138/95/229 设备像素，DIP = 100/110/76/183）；行间距 98 设备像素 ≈ 78 DIP
+    （行高 68 + 8 间距 + 边框），符合"单行不要太挤"的目标；
+  - **切换即写盘**：点「列表视图」→ `settings.json` 写入 `"Characters.ListView": "true"`；点「卡片视图」→ `"false"`；
+    重启后按上次选择直接打开（实测以列表视图启动）。核验后已把该键从用户存档里删除，回到默认卡片视图；
+  - **窄窗口**：把窗口压到最小尺寸（960 宽）时，列表出现横向滚动条、内容不被裁掉（1200 宽时无滚动条）；
+  - **工具栏**：一行依次为 拖拽提示 / 视图切换（两个图标） / 刷新 / 添加角色（主题色实心按钮）；
+    逐像素核对分段控件区域：**主题色像素数 = 0**（描边已彻底移除，只剩浅底选中态），
+    而"添加角色"按钮区域 **148** 个主题色像素（`Appearance=Primary` 生效）；
+  - **选中态配色**：逐像素采样两个分段按钮的背景，选中段 = `244,244,245` / 未选中 = `253,253,254`，两种视图互斥切换正确；
+  - **可点击性**：两个纯图标切换按钮与刷新按钮补了 `AutomationProperties.Name`，UIA 能按「列表视图」找到并切换
+    （补之前 UIA 名称是空的，读屏/自动化都认不出这两个按钮）；
+  - 应用日志无新增错误（只有既有的"军团钱包无职位"报错）。
+- 未覆盖：本轮没有做**双卡/双行拖拽**的端到端实测（逻辑只改了宿主与半轴判定，`MoveCard` 未动）；
+  深色主题下未重复截图（列表行的颜色全部走 `DynamicResource` 主题画刷，无字面量颜色）。
+
+## 阶段 270：主页「快捷方式」卡片右上角补编辑入口（跳转 设置 → 主页）（2026-11-03）
+
+> 用户反馈：主页快捷方式卡片右上角应该有个编辑图标，点了要跳到设置界面。
+
+### 270.1 背景与取舍
+
+- 这个位置的「编辑」按钮在**阶段 101 已被整块删除**（当时应用户要求把编辑模式收进 设置 → 主页，
+  见 `HOME_DESIGN.md` §4.3），所以当前代码里该位置本没有控件；用户看到的应是旧版本的残留印象/旧构建。
+- 本轮按需求把它**加回来，但只做跳转入口**：点一下 = 打开「设置 → 主页」，**不进入任何编辑态**
+  （主页磁贴仍然只有"点击打开"一种交互，编辑动作依旧全在设置页）。
+
+### 270.2 实现
+
+- `Views/Pages/HomePage.xaml`：`QuickCard.Header` 由 `StackPanel` 改成两列 `Grid`（左＝标题+计数，右＝按钮），
+  右侧新增 `ui:Button x:Name="ManageShortcutsButton"`：`Appearance="Transparent"`、`Icon="{ui:SymbolIcon Edit24}"`、
+  `Padding="6,2"`，`ToolTip` 与 `AutomationProperties.Name` 都取既有键 **`Home.Quick.Manage`**（「管理快捷方式…」，
+  与左侧导航右键那条完全同文案，零新增键）。
+- `Views/Pages/HomePage.xaml.cs`：新增 `OnManageShortcutsClick` ——
+  `SettingsPage.RequestCategory(typeof(Settings.HomeSettingPage))` + `Navigation.Navigate(typeof(SettingsPage))`。
+  这与导航右键「管理快捷方式…」（`MainWindow.xaml.cs`）**走同一条路径**：设置页消费待打开分类（`Loaded` 时
+  `ApplyPendingCategory`），跨页跳转和"设置页是否已创建"都能正确落地。
+- 语言：`SettingPage_Home_Desc` 文案纠偏——原文还写着"快捷方式的增删与分组在主页「编辑」模式进行"（阶段 101 后已失效），
+  改为「主页卡片的显示开关；快捷方式的增删、排序与宽窄也在这里管理」（中英同步）。
+
+### 270.3 验证
+
+- `dotnet build`：**0 错误**。
+- 按用户要求（"不需要你验证，改完交给我"）**未做界面点击核验**；跳转链路与现成入口逐字相同，风险集中在
+  "设置页已创建时是否还能落到分类"——该分支早已被导航右键「管理快捷方式…」长期使用。
+- 手册同步：`home.md`（卡片标题行说明 + 限制段说明"只跳转、不进编辑态"）、`settings/home.md`（三处入口之一）；
+  `HOME_DESIGN.md` §4.3 补记阶段 270。
+
+## 阶段 271：主页快捷方式卡片去掉标题行计数（保留标题）（2026-11-03）
+
+> 用户要求：把「快捷方式 共 n 个 · 上限 24」这行删了；随后补充「保留「快捷方式」」。
+
+- `Views/Pages/HomePage.xaml`：`QuickCard.Header` 仍是两列 `Grid`——左边只留标题 `TextBlock`
+  （`Home.Quick.Title`，删除旁边的计数 `TextBlock`），右边是阶段 270 的编辑图标按钮。
+- `ViewModels/Home/HomePageViewModel.cs`：`CountText` 计算属性与两处 `OnPropertyChanged(nameof(CountText))` 删除
+  （页面已无绑定，留着等于死代码）；`IsEmpty` 等其它通知不动。
+- 语言：`Home.Quick.Title` **保留**（标题还在用）；`Home.Quick.Count` 保留给「设置 → 主页」顶部
+  （`HomeSettingPage` 的"共 n 个 · 上限 24"）。键集中英仍严格一致（3395 = 3395）、无重复。
+- 文档：`HOME_DESIGN.md` 语言键清单与 §4.3 按"只去计数、保留标题"改写；手册 `home.md` 的卡片说明同步。
+- `dotnet build`：**0 错误**。按用户要求未做界面核验。
+
+## 阶段 272：工业（制造）四个子页各配独立图标（2026-11-03）
+
+> 用户反馈：制造相关功能现在都用同一个图标，需要重新给每个功能配图标。
+
+### 272.1 问题与根因
+
+- 左侧导航「工业」组的四个子项（制造计划 / 行星开发 / 蓝图浏览器 / 库存）此前**全部借用母图标**
+  `NavIcon.industry`（橙色立方体），在导航里并排展开时四条完全一样，看不出区别。
+- 主页磁贴与「设置 → 主页」列表里的图标来自 `HomeFeatureCatalog` 的 `IconKey`，那四条同样都写的 `"industry"`，
+  所以主页上一固定工业类功能就也是同一个图标。
+- 附带发现：`NavIcons.xaml` 头部写着"自动生成，勿手改"，但 `NavIcon.industry` 本来是**手写**加进去的
+  （`design/branding/icons/` 里没有对应的 `nav_industry.svg`，生成脚本的 `ORDER` 里也没有它）——即"真源"缺一枚。
+
+### 272.2 新增图标（`design/branding/icons/` → `Resources/NavIcons.xaml`）
+
+沿用既有视觉规范：128×128 坐标空间、20px 显示、`ScaleTransform 0.15625`、描边统一 ×1.25、配色取现有四种
+（蓝 `#3B82F6`/`#38BDF8`、青 `#5EEAD4`、琥珀 `#F59E0B`）、全部 `round` 线帽。
+
+| 图标键 | 名称 | 图形 | 文件 |
+|---|---|---|---|
+| `NavIcon.industryPlan` | 制造计划 | 蓝色夹板 + 琥珀夹子 + 三根柱状图（"生产计划"） | `nav_industryPlan.svg` |
+| `NavIcon.industryPlanetary` | 行星开发 | 蓝色环形行星 + 青色行星环 + 一点琥珀卫星 | `nav_industryPlanetary.svg` |
+| `NavIcon.industryBlueprints` | 蓝图浏览器 | 琥珀图纸 + 蓝/青网格线（"技术图纸"） | `nav_industryBlueprints.svg` |
+| `NavIcon.industryInventory` | 库存 | 三只货箱（琥珀一上、蓝青两下） | `nav_industryInventory.svg` |
+| `NavIcon.industry` | 工业（母项） | 原橙色立方体，**回填成 SVG**（`nav_industry.svg`） | `nav_industry.svg` |
+
+- 生成脚本 `_svg_to_wpf_icons.py` 的 `ORDER` 末尾补上 5 个 id（工业母项 + 四个子页），
+  `_apply_nav_icons.py` 的 `SEQ` 也按 MainWindow 里的实际位置（估价之后、多开之前）补上——
+  两个脚本都是**按位置**对应导航项，漏掉工业组会让后续批量替换整体错位。
+- **`NavIcons.xaml` 是"脚本输出 + XAML 格式化器"的产物**（属性按字母序、`Pen` 多行）：
+  直接重跑脚本会带出 900 行纯格式差异，所以本轮只在文件末尾按既有格式**手工补了 4 段**，
+  图形数据与脚本输出语义一致；`nav_industry.svg` 则用来补齐"真源"缺口（将来重跑脚本不会丢工业母图标）。
+
+### 272.3 接线
+
+- `Views/MainWindow.xaml`：四个子项的 `ui:ImageIcon` 从 `NavIcon.industry` 分别改为上表四个键（母项保持不变）。
+- `Services/Home/HomeFeatureCatalog.cs`：四条工业功能的 `IconKey` 由 `"industry"` 分别改成
+  `"industryPlan"` / `"industryPlanetary"` / `"industryBlueprints"` / `"industryInventory"`，
+  因此**主页磁贴、设置页行、添加功能窗口**里的图标一并区分开（它们都走 `HomeFeature.IconResourceKey`）。
+
+### 272.4 验证
+
+- `dotnet build`：**0 错误**（18 个既有警告）。
+- `python design/branding/_audit_branding.py`：B 段全 OK，尤其是 **B4 数量 SVG 40 / xaml 40**（此前 35 / 36，
+  现在真源与产物终于一一对应）；颜色、opacity 折算、线帽检查均通过，无 `[X]`。
+- 实机（展开「工业」组抓图）：四个子项图标互不相同且在 20px 下可辨识——
+  夹板柱状图（制造计划）、带环行星（行星开发）、图纸网格（蓝图浏览器）、货箱堆（库存），母项仍是立方体。
+- 已知取舍：`design/branding/icons/preview.html` 与 `nav-icons.svg` 是**手工维护**的图标预览页，
+  本轮未补卡片（README 已注明"新增图标需自行补卡片"）。
+
+## 阶段 273：制造计划成本口径——发明 T1 蓝图可排除、节点可"不计入成本"、节点动作改下拉框（2026-11-03）
+
+> 用户反馈：制造计划算成本时会把"发明步骤要用的 T1 蓝图"按全新买入算进去（如生产「鞭挞狂乱超大型鱼雷」会把
+> 「鞭挞超大型鱼雷蓝图」也算一笔采购），希望在"全新买入蓝图"与"不计入成本"之间可选；
+> 并且要在 BOM 成本里能把某个节点（例如那张 T1 蓝图）设为**不计入成本**，
+> 同时把节点成本方式的几个按钮（制造 / 采购 / 忽略）改成**下拉框**，选中就重算该节点成本。
+
+### 273.1 口径与交互
+
+- **新选项「发明用的 T1 蓝图计入成本」**（默认**关**）：关闭时发明节点仍把 T1 蓝图列成需求（BOM 里看得到、采购清单里也有），
+  但它的成本不计入总成本；打开后才按"全新买入这张蓝图"计价。位置在「计划设置 → 角色与市场」的库存/市场数据卡里，
+  紧挨「使用角色自有蓝图」，改动即时保存并在已有结果时自动重算。
+- **节点「不计入成本」**：新增的第三种成本方式。语义是"数量/流程/采购清单照常，成本清零且不向上聚合"，
+  典型场景就是"蓝图、工具、家里已有的存货不该算进这一单"。列表里该节点的决策标签显示「不计入成本」、成本列显示 `—`，
+  节点详情多一行说明。
+- **节点动作改下拉框**：原来节点详情里的「强制制造 / 强制采购 / 加入黑名单」三个按钮收成一个
+  **成本计算方式**下拉框（自动 / 强制制造 / 强制采购 / 不计入成本），选中即重算；「清除手动成本设置」按钮把四类设置一起清空。
+  - 黑名单与"强制采购"在求解器里本来就等价（都强制 `IndustryDecision.Buy`），因此下拉框不再单独提供黑名单；
+    历史设置文件里已有的 `Blacklist` 仍然被读取与应用，只是不再有新增入口。
+
+### 273.2 代码变更
+
+- **Core**
+  - `Models/Indusrty/IndustryBuildNode.cs`：新增 `CostIgnored`（数量保留、成本清零）。
+  - `Models/Indusrty/IndustrySolverOptions.cs`：新增 `HashSet<int> IgnoredCostTypes` 与 `bool CountInventionBlueprintCost`（默认 false）。
+  - `Services/Industry/IndustrySolver.cs`：
+    - `SolveNodeInternal` 在节点算完后按 `IgnoredCostTypes` 调 `IgnoreCost(node)`；
+    - 新增 `IgnoreCost`：置 `CostIgnored`、清零 `JobCost/JobCostKnown/BuildCost/FullBuildCost/ReferenceCost/ReferenceCostFull`（父节点累加的是 `BuildCost`/`FullBuildCost`，因此自然不再向上聚合）；
+    - `TryBuildInventionNode` 里 T1 蓝图节点在 `CountInventionBlueprintCost == false` 时走 `IgnoreCost`（仍加入 `Inputs` 以便 BOM 显示）。
+- **WPF**
+  - `Services/Industry/IndustrySettingService.cs`：新增 `CountInventionBlueprintCost` 与 `List<int> IgnoredCostTypes`。
+  - `ViewModels/Industry/IndustryPlanPageViewModel.cs`：
+    - 字段 `_ignoredCostTypes`；构造与 `ApplySetting` 两条路径都读取新设置，`SaveSetting` 写回；
+    - `CountInventionBlueprintCost` 属性（改动即保存 + 有结果时重算）；
+    - 新增 `SelectedNodeCostModeIndex`（0 自动 / 1 制造 / 2 采购 / 3 不计入成本）：getter 按"忽略集合 → 手动决策 → 黑名单"推导，
+      setter 清掉三类设置后按选择写入，保存并重算；`SelectedNode` 变化时通知该属性；
+    - `CalculateAsync` 把 `IgnoredCostTypes` / `CountInventionBlueprintCost` 传给 `IndustrySolverOptions`；
+    - 删除 `ForceBuildSelected / ForceBuySelected / BlacklistSelected`（被下拉框取代），`ClearManualDecisions` 一并清空忽略集合。
+  - `ViewModels/Industry/IndustryPlanNodeViewModel.cs`：`CostIgnored` 优先级最高地参与 `DecisionKey`（`"ignored"`）与 `DecisionText`，
+    并新增 `IsCostIgnored` / `CostIgnoredHint`。
+  - `Views/UserControls/IndustryProductionChainView.xaml`（**真正在用的 BOM 视图**）：
+    节点行增加 `DecisionKey = ignored` 的触发器（中性色）；节点详情把三个按钮换成 `ComboBox`
+    （`SelectedIndex` 绑到页面 VM 的 `SelectedNodeCostModeIndex`，`RelativeSource AncestorType=UserControl`），
+    并加一行"该节点不计入成本"的说明；对应 code-behind 删掉三个按钮处理器。
+  - `Views/Pages/IndustryPlanPage.xaml`：库存/市场数据卡新增「发明用的 T1 蓝图计入成本」复选框；
+    顺带删掉该文件里**两份从未被引用的** `IndustryNodeTemplate` / `IndustryNodeDetailTemplate`
+    （阶段 269 之后 BOM 已迁到 `IndustryProductionChainView`，页面里这两份是旧版残留，
+    其中详情模板还引用着被我删掉的按钮处理器）。
+  - 语言：中英各 +9 键（`IndustryPage_NodeCostMode` / `NodeCostModeTip` / `CostModeAuto` / `CostModeIgnore` /
+    `CostIgnored` / `CostIgnoredHint` / `CountInventionBlueprintCost` / `CountInventionBlueprintCostTip` 等）；
+    删除随之失效的 `IndustryPage_NodeActions` 与 `IndustryPage_Blacklist`；`ClearDecisions` 文案改为「清除手动成本设置」。
+- 手册：`Resources/Manuals/zh-CN/industry/plan.md` 的 BOM/成本步骤、字段表与限制段同步（新增下拉框语义、默认不计价的 T1 蓝图、忽略只影响成本不影响数量）。
+
+### 273.3 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 按用户要求（"不要自己操作软件验证，改完交给我"）**未做实机界面核验**。
+  需要实机确认的三点：① 选项开关默认关闭时，T2 目标的发明子节点下那张 T1 蓝图成本为 `—`、总成本随之下降；
+  ② 把某节点设为「不计入成本」后重算，节点标签变「不计入成本」、父节点/总成本按差额下降，但采购清单数量不变；
+  ③ 下拉框切换四种方式都能触发重算（`Auto` 会清除该物品的人工设置）。
+
+## 阶段 274：制造计划「目标物品」列表改为卡片（2026-11-04）
+
+> 用户要求：目标物品列表的物品模板改成卡片式，去掉现在的「物品 / 数量」表头；
+> 卡片顶部是物品名称，下面第一行「数量 + 输入框」、第二行「发明解密器 + 下拉框」，右上角是删除按钮。
+
+- `Views/Pages/IndustryPlanPage.xaml`
+  - `IndustryTargetTemplate` 重写为卡片：`Border`（`CardBackgroundFillColorDefaultBrush` + `CardStrokeColorDefaultBrush` 描边、圆角 8、`Padding 10,8`），
+    内部三行 Grid——①名称（13px 半粗、单行省略）+ 右上角 `Dismiss24` 删除按钮（`Tag` 绑目标项，仍走 `OnRemoveTargetClick`）；
+    ②「数量」标签（`MinWidth=64` 对齐）+ 整宽 `ui:NumberBox`（保持原有 `Min 1 / Max 1000000 / 整数 / Compact` 设置）；
+    ③「发明解密器」标签 + 整宽 `ComboBox`（沿用 `TargetDecryptors` 数据源与 `SelectedDecryptor` 双向绑定）。
+  - 目标面板顶部那行「物品 / 数量」表头连同它占的行一起删掉（`Grid` 由 Auto/*/Auto 三行改为 */Auto 两行），
+    底部「清空全部目标」按钮位置不变。
+- 语言键：无新增（复用 `General_Quantity` / `IndustryPage_Decryptor` / `IndustryPage_DecryptorTargetTip` / `General_Remove`）；
+  `IndustryPage_Col_Item` 仍被 BOM 概览表格用，未删。
+- 手册：`industry/plan.md` 第 2 步改为描述卡片式目标（名称 / 数量 / 解密器 / 删除）。
+- `dotnet build`：**0 错误**（54 个既有警告）。按用户要求未做实机界面核验。
+
+## 阶段 275：改节点成本方式后只刷数据、不再跳回排程页（2026-11-04）
+
+> 用户反馈：改了某个节点的成本计算方式后会"重新刷新页面并跳到排程页"，希望只刷新数据、页面停留在操作前的位置。
+
+### 275.1 根因
+
+- 阶段 273 里下拉框选中即调 `CalculateAsync()`，而 `FillPlan` 结尾无条件执行
+  `SectionTabIndex = 1; ResultTabIndex = 0; DetailTabIndex = 0;`（再按有无排程补成 `ResultTabIndex = 1`）——
+  这是**点「执行计划」时应有的"跳到排程"行为**，但对"只改了一个节点的成本口径"这种增量重算就是副作用：
+  页签被拽回「计划详细 → 排程」，节点选中也被重置成第一个，用户还得自己点回 BOM。
+- 顺带发现：重算会重建全部节点实例，用户的**展开/收起状态**同样会丢（恢复成默认"前两层展开"）。
+
+### 275.2 修法
+
+- `IndustryPlanPageViewModel.CalculateAsync(bool preserveView = false)`：新增可选参数。
+  `preserveView = true` 时在重算开始前抓一份 `ViewState`（三个页签索引 + 选中节点 TypeID 与扁平下标 +
+  概览选中目标 + 展开节点的 TypeID 集合），重算完成后按它还原。
+- `FillPlan(..., ViewState? keepView = null)`：
+  - 有 `keepView` 时**跳过**三处页签重置（开头那组 + 结尾的 `ResultTabIndex = HasSchedule ? 1 : 0`），改为写回快照里的值；
+  - 节点重建后先按快照还原展开状态（`ApplyExpansion`，同时记了"重算前存在过的 TypeID"集合：
+    见过的节点按快照还原，重算后新冒出来的节点保留默认的"前两层展开"），再 `RestoreNode` 找回选中节点：
+    优先"同 TypeID 且扁平下标最接近"，其次"同 TypeID 的第一个"，最后退到第一个节点
+    （强制制造/采购会改变子树结构，下标不一定还能对上，所以有兜底）；
+  - 概览选中目标按 TypeID 还原（找不到回退第一个）。
+- `SelectedNodeCostModeIndex` 的 setter 补两道防回环：**重算进行中（`IsBusy`）直接忽略回写**
+  （节点集合重建时绑定会瞬时刷新，不代表用户操作），以及**值没变不重算**（下拉框刷新选中项也会走 setter）。
+- 调用点：三处"只改设置、需要重算"的地方改为 `CalculateAsync(preserveView: true)` ——
+  节点成本方式下拉框、『发明用的 T1 蓝图计入成本』开关、『清除手动成本设置』；
+  页面上的「执行计划」按钮仍走默认 `false`，保留"算完跳排程"的原行为。
+
+### 275.3 验证
+
+- `dotnet build`：**0 错误**（18 个警告，增量构建）。
+- 按用户要求未做实机界面核验。需要实机确认：在 BOM 页签选中某节点改成本方式后，
+  仍停留在「计划详细 → BOM」、同一节点仍选中、展开状态不变，只有成本数字/flags 变化；
+  点「执行计划」仍会跳到排程页。
+
+## 阶段 276：制造计划接入行星开发规划器（真实殖民地模型）（2026-11-04）
+
+> 用户反馈：制造计划里包含的行星产物似乎都按"一个殖民地"计算。确认确实如此后，用户选择**方案 3**——
+> 让制造计划的 PI 需求直接调用「工业 → 行星开发」的 `PlanetaryPlanner`，把殖民地数量、行星类型、
+> 每天产量、建造成本与进口/出口税带进 BOM 与排程。
+
+### 276.1 原来的口径（为什么像"一个殖民地"）
+
+- BOM：行星节点只用 SDE `planetSchematics` 配方——`流程 = ceil(需求 / 每周期产出)`、材料按 `流程 × 每周期输入`
+  递归、`时间 = CycleTime × 流程`、成本只累加子材料 + 一笔 `收入 × 出口税率`。**没有任何殖民地/容量概念**。
+- 排程：`ProfileState.PlanetFree = new double[1]`，每个角色**恒定 1 条行星线**，所有 PI 任务串行排在这一条线上
+  （制造/发明/反应是按技能 1–11 个槽位，行星却不是）。
+- 「工业 → 行星开发」页其实已有完整模型（`PlanetaryPlanner` + `PlanetaryCapacityCalculator` + `PlanetTypeCatalog`：
+  行星类型 P0 组成、按半径算 CPU/PG、工厂与提取头、每角色 6 殖民地、进口/出口税、按天产量），制造计划**从未接它**。
+
+### 276.2 Core 改动
+
+- 新增 `Models/Indusrty/IndustryPlanetaryOptions.cs`：`Enabled`（默认 true）/ `PeriodDays` / `CcuLevel` /
+  `MaxPlanetsPerCharacter` / `RadiusKm` / `CountSetupCost` / `Mode` / `Characters` / `Planets`。
+- `IndustrySolverOptions.Planetary`（新属性，默认启用）。
+- `IndustryBuildNode` 新增行星字段：`PlanetModeled` / `PlanetColonies` / `PlanetCharacterCount` /
+  `PlanetOutputPerDay` / `PlanetImportCost` / `PlanetSetupCost` / `PlanetProductionDays` / `PlanetEstimated`。
+- `IndustrySolver`：
+  - 静态 `Lazy<PlanetaryPlanner>`（配方目录 + 行星类型表全进程加载一次）；
+  - `TryPlanetModel(node, quantity)`：按节点产物与需求量组请求（周期、CCU、每角色殖民地、半径、税率、角色、候选行星、
+    参考价委托）→ 规划 → 按 `(TypeId, 数量)` 缓存，避免同一产物多次规划；
+  - `ApplyPlanetModel`：写回殖民地数、角色数、日产量、进口成本（× 周期天数）、建造成本、出口税（× 周期天数）、
+    `JobTimeSeconds = 目标量/日产量 × 86400`；`PlanetEstimated` 标记"类型/半径是估算"；
+  - 建模成功时节点**不再递归展开 P0→P1 配方**（规划器已覆盖整链），成本只由进口成本 + 出口税 +（可选）建造成本构成，
+    产出按需求计、不产生上游剩余；`ApplyMarketInfo` 的简单 `收入 × 出口税率` 改为仅在**未建模**时补。
+- 排程（`IndustryScheduler`）：
+  - `IndustryCharacterProfile.PlanetSlots`（默认 6，`SlotsForActivity(100)` / `TotalSlots` 计入），
+    `ProfileState.PlanetFree` 按该值开并发行星线；
+  - `JobWork.PlanetSlots`（取同产物节点的最大殖民地数）、`Assignment.Slots`、`IndustryScheduleJob.Slots`，
+    `IndustryScheduleCharacter.PlanetSlots`；
+  - `FindBest` 对行星任务改为**同时占用 N 条空档线**（取前 N 个空档的最晚时间作为开工时间），
+    分配后把这些线一起占用到结束；其它活动行为不变；
+  - `BuildResult` 按该角色实际占用的殖民地数展开 `P1..Pn` 线，占用时长按 `时长 × 槽数` 计入利用率。
+
+### 276.3 WPF 改动
+
+- `IndustrySetting` 新增 7 个行星字段（默认：启用、周期 7 天、CCU 5、每角色 6 殖民地、半径 0 = 估算、计入建造成本、
+  不用候选行星）；顺带修掉一个既有缺陷：**`PlanetTaxPercent` 此前只在"载入计划"时读入**，构造函数漏读，
+  导致每次启动都会把用户设的海关税率写回 5%。
+- `IndustryPlanPageViewModel`：7 个属性（开关 + 参数），ctor / 载入计划 / 保存三条路径都读写；
+  `CalculateAsync` 组装 `options.Planetary`（参与角色 + 全局 CCU / 殖民地数；勾选时把「成本指数位置」星系的真实行星
+  `MapDenormalizeService.QueryPlanetsBySolarSystemID` 作为候选行星），并把 `CharacterProfiles.PlanetSlots` 设成设置值。
+- `IndustryPlanPage.xaml`：建筑页「行星开发」小节——按殖民地模型估算（关闭后续参数禁用）、计入建造成本、
+  用成本指数位置的星系行星作候选、产出周期、指挥中心等级、每角色殖民地、行星半径。
+- `IndustryProductionChainView.xaml`：BOM 行增加「N 殖民地」短标记；节点详情新增「行星开发（殖民地模型）」小节
+  （殖民地/角色/每天产量/约 N 天 + 建造/进口/出口税），估算半径时给黄色提示。
+- 语言：中英各 +17 键（`IndustryPage_Planetary*` 12 个 + `IndustryChain_Planet*` 4 个 + `IndustryPage_PlanetaryDetail`）。
+- 手册：`industry/plan.md` 的行星限制段改写为新口径 + 开关位置 + 仍存在的简化。
+
+### 276.4 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告，全量构建基线未变）。
+- 语言键：中英各 3422，键集一致、无重复。
+- 按用户要求**未做界面/数据实机核验**。需要实机确认：
+  ① 目标产物含 P1/P2 时，BOM 里该行星节点显示「N 殖民地 / 每天 X / 约 Y 天」，总成本按 建造+进口+出口税 计入；
+  ② 排程里该角色出现 N 条并行「行星」线，工期明显短于旧的一条线串行；
+  ③ 关掉开关后回到旧口径（1 条线、`CycleTime × 流程`）；
+  ④ 勾选「用成本指数位置的星系行星作候选」时按该星系真实行星规划，行星不足会有警告。
+
+## 阶段 277：行星产能改「按可用殖民地」反推工期（默认），不再永远按一个殖民地拉长（2026-11-04）
+
+> 用户反馈：只有一个行星产物（火箭燃料）时，排程里却只用角色一个殖民地，工期被拉到 990+ 小时。
+
+### 277.1 根因（实测数据）
+
+- 阶段 276 的口径是**"把需求塞进产出周期"**：`需求 / 产出周期天数 = 每天要产多少`，规划器只为这个日产量凑殖民地数。
+  周期越长、需要的日产量越低，殖民地就越少。
+- 用探针（真实 SDB，`Rocket Fuel`(9830) × 856，CCU5 / 6 殖民地 / 1 角色）实测：
+
+  | 产出周期 | 殖民地（提取/工厂） | 日产 | 目标天数 |
+  |---|---|---|---|
+  | 1 天 | 5（4/1） | 960 | 0.89 |
+  | 7 天（旧默认） | 3（2/1） | 240 | 3.57 |
+  | 30 天 | 3（2/1） | 120 | 7.13 |
+
+  也就是说：**周期口径下"殖民地数"被压到刚好够用的最小值**，而不是"把手上的殖民地都用上"，
+  所以一批几百件要排好几天。另外阶段 276 的 `PlanetTax/ImportCost` 按设置里的周期换算，规划实际用了别的周期时会算错。
+
+### 277.2 修法
+
+- 新增产能口径 **`IndustryPlanetarySizingMode`**：`AvailableColonies`（按可用殖民地，**默认**）/
+  `FitPeriod`（按产出周期，即旧行为）；`IndustryPlanetaryOptions.SizingMode` 生效。
+- `IndustrySolver`：
+  - `PlanWithPeriod(typeId, qty, days)`：原逻辑抽成独立方法；
+  - `PlanWithAvailableColonies`：先用 **1 天周期**探一次，得到"每个殖民地的日产能 = 日产 / 殖民地数"，
+    再用 **角色数 × 每角色殖民地**（默认 6）作为可用量：
+    - 探针殖民地数 ≤ 可用量 → 直接用 1 天口径（即"一天内出齐"）；
+    - 否则按 `天数 = 数量 / (可用殖民地数 × 每殖民地日产能)` 反推天数，再用该天数规划一次（得到准确的殖民地组合/成本）；
+  - `ApplyPlanetModel` 的进口成本/出口税改用**规划实际周期**（`summary.PeriodDays`）换算，不再用设置值。
+- 排程：行星任务占用 N 条殖民地产线时，把同一条任务**同时挂到 P1..Pn 每一条线上**（甘特图能看出"并行 N 个殖民地"），
+  占用时长仍只按 `时长 × 槽数` 计一次。
+- WPF：设置「行星开发」加「产能口径」下拉框（按可用殖民地 / 按产出周期）；「产出周期」只在后者可编辑；
+  `IndustrySetting.PlanetarySizingMode`（1 = 按可用殖民地，默认）；语言中英各 +4 键（`IndustryPage_PlanetarySizing*`）。
+
+### 277.4 修正：口径下拉的索引方向反了（当晚追加）
+
+- 现象：改完 277 后用户实测行星仍占 90+ 小时（截图里 P1–P3 三条 95h、瓶颈「火箭燃料 · 85h36m」）。
+- 根因：**界面下拉顺序与枚举映射写反**——下拉第 1 项是「按可用殖民地」，代码却把索引 0 映射成 `FitPeriod`，
+  而保存下来的 `PlanetarySizingMode = 0` 于是走的是"按产出周期 7 天"的老口径；
+  探针复算 `Rocket Fuel` × 856 得 3 殖民地 / 3.57 天 / **85.6h**，与截图瓶颈时间完全对上。
+- 修正：
+  - 映射改为 `0 → AvailableColonies（默认）`、`1 → FitPeriod`；`PlanetaryPeriodEnabled` 改为索引 1 时可用；
+    `_planetarySizingModeIndex` 默认 0、`IndustrySetting.PlanetarySizingMode` 默认 0；
+  - `Migrate` 升到 **PreferencesVersion = 2**：把已保存的 0/1 一律重置成 0（旧值的语义不可信）；
+  - 未选角色时"可用殖民地"按 **1 个角色**的字行位算（之前会退化成 1 个殖民地）。
+- 端到端探针（真实 SDB，`Rocket Fuel`(9830) × 856，1 角色 × 6 殖民地）：
+
+  | 口径 | 殖民地 | 日产 | 天数 | 节点工期 |
+  |---|---|---|---|---|
+  | 按可用殖民地（修正后默认） | 5（4 提取 + 1 工厂） | 960 | 0.89 | **21.4h** |
+  | 按产出周期 7 天（旧，用户当前值） | 3（2 提取 + 1 工厂） | 240 | 3.57 | 85.6h |
+
+### 277.3 验证
+
+- 探针实测（真实 SDB）：`Rocket Fuel` × 856，1 天周期 → **5 个殖民地（4 提取 + 1 工厂）、日产 960、目标 0.89 天**；
+  换算到"按可用殖民地"口径即 **约 21 小时**（旧 7 天周期口径约 86 小时，数量更大时成比例变长）。
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 探针文件与临时分派已删除；未在界面上点验。
+
+## 阶段 278：排程甘特图产线名改中文、任务条文字不再重叠（2026-11-06）
+
+> 用户反馈：排程节点类型显示的是 `manufacturing / invention / reaction / planetary` 英文；R2 行文字叠在一起。
+
+### 278.1 产线名本地化
+
+- 甘特图左侧每一行的标签原来绑的是 `IndustryScheduleLineViewModel.Kind`（Core 原始 kind：`manufacturing` 等），
+  改为绑 **`KindText`**——它按 kind 取语言键：制造 / 发明 / 反应 / 行星。
+- 补了缺失的 **`IndustrySchedule_StageManufacturing`**（制造 / Manufacturing）：
+  原来 manufacturing 会落到默认键 `IndustrySchedule_StageComponent`（"组件"），
+  所以 `KindText`、`LocalizeActivity`、`SlotsName` 的默认分支一并改到新键；
+  `SlotsName` 同时补上 `100 => 行星`（工位页"行星槽"文案）。
+- 语言：中英各 +1 键（3427 = 3427，无重复）。
+
+### 278.2 任务条文字重叠
+
+- 三个原因叠在一起：
+  1. 任务条比文字窄时（0.x 小时的短条），`TextBlock` 的省略号没有硬约束，文字会画出条外压到相邻任务；
+  2. 同一条产线上两个任务时间重叠时（取整/人工置顶/并行殖民地摊派后可能出现），两条的文字互相压；
+  3. 行内布局会把间隙 ≤24px 的相邻任务吸到一起，进一步放大视觉重叠。
+- 修法：
+  - `ScheduleBarStyle` 的模板 `Grid` 加 **`ClipToBounds="True"`**：超出任务条的文字被裁掉，不再画到邻居身上；
+  - `IndustryScheduleLineViewModel` 在排布 DisplayLeft 时，若后一个任务与前一个**在像素上重叠**，
+    就把它推到前一个的右边缘（仅视觉；悬浮提示与任务详情仍是真实时间/时长）。
+
+### 278.3 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 语言键：中英各 3427，键集一致、无重复。
+- 按用户要求未做实机点验；需确认：甘特图左侧显示「M1 · 制造」「I1 · 发明」「R1 · 反应」「P1 · 行星」，
+  R2 那一行的两条任务文字不再叠字（窄条会被裁切，悬浮仍能看到完整名称）。
+
+## 阶段 279：计划详细页右上角「保存计划」按钮未接线（2026-11-06）
+
+> 用户反馈：计划详细页右上角的「保存计划」点了没反应。
+
+- 根因：那个按钮在 `IndustryPlanPage.xaml`（计划详细 TabItem 里）**根本没有 `Click`**——只有样式和图标，
+  真正接线的只有「已保存计划」页里的「保存为新计划」。
+- 修法：
+  - 补上 `Click="OnSavePlanClick"`（与「保存为新计划」同一个处理器）和 `AutomationProperties.Name`；
+  - `SaveCurrentPlan()` 改为**一键保存不再强制取名**：名称为空时自动生成「首个目标名 · MM-dd HH:mm」并回填到 `PlanName`
+    （「已保存计划」页仍可改名）；只有连目标都没有时才提示先加目标。
+- 语言键无新增（`IndustryPage_PlanNameRequired` 仍被"重命名"使用，未删）。
+- `dotnet build`：**0 错误**（54 个既有警告）。未实机点验。
+
+## 阶段 280：主页两张数据卡的说明文字收进 ToolTip（2026-11-06）
+
+> 用户要求：把「我的钱包」里的"区间内没有钱包流水…"这类文字，和「我的行情」的"最近一日历史均价…"一样去掉，统一改成悬浮提示。
+
+- `Views/Pages/HomePage.xaml`：
+  - 我的钱包：删掉底部的口径说明（`Wallet.NoteText`）与"区间内没有钱包流水"提示块；整卡加 `ToolTip="{Binding Wallet.CardToolTip}"`。
+  - 我的行情：删掉底部的口径说明（`Market.NoteText`）；整卡加 `ToolTip="{Binding Market.CardToolTip}"`。
+- `ViewModels/Home/HomeWalletCardViewModel.cs`：新增 **`CardToolTip`** —— 由「口径：ESI 钱包流水（7 天）…」+（区间内无流水时）"区间内没有钱包流水…"两段用换行拼成，
+  都为空时返回 `null`（不弹空提示框）；`NoteText` / 区间切换 / 刷新时一并 `OnPropertyChanged`。
+- `ViewModels/Home/HomeMarketCardViewModel.cs`：新增 `CardToolTip`（即原口径说明，空则 `null`），刷新文本时通知。
+- 语言键无新增/删除（`Home.Wallet.Note*` / `Home.Wallet.NoJournal` / `Home.Market.Note` 继续被 ToolTip 使用）。
+- 卡片正文不再占用这两行文字，高度略收紧；提示仍在悬浮时可见。
+- `dotnet build`：**0 错误**（54 个既有警告）。未实机点验。
+
+## 阶段 281：发明与制造改为并行（默认），只对比时间、成本照算（2026-11-06）
+
+> 用户反馈：现在必须先发明完成才能制造，但实际可以边发明边造（或早就备好 BPC），
+> 只需要能对比"发明总时间是否赶得上"，发明成本仍要计入。
+
+- 根因：`IndustryScheduler.Collect` 把**所有**自制输入都加成硬依赖，包括发明节点（`ActivityID = 8`），
+  于是制造被排在发明结束之后。
+- 修法：
+  - `IndustrySolverOptions.InventionParallel`（默认 **true**）：为 true 时，Collect 对 `input.IsInvention` **不建依赖**，
+    只把配对键记到 `JobWork.ParallelInventionKeys`；为 false 时保持原来的严格依赖；
+  - 排程结果里做对比：对每个"制造作业 → 它的发明作业"配对，取制造**最早开工时间**，
+    算 `InventionSlackHours = 制造开工 - 发明结束`；
+    - `IndustryScheduleJob.HasInventionWindow` / `InventionSlackHours` / `IsInventionLate`；
+    - `IndustrySchedule.InventionParallel` / `LateInventionCount`；
+  - 界面：任务详情新增「发明窗口（并行口径）」一行（绿色无需警告 / 黄色表示制造已开工后才完成发明），
+    任务悬浮提示也会带上这句；设置「工艺 → 发明数据」新增复选框「发明与制造并行（不等发明完成）」，
+    写入 `IndustrySetting.InventionParallel`。
+  - 发明成本口径不变：发明作业仍参与成本/现金/利用率与甘特图（只是不再阻塞制造）。
+- 语言：中英各 +5 键（`IndustryPage_InventionParallel*` 2 + `IndustrySchedule_Invention*` 3）。
+- `dotnet build`：**0 错误**（54 个既有警告）；键集 3432 = 3432、无重复。未实机点验。
+- 需确认：勾选时甘特图里制造不再被排到发明之后（可并排），发明条悬浮/详情出现「发明窗口」对比；
+  取消勾选恢复"发明完成 → 制造开工"。
+
+## 阶段 282：执行计划后停在概况；制造业物品名统一可跳市场（2026-11-09）
+
+> 用户要求：① 执行计划后不要跳到「生产详情」，停在「概况」；② 制造功能里所有出现物品名称的地方都要能点击跳市场。
+
+### 282.1 执行计划后的落点
+
+- `IndustryPlanPageViewModel.FillPlan` 里"算出结果后自动跳转"的分支由
+  `SectionTabIndex = 1; ResultTabIndex = HasSchedule ? 1 : 0;` 改为
+  **`SectionTabIndex = 1; ResultTabIndex = 0; DetailTabIndex = 0;`**（= 计划详细 → 概况）。
+- 「保持页面位置」的重算（阶段 275 的 preserveView）逻辑不变：改节点成本/开关仍停在原页签。
+
+### 282.2 物品名 → 可跳转市场的链接
+
+- 新增附加行为 **`Controls/ItemLink.cs`**：给任意 `TextBlock` 挂
+  `controls:ItemLink.TypeId="{Binding TypeId}"` 即变成物品链接——鼠标变手型、悬停加下划线、
+  点击 `e.Handled = true` 后 `Navigation.NavigateToMarket(typeId)`（跳「商业 → 市场」并选中该物品）。
+  用行为而不是换成 Button，是为了不动各处排版（字号/字重/裁剪/换行）。
+- 已接入的位置：
+  - 制造计划：左侧产物树（物品行）、右侧目标卡片名称、概况的目标列表；
+  - 概况：**采购清单表格的物品列**（改成模板列，`IndustryOverviewBuyLine.TypeId` 本就有）；
+  - BOM / 成本（`IndustryProductionChainView`）：BOM 行名称、节点详情标题、详情「直接输入」表格的物品列（改成模板列）；
+  - 生产详情（`IndustryScheduleView`）：步骤表格的名称列、**工位页首任务的名称**、任务详情标题、投入/产出材料胶囊的名称；
+  - 蓝图浏览器：产物树物品行、配方行；
+  - 库存：已选物品标题、物品行、物品表格的物品列（改成模板列）。
+- 配套：`IndustryScheduleJobViewModel.TypeId`、`IndustryScheduleMaterialViewModel.TypeId` 新增（供上面两处绑定）。
+- 语言键无新增/删除。
+
+### 282.3 验证
+
+- `dotnet build`：**0 错误**（54 个既有警告）。
+- 手册：`industry/plan.md` 的"执行计划"落点改为概况，并补一句"物品名可点击跳市场"。
+- 未实机点验；需确认：点执行计划后停在概况；上述各处点物品名能跳到市场并选中对应物品（悬停有下划线与手型）。
+
+## 阶段 283：物品详情窗口（数据库 → Core → UI 全链路）（2026-11-09）
+
+> 用户要求：像游戏里一样看物品属性（等级/体积/技能要求…）；中文只能放 zh.db，主库保持英文；
+> UI 入口用**左键**打开详情（取代原来的"左键跳市场"），窗口底部放「跳转到市场」按钮。
+
+### 283.1 数据核对结论（先说清楚可行性）
+
+- 现有 `main.db`（就是这份 SDE 构的）已经有：`types`（描述/体积/打包体积/质量/容量/半径/基础价格/MetaLevel…）、
+  `dogmaAttributes`（2,871 条英文显示名/描述/单位/分类/是否"越高越好"）、`typeDogma`（648,726 条属性值）、
+  `dogmaUnits`（60 条）、`dogmaAttributeCategories`（37 条）、`masteries`、蓝图/材料表。
+- 缺的只是**代码与本地化**：Core 没有这些表的模型/查询；`zh.db` 里没有属性名/单位/分组的中文。
+  另外 `typeDogma` 里的 **effects** 与 `certificates`（精通等级的技能映射）没有导入——本次未做，见 §8。
+
+### 283.2 本地化库（zh.db）新增三张表
+
+- `SDEBuilder/LocalDBModels/` 新增 `DogmaAttributes`（Id/DisplayName/Description）、`DogmaUnits`（Id/DisplayName）、
+  `DogmaAttributeCategories`（Id/Name，SDE 没有中文，内置 37 条人工中文表）。
+- `NewEdenBuilder.BuilderLocal` 在构建本地化库时一并写入这三张表；另加
+  **`NewEdenBuilder.PatchLocalDogmaAsync(localDbPath, sdeFiles, language)`**，可给已存在的 zh.db 增量补表，不必重建整库。
+- 本次用该接口把仓库里的 `Resources/Database/Local/zh.db` 就地补齐（`dogmaAttributes` 2,871 / `dogmaUnits` 60 /
+  `dogmaAttributeCategories` 37 行，均为 zh）。**main.db 未改动，仍是英文。**
+
+### 283.3 Core
+
+- `DBModels/DogmaInfo.cs`：主库 `DogmaAttribute` / `DogmaUnit` / `DogmaAttributeCategory`，以及本地化库同名表的
+  `LocalDogmaAttribute` / `LocalDogmaUnit` / `LocalDogmaAttributeCategory`（同表名、不同连接，SqlSugar 互不干扰）。
+- `DBModels/InvTypeFull.cs`：`types` 的完整列映射（`InvType` 只映射了工业要用的几列）。
+- `Services/DB/LocalDbService`：`TranDogmaAttributes/TranDogmaUnits/TranDogmaAttributeCategories`，
+  带"表是否存在"保护（老 zh.db 不会炸，自动回退英文）。
+- `Services/DB/TypeInfoService.GetTypeInfo(typeId)`：合并出 `TypeInfo`——
+  基本信息（名称/描述/组/类目/市场分组/科技等级/体积/打包体积/质量/容量/半径/分拣数/基础价格/是否发布）、
+  属性列表（显示名本地化优先、单位本地化、按 dogma 分类分组、`HighIsGood`、`IsPercent`/`IsTypeReference` 标记）、
+  技能要求（`requiredSkill1..6` + `requiredSkillNLevel`，技能名走本地化 types）。
+
+### 283.4 UI
+
+- 新增 `Views/Windows/ItemDetailWindow`（FluentWindow，单实例复用）：`概览`（描述 + 基础数据）/ `属性`
+  （搜索框 + 「显示全部属性」开关 + 按分类分组、值右对齐、悬浮显示说明与内部名）/ `技能要求`；底部 **「跳转到市场」+「关闭」**。
+- `ViewModels/ItemDetailViewModel`：数值格式化（百分比 ×100、typeID 型属性解析成名称、大数千分位）。
+- `Controls/ItemLink`：**左键不再跳市场，改为 `ItemDetailWindow.ShowItem(typeId)`**（悬停手型 + 下划线保持不变）；
+  跳市场统一走窗口底部按钮（`Navigation.NavigateToMarket`）。
+- 语言：中英各 +22 键（`ItemDetail_*`）。
+
+### 283.4.1 细节打磨（同日追加，按用户反馈）
+
+- **头部图标**：物品名称左侧加 56×56 图标（`Image` 绑 `IconUrl`，指向 `https://images.evetech.net/types/{id}/icon?size=64`；离线时为空占位，不报错）。
+- **去掉搜索属性**：属性页不再有搜索框；同时删掉「显示全部属性」开关——它原本只是把未发布属性（名字多为英文）也放出来，现在固定只显示**已发布**属性。
+- **单位显示规则**（`ItemDetailViewModel.ResolveValue`）：
+  1. `typeID` 型属性 → 显示解析后的名称，不显示单位；
+  2. 单位里带枚举说明的（如 unit 117 = `1=小型 2=中型 3=大型`、`1=True 0=False`）→ 直接显示枚举文字（大型 / 是 / 否），不再出现"3 1=小型 2=中型"；
+  3. 含空格的词组单位（如 `Fitting slots`、`Ore units`）→ 去掉单位只显数字；
+  4. 其余短单位（MW / m/s / % / GJ…）照常显示。
+- **技能要求可点击**：技能名加 `controls:ItemLink.TypeId="{Binding TypeId}"`，左键继续打开该技能的物品详情。
+- **底部**：只保留一个居中的主按钮，文案「查看市场详情」（en: View market details），右侧「关闭」按钮删除（标题栏仍有系统关闭）。
+- **跳市场不关窗**：底部「查看市场详情」原来跳完市场会 `Close()` 详情窗口，现在只做 `Navigation.NavigateToMarket(typeId)`，
+  窗口保持打开（方便对照），要关自己关。
+- **字体统一**：属性页的值列原来显式用了 `Cascadia Code, Consolas`（等宽，数字对齐但和全局字体不一致），
+  已去掉——现在标签/值都用全局默认字体（Segoe UI → 微软雅黑回退）。等宽只保留在排程甘特/工时这类本来就对齐数字的地方。
+- **外壳复用（修正）**：一开始自己画了标题栏 + 置顶 ToggleButton，属于重复造轮子——项目里已有统一的
+  **`Views/Windows/ToolWindow`** 外壳（阶段 25）：logo、`DisplayTitle`、最小化/最大化/关闭、
+  标题栏置顶图钉（`SymbolRegular.Pin24/PinOff24` + `ToolWindow.Topmost/TopmostOff` 提示 + 置顶时高亮）、
+  `ToolWindowButtons` 组合控制位都是现成的。现改为：
+  - 内容抽成 `Views/UserControls/ItemDetailView`；
+  - `ItemDetailWindow` 变成**静态入口**，内部 new `ToolWindow(内容, ToolWindowTitleStyle.Default, showTopmostButton: true)`，
+    设 `DisplayTitle/SystemTitle` 为 `ItemDetail_Title`（标题固定「物品详情」）、`Topmost = true`（Show 之前设，图钉状态才正确）、
+    单实例复用（再次打开只换 DataContext）。
+  - 自定义标题栏/图钉/`ItemDetail_Pin` 全部删除；置顶逻辑与其它工具窗完全一致。
+- 语言键：删 `ItemDetail_Search`、`ItemDetail_ShowAll`；`ItemDetail_GoMarket` 文案改为「查看市场详情 / View market details」。
+### 283.4.2 市场入口接线（同日追加）
+
+- 频道市场（`ChannelMarketWindow`）的「详细」按钮：原来跳「商业 → 市场」并选中物品，现在直接
+  `ItemDetailWindow.ShowItem(typeId, showMarketButton: false)`。
+- 市场页（`MarketPage`）的「物品说明」按钮：原来打开一个 440×520 的 `MarketTypeInfoView`（只有图标/名称/体积/简介），
+  现在同样打开统一的物品详情窗口，并**隐藏底部「查看市场详情」按钮**（入口就在市场里，没必要再跳）。
+  `MarketTypeInfoView.xaml(.cs)` 随之删除（功能被详情窗口完全覆盖）。
+- 实现：`ItemDetailView.ShowMarketButton` 依赖属性控制底部那一栏；`ItemDetailWindow.ShowItem(typeId, showMarketButton = true)`
+  在复用已有窗口时也会同步这个开关。
+- **不设 Owner（修正）**：`ToolWindow` 本身不设 `Owner`，`ToolWindowHost` 也刻意不设（注释：没有 Owner 时
+  `CenterOwner` 落点不明确，改显式 `CenterScreen`）。物品详情窗口原先自己设了 `Owner = App.MainWindow` +
+  `CenterOwner`，导致**主窗口最小化时它跟着最小化**。现已去掉 `Owner`、改成 `WindowStartupLocation.CenterScreen`，
+  与其它工具窗行为一致（独立窗口，主窗口最小化/关闭都不影响它）。
+
+### 283.5 验证
+
+- `dotnet build`：SDEBuilder 0 错误；WPF 0 错误（54 个既有警告）。
+- 临时探针（已删）跑真实库：`zh.db` 三表可读（属性 37 = 最大速度、分组 8 = 技能要求、单位 10 = m/s）；
+  `TypeInfoService` 对 587 裂谷级 / 12005 伊什塔级 / 34 三钛合金 均返回完整数据（90/89/0 条属性，
+  技能分别为「米玛塔尔护卫舰操作 Lv1」「盖伦特巡洋舰操作 Lv5 + 重型突击巡洋舰操作 Lv1」）。
+- 未实机点验窗口外观；需确认：左键物品名弹出详情、三个页签内容、底部跳市场。
+
+## 阶段 284：制造计划的「采购清单」独立成页签（2026-11-09）
+
+> 用户要求：把采购清单从「计划详细 → 概况」里拿出来，放在「生产详情」后面做独立 Tab。
+
+- `Views/Pages/IndustryPlanPage.xaml`：从概况页的选中产物详情卡里移除
+  「复制本产物采购 / 导出本产物 CSV」+ 采购清单标题/提示/表格；在 `ResultTabIndex` 的 TabControl 里
+  「生产详情」之后新增 **`IndustryPage_Tab_ShoppingList`（采购清单）** 页签：
+  - 顶部：标题 + 口径提示（`IndustryPage_ShoppingListTip`）+ 右侧「复制本产物采购 / 导出本产物 CSV」；
+  - 主体：占满剩余高度的采购清单表格（物品名仍是 `ItemLink` 可点开详情），数量/单价/金额四列加宽。
+  - 绑定改为 `{Binding OverviewBuyItems}`（页签 DataContext 就是页面 VM），不再需要 `RelativeSource AncestorType=Page`。
+- 「概况」顶部工具条的「复制全部采购 / 导出全部 BOM」保持不变（它们是对整个计划的操作）。
+- 语言：中英各 +1 键 `IndustryPage_Tab_ShoppingList`（采购清单 / Shopping list）。
+- 手册 `industry/plan.md`：第 8 步与字段说明改为「采购清单页签汇总整个计划」。
+- `dotnet build`：0 错误（临时输出目录编译——IDE/运行中的程序锁着 bin）。未实机点验。
+
+## 阶段 285：采购清单改为「全部目标统一列表 + 目标产物筛选」（2026-11-09）
+
+> 用户要求：别再按"某个产物"表达（"复制本产物采购"这种字眼要去掉），把全部制造目标的采购统一列出来，
+> DataGrid 增加「目标产物」列，再加一个下拉框筛选产物，默认「全部」；字体不要自己指定大小。
+
+- 数据层（`IndustryPlanPageViewModel`）：
+  - 旧模型 `IndustryOverviewBuyLine` + `OverviewBuyItems`（跟着"概况选中产物"变）换成
+    **`IndustryShoppingLine`**（TargetTypeId/TargetName + TypeId/Name/Quantity/UnitPrice/Total）
+    与 **`IndustryShoppingFilterOption`**（TargetTypeId=0 表示"全部"）。
+  - `RebuildShoppingList()`：遍历 `Roots`（每个目标产物根节点）`BuildBuyLines` 后按"目标产物 × 材料"生成行；
+    重建 `ShoppingFilters`（第一项固定「全部」，其余按产物名排序）。
+  - `SelectedShoppingFilter` → `ApplyShoppingFilter()` 刷新 `ShoppingItems`；计划算完默认选中「全部」。
+  - 新增 `CopyShoppingList()` / `ExportShoppingCsv()`：作用于**当前筛选结果**；
+    移除按产物的 `CopyTargetPurchaseList()` / `ExportTargetCsv()` 与对应按钮处理器。
+- UI（`IndustryPlanPage.xaml` 采购清单页签）：
+  - 顶部：标题 + 口径提示 + **目标产物下拉**（`ComboBox`，默认「全部」）+「复制采购清单 / 导出采购清单 CSV」；
+  - 表格列：**目标产物（180）** / 物品（*，仍可点开物品详情）/ 数量 / 单价 / 金额；
+  - 去掉页签内所有显式 `FontSize`（回到全局默认字号），标题只保留 `FontWeight=SemiBold`。
+- 语言：中英各 +5 键（`IndustryPage_Col_TargetProduct`、`IndustryPage_ShoppingFilterAll`、`IndustryPage_ShoppingFilter`、
+  `IndustryPage_CopyShoppingList`、`IndustryPage_ExportShoppingCsv`）；删 4 个不再使用的
+  `IndustryPage_CopyProductShopping` / `ExportProductCsv` / `SelectProduct` / `ProductNothingToBuy`；
+  `IndustryPage_ShoppingListTip` 文案改为"所有目标产物…按目标产物分行…可筛选"。
+- 手册 `industry/plan.md` 第 8 步与字段说明同步。
+### 285.1 只做汇总、不要「目标产物」列（同日追加）
+
+- 用户要求：去掉表格里的「目标产物」列，只按当前下拉的统计范围汇总物品。
+- `ApplyShoppingFilter()` 改为**按物品 TypeID 合并**：
+  - 选「全部」→ 把所有目标产物的采购行按物品合并数量（单价取第一个 >0 的值）；
+  - 选某个产物 → 只统计该产物子树，再按物品合并。
+  行里不再携带/显示目标产物；`TargetTypeId/TargetName` 只作为内部筛选依据保留。
+- 采购清单表格删除「目标产物」列；「复制采购清单 / 导出采购清单 CSV」也不再输出目标产物列。
+- 语言：删 `IndustryPage_Col_TargetProduct`；`IndustryPage_ShoppingListTip` 改为"同一物品跨产物合并数量"。
+- 手册第 8 步与字段说明同步改为"按物品汇总、下拉可只统计某个产物"。
+- `dotnet build`：0 错误（临时输出目录，bin 被运行中的程序占用）。未实机点验。
+
+## 阶段 286：倒货排除列表改用共享物品选择树（2026-11-09）
+
+> 用户要求：排除列表要像"目标物品"那样用**同一个带搜索的树控件**挑物品；并且排除列表内部用两个子页签：
+> 一个放选择树、一个放完整排除列表（可删除选中）。
+
+- 复用现成控件 **`Views/UserControls/MarketSelecteTreeView`**（基础设置里"目标物品"用的市场物品树：分类→组→物品、三态勾选、自带搜索）。
+  - 给它加了一个事件 **`SelectedTypesChanged`**（勾选/取消/搜索列表点击后回调当前 TypeId 快照）；
+    原控件只暴露 `SelectedItems`（`List<int>`，就地增删）与 `SelectedItemsCount`，没有变更通知。
+- `ScalperPageViewModel`：
+  - `FilterTypeSelection`（`List<int>`，两路绑定到控件的 `SelectedItems`，`Init()` 时用已保存的排除列表初始化）；
+  - `SyncFilterTypesFromSelection(ids)`：与 `FilterTypes` 做差集——新增的用 `InvTypeService.QueryTypes` 补全后
+    `AddFilterTypes` + `BusinessService.AddToFilter`（持久化），移除的走 `RemoveFilterTypes`；
+  - `RefreshFilterSelection()`：列表侧增删后回写选择树（新 List 触发控件的 `ApplySelectedItems`），
+    保证"树勾选"与"列表"始终一致。
+- `ScalperAnalyseView` 的"排除列表"页签改为**嵌套 TabControl**：
+  - 子页签「**选择物品**」= `MarketSelecteTreeView`（`SelectedItems` 两路绑定 `FilterTypeSelection`）；
+  - 子页签「**排除列表**」= 完整清单（多选 +「删除选中」）。
+  代码后置只在构造函数里挂 `FilterTypeTree.SelectedTypesChanged → SyncFilterTypesFromSelection`；
+  之前那套自建树（`FilterTreeNodes`、Core `TypeBrowserService`、按组懒加载与搜索键）**全部删除**。
+- 语言：新增 `BusinessPage_ExcludePick`（选择物品 / Select items）；删除上一版临时加的
+  `BusinessPage_ExcludeSearch` / `ExcludeSearchResults` / `ExcludeAdd`（3453 = 3453）。
+- 手册 `scalper.md` 排除列表一节改为"两个子页签 + 勾选即增减"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 287：倒货购物车的操作反馈改走右下角通知（2026-11-09）
+
+> 用户反馈：购物车复制后在按钮下面显示文字，应改成 App 内右下角通知。
+
+- `ScalperShoppingCartViewModel`：删除 `Message` / `HasMessage` / `SetMessage` 这套"卡片内文本"，
+  复制、粘贴回填、保存购物车（含购物车为空）统一改调 `PageNotifyService`
+  （成功 `Success`、需要用户注意的 `Info`：未识别订单 / 无物品需要更新 / 购物车为空）。
+- `ScalperShoppingCartView.xaml`：统计卡片里按钮下方的提示 `TextBlock` 删除，按钮仍居中。
+- 手册 `scalper/cart.md`：复制/导入/保存的反馈说明改为"右下角通知"，统计卡片描述同步。
+- 资源键无增删；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 288：剪贴板写入统一重试，修 `CLIPBRD_E_CANT_OPEN`（2026-11-09）
+
+> 个别用户点「复制订单」弹「OpenClipboard 失败 (0x800401D0 (CLIPBRD_E_CANT_OPEN))」。
+
+- 原因：Windows 剪贴板是**全局独占**资源，`Clipboard.SetText`（OLE 的 `OpenClipboard`）在别的程序正持有剪贴板时会抛
+  `CLIPBRD_E_CANT_OPEN`。常见持有者：微信/QQ、输入法、剪贴板管理器（Ditto/PowerToys/Win+V 云剪贴板）、
+  远程桌面（cliprdr 重定向）、Office/浏览器、部分杀软的剪贴板保护；占用通常只有几十毫秒，但正好撞上就失败。
+  同一进程内多线程同时写剪贴板、或前一次复制还没被 OLE flush 完，也会撞上。
+- 修复：新增 **`Helpers/ClipboardHelper`**：
+  - `TrySetText(text)`：短重试（6 次，逐步加长到 ~150ms）+ `Clipboard.SetDataObject(text, true)` OLE 兜底，**不抛异常**；
+  - `TryGetText()`：读取同样重试，读不到返回 null；
+  - `CopyOrNotify(text)`：失败时右下角通知「剪贴板被其它程序占用，请稍后重试」（`General_ClipboardBusy`），返回 false。
+- 全仓 13 处 `Clipboard.SetText` 全部改走该 helper；展示"复制成功"的 11 处改成
+  `if (!ClipboardHelper.CopyOrNotify(...)) return;`，**失败时不再提示成功**（订单页之前直接把异常 message 弹 MessageBox，现已改成通知）。
+  购物车"导入"读取也换成 `TryGetText()`。
+- 语言：中英各 +1 键 `General_ClipboardBusy`（3454 = 3454）。
+- 手册 `troubleshooting.md`「环境与目录」表补一行说明。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 289：购物车按「游戏单次 100 行」分批，批次列表自选复制（2026-11-09）
+
+> 游戏限制一次批量购买最多 100 个物品；购物车原来一口气复制全部，超出部分游戏无法识别。
+> 用户要求：不要自动轮换"第几批"，而是把每一批列出来让用户自己选，复制过的批次显示 √。
+
+- `ScalperShoppingCartViewModel`：
+  - `GameOrderBatchSize = 100`；`BuildGameOrderLines()`（每行「物品名 数量」）、`BuildGameOrderText()`（全量拼接，≤100 时仍用它）；
+  - **`GameOrderBatches`**（`ObservableCollection<GameOrderBatchItem>`）：每次 `Recalculate()` 按 100 行切批重建，
+    每批带 `Index / Start / End / Text / IsCopied` 与显示文案 `Label`（「第 N 批 · 第 a–b 个物品」）；
+  - `HasMultipleBatches`：>1 批时界面切换成"批次列表"模式（顶部单按钮隐藏）。
+- `ScalperShoppingCartView`：单复制按钮始终只有一颗；`OnCopyClick` 在多批时打开
+  **`Views/Windows/GameOrderBatchWindow`**（弹窗），单批时仍直接复制。
+- 语言：`BusinessPage_GameOrderBatchPrompt` 删除；新增 `BusinessPage_GameOrderBatchHint` / `_Item` / `_Copy` / `_CopiedMark`，
+  `_Copied` 改为 3 参数（3457 = 3457）。
+- 手册 `scalper/cart.md` 复制小节改为"每批一行 + 自选复制 + √ 已复制"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 290：购物车分批改为独立弹窗；结果表右键菜单提速（2026-11-09）
+
+> 用户反馈：不要在购物车页面里放批次按钮，保持一个复制按钮，点开后单独弹窗选批次；
+> 另外倒货结果表选中多行后右键会卡顿一阵才出「添加到购物车」。
+
+### 290.1 分批复制弹窗
+
+- 购物车页恢复成**只有一个复制按钮**（去掉上一版内嵌的批次列表与按批按钮）。
+- 新增 `Views/Windows/GameOrderBatchWindow.xaml(.cs)`：标题「复制游戏订单（分批）」，
+  每批一行**只显示区间**（`[1,100]`、`[101,200]`…）+ 右侧「复制这一批」按钮 + 行尾绿色 **√ 已复制**；顶部说明保留，底部不再放「关闭」按钮（用标题栏关闭）。
+- `ScalperShoppingCartView.OnCopyClick`：`GameOrderBatches.Count > 1` 时 `ShowDialog()` 打开该窗口；
+  否则保持原来的直接复制 + 右下角通知。
+- `GameOrderBatchWindow` 复制单批：`ClipboardHelper.CopyOrNotify` → 置 `IsCopied` → 右下角通知「已复制第 N 批（第 a–b 个物品）」。
+- 语言 +1 键 `BusinessPage_GameOrderBatchWindowTitle`；批次行不再需要文案键（删 `BusinessPage_GameOrderBatchItem`，3459 = 3459）。
+
+### 290.2 结果表右键菜单
+
+- 原因：结果表用的是 XAML 里声明的 `DataGrid.ContextMenu`。WPF 默认的右键路径（`ContextMenuService`）
+  在多选（Extended/FullRow）时要先做命中测试/选择同步再开 Popup，行数多/列数多时明显卡顿。
+- 改法：删掉 XAML 里的 `ContextMenu`，改成在 `ScalperAnalyseView` 代码里**自己接管**：
+  - `ResultGrid.PreviewMouseRightButtonUp` 里先按鼠标位置找回 `DataGridRow`；
+  - 右键的行若不在当前选择里→ 清空选择并选中它；已在选择里→ 保住多选；
+  - 懒创建并复用一个 `ContextMenu`（只有一个「添加到购物车」项），`Placement=MousePoint` 直接 `IsOpen = true`，
+    绕过默认打开路径；`AddSelectedToCart()` 复用原来的入车逻辑。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验右键是否已不卡。
+
+## 阶段 291：获取订单后自动分析推荐（2026-11-09）
+
+> 用户要求：点「获取订单」后自动接上「分析推荐」，不用再手动点一次。
+
+- `ScalperPageViewModel`：把分析计算抽成 **`RunAnalysisCoreAsync()`**（不管理等待遮罩：算指标 → 更新 `ScalperItems` → 通知
+  「分析完成: 条数」）；`AnalyseAsync()` 变成"校验 + 遮罩 + 调用核心 + 异常/收尾"的薄壳。
+- `GetOrdersAsync()` 在成功通知「已获取到…」之后，把遮罩文案切到「分析中」并 `await RunAnalysisCoreAsync()`；
+  它仍在原 try 内，分析异常会被外层 catch 捕获并提示，`finally` 统一收遮罩。
+- 取消逻辑不变：取数阶段取消会提前 return，不会进入自动分析。
+- 语言键无增删；手册 `scalper.md` 的「获取订单 / 分析推荐」两节同步为"取完自动分析，手动按钮只用于改设置后重算"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 292：倒货等待改为页面内等待；新增全局强制约定（2026-11-09）
+
+> 用户要求：倒货的所有等待加载都只在当前页面内生效，不能阻塞其它功能；并把"默认禁止全局等待"写进重构文档。
+
+- `ScalperPageViewModel`：
+  - 新增 **`BusyText` / `CanCancelBusy`** 与 `BeginBusy(text, canCancel)` / `UpdateBusy(text)` / `EndBusy()`；
+  - 去掉全部 `PageNotifyService.ShowWaiting/UpdateWaiting/HideWaiting`（取订单各阶段进度、历史进度、自动分析都改走本地 `BusyText`）；
+  - `IsBusy` 仍用于按钮禁用/其它绑定，结束时统一 `EndBusy()`。
+- `ScalperAnalyseView`：新增**页面内等待遮罩**（半透明 `SmokeFillColorDefaultBrush` + 卡片 + `controls:SpinnerIcon` + `BusyText`
+  + 「取消」按钮，`CanCancelBusy` 时显示），只盖住倒货页；等待期间用户可切到其它页面/功能，不受影响。
+- `REFACTORING.md` 新增 **§2.1 等待 / 加载效果约定（强制）**：后续功能一律用页面内等待，
+  **禁止** `PageNotifyService.ShowWaiting`；仅"进程级、必须全局阻断"的场景可用，且必须在文档写明理由。
+  §9 第 39 条旧口径同步修正。
+- 语言键无增删；手册 `scalper.md` 的「获取订单」补一句"等待遮罩只覆盖倒货页，可切到其它功能"。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 293：倒货右键菜单改为页面内自绘；修复取订单无等待效果（2026-11-09）
+
+### 293.1 取订单没有等待效果（阶段 292 的回归）
+
+- 现象：改成页面内等待后，点「获取订单」完全没有遮罩/进度。
+- 根因：阶段 292 用脚本批量删除 `IsBusy = true/false;` 时，把 `BeginBusy()` / `EndBusy()` **方法体内的赋值也删掉了**，
+  于是 `BusyText` 有变化但 `IsBusy` 永远 false，遮罩（`Visibility="{Binding IsBusy}"`）不会显示。
+- 修复：`BeginBusy` 补回 `IsBusy = true;`，`EndBusy` 补回 `IsBusy = false;`；取订单/自动分析都恢复正常显示页面内遮罩。
+
+### 293.2 多选后右键卡顿
+
+- 尝试过（阶段 290）：删掉 XAML `ContextMenu`，改为代码里 `PreviewMouseRightButtonUp` 打开自建 `ContextMenu`
+  ——用户实测**仍然卡**，说明慢在 WPF `ContextMenu`/`Popup` 这条路径本身（菜单主题/弹层创建），不是选择处理。
+- 最终改法（本阶段）：**不用 WPF ContextMenu**，改为**页面内自绘菜单**：
+  - `ScalperAnalyseView.xaml` 根部加一个 `RowContextMenu`（`Border` + 一个 `ui:Button`「添加到购物车」），默认 `Collapsed`，
+    `HorizontalAlignment/VerticalAlignment=Left/Top`；
+  - 右键 `PreviewMouseRightButtonUp`：命中 `DataGridRow` 后把菜单 `Margin` 设成鼠标在视图内的坐标并显示，`e.Handled=true`；
+  - 点菜单项：若右键的行未选中→清空并选中它，再 `AddSelectedToCart()`（已是多选就保留多选，一并加入）；
+  - 点别处（`PreviewMouseDown` 且鼠标不在菜单上）、滚轮、Esc 收起。
+  - 全程没有 `Popup`/`ContextMenu` 弹层，因此不会再有打开卡顿。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 294：倒货三个列表改用 DataGrid 自身滚动（表头不再跟着滚）（2026-11-09）
+
+> 用户反馈：推荐物品列表、购物车列表滚动时表头也跟着滚，怀疑外面套了 ScrollViewer。
+
+- 原因：`ScalperAnalyseView` / `ScalperShoppingCartView` / `ScalperShoppingRecordView` 的右侧表格都被
+  `<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MinWidth=ViewportWidth…>` 包了一层——
+  滚动发生在 ScrollViewer 上，DataGrid 只是被整体滚动，所以表头跟着走，列头固定/行虚拟化也失效。
+- 修复：三个视图都**去掉外层 ScrollViewer**（以及为它服务、绑定 `ScrollViewer.ViewportWidth` 的 `MinWidth`），
+  让 DataGrid 使用自身滚动条：表头固定、行虚拟化恢复、横向滚动由 DataGrid 自己处理；DataGrid 在父 Grid 里拉伸填满。
+- 插曲：`ScalperShoppingRecordView` 的 `<ScrollViewer` 标签是**多行属性**写法，删除时只删了首行，残留的
+  `Grid.Row="1" / HorizontalScrollBarVisibility / VerticalScrollBarVisibility>` 变成 Grid 的文本子节点，
+  运行时报 `XamlParseException: 无法将 String 添加到 UIElementCollection`（行 95）。已删除残留并把 `Grid.Row="1"` 补到 DataGrid 上。
+- 说明：购物车的右键"编辑/删除"菜单仍用 `DataGrid.ContextMenu`（少量行、未反馈卡顿，暂不动）；
+  结果表的"添加到购物车"仍是阶段 293 的页面内自绘菜单。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 295：验证"右键卡顿是否由 ScrollViewer 包 DataGrid 导致"——恢复标准 ContextMenu（2026-11-09）
+
+- 用户判断：阶段 290/293 的右键卡顿可能根因不是菜单，而是**结果表被 ScrollViewer 包住**导致 DataGrid 行虚拟化失效、
+  行数一多整体变慢（阶段 294 已把三张表改为 DataGrid 自身滚动）。
+- 处理：把阶段 293 的"页面内自绘菜单"**撤销**，恢复标准写法：
+  - `ScalperAnalyseView.xaml` 里重新使用 `<ui:DataGrid.ContextMenu>` + 单个 `MenuItem`（「添加到购物车」，`OnAddToCartClick`）；
+  - 删除 `RowContextMenu` 自绘 Border 与相关代码（`OnResultGridPreviewRightButtonUp`、`HideRowContextMenu`、
+    `OnViewPreviewMouseDown/KeyDown`、`OnAddToCartMenuClick`、`FindRow`、`_contextRow`），构造函数里的挂接一并去掉；
+  - `OnAddToCartClick` 直接读取 `ResultGrid.SelectedItems` 入车。
+- 目的：用现在的"DataGrid 自身滚动 + 标准 ContextMenu"再实测一次——若不再卡，说明根因就是阶段 294 的滚动层；
+  若仍卡，再回到自绘菜单/继续定位。
+- 修复了一次删除残留：等待遮罩的**内层卡片 Border 闭合标签**被误删（`XamlParseException` 的同类问题），已补回。
+- **用户实测（2026-11-10）：不卡了** —— 确认根因就是"DataGrid 被 ScrollViewer 包住导致行虚拟化失效"（阶段 294），
+  与右键菜单实现无关。阶段 293 的页面内自绘菜单**不需要恢复**，保持标准 `DataGrid.ContextMenu`。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。
+
+## 阶段 296：倒货接入税费、走簿成交与 P1 指标（2026-11-09）
+
+> 用户要求：把费用（手动填、默认 3.6% 税）、走簿成交、P0/P1 指标都做进来；**不按现实时间/赶路**，每跳就是跳数；
+> 不需要货舱/预算，但保留"利润/体积"；新增指标全部可配置，并在推荐度里像旧指标一样可调权重。
+
+### 296.1 费用（可配置、持久化）
+
+- `ScalperSetting` 新增：`SalesTaxRate`（默认 **3.6%**）、`BrokerFeeRate`（默认 **1%**，买/卖各一次）、
+  `CompetitionBandPercent`（默认 5%）、`RiskAversion`（默认 1）。都在「进阶设置 → 费用与风险」里手填，
+  随 `ScalperSetting.json` 持久化；**不读取 ESI 技能/声望**。
+- 税后口径：`卖出均价×(1−税−经纪费) − 买入均价×(1+经纪费)`；旧的 `NetProfit/ROI` 保留，新增税后字段。
+
+### 296.2 走簿成交（按目标销量）
+
+- `ScalperCalculator.WalkBook`：按目标销量逐档吃单，买侧从低价卖单/高价买单开始，卖侧只在"吃买单"类价格口径下走目的市场买单。
+- 新增 `BuyAvgPrice / SellAvgPrice / FillRatio`：深度不够时 `FillRatio < 1`，利润只按**实际可成交量**算，
+  不再假装能全部成交；挂卖单/历史价格口径沿用所选价格（FillRatio=1）。
+
+### 296.3 新增 P1 指标（均为 `ScalperItem` 新字段）
+
+| 指标 | 口径 |
+|---|---|
+| `NetProfitAfterFees / TargetNetProfitAfterFees / ROIAfterFees` | 见 296.1，单位/整单/回报率 |
+| `CompetitionShare` | 目标销量 ÷（目标销量 + 与卖价相差 ≤「竞争统计价格带」的目的市场卖单量） |
+| `DaysToSell` | 实际可成交量 ÷（目的市场日销量 × 竞争份额）；**不计赶路时间** |
+| `ProfitPerHour` | 税后整单利润 ÷ max(卖完天数×24, 1) |
+| `RiskAdjustedProfit` | 税后整单利润 − 风险厌恶 × 历史价格波动 × 买入成本 |
+| `ProfitPerVolumeAfterFees` | 税后整单利润 ÷ 目标销量体积 |
+
+### 296.4 推荐度
+
+- `CalSuggestion` 仍是"各指标排名加权累加 → 归一到 0–100 分位"，沿用旧机制；
+- 新增 8 个权重（全部 0–100 滑条，默认值）：
+  `SuggestionNetProfitAfterFees=30`、`SuggestionROIAfterFees=30`、`SuggestionFillRatio=15`、
+  `SuggestionCompetitionShare=15`、`SuggestionDaysToSell=20`、`SuggestionProfitPerHour=25`、
+  `SuggestionRiskAdjustedProfit=10`、`SuggestionProfitPerVolumeAfterFees=10`；
+- 卖完天数越短越好（反向计分），其余越大越好。
+
+### 296.5 顺带修掉的算法问题
+
+- `BuildItems` 里**目的市场买单排序方向错误**（升序 → 取到最低买价），已改降序；
+- 买价选「历史…」口径时改用**源市场历史**（原来误用目的市场历史）；
+- 销量窗口从 `−day−2` 改为 `−day`；
+- 历史价去极值时增加 `Count > 1` 保护（原来只有 1 天会除零）；「历史最低」改为去掉一个最小值。
+
+### 296.6 UI / 文档 / 验证
+
+- 进阶设置新增「费用与风险」折叠项；推荐权重滑条从 9 条扩到 17 条，**每条滑条标题右侧实时显示当前权重值**（等宽字体，绑定同一个 `Setting.Suggestion*`）；
+- 注意：新增的 8 个权重与 4 个费用/风险设置必须用 `SetProperty(ref field, value)`（`ObservableObject`），否则滑条拖动时数字不会刷新——旧的权重就是这样写的，第一版误用自动属性，已修正。
+- 结果表新增 10 列（成交买入/卖出均价、税后净利、税后回报率、成交覆盖率、竞争份额、预计卖完天数、利润每小时、风险调整利润、利润体积比），共 28 列；
+- 手册 `scalper.md` 的进阶设置、结果列与字段口径表同步；
+- 临时探针（已删除）用合成订单簿验证 12 项：目的买单降序、走簿买/卖均价、税费公式、覆盖率、竞争份额 100%、
+  卖完天数 0.2 天、深度不足时 40% 覆盖率与 200 件加权价 10.5/17.5 —— **12 PASS / 0 FAIL**；
+- `dotnet build`：0 错误（临时输出目录，`bin` 被运行中的程序占用）。未实机点验。
+
+## 阶段 297：进阶设置全部控件加 ToolTip 说明（2026-11-10）
+
+> 用户要求：进阶设置的每一个设置都要有 ToolTip，解释"是什么、如何影响倒货推荐"。
+
+- 语言：中英各 +40 键（`BusinessPage_Tip_*`，3514 = 3514）：
+  - 每条解释都包含两层——**它是什么/怎么算** + **如何影响推荐**（影响哪些指标、调大调小的后果、与其它设置的关系）；
+  - 旧指标里"反向计分"的两项（本金、历史价格波动、当前价格波动）在 Tip 里明确标注并给出"想正向就设 0、改用税后/风险权重"的建议。
+- `ScalperAnalyseView.xaml`：进阶设置的**全部 41 个控件**挂上 `ToolTip="{DynamicResource BusinessPage_Tip_*}"`：
+  - 价格口径 ComboBox ×2、历史天数/缩放/去极值 NumberBox 与 CheckBox ×（买/卖各 3）、
+    源/目的销量（天数、统计方式、去极值）、目标销量百分比滑条、
+    历史/当前波动窗口、饱和度价格带、热力值（天数、阈值）、
+    费用与风险 4 项（销售税/经纪费/竞争价格带/风险厌恶）、推荐权重滑条 ×17。
+- 实现说明：文案直接放在语言字典（XAML），控件只引用键；脚本已删除。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 298：热力值改为「加热度占比」（可配置判定方式）（2026-11-10）
+
+> 用户确认按组合方案：A 占比 + B 强度加权 + C 自适应阈值 + E 数据置信度。
+
+- `ScalperItem.HeatRatio`（0~1）新字段；
+- `CalHeatValue` 重写：
+  - 判定线按 **`HeatThresholdMode`**（`ScalperSetting` 新枚举 `HeatThresholdKind`，因嵌套类型名与属性名冲突而改名）：
+    **Absolute**（兼容旧版：销量 ≥ 绝对阈值）/ **RelativeToAverage**（默认：销量 ≥ 物品日均 × `HeatRelativeFactor`，默认 0.5）；
+  - 每日强度 = min(销量 / 判定线, 3)（超卖封顶 3 倍，防单日异常污染）；冷天 0；
+  - **置信度**：有数据天数 / 窗口天数（下限 0.25）；`HeatRatio = Σ强度 / 窗口天数 × 置信度`；
+- `CalSuggestion` 的热力分组改用 **`HeatRatio`**（权重沿用 `SuggestionHeatValue`，不新增权重项）；旧 `HeatValue` 列保留显示；
+- UI：热力值 Expander 加「热天判定方式」下拉（`HeatThresholdModeIndex`）与「相对倍数」NumberBox（`ShowHeatRelativeFactor` 控制可见性，仅相对模式显示）；
+- 修掉一轮插入 XAML/VM 时的损坏（重复 `<StackPanel>`、坏行、空的括号），最终 **0 错误**；语言 +6 键；
+- 手册进阶设置与字段口径已更新（含 `HeatRatio` 公式与旧热力值对照行）。未实机点验。
+
+## 阶段 299：倒货 A/B/C 批优化——两阶段取数、订单净化、挂卖单截断、可解释推荐分（2026-11-10）
+
+> 按 296 后续分析落地 A/B/C 三批；D（策略矩阵/多市场/回程/组合）与 E（回测）按用户要求不做。
+
+### 299.1 A 批：数据层
+
+- **两阶段取数**：`ScalperCalculator.Prescreen(items, setting)` 静态预筛——两侧价格口径均为订单簿口径时，
+  用首档价差（扣税/费）> 0 且两侧订单簿存在来决定"要不要为该物品拉历史"；历史口径任一启用则返回 null（全量拉取）。
+  `GetOrdersAsync` 在拉历史前执行预筛，等待文案新增「订单簿静态预筛中…」。
+- **订单净化**：`SanitizeOrders`（BuildItems 增加重载带 `StaleOrderDays`）：
+  - 剩余时间 < `StaleOrderDays`（默认 2 天，0=关闭）的挂单剔除；
+  - 价格偏离本侧中位数 <1% 或 >100 倍的异常单剔除（1 ISK 墙/错价单）；
+  - 0 余量单剔除。
+- **缩放一致**：走簿的 `BuyAvgPrice/SellAvgPrice` 现在乘 `BuyPriceScale/SellPriceScale`，与挂单/历史口径可比。
+
+### 299.2 B 批：定价与执行
+
+- `CalPriceTop5` 改为**成交量加权**（累计到总挂单量 5% 为止的 VWAP），不再按订单条数；
+- 挂卖单/历史卖价策略：可成交量受 **`MaxSellDays`（默认 30 天）** 截断——
+  `executed = min(目标量, 目的日销量 × 竞争份额 × MaxSellDays)`，`FillRatio` 相应 <1，不再"挂单口径假设立刻全成交"；
+- 吃买单策略即时成交，天数按"实际成交量 ÷ 目的市场日销量"折算（吃掉的买单本身就是需求）。
+
+### 299.3 C 批：质量指标 + 可解释推荐分
+
+- 新字段/新指标：`PriceTrend`（目的市场历史均价线性回归斜率，%/天，带方向）、
+  `PriceCushion`（当前卖价 − 历史均价，带方向 %，只奖励"高于历史均价"的安全垫）、
+  `SalesCV`（目的市场日销量变异系数，越低越稳）、`Confidence`（目的市场历史天数 / 统计窗口）；
+- **`Score`（0~100 绝对分）**：全部 21 个有权重指标做中位数/MAD 稳健归一（z 截断 ±3）→ 按方向加权平均 →
+  0~100；`ScoreDetail` 给出正/负贡献最大的两项（悬浮提示）。结果表新增这 5 列；**排序改按 Score**，
+  旧「推荐度」百分位列保留对照；
+- 新权重（0–100 滑条，全部可配）：`SuggestionPriceTrend=15`、`SuggestionPriceCushion=10`、
+  `SuggestionSalesStability=15`、`SuggestionConfidence=15`；
+- **权重预设**：推荐值来源权重页签顶部新增「保守 / 均衡 / 激进」三键（`ApplyWeightPreset`），
+  一键写入全部 21 个权重并立即持久化。
+
+### 299.4 事故记录与恢复
+
+- 实施过程中一次 `git checkout -- ScalperAnalyseView.xaml` 把**未提交的 297/298 UI 增强**（41 条 ToolTip、热力值增强）
+  回退掉了；已通过脚本按阶段重放恢复（ToolTip 49 条、热力值判定方式/相对倍数、费用与风险 Expander、
+  8+4 条权重新滑条、结果 15 列）。教训：**不要对未提交文件使用 `git checkout --`**；改用先备份再操作。
+- 语言：中英各 +21 键（3539 = 3539）。
+
+### 299.5 验证
+
+- 临时探针（已删除）：订单净化滤过期低价单、Prescreen 保留正价差/剔除负价差、
+  吃买单 DaysToSell=目标/日销、挂卖单 MaxSellDays 截断 FillRatio<1、Score∈(0,100] 且 ScoreDetail 有摘要 —— **9 PASS / 0 FAIL**。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 300：倒货结果表右键打开市场详情；详情窗补齐分析字段（2026-11-10）
+
+> 用户要求：双击、右键都能打开倒货列表物品的市场详细（原/目的市场卖单买单、订单星系 + 利润等分析数据），内容参考 WinUI3 版。
+
+- 结果表右键菜单新增「**打开市场详情**」（`OnOpenDetailClick`，双击入口原有不变）。
+- `ScalperItemDetailWindow` 左侧指标面板补齐 296/299 的分析字段（WinUI 版没有这些新指标，属于 WPF 超集）：
+  加热度占比、成交买入均价、成交卖出均价、税后净利（单位）、税后整单利润、税后回报率、成交覆盖率、
+  竞争份额、预计卖完天数、利润每小时、风险调整利润、利润/体积（税后）、价格趋势、历史价安全垫、
+  需求稳定性、数据置信度、推荐分（Suggestion 行悬浮显示 ScoreDetail 构成摘要）；
+  旧「热力值」行保留，另加「加热度占比」行。
+- 订单网格（源/目的 × 卖单/买单）已有 **星系 / 位置 / 安等 / 剩余时间** 列（阶段 157），与 WinUI 对齐，未改动。
+- 语言：中英各 +3 键（`BusinessPage_HeatRatio`、`BusinessPage_TargetNetProfitAfterFees`、`BusinessPage_OpenItemDetail`，3542 = 3542）。
+- 手册 `scalper.md`「看结果与后续」补充右键入口。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 301：修复详情窗双击/右键无反应（2026-11-12）
+
+> 用户反馈：双击没反应，右键也没有菜单项。
+
+- **双击**：`OpenDetail` 只 `new ScalperItemDetailWindow()` 后 `SetItem + Activate()`，**从未 `Show()`**——
+  对从未显示过的窗口调 `Activate()` 是无效的，首次双击因此毫无反应。修复：`SetItem` 后补 `Show()` 再 `Activate()`。
+- **右键**：阶段 300 的右键菜单项「打开市场详情」写入随当时首个脚本中止**丢失且未复检**（XAML 与处理器都没落地）。
+  本次补回：`ContextMenu` 加第二项 + `OnOpenDetailClick`（读 `ResultGrid.SelectedItem` → `OpenDetail`）。
+- **过程教训（写入本条）**：脚本插入型修改在"第一个锚点失败就整体放弃"时，必须**逐个文件复检落地结果**；
+  本次正是漏掉了 AV/AVCS 两个文件的写入。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。待用户复测。
+
+## 阶段 302：LiveCharts 图例文字跟随主题（LegendTextPaint）（2026-11-12）
+
+> 用户反馈：倒货详情窗图表的图例文字是纯黑，黑色主题下不切换。
+
+- `LegendTextPaint` 的正确设置位置是 **`lvc:CartesianChart` 控件本身**（WPF 控件暴露
+  `LegendTextPaint / LegendBackgroundPaint / LegendTextSize`），不是 series 也不是 `Theme`；
+  LiveCharts 的默认主题图例文字是黑色，WPF-UI 的主题资源不会传导给它。
+- 修复：`ScalperItemDetailWindow.ApplyThemeColors()` 末尾把
+  `LegendTextPaint = MakePaint("TextFillColorSecondaryBrush", 1)` 赋给四张图
+  （Source/Destination × Price/Volume）——与坐标轴 `LabelsPaint` 同源，主题切换事件里一起刷新。
+- 反射核对：`LiveChartsCore.SkiaSharpView.WPF.CartesianChart` 确有 `LegendTextPaint : Paint`；
+  Series 上只有 `IsVisibleAtLegend`（显隐），`Theme.LegendTextPaint` 是全局主题注入的另一条路径。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 303：市场/虫洞/星图详情图例文字跟随主题（2026-11-12）
+
+> 用户确认倒货详情窗修复有效，要求市场功能里的同类问题一并修改。
+
+- 新增 **`Helpers/ChartThemeHelper.Make(resourceKey, thickness)`**：把 WPF 主题画刷资源转成 LiveCharts 的
+  `SolidColorPaint`（302 里 `MakePaint` 提炼出来；资源缺失返回 null 保留默认）。
+- 四处带 `LegendPosition` 的图表（默认图例文字纯黑）统一接入：
+  - `MarketPage`：PriceChart / VolumeChart；
+  - `ChannelMarketWindow`：PriceChart；
+  - `WormholePage`：ActivityChart；
+  - `MapSystemDetailView`：ActivityChart；
+  每页 code-behind 在 `Loaded` + `ThemeService.ThemeChanged`（Page 用 `Unloaded` 解绑、Window 用 `Closed`）时
+  `chart.LegendTextPaint = ChartThemeHelper.Make("TextFillColorSecondaryBrush")`。
+- 市场页的坐标轴文字仍走 VM 侧 `XAxes/YAxes`（旧实现），本次只补图例文字；如需坐标轴同源可后续把
+  `LabelsPaint` 也用 helper 赋到 axes。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
 
 ## 阶段 270：预览窗整窗 layered alpha（方案 A）快速验证 — WPF 路径不可行（2026-11-04）
 
@@ -10840,6 +11883,10 @@ MainWindow.xaml(.cs)
   - 当前用户配置已保存 `UseNativeThumbnailOverlay=true`。
 
 ## 8. 已知限制与待办
+- **物品详情（阶段 283）还没做的两块**：
+  1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；
+  2. **精通等级（mastery）**：`masteries` 表已导入但存的是 certificate ID，`certificates` 表没导入，解析不出"精通 0–4 需要哪些技能"。
+  两者都要给 SDEBuilder 加表并重建 `main.db`；技能要求本身不受影响（走 `requiredSkill*`）。
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
 1. **邮件正文链接不可点击** —— `HtmlPanel.LinkClicked` 委托签名与本项目用法不匹配（阶段 8 起遗留）。
@@ -11243,7 +12290,7 @@ MainWindow.xaml(.cs)
 36. **`DepthClone<T>` 跨模型拷贝会"拷出空壳"——命名策略不同的两个模型之间不能这么抄**（阶段 53 第三轮，ZKB 数据全空的根因）：`DepthClone` 是 `SerializeObject(obj)` → `DeserializeObject<T>(json)` 的 JSON 往返，**两边必须用同一套命名规则**。`EVEStandard` 的模型靠序列化设置里的 **snake_case 命名策略**解析（属性无 `[JsonProperty]`），而 `ZKB.NET` 的模型用显式 `[JsonProperty("killmail_id")]` —— 从前者拷到后者，键名全对不上，得到一个**字段全为默认值**的对象（`KillmailId=0`/`KillmailTime=default`），而且**不报错、不抛异常**，下游只能靠"id 匹配不上/显示全空"这类间接症状发现。两条教训：① 跨命名空间的模型转换不要用 JSON 往返，老老实实手写映射或用统一命名策略；② "接口响应里已经带了完整数据时，就不要再逐个去另一服务换取再拷贝"——`/kills/` 现在直接返回完整 killmail，`ZKB.GetKillmailDetailsAsync` 直取后本地富化即可（每页省 200 次 ESI 往返）。
 37. **Core 的本地库（SQLite）查询不是并发安全的，批量富化必须串行**（阶段 53 第三轮实测）：`KBHelpers` 注释原文"使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突"。实测同一批 50 条的富化，6 并发丢 16 条（单条异常/数据缺失被静默吞掉），串行 50/50。凡要并发调用 `IDNameService` / `MapSolarSystemService` / `InvTypeService` 等 Core DB 服务的，先确认线程安全性，默认**串行**。
 38. **zkillboard 有 IP 限流，"同 URL 直取+重试+兜底三连发"会把自己打死**（阶段 53 第三轮）：排障时连续探测后发现 `/kills/killID/<id>/` 从 200 条变成空——是限流，不是接口变更。日常使用频率不会触发，但写代码时注意：**不要让重试与兜底打同一个 URL**（本项目兜底走的是另一条数据通路），排障时探测间隔拉长、或换 IP 验证。
-39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
+39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩只留给"文档里明确写明理由的进程级阻断操作"（阶段 292 起；倒货取数已改为页面内等待，估价等也不再默认使用）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
 40. **`ui:FluentWindow` 也能做真透明（客户区逐像素透出后面的窗口），但四件事缺一不可**（阶段 54）：① **`AllowsTransparency` 用不了**（与 FluentWindow 冲突，实测抛 `InvalidOperationException`），只能走 Win32；② **`DwmExtendFrameIntoClientArea(hwnd, 四个 -1)` 才是开关**——把 DWM 玻璃框铺满客户区，客户区里的 alpha 才会被尊重；**只调 `DwmEnableBlurBehindWindow`（空模糊区域）没有任何视觉效果**，而且它的 HRESULT 还是 0（看起来"成功"），极易误判；③ **窗口背景必须真的透明**：WPF-UI 会把 `FluentWindow.Background` 设成主题底色（浅色主题=白），XAML 里的 `Background="Transparent"` 会被它覆盖，必须在 `OnSourceInitialized`/`Start`/`ShowWindow` 里重新按回来，`CompositionTarget.BackgroundColor` 也要一并置透明；④ **每块要实色的区域都得自己画底色**，而且**透明的子元素会透出父元素的底色**——给"洞"外面套一个填了高亮色的父元素，整幅画面会被染成高亮色（实测画面泛绿），所以边框要用 `BorderBrush`/`BorderThickness` 画，不能用"背景色 + Padding"。
 41. **"透明/半透明"类问题的验收必须用高对比背景做判据，不能只看"画面是不是变淡了"**（阶段 54）：本次"透明度没生效"的第一版修复看起来对（画面变淡、数值能存），实际画面区被一层实色填成了"泛白"——**透出白色窗口与透出任何东西长得都一样**，肉眼分不出"透明"与"实色填充"。可靠判据是**在目标窗口后面放一个红/蓝/黑/绿四色测试窗**，看颜色能不能逐像素透出来（本次正是靠它定位到缺 `DwmExtendFrameIntoClientArea`）。同族教训：涉及"透明度/遮罩/置顶叠加"的需求，先确认它要透出的是"窗口自己的底色"还是"窗口后面的内容"——前者调 opacity 就够，后者必须真的开洞。
 42. **在 WPF / WPF-UI 窗口上"放开最小尺寸"，光删 `MinWidth/MinHeight` 不够**（阶段 55）：`WM_GETMINMAXINFO` 会被 WPF / WPF-UI 的后续处理按回"窗口当前尺寸"——实测删掉 `MinWidth/MinHeight` 后窗口仍卡在当前尺寸，`SetWindowPos` 返回 True 但矩形不变、拖边框只能变大；在 `HwndSource` 钩子里写入 1×1 也会被覆盖。正确做法是**在这条消息上自己接管**：改写 `ptMinTrackSize` 后设 `handled = true`（其余字段保持系统预填），此后 1×1 才会被真正采纳（实测可把窗口拖到 175×101 甚至更小）。排查这类"设了没生效"的 Win32 消息问题，最有效的手段是**从另一个进程 `SendMessage(hwnd, WM_GETMINMAXINFO, 0, 缓冲区)` 读回窗口的答复**——它能直接指出"谁在把值按回去"；同族的还有 `GetWindowRect`/`IsWindowVisible` 之类的旁证查询。

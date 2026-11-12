@@ -164,22 +164,15 @@ public partial class IndustryPlanPage : Page
 
     private void OnExportClick(object sender, RoutedEventArgs e) => _viewModel.ExportCsv();
 
-    private void OnCopySelectedTargetClick(object sender, RoutedEventArgs e)
-        => _viewModel.CopyTargetPurchaseList(_viewModel.SelectedOverviewTarget);
+    private void OnCopyShoppingClick(object sender, RoutedEventArgs e) => _viewModel.CopyShoppingList();
 
-    private void OnExportSelectedTargetClick(object sender, RoutedEventArgs e)
-        => _viewModel.ExportTargetCsv(_viewModel.SelectedOverviewTarget);
+    private void OnExportShoppingClick(object sender, RoutedEventArgs e) => _viewModel.ExportShoppingCsv();
 
     private void OnRefreshMarketClick(object sender, RoutedEventArgs e) => _ = _viewModel.RefreshMarketAsync();
 
     private void OnRefreshCharacterClick(object sender, RoutedEventArgs e) => _ = _viewModel.RefreshCharacterAsync();
 
-    private void OnForceBuildClick(object sender, RoutedEventArgs e) => _viewModel.ForceBuildSelected();
-
-    private void OnForceBuyClick(object sender, RoutedEventArgs e) => _viewModel.ForceBuySelected();
-
-    private void OnBlacklistClick(object sender, RoutedEventArgs e) => _viewModel.BlacklistSelected();
-
+    // 阶段 273：「强制制造 / 强制采购 / 黑名单」三个按钮已收成节点详情里的下拉框（SelectedNodeCostModeIndex）。
     private void OnClearDecisionsClick(object sender, RoutedEventArgs e) => _viewModel.ClearManualDecisions();
 
     private void OnSavePlanClick(object sender, RoutedEventArgs e) => _viewModel.SaveCurrentPlan();

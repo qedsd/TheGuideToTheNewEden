@@ -17,7 +17,6 @@ public partial class MarketPage : Page
 {
     private readonly MarketPageViewModel _viewModel;
 
-    private ToolWindow? _typeInfoWindow;
     private ToolWindow? _calculatorWindow;
 
     public MarketPage()
@@ -84,24 +83,12 @@ public partial class MarketPage : Page
     /// <summary>物品简介：工具窗口 + 简介 UserControl（单实例，重复点击仅激活）。</summary>
     private void OnDescriptionClick(object sender, RoutedEventArgs e)
     {
-        if (_typeInfoWindow is null)
+        var typeId = _viewModel.SelectedInvType?.TypeID ?? 0;
+        if (typeId > 0)
         {
-            _typeInfoWindow = new ToolWindow(
-                new MarketTypeInfoView(_viewModel),
-                ToolWindowTitleStyle.Default,
-                showTopmostButton: false,
-                showInTaskbar: true,
-                width: 440,
-                height: 520)
-            {
-                Owner = Window.GetWindow(this),
-                DisplayTitle = FindString("MarketPage_Description"),
-            };
-            _typeInfoWindow.Closed += (_, _) => _typeInfoWindow = null;
+            // 阶段 283：物品说明换成统一的「物品详情」窗口；入口本身就在市场里，底部「查看市场详情」按钮隐藏。
+            ItemDetailWindow.ShowItem(typeId, showMarketButton: false);
         }
-
-        _typeInfoWindow.Show();
-        _typeInfoWindow.Activate();
     }
 
     /// <summary>买入计算：工具窗口 + 计算 UserControl（单实例，重复点击仅激活；该窗口带置顶按钮）。</summary>

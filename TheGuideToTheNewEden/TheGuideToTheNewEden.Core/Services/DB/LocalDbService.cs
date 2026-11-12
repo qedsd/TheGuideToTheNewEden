@@ -476,6 +476,53 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             item.MarketGroupName = type?.MarketGroupName;
             item.Description = type?.Description;
         }
+
+        #region dogma 本地化（阶段 283：属性名/单位名/属性分组名）
+
+        /// <summary>
+        /// 本地化库是否有 dogma 翻译表。老版本 zh.db 没有这三张表，此时调用方应回退主库英文。
+        /// </summary>
+        private static bool HasLocalDogmaTable(string table)
+        {
+            if (!DBService.LocalDbReady) return false;
+            try
+            {
+                return DBService.LocalDb.DbMaintenance.IsAnyTable(table, false);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static List<LocalDogmaAttribute> TranDogmaAttributes(List<int> ids)
+        {
+            if (ids == null || ids.Count == 0 || !HasLocalDogmaTable("dogmaAttributes"))
+            {
+                return new List<LocalDogmaAttribute>();
+            }
+            return DBService.LocalDb.Queryable<LocalDogmaAttribute>().Where(p => ids.Contains(p.AttributeID)).ToList();
+        }
+
+        public static List<LocalDogmaUnit> TranDogmaUnits()
+        {
+            if (!HasLocalDogmaTable("dogmaUnits"))
+            {
+                return new List<LocalDogmaUnit>();
+            }
+            return DBService.LocalDb.Queryable<LocalDogmaUnit>().ToList();
+        }
+
+        public static List<LocalDogmaAttributeCategory> TranDogmaAttributeCategories()
+        {
+            if (!HasLocalDogmaTable("dogmaAttributeCategories"))
+            {
+                return new List<LocalDogmaAttributeCategory>();
+            }
+            return DBService.LocalDb.Queryable<LocalDogmaAttributeCategory>().ToList();
+        }
+
+        #endregion
         #endregion
     }
 }

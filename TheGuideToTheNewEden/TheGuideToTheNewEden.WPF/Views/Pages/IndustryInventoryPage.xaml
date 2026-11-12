@@ -83,6 +83,7 @@
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Name}"
+                                    controls:ItemLink.TypeId="{Binding TypeId}"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
                                     FontSize="10.5"
@@ -186,6 +187,7 @@
                                                 Grid.Column="0"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                 Text="{Binding Name}"
+                                                controls:ItemLink.TypeId="{Binding TypeId}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
                                                 Grid.Column="1"
@@ -281,11 +283,18 @@
                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                         Style="{StaticResource InvDataGrid}">
                         <ui:DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Name}"
-                                ElementStyle="{StaticResource InvCell}"
-                                Header="{DynamicResource IndustryPage_Col_Item}" />
+                            <DataGridTemplateColumn Width="*" Header="{DynamicResource IndustryPage_Col_Item}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource InvCell}"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            controls:ItemLink.TypeId="{Binding TypeId}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn
                                 Width="120"
                                 Binding="{Binding QuantityText}"

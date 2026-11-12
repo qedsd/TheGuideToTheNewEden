@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 工业 · Nav.Industry（阶段 272：从手写 XAML 回填成 SVG，母图标保持不变） -->
+  <path d="M32 46 L64 30 L96 46 V84 L64 100 L32 84 Z" fill="none" stroke="#F59E0B" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 46 L64 62 L96 46 M64 62 V100" fill="none" stroke="#F59E0B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="64" cy="62" r="8" fill="#38BDF8"/>
+  <circle cx="102" cy="64" r="6" fill="#5EEAD4"/>
+</svg>

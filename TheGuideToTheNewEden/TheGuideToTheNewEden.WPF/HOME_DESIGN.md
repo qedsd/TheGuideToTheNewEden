@@ -176,11 +176,19 @@ public sealed class HomePage : PlaceholderPage
 
 **磁贴标签一律取导航键（`Nav.*`）原文**——零新增翻译；副标题取所属分组名（`Nav.Business` 等）。所有图标名已用反射核验存在于 `SymbolRegular`（见 §7 清单）。
 
-### 4.3 ~~编辑模式~~（阶段 101 移除）
+### 4.3 ~~编辑模式~~（阶段 101 移除；阶段 270 补回"跳转入口"）
 
 原设计：卡片右上角「编辑」进入编辑态（磁贴 ✕、末尾「＋ 添加功能」槽位、拖动排序、`Alt + ←/→`、
 底部提示条 + 恢复默认）。**阶段 101 应用户要求整体移除**——编辑统一收进 设置 → 主页（§4.1），
 拖动排序的交互在那里原样保留；"恢复默认"与宽窄切换也移到设置页行内。
+
+**阶段 270**：卡片右上角重新出现一个**铅笔/编辑图标**（`Edit24`，Tooltip 与无障碍名 `Home.Quick.Manage`），
+但它**不进编辑态**，只是"跳转到 设置 → 主页"的快捷入口（`SettingsPage.RequestCategory(typeof(HomeSettingPage))`
++ `Navigation.Navigate(typeof(SettingsPage))`，与导航右键「管理快捷方式…」完全同一条路径）。
+
+**阶段 271**：卡片标题行按用户要求**只保留标题「快捷方式」**——右侧的「共 n 个 · 上限 24」计数移除
+（`HomePageViewModel.CountText` 一并删除）；标题行仍是"左标题 + 右编辑图标"两列，高度（44px）与下方分隔线
+由 `CardControl` 模板决定，保持不变。
 
 ### 4.4 右键菜单（阶段 101 移除）
 
@@ -405,7 +413,10 @@ L2 动作项：
 
 - 快捷方式：`Home.Quick.Title` `Home.Quick.Count` `Home.Quick.RestoreDefaults` `Home.Quick.RestoreConfirm` `Home.Quick.Empty` `Home.Quick.LimitReached` `Home.Quick.Pin` `Home.Quick.Unpin` `Home.Quick.Remove` `Home.Quick.ToWide` `Home.Quick.ToSmall` `Home.Quick.Manage`
   （阶段 101 删除：`Home.Quick.Add` `AddTip` `Edit` `Done` `EditHint` `MoveFirst`、`Home.Setting.Grouped`——编辑统一在设置页；
-  阶段 188 删除：`Home.Quick.BadgeCount` `Home.Quick.BadgeRunning`——角标功能移除）
+  阶段 188 删除：`Home.Quick.BadgeCount` `Home.Quick.BadgeRunning`——角标功能移除；
+  阶段 271：主页标题行的**计数**移除（`HomePageViewModel.CountText` 删除），标题仍用 `Home.Quick.Title`；
+  `Home.Quick.Count` 保留给「设置 → 主页」顶部）
+  阶段 271 删除：`Home.Quick.Title`——主页快捷方式卡片标题行（标题 + 计数）整体移除，`Count` 仍被「设置 → 主页」使用）
 - 添加功能：`Home.Add.Title` `Home.Add.Search` `Home.Add.Add` `Home.Add.Added` `Home.Add.Summary` `Home.Add.Hint` `Home.Add.GroupAll`
 - 品牌与状态：`Home.Status.Online` `Home.Status.Players` `Home.Status.GameTime` `Home.Status.NewVersion` `Home.Status.Community`
 - 钱包：`Home.Wallet.Title` `Home.Wallet.Total` `Home.Wallet.Income` `Home.Wallet.Outcome` `Home.Wallet.IncomeBreakdown` `Home.Wallet.OutcomeBreakdown` `Home.Wallet.NoCharacter` `Home.Wallet.PartialFailed` `Home.Wallet.Range` `Home.Wallet.Range30` `Home.Wallet.RangeAll` `Home.Wallet.Note`

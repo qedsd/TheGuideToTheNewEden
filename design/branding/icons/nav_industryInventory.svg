@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 库存 · Nav.IndustryInventory（货箱堆：上层一只、下层两只） -->
+  <rect x="40" y="14" width="48" height="34" rx="8" fill="#F59E0B"/>
+  <rect x="16" y="58" width="46" height="50" rx="8" fill="#38BDF8"/>
+  <rect x="66" y="58" width="46" height="50" rx="8" fill="#5EEAD4"/>
+</svg>

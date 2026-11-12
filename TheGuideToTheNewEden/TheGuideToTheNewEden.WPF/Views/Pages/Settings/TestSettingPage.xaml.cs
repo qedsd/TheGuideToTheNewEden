@@ -123,7 +123,8 @@ public partial class TestSettingPage : Page
         var url = AuthHelper.GetCallbackUrlForDisplay();
         try
         {
-            Clipboard.SetText(url);
+            if (!ClipboardHelper.CopyOrNotify(url))
+                return;
             LoopbackValueText.Text = $"{FindString("TestSettingPage_Loopback_Copy_Success")}{Environment.NewLine}{url}";
         }
         catch (Exception ex)

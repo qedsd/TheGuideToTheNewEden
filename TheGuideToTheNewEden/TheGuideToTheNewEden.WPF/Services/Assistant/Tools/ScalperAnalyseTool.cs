@@ -105,7 +105,7 @@ public sealed class ScalperAnalyseTool : ITool
         {
             builder.AppendLine(
                 $"{item.InvType.TypeName} | 源买 {ToolArgs.FormatIsk(item.BuyPrice)} | 目的卖 {ToolArgs.FormatIsk(item.SellPrice)} | " +
-                $"净利润 {ToolArgs.FormatIsk(item.NetProfit)} | 回报率 {item.ROI:F1}% | 本金 {ToolArgs.FormatIsk(item.Principal)} | " +
+                $"净利润 {ToolArgs.FormatIsk(item.NetProfit)} | 回报率 {item.ROI:F1}% | 税后净利 {ToolArgs.FormatIsk(item.TargetNetProfitAfterFees)} | 税后回报 {item.ROIAfterFees:F1}% | " +
                 $"销量 {item.SourceSales:N0} | 热力 {item.HeatValue} | 推荐度 {item.Suggestion:F1}");
         }
 

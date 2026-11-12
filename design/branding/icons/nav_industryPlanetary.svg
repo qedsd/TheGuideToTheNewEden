@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 行星开发 · Nav.IndustryPlanetary（带环行星 + 一颗卫星，20px 下也能认出"星球"） -->
+  <circle cx="62" cy="64" r="30" fill="none" stroke="#3B82F6" stroke-width="9"/>
+  <ellipse cx="62" cy="64" rx="44" ry="15" fill="none" stroke="#5EEAD4" stroke-width="8"/>
+  <circle cx="100" cy="26" r="7" fill="#F59E0B"/>
+</svg>

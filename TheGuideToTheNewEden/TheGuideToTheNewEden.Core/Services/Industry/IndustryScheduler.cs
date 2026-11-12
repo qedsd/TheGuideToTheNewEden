@@ -34,7 +34,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             var jobs = new Dictionary<string, JobWork>(StringComparer.Ordinal);
             foreach (var target in plan.Targets)
             {
-                Collect(target, jobs, targetIds);
+                Collect(target, jobs, targetIds, options.InventionParallel);
             }
 
             foreach (var job in jobs.Values)
@@ -86,7 +86,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
         private static void Collect(
             IndustryBuildNode node,
             Dictionary<string, JobWork> jobs,
-            HashSet<int> targetIds)
+            HashSet<int> targetIds,
+            bool inventionParallel)
         {
             if (node is null) return;
 
@@ -115,6 +116,11 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 job.BaseHours += Math.Max(0, node.JobTimeSeconds) / 3600.0;
                 job.IsTarget |= targetIds.Contains(node.TypeID);
                 job.IsInvention |= node.IsInvention;
+                // 行星节点：取所需殖民地数的最大值（同产物多次出现时是同一批殖民地在产）。
+                if (node.ActivityID == IndustryActivity.Planetary && node.PlanetColonies > 0)
+                {
+                    job.PlanetSlots = Math.Max(job.PlanetSlots, node.PlanetColonies);
+                }
 
                 if (node.Inputs != null)
                 {
@@ -142,7 +148,16 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                         if (input.Decision == IndustryDecision.Build
                             && input.Runs > 0)
                         {
-                            job.DependencyKeys.Add(JobKey(input.TypeID, input.ActivityID));
+                            var inputKey = JobKey(input.TypeID, input.ActivityID);
+                            if (input.IsInvention && inventionParallel)
+                            {
+                                // 阶段 281：发明与制造并行，不建依赖（制造不等发明），只记下配对做对比。
+                                job.ParallelInventionKeys.Add(inputKey);
+                            }
+                            else
+                            {
+                                job.DependencyKeys.Add(inputKey);
+                            }
                         }
                     }
                 }
@@ -170,7 +185,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             {
                 foreach (var child in node.Inputs)
                 {
-                    Collect(child, jobs, targetIds);
+                    Collect(child, jobs, targetIds, inventionParallel);
                 }
             }
         }
@@ -232,6 +247,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 ManufacturingFree = new double[Math.Max(0, p.ManufacturingSlots)],
                 InventionFree = new double[Math.Max(0, p.InventionSlots)],
                 ReactionFree = new double[Math.Max(0, p.ReactionSlots)],
+                // 每个殖民地一条并行的「行星」线（阶段 276）。
+                PlanetFree = new double[Math.Max(1, Math.Min(6, p.PlanetSlots))],
             }).ToList();
 
             var activeAssignments = ReserveInProgress(states, activeJobs);
@@ -269,7 +286,11 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
                 assignments[job.Key] = best;
                 var state = states.First(p => p.Profile.CharacterId == best.CharacterId && ReferenceEquals(p.Profile, best.Profile));
-                SetFree(state, job.ActivityId, best.LineIndex, best.End);
+                var freeSlots = GetFree(state, job.ActivityId);
+                for (int slot = 0; slot < Math.Max(1, best.Slots) && slot < freeSlots.Length; slot++)
+                {
+                    freeSlots[slot] = Math.Max(freeSlots[slot], best.End);
+                }
 
                 foreach (var dependent in job.Dependents)
                 {
@@ -324,9 +345,28 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
 
                 var multiplier = state.Profile.TimeMultiplierForActivity(job.ActivityId);
                 var duration = Math.Max(0.01, job.BaseHours * multiplier);
-                for (int i = 0; i < free.Length; i++)
+
+                // 行星任务要同时占用「殖民地数」条并行线；其他活动只占一条。
+                var needed = job.ActivityId == 100 ? Math.Max(1, job.PlanetSlots) : 1;
+                var slots = Math.Min(needed, free.Length);
+                var starts = new List<(int Index, double Start)>();
+                if (job.ActivityId == 100)
                 {
-                    var start = Math.Max(readyTime, free[i]);
+                    // 殖民地在同一条产线上并行：取前 slots 个空档里最晚的那个作为开工时间。
+                    var earliest = 0.0;
+                    for (int k = 0; k < slots; k++) earliest = Math.Max(earliest, free[k]);
+                    starts.Add((0, Math.Max(readyTime, earliest)));
+                }
+                else
+                {
+                    for (int i = 0; i < free.Length; i++)
+                    {
+                        starts.Add((i, Math.Max(readyTime, free[i])));
+                    }
+                }
+
+                foreach (var (lineIndex, start) in starts)
+                {
                     var end = start + duration;
 
                     double score;
@@ -352,13 +392,14 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                             CharacterName = state.Profile.CharacterName,
                             Profile = state.Profile,
                             LineKind = LineKind(job.ActivityId),
-                            LineId = LineId(job.ActivityId, i),
-                            LineIndex = i,
+                            LineId = LineId(job.ActivityId, lineIndex),
+                            LineIndex = lineIndex,
                             Start = start,
                             End = end,
                             Duration = duration,
                             Multiplier = multiplier,
                             IsPinned = pinnedCharacterId != 0,
+                            Slots = slots,
                         };
                     }
                 }
@@ -439,6 +480,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                     Stage = stage,
                     Runs = job.Runs,
                     QuantityProduced = job.QuantityProduced,
+                    Slots = assignment.Slots,
                     BaseHours = job.BaseHours,
                     DurationHours = assignment.Duration,
                     StartHours = assignment.Start,
@@ -504,6 +546,36 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             }
 
             var byKey = result.Jobs.ToDictionary(p => p.Key, StringComparer.Ordinal);
+
+            // 阶段 281：并行口径下，记录「发明作业结束时，最早需要它的制造作业是否已开始」。
+            var inventionNeededBy = new Dictionary<string, double>(StringComparer.Ordinal);
+            foreach (var pair in jobs)
+            {
+                if (pair.Value.ParallelInventionKeys.Count == 0) continue;
+                if (!best.Assignments.TryGetValue(pair.Key, out var consumerAssignment)) continue;
+                foreach (var inventionKey in pair.Value.ParallelInventionKeys)
+                {
+                    if (!inventionNeededBy.TryGetValue(inventionKey, out var earliest) || consumerAssignment.Start < earliest)
+                    {
+                        inventionNeededBy[inventionKey] = consumerAssignment.Start;
+                    }
+                }
+            }
+
+            if (inventionNeededBy.Count > 0)
+            {
+                result.InventionParallel = true;
+                foreach (var pair in inventionNeededBy)
+                {
+                    if (!byKey.TryGetValue(pair.Key, out var inventionJob)) continue;
+                    inventionJob.HasInventionWindow = true;
+                    inventionJob.InventionSlackHours = pair.Value - inventionJob.EndHours;
+                    if (inventionJob.InventionSlackHours < 0)
+                    {
+                        result.LateInventionCount++;
+                    }
+                }
+            }
             foreach (var job in result.Jobs)
             {
                 var latestEnd = LatestEnd(job, byKey, result.MakespanHours, new HashSet<string>(StringComparer.Ordinal));
@@ -523,6 +595,7 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                     ManufacturingSlots = profile.ManufacturingSlots,
                     InventionSlots = profile.InventionSlots,
                     ReactionSlots = profile.ReactionSlots,
+                    PlanetSlots = profile.PlanetSlots,
                     ManufacturingTimeMultiplier = profile.ManufacturingTimeMultiplier,
                     ReactionTimeMultiplier = profile.ReactionTimeMultiplier,
                     InventionTimeMultiplier = profile.InventionTimeMultiplier,
@@ -544,7 +617,16 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                 }
                 if (result.Jobs.Any(p => p.CharacterId == profile.CharacterId && p.ActivityId == 100))
                 {
-                    character.Lines.Add(MakeLine("P", "planetary", 0));
+                    // 行星线按该角色实际占用的殖民地数展开（阶段 276）；没有占用信息的旧结果回退到 1 条。
+                    var usedPlanetLines = result.Jobs
+                        .Where(p => p.CharacterId == profile.CharacterId && p.ActivityId == 100)
+                        .Select(p => Math.Max(1, Math.Min(6, p.LineIndex + Math.Max(1, p.Slots))))
+                        .DefaultIfEmpty(1)
+                        .Max();
+                    for (int i = 0; i < usedPlanetLines; i++)
+                    {
+                        character.Lines.Add(MakeLine("P", "planetary", i));
+                    }
                 }
 
                 foreach (var job in result.Jobs.Where(p => p.CharacterId == profile.CharacterId))
@@ -553,7 +635,19 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
                     if (line is null) continue;
                     line.JobKeys.Add(job.Key);
                     line.BusyHours += job.DurationHours;
-                    character.UsedSlotHours += job.DurationHours;
+                    // 行星任务同时占多条殖民地产线：把同一条任务也挂到其余被占用的线上，
+                    // 甘特图就能看出"并行 N 个殖民地"；占用时长只在下面按槽数累计一次。
+                    if (job.ActivityId == 100 && job.Slots > 1)
+                    {
+                        for (int slot = 1; slot < job.Slots; slot++)
+                        {
+                            var sibling = character.Lines.FirstOrDefault(p => p.Id == LineId(100, slot));
+                            if (sibling is null) continue;
+                            if (!sibling.JobKeys.Contains(job.Key)) sibling.JobKeys.Add(job.Key);
+                            sibling.BusyHours += job.DurationHours;
+                        }
+                    }
+                    character.UsedSlotHours += job.DurationHours * Math.Max(1, job.Slots);
                 }
 
                 character.AvailableSlotHours = Math.Max(0, character.TotalSlots) * result.MakespanHours;
@@ -769,6 +863,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             public bool IsTarget { get; set; }
             public int Runs { get; set; }
             public long QuantityProduced { get; set; }
+            /// <summary>行星任务需要同时占用几个殖民地（阶段 276；其他活动恒为 1）。</summary>
+            public int PlanetSlots { get; set; } = 1;
             public double BaseHours { get; set; }
             public double JobCost { get; set; }
             public double MaterialCost { get; set; }
@@ -778,6 +874,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             public HashSet<string> DependencyKeys { get; } = new HashSet<string>(StringComparer.Ordinal);
             public List<JobWork> Dependents { get; } = new List<JobWork>();
 
+            /// <summary>并行口径下与之配对的发明作业键（制造不等发明，但要对比发明是否赶得上）。</summary>
+            public HashSet<string> ParallelInventionKeys { get; } = new HashSet<string>(StringComparer.Ordinal);
             public int Depth { get; set; }
             public bool DepthComputed { get; set; }
             public double DownstreamHours { get; set; }
@@ -798,6 +896,8 @@ namespace TheGuideToTheNewEden.Core.Services.Industry
             public double Duration { get; set; }
             public double Multiplier { get; set; }
             public bool IsPinned { get; set; }
+            /// <summary>实际占用的并行产线数（行星殖民地数；其他活动恒为 1）。</summary>
+            public int Slots { get; set; } = 1;
         }
 
         private sealed class ActiveAssignment

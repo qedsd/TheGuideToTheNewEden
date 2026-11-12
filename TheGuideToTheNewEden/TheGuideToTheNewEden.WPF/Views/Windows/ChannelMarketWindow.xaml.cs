@@ -83,8 +83,8 @@ public partial class ChannelMarketWindow : Wpf.Ui.Controls.FluentWindow
             ?? ViewModel.Result?.Item?.TypeID;
         if (typeId is > 0)
         {
-            // 跳到市场页并选中该物品，同时把主窗口置前
-            TheGuideToTheNewEden.WPF.Services.Navigation.NavigateToMarket(typeId.Value);
+            // 阶段 283：直接打开物品详情窗口；入口本身就在市场里，底部「查看市场详情」按钮不再显示。
+            TheGuideToTheNewEden.WPF.Views.Windows.ItemDetailWindow.ShowItem(typeId.Value, showMarketButton: false);
         }
     }
 

@@ -102,9 +102,8 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
     // ---------- 快捷方式卡 ----------
 
-    /// <summary>「共 N 个 · 上限 M」。</summary>
-    public string CountText => string.Format(
-        Resolve("Home.Quick.Count"), HomeShortcutService.Items.Count, HomeShortcutService.MaxItems);
+    // 阶段 271：卡片标题行（「快捷方式 共 n 个 · 上限 24」）按用户要求删除，
+    // CountText 一并移除；计数文案 Home.Quick.Count 仍被「设置 → 主页」使用。
 
     public bool IsEmpty => HomeShortcutService.Items.Count == 0;
 
@@ -171,7 +170,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(AppName));
         OnPropertyChanged(nameof(AppSubtitle));
         OnPropertyChanged(nameof(NewVersionText));
-        OnPropertyChanged(nameof(CountText));
     }
 
     // ---------- 磁贴操作 ----------
@@ -248,7 +246,6 @@ public sealed class HomePageViewModel : INotifyPropertyChanged
 
         RebuildRecent();
 
-        OnPropertyChanged(nameof(CountText));
         OnPropertyChanged(nameof(IsEmpty));
         // 两张数据卡的可见性也在这份"服务变化 → 通知"清单里：
         // 它们是 `=> HomeShortcutService.Show*` 的计算属性，缺了这两行就只在绑定时读一次初值，

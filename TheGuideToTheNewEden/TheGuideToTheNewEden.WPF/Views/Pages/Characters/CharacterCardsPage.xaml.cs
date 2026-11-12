@@ -11,10 +11,13 @@ using TheGuideToTheNewEden.WPF.ViewModels.Characters;
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 
 /// <summary>
-/// 角色卡片页：汇总 + 卡片网格 + 添加/移除/打开。
+/// 角色卡片页：汇总 + 卡片网格 / 紧凑列表（可切换） + 添加/移除/打开。
 /// </summary>
 public partial class CharacterCardsPage : Page
 {
+    /// <summary>角色页视图形态（false = 卡片网格，true = 紧凑列表）；存 settings.json，重启后沿用。</summary>
+    private const string ListViewSettingKey = "Characters.ListView";
+
     private readonly CharactersViewModel _viewModel = new();
 
     /// <summary>当前登录等待的取消源；仅用于页面内遮罩的「取消」按钮。</summary>
@@ -23,6 +26,9 @@ public partial class CharacterCardsPage : Page
     private CharacterCardViewModel? _dragCard;
     private Point _dragStart;
     private bool _suppressClick;
+
+    /// <summary>当前是否为列表视图（角色多时用它扫读，单行仍保留头像/状态/SP/ISK/LP/技能队列）。</summary>
+    private bool _listView;
 
     /// <summary>点击角色卡片时触发（由壳页打开对应标签）。</summary>
     public event EventHandler<CharacterCardViewModel>? CharacterActivated;
@@ -38,11 +44,16 @@ public partial class CharacterCardsPage : Page
 
         DataContext = _viewModel;
         CardList.ItemsSource = _viewModel.Cards;
+        RowList.ItemsSource = _viewModel.Cards;
 
         RefreshButton.Click += async (_, _) => await ReloadAsync(forceRefresh: true);
         LoginButton.Click += async (_, _) => await AddCharacterAsync();
+        AddCharacterButton.Click += async (_, _) => await AddCharacterAsync();
 
         _viewModel.PropertyChanged += (_, _) => UpdateEmptyState();
+
+        // 视图形态是纯界面偏好：沿用上次的选择（默认卡片网格）
+        ApplyViewMode(SettingsService.GetBool(ListViewSettingKey), persist: false);
 
         Loaded += async (_, _) => await ReloadAsync();
     }
@@ -60,16 +71,41 @@ public partial class CharacterCardsPage : Page
 
     /// <summary>按角色 ID 找卡片（主页"角色 + 指定角色"快捷方式用）。</summary>
     public CharacterCardViewModel? FindCard(long characterId)
-        => _viewModel.Cards.FirstOrDefault(p => !p.IsAdd && p.CharacterId == characterId);
+        => _viewModel.Cards.FirstOrDefault(p => p.CharacterId == characterId);
 
     private void UpdateEmptyState()
     {
         var empty = _viewModel.IsEmpty;
         EmptyState.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
         SummaryCard.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
-        CardList.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
         DragHint.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
+        ViewHost.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
+
+        // 空态下两种视图都不显示，否则按当前视图二选一
+        CardList.Visibility = empty || _listView ? Visibility.Collapsed : Visibility.Visible;
+        RowScrollHost.Visibility = empty || !_listView ? Visibility.Collapsed : Visibility.Visible;
     }
+
+    /// <summary>切换卡片 / 列表视图：同步两个按钮的选中态与两个容器，必要时持久化。</summary>
+    private void ApplyViewMode(bool listView, bool persist)
+    {
+        _listView = listView;
+
+        // 两个 ToggleButton 互斥：点已选中的那个时 WPF 会先取消选中，这里按状态回填
+        CardViewToggle.IsChecked = !listView;
+        ListViewToggle.IsChecked = listView;
+
+        UpdateEmptyState();
+
+        if (persist)
+        {
+            SettingsService.SetBool(ListViewSettingKey, listView);
+        }
+    }
+
+    private void CardViewToggle_Click(object sender, RoutedEventArgs e) => ApplyViewMode(listView: false, persist: true);
+
+    private void ListViewToggle_Click(object sender, RoutedEventArgs e) => ApplyViewMode(listView: true, persist: true);
 
     private void Card_Click(object sender, RoutedEventArgs e)
     {
@@ -83,12 +119,6 @@ public partial class CharacterCardsPage : Page
 
         if (sender is not FrameworkElement { Tag: CharacterCardViewModel card })
         {
-            return;
-        }
-
-        if (card.IsAdd)
-        {
-            _ = AddCharacterAsync();
             return;
         }
 
@@ -108,7 +138,7 @@ public partial class CharacterCardsPage : Page
         }
     }
 
-    // ---------- 卡片拖拽排序 ----------
+    // ---------- 拖拽排序（卡片网格与列表共用同一套逻辑） ----------
 
     private void CardList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -116,14 +146,14 @@ public partial class CharacterCardsPage : Page
         _suppressClick = false;
 
         var button = FindAncestor<Button>(e.OriginalSource as DependencyObject);
-        if (button?.Tag is CharacterCardViewModel card && !card.IsAdd)
+        if (button?.Tag is CharacterCardViewModel card)
         {
             _dragCard = card;
-            _dragStart = e.GetPosition(CardList);
+            _dragStart = e.GetPosition(ViewHost);
         }
         else
         {
-            // "···"按钮/添加卡片不参与拖拽
+            // "···"按钮落在按钮自身（Tag 不是角色）上，不参与拖拽
             _dragCard = null;
         }
     }
@@ -135,7 +165,7 @@ public partial class CharacterCardsPage : Page
             return;
         }
 
-        var position = e.GetPosition(CardList);
+        var position = e.GetPosition(ViewHost);
         if (Math.Abs(position.X - _dragStart.X) < SystemParameters.MinimumHorizontalDragDistance
             && Math.Abs(position.Y - _dragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
         {
@@ -146,7 +176,7 @@ public partial class CharacterCardsPage : Page
         _dragCard = null;
         _suppressClick = true;
         var data = new DataObject(typeof(CharacterCardViewModel), card);
-        DragDrop.DoDragDrop(CardList, data, DragDropEffects.Move);
+        DragDrop.DoDragDrop(ViewHost, data, DragDropEffects.Move);
         e.Handled = true;
     }
 
@@ -163,15 +193,14 @@ public partial class CharacterCardsPage : Page
     private void CardList_Drop(object sender, DragEventArgs e)
     {
         if (!e.Data.GetDataPresent(typeof(CharacterCardViewModel))
-            || e.Data.GetData(typeof(CharacterCardViewModel)) is not CharacterCardViewModel source
-            || source.IsAdd)
+            || e.Data.GetData(typeof(CharacterCardViewModel)) is not CharacterCardViewModel source)
         {
             return;
         }
 
-        var normal = _viewModel.Cards.Where(p => !p.IsAdd).ToList();
-        var sourceIndex = normal.IndexOf(source);
-        if (sourceIndex < 0 || normal.Count <= 1)
+        var cards = _viewModel.Cards;
+        var sourceIndex = cards.IndexOf(source);
+        if (sourceIndex < 0 || cards.Count <= 1)
         {
             return;
         }
@@ -183,30 +212,30 @@ public partial class CharacterCardsPage : Page
             return;
         }
 
+        var targetIndex = target is null ? -1 : cards.IndexOf(target);
         int finalIndex;
-        if (target is null || target.IsAdd)
+        if (targetIndex < 0)
         {
-            // 拖到空白 / 末尾添加卡：放到最后一个真实角色之后
-            finalIndex = normal.Count - 1;
+            // 拖到空白处：放到最后一个角色之后
+            finalIndex = cards.Count - 1;
         }
         else
         {
-            var targetIndex = normal.IndexOf(target);
-            if (targetIndex < 0)
+            // 删除源之后的列表里目标的新下标；卡片按左右半边、列表行按上下半边决定插前/插后
+            var targetAfterRemoval = targetIndex > sourceIndex ? targetIndex - 1 : targetIndex;
+            var after = false;
+            if (hit is { } cardHit)
             {
-                finalIndex = normal.Count - 1;
+                var drop = e.GetPosition(cardHit.Button);
+                after = _listView
+                    ? drop.Y > cardHit.Button.ActualHeight / 2
+                    : drop.X > cardHit.Button.ActualWidth / 2;
             }
-            else
-            {
-                // 删除源之后的列表里目标的新下标；按落点在卡片左/右半边决定插前/插后
-                var targetAfterRemoval = targetIndex > sourceIndex ? targetIndex - 1 : targetIndex;
-                var after = hit is { } cardHit
-                    && e.GetPosition(cardHit.Button).X > cardHit.Button.ActualWidth / 2;
-                finalIndex = Math.Clamp(
-                    targetAfterRemoval + (after ? 1 : 0),
-                    0,
-                    normal.Count - 1);
-            }
+
+            finalIndex = Math.Clamp(
+                targetAfterRemoval + (after ? 1 : 0),
+                0,
+                cards.Count - 1);
         }
 
         if (finalIndex != sourceIndex)
@@ -273,7 +302,7 @@ public partial class CharacterCardsPage : Page
     /// </summary>
     private void PinCharacter_Click(object sender, RoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.DataContext is not CharacterCardViewModel card || card.IsAdd)
+        if ((sender as FrameworkElement)?.DataContext is not CharacterCardViewModel card)
         {
             return;
         }

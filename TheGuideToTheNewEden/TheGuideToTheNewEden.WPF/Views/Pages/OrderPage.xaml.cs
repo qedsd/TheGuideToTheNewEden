@@ -1,3 +1,4 @@
+using TheGuideToTheNewEden.WPF.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.Models.Market;
@@ -55,7 +56,8 @@ public partial class OrderPage : Page
 
         try
         {
-            Clipboard.SetText(text);
+            if (!ClipboardHelper.CopyOrNotify(text))
+                return;
             ShowMessage(FindString("OrderPage_AddToGameOrder_Success"));
         }
         catch (Exception ex)

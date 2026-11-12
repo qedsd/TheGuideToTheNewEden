@@ -31,6 +31,7 @@
                             FontSize="12"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="{Binding Name}"
+                            controls:ItemLink.TypeId="{Binding TypeId}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             FontSize="9.5"
@@ -104,6 +105,7 @@
                     FontSize="12.5"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{Binding Name}"
+                    controls:ItemLink.TypeId="{Binding TypeId}"
                     TextTrimming="CharacterEllipsis" />
                 <TextBlock
                     FontSize="10"

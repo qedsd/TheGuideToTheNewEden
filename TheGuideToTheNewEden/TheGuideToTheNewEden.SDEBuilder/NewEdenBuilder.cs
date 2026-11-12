@@ -122,12 +122,111 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     db.CodeFirst.InitTables(typeof(LocalDBModels.PlanetSchematic));
                     await db.Insertable(planetSchematics.Item1.Select(p => new LocalDBModels.PlanetSchematic(p)).ToList()).ExecuteCommandAsync();
                 }
+
+                // 阶段 283：本地化库补 dogma 显示名（属性名/描述、单位、属性分组）
+                var localDogmaAttributes = GetLocalDogmaAttributes(fileDatas, language);
+                if (localDogmaAttributes != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.DogmaAttributes));
+                    await db.Insertable(localDogmaAttributes).ExecuteCommandAsync();
+                }
+
+                var localDogmaUnits = GetLocalDogmaUnits(fileDatas, language);
+                if (localDogmaUnits != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.DogmaUnits));
+                    await db.Insertable(localDogmaUnits).ExecuteCommandAsync();
+                }
+
+                var localDogmaCategories = GetLocalDogmaAttributeCategories(fileDatas, language);
+                if (localDogmaCategories != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.DogmaAttributeCategories));
+                    await db.Insertable(localDogmaCategories).ExecuteCommandAsync();
+                }
             }
             finally
             {
                 db.Close();
                 db.Dispose();
             }
+        }
+
+        /// <summary>
+        /// 给**已存在**的本地化库（zh.db 等）补 dogma 显示名三张表，不必重建整库（阶段 283）。
+        /// 只需要 dogmaAttributes / dogmaUnits / dogmaAttributeCategories 三个 jsonl 文件。
+        /// </summary>
+        public static async Task PatchLocalDogmaAsync(string localDbPath, string[] sdeFiles, LanguageEnum language)
+        {
+            var fileDatas = await Task.Run(() => Builder.ReadAllFiles(sdeFiles, LanguageEnum.En));
+            var db = Builder.CreateDB(localDbPath);
+            try
+            {
+                var attributes = GetLocalDogmaAttributes(fileDatas, language);
+                if (attributes != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.DogmaAttributes));
+                    await db.Deleteable<LocalDBModels.DogmaAttributes>().ExecuteCommandAsync();
+                    await db.Insertable(attributes).ExecuteCommandAsync();
+                }
+
+                var units = GetLocalDogmaUnits(fileDatas, language);
+                if (units != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.DogmaUnits));
+                    await db.Deleteable<LocalDBModels.DogmaUnits>().ExecuteCommandAsync();
+                    await db.Insertable(units).ExecuteCommandAsync();
+                }
+
+                var categories = GetLocalDogmaAttributeCategories(fileDatas, language);
+                if (categories != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.DogmaAttributeCategories));
+                    await db.Deleteable<LocalDBModels.DogmaAttributeCategories>().ExecuteCommandAsync();
+                    await db.Insertable(categories).ExecuteCommandAsync();
+                }
+            }
+            finally
+            {
+                db.Close();
+                db.Dispose();
+            }
+        }
+
+        private static List<LocalDBModels.DogmaAttributes> GetLocalDogmaAttributes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaAttributes", out var datas) || datas == null)
+            {
+                return null;
+            }
+
+            return datas.OfType<DeserializeModels.DogmaAttributes>()
+                .Select(p => new LocalDBModels.DogmaAttributes(p, language))
+                .ToList();
+        }
+
+        private static List<LocalDBModels.DogmaUnits> GetLocalDogmaUnits(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaUnits", out var datas) || datas == null)
+            {
+                return null;
+            }
+
+            return datas.OfType<DeserializeModels.DogmaUnits>()
+                .Select(p => new LocalDBModels.DogmaUnits(p, language))
+                .ToList();
+        }
+
+        private static List<LocalDBModels.DogmaAttributeCategories> GetLocalDogmaAttributeCategories(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaAttributeCategories", out var datas) || datas == null)
+            {
+                return null;
+            }
+
+            return datas.OfType<DeserializeModels.DogmaAttributeCategories>()
+                .Select(p => new LocalDBModels.DogmaAttributeCategories(p, language))
+                .ToList();
         }
     }
 }
