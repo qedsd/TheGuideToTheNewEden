@@ -11773,6 +11773,64 @@ MainWindow.xaml(.cs)
   吃买单 DaysToSell=目标/日销、挂卖单 MaxSellDays 截断 FillRatio<1、Score∈(0,100] 且 ScoreDetail 有摘要 —— **9 PASS / 0 FAIL**。
 - `dotnet build`：0 错误（临时输出目录）。未实机点验。
 
+## 阶段 300：倒货结果表右键打开市场详情；详情窗补齐分析字段（2026-11-10）
+
+> 用户要求：双击、右键都能打开倒货列表物品的市场详细（原/目的市场卖单买单、订单星系 + 利润等分析数据），内容参考 WinUI3 版。
+
+- 结果表右键菜单新增「**打开市场详情**」（`OnOpenDetailClick`，双击入口原有不变）。
+- `ScalperItemDetailWindow` 左侧指标面板补齐 296/299 的分析字段（WinUI 版没有这些新指标，属于 WPF 超集）：
+  加热度占比、成交买入均价、成交卖出均价、税后净利（单位）、税后整单利润、税后回报率、成交覆盖率、
+  竞争份额、预计卖完天数、利润每小时、风险调整利润、利润/体积（税后）、价格趋势、历史价安全垫、
+  需求稳定性、数据置信度、推荐分（Suggestion 行悬浮显示 ScoreDetail 构成摘要）；
+  旧「热力值」行保留，另加「加热度占比」行。
+- 订单网格（源/目的 × 卖单/买单）已有 **星系 / 位置 / 安等 / 剩余时间** 列（阶段 157），与 WinUI 对齐，未改动。
+- 语言：中英各 +3 键（`BusinessPage_HeatRatio`、`BusinessPage_TargetNetProfitAfterFees`、`BusinessPage_OpenItemDetail`，3542 = 3542）。
+- 手册 `scalper.md`「看结果与后续」补充右键入口。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 301：修复详情窗双击/右键无反应（2026-11-12）
+
+> 用户反馈：双击没反应，右键也没有菜单项。
+
+- **双击**：`OpenDetail` 只 `new ScalperItemDetailWindow()` 后 `SetItem + Activate()`，**从未 `Show()`**——
+  对从未显示过的窗口调 `Activate()` 是无效的，首次双击因此毫无反应。修复：`SetItem` 后补 `Show()` 再 `Activate()`。
+- **右键**：阶段 300 的右键菜单项「打开市场详情」写入随当时首个脚本中止**丢失且未复检**（XAML 与处理器都没落地）。
+  本次补回：`ContextMenu` 加第二项 + `OnOpenDetailClick`（读 `ResultGrid.SelectedItem` → `OpenDetail`）。
+- **过程教训（写入本条）**：脚本插入型修改在"第一个锚点失败就整体放弃"时，必须**逐个文件复检落地结果**；
+  本次正是漏掉了 AV/AVCS 两个文件的写入。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。待用户复测。
+
+## 阶段 302：LiveCharts 图例文字跟随主题（LegendTextPaint）（2026-11-12）
+
+> 用户反馈：倒货详情窗图表的图例文字是纯黑，黑色主题下不切换。
+
+- `LegendTextPaint` 的正确设置位置是 **`lvc:CartesianChart` 控件本身**（WPF 控件暴露
+  `LegendTextPaint / LegendBackgroundPaint / LegendTextSize`），不是 series 也不是 `Theme`；
+  LiveCharts 的默认主题图例文字是黑色，WPF-UI 的主题资源不会传导给它。
+- 修复：`ScalperItemDetailWindow.ApplyThemeColors()` 末尾把
+  `LegendTextPaint = MakePaint("TextFillColorSecondaryBrush", 1)` 赋给四张图
+  （Source/Destination × Price/Volume）——与坐标轴 `LabelsPaint` 同源，主题切换事件里一起刷新。
+- 反射核对：`LiveChartsCore.SkiaSharpView.WPF.CartesianChart` 确有 `LegendTextPaint : Paint`；
+  Series 上只有 `IsVisibleAtLegend`（显隐），`Theme.LegendTextPaint` 是全局主题注入的另一条路径。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 303：市场/虫洞/星图详情图例文字跟随主题（2026-11-12）
+
+> 用户确认倒货详情窗修复有效，要求市场功能里的同类问题一并修改。
+
+- 新增 **`Helpers/ChartThemeHelper.Make(resourceKey, thickness)`**：把 WPF 主题画刷资源转成 LiveCharts 的
+  `SolidColorPaint`（302 里 `MakePaint` 提炼出来；资源缺失返回 null 保留默认）。
+- 四处带 `LegendPosition` 的图表（默认图例文字纯黑）统一接入：
+  - `MarketPage`：PriceChart / VolumeChart；
+  - `ChannelMarketWindow`：PriceChart；
+  - `WormholePage`：ActivityChart；
+  - `MapSystemDetailView`：ActivityChart；
+  每页 code-behind 在 `Loaded` + `ThemeService.ThemeChanged`（Page 用 `Unloaded` 解绑、Window 用 `Closed`）时
+  `chart.LegendTextPaint = ChartThemeHelper.Make("TextFillColorSecondaryBrush")`。
+- 市场页的坐标轴文字仍走 VM 侧 `XAxes/YAxes`（旧实现），本次只补图例文字；如需坐标轴同源可后续把
+  `LabelsPaint` 也用 helper 赋到 axes。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

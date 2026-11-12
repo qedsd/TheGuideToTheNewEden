@@ -622,6 +622,7 @@
                     <ui:DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Click="OnAddToCartClick" Header="{DynamicResource BusinessPage_AddToShoppingCart}" />
+                            <MenuItem Click="OnOpenDetailClick" Header="{DynamicResource BusinessPage_OpenItemDetail}" />
                         </ContextMenu>
                     </ui:DataGrid.ContextMenu>
                     <ui:DataGrid.Columns>

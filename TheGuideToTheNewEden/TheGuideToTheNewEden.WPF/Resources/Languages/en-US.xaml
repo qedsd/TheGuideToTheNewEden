@@ -1093,6 +1093,9 @@
     <sys:String x:Key="BusinessPage_SalesStability">Demand stability</sys:String>
     <sys:String x:Key="BusinessPage_Confidence">Data confidence</sys:String>
     <sys:String x:Key="BusinessPage_Score">Score</sys:String>
+    <sys:String x:Key="BusinessPage_HeatRatio">Heat ratio</sys:String>
+    <sys:String x:Key="BusinessPage_TargetNetProfitAfterFees">After-fee total profit</sys:String>
+    <sys:String x:Key="BusinessPage_OpenItemDetail">Open market detail</sys:String>
     <sys:String x:Key="BusinessPage_PresetConservative">Conservative</sys:String>
     <sys:String x:Key="BusinessPage_PresetBalanced">Balanced</sys:String>
     <sys:String x:Key="BusinessPage_PresetAggressive">Aggressive</sys:String>

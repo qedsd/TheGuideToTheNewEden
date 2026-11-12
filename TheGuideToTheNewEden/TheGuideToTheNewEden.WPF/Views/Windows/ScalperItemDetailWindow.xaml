@@ -144,52 +144,128 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_IskPerVolume}" />
                             <TextBlock x:Name="IskPerVolumeText" Style="{StaticResource DetailFieldValue}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_BuyAvgPrice}" />
+                                <TextBlock x:Name="BuyAvgPriceText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_SellAvgPrice}" />
+                                <TextBlock x:Name="SellAvgPriceText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_NetProfitAfterFees}" />
+                                <TextBlock x:Name="NetProfitAfterFeesText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_TargetNetProfitAfterFees}" />
+                                <TextBlock x:Name="TargetNetProfitAfterFeesText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_ROIAfterFees}" />
+                                <TextBlock x:Name="RoiAfterFeesText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_FillRatio}" />
+                                <TextBlock x:Name="FillRatioText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_CompetitionShare}" />
+                                <TextBlock x:Name="CompetitionShareText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_DaysToSell}" />
+                                <TextBlock x:Name="DaysToSellText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_ProfitPerHour}" />
+                                <TextBlock x:Name="ProfitPerHourText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_RiskAdjustedProfit}" />
+                                <TextBlock x:Name="RiskAdjustedProfitText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_ProfitPerVolumeAfterFees}" />
+                                <TextBlock x:Name="ProfitPerVolumeAfterFeesText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_PriceTrend}" />
+                                <TextBlock x:Name="PriceTrendText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_PriceCushion}" />
+                                <TextBlock x:Name="PriceCushionText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_SalesStability}" />
+                                <TextBlock x:Name="SalesCvText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_Confidence}" />
+                                <TextBlock x:Name="ConfidenceText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource DetailFieldLabel}" Text="{DynamicResource BusinessPage_Score}" />
+                                <TextBlock x:Name="ScoreText" Style="{StaticResource DetailFieldValue}" />
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>
 
             <!--  右：源/目的市场订单与历史  -->
-            <TabControl Grid.Column="1" Margin="6,0,0,0">
+            <TabControl Grid.Column="1">
                 <TabItem Header="{DynamicResource BusinessPage_SourceMarket}">
-                    <Grid Margin="0,6,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <ComboBox
-                            x:Name="SourceRangeBox"
-                            Width="150"
-                            HorizontalAlignment="Right"
-                            SelectedIndex="0"
-                            SelectionChanged="OnSourceRangeChanged">
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History1}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History3}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History6}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_History12}" />
-                            <ComboBoxItem Content="{DynamicResource MarketPage_HistoryAll}" />
-                        </ComboBox>
-                        <TabControl Grid.Row="1" Margin="0,6,0,0">
+                    <Grid>
+                        <TabControl>
                             <TabItem Header="{DynamicResource MarketPage_Sell}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <ui:DataGrid
                                         x:Name="SourceSellGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         AutoGenerateColumns="False"
                                         CanUserAddRows="False"
                                         CanUserDeleteRows="False"
                                         GridLinesVisibility="Horizontal"
                                         HeadersVisibility="Column"
                                         IsReadOnly="True"
-                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         ScrollViewer.CanContentScroll="True">
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Width="90" Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Amount}" />
-                                            <DataGridTextColumn Width="110" Binding="{Binding Price, StringFormat={}{0:N2}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Price}" />
-                                            <DataGridTextColumn Width="80" Binding="{Binding Security}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Security}" />
-                                            <DataGridTextColumn Width="220" Binding="{Binding LocationName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Location}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding SolarSystem.SolarSystemName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource General_SolarSystemName}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding RemainTime}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Duration}" />
-                                            <DataGridTextColumn Width="120" Binding="{Binding LocationId}" ElementStyle="{StaticResource DetailCellStyle}" Header="LocationId" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Amount}" />
+                                            <DataGridTextColumn
+                                                Width="110"
+                                                Binding="{Binding Price, StringFormat={}{0:N2}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Price}" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding Security}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Security}" />
+                                            <DataGridTextColumn
+                                                Width="220"
+                                                Binding="{Binding LocationName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Location}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding SolarSystem.SolarSystemName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource General_SolarSystemName}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding RemainTime}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Duration}" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding LocationId}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="LocationId" />
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
@@ -198,24 +274,60 @@
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <ui:DataGrid
                                         x:Name="SourceBuyGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         AutoGenerateColumns="False"
                                         CanUserAddRows="False"
                                         CanUserDeleteRows="False"
                                         GridLinesVisibility="Horizontal"
                                         HeadersVisibility="Column"
                                         IsReadOnly="True"
-                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         ScrollViewer.CanContentScroll="True">
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Width="90" Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Amount}" />
-                                            <DataGridTextColumn Width="110" Binding="{Binding Price, StringFormat={}{0:N2}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Price}" />
-                                            <DataGridTextColumn Width="80" Binding="{Binding Security}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Security}" />
-                                            <DataGridTextColumn Width="220" Binding="{Binding LocationName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Location}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding SolarSystem.SolarSystemName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource General_SolarSystemName}" />
-                                            <DataGridTextColumn Width="90" Binding="{Binding Range}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Range}" />
-                                            <DataGridTextColumn Width="100" Binding="{Binding MinVolume, StringFormat={}{0:N0}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_MinVolume}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding RemainTime}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Duration}" />
-                                            <DataGridTextColumn Width="120" Binding="{Binding LocationId}" ElementStyle="{StaticResource DetailCellStyle}" Header="LocationId" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Amount}" />
+                                            <DataGridTextColumn
+                                                Width="110"
+                                                Binding="{Binding Price, StringFormat={}{0:N2}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Price}" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding Security}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Security}" />
+                                            <DataGridTextColumn
+                                                Width="220"
+                                                Binding="{Binding LocationName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Location}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding SolarSystem.SolarSystemName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource General_SolarSystemName}" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding Range}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Range}" />
+                                            <DataGridTextColumn
+                                                Width="100"
+                                                Binding="{Binding MinVolume, StringFormat={}{0:N0}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_MinVolume}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding RemainTime}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Duration}" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding LocationId}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="LocationId" />
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
@@ -226,6 +338,7 @@
                                         <lvc:CartesianChart
                                             x:Name="SourcePriceChart"
                                             MinHeight="240"
+                                            Background="Transparent"
                                             LegendPosition="Top"
                                             TooltipPosition="Auto"
                                             ZoomMode="X" />
@@ -234,6 +347,7 @@
                                         <lvc:CartesianChart
                                             x:Name="SourceVolumeChart"
                                             MinHeight="240"
+                                            Background="Transparent"
                                             LegendPosition="Top"
                                             TooltipPosition="Auto"
                                             ZoomMode="X" />
@@ -241,48 +355,73 @@
                                 </TabControl>
                             </TabItem>
                         </TabControl>
-                    </Grid>
-                </TabItem>
-
-                <TabItem Header="{DynamicResource BusinessPage_DestinationMarket}">
-                    <Grid Margin="0,6,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
                         <ComboBox
-                            x:Name="DestinationRangeBox"
+                            x:Name="SourceRangeBox"
                             Width="150"
                             HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
                             SelectedIndex="0"
-                            SelectionChanged="OnDestinationRangeChanged">
+                            SelectionChanged="OnSourceRangeChanged">
                             <ComboBoxItem Content="{DynamicResource MarketPage_History1}" />
                             <ComboBoxItem Content="{DynamicResource MarketPage_History3}" />
                             <ComboBoxItem Content="{DynamicResource MarketPage_History6}" />
                             <ComboBoxItem Content="{DynamicResource MarketPage_History12}" />
                             <ComboBoxItem Content="{DynamicResource MarketPage_HistoryAll}" />
                         </ComboBox>
-                        <TabControl Grid.Row="1" Margin="0,6,0,0">
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="{DynamicResource BusinessPage_DestinationMarket}">
+                    <Grid>
+                        <TabControl>
                             <TabItem Header="{DynamicResource MarketPage_Sell}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <ui:DataGrid
                                         x:Name="DestinationSellGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         AutoGenerateColumns="False"
                                         CanUserAddRows="False"
                                         CanUserDeleteRows="False"
                                         GridLinesVisibility="Horizontal"
                                         HeadersVisibility="Column"
                                         IsReadOnly="True"
-                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         ScrollViewer.CanContentScroll="True">
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Width="90" Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Amount}" />
-                                            <DataGridTextColumn Width="110" Binding="{Binding Price, StringFormat={}{0:N2}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Price}" />
-                                            <DataGridTextColumn Width="80" Binding="{Binding Security}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Security}" />
-                                            <DataGridTextColumn Width="220" Binding="{Binding LocationName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Location}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding SolarSystem.SolarSystemName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource General_SolarSystemName}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding RemainTime}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Duration}" />
-                                            <DataGridTextColumn Width="120" Binding="{Binding LocationId}" ElementStyle="{StaticResource DetailCellStyle}" Header="LocationId" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Amount}" />
+                                            <DataGridTextColumn
+                                                Width="110"
+                                                Binding="{Binding Price, StringFormat={}{0:N2}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Price}" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding Security}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Security}" />
+                                            <DataGridTextColumn
+                                                Width="220"
+                                                Binding="{Binding LocationName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Location}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding SolarSystem.SolarSystemName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource General_SolarSystemName}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding RemainTime}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Duration}" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding LocationId}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="LocationId" />
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
@@ -291,24 +430,60 @@
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <ui:DataGrid
                                         x:Name="DestinationBuyGrid"
+                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         AutoGenerateColumns="False"
                                         CanUserAddRows="False"
                                         CanUserDeleteRows="False"
                                         GridLinesVisibility="Horizontal"
                                         HeadersVisibility="Column"
                                         IsReadOnly="True"
-                                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         ScrollViewer.CanContentScroll="True">
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Width="90" Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Amount}" />
-                                            <DataGridTextColumn Width="110" Binding="{Binding Price, StringFormat={}{0:N2}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Price}" />
-                                            <DataGridTextColumn Width="80" Binding="{Binding Security}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_Security}" />
-                                            <DataGridTextColumn Width="220" Binding="{Binding LocationName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Location}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding SolarSystem.SolarSystemName}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource General_SolarSystemName}" />
-                                            <DataGridTextColumn Width="90" Binding="{Binding Range}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Range}" />
-                                            <DataGridTextColumn Width="100" Binding="{Binding MinVolume, StringFormat={}{0:N0}}" ElementStyle="{StaticResource DetailNumberCellStyle}" Header="{DynamicResource MarketPage_MinVolume}" />
-                                            <DataGridTextColumn Width="140" Binding="{Binding RemainTime}" ElementStyle="{StaticResource DetailCellStyle}" Header="{DynamicResource MarketPage_Duration}" />
-                                            <DataGridTextColumn Width="120" Binding="{Binding LocationId}" ElementStyle="{StaticResource DetailCellStyle}" Header="LocationId" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding VolumeRemain, StringFormat={}{0:N0}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Amount}" />
+                                            <DataGridTextColumn
+                                                Width="110"
+                                                Binding="{Binding Price, StringFormat={}{0:N2}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Price}" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding Security}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_Security}" />
+                                            <DataGridTextColumn
+                                                Width="220"
+                                                Binding="{Binding LocationName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Location}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding SolarSystem.SolarSystemName}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource General_SolarSystemName}" />
+                                            <DataGridTextColumn
+                                                Width="90"
+                                                Binding="{Binding Range}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Range}" />
+                                            <DataGridTextColumn
+                                                Width="100"
+                                                Binding="{Binding MinVolume, StringFormat={}{0:N0}}"
+                                                ElementStyle="{StaticResource DetailNumberCellStyle}"
+                                                Header="{DynamicResource MarketPage_MinVolume}" />
+                                            <DataGridTextColumn
+                                                Width="140"
+                                                Binding="{Binding RemainTime}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="{DynamicResource MarketPage_Duration}" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding LocationId}"
+                                                ElementStyle="{StaticResource DetailCellStyle}"
+                                                Header="LocationId" />
                                         </ui:DataGrid.Columns>
                                     </ui:DataGrid>
                                 </ScrollViewer>
@@ -319,6 +494,7 @@
                                         <lvc:CartesianChart
                                             x:Name="DestinationPriceChart"
                                             MinHeight="240"
+                                            Background="Transparent"
                                             LegendPosition="Top"
                                             TooltipPosition="Auto"
                                             ZoomMode="X" />
@@ -327,6 +503,7 @@
                                         <lvc:CartesianChart
                                             x:Name="DestinationVolumeChart"
                                             MinHeight="240"
+                                            Background="Transparent"
                                             LegendPosition="Top"
                                             TooltipPosition="Auto"
                                             ZoomMode="X" />
@@ -334,6 +511,19 @@
                                 </TabControl>
                             </TabItem>
                         </TabControl>
+                        <ComboBox
+                            x:Name="DestinationRangeBox"
+                            Width="150"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            SelectedIndex="0"
+                            SelectionChanged="OnDestinationRangeChanged">
+                            <ComboBoxItem Content="{DynamicResource MarketPage_History1}" />
+                            <ComboBoxItem Content="{DynamicResource MarketPage_History3}" />
+                            <ComboBoxItem Content="{DynamicResource MarketPage_History6}" />
+                            <ComboBoxItem Content="{DynamicResource MarketPage_History12}" />
+                            <ComboBoxItem Content="{DynamicResource MarketPage_HistoryAll}" />
+                        </ComboBox>
                     </Grid>
                 </TabItem>
             </TabControl>

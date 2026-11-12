@@ -69,6 +69,15 @@ public partial class ScalperAnalyseView : UserControl
         }
     }
 
+    /// <summary>阶段 300/301：右键打开倒货物品的市场详情。</summary>
+    private void OnOpenDetailClick(object sender, RoutedEventArgs e)
+    {
+        if (ResultGrid.SelectedItem is ScalperItem item)
+        {
+            OpenDetail(item);
+        }
+    }
+
     private void OnAddToCartClick(object sender, RoutedEventArgs e)
     {
         if (Vm is not { } vm)
@@ -103,6 +112,8 @@ public partial class ScalperAnalyseView : UserControl
         }
 
         _detailWindow.SetItem(item);
+        // 阶段 301 修复：从未 Show 过的窗口 Activate 无效——首次双击"没反应"的根因
+        _detailWindow.Show();
         _detailWindow.Activate();
     }
 

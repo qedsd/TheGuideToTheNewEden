@@ -1109,6 +1109,9 @@
     <sys:String x:Key="BusinessPage_SalesStability">需求稳定性</sys:String>
     <sys:String x:Key="BusinessPage_Confidence">数据置信度</sys:String>
     <sys:String x:Key="BusinessPage_Score">推荐分</sys:String>
+    <sys:String x:Key="BusinessPage_HeatRatio">加热度占比</sys:String>
+    <sys:String x:Key="BusinessPage_TargetNetProfitAfterFees">税后整单利润</sys:String>
+    <sys:String x:Key="BusinessPage_OpenItemDetail">打开市场详情</sys:String>
     <sys:String x:Key="BusinessPage_PresetConservative">保守</sys:String>
     <sys:String x:Key="BusinessPage_PresetBalanced">均衡</sys:String>
     <sys:String x:Key="BusinessPage_PresetAggressive">激进</sys:String>

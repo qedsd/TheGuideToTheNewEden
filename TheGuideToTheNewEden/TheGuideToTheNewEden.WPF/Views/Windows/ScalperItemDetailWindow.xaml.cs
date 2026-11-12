@@ -212,6 +212,13 @@ public partial class ScalperItemDetailWindow : FluentWindow
             _dstXAxis.SeparatorsPaint = separatorPaint;
             _dstYAxis.SeparatorsPaint = separatorPaint;
         }
+
+        // 阶段 302：图例文字跟随主题（LiveCharts 默认为纯黑，黑色主题下不切换）
+        var legendPaint = MakePaint("TextFillColorSecondaryBrush", 1);
+        SourcePriceChart.LegendTextPaint = legendPaint;
+        SourceVolumeChart.LegendTextPaint = legendPaint;
+        DestinationPriceChart.LegendTextPaint = legendPaint;
+        DestinationVolumeChart.LegendTextPaint = legendPaint;
     }
 
     private static SolidColorPaint? MakePaint(string resourceKey, double thickness)
