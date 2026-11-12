@@ -220,6 +220,20 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 SetProperty(ref _switchCharacterKeepSetting, value);
             }
         }
+
+        private bool _useNativeThumbnailOverlay = true;
+        /// <summary>
+        /// 使用独立的原生 Win32 layered 画面层显示 DWM 缩略图。
+        /// 默认开启；关闭后回退到“DWM 缩略图自身 opacity + WPF 玻璃”的旧实现。
+        /// </summary>
+        public bool UseNativeThumbnailOverlay
+        {
+            get => _useNativeThumbnailOverlay;
+            set
+            {
+                SetProperty(ref _useNativeThumbnailOverlay, value);
+            }
+        }
     }
     public class PreviewHotKeyGroup : ObservableObject
     {

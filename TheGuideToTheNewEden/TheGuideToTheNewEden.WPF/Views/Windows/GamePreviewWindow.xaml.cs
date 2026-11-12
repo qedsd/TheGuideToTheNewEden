@@ -98,8 +98,11 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// <summary>"跟随缩放"的字号上限倍率，避免窗口拉得很大时角标大到离谱。</summary>
     private const double MaxNameOverlayScale = 4d;
 
+    private PreviewThumbnailSurface? _thumbnailOverlay;
     private readonly DwmThumbnail _thumbnail = new();
     private readonly PreviewSetting _globalSetting;
+
+    private bool UseNativeOverlay => _globalSetting.UseNativeThumbnailOverlay;
 
     /// <summary>拖动时用于吸附的其它预览窗矩形（由管理器提供，排除自己）。</summary>
     private readonly Func<IReadOnlyList<NativeMethods.RECT>>? _snapTargets;
@@ -175,6 +178,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         Setting = setting;
         _globalSetting = globalSetting;
         _snapTargets = snapTargets;
+        _globalSetting.PropertyChanged += GlobalSetting_PropertyChanged;
 
         InitializeComponent();
 
@@ -286,6 +290,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         const int WM_ENTERSIZEMOVE = 0x0231;
         const int WM_EXITSIZEMOVE = 0x0232;
         const int WM_SIZING = 0x0214;
+        const int WM_MOVE = 0x0003;
 
         if (_stopped)
         {
@@ -294,6 +299,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         try
         {
+            if (msg == WM_MOVE)
+            {
+                // 原生画面层是独立顶层窗口，移动主窗口时要立即跟随（只在 WM_MOVE 里同步位置）。
+                UpdateThumbnailDestination();
+                return IntPtr.Zero;
+            }
+
             if (msg == WM_ENTERSIZEMOVE)
             {
                 // 用户开始拖动/缩放：期间不做兜底校正（拖动本身在 WM_SIZING 里锁比例）
@@ -600,6 +612,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         // 带标题栏的样式下它保持隐藏（名字已在标题栏里）
         CreateNameOverlay();
         ShowNameOverlayIfNeeded();
+        BringNameOverlayToFront();
 
         // 首次布局完成后（尺寸稳定）按游戏客户区比例校正一次：
         // 存档里的旧尺寸可能与游戏比例不符，校正后画面才铺满、没有黑边
@@ -625,8 +638,11 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         _stopped = true;
         _isShowing = false;
+        _globalSetting.PropertyChanged -= GlobalSetting_PropertyChanged;
         _aspectCorrectionTimer.Stop();
         _minimizeWatchTimer.Stop();
+        _thumbnailOverlay?.Hide();
+        _thumbnail.Hide();
         _thumbnail.Unregister();
         DestroyNameOverlay();
 
@@ -641,6 +657,8 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     public void Dispose()
     {
         Stop();
+        _thumbnailOverlay?.Dispose();
+        _thumbnailOverlay = null;
         _thumbnail.Dispose();
     }
 
@@ -678,6 +696,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ApplyPreviewPlaceholder();
         _minimizeWatchTimer.Start();
         ShowNameOverlayIfNeeded();
+        BringNameOverlayToFront();
         EnsureTransparentClientArea();
 
         Recover();
@@ -687,6 +706,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     {
         if (_isShowing && IsVisible)
         {
+            _thumbnailOverlay?.Hide();
             _thumbnail.Hide();
             _minimizeWatchTimer.Stop();
             _nameOverlay?.Hide();
@@ -794,13 +814,84 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ScheduleAspectCorrection();
     }
 
+    private void EnsureThumbnailOverlay()
+    {
+        if (!UseNativeOverlay || _thumbnailOverlay is not null || _hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        try
+        {
+            _thumbnailOverlay = new PreviewThumbnailSurface(_hwnd, Process.MainWindowHandle);
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+        }
+    }
+
+    private void EnsureLegacyThumbnail()
+    {
+        if (UseNativeOverlay)
+        {
+            return;
+        }
+
+        _thumbnailOverlay?.Hide();
+        _thumbnail.Rebind(_hwnd, Process.MainWindowHandle);
+    }
+
+    private void GlobalSetting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PreviewSetting.UseNativeThumbnailOverlay))
+        {
+            ApplyTransparencyMode();
+        }
+    }
+
+    /// <summary>在“原生 layered 画面层”和旧版 DWM 缩略图透明之间切换，立即生效。</summary>
+    private void ApplyTransparencyMode()
+    {
+        if (!_isShowing || _hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        if (UseNativeOverlay)
+        {
+            _thumbnail.Hide();
+            _thumbnail.Unregister();
+            EnsureThumbnailOverlay();
+            _thumbnailOverlay?.SetSource(Process.MainWindowHandle);
+        }
+        else
+        {
+            _thumbnailOverlay?.Hide();
+            _thumbnailOverlay?.Dispose();
+            _thumbnailOverlay = null;
+            EnsureLegacyThumbnail();
+        }
+
+        ScheduleThumbnailUpdate();
+    }
+
     public void Rebind(ProcessInfo process, PreviewItem setting)
     {
         Process = process;
         Setting = setting;
 
         ApplyVisuals();
-        _thumbnail.Rebind(_hwnd, process.MainWindowHandle);
+        if (UseNativeOverlay)
+        {
+            EnsureThumbnailOverlay();
+            _thumbnailOverlay?.SetSource(process.MainWindowHandle);
+        }
+        else
+        {
+            EnsureLegacyThumbnail();
+        }
+
         ScheduleThumbnailUpdate();
         ScheduleAspectCorrection();
     }
@@ -812,9 +903,14 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        if (!_thumbnail.IsRegistered || _thumbnail.SourceWindow != Process.MainWindowHandle)
+        if (UseNativeOverlay)
         {
-            _thumbnail.Rebind(_hwnd, Process.MainWindowHandle);
+            EnsureThumbnailOverlay();
+            _thumbnailOverlay?.SetSource(Process.MainWindowHandle);
+        }
+        else
+        {
+            EnsureLegacyThumbnail();
         }
 
         ScheduleThumbnailUpdate();
@@ -1091,7 +1187,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     private void UpdateThumbnailDestination()
     {
-        if (!_isShowing || _hwnd == IntPtr.Zero || !_thumbnail.IsRegistered)
+        if (!_isShowing || !IsVisible || _hwnd == IntPtr.Zero)
         {
             return;
         }
@@ -1101,6 +1197,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         // 注意不能在这里 return：恢复时要能重新画上，重新绘制由 MinimizeWatchTick 触发。
         if (_sourceMinimized)
         {
+            _thumbnailOverlay?.Hide();
             _thumbnail.Hide();
             return;
         }
@@ -1137,15 +1234,78 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         int sourceWidth;
         int sourceHeight;
         var hasSource = TryGetSourceSize(out sourceWidth, out sourceHeight);
-        var destination = hasSource && Setting.LockAspectRatio
+        if (!hasSource)
+        {
+            _thumbnailOverlay?.Hide();
+            _thumbnail.Hide();
+            return;
+        }
+
+        var destination = Setting.LockAspectRatio
             ? PreviewGeometry.FitAspect(container, sourceWidth, sourceHeight)
             : container;
 
-        var opacity = (byte)Math.Clamp((int)Math.Round(Setting.OverlapOpacity * 255.0 / 100.0), 0, 255);
-        _thumbnail.TryUpdate(destination, opacity, true);
+        // 默认走原生 layered 画面层；如果 overlay 创建/注册失败，再回退到旧 DWM 缩略图路径。
+        var useOverlay = UseNativeOverlay && _thumbnailOverlay is { IsRegistered: true };
+        if (useOverlay)
+        {
+            _thumbnail.Hide();
+            var screenPoint = new NativeMethods.POINT { X = destination.Left, Y = destination.Top };
+            if (!NativeMethods.ClientToScreen(_hwnd, ref screenPoint))
+            {
+                return;
+            }
+
+            _thumbnailOverlay!.ShowAt(
+                screenPoint.X,
+                screenPoint.Y,
+                destination.Right - destination.Left,
+                destination.Bottom - destination.Top,
+                Setting.OverlapOpacity);
+        }
+        else
+        {
+            _thumbnailOverlay?.Hide();
+            if (!_thumbnail.IsRegistered)
+            {
+                _thumbnail.Rebind(_hwnd, Process.MainWindowHandle);
+            }
+
+            var opacity = (byte)Math.Clamp(
+                (int)Math.Round(Setting.OverlapOpacity * 255.0 / 100.0),
+                0,
+                255);
+            _thumbnail.TryUpdate(destination, opacity, true);
+        }
 
         // 角色名叠加窗跟随预览窗口的位置/高亮留白
         UpdateNameOverlayBounds();
+        BringNameOverlayToFront();
+    }
+
+    /// <summary>
+    /// 缩略图现在是独立的 topmost layered 窗口；无标题栏样式下角色名也是独立窗口。
+    /// 缩略图 ShowAt 可能把它顶到最上，这里把名字重新提到 topmost 组最前。
+    /// </summary>
+    private void BringNameOverlayToFront()
+    {
+        if (_nameOverlay is not { IsVisible: true })
+        {
+            return;
+        }
+
+        var hwnd = new WindowInteropHelper(_nameOverlay).Handle;
+        if (hwnd != IntPtr.Zero)
+        {
+            NativeMethods.SetWindowPos(
+                hwnd,
+                new IntPtr(-1),
+                0,
+                0,
+                0,
+                0,
+                0x0001 | 0x0002 | 0x0010); // NOSIZE | NOMOVE | NOACTIVATE
+        }
     }
 
     /// <summary>

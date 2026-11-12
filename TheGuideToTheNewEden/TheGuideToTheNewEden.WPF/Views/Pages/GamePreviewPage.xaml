@@ -1776,6 +1776,26 @@
                                 </StackPanel>
                             </Border>
 
+                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_Transparency}" />
+                            <Border Style="{StaticResource GroupCard}">
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Style="{StaticResource RowLabel}"
+                                        Text="{DynamicResource GamePreviewPage_UseNativeThumbnailOverlay}"
+                                        TextWrapping="Wrap"
+                                        ToolTip="{DynamicResource GamePreviewPage_UseNativeThumbnailOverlayTip}" />
+                                    <ui:ToggleSwitch
+                                        Grid.Column="1"
+                                        AutomationProperties.Name="{DynamicResource GamePreviewPage_UseNativeThumbnailOverlay}"
+                                        IsChecked="{Binding Setting.UseNativeThumbnailOverlay, Mode=TwoWay}"
+                                        ToolTip="{DynamicResource GamePreviewPage_UseNativeThumbnailOverlayTip}" />
+                                </Grid>
+                            </Border>
+
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_Behavior}" />
                             <Border Style="{StaticResource GroupCard}">
                                 <StackPanel>

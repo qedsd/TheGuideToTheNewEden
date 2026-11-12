@@ -10788,6 +10788,57 @@ MainWindow.xaml(.cs)
   - 按当前系统 136 DIP/37.6 DIP 校准；原日志中的 110×62 → 136×77（无标题栏）/约 136×105（有标题栏），宽度不再低于 WPF 硬下限，300ms 对账应不再产生该 WARN。
   - 未在受影响机器上实机复测，需用户把预览缩小到最小尺寸后确认不再刷日志。
 
+## 阶段 270：预览窗整窗 layered alpha（方案 A）快速验证 — WPF 路径不可行（2026-11-04）
+
+- 背景：同一台机器上 WinForms 的 EVE-O Preview 可以半透明。查其源码：
+  - `ThumbnailView.SetOpacity` 用 `this.Opacity = opacity`（WinForms 整窗 layered alpha）；
+  - `DwmThumbnail.Register` 的 `opacity` 固定 **255**，之后只移动/显隐，从不改缩略图 alpha。
+- 本项目的路径是 `DwmExtendFrameIntoClientArea` 玻璃 + `DwmUpdateThumbnailProperties(opacity)`，与 EVE-O 完全不同。
+- 方案 A 试验（`UseWholeWindowOpacity`）结果：**不可行，默认关闭**。
+  - `FluentWindow` + `AllowsTransparency=false` 时 `Window.Opacity` 不会给窗口加 `WS_EX_LAYERED`；
+  - 外部 `SetWindowLong(GWL_EXSTYLE, ... | WS_EX_LAYERED)` 在 WPF 窗口上会被拒绝/还原，随后 `SetLayeredWindowAttributes` 返回 87；
+  - 另建 `AllowsTransparency=true` 的 WPF 窗口 + DWM 缩略图：`DwmRegisterThumbnail`/`DwmUpdateThumbnailProperties` 返回 0，但缩略图不显示；
+  - 这些是 WPF 顶层窗口与 DWM 缩略图合成的限制，不是 Windows 透明效果问题。
+- 结论：要复刻 EVE-O 的效果，必须用 **WinForms 顶层 Form**（或 WinForms/Win32 独立 layered 画面层）承载 DWM 缩略图；当前 WPF `GamePreviewWindow` 不能直接整窗 alpha。
+- 现状：`UseWholeWindowOpacity=false`，恢复原有“只淡缩略图”的行为；`GamePreviewWindow` 编译 0 错误。下一步需做方案 B：独立 layered 画面层，标题栏保持实色。
+
+## 阶段 271：预览窗改为原生 Win32 layered 画面层（不引 WinForms，2026-11-04）
+
+- 新增 `Services/GamePreview/PreviewThumbnailSurface.cs`：
+  - 用 `CreateWindowEx(WS_POPUP, WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT)` 创建独立原生窗口；
+  - `SetLayeredWindowAttributes(..., LWA_ALPHA)` 做整窗 alpha；DWM 缩略图注册到该窗口，缩略图 opacity 固定 255；
+  - 窗口只覆盖预览窗的游戏画面矩形，WPF 标题栏/高亮边框/角色名叠加窗保持不变；
+  - `WS_EX_TRANSPARENT` 让鼠标点击穿透到下面的 WPF 预览窗；窗口 owner 为 WPF 预览窗，跟随移动/显隐。
+- `GamePreviewWindow` 不再把 DWM 缩略图注册到 WPF 顶层窗口：
+  - Start/Rebind/Recover 创建或换绑 overlay；Stop/Dispose/HideWindow 隐藏/销毁；
+  - `UpdateThumbnailDestination` 把客户端坐标的目标矩形经 `ClientToScreen` 换算成屏幕坐标，交给 overlay；
+  - 监听 `WM_MOVE` 立即同步位置；尺寸变化仍走原有 `ScheduleThumbnailUpdate`；
+  - 缩略图 255 + overlay alpha = 真正的半透明，且标题栏不淡。
+- 独立探针（临时 WPF 程序，源窗口=纯蓝，overlay alpha=50%）：
+  - overlay 显示源画面，取像素 `(32,56,112)` = 50% 蓝 `(32,80,192)` 与深灰底 `(32,32,32)` 的混合；
+  - DWM 注册/更新返回 0，alpha 正确 → **PASS**。
+- 构建：WPF **0 错误**。
+- 角色名叠加窗的 z-order：overlay `ShowAt` 后调用 `BringNameOverlayToFront()`，用 `SetWindowPos(HWND_TOPMOST, NOMOVE|NOSIZE|NOACTIVATE)` 把独立名字窗重新提到最前，避免被缩略图 overlay 盖住。
+- 待实机确认：overlay 点击穿透拖动、多个预览窗重叠时的层级；探针已验证透明与 DWM 合成，尚未做完整页面交互回归。
+
+## 阶段 272：原生透明画面层 / 旧 DWM 透明可切换（默认原生，2026-11-12）
+
+- `PreviewSetting` 新增全局属性 `UseNativeThumbnailOverlay`，默认 **true**；旧配置缺该字段时按 true 读取。
+- 多开 → 全局设置新增「透明效果」卡片：
+  - 开关「使用原生半透明画面层」；
+  - 中英语言键 `GamePreviewPage_Transparency` / `...UseNativeThumbnailOverlay` / `...Tip`；
+  - 改动立即保存到 `GamePreviewSetting.json`。
+- `GamePreviewWindow` 同时保留两套后端：
+  - true：`PreviewThumbnailSurface` 原生 layered overlay；缩略图 opacity 255；
+  - false：旧 `DwmThumbnail` + `DwmUpdateThumbnailProperties(opacity)` 路径。
+  - 每个预览窗订阅全局 `PropertyChanged`，切换时立即释放当前后端、创建另一个后端并重设源窗口；
+  - 原生 overlay 注册失败时自动回退旧 DWM 缩略图，避免预览空白；
+  - `UpdateThumbnailDestination` 增加 `IsVisible` 保护，避免主窗口隐藏后调度任务把 overlay 重新显示。
+- 验证：
+  - WPF build：**0 错误**。
+  - 实机切换：预览运行中关闭/开启开关，标题栏均保持实色；开启后游戏区域能透出主窗口导航，关闭后回退旧路径；无崩溃。
+  - 当前用户配置已保存 `UseNativeThumbnailOverlay=true`。
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）

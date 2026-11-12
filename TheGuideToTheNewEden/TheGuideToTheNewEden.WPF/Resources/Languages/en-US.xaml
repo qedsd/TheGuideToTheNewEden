@@ -1330,6 +1330,9 @@
     <sys:String x:Key="GamePreviewPage_SnapEnabledTip">While dragging a preview window, edges/corners near other visible preview windows snap into alignment; after snapping to an edge you can keep sliding along it. Only preview windows are used as snap targets, not screen edges.</sys:String>
     <sys:String x:Key="GamePreviewPage_SnapDistance">Snap distance (px)</sys:String>
     <sys:String x:Key="GamePreviewPage_SnapDistanceTip">Snap when an edge is within this distance of a target edge; 8–16 is recommended.</sys:String>
+    <sys:String x:Key="GamePreviewPage_Transparency">Transparency</sys:String>
+    <sys:String x:Key="GamePreviewPage_UseNativeThumbnailOverlay">Use native transparent overlay</sys:String>
+    <sys:String x:Key="GamePreviewPage_UseNativeThumbnailOverlayTip">On by default. Shows the game through a separate native layered window for better transparency compatibility. Turn off to fall back to the legacy DWM thumbnail transparency.</sys:String>
     <sys:String x:Key="GamePreviewPage_Behavior">Behavior</sys:String>
     <sys:String x:Key="GamePreviewPage_StartAllWithNoneSetting">Include processes without saved settings when starting all</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoStartNewProcess">Automatically start new processes</sys:String>

@@ -1346,6 +1346,9 @@
     <sys:String x:Key="GamePreviewPage_SnapEnabledTip">拖动浮窗时，靠近其它可见预览窗的边/角会自动对齐；贴住一条边后仍可沿该边滑动。只吸附预览窗口，不吸屏幕边缘。</sys:String>
     <sys:String x:Key="GamePreviewPage_SnapDistance">吸附距离（像素）</sys:String>
     <sys:String x:Key="GamePreviewPage_SnapDistanceTip">窗口边与目标边的距离不超过该值时吸附；建议 8–16。</sys:String>
+    <sys:String x:Key="GamePreviewPage_Transparency">透明效果</sys:String>
+    <sys:String x:Key="GamePreviewPage_UseNativeThumbnailOverlay">使用原生半透明画面层</sys:String>
+    <sys:String x:Key="GamePreviewPage_UseNativeThumbnailOverlayTip">默认开启。用独立的原生分层窗口显示游戏画面，半透明兼容性更好；关闭后回退到旧版 DWM 缩略图透明，部分电脑可能无法半透明。</sys:String>
     <sys:String x:Key="GamePreviewPage_Behavior">行为</sys:String>
     <sys:String x:Key="GamePreviewPage_StartAllWithNoneSetting">开始全部时包含没有保存过配置的进程</sys:String>
     <sys:String x:Key="GamePreviewPage_AutoStartNewProcess">自动开始新出现的进程</sys:String>
