@@ -12059,6 +12059,44 @@ MainWindow.xaml(.cs)
   删除 `_nameDbRestoring` 标志与 `FindVisualChild` 助手（不再需要）。
 - `dotnet build`：0 错误（临时输出目录）。未实机点验。
 
+## 阶段 315：本地位置选择后刷新按钮/头部文字（2026-11-13）
+
+> 用户反馈：本地位置手动搜索选择后按钮文字不更新，停留在旧位置。
+
+- 根因：`ChannelIntelSession` 不是 INPC，`LocalSolarSystem` 在会话内被 `SetSearchSolarSystem` 改掉后，
+  `ToggleButton Content="{Binding Session.LocalSolarSystem.SolarSystemName}"` 这条绑定链不会重新求值。
+- 修复：选择星系后手动同步——`OnSystemSelectionChanged` 里直接写
+  `LocalSystemToggle.Content / LocalSystemNameText.Text`（头部星系名 TextBlock 加了 `x:Name`）；
+  `UpdateSelectedHeader` 也同步这两处（会话切换/启动后保持一致，空会话显示空）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 316：星图 XY 适配改"稳健核心 + 平滑压缩"——远星系不再挤爆核心（2026-11-13）
+
+> 用户反馈（附截图）：吉他周围 4 跳，最远的阿巴宗（4 跳外）按全量 min/max 缩放后把其余星系挤成一团。
+
+- 根因：312 的全量线性缩放以最远点定标尺——一个极端离群点把整个比例拉大，核心星系全被压到中间。
+- 修复（`SolarSystemPosHelper.ResetXY`）：
+  - 核心段取 **5%~95% 分位**（纵横比一致）占满约 88% 视口——核心星系间相对位置几乎不受最远点影响；
+  - 分位外的尾部星系按 **sqrt 缓动**压进两侧各 6% 过渡带（随超出比例平滑趋近边界），
+    单调、保持次序与相对远近——不再有 305 前的"4% 细边带挤成一排"，也没有贴边卡片；
+  - 小样本/退化范围仍退回全量 min/max（`ResetXYByBounds` 保留）；
+  - `ViewportOutlier` 恒 false。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验——请用吉他 4 跳验证：核心星系应舒展，
+  阿巴宗在边缘过渡带上。
+
+## 阶段 317：预警星图连线弱化（2026-11-13）
+
+> 用户反馈：星系间连线颜色太明显，影响感官体验。
+
+- `IntelMapView.UpdateUI` 连线参数：安静线 `0.9px/透明度 0.78` → **`0.6px/0.18`**（色值微调浅一点
+  `79,102,128 → 96,116,142`）；激活线（连着本地/预警/降级）`1.4px/0.9` → `1.2px/0.45`——
+  仍能一眼看出与预警星系相连的门线，但不再抢圆点的视觉；
+- 悬停高亮线（`TempCanvas`，`1.4px/0.9` 青绿）保持醒目不变——它只在你悬停时出现，是故意的强调。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验——若觉得激活线也想更淡/更淡的线想更粗，
+  直接说数值方向即可（参数都在 `UpdateUI` 一处）。
+
+ - **317 补记**：上一轮的替换因缩进不匹配被 `.Replace` 静默吞掉（未命中即无变化，构建仍通过）——本轮已用正则严格替换并复检源码（`0.6px/0.18`、激活 `1.2px/0.45`）。教训：`.Replace` 改代码后必须回读源码确认命中。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

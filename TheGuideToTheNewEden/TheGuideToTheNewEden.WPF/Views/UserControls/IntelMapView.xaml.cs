@@ -31,7 +31,7 @@ public partial class IntelMapView : UserControl
     private static readonly Brush HomeBrush = Frozen(Color.FromRgb(70, 211, 155));
     private static readonly Brush IntelBrush = Frozen(Color.FromRgb(255, 138, 76));
     private static readonly Brush DowngradeBrush = Frozen(Color.FromRgb(195, 164, 255));
-    private static readonly Brush QuietLineBrush = Frozen(Color.FromRgb(79, 102, 128));
+    private static readonly Brush QuietLineBrush = Frozen(Color.FromRgb(96, 116, 142));
     private static readonly Brush ActiveLineBrush = Frozen(Color.FromRgb(152, 102, 74));
     private static readonly Brush HoverLineBrush = Frozen(Color.FromRgb(135, 227, 205));
 
@@ -343,9 +343,9 @@ public partial class IntelMapView : UserControl
                     Y1 = Canvas.GetTop(itemEllipse) + itemEllipse.Height / 2,
                     X2 = Canvas.GetLeft(jumpToEllipse) + jumpToEllipse.Width / 2,
                     Y2 = Canvas.GetTop(jumpToEllipse) + jumpToEllipse.Height / 2,
-                    StrokeThickness = active ? 1.4 : 0.9,
+                    StrokeThickness = active ? 1.2 : 0.6,
                     Stroke = active ? ActiveLineBrush : QuietLineBrush,
-                    Opacity = active ? 0.9 : 0.78,
+                    Opacity = active ? 0.45 : 0.18,
                 });
             }
         }

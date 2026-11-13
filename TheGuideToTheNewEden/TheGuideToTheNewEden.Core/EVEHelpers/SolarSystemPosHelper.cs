@@ -255,8 +255,11 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         /// <summary>
         /// 将范围内星系的 2D 坐标适配到 [0,1] 视口。
         /// <para>
-        /// 阶段 312：按全量 min/max 等比缩放（保持纵横比、居中），离中心远的星系按比例靠近显示，
-        /// 不再做"几何离群"分位软压缩/贴边；<see cref="SolarSystemPosition.ViewportOutlier"/> 恒为 false。
+        /// 阶段 316：稳健核心 + 平滑压缩——核心段取 5%~95% 分位（纵横比一致），占满约 88% 视口；
+        /// 超出核心的"远星系"（如吉他 4 跳外的阿巴宗）不再按全量线性缩放把核心挤成一团，
+        /// 而是按 <c>sqrt</c> 缓动压进两侧各 6% 的过渡带：单调、保持次序与相对远近，
+        /// 核心星系之间的相对位置几乎不受最远点影响。
+        /// <see cref="SolarSystemPosition.ViewportOutlier"/> 恒为 false（312 已无贴边卡片）。
         /// </para>
         /// </summary>
         public static void ResetXY(List<IntelSolarSystemMap> all)
@@ -266,15 +269,108 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 return;
             }
 
-            var minX = all.Min(p => p.X2);
-            var maxX = all.Max(p => p.X2);
-            var minY = all.Min(p => p.Y2);
-            var maxY = all.Max(p => p.Y2);
-            ResetXYByBounds(all, minX, maxX, minY, maxY);
+            var xs = all.Select(p => p.X2).OrderBy(p => p).ToArray();
+            var ys = all.Select(p => p.Y2).OrderBy(p => p).ToArray();
+            var minX = xs[0];
+            var maxX = xs[^1];
+            var minY = ys[0];
+            var maxY = ys[^1];
+
+            // 样本太少时分位没有意义，退回全量 min/max。
+            if (all.Count < 8 || maxX - minX < 1e-9 || maxY - minY < 1e-9)
+            {
+                ResetXYByBounds(all, minX, maxX, minY, maxY);
+                foreach (var point in all)
+                {
+                    point.ViewportOutlier = false;
+                }
+
+                return;
+            }
+
+            var lowX = Percentile(xs, 0.05);
+            var highX = Percentile(xs, 0.95);
+            var lowY = Percentile(ys, 0.05);
+            var highY = Percentile(ys, 0.95);
+            if (highX - lowX < 1e-9)
+            {
+                lowX = minX;
+                highX = maxX;
+            }
+
+            if (highY - lowY < 1e-9)
+            {
+                lowY = minY;
+                highY = maxY;
+            }
+
+            var rangeX = highX - lowX;
+            var rangeY = highY - lowY;
+            // 核心段占满约 88% 视口；纵横比保持一致。
+            var scaleRatio = Math.Min(0.88 / rangeX, 0.88 / rangeY);
+            var offsetX = (1 - rangeX * scaleRatio) / 2;
+            var offsetY = (1 - rangeY * scaleRatio) / 2;
+
             foreach (var point in all)
             {
+                point.X2 = MapAxis(point.X2, minX, lowX, highX, maxX, scaleRatio, offsetX);
+                point.Y2 = MapAxis(point.Y2, minY, lowY, highY, maxY, scaleRatio, offsetY);
                 point.ViewportOutlier = false;
             }
+        }
+
+        /// <summary>取排序数组的分位值（线性夹取，避免越界）。</summary>
+        private static double Percentile(double[] sorted, double percentile)
+        {
+            if (sorted.Length == 0)
+            {
+                return 0;
+            }
+
+            var index = (int)Math.Floor((sorted.Length - 1) * Math.Clamp(percentile, 0, 1));
+            return sorted[Math.Clamp(index, 0, sorted.Length - 1)];
+        }
+
+        /// <summary>
+        /// 单轴映射：核心段 [pLow,pHigh] 线性展开到 [offset, offset+range*scale]；
+        /// 分位之外按 sqrt 缓动压进 6% 过渡带（随超出比例平滑趋近边界，保持单调与相对远近）。
+        /// </summary>
+        private static double MapAxis(
+            double value,
+            double min,
+            double pLow,
+            double pHigh,
+            double max,
+            double scale,
+            double offset)
+        {
+            const double Band = 0.06;
+            if (value < pLow)
+            {
+                var span = pLow - min;
+                if (span < 1e-9)
+                {
+                    return Math.Max(0.005, offset);
+                }
+
+                var excess = (pLow - value) / span;
+                return Math.Max(0.005, offset - Band * Math.Sqrt(excess));
+            }
+
+            if (value > pHigh)
+            {
+                var span = max - pHigh;
+                var coreEnd = offset + (pHigh - pLow) * scale;
+                if (span < 1e-9)
+                {
+                    return Math.Min(0.995, coreEnd);
+                }
+
+                var excess = (value - pHigh) / span;
+                return Math.Min(0.995, coreEnd + Band * Math.Sqrt(excess));
+            }
+
+            return offset + (value - pLow) * scale;
         }
 
         /// <summary>全量 min/max 适配（小样本或退化范围使用）。</summary>
@@ -305,7 +401,6 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 point.Y2 = ((point.Y2 - minY) * scaleRatio) + offsetY;
             }
         }
-
         public static int GetShortesRoute(IntelSolarSystemMap home, IntelSolarSystemMap start)
         {
             //按层数寻找

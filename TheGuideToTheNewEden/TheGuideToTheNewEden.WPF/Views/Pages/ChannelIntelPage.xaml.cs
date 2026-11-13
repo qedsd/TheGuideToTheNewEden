@@ -191,6 +191,10 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
             return;
         }
 
+        // 阶段 315：本地位置按钮/头部文字同步（绑定链在会话内不刷新）
+        LocalSystemToggle.Content = session.LocalSolarSystem?.SolarSystemName;
+        LocalSystemNameText.Text = session.LocalSolarSystem?.SolarSystemName;
+
         var role = _viewModel.Characters.FirstOrDefault(p => p.Name == session.Listener);
         AsyncImage.SetSource(SelectedAvatarImage, role?.AvatarUrl);
         if (string.IsNullOrWhiteSpace(role?.AvatarUrl))
@@ -350,6 +354,9 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         if (SystemList.SelectedItem is MapSolarSystem system && _viewModel.Session is not null)
         {
             _viewModel.Session.SetSearchSolarSystem(system);
+            // 阶段 315：Session 不是 INPC，LocalSolarSystem 变化不会推动绑定刷新——手动同步按钮/头部文字
+            LocalSystemToggle.Content = system.SolarSystemName;
+            LocalSystemNameText.Text = system.SolarSystemName;
             LocalSystemToggle.IsChecked = false;
         }
     }
