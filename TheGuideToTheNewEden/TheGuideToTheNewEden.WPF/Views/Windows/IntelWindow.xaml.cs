@@ -68,10 +68,20 @@ public partial class IntelWindow : Window
         ApplyBackdrop();
         ThemeService.ThemeChanged += ApplyBackdrop;
 
-        Width = setting.WinW > 0 ? setting.WinW : 640;
-        Height = setting.WinH > 0 ? setting.WinH : 620;
-        Left = setting.WinX;
-        Top = setting.WinY;
+        // 阶段 318：尺寸有效性收紧——过小的保存尺寸（旧版本/异常路径写入）视为无效，回退默认；
+        // 没保存过位置（WinX/WinY=-1）则居中启动，不再顶到屏幕左上角 (-1,-1)。
+        Width = setting.WinW >= 320 ? setting.WinW : 640;
+        Height = setting.WinH >= 240 ? setting.WinH : 620;
+        if (setting.WinX < 0 && setting.WinY < 0)
+        {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+        else
+        {
+            Left = setting.WinX;
+            Top = setting.WinY;
+        }
+
         EnsureOnScreen();
 
         Title = $"{FindString("IntelWindow_Title")} · {setting.Listener}";
