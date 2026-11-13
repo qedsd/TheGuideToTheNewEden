@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 using TheGuideToTheNewEden.WPF.Services.Update;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF;
 
@@ -141,7 +142,7 @@ public partial class App : Application
             current = current.InnerException;
         }
 
-        MessageBox.Show(
+        MessageDialog.Show(
             "界面资源加载失败。\n\n" +
             detail + "\n\n" +
             "常见原因：本次生成的 dll 资源不完整（生成过程中被其它进程同时写，或生成到一半就被启动）。\n" +
@@ -170,7 +171,7 @@ public partial class App : Application
         // 必须记日志：此前只弹框、不记录，导致"界面上报了一个异常，但日志里什么都没有"，
         // 无法定位调用链（阶段 53 排障教训）。弹框里给出类型 + 完整堆栈，便于直接贴给我们。
         Core.Log.Error(e.Exception);
-        MessageBox.Show(e.Exception.ToString(), "未处理的错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageDialog.Show(e.Exception.ToString(), "未处理的错误", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private void OnExit(object sender, ExitEventArgs e)

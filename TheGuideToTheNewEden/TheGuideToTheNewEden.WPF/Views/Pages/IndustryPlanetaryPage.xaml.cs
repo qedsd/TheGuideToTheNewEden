@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
@@ -152,7 +153,7 @@ public partial class IndustryPlanetaryPage : Page
     private void OnDeletePlanClick(object sender, RoutedEventArgs e)
     {
         if (_viewModel.SelectedSavedPlan is null) return;
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 LanguageService.Format("IndustryPlanetary_DeleteConfirm", _viewModel.SelectedSavedPlan.Name),
                 LanguageService.Get("IndustryPlanetary_DeleteTitle"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)

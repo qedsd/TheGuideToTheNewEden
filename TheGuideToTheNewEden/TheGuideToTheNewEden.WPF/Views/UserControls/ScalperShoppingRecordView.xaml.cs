@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.WPF.ViewModels.Business;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls;
 
@@ -29,7 +30,7 @@ public partial class ScalperShoppingRecordView : UserControl
         }
 
         var confirm = $"{FindString("BusinessPage_ShoppingRecord_DeleteCount")}";
-        var result = MessageBox.Show(
+        var result = MessageDialog.Show(
             string.Format(confirm, files.Count),
             FindString("General_RemoveSelected"),
             MessageBoxButton.OKCancel,

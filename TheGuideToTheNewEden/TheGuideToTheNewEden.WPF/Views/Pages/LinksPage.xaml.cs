@@ -282,7 +282,7 @@ public partial class LinksPage : Page
 
     private void OnRestoreDefaultsClick(object sender, RoutedEventArgs e)
     {
-        var confirm = MessageBox.Show(
+        var confirm = MessageDialog.Show(
             FindString("LinksPage_RestoreDefaultsConfirm"),
             FindString("LinksPage_RestoreDefaults"),
             MessageBoxButton.OKCancel,
@@ -383,7 +383,7 @@ public partial class LinksPage : Page
             return;
         }
 
-        var confirm = MessageBox.Show(
+        var confirm = MessageDialog.Show(
             string.Format(FindString("LinksPage_RemoveConfirm"), item.Name),
             FindString("LinksPage_Remove"),
             MessageBoxButton.OKCancel,

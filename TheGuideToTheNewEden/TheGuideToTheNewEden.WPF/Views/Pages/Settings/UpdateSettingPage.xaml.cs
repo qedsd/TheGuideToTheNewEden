@@ -8,6 +8,7 @@ using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Services.Update;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -335,12 +336,12 @@ public partial class UpdateSettingPage : Page
 
         var owner = Window.GetWindow(this);
         var answer = owner is null
-            ? MessageBox.Show(
+            ? MessageDialog.Show(
                 string.Format(FindString("Settings.Update.InstallConfirmMessage"), _latest.Version),
                 FindString("Settings.Update.InstallConfirmTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question)
-            : MessageBox.Show(
+            : MessageDialog.Show(
                 owner,
                 string.Format(FindString("Settings.Update.InstallConfirmMessage"), _latest.Version),
                 FindString("Settings.Update.InstallConfirmTitle"),
@@ -415,7 +416,7 @@ public partial class UpdateSettingPage : Page
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                MessageBox.Show(
+                MessageDialog.Show(
                     Window.GetWindow(this),
                     ex.Message,
                     FindString(languageKey),

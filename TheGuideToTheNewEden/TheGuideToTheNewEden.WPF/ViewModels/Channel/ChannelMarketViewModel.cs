@@ -11,6 +11,7 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Business;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
@@ -359,7 +360,7 @@ public sealed class ChannelMarketViewModel : INotifyPropertyChanged
             return;
         }
 
-        var result = MessageBox.Show(
+        var result = MessageDialog.Show(
             FindString("ChannelMarket_ApplySettingToAll_Tip"),
             FindString("ChannelMarket_ApplySettingToAll"),
             MessageBoxButton.OKCancel,

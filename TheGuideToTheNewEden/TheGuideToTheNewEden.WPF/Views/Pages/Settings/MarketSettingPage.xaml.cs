@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -59,7 +60,7 @@ public partial class MarketSettingPage : Page
             }
         }
 
-        MessageBox.Show(
+        MessageDialog.Show(
             Application.Current.TryFindResource("MarketSettingPage_ClearCache_Done") as string ?? "已清除缓存订单信息",
             Application.Current.TryFindResource("SettingPage_Market") as string ?? "市场",
             MessageBoxButton.OK,

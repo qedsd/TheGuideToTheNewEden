@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using TheGuideToTheNewEden.WPF.ViewModels.Industry;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
@@ -47,7 +48,7 @@ public partial class IndustryInventoryPage : Page
             _viewModel.DeleteWarehouse();
             return;
         }
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 LanguageService.Format("IndustryInventory_DeleteConfirm", _viewModel.SelectedWarehouse.Name),
                 LanguageService.Get("IndustryInventory_DeleteTitle"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
@@ -60,7 +61,7 @@ public partial class IndustryInventoryPage : Page
 
     private void OnReplaceImportClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 LanguageService.Get("IndustryInventory_ReplaceConfirm"),
                 LanguageService.Get("IndustryInventory_ReplaceImport"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)

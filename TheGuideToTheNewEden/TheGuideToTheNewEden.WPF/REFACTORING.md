@@ -12120,6 +12120,43 @@ MainWindow.xaml(.cs)
   核心段占比不变（88%），标签另有防重叠布局钳边，不受影响。
 - `dotnet build`：0 错误（临时输出目录）。未实机点验。
 
+## 阶段 320：WPF 原生 MessageBox 全部替换为统一风格对话框（2026-11-13）
+
+> 用户反馈：大量 WPF 原生 MessageBox（如频道预警"同步所有设置"确认），风格与全局不统一。
+
+- 新增 **`Views/Windows/MessageDialog`**（FluentWindow + WPF-UI TitleBar + Mica 背景）：
+  - `SymbolIcon` 按级别着色：Error 红 ✕ / Warning 黄 ⚠ / Question 绿 ? / Information 蓝 ⓘ；
+  - 按钮组合 OK / OKCancel / YesNo（`General_OK/Cancel/Yes/No` 既有词条），主按钮高亮，
+    Esc=Cancel/No、Enter=默认键；
+  - `Show` 重载与 `System.Windows.MessageBox` 的常用签名一一对应（含 owner-first、
+    带默认结果的 5 参形式），返回 `MessageBoxResult`——调用方判断逻辑零改动。
+- **41 处调用全量替换**（20 个文件：频道预警/频道市场、角色卡、EVE 设置同步、多开预览、
+  通用/首页/市场/结构/测试/更新设置、工业三页、链接、订单、AI 设置两页、倒货购物记录、App 启动异常），
+  每文件补 `using TheGuideToTheNewEden.WPF.Views.Windows;`；全仓已无原生 `MessageBox.Show`（仅
+  MessageDialog 注释里的说明文字）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验——重点试：频道预警"同步所有设置"、
+  EVE 设置同步删除备份（默认否）、更新安装确认（默认否）。
+
+## 阶段 321：MessageDialog 高度按内容计算（2026-11-13）
+
+> 用户反馈（附截图）：统一对话框窗口太高，内容下方一片空白。
+
+- 根因：`SizeToContent="Height"` 在 WPF-UI 的 FluentWindow（ExtendsContentIntoTitleBar + Mica）下不生效，
+  窗口保持默认高度。
+- 修复：XAML 去掉 `SizeToContent`；`Prepare()` 用 `FormattedText` 按消息文本行数（408px 文本宽换行）
+  精确计算窗口高度 `= 消息高 × 1.4 + 160`，钳制在 170~560——单行确认 ≈ 170px，长消息自适应。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验——试"同步所有设置"（单行）与 EVE 同步的
+  多行确认。
+
+ - **321b 补记**：用户以最新 exe 复测仍见高窗，但探针 v2 真实 `Show()` 后 `ActualHeight=170.4`——代码与产物均正确，判定为用户侧构建缓存（obj 里的旧 BAML）或运行了旧进程。补一道保险：`SourceInitialized` 再执行一次 `ApplyHeight()`；请用户**删除 obj/bin 后重新编译**再验证。
+
+ - **321c 定案（真根因）**：用户复测仍 400 高——探针 v3 合并 `Wpf.Ui.Markup.ControlsDictionary`（App 与
+   App.xaml 一致的环境）后复现：**隐式样式把 FluentWindow 的 `MinHeight` 定为 320**，本地 `Height=170`
+   被 MinHeight 钳回 320（125% DPI 下即 400 物理像素）；之前裸环境探针 Min=0 看不出。修复：`ApplyHeight`
+   同时设置本地 `MinHeight = height`、`MaxHeight = height + 40`（本地值覆盖隐式样式），
+   复测 `Min=170 / AH=170.4`。教训：WPF 本地值也会被**依赖属性 MinHeight** 这类"地板"约束，
+   排查尺寸问题要连 Min/Max 一起看，且探针环境必须带上应用的资源字典才可信。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

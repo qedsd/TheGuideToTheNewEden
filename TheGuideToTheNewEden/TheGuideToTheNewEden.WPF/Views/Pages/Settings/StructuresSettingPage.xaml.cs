@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -69,7 +70,7 @@ public partial class StructuresSettingPage : Page
 
     private void ShowNotice(string title)
     {
-        MessageBox.Show(
+        MessageDialog.Show(
             FindString("Settings.Structures.SearchUnavailable"),
             title,
             MessageBoxButton.OK,

@@ -93,7 +93,7 @@ public partial class IndustryPlanPage : Page
 
     private void OnDeleteBuildingProfileClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 LanguageService.Get("IndustryPage_DeleteProfileConfirm"),
                 LanguageService.Get("IndustryPage_ConfirmDeleteTitle"),
                 MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
@@ -138,7 +138,7 @@ public partial class IndustryPlanPage : Page
     {
         if (sender is FrameworkElement element && element.Tag is IndustryCustomCharacterItem item)
         {
-            if (MessageBox.Show(
+            if (MessageDialog.Show(
                     LanguageService.Format("IndustryCustomCharacter_DeleteConfirm", item.Name),
                     LanguageService.Get("IndustryCustomCharacter_DeleteTitle"),
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
@@ -190,7 +190,7 @@ public partial class IndustryPlanPage : Page
             _viewModel.DeleteSelectedPlan();
             return;
         }
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 LanguageService.Format("IndustryPage_DeletePlanConfirm", _viewModel.SelectedSavedPlan.Name),
                 LanguageService.Get("IndustryPage_DeletePlanTitle"),
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)

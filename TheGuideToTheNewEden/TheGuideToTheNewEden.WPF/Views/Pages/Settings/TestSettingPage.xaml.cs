@@ -5,6 +5,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -136,7 +137,7 @@ public partial class TestSettingPage : Page
 
     private static void ShowDialog(string title, string message)
     {
-        System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        MessageDialog.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
     }
 
     private static string FindString(string key)

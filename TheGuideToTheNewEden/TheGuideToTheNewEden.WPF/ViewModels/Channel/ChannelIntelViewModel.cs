@@ -17,6 +17,7 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Channel;
 
@@ -427,7 +428,7 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         }
 
         var tip = FindString("ChannelIntelPage_ApplySettingToAll_Tip");
-        var result = MessageBox.Show(
+        var result = MessageDialog.Show(
             tip,
             FindString("ChannelIntelPage_ApplySettingToAll"),
             MessageBoxButton.OKCancel,

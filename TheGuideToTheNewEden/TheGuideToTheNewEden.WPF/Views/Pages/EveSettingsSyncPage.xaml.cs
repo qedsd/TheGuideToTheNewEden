@@ -262,7 +262,7 @@ public partial class EveSettingsSyncPage : Page
             return;
         }
 
-        var confirm = MessageBox.Show(
+        var confirm = MessageDialog.Show(
             string.Format(FindString("EveSettingsSyncPage_ProfileDeleteConfirmDetail"), profile.Name),
             FindString("EveSettingsSyncPage_ProfileDeleteConfirmTitle"),
             MessageBoxButton.YesNo,
@@ -348,7 +348,7 @@ public partial class EveSettingsSyncPage : Page
                 ? string.Format(FindString("EveSettingsSyncPage_SyncConfirmDetailBackup"), paths.Count)
                 : string.Format(FindString("EveSettingsSyncPage_SyncConfirmDetail"), paths.Count);
 
-            var confirm = MessageBox.Show(
+            var confirm = MessageDialog.Show(
                 detail + Environment.NewLine + Environment.NewLine + FindString("EveSettingsSyncPage_SyncConfirmBackupSuggest"),
                 FindString("EveSettingsSyncPage_SyncConfirmTitle"),
                 MessageBoxButton.YesNo,
@@ -434,7 +434,7 @@ public partial class EveSettingsSyncPage : Page
             ? string.Format(FindString("EveSettingsSyncPage_RestoreFolderDetail"), backup.Name)
             : string.Format(FindString("EveSettingsSyncPage_RestoreFileDetail"), backup.SourceText);
 
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 detail,
                 FindString("EveSettingsSyncPage_RestoreConfirmTitle"),
                 MessageBoxButton.YesNo,
@@ -459,7 +459,7 @@ public partial class EveSettingsSyncPage : Page
             return;
         }
 
-        if (MessageBox.Show(
+        if (MessageDialog.Show(
                 string.Format(FindString("EveSettingsSyncPage_DeleteBackupConfirmDetail"), backup.Name),
                 FindString("EveSettingsSyncPage_DeleteBackupConfirmTitle"),
                 MessageBoxButton.YesNo,
@@ -491,7 +491,7 @@ public partial class EveSettingsSyncPage : Page
 
         if (!_viewModel.BlockWhenGameRunning)
         {
-            MessageBox.Show(
+            MessageDialog.Show(
                 _viewModel.RunningGameText,
                 FindString("EveSettingsSyncPage_GameRunningTitle"),
                 MessageBoxButton.OK,
@@ -502,7 +502,7 @@ public partial class EveSettingsSyncPage : Page
         var text = _viewModel.RunningGameText + Environment.NewLine + Environment.NewLine
                    + FindString("EveSettingsSyncPage_GameRunningAsk");
 
-        return MessageBox.Show(
+        return MessageDialog.Show(
             text,
             FindString("EveSettingsSyncPage_GameRunningTitle"),
             MessageBoxButton.YesNo,
@@ -523,7 +523,7 @@ public partial class EveSettingsSyncPage : Page
             lines.Add("…");
         }
 
-        MessageBox.Show(
+        MessageDialog.Show(
             string.Join(Environment.NewLine, lines),
             FindString("EveSettingsSyncPage_SyncFailuresTitle"),
             MessageBoxButton.OK,

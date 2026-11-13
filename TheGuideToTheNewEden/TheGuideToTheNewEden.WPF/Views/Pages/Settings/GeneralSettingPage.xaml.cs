@@ -10,6 +10,7 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
@@ -215,7 +216,7 @@ public partial class GeneralSettingPage : Page
 
             // 立即生效：重灌 ESI 凭据（国服用独立客户端 ID）+ 重建 ESI 单例 + 载入该国服的已授权角色。
             CoreInitializer.SwitchGameServer(server);
-            System.Windows.MessageBox.Show(
+            MessageDialog.Show(
                 string.Format(FindString("Setting_GameServer_Switched_Description"), server),
                 FindString("Setting_GameServer_Switched_Title"),
                 System.Windows.MessageBoxButton.OK,
@@ -289,7 +290,7 @@ public partial class GeneralSettingPage : Page
     {
         if (IsSameFolder(target, DataPathService.Current))
         {
-            System.Windows.MessageBox.Show(
+            MessageDialog.Show(
                 FindString("Setting_DataPath_SameFolder"),
                 FindString("Setting_DataPath_Title"),
                 System.Windows.MessageBoxButton.OK,
@@ -297,7 +298,7 @@ public partial class GeneralSettingPage : Page
             return;
         }
 
-        var answer = System.Windows.MessageBox.Show(
+        var answer = MessageDialog.Show(
             string.Format(FindString("Setting_DataPath_CopyQuestion"), Environment.NewLine),
             FindString("Setting_DataPath_Title"),
             System.Windows.MessageBoxButton.YesNoCancel,
@@ -310,7 +311,7 @@ public partial class GeneralSettingPage : Page
         var copy = answer == System.Windows.MessageBoxResult.Yes;
         if (!DataPathService.SetDataPath(target, copy))
         {
-            System.Windows.MessageBox.Show(
+            MessageDialog.Show(
                 FindString("Setting_DataPath_SetFailed"),
                 FindString("Setting_DataPath_Title"),
                 System.Windows.MessageBoxButton.OK,
@@ -327,7 +328,7 @@ public partial class GeneralSettingPage : Page
             FindString(DataPathService.ModeKeyFor(DataPathService.GetModeFor(pending))),
             FindString("Setting_DataPath_Pending"));
 
-        if (System.Windows.MessageBox.Show(
+        if (MessageDialog.Show(
                 string.Format(FindString("Setting_DataPath_Changed_Message"), pending, Environment.NewLine),
                 FindString("Setting_DataPath_Changed_Title"),
                 System.Windows.MessageBoxButton.YesNo,

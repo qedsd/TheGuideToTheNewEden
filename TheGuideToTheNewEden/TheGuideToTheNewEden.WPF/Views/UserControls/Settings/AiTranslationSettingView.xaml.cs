@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Services.Translation;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls.Settings;
 
@@ -58,7 +59,7 @@ public partial class AiTranslationSettingView : UserControl
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-            MessageBox.Show(
+            MessageDialog.Show(
                 ex.Message,
                 FindString("SettingPage_AiTranslation"),
                 MessageBoxButton.OK,

@@ -131,9 +131,9 @@ public partial class HomeSettingPage : Page
     {
         var owner = Window.GetWindow(this);
         var result = owner is null
-            ? MessageBox.Show(FindString("Home.Quick.RestoreConfirm"), FindString("Home.Quick.RestoreDefaults"),
+            ? MessageDialog.Show(FindString("Home.Quick.RestoreConfirm"), FindString("Home.Quick.RestoreDefaults"),
                 MessageBoxButton.YesNo, MessageBoxImage.Question)
-            : MessageBox.Show(owner, FindString("Home.Quick.RestoreConfirm"), FindString("Home.Quick.RestoreDefaults"),
+            : MessageDialog.Show(owner, FindString("Home.Quick.RestoreConfirm"), FindString("Home.Quick.RestoreDefaults"),
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
 
         if (result == MessageBoxResult.Yes)

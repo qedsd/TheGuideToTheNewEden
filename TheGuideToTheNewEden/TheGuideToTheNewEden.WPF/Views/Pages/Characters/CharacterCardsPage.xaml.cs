@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Home;
 using TheGuideToTheNewEden.WPF.ViewModels.Characters;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 
@@ -334,7 +335,7 @@ public partial class CharacterCardsPage : Page
         // 阻止事件冒泡到卡片本身（避免同时触发"打开"）
         e.Handled = true;
 
-        var confirm = MessageBox.Show(
+        var confirm = MessageDialog.Show(
             $"{FindString("Characters.Remove")}: {card.Name}?",
             FindString("Characters.Title"),
             MessageBoxButton.OKCancel,
@@ -367,7 +368,7 @@ public partial class CharacterCardsPage : Page
             }
             else if (!CharacterAuthService.CredentialsAvailable)
             {
-                MessageBox.Show(FindString("Characters.LoginFailed"), FindString("Characters.Login"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageDialog.Show(FindString("Characters.LoginFailed"), FindString("Characters.Login"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             else
@@ -417,7 +418,7 @@ public partial class CharacterCardsPage : Page
                     else
                     {
                         // 优先显示具体原因——只有"登录失败"四个字时，用户既不知道是拒绝授权还是配置有问题。
-                        MessageBox.Show(
+                        MessageDialog.Show(
                             string.IsNullOrWhiteSpace(CharacterAuthService.LastFailure)
                                 ? FindString("Characters.LoginFailed")
                                 : CharacterAuthService.LastFailure,

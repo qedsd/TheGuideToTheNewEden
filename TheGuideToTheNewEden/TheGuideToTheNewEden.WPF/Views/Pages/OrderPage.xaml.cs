@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.WPF.ViewModels.Business;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
@@ -80,7 +81,7 @@ public partial class OrderPage : Page
     }
 
     private static void ShowMessage(string text) =>
-        MessageBox.Show(text, FindString("AppDisplayName"), MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageDialog.Show(text, FindString("AppDisplayName"), MessageBoxButton.OK, MessageBoxImage.Information);
 
     private static string FindString(string key) =>
         Application.Current?.TryFindResource(key) as string ?? key;

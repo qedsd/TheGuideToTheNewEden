@@ -12,6 +12,7 @@ using TheGuideToTheNewEden.WPF.Converters;
 using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.Services.Assistant.Features;
 using TheGuideToTheNewEden.WPF.ViewModels.GamePreview;
+using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
@@ -406,8 +407,8 @@ public partial class GamePreviewPage : Page, IAssistantFeatureRuntime
         var title = FindString("GamePreviewPage_GroupHotkey_Remove");
         var owner = Window.GetWindow(this);
         var result = owner is null
-            ? MessageBox.Show(text, title, MessageBoxButton.YesNo, MessageBoxImage.Warning)
-            : MessageBox.Show(owner, text, title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            ? MessageDialog.Show(text, title, MessageBoxButton.YesNo, MessageBoxImage.Warning)
+            : MessageDialog.Show(owner, text, title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
         if (result == MessageBoxResult.Yes)
         {
