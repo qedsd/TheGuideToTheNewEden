@@ -344,17 +344,18 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             double scale,
             double offset)
         {
-            const double Band = 0.06;
+            const double Pad = 0.035; // 阶段 319：视口内边距——圆点半径+标签不越界（此前 0.005 会把边缘圆点裁一半）
+            const double Band = 0.05;
             if (value < pLow)
             {
                 var span = pLow - min;
                 if (span < 1e-9)
                 {
-                    return Math.Max(0.005, offset);
+                    return Math.Max(Pad, offset);
                 }
 
                 var excess = (pLow - value) / span;
-                return Math.Max(0.005, offset - Band * Math.Sqrt(excess));
+                return Math.Max(Pad, offset - Band * Math.Sqrt(excess));
             }
 
             if (value > pHigh)
@@ -363,11 +364,11 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 var coreEnd = offset + (pHigh - pLow) * scale;
                 if (span < 1e-9)
                 {
-                    return Math.Min(0.995, coreEnd);
+                    return Math.Min(1 - Pad, coreEnd);
                 }
 
                 var excess = (value - pHigh) / span;
-                return Math.Min(0.995, coreEnd + Band * Math.Sqrt(excess));
+                return Math.Min(1 - Pad, coreEnd + Band * Math.Sqrt(excess));
             }
 
             return offset + (value - pLow) * scale;
