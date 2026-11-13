@@ -13,6 +13,8 @@ using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
+using TheGuideToTheNewEden.WPF.Helpers.Interop;
+using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 
 namespace TheGuideToTheNewEden.WPF.Views.Windows;
@@ -31,8 +33,15 @@ public partial class IntelWindow : Window
     private const double CollapsedDrawerHeight = 43;
     private const double ExpandedDrawerHeight = 210;
 
-    private readonly ChannelIntelSetting _setting;
+    internal readonly ChannelIntelSetting _setting;
+    private readonly IntelGlobalSetting _globalSetting;
+    private readonly Func<IReadOnlyList<NativeMethods.RECT>>? _snapTargets;
+    private readonly PreviewSnapSession _snapSession = new();
     private IntelSolarSystemMap _intelMap;
+    private NativeMethods.RECT _dragStartRect;
+    private NativeMethods.POINT _dragStartCursor;
+    private bool _dragCandidate;
+    private bool _dragging;
     private readonly Dictionary<int, DateTime> _startTimes = [];
     private readonly ObservableCollection<IntelChatRow> _chatRows = [];
     private readonly ICollectionView _chatView;
@@ -48,9 +57,11 @@ public partial class IntelWindow : Window
     /// <summary>用户点击标题栏关闭（会话据此停止预警）。</summary>
     public event EventHandler? StopRequested;
 
-    public IntelWindow(ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
+    internal IntelWindow(ChannelIntelSetting setting, IntelSolarSystemMap intelMap, IntelGlobalSetting globalSetting, Func<IReadOnlyList<NativeMethods.RECT>>? snapTargets = null)
     {
         _setting = setting;
+        _globalSetting = globalSetting;
+        _snapTargets = snapTargets;
         _intelMap = intelMap;
 
         InitializeComponent();
@@ -83,6 +94,11 @@ public partial class IntelWindow : Window
         LocationChanged += OnWindowBoundsChanged;
         SizeChanged += OnWindowBoundsChanged;
         Closed += (_, _) => Dispose();
+
+        // 阶段 307：标题栏手动拖动 + 与其它预警小窗吸附（CaptionHeight=0，原生拖拽已关闭）
+        TitleBarGrid.MouseLeftButtonDown += OnTitleDragStart;
+        TitleBarGrid.MouseMove += OnTitleDragMove;
+        TitleBarGrid.MouseLeftButtonUp += OnTitleDragEnd;
     }
 
     private static string FindString(string key) =>
@@ -153,6 +169,122 @@ public partial class IntelWindow : Window
         Left = double.NaN;
         Top = double.NaN;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
+    }
+
+    // ---------- 拖动与吸附（阶段 307，对齐多开预览） ----------
+
+    internal IntPtr GetHwnd()
+        => _hwnd == IntPtr.Zero ? (_hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle) : _hwnd;
+
+    private IntPtr _hwnd;
+
+    /// <summary>本窗物理像素矩形（供管理器做吸附候选/统一排列）。</summary>
+    internal NativeMethods.RECT GetRectPhysical()
+        => NativeMethods.GetWindowRect(GetHwnd(), out var rect) ? rect : new NativeMethods.RECT();
+
+    private bool IsButtonSource(object originalSource)
+    {
+        for (var d = originalSource as System.Windows.DependencyObject; d is not null; d = System.Windows.Media.VisualTreeHelper.GetParent(d))
+        {
+            if (d is System.Windows.Controls.Primitives.ButtonBase)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void OnTitleDragStart(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (IsButtonSource(e.OriginalSource))
+        {
+            return;
+        }
+
+        if (e.ClickCount >= 2)
+        {
+            // 与原生标题栏双击一致：还原/最大化
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            e.Handled = true;
+            return;
+        }
+
+        NativeMethods.GetCursorPos(out _dragStartCursor);
+        _dragStartRect = GetRectPhysical();
+        _snapSession.Reset();
+        _dragCandidate = true;
+        _dragging = false;
+        TitleBarGrid.CaptureMouse();
+        e.Handled = true;
+    }
+
+    private void OnTitleDragMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (!_dragCandidate || e.LeftButton != System.Windows.Input.MouseButtonState.Pressed || _hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        NativeMethods.GetCursorPos(out var cursor);
+        var dx = cursor.X - _dragStartCursor.X;
+        var dy = cursor.Y - _dragStartCursor.Y;
+        if (!_dragging && Math.Abs(dx) + Math.Abs(dy) < 4)
+        {
+            return;
+        }
+
+        _dragging = true;
+        var x = _dragStartRect.Left + dx;
+        var y = _dragStartRect.Top + dy;
+
+        // 吸附：只吸其它可见预警小窗（沿对齐边滑动由 PreviewSnapSession 维持）
+        if (_globalSetting.SnapEnabled && _globalSetting.SnapDistance > 0 && _snapTargets is not null)
+        {
+            var proposed = new NativeMethods.RECT
+            {
+                Left = x,
+                Top = y,
+                Right = x + _dragStartRect.Width,
+                Bottom = y + _dragStartRect.Height,
+            };
+            var snap = _snapSession.Snap(proposed, _snapTargets(), _globalSetting.SnapDistance);
+            x = snap.X;
+            y = snap.Y;
+        }
+        else
+        {
+            _snapSession.Reset();
+        }
+
+        NativeMethods.MoveWindow(_hwnd, x, y);
+        e.Handled = true;
+    }
+
+    private void OnTitleDragEnd(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (TitleBarGrid.IsMouseCaptured)
+        {
+            TitleBarGrid.ReleaseMouseCapture();
+        }
+
+        _dragCandidate = false;
+        _dragging = false;
+        _snapSession.Reset();
+    }
+
+    /// <summary>统一尺寸：按全局设置的宽高（DIP）调整本窗（SizeChanged 自动持久化到每角色 WinW/WinH）。</summary>
+    public void SetUniformSize(int width, int height)
+    {
+        if (width > 0)
+        {
+            Width = width;
+        }
+
+        if (height > 0)
+        {
+            Height = height;
+        }
     }
 
     // ---------- 预警内容 ----------
@@ -486,6 +618,7 @@ public partial class IntelWindow : Window
         _disposed = true;
         ThemeService.ThemeChanged -= ApplyBackdrop;
         MapView.SystemClearRequested -= OnSystemClearRequested;
+        MapView.DetachGlobalSetting();
         _autoIntelTimer?.Stop();
         _delayHideTimer?.Stop();
         LocationChanged -= OnWindowBoundsChanged;

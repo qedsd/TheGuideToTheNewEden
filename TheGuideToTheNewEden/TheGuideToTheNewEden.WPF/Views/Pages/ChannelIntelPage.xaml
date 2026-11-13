@@ -712,6 +712,7 @@
                                         </StackPanel>
                                     </Border>
 
+
                                     <!--  通知方式  -->
                                     <Border Style="{StaticResource SectionCard}">
                                         <StackPanel>
@@ -854,12 +855,8 @@
                                                     FontSize="12"
                                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                     Text="{DynamicResource ChannelIntelPage_SystemNameDbs}" />
-                                                <ListBox
-                                                    x:Name="NameDbsList"
-                                                    MaxHeight="96"
-                                                    DisplayMemberPath="Name"
-                                                    SelectionChanged="OnNameDbsSelectionChanged"
-                                                    SelectionMode="Multiple" />
+                                                <ItemsControl x:Name="NameDbsList" MaxHeight="96" VerticalAlignment="Top">                                                    
+                                                <ItemsControl.ItemTemplate>                                                         <DataTemplate>                                                             <CheckBox                                                                 Margin="0,2,0,0"                                                                 Checked="OnNameDbCheckChanged"                                                                 Content="{Binding Name}"                                                                 IsChecked="{Binding IsChecked, Mode=TwoWay}"                                                                 Unchecked="OnNameDbCheckChanged" />                                                         </DataTemplate>                                                     </ItemsControl.ItemTemplate>                                                 </ItemsControl>
                                             </StackPanel>
                                         </Border>
 
@@ -953,6 +950,199 @@
                                 </StackPanel>
                             </ScrollViewer>
                         </TabItem>
+
+                        <!--  预警小窗全局设置：独立页签，四张卡片（阶段 308/309/310）  -->
+                        <TabItem Header="{DynamicResource ChannelIntelPage_GlobalIntelSetting}">
+                            <ScrollViewer
+                                Margin="0,4,0,0"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="12,0,12,12">
+                                    <!--  吸附  -->
+                                    <Border Style="{StaticResource SectionCard}">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Style="{StaticResource PanelHeading}"
+                                                Text="{DynamicResource ChannelIntelPage_IntelSnapTitle}"
+                                                ToolTip="{DynamicResource ChannelIntelPage_IntelSnap}" />
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox
+                                                    VerticalAlignment="Center"
+                                                    Content="{DynamicResource ChannelIntelPage_IntelSnap_Enable}"
+                                                    IsChecked="{Binding GlobalIntelSetting.SnapEnabled, Mode=TwoWay}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Text="{DynamicResource ChannelIntelPage_IntelSnapDistance}" />
+                                                <ui:NumberBox
+                                                    Grid.Column="2"
+                                                    Margin="4,0,0,0"
+                                                    ClearButtonEnabled="False"
+                                                    Maximum="100"
+                                                    Minimum="1"
+                                                    SmallChange="2"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    Value="{Binding GlobalIntelSetting.SnapDistance, Mode=TwoWay}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                    <!--  窗口大小  -->
+                                    <Border Style="{StaticResource SectionCard}">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Style="{StaticResource PanelHeading}"
+                                                Text="{DynamicResource ChannelIntelPage_IntelUniformSize}"
+                                                ToolTip="{DynamicResource GamePreviewPage_UniformWidth}" />
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    Margin="0,0,6,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{DynamicResource GamePreviewPage_UniformWidth}" />
+                                                <ui:NumberBox
+                                                    Grid.Column="1"
+                                                    ClearButtonEnabled="False"
+                                                    Maximum="2000"
+                                                    Minimum="120"
+                                                    SmallChange="10"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    Value="{Binding GlobalIntelSetting.UniformWidth, Mode=TwoWay}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    Margin="14,0,6,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{DynamicResource GamePreviewPage_UniformHeight}" />
+                                                <ui:NumberBox
+                                                    Grid.Column="3"
+                                                    ClearButtonEnabled="False"
+                                                    Maximum="2000"
+                                                    Minimum="120"
+                                                    SmallChange="10"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    Value="{Binding GlobalIntelSetting.UniformHeight, Mode=TwoWay}" />
+                                                <ui:Button
+                                                    Grid.Column="4"
+                                                    Margin="14,0,0,0"
+                                                    Appearance="Primary"
+                                                    Click="OnIntelUniformSizeClick"
+                                                    Content="{DynamicResource ChannelIntelPage_BtnUniformSize}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                    <!--  位置对齐  -->
+                                    <Border Style="{StaticResource SectionCard}">
+                                        <StackPanel>
+                                            <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_IntelLayoutTitle}" />
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="16" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="16" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="16" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Style="{StaticResource IntelFieldLabel}" Text="{DynamicResource ChannelIntelPage_IntelLayoutMode}" />
+                                                <ComboBox Grid.Column="1" SelectedIndex="{Binding GlobalIntelSetting.LayoutMode, Mode=TwoWay}">
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutMode_Left}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutMode_Right}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutMode_Down}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutMode_Up}" />
+                                                </ComboBox>
+                                                <TextBlock
+                                                    Grid.Column="3"
+                                                    VerticalAlignment="Center"
+                                                    Text="{DynamicResource ChannelIntelPage_IntelLayoutAlign}" />
+                                                <ComboBox Grid.Column="4" SelectedIndex="{Binding GlobalIntelSetting.LayoutAlign, Mode=TwoWay}">
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutAlign_Start}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutAlign_Center}" />
+                                                    <ComboBoxItem Content="{DynamicResource ChannelIntelPage_LayoutAlign_End}" />
+                                                </ComboBox>
+
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_IntelLayoutSpan}" />
+                                                <ui:NumberBox
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    ClearButtonEnabled="False"
+                                                    Maximum="200"
+                                                    Minimum="0"
+                                                    SmallChange="2"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    Value="{Binding GlobalIntelSetting.LayoutSpan, Mode=TwoWay}" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Grid.Column="3"
+                                                    VerticalAlignment="Center"
+                                                    Text="{DynamicResource ChannelIntelPage_IntelLayoutMaxPerLine}" />
+                                                <ui:NumberBox
+                                                    Grid.Row="2"
+                                                    Grid.Column="4"
+                                                    Maximum="12"
+                                                    Minimum="0"
+                                                    SmallChange="1"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    Value="{Binding GlobalIntelSetting.LayoutMaxPerLine, Mode=TwoWay}" />
+                                                <ui:Button
+                                                    Grid.RowSpan="3"
+                                                    Grid.Column="6"
+                                                    Appearance="Primary"
+                                                    Click="OnIntelAutoLayoutClick"
+                                                    Content="{DynamicResource ChannelIntelPage_BtnAutoLayout}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                    <!--  其他  -->
+                                    <Border Style="{StaticResource SectionCard}">
+                                        <StackPanel>
+                                            <TextBlock Style="{StaticResource PanelHeading}" Text="{DynamicResource ChannelIntelPage_IntelOther}" />
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Style="{StaticResource IntelFieldLabel}"
+                                                    Text="{DynamicResource ChannelIntelPage_SmallWidthLabelThreshold}"
+                                                    ToolTip="{DynamicResource ChannelIntelPage_Tip_SmallWidthLabelThreshold}" />
+                                                <ui:NumberBox
+                                                    Grid.Column="1"
+                                                    ClearButtonEnabled="False"
+                                                    Maximum="4000"
+                                                    Minimum="0"
+                                                    SmallChange="50"
+                                                    SpinButtonPlacementMode="Inline"
+                                                    ToolTip="{DynamicResource ChannelIntelPage_Tip_SmallWidthLabelThreshold}"
+                                                    Value="{Binding GlobalIntelSetting.LabelWidthThreshold, Mode=TwoWay}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
 
                         <TabItem Header="{DynamicResource ChannelIntelPage_Contents}">
                             <RichTextBox

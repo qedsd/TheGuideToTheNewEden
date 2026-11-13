@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -7,6 +8,7 @@ using System.Windows.Shapes;
 using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.Core.Models.Map;
 
 namespace TheGuideToTheNewEden.WPF.Views.UserControls;
@@ -16,7 +18,7 @@ namespace TheGuideToTheNewEden.WPF.Views.UserControls;
 /// <para>
 /// 数据集合严格等于配置的 N 跳范围（<see cref="ChannelIntelSetting.IntelJumps"/>），所有星系都绘制；
 /// “重点”只影响标签/节点亮度/星门强调，不删除任何星系。2D 坐标由 <c>SolarSystemPosHelper.ResetXY</c>
-/// 做 2%–98% 分位适配 + 尾部软压缩，几何离群星系在右侧贴边提示，仍可悬停与右键解除。
+/// 阶段 312：2D 坐标按全量 min/max 等比适配（无几何离群贴边），星系可悬停与右键解除。
 /// </para>
 /// </summary>
 public partial class IntelMapView : UserControl
@@ -28,14 +30,13 @@ public partial class IntelMapView : UserControl
     private static readonly Brush DefaultBrush = Frozen(Color.FromRgb(151, 169, 193));
     private static readonly Brush HomeBrush = Frozen(Color.FromRgb(70, 211, 155));
     private static readonly Brush IntelBrush = Frozen(Color.FromRgb(255, 138, 76));
-    private static readonly Brush DowngradeBrush = Frozen(Color.FromRgb(242, 198, 92));
+    private static readonly Brush DowngradeBrush = Frozen(Color.FromRgb(195, 164, 255));
     private static readonly Brush QuietLineBrush = Frozen(Color.FromRgb(79, 102, 128));
     private static readonly Brush ActiveLineBrush = Frozen(Color.FromRgb(152, 102, 74));
     private static readonly Brush HoverLineBrush = Frozen(Color.FromRgb(135, 227, 205));
-    private static readonly Brush OutlierBorderBrush = Frozen(Color.FromRgb(126, 105, 166));
-    private static readonly Brush OutlierTextBrush = Frozen(Color.FromRgb(216, 200, 245));
 
     private const double QuietSize = 3.4;
+    /// <summary>阶段 305：画布宽度低于该值（px）时不显示星系名标签，只用点的颜色/大小表达预警。</summary>
     private const double IntelSize = 4.4;
     private const double HomeSize = 5.2;
     private const double IntelScale = 1.45;
@@ -45,6 +46,7 @@ public partial class IntelMapView : UserControl
 
     private readonly Dictionary<int, Ellipse> _ellipseDic = [];
     private readonly Dictionary<int, TextBlock> _labelDic = [];
+    private readonly Dictionary<int, Point> _centerDic = [];
     private readonly List<IntelSolarSystemMap> _allSolarSystem = [];
 
     /// <summary>正处于预警中的星系。</summary>
@@ -60,9 +62,6 @@ public partial class IntelMapView : UserControl
     private double _panStartX;
     private double _panStartY;
 
-    /// <summary>点击右侧“几何离群”卡片时触发，窗口可据此展示最新预警。</summary>
-    public event EventHandler<IntelSolarSystemMap>? OutlierActivated;
-
     /// <summary>右键解除单个预警时触发；窗口据此清掉 _startTimes 并刷新状态。</summary>
     public event EventHandler<int>? SystemClearRequested;
 
@@ -75,6 +74,20 @@ public partial class IntelMapView : UserControl
     public IntelMapView()
     {
         InitializeComponent();
+        // 阶段 307：全局设置变化（阈值/布局样式等）即时刷新星图
+        IntelGlobalSettingService.SettingChanged += OnGlobalIntelSettingChanged;
+    }
+
+    private void OnGlobalIntelSettingChanged(object? sender, EventArgs e)
+    {
+        if (Dispatcher.CheckAccess())
+        {
+            UpdateUI();
+        }
+        else
+        {
+            Dispatcher.BeginInvoke(UpdateUI);
+        }
     }
 
     private static Brush Frozen(Color color)
@@ -139,7 +152,6 @@ public partial class IntelMapView : UserControl
             ShowLabel(content.SolarSystemId, content.SolarSystemId == _setting?.LocationID);
         }
 
-        UpdateOutlierPanel();
     }
 
     public void Clear(IEnumerable<int> systemIds)
@@ -156,7 +168,6 @@ public partial class IntelMapView : UserControl
             ShowLabel(id, id == _setting?.LocationID);
         }
 
-        UpdateOutlierPanel();
     }
 
     public void Clear()
@@ -179,7 +190,6 @@ public partial class IntelMapView : UserControl
             }
         }
 
-        UpdateOutlierPanel();
     }
 
     private void SetIntelState(Ellipse ellipse, int systemId)
@@ -229,6 +239,7 @@ public partial class IntelMapView : UserControl
         _lastHovered = null;
         _ellipseDic.Clear();
         _labelDic.Clear();
+        _centerDic.Clear();
         _allSolarSystem.Clear();
 
         var width = MapCanvas.ActualWidth;
@@ -241,8 +252,7 @@ public partial class IntelMapView : UserControl
         var all = _intelMap.GetAllSolarSystem();
         if (all is not { Count: > 0 })
         {
-            UpdateOutlierPanel();
-            return;
+                return;
         }
 
         _allSolarSystem.AddRange(all);
@@ -296,14 +306,11 @@ public partial class IntelMapView : UserControl
             };
             _labelDic[item.SolarSystemID] = label;
             LabelCanvas.Children.Add(label);
-            var labelLeft = left + size * 2 + 3;
-            if (labelLeft + 90 > width)
-            {
-                labelLeft = Math.Max(2, left - 76);
-            }
-            Canvas.SetLeft(label, labelLeft);
-            Canvas.SetTop(label, top - 2);
+            _centerDic[item.SolarSystemID] = center;
         }
+
+        // 阶段 304：可见标签做防重叠布局（替代固定左右摆放）
+        RelayoutLabels(width, height);
 
         // 星门连线：所有 N 跳内星系的直接星门都画；有情报/本地的连线才加亮。
         var drawn = new HashSet<long>();
@@ -343,7 +350,6 @@ public partial class IntelMapView : UserControl
             }
         }
 
-        UpdateOutlierPanel();
     }
 
     /// <summary>
@@ -391,96 +397,162 @@ public partial class IntelMapView : UserControl
         return centers;
     }
 
+    /// <summary>阶段 307：名称标签宽度阈值上收到全局设置；无设置时回退 0（总是显示名称）。</summary>
+    private double GetLabelWidthThreshold()
+        => IntelGlobalSettingService.Value.LabelWidthThreshold;
     private void ShowLabel(int systemId, bool visible)
     {
         if (_labelDic.TryGetValue(systemId, out var label))
         {
-            label.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            // 阶段 305：窗口过小时不显示星系名（预警用点的颜色/大小表达），悬停/右键仍可用
+            label.Visibility = visible && MapCanvas.ActualWidth >= GetLabelWidthThreshold()
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        // 阶段 304：可见集合变了，重新做防重叠布局（把空出来的位置还给别的标签）
+        RelayoutLabels(MapCanvas.ActualWidth, MapCanvas.ActualHeight);
+    }
+
+    /// <summary>
+    /// 阶段 304：标签防重叠布局。
+    /// <para>
+    /// 可见标签按优先级排布：本地 &gt; 预警中 &gt; 已降级（同级保持创建顺序）。
+    /// 每个标签在所属圆点四周尝试 12 个候选位（右/左/上/下 × 上下错行），取第一个
+    /// 与已放置标签不相交的；全部碰撞时取重叠面积最小的。位置全程钳制在画布内。
+    /// </para>
+    /// </summary>
+    private void RelayoutLabels(double width, double height)
+    {
+        // 阶段 305：小窗口不显示名称，只靠点的颜色/大小表达预警状态
+        if (width < GetLabelWidthThreshold())
+        {
+            foreach (var label in _labelDic.Values)
+            {
+                label.Visibility = Visibility.Collapsed;
+            }
+
+            return;
+        }
+
+        if (width <= 1 || height <= 1 || _labelDic.Count == 0)
+        {
+            return;
+        }
+
+        var visible = new List<(int Id, TextBlock Label, Point Center, int Priority)>();
+        foreach (var pair in _labelDic)
+        {
+            if (pair.Value.Visibility != Visibility.Visible)
+            {
+                continue;
+            }
+
+            if (!_centerDic.TryGetValue(pair.Key, out var center))
+            {
+                continue;
+            }
+
+            var priority = pair.Key == _setting?.LocationID ? 0
+                : _intelings.Contains(pair.Key) ? 1
+                : _downgradeds.Contains(pair.Key) ? 2 : 3;
+            visible.Add((pair.Key, pair.Value, center, priority));
+        }
+
+        if (visible.Count == 0)
+        {
+            return;
+        }
+
+        visible.Sort((a, b) =>
+        {
+            var byPriority = a.Priority.CompareTo(b.Priority);
+            return byPriority != 0 ? byPriority : a.Id.CompareTo(b.Id);
+        });
+
+        var placed = new List<Rect>();
+        foreach (var entry in visible)
+        {
+            var label = entry.Label;
+            var size = MeasureLabel(label);
+            var w = size.Width;
+            var h = size.Height;
+            var r = entry.Center.X > 0 && _ellipseDic.TryGetValue(entry.Id, out var dot) ? dot.Width / 2 : 6;
+            var cx = entry.Center.X;
+            var cy = entry.Center.Y;
+
+            // 候选位：右 / 左 / 上 / 下，以及右侧、左侧的上下错行（同点多标签时上下堆叠）
+            (double x, double y)[] candidates =
+            [
+                (cx + r + 3, cy - h / 2),
+                (cx - r - 3 - w, cy - h / 2),
+                (cx - w / 2, cy - r - 3 - h),
+                (cx - w / 2, cy + r + 3),
+                (cx + r + 3, cy - h / 2 - h - 3),
+                (cx + r + 3, cy + h / 2 + 3),
+                (cx - r - 3 - w, cy - h / 2 - h - 3),
+                (cx - r - 3 - w, cy + h / 2 + 3),
+                (cx + r + 3, cy - h / 2 - (h + 3) * 2),
+                (cx + r + 3, cy + h / 2 + h + 6),
+                (cx - r - 3 - w, cy - h / 2 - (h + 3) * 2),
+                (cx - r - 3 - w, cy + h / 2 + h + 6),
+            ];
+
+            Rect? best = null;
+            var bestOverlap = double.MaxValue;
+            foreach (var (x, y) in candidates)
+            {
+                var rect = ClampRect(new Rect(x, y, w, h), width, height);
+                if (!placed.Any(p => p.IntersectsWith(rect)))
+                {
+                    best = rect;
+                    break;
+                }
+
+                var overlap = placed.Sum(p => IntersectArea(p, rect));
+                if (overlap < bestOverlap)
+                {
+                    bestOverlap = overlap;
+                    best = rect;
+                }
+            }
+
+            if (best is not { } chosen)
+            {
+                continue;
+            }
+
+            Canvas.SetLeft(label, chosen.X);
+            Canvas.SetTop(label, chosen.Y);
+            placed.Add(chosen);
         }
     }
 
-    private void UpdateOutlierPanel()
+    private static Rect ClampRect(Rect rect, double width, double height)
     {
-        if (_overlapStyle != 0)
-        {
-            // SMT / Near2 本身按跳数分层，不使用“几何离群”贴边卡片。
-            OutlierPanel.Children.Clear();
-            OutlierPanel.Visibility = Visibility.Collapsed;
-            return;
-        }
+        var x = Math.Clamp(rect.X, 2, Math.Max(2, width - rect.Width - 2));
+        var y = Math.Clamp(rect.Y, 2, Math.Max(2, height - rect.Height - 2));
+        return new Rect(x, y, rect.Width, rect.Height);
+    }
 
-        OutlierPanel.Children.Clear();
-        var outliers = _allSolarSystem
-            .Where(p => p.ViewportOutlier && (_intelings.Contains(p.SolarSystemID) || _downgradeds.Contains(p.SolarSystemID)))
-            .ToList();
-        if (outliers.Count == 0)
-        {
-            OutlierPanel.Visibility = Visibility.Collapsed;
-            return;
-        }
+    private static double IntersectArea(Rect a, Rect b)
+    {
+        a.Intersect(b);
+        return a.IsEmpty ? 0 : a.Width * a.Height;
+    }
 
-        OutlierPanel.Visibility = Visibility.Visible;
-        foreach (var item in outliers.Take(3))
-        {
-            var border = new Border
-            {
-                Margin = new Thickness(0, 0, 0, 6),
-                Padding = new Thickness(8, 6, 8, 7),
-                CornerRadius = new CornerRadius(6),
-                BorderThickness = new Thickness(1),
-                BorderBrush = OutlierBorderBrush,
-                Background = Application.Current?.TryFindResource("CardBackgroundFillColorDefaultBrush") as Brush
-                             ?? new SolidColorBrush(Color.FromArgb(235, 32, 28, 44)),
-                Cursor = Cursors.Hand,
-                Tag = item,
-                ToolTip = $"{FindString("IntelWindow_OutlierTip")}\n{item.SolarSystemName}",
-            };
-
-            var stack = new StackPanel();
-            stack.Children.Add(new TextBlock
-            {
-                Text = FindString("IntelWindow_Outlier"),
-                FontSize = 9,
-                Foreground = OutlierTextBrush,
-                Opacity = 0.8,
-            });
-            stack.Children.Add(new TextBlock
-            {
-                Text = item.SolarSystemName,
-                Margin = new Thickness(0, 1, 0, 0),
-                FontSize = 12,
-                FontWeight = FontWeights.SemiBold,
-                Foreground = OutlierTextBrush,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-            });
-            stack.Children.Add(new TextBlock
-            {
-                Text = $"{_intelMap?.JumpsOf(item.SolarSystemID) ?? 0} {FindString("EarlyWarningPage_Jumps")}",
-                FontSize = 9,
-                Foreground = OutlierTextBrush,
-                Opacity = 0.66,
-            });
-            border.Child = stack;
-            border.MouseLeftButtonUp += (_, e) =>
-            {
-                e.Handled = true;
-                FocusSystem(item);
-                OutlierActivated?.Invoke(this, item);
-            };
-            OutlierPanel.Children.Add(border);
-        }
-
-        if (outliers.Count > 3)
-        {
-            OutlierPanel.Children.Add(new TextBlock
-            {
-                Text = $"+{outliers.Count - 3}",
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Foreground = OutlierTextBrush,
-                FontSize = 10,
-                Opacity = 0.65,
-            });
-        }
+    private Size MeasureLabel(TextBlock label)
+    {
+        var typeface = new Typeface(label.FontFamily, label.FontStyle, label.FontWeight, FontStretches.Normal);
+        var text = new FormattedText(
+            label.Text ?? string.Empty,
+            CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            typeface,
+            label.FontSize,
+            Brushes.Black,
+            VisualTreeHelper.GetDpi(this).PixelsPerDip);
+        return new Size(Math.Max(56, text.Width + 4), Math.Max(12, text.Height + 2));
     }
 
     public void UpdateHome(IntelSolarSystemMap intelMap)
@@ -528,11 +600,6 @@ public partial class IntelMapView : UserControl
 
     private void Root_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (OutlierPanel.IsMouseOver)
-        {
-            return;
-        }
-
         _dragging = true;
         _dragStart = e.GetPosition(this);
         _panStartX = PanTransform.X;
@@ -697,4 +764,8 @@ public partial class IntelMapView : UserControl
     {
         UpdateUI();
     }
+
+    /// <summary>阶段 307：控件卸载时解绑全局设置事件。</summary>
+    public void DetachGlobalSetting()
+        => IntelGlobalSettingService.SettingChanged -= OnGlobalIntelSettingChanged;
 }

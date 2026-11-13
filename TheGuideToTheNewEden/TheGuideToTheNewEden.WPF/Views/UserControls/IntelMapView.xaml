@@ -52,12 +52,5 @@
                 TextWrapping="Wrap" />
         </Border>
 
-        <!--  几何离群星系：只贴边提示，仍在 N 跳数据集合里  -->
-        <StackPanel
-            x:Name="OutlierPanel"
-            Width="112"
-            Margin="0,38,8,8"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center" />
     </Grid>
 </UserControl>

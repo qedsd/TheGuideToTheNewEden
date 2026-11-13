@@ -1,10 +1,14 @@
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.WPF.Helpers.Interop;
+using TheGuideToTheNewEden.WPF.Services.GamePreview;
+using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Services.ChannelIntel;
@@ -37,7 +41,8 @@ public sealed class IntelWarningService
                 return false;
             }
 
-            var window = new IntelWindow(setting, intelMap);
+            // 阶段 307：全局设置 + 其它可见小窗做吸附候选
+            var window = new IntelWindow(setting, intelMap, IntelGlobalSettingService.Value, () => SnapshotIntelTargets(setting.Listener));
             _windows.Add(setting.Listener, window);
             if (setting.OverlapType == 0)
             {
@@ -107,6 +112,92 @@ public sealed class IntelWarningService
 
     public IntelWindow? GetIntelWindow(string listener)
         => _windows.TryGetValue(listener, out var window) ? window : null;
+
+    /// <summary>阶段 307：其它可见预警小窗的物理矩形（拖动吸附候选，排除自己）。</summary>
+    private IReadOnlyList<NativeMethods.RECT> SnapshotIntelTargets(string selfListener)
+    {
+        var targets = new List<NativeMethods.RECT>();
+        foreach (var pair in _windows)
+        {
+            if (string.Equals(pair.Key, selfListener, StringComparison.Ordinal)
+                || !pair.Value.IsVisible
+                || pair.Value.WindowState == WindowState.Minimized)
+            {
+                continue;
+            }
+
+            var rect = pair.Value.GetRectPhysical();
+            if (rect.Width > 0 && rect.Height > 0)
+            {
+                targets.Add(rect);
+            }
+        }
+
+        return targets;
+    }
+
+    /// <summary>阶段 307：按全局设置统一所有预警小窗的尺寸。返回处理数量。</summary>
+    public int ApplyUniformSize(int width, int height)
+    {
+        var count = 0;
+        foreach (var window in _windows.Values)
+        {
+            window.SetUniformSize(width, height);
+            count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// 阶段 307：以第一个可见小窗为锚点，按全局设置的方向/对齐/间隔把其余可见小窗排开。
+    /// 复用多开预览的 <see cref="PreviewLayoutCalculator"/>（物理像素坐标）。返回排列数量。
+    /// </summary>
+    public int ApplyAutoLayout()
+    {
+        var global = IntelGlobalSettingService.Value;
+        var visible = new List<IntelWindow>();
+        foreach (var window in _windows.Values)
+        {
+            if (window.IsVisible && window.WindowState != WindowState.Minimized)
+            {
+                visible.Add(window);
+            }
+        }
+
+        if (visible.Count < 2)
+        {
+            return 0;
+        }
+
+        var anchor = visible[0];
+        var anchorRect = anchor.GetRectPhysical();
+        if (anchorRect.Width <= 0 || anchorRect.Height <= 0)
+        {
+            return 0;
+        }
+
+        if (!NativeMethods.TryGetMonitorWorkArea(anchor.GetHwnd(), out var workArea))
+        {
+            return 0;
+        }
+
+        var others = visible.Skip(1).OrderBy(w => w._setting.Listener, StringComparer.Ordinal).ToList();
+        var items = others.Select(_ =>
+        {
+            var rect = _.GetRectPhysical();
+            return new PreviewLayoutCalculator.Size(rect.Width, rect.Height);
+        }).ToList();
+        var positions = PreviewLayoutCalculator.Compute(
+            anchorRect, items, workArea, global.LayoutMode, global.LayoutAlign, Math.Max(0, global.LayoutSpan), global.LayoutMaxPerLine);
+        var count = Math.Min(others.Count, positions.Count);
+        for (var i = 0; i < count; i++)
+        {
+            NativeMethods.MoveWindow(others[i].GetHwnd(), positions[i].X, positions[i].Y);
+        }
+
+        return count;
+    }
 
     private readonly object _notifyLocker = new();
 

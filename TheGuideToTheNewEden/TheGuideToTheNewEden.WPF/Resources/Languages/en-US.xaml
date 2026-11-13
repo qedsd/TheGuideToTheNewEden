@@ -1030,8 +1030,12 @@
     <sys:String x:Key="BusinessPage_HeatThresholdAbsolute">Absolute volume</sys:String>
     <sys:String x:Key="BusinessPage_HeatThresholdRelative">Multiple of own average</sys:String>
     <sys:String x:Key="BusinessPage_HeatRelativeFactor">Relative factor (x own average)</sys:String>
-    <sys:String x:Key="BusinessPage_Tip_HeatThresholdMode">How a hot day is decided: absolute volume (daily volume >= threshold) or a multiple of the item's own average (daily volume >= its own average x factor). Relative adapts to high/low-volume items automatically; recommended.</sys:String>
-    <sys:String x:Key="BusinessPage_Tip_HeatRelativeFactor">Hot-day line in relative mode: volume >= the item's own average times this factor. 0.5 = half of its own average already counts as hot; raise for stricter.</sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatThresholdMode">
+        How a hot day is decided: absolute volume (daily volume >= threshold) or a multiple of the item's own average (daily volume >= its own average x factor). Relative adapts to high/low-volume items automatically; recommended.
+    </sys:String>
+    <sys:String x:Key="BusinessPage_Tip_HeatRelativeFactor">
+        Hot-day line in relative mode: volume >= the item's own average times this factor. 0.5 = half of its own average already counts as hot; raise for stricter.
+    </sys:String>
     <sys:String x:Key="BusinessPage_Tip_HeatValueDay">Days for the heat value. More days = a better view of lasting demand (see hot-day rule).</sys:String>
     <sys:String x:Key="BusinessPage_Tip_HeatValueThreshold">Threshold for a hot day: a day with volume at or above this counts +1. Tune per category (raise for consumables).</sys:String>
     <sys:String x:Key="BusinessPage_Tip_SalesTaxRate">Sales tax charged on selling (%). Deducted from after-fee profit: sell x (1 - tax - broker) - buy x (1 + broker). Default 3.6%, enter per your skills.</sys:String>
@@ -1207,8 +1211,6 @@
     <sys:String x:Key="IntelWindow_Kill">Kills</sys:String>
     <sys:String x:Key="IntelWindow_NoMessages">No channel messages yet</sys:String>
     <sys:String x:Key="IntelWindow_ResizeChannel">Drag to resize channel content</sys:String>
-    <sys:String x:Key="IntelWindow_Outlier">Geometric outlier</sys:String>
-    <sys:String x:Key="IntelWindow_OutlierTip">Still within range; shown at the edge only because its 2D position is far from the viewport center.</sys:String>
     <sys:String x:Key="IntelWindow_ZoomIn">Zoom in</sys:String>
     <sys:String x:Key="IntelWindow_ZoomOut">Zoom out</sys:String>
     <sys:String x:Key="IntelWindow_ResetView">Reset view</sys:String>
@@ -1221,6 +1223,32 @@
     <sys:String x:Key="ChannelIntelPage_OverlapSetting">Intel Window</sys:String>
     <sys:String x:Key="ChannelIntelPage_RangeSetting">Intel Range</sys:String>
     <sys:String x:Key="ChannelIntelPage_SoundSetting">Intel Sound</sys:String>
+    <sys:String x:Key="ChannelIntelPage_GlobalIntelSetting">Global Settings</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelSnap">Snap to other intel windows</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelSnapDistance">Snap distance (px)</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelLayoutMode">Arrange direction</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutMode_Left">Left</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutMode_Right">Right</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutMode_Down">Down</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutMode_Up">Up</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelLayoutAlign">Cross-axis align</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutAlign_Start">Start</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutAlign_Center">Center</sys:String>
+    <sys:String x:Key="ChannelIntelPage_LayoutAlign_End">End</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelLayoutSpan">Span (px)</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelLayoutMaxPerLine">Max per line</sys:String>
+    <sys:String x:Key="ChannelIntelPage_BtnUniformSize">Uniform size</sys:String>
+    <sys:String x:Key="ChannelIntelPage_BtnAutoLayout">Auto arrange</sys:String>
+    <sys:String x:Key="ChannelIntelPage_AppliedUniformSize">Unified {0} intel window sizes</sys:String>
+    <sys:String x:Key="ChannelIntelPage_AppliedAutoLayout">Arranged {0} intel windows</sys:String>
+    <sys:String x:Key="ChannelIntelPage_NoVisibleIntel">No visible intel windows (need at least two)</sys:String>
+    <sys:String x:Key="ChannelIntelPage_SmallWidthLabelThreshold">Map label width threshold (px)</sys:String>
+    <sys:String x:Key="ChannelIntelPage_Tip_SmallWidthLabelThreshold">Below this window/canvas width the star map hides system names and expresses alerts by dot color/size only; 0 = always show names.</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelSnap_Enable">Enable snapping</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelSnapTitle">Snapping</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelLayoutTitle">Position &amp; alignment</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelOther">Other</sys:String>
+    <sys:String x:Key="ChannelIntelPage_IntelUniformSize">Window size</sys:String>
     <sys:String x:Key="ChannelIntelPage_SoundFile">Sound file</sys:String>
     <sys:String x:Key="ChannelIntelPage_HeaderTitle">Channel intel</sys:String>
     <sys:String x:Key="ChannelIntelPage_HeaderSubtitle">Monitor chat channels and get intel through the overlay, sound and system notifications.</sys:String>

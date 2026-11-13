@@ -114,6 +114,8 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
 
         private int overlapStyle;
         public int OverlapStyle { get => overlapStyle; set => SetProperty(ref overlapStyle, value); }
+
+        // 阶段 307：星图名称标签宽度阈值上收到全局设置（IntelGlobalSetting.LabelWidthThreshold）
         private bool makeSound = true;
         /// <summary>
         /// 预警声

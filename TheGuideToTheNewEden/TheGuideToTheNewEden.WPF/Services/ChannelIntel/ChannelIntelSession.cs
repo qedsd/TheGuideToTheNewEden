@@ -135,7 +135,8 @@ public sealed class ChannelIntelSession
         }
         else
         {
-            SelectedNameDbs = [_nameDbs.FirstOrDefault() ?? string.Empty];
+            // 阶段 311：语言库默认全部勾选（不再只默认英文主库）
+            SelectedNameDbs = [.. _nameDbs];
         }
 
         if (Setting.AutoUpdateLocaltion)
@@ -148,6 +149,13 @@ public sealed class ChannelIntelSession
     {
         Setting.EnsureSounds();
         Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelID).ToList();
+        Setting.NameDbs = SelectedNameDbs.ToList();
+        IntelSettingService.SetValue(Setting);
+    }
+
+    /// <summary>阶段 311：语言库勾选变化后立即持久化（否则下次启动仍回到旧选择）。</summary>
+    public void SaveNameDbs()
+    {
         Setting.NameDbs = SelectedNameDbs.ToList();
         IntelSettingService.SetValue(Setting);
     }

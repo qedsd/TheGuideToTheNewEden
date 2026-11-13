@@ -12,6 +12,7 @@ using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WPF.Helpers;
+using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
@@ -41,6 +42,9 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     private const int MaxPendingZkbContents = 500;
     private const int ChatFlushBatchSize = 500;
     private const int ZkbFlushBatchSize = 200;
+
+    /// <summary>阶段 307：预警小窗全局设置（统一尺寸/排列/吸附/标签阈值），供页面卡片绑定。</summary>
+    public IntelGlobalSetting GlobalIntelSetting => IntelGlobalSettingService.Value;
 
     private List<string> _nameDbs = [];
 
@@ -674,6 +678,8 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         if (Session is not null)
         {
             Session.SelectedNameDbs = dbs.ToList();
+            // 阶段 311：立即写入 IntelSettings.json，重启后保持
+            Session.SaveNameDbs();
         }
     }
 

@@ -49,6 +49,9 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         public string Path { get; init; } = string.Empty;
 
         public string Name { get; init; } = string.Empty;
+
+        /// <summary>阶段 314：勾选状态走数据绑定（ItemsSource 赋值前先置好，容器未生成也可恢复）。</summary>
+        public bool IsChecked { get; set; }
     }
 
     public ChannelIntelPage()
@@ -118,30 +121,53 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         }
     }
 
+    /// <summary>阶段 307：按全局设置统一全部预警小窗尺寸。</summary>
+    private void OnIntelUniformSizeClick(object sender, RoutedEventArgs e)
+    {
+        var global = _viewModel.GlobalIntelSetting;
+        if (global is null)
+        {
+            return;
+        }
+
+        var count = Services.ChannelIntel.IntelWarningService.Current.ApplyUniformSize(global.UniformWidth, global.UniformHeight);
+        Services.PageNotifyService.Success(string.Format(FindString("ChannelIntelPage_AppliedUniformSize"), count));
+    }
+
+    /// <summary>阶段 307：以第一个可见小窗为锚点自动排列其余可见小窗。</summary>
+    private void OnIntelAutoLayoutClick(object sender, RoutedEventArgs e)
+    {
+        var count = Services.ChannelIntel.IntelWarningService.Current.ApplyAutoLayout();
+        if (count <= 0)
+        {
+            Services.PageNotifyService.Warning(FindString("ChannelIntelPage_NoVisibleIntel"));
+            return;
+        }
+
+        Services.PageNotifyService.Success(string.Format(FindString("ChannelIntelPage_AppliedAutoLayout"), count));
+    }
+
     private void OnSessionChanged()
     {
         // 初始化星系搜索列表与语言库多选
         var systems = _viewModel.MapSolarSystems;
         SystemList.ItemsSource = systems;
         ApplySystemFilter(SystemSearchBox.Text);
+        // 阶段 311/314：恢复复选框勾选（会话已保证"无保存选择 → 全选"）。
+        // 必须在赋 ItemsSource 之前把 IsChecked 写进数据项：ItemsControl 的容器在布局前不存在，
+        // 恢复期走视觉树会全部落空 → 表现为"默认全不勾"。
+        var selected = _viewModel.Session?.SelectedNameDbs ?? [];
+        if (selected.Count == 0)
+        {
+            selected = [.. _viewModel.NameDbs];
+        }
+
         NameDbsList.ItemsSource = _viewModel.NameDbs.Select(p => new NameDbItem
         {
             Path = p,
             Name = p == _viewModel.NameDbs.FirstOrDefault() ? "default(en)" : System.IO.Path.GetFileNameWithoutExtension(p),
+            IsChecked = selected.Contains(p),
         }).ToList();
-        // 恢复勾选
-        NameDbsList.SelectionChanged -= OnNameDbsSelectionChanged;
-        NameDbsList.SelectedItems.Clear();
-        var selected = _viewModel.Session?.SelectedNameDbs ?? [];
-        foreach (var item in NameDbsList.Items.Cast<NameDbItem>())
-        {
-            if (selected.Contains(item.Path))
-            {
-                NameDbsList.SelectedItems.Add(item);
-            }
-        }
-
-        NameDbsList.SelectionChanged += OnNameDbsSelectionChanged;
 
         ChannelList.ItemsSource = _viewModel.Session?.ChatChanelInfos;
         AttachSession(_viewModel.Session);
@@ -328,8 +354,14 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         }
     }
 
-    private void OnNameDbsSelectionChanged(object sender, SelectionChangedEventArgs e)
-        => _viewModel.SetSelectedNameDbs(NameDbsList.SelectedItems.Cast<NameDbItem>().Select(p => p.Path));
+    /// <summary>阶段 311/314：复选框勾选变化 → 从数据项重建语言库选择（VM 内即时持久化）。</summary>
+    private void OnNameDbCheckChanged(object sender, RoutedEventArgs e)
+    {
+        var selected = NameDbsList.ItemsSource is IEnumerable<NameDbItem> items
+            ? items.Where(p => p.IsChecked).Select(p => p.Path).ToList()
+            : [];
+        _viewModel.SetSelectedNameDbs(selected);
+    }
 
     // ---------- 按钮 ----------
 

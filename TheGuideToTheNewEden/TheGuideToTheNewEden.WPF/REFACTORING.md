@@ -1,5 +1,5 @@
 # TheGuideToTheNewEden.WPF 重构与更新记录
-
+- 阶段 306：阈值开放为预警设置项 `SmallWidthLabelThreshold`（默认 **500**，0 = 总是显示名称），频道预警页「预警设置」卡片新增数字输入框（带悬浮说明），随存档持久化；语言键 +2。
 > 本文档记录 WinUI 3 → WPF 迁移过程中的**全部重构决策与每一次更新**，包含背景、方案、变更明细、问题根因、验证结果与已知限制。
 > 起点：对 WinUI 3 项目做"重构为 WPF"的可行性评估；终点：WPF 版已具备导航框架、完整设置模块、角色功能（授权 + 数据层 + 7 个子页）。
 
@@ -11896,6 +11896,168 @@ MainWindow.xaml(.cs)
   - 主窗口最小化或页面不可见时不再 `ScrollToEnd`（仍保留最近内容）。
 - 清空频道内容时同时清空 VM 队列和页面待追加列表，避免清空后旧消息又冒出来。
 - 验证：WPF build **0 错误**；未做数小时长跑复测，建议连续后台运行 4–8 小时观察内存/CPU。
+
+## 阶段 304：预警小窗星图标签防重叠布局（2026-11-13）
+
+> 用户反馈：频道预警小窗的星图会为预警星系显示完整名字，预警多且窗口小时名字重叠成一团。
+
+- 现状：`IntelMapView.UpdateUI` 把可见标签（本地/预警/降级）固定放在圆点右侧（靠边时改到左侧），
+  预警一多必然叠成一团；预警解除后固定位置也不回收。
+- 修复：**标签防重叠布局**（贪心碰撞放置）：
+  - `UpdateUI` 记录每个星系的圆心（`_centerDic`），标签创建后统一交给 `RelayoutLabels(width, height)`；
+  - `ShowLabel` 只切换可见性，随后重排——预警解除后空出来的位置自动让给别的标签；
+  - 排布优先级：**本地 > 预警中 > 已降级**（同级保持创建顺序），重要的名字优先拿到好位置；
+  - 每个标签在圆点四周试 12 个候选位（右/左/上/下 × 上下错行），用 `FormattedText` 量实际宽高、
+    取第一个与已放置标签**不相交**的候选位；全部碰撞时取重叠面积最小者；全程钳制在画布内。
+- 适用两种布局样式（2D / SMT / Near2）；缩放/平移走容器 Transform，不受影响。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 305：预警小窗小尺寸时隐藏星系名标签（2026-11-13）
+
+> 用户要求：窗口尺寸小的时候就直接不显示星系名，只靠点的颜色表达预警。
+
+- `IntelMapView` 新增常量 `SmallWidthLabelThreshold = 300`：
+  - `ShowLabel`：画布宽度 < 300 时标签一律收起（本地也收起）；
+  - `RelayoutLabels` 开头同样按宽度短路——小窗口直接全部 `Collapsed`，不再做防重叠布局；
+  - 尺寸变化（`SizeChanged → UpdateUI`）会自动在"显示名称 + 防重叠"与"只显示点"之间切换；
+  - 悬停高亮、右键解除、右侧离群卡片均不受影响（信息通道都还在）。
+- 阈值已开放为预警设置项 `SmallWidthLabelThreshold`（默认 **500**，0 = 总是显示名称），
+  频道预警页「预警设置」卡片新增数字输入框（带悬浮说明），随存档持久化。
+- 语言键无增删；手册 `intel.md` 防重叠说明已并入此条（小窗优先用颜色）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 307：预警小窗全局设置——统一尺寸/自动排列/拖动吸附/标签阈值上收（2026-11-13）
+
+> 参考"多开预览"功能：全部频道预警星图小窗用**全局设置**统一外观；标签阈值从每角色设置上收；小窗加吸附。
+
+### 307.1 全局设置与持久化
+
+- `Core/Models/ChannelIntel/IntelGlobalSetting.cs`（ObservableObject）：
+  `LabelWidthThreshold=500`、`UniformWidth/Height=360`、`SnapEnabled=true`、`SnapDistance=12`、
+  `LayoutMode=2 向下`、`LayoutAlign=1 居中`、`LayoutSpan=8`、`LayoutMaxPerLine=0`；
+- `Services/Settings/IntelGlobalSettingService`：`Configs/IntelGlobalSetting.json`，改值即写盘；`SettingChanged` 事件。
+
+### 307.2 吸附（对齐多开预览实现）
+
+- `IntelWindow` 标题栏改为**手动拖动**（XAML `WindowChrome.CaptionHeight=38→0`，标题 Grid 命名
+  `TitleBarGrid` + 手势），拖动中用多开预览的 `PreviewSnapCalculator/PreviewSnapSession` 与**其它可见预警小窗**
+  吸附（每轴独立、沿对齐边滑动、距离可配）；候选矩形由 `IntelWarningService.SnapshotIntelTargets(角色)` 提供；
+- 双击标题还原/最大化（与原生 CaptionHeight 行为一致）；按钮命中不拦截；窗口矩形以物理像素记。
+
+### 307.3 统一尺寸与自动排列
+
+- `IntelWarningService.ApplyUniformSize(w,h)`：全部小窗按全局宽高（DIP）调整，`SizeChanged` 持久化到各角色 WinW/WinH；
+- `IntelWarningService.ApplyAutoLayout()`：第一个可见小窗为锚点，其余按角色名排序，
+  复用多开预览的 `PreviewLayoutCalculator.Compute`（方向/交叉轴对齐/间隔/每行最多），`MoveWindow` 落位；
+- 频道预警页新增「**预警小窗全局设置**」卡片：吸附开关+距离、统一宽高、排列方向/交叉轴/间隔/每行最多、
+  标签宽度阈值（从每角色预警设置卡移入）、「统一尺寸」「自动排列」两个按钮（右下角通知结果）。
+
+### 307.4 标签阈值上收
+
+- `ChannelIntelSetting.SmallWidthLabelThreshold` **删除**（旧 JSON 字段被反序列化忽略，无需迁移）；
+- `IntelMapView.GetLabelWidthThreshold()` 改读 `IntelGlobalSettingService.Value.LabelWidthThreshold`；
+  订阅 `SettingChanged` 即时 `UpdateUI()`；控件卸载时 `DetachGlobalSetting()` 解绑。
+
+### 307.5 验证
+
+- 语言：中英各 +19 键（3566 = 3566）；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 308：预警小窗全局设置移出「预警设置」页签，改为独立页签（2026-11-13）
+
+> 用户要求：全局设置不要放在单个会话的「预警设置」卡片里，用单独的 Tab。
+
+- `ChannelIntelPage` 把阶段 307 的「预警小窗全局设置」卡片从「预警设置」Tab（会话级设置面板）整体迁出，
+  作为 TabControl 的独立页签「预警小窗全局设置」（内容与绑定不变：吸附开关/距离、统一宽高、排列方向/交叉轴/间隔/每行最多、
+  标签阈值、「统一尺寸」「自动排列」按钮）——全局设置不再随选中会话的 `IsEnabled` 一起被禁用。
+- 语言键复用 `ChannelIntelPage_GlobalIntelSetting`（页签名与卡片标题同词），无新增；`dotnet build`：0 错误。未实机点验。
+
+## 阶段 309：修复 en-US.xaml 乱码；全局设置页签排版对齐会话级预警设置（2026-11-13）
+
+> 用户反馈：en-US.xaml 大量乱码且 `<sys:String>` 结束标记缺失（启动即崩）；全局设置 UI 排布太乱。
+
+### 309.1 乱码根因与修复
+
+- 工作区 en-US.xaml 有 **142 行**含 U+FFFD（多字节字符损坏，`</sys:String>` 的 `<` 被吞 → XAML 解析失败）；
+  zh-CN 完好（0 行），HEAD 干净（0 行）——损坏只发生在工作区一侧（某次以错误编码读写所致）。
+- 修复：`git cat-file -p HEAD:...en-US.xaml` 取干净版（LF、3677 行）→ 重放 307/309 的 21 个新键
+  （含 306 遗漏补入 en 的 `SmallWidthLabelThreshold` 两键）→ 校验 FFFD=0、zh/en **3568 = 3568**。
+- 教训：**语言文件今后只允许通过显式 UTF-8（python io / ReadAllText+UTF8）写**；
+  `Get-Content` 无 `-Encoding UTF8` 一类默认编码读写一律禁止。
+
+### 309.2 全局设置排版
+
+- 「预警小窗全局设置」页签内部改为与会话级「预警设置」一致的**两列（110px 标签 + 全宽控件）Grid**：
+  吸附（启用+距离）/ 统一窗口尺寸（宽+高）/ 排列方向 / 交叉轴对齐 / 排列间隔+每行最多 / 标签阈值 /
+  右下角「统一尺寸」「自动排列」按钮，7 行规整排布；
+- 新增键 `ChannelIntelPage_IntelSnap_Enable`（启用吸附）、`ChannelIntelPage_IntelUniformSize`（统一窗口尺寸）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 310：预警小窗全局设置页签拆分为四张卡片（2026-11-13）
+
+> 用户要求：全局设置 Tab 的内容拆分，不要一个标题包全部。
+
+- 「预警小窗全局设置」页签内按功能拆成 4 张 `SectionCard`：
+  **吸附**（启用吸附 + 距离）、**窗口大小**（统一宽/高 + 「统一尺寸」按钮）、
+  **位置对齐**（排列方向 + 交叉轴对齐 / 间隔 + 每行最多 + 「自动排列」按钮）、
+  **其他**（星图名称标签宽度阈值）；
+  操作按钮移到所属卡片的行内（统一尺寸在窗口大小卡、自动排列在位置对齐卡），不再集中右下角。
+- 新增键：`ChannelIntelPage_IntelSnapTitle`（吸附）、`ChannelIntelPage_IntelLayoutTitle`（位置对齐）、
+  `ChannelIntelPage_IntelOther`（其他）、`GamePreviewPage_UniformSize`（统一尺寸，中英各 4）；
+  zh/en **3571 = 3571**，en 无乱码。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 311：预警星系名语言库改复选框（默认全选，勾选即时持久化）（2026-11-13）
+
+> 用户反馈：预警星系名的中英文列表要多选；手动选了中文，下次启动又只剩英文。
+
+- 根因：页面的多选 ListBox 变化只写 `Session.SelectedNameDbs`（运行时内存），**从不写回**
+  `Setting.NameDbs`/`IntelSettings.json`；且旧逻辑"Setting.NameDbs 为空 → 默认只选 default(en)"。
+- 改造（在用户现有实现上）：
+  - 频道预警页「语言库」由多选 `ListBox` 改为 **`ItemsControl` + `CheckBox`**（每库一行复选框）；
+  - **默认全部勾选**：`ChannelIntelSession` 初始化时 `Setting.NameDbs` 为空 → `SelectedNameDbs = 全部语言库`；
+  - **即时持久化**：勾选变化 → `Session.SelectedNameDbs` 更新后立即 `SaveNameDbs()`
+    （`Setting.NameDbs` + `IntelSettingService.SetValue`），重启保持；
+  - 页面恢复勾选走复选框状态（`_nameDbRestoring` 抑制恢复期事件），新增 `FindVisualChild<T>` 助手。
+- 语言键无增删；`dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 312：预警星图去掉"几何离群"，离群点按全量等比缩放靠近显示（2026-11-13）
+
+> 用户反馈：离群几何显示奇怪——离其他星系远的点直接缩放 XY 靠近显示即可，去掉贴边卡片。
+
+- `SolarSystemPosHelper.ResetXY`：2%–98% 分位 + 外侧 4% 软压缩 + `ViewportOutlier` 标记，
+  改为**全量 min/max 等比缩放**（保持纵横比、居中，范围 0.96），离群点按真实比例靠近；
+  `ViewportOutlier` 恒为 false；删除不再使用的 `Percentile/MapAxis`。
+- `IntelMapView`：删除 `UpdateOutlierPanel` 与全部调用、`OutlierActivated` 事件、
+  `OutlierPanel`（XAML 右侧贴边卡片）与离群画刷、拖拽起点里对它的命中判断；
+- `IntelWindow`：图例删除"几何离群"项（`IntelOutlierBrush` 资源一并删）；
+- 语言：删除 `IntelWindow_Outlier` / `IntelWindow_OutlierTip`（中英同步，3569 = 3569）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 313：预警/降级/击杀三色区分度优化（2026-11-13）
+
+> 用户反馈：预警（橙 #FF8A4C）、降级（琥珀 #F2C65C）、击杀（红 #FF6262）都偏红系，小圆点几乎分不清。
+
+- **降级改为紫色 `#C3A4FF`**（复用 312 删掉的离群紫）：橙=预警、紫=降级、红=击杀、绿=本地、灰蓝=安静，
+  五色色相彼此独立；
+- 地图侧 `IntelMapView.DowngradeBrush` 同步改紫；星图连线/标签的降级色随画刷自动跟随；
+- 小窗图例：新增 `IntelDowngradeBrush` 资源，"已降级"图例圆点由预警橙改为紫（此前图例里降级点和预警点同色）。
+- 事故记录：本轮一次 PowerShell 跨进程变量误用把 `IntelWindow.xaml` 写空；已从 HEAD 恢复并
+  **逐项重放**未提交的 XAML 改动（307 CaptionHeight=0/TitleBarGrid、312 图例去离群、313 降级配色），
+  构建与图例顺序核验通过。教训：写文件前必须确认源数据非空（尤其是跨命令复用变量时）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 314：修复语言库复选框"默认全不勾"（2026-11-13）
+
+> 用户反馈：311 之后星系名语言库默认一个都没勾。
+
+- 根因：恢复勾选走**视觉树**（`ItemContainerGenerator.ContainerFromItem` + `FindVisualChild`），
+  但 `ItemsControl` 的容器在 `ItemsSource` 赋值后要等**布局**才生成——恢复期全部取到 null，
+  勾选状态从未被写回；会话侧"默认全选"其实已生效，只是 UI 没显示。
+- 修复：勾选状态改为**数据绑定**——`NameDbItem` 增加 `IsChecked`（先按已选集合写好），
+  赋 `ItemsSource` 时复选框初始状态即正确；`CheckBox.IsChecked` 绑定该项；
+  `OnNameDbCheckChanged` 直接从 `ItemsSource` 数据项收集勾选（不再走视觉树），
+  删除 `_nameDbRestoring` 标志与 `FindVisualChild` 助手（不再需要）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
 
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
