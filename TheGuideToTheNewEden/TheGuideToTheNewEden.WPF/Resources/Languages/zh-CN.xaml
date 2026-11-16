@@ -1466,6 +1466,13 @@
     <sys:String x:Key="GamePreviewPage_SnapEnabledTip">拖动浮窗时，靠近其它可见预览窗的边/角会自动对齐；贴住一条边后仍可沿该边滑动。只吸附预览窗口，不吸屏幕边缘。</sys:String>
     <sys:String x:Key="GamePreviewPage_SnapDistance">吸附距离（像素）</sys:String>
     <sys:String x:Key="GamePreviewPage_SnapDistanceTip">窗口边与目标边的距离不超过该值时吸附；建议 8–16。</sys:String>
+    <sys:String x:Key="GamePreviewPage_MouseGroup">鼠标操作</sys:String>
+    <sys:String x:Key="GamePreviewPage_DragMouseButton">拖动窗口使用</sys:String>
+    <sys:String x:Key="GamePreviewPage_DragMouseButtonTip">按住该键并移动即可拖动预览浮窗；不移动只点击时按下一行的设置激活游戏窗口。</sys:String>
+    <sys:String x:Key="GamePreviewPage_ActivateMouseButton">点击激活窗口使用</sys:String>
+    <sys:String x:Key="GamePreviewPage_ActivateMouseButtonTip">不拖动的情况下点击浮窗，用该键激活对应的游戏窗口（会按上面的“激活方式”执行）。</sys:String>
+    <sys:String x:Key="GamePreviewPage_MouseButton_Left">左键</sys:String>
+    <sys:String x:Key="GamePreviewPage_MouseButton_Right">右键</sys:String>
     <sys:String x:Key="GamePreviewPage_Transparency">透明效果</sys:String>
     <sys:String x:Key="GamePreviewPage_UseNativeThumbnailOverlay">使用原生半透明画面层</sys:String>
     <sys:String x:Key="GamePreviewPage_UseNativeThumbnailOverlayTip">默认开启。用独立的原生分层窗口显示游戏画面，半透明兼容性更好；关闭后回退到旧版 DWM 缩略图透明，部分电脑可能无法半透明。</sys:String>

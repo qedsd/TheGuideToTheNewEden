@@ -52,6 +52,8 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         _manager = new PreviewWindowManager(_setting, _hotkeys);
         _manager.RunningChanged += OnRunningChanged;
         _manager.SettingChanged += _ => GamePreviewSettingService.Current.ScheduleSave();
+        // 阶段 345：全局设置（吸附、鼠标按键等）改动后也要落盘，不必等退出
+        _setting.PropertyChanged += OnGlobalSettingPropertyChanged;
         _manager.HotkeyFailed += OnHotkeyFailed;
         _hotkeys.Pressed += OnHotkeyPressed;
         _foreground.ForegroundChanged += OnForegroundChanged;
@@ -1799,6 +1801,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     private static string FindString(string key)
         => Application.Current?.TryFindResource(key) as string ?? key;
 
+    private void OnGlobalSettingPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        => GamePreviewSettingService.Current.ScheduleSave();
+
     public void Dispose()
     {
         if (_disposed)
@@ -1823,6 +1828,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             DisposeProcess(process.Process);
         }
 
+        _setting.PropertyChanged -= OnGlobalSettingPropertyChanged;
         GamePreviewSettingService.Current.Save();
         PropertyChanged = null;
     }

@@ -12450,6 +12450,25 @@ MainWindow.xaml(.cs)
 - `dotnet build`：0 错误。未实机点验。
 
 
+## 阶段 345：多开预览——拖动/激活鼠标键全局设置（2026-11-16）
+
+> 用户需求：给多开预览增加全局设置，可指定预览小窗"拖动位置"和"点击激活窗口"分别用左键还是右键，
+> 默认都保持左键。
+
+- `PreviewSetting` 新增 **`DragMouseButton` / `ActivateMouseButton`**（0=左键、1=右键，越界回落 0），
+  随 `Configs/GamePreviewSetting.json` 持久化；
+- `GamePreviewWindow` 交互改为"按键分派"：`AttachDragHandlers` 同时订阅 `MouseDown/Move/Up`，
+  按下时判断该键属于"拖动键"还是"激活键"：
+  - 属于拖动键 → 记录起点、`CaptureMouse`，位移超过阈值才真正拖动（吸附逻辑不变）；
+  - 属于激活键 → 记标记，**松开且全程未拖动**时 `ActivateSource()`；双击激活仍然保留；
+  - 无关按键不拦截（不设 `Handled`）；
+  - 拖动键与激活键相同时行为与旧版完全一致（默认配置）。
+- `GamePreviewPage` 新增「**鼠标操作**」设置组（两组下拉：拖动窗口使用 / 点击激活窗口使用）；
+- `GamePreviewViewModel` 订阅全局 `PreviewSetting.PropertyChanged` → 节流落盘
+  （此前全局设置只在退出时保存）；
+- 语言键 +7（中英各 3579，集合一致）；手册 `game-preview.md` 全局设置第 7 条与字段口径表同步。
+- `dotnet build`：0 错误。未实机点验（左键默认行为与旧版一致，改动需切换成右键才会体现）。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

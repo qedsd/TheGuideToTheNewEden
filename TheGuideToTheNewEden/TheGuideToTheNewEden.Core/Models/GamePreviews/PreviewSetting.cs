@@ -221,6 +221,32 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
+        private int _dragMouseButton = 0;
+        /// <summary>
+        /// 拖动预览窗口用的鼠标键：0 = 左键（默认），1 = 右键。
+        /// </summary>
+        public int DragMouseButton
+        {
+            get => _dragMouseButton;
+            set
+            {
+                SetProperty(ref _dragMouseButton, value < 0 || value > 1 ? 0 : value);
+            }
+        }
+
+        private int _activateMouseButton = 0;
+        /// <summary>
+        /// 点击（不拖动）激活对应游戏窗口用的鼠标键：0 = 左键（默认），1 = 右键。
+        /// </summary>
+        public int ActivateMouseButton
+        {
+            get => _activateMouseButton;
+            set
+            {
+                SetProperty(ref _activateMouseButton, value < 0 || value > 1 ? 0 : value);
+            }
+        }
+
         private bool _useNativeThumbnailOverlay = true;
         /// <summary>
         /// 使用独立的原生 Win32 layered 画面层显示 DWM 缩略图。

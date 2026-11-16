@@ -1776,6 +1776,50 @@
                                 </StackPanel>
                             </Border>
 
+
+                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_MouseGroup}" />
+                            <Border Style="{StaticResource GroupCard}">
+                                <StackPanel>
+                                    <Grid Style="{StaticResource Row}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Style="{StaticResource RowLabel}"
+                                            Text="{DynamicResource GamePreviewPage_DragMouseButton}"
+                                            ToolTip="{DynamicResource GamePreviewPage_DragMouseButtonTip}" />
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="120"
+                                            SelectedIndex="{Binding Setting.DragMouseButton, Mode=TwoWay}"
+                                            ToolTip="{DynamicResource GamePreviewPage_DragMouseButtonTip}">
+                                            <ComboBoxItem Content="{DynamicResource GamePreviewPage_MouseButton_Left}" />
+                                            <ComboBoxItem Content="{DynamicResource GamePreviewPage_MouseButton_Right}" />
+                                        </ComboBox>
+                                    </Grid>
+                                    <Border Style="{StaticResource RowDivider}" />
+                                    <Grid Style="{StaticResource Row}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Style="{StaticResource RowLabel}"
+                                            Text="{DynamicResource GamePreviewPage_ActivateMouseButton}"
+                                            ToolTip="{DynamicResource GamePreviewPage_ActivateMouseButtonTip}" />
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="120"
+                                            SelectedIndex="{Binding Setting.ActivateMouseButton, Mode=TwoWay}"
+                                            ToolTip="{DynamicResource GamePreviewPage_ActivateMouseButtonTip}">
+                                            <ComboBoxItem Content="{DynamicResource GamePreviewPage_MouseButton_Left}" />
+                                            <ComboBoxItem Content="{DynamicResource GamePreviewPage_MouseButton_Right}" />
+                                        </ComboBox>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_Transparency}" />
                             <Border Style="{StaticResource GroupCard}">
                                 <Grid Style="{StaticResource Row}">

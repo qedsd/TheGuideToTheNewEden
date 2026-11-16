@@ -147,6 +147,10 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     private bool _dragCandidate;
     private bool _dragging;
+    /// <summary>阶段 345：本次手势是否由“激活键”发起（松开且未拖动则激活）。</summary>
+    private bool _activateCandidate;
+    /// <summary>阶段 345：本次手势按下的鼠标键（左/右由全局设置决定）。</summary>
+    private MouseButton? _gestureButton;
     private NativeMethods.POINT _dragStartCursor;
     private NativeMethods.RECT _dragStartRect;
 
@@ -1639,31 +1643,64 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     private void AttachDragHandlers(UIElement element)
     {
-        element.MouseLeftButtonDown += OnDragStart;
-        element.MouseMove += OnDragMove;
-        element.MouseLeftButtonUp += OnDragEnd;
+        // 阶段 345：拖动/激活分别用哪个键由全局设置决定——两种键都订阅，按下时按设置分派。
+        element.MouseDown += OnPointerDown;
+        element.MouseMove += OnPointerMove;
+        element.MouseUp += OnPointerUp;
     }
 
-    private void OnDragStart(object sender, MouseButtonEventArgs e)
+    /// <summary>设置值 0=左键、1=右键。</summary>
+    private static bool IsConfiguredButton(MouseButton button, int configured)
+        => configured == 1 ? button == MouseButton.Right : button == MouseButton.Left;
+
+    private void OnPointerDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ClickCount >= 2)
+        var isDragButton = IsConfiguredButton(e.ChangedButton, _globalSetting.DragMouseButton);
+        var isActivateButton = IsConfiguredButton(e.ChangedButton, _globalSetting.ActivateMouseButton);
+        if (!isDragButton && !isActivateButton)
         {
-            ActivateSource();
+            // 未参与本功能的键（例如设置为左键拖动时的右键）不拦截，交给其它逻辑
             return;
         }
 
-        NativeMethods.GetCursorPos(out _dragStartCursor);
-        NativeMethods.GetWindowRect(_hwnd, out _dragStartRect);
-        _snapSession.Reset();
-        _dragCandidate = true;
+        if (e.ClickCount >= 2)
+        {
+            if (isActivateButton)
+            {
+                ActivateSource();
+                e.Handled = true;
+            }
+
+            return;
+        }
+
+        _gestureButton = e.ChangedButton;
+        _dragCandidate = isDragButton;
+        _activateCandidate = isActivateButton;
         _dragging = false;
+
+        if (isDragButton)
+        {
+            NativeMethods.GetCursorPos(out _dragStartCursor);
+            NativeMethods.GetWindowRect(_hwnd, out _dragStartRect);
+            _snapSession.Reset();
+        }
+
         ((UIElement)sender).CaptureMouse();
         e.Handled = true;
     }
 
-    private void OnDragMove(object sender, MouseEventArgs e)
+    private void OnPointerMove(object sender, MouseEventArgs e)
     {
-        if (!_dragCandidate || e.LeftButton != MouseButtonState.Pressed)
+        if (!_dragCandidate || _gestureButton is null)
+        {
+            return;
+        }
+
+        var pressed = _gestureButton.Value == MouseButton.Right
+            ? e.RightButton == MouseButtonState.Pressed
+            : e.LeftButton == MouseButtonState.Pressed;
+        if (!pressed)
         {
             return;
         }
@@ -1708,8 +1745,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         PersistBounds();
     }
 
-    private void OnDragEnd(object sender, MouseButtonEventArgs e)
+    private void OnPointerUp(object sender, MouseButtonEventArgs e)
     {
+        if (_gestureButton is null || e.ChangedButton != _gestureButton.Value)
+        {
+            return;
+        }
+
         var element = (UIElement)sender;
         if (element.IsMouseCaptured)
         {
@@ -1717,11 +1759,14 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         }
 
         var wasDragging = _dragging;
+        var shouldActivate = _activateCandidate;
         _dragCandidate = false;
+        _activateCandidate = false;
         _dragging = false;
+        _gestureButton = null;
         _snapSession.Reset();
 
-        if (!wasDragging)
+        if (!wasDragging && shouldActivate)
         {
             ActivateSource();
         }
