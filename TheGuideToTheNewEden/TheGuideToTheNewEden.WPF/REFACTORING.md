@@ -12540,6 +12540,29 @@ MainWindow.xaml(.cs)
 - `dotnet build`：0 错误；XAML well-formed 校验通过。未实机点验。
 
 
+## 阶段 350：AI 助手——本地文件读写技能（2026-11-16）
+
+> 用户需求：给 AI 增加读写本地文件的技能。
+
+- **受限访问层** `Services/Assistant/Files/AssistantFileService.cs`：
+  - **根目录白名单**（`Assistant.Files.Roots`，默认空 = 仅应用数据目录 `SettingsService.DataPath`）；
+    相对路径按第一个根解析，`Path.GetFullPath` 归一后做前缀比对，`..` 逃不出去；
+  - **敏感文件**永久拒绝：`Auth*.json`（令牌）、`ESILicense.txt`、`settings.json`；
+  - **读**：单文件上限 256KB、二进制（前 8KB 含 NUL）拒绝、按行 `offset/limit` 分段、结果按
+    `ToolArgs.TruncateForModel` 截断（带“不完整”诊断尾巴）；
+  - **写**：单次上限 200K 字符、扩展名黑名单（exe/dll/pdb/db/zip…）、覆盖前备份 `.bak`、
+    临时文件 + `File.Move(..., true)` 原子替换、目录不存在自动创建。
+- **三个工具**：`file_list`（只读列目录）、`file_read`（只读）、`file_write`（`RequiresConfirmation` +
+  `IPendingSummary`，确认卡片显示“写入/追加 哪个文件 多少字符 原因”）。归入 **General 套餐**
+  （`CategoryOf` 前缀规则未命中 `file_` → 默认 General），并在 `ToolRouter` 的 General 关键词表补
+  “文件/目录/文件夹/读取文件/写入文件/保存到/导出到/日志文件/file/folder/directory/save to/write to”，
+  保证“把这些写到 xxx.txt”能选中该组。
+- **设置**：`AiAssistantSettingService` 增 `FilesEnabled` / `FileWritesAllowed` / `FileRoots`
+  （键 `Assistant.Files.Enabled|Writes|Roots`）+ `SaveFileAccess(...)`；设置页
+  `AiToolsSettingView` 增三张卡片（允许读写 / 允许写入 / 根目录多行输入），随该分节的「保存」一起提交。
+- 语言键 +7（中英各 3595，集合一致）；手册 `assistant.md` 的能力与限制两节同步。
+- `dotnet build`：0 错误。未实机点验（需要真实模型对话才能验证模型是否会正确挑这两个工具）。
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

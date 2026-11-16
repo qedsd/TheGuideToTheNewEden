@@ -2722,6 +2722,13 @@
     <sys:String x:Key="AssistantSettingPage_Tools_Desc">逐个启用或停用助手可用的工具。关掉的既不下发给模型（省输入 token），模型硬报它的名字时执行侧也会拒绝；新增工具默认开启。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">按需声明（省 token）</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">只把与本次提问相关的工具组发给模型（最多两组），再叠加常驻的 ESI 网关等入口；看不出意图时自动声明全部。关掉则每次都声明全部已启用工具。</sys:String>
+    <sys:String x:Key="AssistantTool_file_list">列出本地目录</sys:String>
+    <sys:String x:Key="AssistantTool_file_read">读取本地文件</sys:String>
+    <sys:String x:Key="AssistantTool_file_write">写入本地文件</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Desc">允许 AI 读写本地文件：只在你指定的根目录内，读取上限 256KB、写入上限约 200K 字符；写入每次都要你确认，旧内容自动备份为 .bak。令牌/授权/设置文件永久拒绝。</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Enabled">允许 AI 读写本地文件</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Writes">允许 AI 写入文件（每次仍需确认）</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Roots">允许访问的根目录（分号或换行分隔，留空 = 仅应用数据目录）</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Pinned">固定套餐（手动钉选）</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Pinned_Desc">无论问题是什么，勾选的套餐都会一并声明。用于纠正关键词判断的偏差（例如你主要在弄星图，不希望它被别的意图挤掉）。</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">全部启用</sys:String>

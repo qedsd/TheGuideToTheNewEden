@@ -36,6 +36,46 @@
                         MaxWidth="380"
                         HorizontalAlignment="Right" />
                 </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <!--  阶段 350：本地文件读写（根目录白名单 + 写入必确认）  -->
+                <controls:SettingCard
+                    Description="{DynamicResource AssistantSettingPage_Tools_File_Desc}"
+                    Icon="DocumentText24"
+                    Title="{DynamicResource AssistantSettingPage_Tools_File_Enabled}">
+                    <ui:ToggleSwitch
+                        x:Name="FileEnabledToggle"
+                        HorizontalAlignment="Right"
+                        ToolTip="{DynamicResource AssistantSettingPage_Tools_File_Desc}" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Icon="Save24"
+                    Title="{DynamicResource AssistantSettingPage_Tools_File_Writes}">
+                    <ui:ToggleSwitch x:Name="FileWriteToggle" HorizontalAlignment="Right" />
+                </controls:SettingCard>
+
+                <Border Style="{StaticResource SettingsDivider}" />
+
+                <controls:SettingCard
+                    Icon="Folder24"
+                    Title="{DynamicResource AssistantSettingPage_Tools_File_Roots}"
+                    VerticalAlignment="Top">
+                    <TextBox
+                        x:Name="FileRootsBox"
+                        Width="380"
+                        MinHeight="56"
+                        MaxHeight="110"
+                        AcceptsReturn="True"
+                        FontFamily="Consolas"
+                        FontSize="11"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto"
+                        ToolTip="{DynamicResource AssistantSettingPage_Tools_File_Roots}" />
+                </controls:SettingCard>
             </StackPanel>
         </Border>
 

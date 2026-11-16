@@ -79,6 +79,11 @@ public partial class AiToolsSettingView : UserControl
         ToolRouteToggle.IsChecked = AiAssistantSettingService.AutoRouteTools;
         BuildToolGroups();
         BuildPinnedBundles();
+
+        // 阶段 350：本地文件读写
+        FileEnabledToggle.IsChecked = AiAssistantSettingService.FilesEnabled;
+        FileWriteToggle.IsChecked = AiAssistantSettingService.FileWritesAllowed;
+        FileRootsBox.Text = string.Join(Environment.NewLine, AiAssistantSettingService.FileRoots);
     }
 
     /// <summary>重建"手动钉选套餐"复选框（阶段 150；Esi 是核心常驻，不作为套餐出现）。</summary>
@@ -138,6 +143,12 @@ public partial class AiToolsSettingView : UserControl
         AiAssistantSettingService.SaveRouting(ToolRouteToggle.IsChecked == true);
         AiAssistantSettingService.SavePinnedBundles(
             _pinnedChecks.Where(pair => pair.Value.IsChecked == true).Select(pair => pair.Key));
+
+        // 阶段 350：本地文件读写（根目录按行/分号解析）
+        AiAssistantSettingService.SaveFileAccess(
+            FileEnabledToggle.IsChecked == true,
+            FileWriteToggle.IsChecked == true,
+            FileRootsBox.Text.Split(['\n', '\r', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
         UpdateToolCount();
         PageNotifyService.Success(FindString("AssistantSettingPage_Saved"));

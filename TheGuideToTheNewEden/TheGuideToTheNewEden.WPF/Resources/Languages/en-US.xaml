@@ -2704,6 +2704,13 @@
     <sys:String x:Key="AssistantSettingPage_Tools_Desc">Enable or disable each tool the assistant may use. Disabled tools are neither declared to the model (saving input tokens) nor executed; new tools start enabled.</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute">Declare on demand (saves tokens)</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_AutoRoute_Desc">Only the bundles relevant to the current question are sent (at most two), plus the always-on ESI gateway and similar entries; unclear intent falls back to declaring everything. Turn it off to always declare every enabled tool.</sys:String>
+    <sys:String x:Key="AssistantTool_file_list">List local folder</sys:String>
+    <sys:String x:Key="AssistantTool_file_read">Read local file</sys:String>
+    <sys:String x:Key="AssistantTool_file_write">Write local file</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Desc">Let the assistant read/write local files, restricted to the roots you list below. Reads are capped at 256KB, writes at ~200K characters; every write still needs your confirmation and the previous content is backed up as .bak. Token/auth/settings files are always refused.</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Enabled">Allow reading/writing local files</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Writes">Allow writing files (still confirmed each time)</sys:String>
+    <sys:String x:Key="AssistantSettingPage_Tools_File_Roots">Allowed root folders (separated by ; or newline, empty = app data folder only)</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Pinned">Pinned bundles (manual)</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_Pinned_Desc">Checked bundles are always declared regardless of the question. Use this to correct keyword routing (for example, if you mostly work with the map and don't want it crowded out).</sys:String>
     <sys:String x:Key="AssistantSettingPage_Tools_EnableAll">Enable all</sys:String>

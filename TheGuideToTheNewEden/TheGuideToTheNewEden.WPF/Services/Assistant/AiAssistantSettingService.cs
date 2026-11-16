@@ -30,6 +30,9 @@ public static class AiAssistantSettingService
     private const string ConfigWritesKey = "Assistant.Config.Writes";
     private const string ConfigDeniedFilesKey = "Assistant.Config.DeniedFiles";
     private const string FeaturesEnabledKey = "Assistant.Features.Enabled";
+    private const string FilesEnabledKey = "Assistant.Files.Enabled";
+    private const string FileWritesKey = "Assistant.Files.Writes";
+    private const string FileRootsKey = "Assistant.Files.Roots";
     private const string ShowInMainWindowKey = "Assistant.ShowInMainWindow";
     private const string SidebarCollapsedKey = "Assistant.SidebarCollapsed";
     private const string ContextWindowTokensKey = "Assistant.ContextWindowTokens";
@@ -210,6 +213,18 @@ public static class AiAssistantSettingService
     /// <summary>是否开放功能重启工具（feature_list / feature_restart，阶段 155）。</summary>
     public static bool FeatureToolsEnabled { get; private set; } = true;
 
+    /// <summary>是否开放本地文件工具（file_list / file_read / file_write，阶段 350）。</summary>
+    public static bool FilesEnabled { get; private set; } = true;
+
+    /// <summary>是否允许 AI 写入文件（即使允许，每次写入仍需用户在确认卡片上点「应用」）。</summary>
+    public static bool FileWritesAllowed { get; private set; } = true;
+
+    /// <summary>
+    /// 允许 AI 访问的根目录（白名单，阶段 350）。空表 = 只允许应用数据目录
+    /// （<see cref="SettingsService.DataPath"/>）。<c>..</c> 之类会在解析时归一后做前缀比对，逃不出去。
+    /// </summary>
+    public static IReadOnlyList<string> FileRoots { get; private set; } = Array.Empty<string>();
+
     /// <summary>保存"按需声明"开关。</summary>
     public static void SaveRouting(bool autoRoute)
     {
@@ -242,6 +257,25 @@ public static class AiAssistantSettingService
     {
         FeatureToolsEnabled = enabled;
         SettingsService.SetBool(FeaturesEnabledKey, FeatureToolsEnabled);
+        SettingsService.Save();
+    }
+
+    /// <summary>保存本地文件工具设置（阶段 350；写入仍需逐次确认）。</summary>
+    public static void SaveFileAccess(bool enabled, bool allowWrites, IEnumerable<string>? roots)
+    {
+        FilesEnabled = enabled;
+        FileWritesAllowed = allowWrites;
+
+        var list = (roots ?? [])
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => path.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        FileRoots = list;
+
+        SettingsService.SetBool(FilesEnabledKey, FilesEnabled);
+        SettingsService.SetBool(FileWritesKey, FileWritesAllowed);
+        SettingsService.SetValue(FileRootsKey, string.Join(";", list));
         SettingsService.Save();
     }
 
@@ -381,6 +415,12 @@ public static class AiAssistantSettingService
 
         ConfigDeniedFiles = deniedConfig;
         FeatureToolsEnabled = SettingsService.GetBool(FeaturesEnabledKey, true);
+
+        FilesEnabled = SettingsService.GetBool(FilesEnabledKey, true);
+        FileWritesAllowed = SettingsService.GetBool(FileWritesKey, true);
+        FileRoots = (SettingsService.GetValue(FileRootsKey) ?? string.Empty)
+            .Split([';', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
 
         ShowInMainWindow = SettingsService.GetBool(ShowInMainWindowKey, DefaultShowInMainWindow);
         SidebarCollapsed = SettingsService.GetBool(SidebarCollapsedKey, DefaultSidebarCollapsed);

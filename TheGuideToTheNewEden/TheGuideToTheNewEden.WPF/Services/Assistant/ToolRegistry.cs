@@ -83,6 +83,10 @@ public static class ToolRegistry
         // 阶段 155：功能重启（停运行态 → 重读配置 → 按需重新开始）
         Register(new Tools.FeatureListTool());
         Register(new Tools.FeatureRestartTool());
+        // 阶段 350：本地文件读写（根目录白名单 + 读限额 + 写入必确认）
+        Register(new Tools.FileListTool());
+        Register(new Tools.FileReadTool());
+        Register(new Tools.FileWriteTool());
     }
 
     public static void Register(ITool tool)
