@@ -57,6 +57,63 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref winH, value);
         }
 
+        private bool _cropEnabled;
+        /// <summary>
+        /// 是否只显示游戏画面的某个自定义区域（阶段 347）。
+        /// 关闭时为旧行为：显示源窗口客户区的全部内容。
+        /// </summary>
+        public bool CropEnabled
+        {
+            get => _cropEnabled;
+            set => SetProperty(ref _cropEnabled, value);
+        }
+
+        private int _cropX;
+        /// <summary>自定义区域左上角 X（源窗口客户区像素）。</summary>
+        public int CropX
+        {
+            get => _cropX;
+            set => SetProperty(ref _cropX, value);
+        }
+
+        private int _cropY;
+        /// <summary>自定义区域左上角 Y（源窗口客户区像素）。</summary>
+        public int CropY
+        {
+            get => _cropY;
+            set => SetProperty(ref _cropY, value);
+        }
+
+        private int _cropW;
+        /// <summary>自定义区域宽（源窗口客户区像素）；0 表示未设置。</summary>
+        public int CropW
+        {
+            get => _cropW;
+            set => SetProperty(ref _cropW, value);
+        }
+
+        private int _cropH;
+        /// <summary>自定义区域高（源窗口客户区像素）；0 表示未设置。</summary>
+        public int CropH
+        {
+            get => _cropH;
+            set => SetProperty(ref _cropH, value);
+        }
+
+        /// <summary>是否真的需要裁剪（开关打开且有有效区域）。</summary>
+        [JsonIgnore]
+        public bool HasCrop => CropEnabled && CropW > 0 && CropH > 0;
+
+        /// <summary>清空自定义区域（恢复显示全部画面）。</summary>
+        public void ClearCrop()
+        {
+            CropEnabled = false;
+            CropX = 0;
+            CropY = 0;
+            CropW = 0;
+            CropH = 0;
+        }
+
         private bool lockAspectRatio = true;
         /// <summary>
         /// 拖拽边框 / 滚轮缩放预览窗口时是否锁定画面区域的横纵比例（默认锁住）。

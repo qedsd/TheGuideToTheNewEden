@@ -1,0 +1,107 @@
+<Window
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.PreviewCropOverlayWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="PreviewCropOverlay"
+    AllowsTransparency="True"
+    Background="Transparent"
+    ResizeMode="NoResize"
+    ShowActivated="False"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowStyle="None">
+    <!--
+        阶段 347：显示区域选择框的绘制层。
+
+        为什么是独立窗口：DWM 缩略图由系统合成在目标窗口内容之上，
+        画在同一个窗口里的 WPF 元素会被缩略图盖住（见 PreviewNameOverlayWindow 的说明）。
+        所以“选择框”必须放在一个位于缩略图之上的透明窗口里。
+        该窗口**不**带 WS_EX_TRANSPARENT —— 它是可点击的，拖动全靠它。
+    -->
+    <Canvas x:Name="Root" Background="Transparent" ClipToBounds="False">
+        <Rectangle x:Name="DimTop" Fill="#77000000" IsHitTestVisible="False" />
+        <Rectangle x:Name="DimBottom" Fill="#77000000" IsHitTestVisible="False" />
+        <Rectangle x:Name="DimLeft" Fill="#77000000" IsHitTestVisible="False" />
+        <Rectangle x:Name="DimRight" Fill="#77000000" IsHitTestVisible="False" />
+
+        <Border
+            x:Name="Selection"
+            Background="#2200A0FF"
+            BorderBrush="#FF35A3FF"
+            BorderThickness="2"
+            Cursor="SizeAll" />
+
+        <Rectangle
+            x:Name="HandleTopLeft"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="TopLeft"
+            Cursor="SizeNWSE" />
+        <Rectangle
+            x:Name="HandleTop"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="Top"
+            Cursor="SizeNS" />
+        <Rectangle
+            x:Name="HandleTopRight"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="TopRight"
+            Cursor="SizeNESW" />
+        <Rectangle
+            x:Name="HandleRight"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="Right"
+            Cursor="SizeWE" />
+        <Rectangle
+            x:Name="HandleBottomRight"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="BottomRight"
+            Cursor="SizeNWSE" />
+        <Rectangle
+            x:Name="HandleBottom"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="Bottom"
+            Cursor="SizeNS" />
+        <Rectangle
+            x:Name="HandleBottomLeft"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="BottomLeft"
+            Cursor="SizeNESW" />
+        <Rectangle
+            x:Name="HandleLeft"
+            Width="10"
+            Height="10"
+            Fill="White"
+            Stroke="#FF35A3FF"
+            StrokeThickness="1"
+            Tag="Left"
+            Cursor="SizeWE" />
+    </Canvas>
+</Window>

@@ -95,6 +95,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             if (Set(ref _selectedProcess, value))
             {
                 OnPropertyChanged(nameof(SelectedSetting));
+        OnPropertyChanged(nameof(CropSummary));
                 OnPropertyChanged(nameof(HasSelection));
                 OnPropertyChanged(nameof(SelectedRunning));
 
@@ -1324,6 +1325,68 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         _manager.ApplyToAll(source);
         PageNotifyService.Success(FindString("GamePreviewPage_ApplyToAllDone"));
+        Save();
+    }
+
+    /// <summary>阶段 347：当前“显示区域”的可读摘要（全部画面 / 区域尺寸与偏移）。</summary>
+    public string CropSummary
+    {
+        get
+        {
+            if (_selectedProcess?.Setting is { HasCrop: true } setting)
+            {
+                return string.Format(
+                    FindString("PreviewCrop_RegionFormat"),
+                    setting.CropW,
+                    setting.CropH,
+                    setting.CropX,
+                    setting.CropY);
+            }
+
+            return FindString("PreviewCrop_Full");
+        }
+    }
+
+    /// <summary>
+    /// 阶段 347：打开“选择显示区域”弹窗。<paramref name="owner"/> 为弹窗所有者（居中显示用）。
+    /// </summary>
+    public void SelectCropRegion(Window? owner)
+    {
+        if (_selectedProcess is not { Setting: { } setting } process)
+        {
+            return;
+        }
+
+        var dialog = new Views.Windows.PreviewCropWindow(setting, process, ApplyCropLive)
+        {
+            Owner = owner,
+        };
+        dialog.ShowDialog();
+        OnPropertyChanged(nameof(CropSummary));
+        Save();
+    }
+
+    /// <summary>恢复显示全部画面。</summary>
+    public void ClearCropRegion()
+    {
+        if (_selectedProcess?.Setting is not { } setting)
+        {
+            return;
+        }
+
+        setting.ClearCrop();
+        ApplyCropLive();
+    }
+
+    /// <summary>选择区域改动后：套用到正在预览的窗口并落盘（弹窗拖动时高频调用，走节流保存）。</summary>
+    public void ApplyCropLive()
+    {
+        if (_selectedProcess is { Setting: { } } process)
+        {
+            _manager.Find(process)?.ApplySettings();
+        }
+
+        OnPropertyChanged(nameof(CropSummary));
         Save();
     }
 

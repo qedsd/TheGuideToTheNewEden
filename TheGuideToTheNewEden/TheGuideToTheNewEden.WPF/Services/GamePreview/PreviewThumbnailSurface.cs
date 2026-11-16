@@ -72,8 +72,11 @@ internal sealed class PreviewThumbnailSurface : IDisposable
 
     /// <summary>
     /// 显示/更新画面层。坐标是屏幕物理像素，宽高是游戏画面目标矩形。
+    /// <para>
+    /// <paramref name="source"/> 非空时只显示源窗口客户区中的该矩形（阶段 347 的自定义显示区域）。
+    /// </para>
     /// </summary>
-    public bool ShowAt(int x, int y, int width, int height, int opacityPercent)
+    public bool ShowAt(int x, int y, int width, int height, int opacityPercent, NativeMethods.RECT? source = null)
     {
         if (_hwnd == IntPtr.Zero || width <= 0 || height <= 0)
         {
@@ -117,7 +120,7 @@ internal sealed class PreviewThumbnailSurface : IDisposable
             Right = width,
             Bottom = height,
         };
-        _thumbnail.TryUpdate(destination, 255, true);
+        _thumbnail.TryUpdate(destination, source, 255, true);
         return true;
     }
 

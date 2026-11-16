@@ -1392,6 +1392,15 @@
     <sys:String x:Key="GamePreviewPage_PreviewMode_1">无标题栏</sys:String>
     <sys:String x:Key="GamePreviewPage_LockAspectRatio">锁定画面比例</sys:String>
     <sys:String x:Key="GamePreviewPage_LockAspectRatioTip">默认打开：拖拽边框或滚轮缩放时，另一条边按游戏画面比例自动反算，画面不留边。关闭后可自由改成任意宽高比，游戏画面会拉伸铺满整个窗口。</sys:String>
+    <sys:String x:Key="GamePreviewPage_Crop">显示区域</sys:String>
+    <sys:String x:Key="GamePreviewPage_CropTip">默认显示游戏画面的全部内容；点“选择…”可在弹窗里拖动方框，只显示其中一块区域（适合切屏后只留战场/总览）。</sys:String>
+    <sys:String x:Key="GamePreviewPage_CropSelect">选择…</sys:String>
+    <sys:String x:Key="GamePreviewPage_CropClear">全部</sys:String>
+    <sys:String x:Key="PreviewCrop_Title">选择显示区域</sys:String>
+    <sys:String x:Key="PreviewCrop_Hint">在上面的画面里拖动方框选择要显示的区域，拖四边/四角调整大小；松手立即生效，预览窗背后即可看到效果。</sys:String>
+    <sys:String x:Key="PreviewCrop_Full">全部画面</sys:String>
+    <sys:String x:Key="PreviewCrop_RegionFormat">区域 {0}×{1} @ ({2}, {3})</sys:String>
+    <sys:String x:Key="PreviewCrop_Reset">显示全部画面</sys:String>
     <sys:String x:Key="GamePreviewPage_Opacity">不透明度（%）</sys:String>
     <sys:String x:Key="GamePreviewPage_HideOnForeground">游戏窗口活动时隐藏</sys:String>
     <sys:String x:Key="GamePreviewPage_HideOnForegroundTip">开启后游戏窗口活动时隐藏预览窗口；此时高亮设置不生效</sys:String>

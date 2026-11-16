@@ -638,7 +638,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ScheduleAspectCorrection();
 
         _sourceMinimized = IsSourceMinimized();
-        if (!_sourceMinimized && TryGetSourceSize(out var sourceWidth, out var sourceHeight))
+        if (!_sourceMinimized && TryGetFullSourceSize(out var sourceWidth, out var sourceHeight))
         {
             _lastSourceWidth = sourceWidth;
             _lastSourceHeight = sourceHeight;
@@ -1019,13 +1019,82 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// </summary>
     public double SourceAspect
         => IsSourceMinimized() ? 0
-            : PreviewGeometry.TryGetSourceSize(Process.MainWindowHandle, out var width, out var height) && width > 0 && height > 0
+            : TryGetSourceSize(out var width, out var height) && width > 0 && height > 0
                 ? (double)width / height
                 : 0;
 
-    /// <summary>源画面（游戏客户区）尺寸；失败时返回 false。</summary>
-    private bool TryGetSourceSize(out int width, out int height)
+    /// <summary>
+    /// 源窗口**完整**客户区尺寸（裁剪前的真实分辨率）；取不到时为 false。
+    /// </summary>
+    private bool TryGetFullSourceSize(out int width, out int height)
         => PreviewGeometry.TryGetSourceSize(Process.MainWindowHandle, out width, out height);
+
+    /// <summary>
+    /// 画面实际显示的源尺寸：默认等于完整客户区；开启自定义区域后等于裁剪区域尺寸。
+    /// <para>
+    /// 比例校正、目标矩形、WM_SIZING 反算都以它为准——否则裁出来的区域会被按"全画面比例"
+    /// 拉伸，出现黑边或变形（阶段 347）。
+    /// </para>
+    /// </summary>
+    private bool TryGetSourceSize(out int width, out int height)
+    {
+        if (!TryGetFullSourceSize(out var fullWidth, out var fullHeight))
+        {
+            width = 0;
+            height = 0;
+            return false;
+        }
+
+        if (!Setting.HasCrop)
+        {
+            width = fullWidth;
+            height = fullHeight;
+            return true;
+        }
+
+        width = Math.Min(Setting.CropW, fullWidth);
+        height = Math.Min(Setting.CropH, fullHeight);
+        return width > 0 && height > 0;
+    }
+
+    /// <summary>
+    /// 缩略图要显示的源矩形（源窗口客户区像素）。
+    /// <para>
+    /// <b>无裁剪时也要返回“整个客户区”</b>，不能返回 null：DWM 缩略图属性是**粘性**的，
+    /// 更新时不带 <c>DWM_TNP_RECTSOURCE</c> 就不会清掉上一次设的源矩形——于是“选过区域后再选显示全部”
+    /// 永远停在旧区域，只有重新注册（重启程序）才恢复（阶段 348 的用户反馈）。
+    /// </para>
+    /// </summary>
+    private NativeMethods.RECT? GetSourceRect()
+    {
+        if (!TryGetFullSourceSize(out var fullWidth, out var fullHeight) || fullWidth <= 0 || fullHeight <= 0)
+        {
+            return null;
+        }
+
+        if (!Setting.HasCrop)
+        {
+            return new NativeMethods.RECT
+            {
+                Left = 0,
+                Top = 0,
+                Right = fullWidth,
+                Bottom = fullHeight,
+            };
+        }
+
+        var left = Math.Clamp(Setting.CropX, 0, Math.Max(0, fullWidth - 1));
+        var top = Math.Clamp(Setting.CropY, 0, Math.Max(0, fullHeight - 1));
+        var width = Math.Clamp(Setting.CropW, 1, fullWidth - left);
+        var height = Math.Clamp(Setting.CropH, 1, fullHeight - top);
+        return new NativeMethods.RECT
+        {
+            Left = left,
+            Top = top,
+            Right = left + width,
+            Bottom = top + height,
+        };
+    }
 
     private void ApplyVisuals()
     {
@@ -1305,6 +1374,9 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             ? PreviewGeometry.FitAspect(container, sourceWidth, sourceHeight)
             : container;
 
+        // 阶段 347：自定义区域 → 只取源窗口客户区里的这一块
+        var sourceRect = GetSourceRect();
+
         // 默认走原生 layered 画面层；如果 overlay 创建/注册失败，再回退到旧 DWM 缩略图路径。
         var useOverlay = UseNativeOverlay && _thumbnailOverlay is { IsRegistered: true };
         if (useOverlay)
@@ -1321,7 +1393,8 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
                 screenPoint.Y,
                 destination.Right - destination.Left,
                 destination.Bottom - destination.Top,
-                Setting.OverlapOpacity);
+                Setting.OverlapOpacity,
+                sourceRect);
         }
         else
         {
@@ -1335,7 +1408,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
                 (int)Math.Round(Setting.OverlapOpacity * 255.0 / 100.0),
                 0,
                 255);
-            _thumbnail.TryUpdate(destination, opacity, true);
+            _thumbnail.TryUpdate(destination, sourceRect, opacity, true);
         }
 
         // 角色名叠加窗跟随预览窗口的位置/高亮留白

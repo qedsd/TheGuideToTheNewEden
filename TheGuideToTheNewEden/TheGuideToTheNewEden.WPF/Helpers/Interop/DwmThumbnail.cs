@@ -35,6 +35,7 @@ internal sealed class DwmThumbnail : IDisposable
     }
 
     private const int DWM_TNP_RECTDESTINATION = 0x00000001;
+    private const int DWM_TNP_RECTSOURCE = 0x00000002;
     private const int DWM_TNP_OPACITY = 0x00000004;
     private const int DWM_TNP_VISIBLE = 0x00000008;
     private const int DWM_TNP_SOURCECLIENTAREAONLY = 0x00000010;
@@ -80,21 +81,40 @@ internal sealed class DwmThumbnail : IDisposable
 
     /// <summary>更新目标矩形（目标窗口客户区物理像素）、不透明度与可见性。</summary>
     public bool TryUpdate(NativeMethods.RECT destination, byte opacity, bool visible)
+        => TryUpdate(destination, null, opacity, visible);
+
+    /// <summary>
+    /// 更新缩略图属性。<paramref name="source"/> 非空时只显示源窗口客户区中的该矩形
+    /// （阶段 347：自定义显示区域），坐标同为源窗口客户区物理像素。
+    /// <para>
+    /// <b>注意属性的粘性</b>：DWM 只更新 dwFlags 里列出的字段，其余字段保持上一次的值。
+    /// 因此“取消裁剪”时**必须**显式下发整块客户区矩形，传 null 是清不掉源矩形的
+    /// （阶段 348 的“无法恢复显示全部”就是踩了这个坑）。
+    /// </para>
+    /// </summary>
+    public bool TryUpdate(NativeMethods.RECT destination, NativeMethods.RECT? source, byte opacity, bool visible)
     {
         if (_thumbnail == IntPtr.Zero)
         {
             return false;
         }
 
+        var flags = DWM_TNP_RECTDESTINATION | DWM_TNP_OPACITY | DWM_TNP_VISIBLE | DWM_TNP_SOURCECLIENTAREAONLY;
         var properties = new DWM_THUMBNAIL_PROPERTIES
         {
-            dwFlags = DWM_TNP_RECTDESTINATION | DWM_TNP_OPACITY | DWM_TNP_VISIBLE | DWM_TNP_SOURCECLIENTAREAONLY,
             rcDestination = destination,
             opacity = opacity,
             fVisible = visible,
             fSourceClientAreaOnly = true,
         };
 
+        if (source is { } rect)
+        {
+            flags |= DWM_TNP_RECTSOURCE;
+            properties.rcSource = rect;
+        }
+
+        properties.dwFlags = flags;
         return DwmUpdateThumbnailProperties(_thumbnail, ref properties) == 0;
     }
 

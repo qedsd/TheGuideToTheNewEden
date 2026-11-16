@@ -1227,6 +1227,39 @@
                                                 ToolTip="{DynamicResource GamePreviewPage_LockAspectRatioTip}" />
                                         </Grid>
                                         <Border Style="{StaticResource RowDivider}" />
+                                        <Grid Style="{StaticResource Row}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Style="{StaticResource RowLabel}"
+                                                Text="{DynamicResource GamePreviewPage_Crop}"
+                                                ToolTip="{DynamicResource GamePreviewPage_CropTip}" />
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <TextBlock
+                                                    Margin="0,0,8,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding CropSummary}"
+                                                    ToolTip="{DynamicResource GamePreviewPage_CropTip}" />
+                                                <ui:Button
+                                                    Margin="0,0,8,0"
+                                                    Padding="8,4"
+                                                    Click="OnSelectCropClick"
+                                                    Content="{DynamicResource GamePreviewPage_CropSelect}"
+                                                    ToolTip="{DynamicResource GamePreviewPage_CropTip}" />
+                                                <ui:Button
+                                                    Padding="8,4"
+                                                    Click="OnClearCropClick"
+                                                    Content="{DynamicResource GamePreviewPage_CropClear}" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <Border Style="{StaticResource RowDivider}" />
 
                                         <Grid Style="{StaticResource Row}">
                                             <Grid.ColumnDefinitions>

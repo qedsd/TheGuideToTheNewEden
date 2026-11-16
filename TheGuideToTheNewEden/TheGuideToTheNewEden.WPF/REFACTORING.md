@@ -12491,6 +12491,55 @@ MainWindow.xaml(.cs)
 - `dotnet build`：0 错误（临时输出目录）。未实机点验（需要"登出→重登"场景，建议用户侧验证）。
 
 
+## 阶段 347：多开预览——自定义显示区域（2026-11-16）
+
+> 用户需求：给多开预览增加自定义区域选择功能。默认与现状一致（显示全部有效内容），
+> 提供一个区域选择按钮，点击后弹窗里可实时拖拽调整显示区域。
+
+- **数据模型**：`PreviewItem` 新增 `CropEnabled / CropX / CropY / CropW / CropH`（源窗口**客户区像素**）
+  与 `HasCrop`、`ClearCrop()`；关闭开关即恢复“显示全部”（默认值就是关闭）。
+- **渲染管线**：
+  - `DwmThumbnail` 支持 `DWM_TNP_RECTSOURCE`（新增 `TryUpdate(destination, source?, opacity, visible)` 重载）；
+  - `PreviewThumbnailSurface.ShowAt(...)` 透传源矩形；
+  - `GamePreviewWindow` 里 `TryGetSourceSize` 改为返回**有效尺寸**（裁剪后），新增 `TryGetFullSourceSize`
+    给“源分辨率变化检测”用；目标矩形与 `WM_SIZING`/`GetMinimumWindowSize`/`CorrectSizeToAspect` 全部按裁剪后比例计算，
+    因此裁出来的一块不会被按整屏比例拉伸；`GetCropSourceRect()` 负责把存档区域夹进真实分辨率。
+- **选择弹窗**（`PreviewCropWindow`）：画面用 `DwmThumbnail` 直接合成到本窗口的 `StageHost`（不抓图、零开销，
+  与页面内 `SelectionPreview` 同一套做法），弹窗按源画面比例与屏幕工作区自动定尺寸。
+  选择框画在独立的透明置顶窗口 `PreviewCropOverlayWindow` 里——**DWM 缩略图会盖住同一窗口内的 WPF 元素**
+  （阶段 43 的既有结论），所以框必须独占一层窗口；该层可点击，支持拖框内平移、拖 8 个手柄改尺寸，
+  并自动夹在画面范围内。叠加窗用 `SetWindowPos` 以**物理像素**贴合舞台区（与 `PreviewNameOverlayWindow` 同法），
+  100ms 定时同步位置与缩略图。
+- **实时生效**：拖动过程中即写回 `PreviewItem` 并回调 `GamePreviewViewModel.ApplyCropLive()`
+  （`window.ApplySettings()` → 缩略图立刻按新源矩形重绘、比例校正按新比例调窗；节流保存）。
+  弹窗打开前的区域会被快照，点“取消”恢复；“显示全部画面”按钮等价于 `ClearCrop()`。
+- **入口**：设置页每项配置里的「显示区域」行：摘要文字（全部画面 / 区域 W×H @ x,y）+「选择…」+「全部」。
+- 语言键 +9（中英各 3588，集合一致）；手册 `game-preview.md` 全局设置与字段口径表同步。
+- `dotnet build`：0 错误（临时输出目录）。**未实机点验**：DWM 缩略图与叠加窗的层叠、选区换算、
+  取消恢复都依赖真实客户端画面，需要在有游戏窗口的机器上验证。
+
+## 阶段 348：修复“选过区域后再选显示全部无法复原”（2026-11-16）
+
+> 用户反馈：选过自定义区域后再点「显示全部」，画面仍是裁切后的区域，只有关掉重开才恢复。
+
+- 根因：**DWM 缩略图属性是粘性的**——`DwmUpdateThumbnailProperties` 只更新 `dwFlags` 里列出的字段，
+  没带的字段保持上一次的值。阶段 347 的实现里"未裁剪"时传 `source = null`（不带 `DWM_TNP_RECTSOURCE`），
+  于是上一次设的 `rcSource` 一直留着，直到缩略图重新注册（= 重启程序）才回到整屏。
+- 修复：`GamePreviewWindow.GetCropSourceRect()` → **`GetSourceRect()`**，无裁剪时返回**整个客户区矩形**
+  （不再返回 null），保证每次更新都显式下发 `rcSource`；`DwmThumbnail.TryUpdate` 补充了粘性说明。
+- `dotnet build`：0 错误。未实机点验（同样需要真实游戏窗口）。
+
+
+## 阶段 349：区域选择弹窗置顶（2026-11-16）
+
+> 用户要求：把选择窗口置顶显示。
+
+- `PreviewCropWindow.xaml` 增加 `Topmost="True"`：弹窗浮在游戏/预览窗之上，
+  调整选区时不必来回切窗口（选择框叠加层本来就是 `Topmost` 且 Owner 为该弹窗，
+  同属置顶组时被拥有者窗口仍在所有者之上，层级不变）。
+- `dotnet build`：0 错误；XAML well-formed 校验通过。未实机点验。
+
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

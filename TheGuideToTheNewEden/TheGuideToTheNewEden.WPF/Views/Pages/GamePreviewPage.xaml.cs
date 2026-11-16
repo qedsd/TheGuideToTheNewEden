@@ -380,6 +380,22 @@ public partial class GamePreviewPage : Page, IAssistantFeatureRuntime
 
     private void OnApplyAutoLayoutClick(object sender, RoutedEventArgs e) => _viewModel.ApplyAutoLayout();
 
+    private void OnSelectCropClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectFromSender(sender))
+        {
+            _viewModel.SelectCropRegion(Window.GetWindow(this));
+        }
+    }
+
+    private void OnClearCropClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectFromSender(sender))
+        {
+            _viewModel.ClearCropRegion();
+        }
+    }
+
     private void OnRestorePositionClick(object sender, RoutedEventArgs e)
     {
         if (SelectFromSender(sender))

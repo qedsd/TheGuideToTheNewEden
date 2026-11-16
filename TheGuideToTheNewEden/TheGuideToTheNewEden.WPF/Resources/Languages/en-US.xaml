@@ -1380,6 +1380,15 @@
     <sys:String x:Key="GamePreviewPage_PreviewMode_1">Without title bar</sys:String>
     <sys:String x:Key="GamePreviewPage_LockAspectRatio">Lock aspect ratio</sys:String>
     <sys:String x:Key="GamePreviewPage_LockAspectRatioTip">On by default: dragging an edge or scrolling recalculates the other edge from the game's aspect ratio, so the picture has no bars. When off, the window can be any shape and the game picture stretches to fill the whole window.</sys:String>
+    <sys:String x:Key="GamePreviewPage_Crop">Display region</sys:String>
+    <sys:String x:Key="GamePreviewPage_CropTip">By default the whole game client is shown. Click Select to drag a box in a dialog and show only that part (useful after the layout changes).</sys:String>
+    <sys:String x:Key="GamePreviewPage_CropSelect">Select…</sys:String>
+    <sys:String x:Key="GamePreviewPage_CropClear">All</sys:String>
+    <sys:String x:Key="PreviewCrop_Title">Select display region</sys:String>
+    <sys:String x:Key="PreviewCrop_Hint">Drag the box over the picture to choose what to show; drag edges/corners to resize. Changes apply immediately to the preview window.</sys:String>
+    <sys:String x:Key="PreviewCrop_Full">Whole picture</sys:String>
+    <sys:String x:Key="PreviewCrop_RegionFormat">Region {0}x{1} @ ({2}, {3})</sys:String>
+    <sys:String x:Key="PreviewCrop_Reset">Show whole picture</sys:String>
     <sys:String x:Key="GamePreviewPage_Opacity">Opacity (%)</sys:String>
     <sys:String x:Key="GamePreviewPage_HideOnForeground">Hide when game window is active</sys:String>
     <sys:String x:Key="GamePreviewPage_HideOnForegroundTip">Hide the preview window while the game window is active; highlight settings no longer apply</sys:String>

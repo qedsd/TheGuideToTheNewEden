@@ -1,0 +1,89 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.PreviewCropWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Width="820"
+    Height="620"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/TheGuideToTheNewEden;component/Assets/app.ico"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <!--
+        阶段 347：自定义显示区域选择弹窗。
+        画面由 DWM 缩略图直接合成到本窗口的 StageHost 区域（不抓图、无额外开销），
+        可拖拽的选择框画在 StageHost 之上的一层独立透明窗口里（见 PreviewCropOverlayWindow）。
+    -->
+    <Grid>
+        <Grid Margin="16,48,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                x:Name="HintText"
+                Grid.Row="0"
+                Margin="0,0,0,10"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+
+            <Border
+                x:Name="StageContainer"
+                Grid.Row="1"
+                Background="#22000000"
+                CornerRadius="4">
+                <Border
+                    x:Name="StageHost"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent" />
+            </Border>
+
+            <TextBlock
+                x:Name="SelectionText"
+                Grid.Row="2"
+                Margin="0,10,0,0"
+                FontFamily="Consolas"
+                FontSize="11"
+                Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+            <StackPanel
+                Grid.Row="3"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <ui:Button
+                    x:Name="ResetButton"
+                    Margin="0,0,8,0"
+                    Click="OnResetClick"
+                    Content="{DynamicResource PreviewCrop_Reset}" />
+                <ui:Button
+                    x:Name="CancelButton"
+                    Margin="0,0,8,0"
+                    Click="OnCancelClick"
+                    Content="{DynamicResource General_Cancel}"
+                    IsCancel="True" />
+                <ui:Button
+                    x:Name="OkButton"
+                    Appearance="Primary"
+                    Click="OnOkClick"
+                    Content="{DynamicResource General_OK}"
+                    IsDefault="True" />
+            </StackPanel>
+        </Grid>
+
+        <ui:TitleBar x:Name="TitleBar">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/TheGuideToTheNewEden;component/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+    </Grid>
+</ui:FluentWindow>
