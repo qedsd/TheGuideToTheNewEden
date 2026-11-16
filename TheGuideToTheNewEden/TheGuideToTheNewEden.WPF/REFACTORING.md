@@ -12157,6 +12157,299 @@ MainWindow.xaml(.cs)
    复测 `Min=170 / AH=170.4`。教训：WPF 本地值也会被**依赖属性 MinHeight** 这类"地板"约束，
    排查尺寸问题要连 Min/Max 一起看，且探针环境必须带上应用的资源字典才可信。
 
+## 阶段 323：预警小窗放开最小尺寸（2026-11-16）
+
+> 用户确认存在最小窗口限制并选择"完全放开"。
+
+- `IntelWindow.xaml` 删除 `MinWidth=320 / MinHeight=240`——窗口可自由拖到任意小；
+- 构造时的保存尺寸有效性检查阈值从 320×240 放宽到 **80×60**（只拦旧版本/坏配置写入的异常小值，
+  其余保存尺寸原样使用；无效时仍回退 640×620）；
+- 星图在小尺寸下的自适应（隐藏名称标签只显示点，阈值 500px 全局设置）不受影响。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 324：预警小窗去掉关闭按钮，只留最小化（2026-11-16）
+
+> 用户要求：星图窗口右上角只保留最小化按钮。
+
+- `IntelWindow.xaml` 标题栏删除 CloseButton（`OnCloseClick` 处理器一并移除）；
+- **停止预警入口不变**：`OnClosing` 仍会触发 `StopRequested`——Alt+F4 / 系统关闭仍等于"关闭并停止预警"；
+  页面上的「停止预警」按钮照常。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 325：预警小窗"专注模式"开关（2026-11-16）
+
+> 用户要求：星图窗口增加一个按钮，可隐藏频道内容、静音/跳转游戏等按钮、本地/预警颜色提示条；
+> 点击后界面只显示 窗口标题、最小化按钮、星图、恢复按钮。放在右侧按键列表最上面。
+
+- `IntelWindow.xaml` 右侧悬浮按钮列表顶部新增 **FocusButton**（`ArrowMinimize24` 图标，开/关切换为
+  `ArrowMaximize24/ArrowMinimize24`，悬浮提示同步换文案）；
+- 开启专注模式：隐藏 `LegendPanel`（本地/预警/降级/击杀颜色图例）、ResetView/Clear/StopSound/ActivateGame
+  四个按钮、`DrawerSplitter` 与频道内容抽屉（`DrawerRow` 行高压 0）——界面只剩 标题栏（含状态胶囊）、
+  最小化按钮、星图、恢复开关；
+- 关闭专注模式：分割线恢复、抽屉按此前展开/收起状态还原（`SetDrawer(_drawerExpanded)`）。
+- 语言键 +2：`IntelWindow_FocusHide`（专注模式：隐藏频道内容与按钮）/`IntelWindow_FocusRestore`
+  （恢复频道内容与按钮），zh/en 3569 = 3569。
+- 专注模式不持久化（会话级开关）；`dotnet build`：0 错误。未实机点验。
+
+ - **325 修复**：图例 `StackPanel` 加 `x:Name` 时误把闭合 `>` 写在 x:Name 行（Margin 等属性变成元素内容，运行时 XamlParseException"无法将 String 添加到 UIElementCollection"）——已修正属性块并构建/格式校验通过。教训：XAML 行级手术必须整块重排属性列表，改完先跑 XML well-formed 检查再编译。
+
+ - **326 补记**：按用户要求调整——专注模式开关从右侧列表移到**最小化按钮左侧**（标题栏内，带
+   `IsHitTestVisibleInChrome`）；开启专注模式额外隐藏标题栏的"预警中/待命"状态胶囊；
+   **窗口全部按钮缩小至 2/3**：标题栏 最小化/专注 34x28/34x32 → 23x19，右侧悬浮四键 34x32 → 23x21
+   （激活游戏 30 → 20 高），行距 4 → 3。
+
+ - **327 修复**：缩小按钮后 SymbolIcon 的 24px 字形被 23x19/23x21 的按钮裁剪——最小化按钮图标
+   "看不见内容"；六个图标按钮统一显式 `FontSize="16"`（专注/最小化/重置/清除/静音/激活游戏）；
+   激活游戏按钮补 `Width="23"`（此前只有 Height 缩了，宽度随字形自适应显得比其它按钮大）。
+   （过程中 python 脚本 enumerate+insert 死循环 MemoryError 一次，改为线性收集重写后完成；
+   脚本务必线性遍历收集新列表再整体写盘，避免边遍历边插入。）
+
+## 阶段 328：预警小窗标题只显示角色名（2026-11-16）
+
+> 用户要求：窗口标题的"频道预警"去掉，只显示角色名称。
+
+- `IntelWindow` 构造里 `Title` 与 `TitleText.Text` 由 `"频道预警 · 角色"` 改为 **只显示 `setting.Listener`**；
+  任务栏/窗口切换器（`Title`）同步生效。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 329：标题状态胶囊改为颜色圆点 + ToolTip（2026-11-16）
+
+> 用户要求：标题右侧"无预警/预警中"胶囊改成颜色圆点，具体文字用 ToolTip 显示。
+
+- `IntelWindow.xaml`：`TitleStatusBorder` 胶囊（底色 + 文字）改为 **8px 圆点 `TitleStatusDot`**；
+  原文字 `TitleStatusText` 保留为**隐藏数据源**（圆点 ToolTip 绑定其 Text）；
+- `UpdateStatus`：只切换圆点填充色（预警中=橙 `IntelCautionBrush` / 无预警=绿 `IntelGreenBrush`）
+  并更新隐藏文本（ToolTip 跟随）；
+- 专注模式隐藏引用同步改名 `TitleStatusBorder → TitleStatusDot`。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 330：状态圆点 ToolTip 空文案修复；抽屉头部计数文字移除（2026-11-16）
+
+> 用户反馈（附截图）：① 状态圆点 ToolTip 内容是空的；② 频道内容头部"频道内容 0"的计数文字去掉。
+
+- ① 根因：`ToolTip` 元素里的 `ElementName=TitleStatusText` 绑定——ToolTip 位于独立的 Popup 可视树，
+  **ElementName 跨悬浮层解析失败**，绑定求值为空。修复：改为 `UpdateStatus()` 里直接
+  `TitleStatusDot.ToolTip = TitleStatusText.Text;`（状态文案本就在 cs 更新，一并赋 ToolTip）。
+- ② `DrawerCountText` 加 `Visibility="Collapsed"`（元素保留，cs 的 `DrawerCountText.Text = count` 赋值
+  不动，避免 NRE）——头部只剩"频道内容"+最新一条摘要。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+ - **330 追加**：抽屉头部"频道内容"标签也按用户要求移除——头部简化为 图标 + 最新一条摘要 + chevron
+   三列（空的计数 StackPanel 一并删除，列定义 4→3，摘要/chevron 列号前移）；
+   `UpdateChannelHeader` 里 `DrawerCountText.Text` 赋值行随元素删除（其上的 `count` 变量保留，
+   `ChatEmptyText` 可见性逻辑不变）。
+
+## 阶段 331：频道列表折叠时底部空白修复（2026-11-16）
+
+> 用户反馈（附截图）：频道列表折叠起来的时候下面有一块空白。
+
+- 根因：折叠态 `DrawerRow` 固定 **43px**，而抽屉头部实际内容只有约 28px——
+  剩余 ~15px 空白贴在窗口底部（主体行已 Collapsed，但行高仍占位）。
+- 修复：`SetDrawer(false)` 时行高改为 **`GridLength(1, GridUnitType.Auto)`**（由头部内容决定，
+  约 28px）；展开仍用拖动记忆的像素高。`CollapsedDrawerHeight` 常量不再被引用（保留定义无害）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+## 阶段 332：空态文字常显修复；删除地图颜色图例（2026-11-16）
+
+> 用户反馈（附截图）：① "暂无频道内容"文字一直显示不会自动隐藏；② 频道内容列表上方的
+> 本地/预警/降级/击杀颜色提示条去掉。
+
+- ① 根因：`ChatEmptyText` 只在 XAML 静态定义（与 ChatList 同层），**cs 从未控制其可见性**——
+  有消息后依然悬在列表上。修复：`UpdateChannelHeader` 开头按 `_chatRows.Count` 显隐。
+- ② 按要求直接删除 `LegendPanel` 图例（星图左下角颜色点+文字）——星系状态靠圆点颜色本身表达；
+  专注模式代码中的 `LegendPanel` 引用一并移除。语言键 `IntelWindow_Local/Alerts/Downgraded/Kill`
+  暂保留（EarlyWarning 旧页可能复用，不影响运行）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+## 阶段 333：频道内容列表——时间与频道名合并为一列（2026-11-16）
+
+> 用户要求：时间、频道名字显示到同一列，时间在上、频道名称在下。
+
+- `IntelWindow.xaml` 聊天行模板从 4 列改为 **3 列**：第一列 56px 放垂直 StackPanel（Consolas 时间在上、
+  频道名徽章在下左对齐），第二列 `*` 消息（星系+跳数 / 内容），第三列 Auto meta；
+  消息/meta 列号前移，徽章不再水平占一列，行高更紧凑。
+- `dotnet build`：0 错误（临时输出目录）；XAML well-formed 校验通过（本轮替换块尾多出一个
+  `</Grid>` 闭合，已即时发现并删除——XML 校验再次兜住行级手术的尾巴）。
+
+
+## 阶段 334：滚动留白修复 + 清空预警列表按钮（2026-11-16）
+
+> 用户反馈（附截图）：① 新预警来了后自动滚到末尾，底部多空余一片空白；
+> ② 频道内容那一排过滤按钮最右侧加一个"清空预警列表内容"的按钮。
+
+- ① 根因：`ScrollIntoView(末项)` 会把最后一项**对齐到视口顶部**——内容短于视口时下方全空。
+  修复：仍先 ScrollIntoView 保证容器生成，随后取 ListBox 内嵌 `ScrollViewer` 调 **`ScrollToEnd()`**
+  （滚到内容末尾，不留顶对齐空隙）；加 `WpfTraversal` 可视树枚举助手。
+- ② 过滤按钮排（全部/预警/解除/击杀）最右侧新增 **"清空列表"**（Caution 外观）：
+  `OnClearListClick` → `_chatRows.Clear()` + `RefreshChatView()`——只清列表内容，
+  星图上的预警状态与 `_startTimes` 不动。语言键 +1 `IntelWindow_ClearList`（3572=3572）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+ - **334b/335 补记（真根因）**：复测仍见底部空白——排查发现 **334 的滚动修复当时根本没落盘**
+   （脚本锚点失败中止，我只补了 OnClearListClick 处理器并误认为全部生效）。本轮按实际文本重放：
+   `RefreshChatView` 滚动块 → 先 `ScrollIntoView` 保证容器生成，再用内嵌 ScrollViewer **`ScrollToEnd()`**；
+   并新增 **`AdjustDrawerHeightToContent()`**：布局后把抽屉行高收紧到
+   `min(拖动记忆高, 头部/过滤排固定高 + 列表内容高 + 6px)`（内容超视口时保持记忆高出现滚动条），
+   消除"内容短于视口"导致的底部空白——这才是手动滚动也一样的真正原因（抽屉高度本身大于内容）。
+   新增 `WpfTraversal` 可视树枚举助手；`using System.Linq`。
+   教训：锚点替换脚本"第一个锚点失败就整体放弃"时，**已写入的文件必须逐一复检**（本次 cs 两条改动
+   一条落盘一条未落盘，构建通过掩盖了问题）。
+
+## 阶段 336：抽屉高度改 Auto+MaxHeight（列表被压没/空白最终修复）（2026-11-16）
+
+> 用户反馈：仍有空白，且**新内容来了后列表会自动隐藏**——335 的 ExtentHeight 估算在行高刚被
+> 改写的时机上不可靠（fixedHeight/ExtentHeight 取到旧布局值），desired 被算成极小值，
+> 行高压到 ~60px → 过滤排占掉后列表几乎不可见。
+
+- 弃用估算方案，改为**布局引擎自动求值**：`SetDrawer` 里
+  `DrawerRow.MinHeight = 80（展开）`、`DrawerRow.MaxHeight = _expandedDrawerHeight（记忆高，折叠时 ∞）`、
+  `DrawerRow.Height = Auto`——行高恒为 **min(内容, 记忆高)**：内容多时 = 记忆高（滚动条），内容少时 =
+  内容高（无空白），列表永远可见；
+- 删除 `AdjustDrawerHeightToContent` 与其 BeginInvoke 调用；`ScrollToEnd` 滚动修复保留；
+- `OnDrawerSplitterDragCompleted` 拖完同步 `DrawerRow.MaxHeight = 记忆高`。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+## 阶段 337：滚动回归修复——抽屉行高回到固定像素（2026-11-16）
+
+> 用户反馈：列表不能滚动了。
+
+- 根因（336 的回归）：**Auto 行让内嵌 ScrollViewer 被无限高度约束测量**——ScrollViewer 报告
+  "视口=全部内容"，无溢出 → 滚动条禁用、滚轮无效；行又被 MaxHeight 截断，底部内容不可见。
+  这与"空白"是同一机制的两面：**Auto 行高与内嵌 ScrollViewer 天生不兼容**。
+- 修复：行高回到**固定像素**，数值由"过滤排实际高 + 行数×单行高(48px) + 余量"估算
+  （`UpdateDrawerRowHeight`，在 `RefreshChatView`/`SetDrawer` 时同步调用；count 估算无布局时序依赖），
+  钳制 [60, 记忆高]：内容多 → 记忆高（ScrollViewer 视口固定 → 滚动正常）；内容少 → 内容高（无空白）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+## 阶段 338：抽屉高度两遍布局法（空白/折叠不恢复 最终修复）（2026-11-16）
+
+> 用户反馈（附截图）：① 展开态底部仍有空白（337 估算行高偏低）；② 折叠列表后不会恢复最小高度
+> （331 的 Auto 被 337 重写覆盖，折叠时 `UpdateDrawerRowHeight` 因 `_drawerExpanded=false` 直接 return，
+> 行高停在展开值）。
+
+- 最终方案——**两遍布局**：
+  - 折叠：`DrawerRow.Height = Auto`（DrawerBody 已 Collapsed，行高=头部实际高，恢复最小）；
+  - 展开：第一遍 `Height = 记忆高`（视口=记忆高，此时 `ExtentHeight` 即**真实内容总高**），
+    布局完成后 `ApplyExpandedDrawerHeight` 第二遍把行高收紧到
+    `min(记忆高, 头部/过滤排固定高 + 内容高 + 6px)` 并 `ScrollToEnd`——数学上无估算、无时序依赖；
+  - 新消息/清空/过滤/展开均走一遍（先占位再收紧）。
+- `UpdateDrawerRowHeight`（估算法）删除；`ScrollIntoView` 保留占位用。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验——展开/折叠/新消息/清空四场景复测。
+
+
+## 阶段 339：展开看不到列表修复（2026-11-16）
+
+> 用户反馈（附截图）：展开后只有过滤按钮排，看不到内容列表。
+
+- 根因：338 两遍布局的第二遍里，**虚拟化列表容器尚未生成时 `ExtentHeight=0`**——
+  `desired = min(记忆高, fixed+0+6)` 被 clamp 到 60px，抽屉只剩过滤排（32px）+ 一条缝，列表被压没。
+  （338 重写 RefreshChatView 时把 334 的 `ScrollIntoView` 一并丢了，容器生成没了保证。）
+- 修复：`ApplyExpandedDrawerHeight` 读 Extent **之前**先 `ChatList.ScrollIntoView(末项)`
+  （同步生成容器并更新滚动信息）；收紧下限 60 → **80**（至少可见两行）。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+## 阶段 340：新消息后列表高度"固定一小截"修复（2026-11-16）
+
+> 用户反馈（附截图）：每次有新消息，列表高度都会变成同一个固定的小高度（只露出一行的一半）。
+
+- 两个叠加的根因：
+  1. **`ExtentHeight` 读到 0**：虚拟化 ListBox 的 `ScrollIntoView` 要到下一次布局才生效，
+     在回调里立刻读 `ExtentHeight` 恒为 0 → `desired = fixed + 0 + 6` 被 clamp 到下限 →
+     无论多少条消息都是同一个"固定小高度"。**339 的 ScrollIntoView 并不能同步刷新 Extent**。
+  2. **记忆高棘轮**：`SetDrawer` 里把"当前实际高"记为新记忆高——而当前实际高可能是上一次
+     收紧后的内容高，于是天花板越用越低。
+- 修复：
+  - 内容高改用 **【已实化首行容器 `ActualHeight` × 过滤后条数】**（真实测量，无时序依赖；
+    取不到时回退 52px/行）；
+  - `fixedHeight` 增加合理性校验（≤0 或 >400 视为布局未就绪，保留占位高下次再收紧）；
+  - `desired = min(记忆高, fixed + 内容高 + 8)`，下限 80；内容多时 = 记忆高（滚动正常），
+    内容少时 = 内容高（无空白）；
+  - **删除 SetDrawer 里的记忆高捕获**——记忆高只由用户拖动分隔条更新；
+  - `RefreshChatView` 在展开态**一律**触发"占位→收紧"（清空/过滤为 0 条时也会收紧，
+    否则抽屉留在旧高度留白）；收紧后再于 Background 优先级补一次 `ScrollToEnd`。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验。
+
+
+## 阶段 341：抽屉高度最终方案——Auto 行 + ListBox.MaxHeight（2026-11-16）
+
+> 用户反馈（附截图）：底部空白又回来了。
+
+- 340 的像素估算彻底废弃（`ApplyExpandedDrawerHeight` 已删除）：只要靠"算"，就总会在
+  固定高/内容高之间留一条缝——`desired` 被记忆高钳制时抽屉高于内容即空白，反之内容被裁。
+- **最终方案：让布局引擎求值**
+  - `DrawerRow.Height = Auto`（折叠/展开都用 Auto，折叠时 DrawerBody 已 Collapsed）；
+  - 展开时 `ChatList.MaxHeight = max(80, 记忆高 - 68)`（68 = 头部 28 + 过滤排 32 + 边距，
+    抽为常量 `DrawerFixedHeight`）；
+  - 抽屉总高 = 头部 + 过滤排 + **min(内容高, MaxHeight)**：内容少贴内容（无空白），内容多时
+    ListBox 自身封顶并在内部滚动。
+- 关键原理（解释为何 336 的 Auto+**Row**.MaxHeight 会"不能滚动"而本方案不会）：
+  `FrameworkElement.MeasureCore` 在调用 `MeasureOverride` **之前**就用 MaxHeight 钳制传入的
+  可用尺寸；MaxHeight 设在 **ListBox 自身**时，内嵌 ScrollViewer 收到的是**有限**高 →
+  viewport 正确 → 滚动条/滚轮正常。设在 **Row** 上时子元素仍以无限高被测量（StackPanel 经典陷阱），
+  所以表现为裁剪且不能滚。
+- 滚动到最新一条：`RefreshChatView` 在 Background 优先级调 `ScrollToEnd`（高度由布局求值，
+  不再需要"先占位后收紧"）。
+- `dotnet build`：0 错误（临时输出目录）。探针验证尝试因引用工程产物缺失未能跑通，
+  已按"MeasureCore 钳制"原理确认方案，并清理全部探针文件（`git status -- probe` 干净）。
+
+
+## 阶段 342：列表高度=条数×实测行高（探针实测驱动的最终修复）（2026-11-16）
+
+> 用户反馈（附截图）：列表上下都有空白，像固定了高度。
+
+- **用独立 WPF 探针实测**（临时工程，跑完即删）复现 IntelWindow 抽屉结构，结论：
+  - `Auto 行 + ListBox.MaxHeight`：ListBox **总是吃满 MaxHeight**——3 条内容 156px 也只给上限
+    142px；`ScrollableHeight` 恒 > 0（滚动条误显）。这正是"像固定了高度"的机制。
+  - `Auto 行 + 无 MaxHeight`：ListBox 长到全内容高（30 条 → 1532px），窗口被撑破、无法滚动。
+  - 2 条时（内容 < 上限）：高度精确贴合（104px）——说明"上限 + 显式 Height"可行。
+- 修复：
+  - 保留 `MaxHeight` 作为**上限**，另**显式设置 `ChatList.Height = min(上限, 条数 × 实测行高 + 2)`**；
+    行高取自已实化的首个 `ListBoxItem.ActualHeight`（无实化时回退 48px），0 条时取 80px（空态可见）；
+  - `ChatList` 增加 `Padding="0"`（主题默认内边距会造成首行上方留白）；
+  - 调用点：展开（SetDrawer）、每次刷新（RefreshChatView 的延迟回调内，滚到底前后）、拖动完成。
+- `dotnet build`：0 错误。未实机点验（探针只验证布局机制，真实主题样式下的观感仍需用户确认）。
+
+
+## 阶段 343：ExtentHeight 单位陷阱——列表高度最终修复（2026-11-16）
+
+> 用户反馈：底部空白又回来了。
+
+- **探针实测出贯穿 337~342 的真凶**：`ScrollViewer.CanContentScroll=true`（ListBox 默认、
+  虚拟化必需）时，`ExtentHeight / ViewportHeight / ScrollableHeight` 的单位是**「项」而不是像素**——
+  3 条消息 `ExtentHeight == 3`。所以 338/339/340 的 `desired = 固定高 + ExtentHeight + 6` 恒等于
+  几十像素，只能靠 clamp 下限兜底；而 342 的"条数 × 实测行高"又被 ListBox 在 Auto 行下
+  **吃满 MaxHeight** 的行为盖过 → 空白/固定高度反复出现。
+- 修复（三步，全部有探针数据支撑）：
+  1. `ChatList` 增加 `ScrollViewer.CanContentScroll="False"` → Extent 变成**像素**
+     （探针：3 条 = 153px、30 条 = 1530px）；消息上限 200 条，关闭虚拟化无性能问题；
+  2. `UpdateChatListHeight()` 改为两遍法：先把 `Height` 撑到上限（内容完整测量），
+     `Loaded` 回调里读**像素 ExtentHeight**，设 `Height = clamp(ExtentHeight + 2, 80, 上限)`，
+     `ScrollToEnd()`；
+  3. `RefreshChatView` / `SetDrawer` / 拖动分隔条后统一调用它（删掉 341/342 的分散逻辑）。
+- `dotnet build`：0 错误。探针工程已删除（`git status -- probe .tmp` 干净）。未实机点验。
+
+
+## 阶段 344：拖动分隔条时列表高度实时同步（2026-11-16）
+
+> 用户反馈：空白问题已解决；但拖动分隔条改变内容区高度时列表不跟着变，上下出现空白。
+
+- 原因：列表用的是**显式 Height**（343 为贴合内容而设），GridSplitter 只改行高，
+  列表高度不会跟着长 → 抽屉变高、列表不变，下方留白。
+- 修复：
+  - `GridSplitter` 增加 `DragDelta="OnDrawerSplitterDragDelta"`——拖动**过程中**实时
+    `_expandedDrawerHeight = DrawerRow.ActualHeight` 并 `FillChatListHeight()`（MaxHeight/Height 同步为
+    上限），拖动结束再同步一次；
+  - 新增 `_fillListHeight` 标记：用户拖动过之后进入“填满抽屉”模式，新消息**不再按内容收紧**
+    （否则来一条消息列表又缩回去）；每次重新展开抽屉时复位为“按内容收紧”。
+- `dotnet build`：0 错误。未实机点验。
+
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

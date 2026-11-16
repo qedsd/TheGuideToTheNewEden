@@ -16,6 +16,7 @@ using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 using TheGuideToTheNewEden.WPF.Helpers.Interop;
 using TheGuideToTheNewEden.WPF.Services.GamePreview;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using System.Linq;
 
 namespace TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -31,6 +32,8 @@ public partial class IntelWindow : Window
 {
     private const int MaxChatRows = 200;
     private const double CollapsedDrawerHeight = 43;
+    /// <summary>头部行(28) + 过滤排(约 32) + 边距，抽屉内列表以外的固定高度。</summary>
+    private const double DrawerFixedHeight = 68;
     private const double ExpandedDrawerHeight = 210;
 
     internal readonly ChannelIntelSetting _setting;
@@ -51,6 +54,8 @@ public partial class IntelWindow : Window
     private bool _disposed;
     private bool _closing;
     private bool _drawerExpanded;
+    /// <summary>阶段 344：用户拖动过分隔条 → 列表改为"填满抽屉"，不再按内容收紧。</summary>
+    private bool _fillListHeight;
     private double _expandedDrawerHeight = ExpandedDrawerHeight;
     private string _filter = "All";
 
@@ -70,8 +75,8 @@ public partial class IntelWindow : Window
 
         // 阶段 318：尺寸有效性收紧——过小的保存尺寸（旧版本/异常路径写入）视为无效，回退默认；
         // 没保存过位置（WinX/WinY=-1）则居中启动，不再顶到屏幕左上角 (-1,-1)。
-        Width = setting.WinW >= 320 ? setting.WinW : 640;
-        Height = setting.WinH >= 240 ? setting.WinH : 620;
+        Width = setting.WinW >= 80 ? setting.WinW : 640;
+        Height = setting.WinH >= 60 ? setting.WinH : 620;
         if (setting.WinX < 0 && setting.WinY < 0)
         {
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -84,8 +89,9 @@ public partial class IntelWindow : Window
 
         EnsureOnScreen();
 
-        Title = $"{FindString("IntelWindow_Title")} · {setting.Listener}";
-        TitleText.Text = $"{FindString("IntelWindow_Title")} · {setting.Listener}";
+        // 阶段 328：标题只显示角色名（去掉"频道预警"前缀）
+        Title = setting.Listener;
+        TitleText.Text = setting.Listener;
         TitleStatusText.Text = FindString("ChannelIntelPage_Running");
 
         _chatView = CollectionViewSource.GetDefaultView(_chatRows);
@@ -370,9 +376,28 @@ public partial class IntelWindow : Window
     {
         _chatView.Refresh();
         UpdateChannelHeader();
-        if (_drawerExpanded && _chatRows.Count > 0)
+
+        // 阶段 343：高度与滚动统一交给 UpdateChatListHeight
+        // （先撑到上限让内容完整测量 → 按像素 ExtentHeight 收紧 → 滚到底）
+        if (_drawerExpanded)
         {
-            ChatList.ScrollIntoView(_chatRows[^1]);
+            Dispatcher.BeginInvoke(UpdateChatListHeight, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+    }
+
+
+    /// <summary>阶段 334：深度优先枚举可视树（供 ScrollViewer 查找）。</summary>
+    private static System.Collections.Generic.IEnumerable<System.Windows.DependencyObject> WpfTraversal(System.Windows.DependencyObject root)
+    {
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var nested in WpfTraversal(child))
+            {
+                yield return nested;
+            }
         }
     }
 
@@ -382,9 +407,10 @@ public partial class IntelWindow : Window
 
     private void UpdateChannelHeader()
     {
+        // 阶段 332：空态文字跟随实际条数（此前 XAML 常显，从不清隐）
+        ChatEmptyText.Visibility = _chatRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         var count = _chatRows.Count;
-        DrawerCountText.Text = count.ToString();
-        ChatEmptyText.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        // 阶段 330：DrawerCountText 已随头部"频道内容 0"文案移除
 
         var latest = _chatRows.LastOrDefault();
         if (latest is null)
@@ -401,15 +427,14 @@ public partial class IntelWindow : Window
     private void UpdateStatus()
     {
         var active = MapView.ActiveCount > 0;
+        // 阶段 329：颜色圆点 + ToolTip 文字（隐藏文本作为绑定源）
         TitleStatusText.Text = active
             ? FindString("ChannelIntelPage_Running")
             : FindString("IntelWindow_NoActiveAlert");
-        TitleStatusText.Foreground = active
+        TitleStatusDot.ToolTip = TitleStatusText.Text;
+        TitleStatusDot.Fill = active
             ? (Brush)FindResource("IntelCautionBrush")
             : (Brush)FindResource("IntelGreenBrush");
-        TitleStatusBorder.Background = active
-            ? (Brush)FindResource("IntelCautionSoftBrush")
-            : (Brush)FindResource("IntelGreenSoftBrush");
     }
 
     private void OnSystemClearRequested(object? sender, int systemId)
@@ -432,18 +457,94 @@ public partial class IntelWindow : Window
 
     private void SetDrawer(bool expanded)
     {
-        if (_drawerExpanded && DrawerRow.ActualHeight >= 80)
+        // 阶段 340：不再把当前实际高记为记忆高——收紧后的高度会被当成新的天花板（棘轮越用越矮）；
+        // 记忆高只由用户拖动分隔条（OnDrawerSplitterDragCompleted）更新。
+
+        _drawerExpanded = expanded;
+        DrawerSplitter.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
+        // 阶段 341：行高交给布局引擎——Auto 行 + ListBox.MaxHeight 封顶：
+        // 抽屉高 = 头部 + 过滤排 + min(内容高, MaxHeight)。内容少 → 贴内容（无空白）；
+        // 内容多 → ListBox 自身封顶并在内部滚动（不再由 Row 裁剪，滚轮/滚动条正常）。
+        DrawerRow.MinHeight = 0;
+        ChatList.MaxHeight = expanded
+            ? Math.Max(80, _expandedDrawerHeight - DrawerFixedHeight)
+            : double.PositiveInfinity;
+        if (expanded)
+        {
+            // 阶段 344：每次（重新）展开回到“按内容收紧”模式
+            _fillListHeight = false;
+            // 阶段 342：MaxHeight 只是上限，Auto 行下 ListBox 会吃满上限；显式 Height 才贴合内容
+            Dispatcher.BeginInvoke(UpdateChatListHeight, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+        DrawerRow.Height = new GridLength(1, GridUnitType.Auto);
+        DrawerBody.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
+        DrawerChevron.RenderTransformOrigin = new Point(0.5, 0.5);
+        DrawerChevron.RenderTransform = new RotateTransform(expanded ? 180 : 0);
+    }
+
+    /// <summary>
+    /// 阶段 342：把列表高度设为【条数 × 实测行高】（封顶记忆高）。
+    /// 探针实测：Auto 行 + MaxHeight 时 ListBox 会直接吃满 MaxHeight（内容少也留白），
+    /// 因此上限之外还必须显式给 Height；行高取自已实化的首个 ListBoxItem。
+    /// </summary>
+    private void UpdateChatListHeight()
+    {
+        if (!_drawerExpanded || _disposed)
+        {
+            return;
+        }
+
+        if (_fillListHeight)
+        {
+            // 用户拖动过 → 保持填满（内容少时留空是用户自己设定的）
+            FillChatListHeight();
+            return;
+        }
+
+        var max = Math.Max(80, _expandedDrawerHeight - DrawerFixedHeight);
+        // 阶段 343（探针实测）：CanContentScroll=true 时 ExtentHeight 单位是"项"（3 条 → 3），
+        // 用它加固定高永远只有几十像素；设为 false 才是像素（3 条 → 153）。
+        // 因此先撑到上限让内容完整测量，布局后按【像素 ExtentHeight】收紧。
+        ChatList.Height = max;
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (!_drawerExpanded || _disposed)
+            {
+                return;
+            }
+
+            var scrollViewer = WpfTraversal(ChatList)
+                .OfType<System.Windows.Controls.ScrollViewer>()
+                .FirstOrDefault();
+            if (scrollViewer is null)
+            {
+                return;
+            }
+
+            var desired = Math.Min(max, scrollViewer.ExtentHeight + 2);
+            ChatList.Height = Math.Max(desired, 80);
+            scrollViewer.ScrollToEnd();
+        }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+
+    /// <summary>
+    /// 阶段 344：拖动中实时同步（GridSplitter 只改行高，列表是显式高度不会跟着长），
+    /// 否则拖动后抽屉变高、列表不变 → 下方留白。
+    /// </summary>
+    private void OnDrawerSplitterDragDelta(object sender, DragDeltaEventArgs e)
+    {
+        if (!_drawerExpanded || _disposed)
+        {
+            return;
+        }
+
+        if (DrawerRow.ActualHeight >= 80)
         {
             _expandedDrawerHeight = DrawerRow.ActualHeight;
         }
 
-        _drawerExpanded = expanded;
-        DrawerSplitter.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
-        DrawerRow.MinHeight = expanded ? 80 : 0;
-        DrawerRow.Height = new GridLength(expanded ? _expandedDrawerHeight : CollapsedDrawerHeight);
-        DrawerBody.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
-        DrawerChevron.RenderTransformOrigin = new Point(0.5, 0.5);
-        DrawerChevron.RenderTransform = new RotateTransform(expanded ? 180 : 0);
+        FillChatListHeight();
     }
 
     private void OnDrawerSplitterDragCompleted(object sender, DragCompletedEventArgs e)
@@ -452,10 +553,35 @@ public partial class IntelWindow : Window
         {
             _expandedDrawerHeight = DrawerRow.ActualHeight;
         }
+
+        FillChatListHeight();
+    }
+
+    /// <summary>
+    /// 阶段 344：把列表填满抽屉可用高度（拖动后用户已明确设定尺寸，内容少时留空是预期行为）。
+    /// </summary>
+    private void FillChatListHeight()
+    {
+        if (!_drawerExpanded || _disposed)
+        {
+            return;
+        }
+
+        var max = Math.Max(80, _expandedDrawerHeight - DrawerFixedHeight);
+        ChatList.MaxHeight = max;
+        _fillListHeight = true;
+        ChatList.Height = max;
     }
 
     private void OnDrawerHeaderClick(object sender, RoutedEventArgs e)
         => SetDrawer(!_drawerExpanded);
+
+    /// <summary>阶段 334：清空预警列表内容（不动星图上的预警状态）。</summary>
+    private void OnClearListClick(object sender, RoutedEventArgs e)
+    {
+        _chatRows.Clear();
+        RefreshChatView();
+    }
 
     private void OnFilterClick(object sender, RoutedEventArgs e)
     {
@@ -587,8 +713,6 @@ public partial class IntelWindow : Window
         base.OnStateChanged(e);
     }
 
-    private void OnCloseClick(object sender, RoutedEventArgs e)
-        => Close();
 
     private void OnClearClick(object sender, RoutedEventArgs e)
     {
@@ -602,6 +726,37 @@ public partial class IntelWindow : Window
 
     private void OnActivateGameClick(object sender, RoutedEventArgs e)
         => GameWindowHelper.BringGameToFront(_setting.Listener);
+
+    /// <summary>阶段 325：专注模式——隐藏频道内容抽屉/右侧按钮/颜色图例，只留标题、最小化、星图、本开关。</summary>
+    private bool _focusMode;
+
+    private void OnFocusClick(object sender, RoutedEventArgs e)
+    {
+        _focusMode = !_focusMode;
+        FocusButton.Icon = new Wpf.Ui.Controls.SymbolIcon
+        {
+            Symbol = _focusMode ? Wpf.Ui.Controls.SymbolRegular.ArrowMaximize24 : Wpf.Ui.Controls.SymbolRegular.ArrowMinimize24,
+        };
+        FocusButton.ToolTip = FindString(_focusMode ? "IntelWindow_FocusRestore" : "IntelWindow_FocusHide");
+
+        TitleStatusDot.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
+        ResetViewButton.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
+        ClearButton.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
+        StopSoundButton.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
+        ActivateGameButton.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
+
+        if (_focusMode)
+        {
+            SetDrawer(false);
+            DrawerRow.Height = new GridLength(0);
+            DrawerSplitter.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            DrawerSplitter.Visibility = Visibility.Visible;
+            SetDrawer(_drawerExpanded);
+        }
+    }
 
     private void OnResetViewClick(object sender, RoutedEventArgs e) => MapView.ResetView();
 

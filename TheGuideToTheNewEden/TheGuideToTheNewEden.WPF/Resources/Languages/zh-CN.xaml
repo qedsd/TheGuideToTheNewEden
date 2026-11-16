@@ -1222,12 +1222,15 @@
     <sys:String x:Key="IntelWindow_NoActiveAlert">无预警</sys:String>
     <sys:String x:Key="IntelWindow_All">全部</sys:String>
     <sys:String x:Key="IntelWindow_Clear">解除</sys:String>
+    <sys:String x:Key="IntelWindow_ClearList">清空列表</sys:String>
     <sys:String x:Key="IntelWindow_Kill">击杀</sys:String>
     <sys:String x:Key="IntelWindow_NoMessages">暂无频道内容</sys:String>
     <sys:String x:Key="IntelWindow_ResizeChannel">拖动调整频道内容高度</sys:String>
     <sys:String x:Key="IntelWindow_ZoomIn">放大</sys:String>
     <sys:String x:Key="IntelWindow_ZoomOut">缩小</sys:String>
     <sys:String x:Key="IntelWindow_ResetView">复位视图</sys:String>
+    <sys:String x:Key="IntelWindow_FocusHide">专注模式：隐藏频道内容与按钮</sys:String>
+    <sys:String x:Key="IntelWindow_FocusRestore">恢复频道内容与按钮</sys:String>
     <sys:String x:Key="IntelWindow_MapHint">拖拽平移 · 滚轮缩放 · 双击复位</sys:String>
     <sys:String x:Key="IntelWindow_Latest">最新</sys:String>
     <sys:String x:Key="IntelWindow_AlertCount">预警 {0}</sys:String>

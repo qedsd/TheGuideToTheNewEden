@@ -1208,12 +1208,15 @@
     <sys:String x:Key="IntelWindow_NoActiveAlert">No active alerts</sys:String>
     <sys:String x:Key="IntelWindow_All">All</sys:String>
     <sys:String x:Key="IntelWindow_Clear">Cleared</sys:String>
+    <sys:String x:Key="IntelWindow_ClearList">Clear list</sys:String>
     <sys:String x:Key="IntelWindow_Kill">Kills</sys:String>
     <sys:String x:Key="IntelWindow_NoMessages">No channel messages yet</sys:String>
     <sys:String x:Key="IntelWindow_ResizeChannel">Drag to resize channel content</sys:String>
     <sys:String x:Key="IntelWindow_ZoomIn">Zoom in</sys:String>
     <sys:String x:Key="IntelWindow_ZoomOut">Zoom out</sys:String>
     <sys:String x:Key="IntelWindow_ResetView">Reset view</sys:String>
+    <sys:String x:Key="IntelWindow_FocusHide">Focus mode: hide channel contents and buttons</sys:String>
+    <sys:String x:Key="IntelWindow_FocusRestore">Restore channel contents and buttons</sys:String>
     <sys:String x:Key="IntelWindow_MapHint">Drag to pan · Wheel to zoom · Double-click to reset</sys:String>
     <sys:String x:Key="IntelWindow_Latest">Latest</sys:String>
     <sys:String x:Key="IntelWindow_AlertCount">Alerts {0}</sys:String>
