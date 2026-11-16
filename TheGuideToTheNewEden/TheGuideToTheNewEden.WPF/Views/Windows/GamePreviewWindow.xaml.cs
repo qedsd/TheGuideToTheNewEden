@@ -156,6 +156,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     private bool _thumbnailUpdateQueued;
 
+    /// <summary>阶段 346：首帧布局完成、窗口位置尺寸已可信（之前不把矩形写回配置）。</summary>
+    private bool _boundsReady;
+
+    /// <summary>阶段 346：程序化摆放窗口期间禁止回写（Start/换绑恢复/比例校正）。</summary>
+    private int _boundsPersistLock;
+
     // 尺寸对账告警去重：同一组“布局/实际”尺寸只报一次，避免窄窗口时 300ms 刷屏。
     private int _lastStaleLayoutWidth = -1;
     private int _lastStaleLayoutHeight = -1;
@@ -596,7 +602,15 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         var bounds = ResolveStartBounds();
 
         _isShowing = true;
-        NativeMethods.SetWindowBounds(_hwnd, bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+        _boundsPersistLock++;
+        try
+        {
+            NativeMethods.SetWindowBounds(_hwnd, bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+        }
+        finally
+        {
+            _boundsPersistLock--;
+        }
 
         Show();
 
@@ -632,6 +646,11 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         ApplyPreviewPlaceholder();
         _minimizeWatchTimer.Start();
+
+        // 阶段 346：首帧布局完成后再允许回写位置尺寸（Loaded 优先级在布局之后）
+        Dispatcher.BeginInvoke(
+            () => _boundsReady = true,
+            System.Windows.Threading.DispatcherPriority.Loaded);
     }
     public void Stop()
     {
@@ -642,6 +661,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         _stopped = true;
         _isShowing = false;
+        _boundsReady = false;
         _globalSetting.PropertyChanged -= GlobalSetting_PropertyChanged;
         _aspectCorrectionTimer.Stop();
         _minimizeWatchTimer.Stop();
@@ -775,6 +795,33 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     }
 
     /// <summary>
+    /// 阶段 346：按当前 <see cref="Setting"/> 里存档的位置与尺寸摆放窗口。
+    /// <para>
+    /// 只用于"换绑配置 / 重新应用配置"这类程序化摆放，因此期间禁止回写（<see cref="_boundsPersistLock"/>），
+    /// 避免把刚摆上去的矩形又当成用户操作存一遍。没有历史尺寸时保持当前几何。
+    /// </para>
+    /// </summary>
+    private void ApplySavedBounds()
+    {
+        if (Setting.WinW <= 0 || Setting.WinH <= 0)
+        {
+            return;
+        }
+
+        var bounds = ResolveStartBounds();
+        _boundsPersistLock++;
+        try
+        {
+            NativeMethods.SetWindowBounds(_hwnd, bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+            MoveNameOverlay(bounds.Left, bounds.Top);
+        }
+        finally
+        {
+            _boundsPersistLock--;
+        }
+    }
+
+    /// <summary>
     /// 设置尺寸。带的宽高是<b>画面区域</b>的尺寸（窗口会给标题栏/名称条/高亮留白补足差额），
     /// 因此调用方不必自己去算装饰尺寸；不满足游戏客户区比例的请求由尺寸校正自动修正。
     /// </summary>
@@ -882,10 +929,19 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     public void Rebind(ProcessInfo process, PreviewItem setting)
     {
+        var previousSetting = Setting;
         Process = process;
         Setting = setting;
 
         ApplyVisuals();
+
+        // 阶段 346（修复 1）：换绑到**不同**的配置项时，把该配置里存档的位置尺寸摆上去。
+        // 旧实现只应用外观，角色重登/换绑后窗口还停在上一条（或默认）矩形上，
+        // 紧接着 PersistBounds 就把默认矩形写回了真配置——表现为“配置没保存、回到左上”。
+        if (_isShowing && _hwnd != IntPtr.Zero && !ReferenceEquals(previousSetting, setting))
+        {
+            ApplySavedBounds();
+        }
         if (UseNativeOverlay)
         {
             EnsureThumbnailOverlay();
@@ -1546,15 +1602,19 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         // 留一条透明边"，看起来像窗口没按画面比例。防自循环交给上面那条容差判断（下发后窗口就等于目标尺寸，
         // 下一轮必落在容差内）。
         _applyingAspectCorrection = true;
+        _boundsPersistLock++;
         try
         {
             NativeMethods.SetWindowBounds(_hwnd, window.Left, window.Top, size.Width, size.Height);
-            PersistBounds();
         }
         finally
         {
+            _boundsPersistLock--;
             _applyingAspectCorrection = false;
         }
+
+        // 锁外回写：此时窗口矩形就是最终值
+        PersistBounds();
     }
 
     /// <summary>
@@ -1835,6 +1895,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     private void PersistBounds()
     {
+        // 阶段 346（修复 2）：布局未就绪 / 正在程序化摆放时不回写。
+        // 这条堵死"窗口刚以默认矩形建出来就把默认值覆盖进已保存配置"的路径。
+        if (!_boundsReady || _boundsPersistLock > 0)
+        {
+            return;
+        }
+
         NativeMethods.GetWindowRect(_hwnd, out var rect);
         Setting.WinW = rect.Width;
         Setting.WinH = rect.Height;

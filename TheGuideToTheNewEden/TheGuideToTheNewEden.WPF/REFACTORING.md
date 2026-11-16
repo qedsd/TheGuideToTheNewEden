@@ -12469,6 +12469,28 @@ MainWindow.xaml(.cs)
 - 语言键 +7（中英各 3579，集合一致）；手册 `game-preview.md` 全局设置第 7 条与字段口径表同步。
 - `dotnet build`：0 错误。未实机点验（左键默认行为与旧版一致，改动需切换成右键才会体现）。
 
+## 阶段 346：多开预览"重登后回到左上/配置丢失"修复 1+2（2026-11-16）
+
+> 用户反馈（他人机器，非本机复现）：角色退出游戏再进角色后，锁定画面比例、窗口大小、位置
+> 全部恢复默认/跑到左上，像是没有实时保存配置。分析见阶段 346 的排查结论，本轮先落地两条主因。
+
+- **修复 1：换绑配置时回填几何**
+  `GamePreviewWindow.Rebind` 旧实现只 `ApplyVisuals()`，不碰位置尺寸——角色重登/换绑到另一份配置
+  （或从"名字未知时的默认项"换到真配置）后，窗口仍停在上一条/默认矩形上。
+  现在换绑到**不同** `PreviewItem`（引用不同）且窗口已显示时调用新增的 `ApplySavedBounds()`：
+  按该配置的 `WinX/WinY/WinW/WinH` 经 `ResolveStartBounds()`（含工作区夹取）摆好，并同步角色名叠加窗。
+  注意：`Start()` 内部的 `Rebind(Process, Setting)` 是同一引用 → 不会重复摆放；
+  句柄变化但配置不变的 `Rebind` 也不会动几何。
+- **修复 2：`PersistBounds()` 增加就绪/程序化门槛**
+  新增 `_boundsReady`（首帧布局完成后由 `Loaded` 优先级的 Dispatcher 回调置位）与
+  `_boundsPersistLock`（`Start` 初始摆放、`ApplySavedBounds`、比例校正的 `SetWindowBounds` 期间加锁）。
+  任一条件不满足就**不回写** `Setting.WinX/WinY/WinW/WinH`。
+  这条堵死"窗口刚以默认矩形建出来（100,100 / 533×300），随后某个路径触发 PersistBounds 把默认值
+  覆盖进已保存配置"的路径——这正是"配置像是没保存"的真凶。
+  比例校正在锁外补一次 `PersistBounds()`，写入的是校正后的最终矩形；`Stop()` 复位 `_boundsReady`。
+- `dotnet build`：0 错误（临时输出目录）。未实机点验（需要"登出→重登"场景，建议用户侧验证）。
+
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；
