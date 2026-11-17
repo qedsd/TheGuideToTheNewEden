@@ -5,8 +5,9 @@ using TheGuideToTheNewEden.WPF.ViewModels;
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
 /// <summary>
-/// DED 页：左侧"势力筛选 + 名称搜索"的 DED 列表，右侧是选中项的攻略正文（Markdown）。
-/// 对应 WinUI 版 <c>Views/DEDPage</c>，数据取自 Core <c>DEDService</c>（<c>Resources/Database/ded.db</c>）。
+/// 「攻略 · 死亡远征」页：左侧"分类 / 势力 / 难度 + 名称搜索"的站点列表，右侧是选中项的攻略正文（Markdown）。
+/// 数据取自 Core <c>CombatSiteService</c>（<c>Resources/Database/static.db</c> 的 <c>CombatSite</c> 表）。
+/// 右侧正文双轨：社区攻略（本站整理）与 Wiki 数据（EVE University Wiki 抓取并翻译）。
 /// </summary>
 public partial class DEDPage : Page
 {

@@ -107,6 +107,18 @@
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="WPF-UI · H.NotifyIcon · HtmlRenderer.WPF · LiveCharts2 / SkiaSharp · Newtonsoft.Json · EVEStandard · ZKB.NET · Octokit"
                     TextWrapping="Wrap" />
+                <TextBlock
+                    Margin="0,8,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource Home.About.ContentLicense}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Margin="0,2,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="EVE University Wiki (CC BY-SA 4.0) — https://wiki.eveuniversity.org/Combat_site"
+                    TextWrapping="Wrap" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

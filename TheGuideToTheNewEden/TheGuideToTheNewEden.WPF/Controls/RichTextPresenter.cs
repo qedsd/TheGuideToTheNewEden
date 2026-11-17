@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -58,6 +59,7 @@ public class RichTextPresenter : RichTextBox
         HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
         Document = BuildDocument(string.Empty);
+        BindDocumentTextProperties();
     }
 
     /// <summary>要展示的纯文本。</summary>
@@ -83,10 +85,42 @@ public class RichTextPresenter : RichTextBox
     {
         var presenter = (RichTextPresenter)d;
         presenter.Document = BuildDocument(e.NewValue as string);
+        presenter.BindDocumentTextProperties();
         if (presenter.AutoScrollToEnd)
         {
             presenter.ScrollToEnd();
         }
+    }
+
+    /// <summary>
+    /// 把 <c>Foreground / FontSize / FontWeight / FontFamily</c> **绑**到 <see cref="FlowDocument"/> 上。
+    /// <para>
+    /// 为什么不靠继承：<see cref="RichTextBox"/> 与它的 <see cref="FlowDocument"/> 之间那一层属性继承
+    /// 在"首次布局 / DynamicResource 尚未解析"时会取到默认值（黑字），本项目在 MarkdownPresenter 上已经踩过
+    /// （见 REFACTORING.md 阶段 18 与阶段 79 的三层保险）。这里用 <see cref="Binding"/> 而不是
+    /// <c>SetValue</c> 拷一份快照——绑定会跟着控件上的 DynamicResource 一起重解析，**切主题仍然即时生效**
+    /// （拷快照的做法会把深色主题的 Brush 固化下来，正是阶段 13 的老问题）。
+    /// </para>
+    /// </summary>
+    private void BindDocumentTextProperties()
+    {
+        var document = Document;
+        if (document is null)
+        {
+            return;
+        }
+
+        Bind(TextElement.ForegroundProperty, nameof(Foreground));
+        Bind(TextElement.FontSizeProperty, nameof(FontSize));
+        Bind(TextElement.FontWeightProperty, nameof(FontWeight));
+        Bind(TextElement.FontFamilyProperty, nameof(FontFamily));
+
+        void Bind(DependencyProperty property, string path)
+            => document.SetBinding(property, new Binding(path)
+            {
+                Source = this,
+                Mode = BindingMode.OneWay,
+            });
     }
 
     private static void OnAutoScrollToEndChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

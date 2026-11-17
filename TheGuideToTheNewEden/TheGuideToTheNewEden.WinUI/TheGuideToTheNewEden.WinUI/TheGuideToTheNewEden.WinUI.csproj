@@ -548,9 +548,6 @@
     <None Update="Resources\Configs\UpgradeResources.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Database\ded.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\Database\Local\zh.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

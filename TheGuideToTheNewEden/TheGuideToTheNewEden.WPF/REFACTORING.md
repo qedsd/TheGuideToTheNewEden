@@ -1,5 +1,5 @@
 # TheGuideToTheNewEden.WPF 重构与更新记录
-- 阶段 306：阈值开放为预警设置项 `SmallWidthLabelThreshold`（默认 **500**，0 = 总是显示名称），频道预警页「预警设置」卡片新增数字输入框（带悬浮说明），随存档持久化；语言键 +2。
+- 阶段 351：死亡远征攻略补全——新增 `CombatSite` 表（379 条：DED 评级 50 / 无评级 74 / 远征 76 / 战斗异常 126 / 化学实验室 34 / 遗迹 6 / 三神裔 9 / 特殊 4），wiki 正文全量中文化；DED 页加「分类 / 势力 / 难度」筛选与「社区攻略 / Wiki 数据」双页签；`ded_info` 工具支持分类；删掉死文件 `ded.db`；语言键 +17。
 > 本文档记录 WinUI 3 → WPF 迁移过程中的**全部重构决策与每一次更新**，包含背景、方案、变更明细、问题根因、验证结果与已知限制。
 > 起点：对 WinUI 3 项目做"重构为 WPF"的可行性评估；终点：WPF 版已具备导航框架、完整设置模块、角色功能（授权 + 数据层 + 7 个子页）。
 
@@ -2971,9 +2971,11 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   - 行内样式**不写死颜色**（靠属性继承跟随主题）；标题字号 h1~h6 = 24/20/18/16/15/14，正文继承 App 级隐式
     `FlowDocument` 样式（14px / 系统消息字体）。
 - **分层**（照项目既有约定，Core 就是数据层，**未新增服务层**）：
-  - `ViewModels/DEDPageViewModel.cs` / `MissionPageViewModel.cs`：势力（0–5）/ 等级（1–5）筛选 + 名称搜索
+  - `ViewModels/DEDPageViewModel.cs` / `MissionPageViewModel.cs`：势力（0–5）筛选 + 名称搜索
     （**350ms 防抖**，换关键词会作废上一轮结果）+ 状态行（共 N 项 / 搜索到 N 项 / 加载中 / 加载失败）+
     订阅 `LanguageService.LanguageChanged` 重发状态行通知（§9 第 63 条）。
+    > **订正（阶段 351）**：原文写"DED 页也有等级（1–5）筛选"是错的——DED 页当时**只有势力下拉 + 名称搜索**，
+    > 等级筛选是任务页的。阶段 351 才给 DED 页补上"分类 / 势力 / 难度"三个筛选。
   - 页面用 `controls:CardControl`：左卡 Header=搜索框、内容=列表、Footer=筛选下拉 + 状态行；右卡=标题 + Markdown 正文。
     页内**不再显示大标题**（§10「UI 约定」）；列表 `ItemContainerStyle="{StaticResource StretchListItem}"`（Fluent 悬停/选中）。
   - 任务正文加载走 `Task.Run(() => MissionService.QueryMissionContent(id))`——Core 那个接口是**同步**的，
@@ -12562,6 +12564,219 @@ MainWindow.xaml(.cs)
   `AiToolsSettingView` 增三张卡片（允许读写 / 允许写入 / 根目录多行输入），随该分节的「保存」一起提交。
 - 语言键 +7（中英各 3595，集合一致）；手册 `assistant.md` 的能力与限制两节同步。
 - `dotnet build`：0 错误。未实机点验（需要真实模型对话才能验证模型是否会正确挑这两个工具）。
+
+## 阶段 351：死亡远征攻略补全（CombatSite 新表 + wiki 全量 379 条中文化 + 分类/难度筛选）（2026-11-17）
+
+> 用户需求：现有死亡远征功能只记录了部分战斗地点，攻略可能过期/缺失；参考 EVE University Wiki「Combat site」
+> 的最新内容把攻略补全。
+> 设计文档：**`DED_COMBAT_SITE_DESIGN.md`**（含 wiki 全量清单、差异表、P0–P5 计划）；
+> 全量清单快照：`Docs/wiki-combat-site-inventory.md` / `.json`；导入工具：`Tools/wiki-import/`。
+
+### A. 先盘清事实（不在印象上动手）
+
+- 现有 `DED` 表 192 条：`Level` 1–10 = DED 评级（其中 **9 是 5 条 Fleet Staging Point**），`Level = 0` = 138 条
+  **无评级复合体（69）与远征（69）混在一起**，界面都显示"未定级"，玩家分不清"自己扫出来打"和"只能从星际代理处进"。
+- 拿 wiki 的 `Combat_site`（revision **230825 / 2026-05-15**，CC BY-SA 4.0）用**展开 rowspan/colspan 的 HTML 表格网格解析器**
+  读数，得到全量 **380 条**：战斗异常 126、无评级复合体 74、DED 评级 50、远征 76、化学实验室 34、
+  战斗遗迹 7、三神裔 9、特殊站点 4。
+- 逐条比对结论：**核心三类的覆盖其实不差**——DED 评级 49/50（只缺 `Drone Infested Mine` 4/10）、无评级 74/74、
+  远征 69/76（缺 7 条续篇）。真正的缺口是**整类缺失 180 条**（异常 126 / 实验室 34 / 遗迹 7 / 三神裔 9 /
+  神庙 2 / 围困 1 / ISHAEKA 1），而且连**"异常 → 可升级成哪个 DED"**这条最有用的映射也一条都没有。
+
+### B. 口径澄清（用户指出，已按此实现）
+
+> **5 条 `<Faction> Fleet Staging Point` 记 `Level = 9` 不是缺陷，是刻意保留的游戏习惯叫法。**
+> CONCORD 体系里确实没有 9/10 这一档（wiki 也这么写），但玩家一直按 9/10 称呼舰队集结点。
+> 因此新表里它们**仍是 `Rating = 9`**，只是 `Category` 归到「无评级复合体」；界面/AI 输出照旧显示 `9/10`。
+> 设计文档里"FSP 被错标成 9/10 属于缺陷"的说法已按此订正——那是**有意为之的口径**。
+
+### C. 数据模型：新增 `CombatSite` 表（`DED` 表原样保留）
+
+- `Core/Enums/CombatSiteCategory.cs`：8 个分类（DED评级 / 无评级 / 远征 / 异常 / 化学实验室 / 遗迹 / 三神裔 / 特殊）。
+- `Core/DBModels/Static/CombatSite.cs`：`Category / Faction / Rating / Tier / Level / Security（位掩码 高安1 低安2 00=4）/
+  ShipLimit / TitleCN / TitleEN / Escalation / Source / Location / WikiTitle /
+  CommunityContent / WikiContent / IsStub / CommunityUpdatedAt / WikiUpdatedAt`。
+  - **双轨正文**：`CommunityContent` 是本站整理的中文实战（原 `DED.Content` 原样迁入，一个字没改）；
+    `WikiContent` 是 wiki 抓取并翻译的结构化资料。两者分开，wiki 侧可整段重刷，社区侧不被覆盖。
+- `Core/Services/DB/CombatSiteService.cs`：`QueryAsync(category/faction/rating/tier/keyword)`、`GetByIdAsync`、
+  `CountByCategoryAsync`、`CountAsync`。全部 try/catch + `Log.Error`，失败返回空集合（不返回 null）。
+  排序放在内存里做（全表 379 条），避免 SqlSugar 生成多段 `ORDER BY` 的可控性问题。
+- **`DED` 表与 `DEDService` 一行没动**：WinUI 版仍在用旧链路，渐进迁移风险最低。
+
+### D. 数据导入链路（`Tools/wiki-import/`，可离线复现）
+
+```
+fetch_wiki.py    抓 Combat_site 索引页 + 372 个站点子页（action=raw，限速 0.3s）→ raw/pages/*.wiki + index.json
+parse_wiki.py    {{CMBSiteInfo}} / {{NPCTableHead|Row}} / 消息框 / 战利品表 → parsed.json（保持章节原始顺序）
+extract_units.py 抽 4498 条待译片段，按"核心三类 / 战斗异常 / 长尾"分三波、约 26KB 一批
+（翻译）         每批一个子代理：读批文件 → 写 zh_*.json，键集合必须一致
+merge_translations.py  逐批校验键集合后合并 → translations.json / translations_names.json
+build_sites.py   组装 + 渲染中文 Markdown + 写 static.db（--write-db）
+```
+
+- **NPC / 建筑 / 战利品名优先走本地 SDE**：`main.db` 的 `types` 拿 typeID，再到 `Local/zh.db` 的 `types` 取中文名
+  （例 `Centior Abomination/Horror` → `森迪尔 憎恶者/森迪尔 恐惧者`）。
+  共享前缀的写法（`Centior X/Y`）会先补前缀再查；查不到的（废弃建筑、加速轨道）保留英文原名。
+- **正文与说明段落走翻译代理**：4498 条片段、约 620KB 英文，全部译成简体中文；
+  长剧情独白（>200 字符的 warp-in / 升级播报）不逐字翻——对攻略价值低却占近一半体量。
+- 站点名单独一批（368 个），按既有社区译法给的术语表对齐（Hideaway=藏身处、Vigil=警卫哨、
+  Fleet Staging Point=舰队集结点……），避免同一势力出现"藏身所/藏身处"两套叫法。
+
+### E. 落库结果
+
+| 分类 | 条数 |
+|---|---|
+| DED 评级复合体 | 50 |
+| 无评级复合体（含 5 条 9/10 舰队集结点） | 74 |
+| 远征 | 76 |
+| 战斗异常 | 126 |
+| 化学实验室 | 34 |
+| 战斗遗迹 | 6（`Crumbling Ruins` 是 wiki 红链，未建条目） |
+| 三神裔站点 | 9 |
+| 特殊站点 | 4 |
+| **合计** | **379** |
+
+- 带社区中文攻略 **192** 条（逐字节迁移，未改内容）；带 wiki 中文正文 **379** 条（含 16 条"wiki 无页面"的说明占位）。
+- 数据清洗：**0 条空中文名**（原 5 条补齐：Colony Under Fire / Religious Fury / Salvation Angel's Shipment /
+  Gurista Productions Shipment / Loose Ends）、**0 组重名**（`Outgrowth Rogue Drone Hive` 拆成 `(5/10)` / `(10/10)`；
+  `Sansha Military Complex` 与 `Sansha Military Operations Complex` 分别定名）、**0 处尾随空格**。
+- `static.db` 6.0 MB → 7.0 MB（+1 MB 换 379 条中文结构化正文）。
+- **删除死文件 `Resources/Database/ded.db`**（348 KB）：它与 `static.db` 的 `DED` 表**逐行完全相同**，
+  而 `Config.InitDb()` 里 `InitDEDDb` 一直是注释掉的，谁也读不到它；WinUI csproj 里的打包项一并移除。
+
+### F. 界面（`DEDPage` 重做）
+
+- 左卡新增三个下拉：**分类**（全部 + 8 类）、**势力**（不限 + 6）、**难度**——
+  难度下拉的内容**随分类重建**：评级给 `1/10…10/10`、无评级给 `未定级 / 9/10`、异常给 `T1…T10`，
+  其它分类没有难度概念时整条隐藏。
+- 列表项加**分类名 + 难度徽标**（`6/10` / `T8·3` / `远征` / `9/10`），重名问题随之消失。
+- 右卡加**元信息行**（类别 · 势力 · 评级/档位 · 最大船型 · 出现空间）与**升级关系行**
+  （"可升级为 …" / "触发来源 …"，没有就整行隐藏）。
+- 正文改**双页签**：`社区攻略` / `Wiki 数据`；**只有一侧有内容时不显示页签栏**，直接铺满，
+  打开时默认停在有内容的一侧（优先社区攻略）。
+- 主题色一律 `DynamicResource`；列表沿用 `StretchListItem`，没有新造显式样式去顶掉 Fluent 模板（§9 第 18 条）。
+- 语言键 +17（中英同步）：`DEDPage_AllCategories|AllFactions|AllLevels`、`DEDPage_Cat_*` ×8、
+  `DEDPage_MetaShipLimit|Escalation|Source|TabCommunity|TabWiki`。
+
+### G. AI 工具 `ded_info` 升级
+
+- 数据源切到 `CombatSiteService`；新增 `category` 参数（评级/无评级/远征/异常/化学/遗迹/三神裔/特殊）。
+- 标签改三态：评级 `6/10`、异常 `T8·3`、其它给分类名；舰队集结点照旧 `9/10`（习惯叫法）。
+- 正文摘要优先取社区攻略、缺失回落 wiki 正文；描述与推荐问法同步更新（"天使有哪些战斗异常"）。
+
+### H. 验证
+
+- **数据侧**：直查 `static.db` —— 各分类计数 50/74/76/126/34/6/9/4、0 重名、0 空中文名、0 尾随空格、
+  379 条都有正文；`Rating = 9` 的 5 条全部落在「无评级复合体」。
+- **服务侧**：临时控制台探针（跑完已删）走真实 `Config.InitDb()` + `CombatSiteService`：
+  `total=379`、`CountByCategoryAsync` 与上表一致、`QueryAsync(Anomaly)` 126 条（首条 `T1·1`）、
+  `QueryAsync(DedRated, rating:6)` 5 条、`QueryAsync(Unrated, rating:9)` 5 条 / `rating:0` 69 条、
+  关键词"迷魂"命中 `The Maze`、`GetByIdAsync(23)` 两份正文都取到（1316 / 2626 字符）、无命中返回 0 条不抛异常。
+- `dotnet build`：**0 错误**。
+- **未实机截图核验**（同 §8 约定）：页面布局与三档筛选的实际观感由使用者确认。
+
+### H2. 用户实机截图反馈（2026-11-17）：列表里出现 `-1`
+
+- **现象**：三神裔站点那几行的"势力"位置显示 **`-1`**，右边还重复了一个"三神裔站点"。
+- **根因**：`CombatSite.Faction` 用 **`-1` 表示"不适用"**（三神裔 / 战斗遗迹 / 特殊站点不属于六大海盗势力），
+  但列表模板把 `Faction` 直接喂给了 `DEDTypeConverter`；该转换器只映射 0–5，其余走
+  `value?.ToString()` 兜底 → 把哨兵值原样打了出来。右侧徽标则是因为"分类名"和"徽标文案"取了同一个值。
+- **修法**（两处，都在转换器这个唯一的汇聚点上改）：
+  1. `DEDTypeConverter`：`int < 0` 直接返回空串，**不显示势力**（不是显示 -1）；
+  2. `CombatSiteTagConverter`：只在"徽标能补充信息"的分类下出内容——DED 评级 `6/10`、
+     无评级 `未定级`/`9/10`、异常 `T8·3`；远征 / 化学实验室 / 遗迹 / 三神裔 / 特殊一律留空
+     （左边那行已经是分类名了）。
+- 顺带核对：`MetaText`（右卡元信息）与 AI 工具 `ded_info` 早就用 `Faction >= 0` 做了守卫，只有列表模板漏了。
+- 验证：`dotnet build` 0 错误（应用正在运行、主输出被占用，按既有做法用 `-p:OutputPath=obj\verify\` 重定向校验）。
+
+### H3. 用户实机反馈（2026-11-17）：右卡头部的名字/分类要能选中复制
+
+- **现象**：选中站点后，右卡的英文名、中文名、元信息行、升级关系行都是 `TextBlock`——**选不中、复制不了**。
+  而站点名恰恰是玩家最想复制出去的东西（贴群、贴论坛、发给队友）。
+- **修法**：头部四行改用既有的 **`Controls/RichTextPresenter`**（只读 `RichTextBox`，可拖选 / Ctrl+C / 右键复制；
+  无边框、透明底、无内边距，外观与 `TextBlock` 一致）。逐行分开而不是合并成一个控件，
+  是为了保留"标题 18px 主题色 / 中文名次要色 / 元信息 12px / 关系行警示色"这套排版；
+  单行复制也正好是常见诉求。每个实例设 `VerticalScrollBarVisibility="Disabled"`，高度按内容自适应。
+- **顺带补掉一个既有隐患**：`RichTextPresenter` 原本**依赖 `RichTextBox → FlowDocument` 的属性继承**把
+  `Foreground / FontSize` 传进文档，而这一层在"首次布局 / DynamicResource 尚未解析"时会取默认值（黑字）——
+  正是 §9 第 18 条与阶段 79 在 `MarkdownPresenter` 上踩过的同一个坑。现在改为**在文档上做 `Binding`**
+  （`Source = 控件`，`OneWay`），而不是 `SetValue` 拷一份快照：绑定会跟着控件上的 DynamicResource 一起重解析，
+  **切主题仍然即时生效**（拷快照会把深色主题的 Brush 固化成旧值，就是阶段 13 的老问题）。
+  换文本会重建文档，重建后再绑一次。
+- **探针验证（8/8 PASS，一次性产物已清理）**：直接 `new RichTextPresenter()` 断言——
+  文档已生成；`Foreground`/`FontSize` 传进文档（`#FFFF0000` / `18`）；
+  把控件 `Foreground` 换成 Lime 模拟主题切换后**文档跟着变**；换文本重建文档后绑定仍在；
+  文本内容正确；`IsReadOnly=true` 且 `IsReadOnlyCaretVisible=false`；无边框、透明底。
+
+### H4. 用户反馈（2026-11-17）：漏了「旗舰远征」——改从游戏 SDE 补 12 条
+
+- **现象**：玩家口中的**旗舰远征**（`<Faction> Capital Staging` / `Shielded Starbase` / `Drone Capital Hive` /
+  `Drone Infested Starbase`）在库里一条都没有。用户举的例子是「天使护盾加强母星」。
+- **根因不是漏抓**：wiki 的 `Combat site` 页**根本没把这些站列成条目**——它们只在个别异常的"可升级为"里
+  被顺带提过一次（`Serpentis Hub` → 8/10 护盾加强母星、`Drone Herd` → 5/10 侵袭母星、
+  `Serpentis Hidden Rally Point` → Capital Staging），所以 `fetch_wiki.py` 抓不到。
+- **正确数据源是游戏 SDE**：`<SDE>/dungeons.jsonl`（1416 条）里每个站点都有
+  `name.en` / `name.zh` 和**八语种官方描述**，还有 `archetypeID` 与 `factionID`。
+  于是新增 `Tools/wiki-import/extract_sde_dungeons.py`，把 12 条旗舰远征抽成
+  `capital_sites.json`，`build_sites.py` 再把它并进库（分类 `CapitalExpedition`）。
+- **判定规则（关键）**：`archetypeID == 31`（SDE 里叫 `Escalation` / 远征）
+  **且**英文名匹配 `Capital Staging` / `Capital Hive` / `Shielded Starbase` / `Infested Starbase`，
+  再排除 `Escalation Test 3/4`（CCP 内部测试条目）。
+  **只按中文名搜会误收**：搜「旗舰」能捞到 13 条，其中 7 条不是旗舰远征
+  （统合部旗舰建造车间、EoM 自由旗舰船坞 ×3、古斯塔斯旗舰工场、战争之路：旗舰救援、远征测试 4）；
+  搜「母星」同样会把"远征测试 3"带上。两个条件一起用才准。
+- **新增第 9 个分类** `CombatSiteCategory.CapitalExpedition = 8`（不改它的 `Category` 值会混进 76 条普通远征里，
+  玩家根本翻不出来）：枚举 + 分类转换器 + 语言键 `DEDPage_Cat_CapitalExpedition`（中英各 +1，3613 键、集合一致）
+  + `ded_info` 的 `category` 别名（`旗舰` / `capital`，标签给「旗舰」）+ 手册「关于旗舰远征」一节。
+- **这 12 条的正文**：官方中文描述（去 HTML）+ 触发关系（只有 3 条 wiki 有记载，其余写明"未记载"）
+  + 一段说明（旗舰级、wiki 无条目、名字与描述来自 SDE 不是机翻）。`IsStub = 1`，因为没有逐层怪表。
+- **落库结果**：391 条（原 379 + 12），分类计数 50/74/76/126/34/6/9/4/**12**，0 重名、0 空正文。
+- **顺带把中文名统一成官方名（用户要求）**：拿 391 条的英文名去 `dungeons.jsonl` 里对，**333 条精确命中**，
+  其中 **174 条与之前的译名不同**。`build_sites.py` 的名字优先级改为
+  「按页人工覆盖 → **SDE 官方中文名** → 红链站点人工名 → 旧 DED 库译名 → 站点名译文」，
+  即**官方名压过社区旧译名**（例：`Pith Merchant Depot` 皮特佣兵站 → **波希**佣兵站；
+  `Serpentis Watch` 天蛇嘹望哨 → 天蛇**瞭望塔**；`Angel Kickbacks` 天使的脏物 → 天使的**赃**物；
+  `Serpentis Phi-Outpost` 天蛇21哨站 → 天蛇**二十一**哨站）。异常类官方名自带难度后缀
+  （`隐秘的天使藏身处（难度1）` / `天使圣坛（难度10）`），与客户端一致。
+- **官方名撞车 → 加后缀消重**：官方名有 2 组重复，`disambiguate()` 按分类给语义后缀：
+  `无人机群（T1·1）` / `无人机群（T10·1）`（Drone Cluster vs Drone Horde）、
+  `萨沙军用复合体（7/10）` / `萨沙军用复合体（无评级）`（Sansha Military Operations Complex vs Sansha Military Complex）。
+  规则：评级 `n/10`、异常 `Tn·m`、无评级 `无评级`/`9/10`、远征与旗舰远征给类别名；万一还撞退化成 `#Id`。
+  落库后 **0 重名**。
+- **`extract_sde_dungeons.py` 现在顺带产出 `sde_names.json`**（1011 个英文名 → 官方中文名，含 220 个多义条目），
+  `build_sites.py` 据此纠名；没有该文件时退回原译文并打印提示。
+
+### H5. 用户反馈（2026-11-17）：攻略正文字号偏小 → 14 → 16
+
+- **原来是多少**：正文 `14` DIP（≈10.5pt），来自 `Controls/GlobalControlStyles.xaml` 里 `<Style TargetType="FlowDocument">`
+  的全局 14；标题在 `MarkdownRenderer.BuildHeading` 里写死 24/20/18/16/15/14；代码块与行内代码 13。
+- **为什么以前调不动**：`MarkdownPresenter` 是 `RichTextBox`，文档**不继承**控件的 `FontSize`（§9 第 18 条同款），
+  所以就算在 XAML 写 `FontSize="18"` 也毫无变化（AI 对话页的 `ChatMarkdown` 样式里就写了个 `FontSize=14`，
+  恰好与全局值相同，所以一直没暴露）。
+- **修法**：
+  1. `MarkdownRenderer.ToFlowDocument(markdown, baseFontSize = 14)`：把文档基准字号设成 `baseFontSize`，
+     再把**显式设过字号**的元素按 `base/14` 等比缩放（用 `ReadLocalValue(FontSizeProperty)` 过滤，
+     只缩放标题 / 代码这类"有本地值"的块，正文段落本来就没有本地值，缩它会变成双重放大）。
+  2. `MarkdownPresenter` 新增 `BaseFontSize`（依赖属性，默认 14）——改它要**重渲染**（标题字号是渲染期算的）。
+  3. 攻略两页（`DEDPage` / `MissionPage`）的正文 `BaseFontSize="16"`；
+     右卡头部同步：英文名 18、中文名 15、元信息与关系行 13（原 12）。
+- **结果**（实测断言见下）：正文 16（≈12pt）；标题 27.4 / 22.9 / 20.6 / 18.3 / 17.1 / 16；代码 14.9。
+- **探针（12/12 PASS，产物已清）**：base=14 时文档 14、h2 20、h3 18、代码 13（与改动前完全一致）；
+  base=16 时文档 16、h2 22.86、h3 20.57、代码 14.86，且**正文段落仍无本地字号**（确认不会双重放大）。
+- **另一条探针**：4 列宽表（备注列很长）在 900px 宽的 `RichTextBox` 里 base=14 与 16 的
+  `ExtentWidth - ViewportWidth` 都是 **0**，即 WPF 表格会自适应当前页宽、**不会出现横向裁切**，所以放大到 16 安全。
+- **没动的地方**：AI 对话、内置手册、翻译结果的 `BaseFontSize` 仍是默认 14（那些面板更密、且用户只提攻略）。
+  要整体调大只改各自 XAML 的一个属性即可。
+
+### I. 已知限制
+- wiki 数据是**离线快照**（revision 230825 / 2026-05-15），不联网更新；`Tools/wiki-import/` 可整体重跑刷新，
+  日常增量应只重抓 revision 变化的页（P4 未做）。
+- **16 条站点 wiki 没有独立页面**（红链，如 `Teeming Drone Horde`、`* Forsaken Sanctum`、`Sansha Chemical Lab`、
+  `Crumbling Ruins` 连条目都没建），这些只有元信息 + 一句说明。
+- wiki 正文里的**长剧情播报没有逐字翻译**（只保留 ≤200 字符的短提示），是有意的取舍。
+- SDE 查不到的实体名（废弃建筑 / 加速轨道）保留英文；界面不混排中英时会略显突兀。
+- 归类的"无评级 vs 远征"用 wiki 名称表判定（文本启发式实测只有 62/65/11，不可靠），
+  以后新增站点必须补进 `index.json` 才会被正确归类。
 
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：

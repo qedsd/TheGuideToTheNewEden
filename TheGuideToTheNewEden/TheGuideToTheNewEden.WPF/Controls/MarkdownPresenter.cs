@@ -28,6 +28,20 @@ public class MarkdownPresenter : RichTextBox
         typeof(MarkdownPresenter),
         new FrameworkPropertyMetadata(string.Empty, OnMarkdownChanged));
 
+    /// <summary>
+    /// 正文字号（DIP）。默认 14 = 全应用基础字号；**攻略页这种长文阅读面板调到 16 更舒服**。
+    /// <para>
+    /// 单独开一个属性而不是复用 <see cref="System.Windows.Controls.Control.FontSize"/>：
+    /// <c>RichTextBox</c> 的文档不从这个属性继承（§9 第 18 条的同款坑），改了也不生效；
+    /// 而用独立属性可以明确"这是给渲染器用的基准字号"，不会让调用方误以为设 FontSize 就行了。
+    /// </para>
+    /// </summary>
+    public static readonly DependencyProperty BaseFontSizeProperty = DependencyProperty.Register(
+        nameof(BaseFontSize),
+        typeof(double),
+        typeof(MarkdownPresenter),
+        new FrameworkPropertyMetadata(14.0, OnBaseFontSizeChanged));
+
     public MarkdownPresenter()
     {
         // 只读富文本：能选、能复制，但不能改
@@ -67,22 +81,36 @@ public class MarkdownPresenter : RichTextBox
         set => SetValue(MarkdownProperty, value);
     }
 
+    /// <summary>正文字号（DIP），标题与代码块按比例跟随。默认 14。</summary>
+    public double BaseFontSize
+    {
+        get => (double)GetValue(BaseFontSizeProperty);
+        set => SetValue(BaseFontSizeProperty, value);
+    }
+
     /// <summary>取当前选中的文本（未选中返回空串）。</summary>
     public string SelectedText => Selection?.Text ?? string.Empty;
 
     private static void OnMarkdownChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var presenter = (MarkdownPresenter)d;
-        presenter.Document = Render(e.NewValue as string);
+        presenter.Document = presenter.Render(e.NewValue as string);
+    }
+
+    private static void OnBaseFontSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        // 标题字号是在渲染时算进来的，所以改字号必须重渲染（不是改个属性就能生效）
+        var presenter = (MarkdownPresenter)d;
+        presenter.Document = presenter.Render(presenter.Markdown);
     }
 
     /// <summary>
     /// 渲染正文，并把**文档自己的**默认前景色设为主题正文色——这样即使从控件继承的链路不生效，
     /// 段落与 Run 也会继承到这个主题色（页面上显式设色的部分，如引用块/超链接，仍然各自覆盖）。
     /// </summary>
-    private static FlowDocument Render(string? markdown)
+    private FlowDocument Render(string? markdown)
     {
-        var document = MarkdownRenderer.ToFlowDocument(markdown);
+        var document = MarkdownRenderer.ToFlowDocument(markdown, BaseFontSize);
         document.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush");
         return document;
     }

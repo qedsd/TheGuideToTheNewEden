@@ -85,7 +85,13 @@ public static class MarkdownRenderer
     private static readonly FontFamily MonoFont = new("Consolas, Microsoft YaHei UI, monospace");
 
     /// <summary>把 Markdown 文本渲染成可选中复制的 <see cref="FlowDocument"/>。</summary>
-    public static FlowDocument ToFlowDocument(string? markdown)
+    /// <param name="markdown">Markdown 正文。</param>
+    /// <param name="baseFontSize">
+    /// 正文字号（DIP）。标题与代码块的字号是**按 14 这一档设计的绝对值**，这里按比例整体缩放，
+    /// 所以调大正文时标题层级不会被"吃掉"（否则 base=16 时 h6=14 会比正文还小）。
+    /// 默认 14 = 全应用的基础字号。
+    /// </param>
+    public static FlowDocument ToFlowDocument(string? markdown, double baseFontSize = 14)
     {
         var document = new FlowDocument
         {
@@ -154,8 +160,103 @@ public static class MarkdownRenderer
             document.Blocks.Add(new Paragraph { Margin = new Thickness(0) });
         }
 
+        ApplyFontSize(document, baseFontSize);
         return document;
     }
+
+    /// <summary>
+    /// 把整篇文档的基准字号设成 <paramref name="baseFontSize"/>，并把**显式设过字号**的块
+    /// （标题、代码块、行内代码）按 14 → base 的比例一起缩放。
+    /// <para>
+    /// 只缩放"有本地值"的元素（<see cref="DependencyProperty.UnsetValue"/> 过滤）：
+    /// 正文段落本来就没有本地字号（靠继承），缩放它会变成双倍放大。
+    /// </para>
+    /// </summary>
+    private static void ApplyFontSize(FlowDocument document, double baseFontSize)
+    {
+        document.FontSize = baseFontSize;
+
+        var ratio = baseFontSize / 14.0;
+        if (Math.Abs(ratio - 1.0) < 0.001)
+        {
+            return;
+        }
+
+        foreach (var block in document.Blocks)
+        {
+            ScaleBlock(block, ratio);
+        }
+    }
+
+    private static void ScaleBlock(Block block, double ratio)
+    {
+        switch (block)
+        {
+            case Paragraph paragraph:
+                if (HasLocalFontSize(paragraph))
+                {
+                    paragraph.FontSize *= ratio;
+                }
+
+                ScaleInlines(paragraph.Inlines, ratio);
+                break;
+
+            case Table table:
+                foreach (var group in table.RowGroups)
+                {
+                    foreach (var row in group.Rows)
+                    {
+                        foreach (var cell in row.Cells)
+                        {
+                            foreach (var child in cell.Blocks)
+                            {
+                                ScaleBlock(child, ratio);
+                            }
+                        }
+                    }
+                }
+
+                break;
+
+            case List list:
+                foreach (var item in list.ListItems)
+                {
+                    foreach (var child in item.Blocks)
+                    {
+                        ScaleBlock(child, ratio);
+                    }
+                }
+
+                break;
+
+            case Section section:
+                foreach (var child in section.Blocks)
+                {
+                    ScaleBlock(child, ratio);
+                }
+
+                break;
+        }
+    }
+
+    private static void ScaleInlines(InlineCollection inlines, double ratio)
+    {
+        foreach (var inline in inlines)
+        {
+            if (inline is Span span)
+            {
+                if (HasLocalFontSize(span))
+                {
+                    span.FontSize *= ratio;
+                }
+
+                ScaleInlines(span.Inlines, ratio);
+            }
+        }
+    }
+
+    private static bool HasLocalFontSize(DependencyObject element)
+        => element.ReadLocalValue(TextElement.FontSizeProperty) != DependencyProperty.UnsetValue;
 
     // ---------- 块级实现 ----------
 

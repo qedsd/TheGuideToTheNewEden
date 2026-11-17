@@ -16,6 +16,13 @@ public sealed class DEDTypeConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
+        // 负数 = 不适用（三神裔 / 战斗遗迹 / 特殊站点不属于六大海盗势力）。
+        // 这些条目在列表里**不该显示势力**，不是显示 "-1"。
+        if (value is int negative && negative < 0)
+        {
+            return string.Empty;
+        }
+
         var key = value switch
         {
             int index => index switch

@@ -1,0 +1,7656 @@
+{
+ "Pith Merchant Depot": [
+  {
+   "zh": "波希佣兵站",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Military Outpost": [
+  {
+   "zh": "萨沙军事哨站",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙军事哨站",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Drug Outlet": [
+  {
+   "zh": "天蛇毒品出口",
+   "factionId": 500020
+  }
+ ],
+ "Rogue Drone Infestation Sprout": [
+  {
+   "zh": "自由无人机萌生地",
+   "factionId": 500021
+  }
+ ],
+ "Pith-Robux Asteroid Mining Co.": [
+  {
+   "zh": "皮特—洛波斯小行星矿冶公司",
+   "factionId": 500010
+  }
+ ],
+ "Angel Creo-Corp Mining": [
+  {
+   "zh": "天使创造工业矿冶",
+   "factionId": 500011
+  }
+ ],
+ "Minmatar Contracted Bio-Farm": [
+  {
+   "zh": "米玛塔尔承包模拟生态农场",
+   "factionId": 500011
+  }
+ ],
+ "Old Meanie - Cultivation Center": [
+  {
+   "zh": "“小气鬼”修心场",
+   "factionId": 500012
+  }
+ ],
+ "Drifting Cask": [
+  {
+   "zh": "漂流舱",
+   "factionId": 500012
+  },
+  {
+   "zh": "漂流舱",
+   "factionId": 500021
+  },
+  {
+   "zh": "漂流舱",
+   "factionId": 500021
+  }
+ ],
+ "Yamia Mida": [
+  {
+   "zh": "亚米埃·迈达",
+   "factionId": 500012
+  }
+ ],
+ "Minedrill's Alpha Excavation Site": [
+  {
+   "zh": "矿钻发掘场A",
+   "factionId": 500001
+  }
+ ],
+ "Prohibited Guristas Pirate Base": [
+  {
+   "zh": "古斯塔斯海盗基地禁区",
+   "factionId": 500010
+  }
+ ],
+ "Restricted Caldari Navy Base": [
+  {
+   "zh": "有管制的加达里海军基地",
+   "factionId": 500001
+  }
+ ],
+ "Restricted Serpentis Base": [
+  {
+   "zh": "受管制的天蛇基地",
+   "factionId": 500020
+  }
+ ],
+ "Prohibited Caldari Navy Base": [
+  {
+   "zh": "加达里海军基地禁区",
+   "factionId": 500001
+  }
+ ],
+ "Minedrill's Beta Excavation Site": [
+  {
+   "zh": "矿钻发掘场B",
+   "factionId": 500001
+  }
+ ],
+ "Cadaver Reef": [
+  {
+   "zh": "亡者之礁",
+   "factionId": 500021
+  }
+ ],
+ "Caldari Agent's Hideout": [
+  {
+   "zh": "加达里特工藏身处",
+   "factionId": 500001
+  }
+ ],
+ "Minecore Harvester Depot": [
+  {
+   "zh": "矿源采集站",
+   "factionId": 500011
+  }
+ ],
+ "The Pirate Expedition": [
+  {
+   "zh": "海盗远征队",
+   "factionId": 500011
+  }
+ ],
+ "Angel Watch": [
+  {
+   "zh": "天使瞭望站",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Watch": [
+  {
+   "zh": "古斯塔斯监察哨",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Watch": [
+  {
+   "zh": "萨沙瞭望塔",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Watch": [
+  {
+   "zh": "天蛇瞭望塔",
+   "factionId": 500020
+  }
+ ],
+ "Blood Watch": [
+  {
+   "zh": "血袭者瞭望站",
+   "factionId": 500012
+  }
+ ],
+ "Angel Hideout": [
+  {
+   "zh": "天使隐蔽所",
+   "factionId": 500011
+  }
+ ],
+ "Gurista Hideout": [
+  {
+   "zh": "古斯塔藏身处",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Hideout": [
+  {
+   "zh": "天蛇藏身处",
+   "factionId": 500020
+  }
+ ],
+ "Blood Hideout": [
+  {
+   "zh": "血袭者隐蔽所",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Hideout": [
+  {
+   "zh": "萨沙藏身处",
+   "factionId": 500019
+  }
+ ],
+ "Angel Vigil": [
+  {
+   "zh": "天使警卫哨",
+   "factionId": 500011
+  }
+ ],
+ "Blood Vigil": [
+  {
+   "zh": "血袭者警卫哨",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Vigil": [
+  {
+   "zh": "萨沙警卫哨",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Vigil": [
+  {
+   "zh": "天蛇警卫哨",
+   "factionId": 500020
+  }
+ ],
+ "Guristas Vigil": [
+  {
+   "zh": "古斯塔斯警卫哨",
+   "factionId": 500010
+  }
+ ],
+ "Angel Lookout": [
+  {
+   "zh": "天使哨所",
+   "factionId": 500011
+  }
+ ],
+ "Gurista Lookout": [
+  {
+   "zh": "古斯塔哨所",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Lookout": [
+  {
+   "zh": "萨沙哨所",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Lookout": [
+  {
+   "zh": "天蛇哨所",
+   "factionId": 500020
+  }
+ ],
+ "Blood Lookout": [
+  {
+   "zh": "血袭者哨所",
+   "factionId": 500012
+  }
+ ],
+ "Angel Powergrid": [
+  {
+   "zh": "天使能量网",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使能量网",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使能量网",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使能量网",
+   "factionId": 500011
+  }
+ ],
+ "Rogue Trial Yard": [
+  {
+   "zh": "自由无人机审判场",
+   "factionId": 500021
+  }
+ ],
+ "Angel Outpost": [
+  {
+   "zh": "天使哨站",
+   "factionId": 500011
+  }
+ ],
+ "Gurista Outpost": [
+  {
+   "zh": "古斯塔哨站",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Outpost": [
+  {
+   "zh": "萨沙哨站",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Outpost": [
+  {
+   "zh": "天蛇哨站",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Outpost": [
+  {
+   "zh": "血袭者哨站",
+   "factionId": 500012
+  }
+ ],
+ "Dirty Site": [
+  {
+   "zh": "不洁小站",
+   "factionId": 500021
+  }
+ ],
+ "Gurista Fortress": [
+  {
+   "zh": "古斯塔堡垒",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Fortress": [
+  {
+   "zh": "萨沙堡垒",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Fortress": [
+  {
+   "zh": "天蛇堡垒",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Fortress": [
+  {
+   "zh": "血袭者堡垒",
+   "factionId": 500012
+  }
+ ],
+ "Angel Fortress": [
+  {
+   "zh": "天使要塞",
+   "factionId": 500011
+  }
+ ],
+ "Ruins": [
+  {
+   "zh": "遗迹",
+   "factionId": 500021
+  }
+ ],
+ "Haunted Yard": [
+  {
+   "zh": "闹鬼庭院",
+   "factionId": 500021
+  }
+ ],
+ "Desolate Site": [
+  {
+   "zh": "凄凉小站",
+   "factionId": 500021
+  }
+ ],
+ "Chemical Yard": [
+  {
+   "zh": "化学园区",
+   "factionId": 500021
+  }
+ ],
+ "Independence": [
+  {
+   "zh": "独立",
+   "factionId": 500021
+  }
+ ],
+ "Radiance": [
+  {
+   "zh": "眩光",
+   "factionId": 500021
+  }
+ ],
+ "Hierarchy": [
+  {
+   "zh": "等级制度",
+   "factionId": 500021
+  }
+ ],
+ "Toxic Waste Scandal!": [
+  {
+   "zh": "有毒废料大丑闻！",
+   "factionId": 500011
+  },
+  {
+   "zh": "有毒废料大丑闻！",
+   "factionId": 500011
+  },
+  {
+   "zh": "有毒废料大丑闻！",
+   "factionId": 500011
+  },
+  {
+   "zh": "有毒废料大丑闻！",
+   "factionId": 500010
+  }
+ ],
+ "The Nuclear Small Arms Project": [
+  {
+   "zh": "小型核武计划",
+   "factionId": 500011
+  },
+  {
+   "zh": "小型核武计划",
+   "factionId": 500011
+  },
+  {
+   "zh": "小型核武计划",
+   "factionId": 500011
+  },
+  {
+   "zh": "小型核武计划",
+   "factionId": 500011
+  }
+ ],
+ "Terrorist Plot!": [
+  {
+   "zh": "恐怖疑云",
+   "factionId": 500010
+  },
+  {
+   "zh": "恐怖疑云",
+   "factionId": 500010
+  },
+  {
+   "zh": "恐怖疑云",
+   "factionId": 500010
+  },
+  {
+   "zh": "恐怖疑云",
+   "factionId": 500010
+  }
+ ],
+ "Nation on the Rise": [
+  {
+   "zh": "崛起的民族",
+   "factionId": 500019
+  },
+  {
+   "zh": "民族的崛起",
+   "factionId": 500019
+  },
+  {
+   "zh": "民族的崛起",
+   "factionId": 500019
+  },
+  {
+   "zh": "民族的崛起",
+   "factionId": 500019
+  }
+ ],
+ "Average Hedbergite, Hemorphite and Jaspet Deposit": [
+  {
+   "zh": "同位原矿，希莫非特，杰斯贝矿中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Omber Deposit": [
+  {
+   "zh": "奥贝尔石小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Kernite and Omber Deposit": [
+  {
+   "zh": "小型水硼砂和奥贝尔矿带",
+   "factionId": null
+  }
+ ],
+ "Small Hedbergite, Hemorphite and Jaspet Deposit": [
+  {
+   "zh": "同位原矿，希莫非特，杰斯贝矿小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Omber Deposit": [
+  {
+   "zh": "奥贝尔石中等规模矿",
+   "factionId": null
+  }
+ ],
+ "Large Hedbergite, Hemorphite and Jaspet Deposit": [
+  {
+   "zh": "同位原矿，希莫非特，杰斯贝矿大型规模矿",
+   "factionId": 500021
+  }
+ ],
+ "Provisional Angel Outpost": [
+  {
+   "zh": "天使区域哨",
+   "factionId": 500011
+  }
+ ],
+ "Provisional Gurista Outpost": [
+  {
+   "zh": "古斯塔斯区域哨",
+   "factionId": 500010
+  }
+ ],
+ "Provisional Serpentis Outpost": [
+  {
+   "zh": "天蛇区域哨",
+   "factionId": 500020
+  }
+ ],
+ "Provisional Blood Outpost": [
+  {
+   "zh": "血袭者区域哨",
+   "factionId": 500012
+  }
+ ],
+ "Provisional Sansha Outpost": [
+  {
+   "zh": "萨沙区域哨",
+   "factionId": 500019
+  }
+ ],
+ "Small Hemorphite, Jaspet and Kernite Deposit": [
+  {
+   "zh": "希莫非特，杰斯贝矿，水硼砂小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Large Omber Deposit": [
+  {
+   "zh": "奥贝尔石大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Chasing the Dragon": [
+  {
+   "zh": "追逐恶龙",
+   "factionId": 500011
+  },
+  {
+   "zh": "追逐恶龙",
+   "factionId": 500011
+  },
+  {
+   "zh": "追逐恶龙",
+   "factionId": 500011
+  },
+  {
+   "zh": "追逐恶龙",
+   "factionId": 500011
+  }
+ ],
+ "Trap ?": [
+  {
+   "zh": "圈套？",
+   "factionId": 500010
+  },
+  {
+   "zh": "圈套？",
+   "factionId": 500010
+  },
+  {
+   "zh": "圈套？",
+   "factionId": 500010
+  },
+  {
+   "zh": "圈套？",
+   "factionId": 500010
+  }
+ ],
+ "Slave Breeding Plants": [
+  {
+   "zh": "劳工培养场",
+   "factionId": 500019
+  },
+  {
+   "zh": "劳工培养场",
+   "factionId": 500019
+  },
+  {
+   "zh": "劳工培养场",
+   "factionId": 500019
+  },
+  {
+   "zh": "劳工培养场",
+   "factionId": 500019
+  }
+ ],
+ "Angel Kickbacks": [
+  {
+   "zh": "天使的赃物",
+   "factionId": 500020
+  },
+  {
+   "zh": "天使的赃物",
+   "factionId": 500020
+  },
+  {
+   "zh": "天使的赃物",
+   "factionId": 500020
+  },
+  {
+   "zh": "天使的赃物",
+   "factionId": 500020
+  }
+ ],
+ "Following the Blood": [
+  {
+   "zh": "以血之名",
+   "factionId": 500012
+  },
+  {
+   "zh": "以血之名",
+   "factionId": 500012
+  },
+  {
+   "zh": "以血之名",
+   "factionId": 500012
+  },
+  {
+   "zh": "以血之名",
+   "factionId": 500012
+  }
+ ],
+ "Salvation Angel´s Shipment": [
+  {
+   "zh": "救赎天使船货",
+   "factionId": 500011
+  },
+  {
+   "zh": "救赎天使船运",
+   "factionId": 500011
+  },
+  {
+   "zh": "救赎天使船货",
+   "factionId": 500011
+  },
+  {
+   "zh": "救赎天使船货",
+   "factionId": 500011
+  }
+ ],
+ "Hidden Riches": [
+  {
+   "zh": "隐藏宝藏",
+   "factionId": 500019
+  },
+  {
+   "zh": "隐藏宝藏",
+   "factionId": 500019
+  },
+  {
+   "zh": "隐藏宝藏",
+   "factionId": 500019
+  },
+  {
+   "zh": "隐藏宝藏",
+   "factionId": 500019
+  }
+ ],
+ "Elite Playground": [
+  {
+   "zh": "精英活动场",
+   "factionId": 500020
+  },
+  {
+   "zh": "精英活动场",
+   "factionId": 500020
+  },
+  {
+   "zh": "精英活动场",
+   "factionId": 500020
+  },
+  {
+   "zh": "精英活动场",
+   "factionId": 500020
+  }
+ ],
+ "Gurista Productions Shipment": [
+  {
+   "zh": "古斯塔货运系统",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔出货区",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔出货区",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔出货区",
+   "factionId": 500010
+  }
+ ],
+ "Save the Slaves": [
+  {
+   "zh": "拯救劳工",
+   "factionId": 500012
+  },
+  {
+   "zh": "拯救劳工",
+   "factionId": 500012
+  },
+  {
+   "zh": "拯救劳工",
+   "factionId": 500012
+  },
+  {
+   "zh": "拯救劳工",
+   "factionId": 500012
+  }
+ ],
+ "Dubious Assignment": [
+  {
+   "zh": "可疑的任务",
+   "factionId": 500012
+  },
+  {
+   "zh": "可疑的任务",
+   "factionId": 500012
+  },
+  {
+   "zh": "可疑的任务",
+   "factionId": 500012
+  },
+  {
+   "zh": "可疑的任务",
+   "factionId": 500012
+  }
+ ],
+ "Operation Spring Cleaning": [
+  {
+   "zh": "春季大扫除行动",
+   "factionId": 500011
+  },
+  {
+   "zh": "春季大扫除行动",
+   "factionId": 500011
+  },
+  {
+   "zh": "春季大扫除行动",
+   "factionId": 500011
+  },
+  {
+   "zh": "春季大扫除行动",
+   "factionId": 500011
+  }
+ ],
+ "Shady Operation": [
+  {
+   "zh": "阴暗行动",
+   "factionId": 500019
+  },
+  {
+   "zh": "阴暗行动",
+   "factionId": 500019
+  },
+  {
+   "zh": "阴暗行动",
+   "factionId": 500019
+  },
+  {
+   "zh": "阴暗行动",
+   "factionId": 500019
+  }
+ ],
+ "Hired Gun": [
+  {
+   "zh": "雇佣枪手",
+   "factionId": 500010
+  },
+  {
+   "zh": "雇佣枪手",
+   "factionId": 500010
+  },
+  {
+   "zh": "雇佣枪手",
+   "factionId": 500010
+  },
+  {
+   "zh": "雇佣枪手",
+   "factionId": 500010
+  }
+ ],
+ "Suspicious Job": [
+  {
+   "zh": "可疑的工作",
+   "factionId": 500020
+  },
+  {
+   "zh": "可疑的任务",
+   "factionId": 500020
+  },
+  {
+   "zh": "可疑的任务",
+   "factionId": 500020
+  },
+  {
+   "zh": "可疑的工作",
+   "factionId": 500020
+  }
+ ],
+ "Average Hemorphite, Jaspet and Kernite Deposit": [
+  {
+   "zh": "希莫非特，杰斯贝矿，水硼砂中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Large Hemorphite, Jaspet and Kernite Deposit": [
+  {
+   "zh": "希莫非特，杰斯贝矿，水硼砂大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Kernite and Omber Deposit": [
+  {
+   "zh": "水硼砂，奥贝尔石中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Medium Arkonor and Bistot Deposit": [
+  {
+   "zh": "中型艾克诺岩和双多特石储量",
+   "factionId": null
+  }
+ ],
+ "Large Kernite and Omber Deposit": [
+  {
+   "zh": "水硼砂，奥贝尔石大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Jaspet, Kernite and Omber Deposit": [
+  {
+   "zh": "杰斯贝矿，水硼砂，奥贝尔石中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Jaspet, Kernite and Omber Deposit": [
+  {
+   "zh": "杰斯贝矿，水硼砂，奥贝尔石小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Angel Base": [
+  {
+   "zh": "天使基地",
+   "factionId": 500011
+  }
+ ],
+ "Gurista Base": [
+  {
+   "zh": "古斯塔基地",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Base": [
+  {
+   "zh": "天蛇基地",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Base": [
+  {
+   "zh": "血袭者基地",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Base": [
+  {
+   "zh": "萨沙基地",
+   "factionId": 500019
+  }
+ ],
+ "Small Gneiss Deposit": [
+  {
+   "zh": "片麻岩小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Gneiss Deposit": [
+  {
+   "zh": "片麻岩中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Jaspet Deposit": [
+  {
+   "zh": "中型杰斯贝矿矿床",
+   "factionId": null
+  }
+ ],
+ "Hunting the Drudge Factory": [
+  {
+   "zh": "围剿苦工作业所",
+   "factionId": 500021
+  },
+  {
+   "zh": "围剿苦工作业所",
+   "factionId": 500021
+  },
+  {
+   "zh": "围剿苦工作业所",
+   "factionId": 500021
+  },
+  {
+   "zh": "围剿苦工作业所",
+   "factionId": 500021
+  }
+ ],
+ "Large Gneiss Deposit": [
+  {
+   "zh": "片麻岩大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "黑赭石，片麻岩小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "黑赭石，片麻岩中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Pulverize the Pioneers": [
+  {
+   "zh": "剿灭先锋",
+   "factionId": 500021
+  },
+  {
+   "zh": "剿灭先锋",
+   "factionId": 500021
+  },
+  {
+   "zh": "剿灭先锋",
+   "factionId": 500021
+  },
+  {
+   "zh": "剿灭先锋",
+   "factionId": 500021
+  }
+ ],
+ "Mare Sargassum": [
+  {
+   "zh": "梅尔·萨尔加萨姆",
+   "factionId": 500021
+  },
+  {
+   "zh": "梅尔·萨尔加萨姆",
+   "factionId": 500021
+  },
+  {
+   "zh": "梅尔·萨尔加萨姆",
+   "factionId": 500021
+  },
+  {
+   "zh": "梅尔·萨尔加萨姆",
+   "factionId": 500021
+  }
+ ],
+ "Moving Day": [
+  {
+   "zh": "迁徙日",
+   "factionId": 500021
+  },
+  {
+   "zh": "迁徙日",
+   "factionId": 500021
+  },
+  {
+   "zh": "迁徙日",
+   "factionId": 500021
+  },
+  {
+   "zh": "迁徙日",
+   "factionId": 500021
+  }
+ ],
+ "Loose Ends": [
+  {
+   "zh": "空闲时刻",
+   "factionId": 500021
+  },
+  {
+   "zh": "空闲时刻",
+   "factionId": 500021
+  },
+  {
+   "zh": "空闲时刻",
+   "factionId": 500021
+  },
+  {
+   "zh": "空闲时刻",
+   "factionId": 500021
+  }
+ ],
+ "Large Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "黑赭石，片麻岩大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Crokite and Dark Ochre Deposit": [
+  {
+   "zh": "克洛基石和黑赭石中等规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Crokite, Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "克洛基石，黑赭石，片麻岩小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Crokite and Dark Ochre Deposit": [
+  {
+   "zh": "克洛基石和黑赭石小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Omber, Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "奥贝尔石，黑赭石和片麻岩中型储量矿",
+   "factionId": null
+  }
+ ],
+ "Blue Pill": [
+  {
+   "zh": "蓝色药丸",
+   "factionId": 500011
+  },
+  {
+   "zh": "蓝色药丸",
+   "factionId": 500011
+  },
+  {
+   "zh": "蓝色药丸",
+   "factionId": 500011
+  },
+  {
+   "zh": "蓝色药丸",
+   "factionId": 500011
+  }
+ ],
+ "Frentex": [
+  {
+   "zh": "疯癫",
+   "factionId": 500012
+  },
+  {
+   "zh": "疯癫",
+   "factionId": 500012
+  },
+  {
+   "zh": "疯癫",
+   "factionId": 500012
+  },
+  {
+   "zh": "疯癫",
+   "factionId": 500012
+  }
+ ],
+ "Sooth Sayer": [
+  {
+   "zh": "梦呓",
+   "factionId": 500010
+  },
+  {
+   "zh": "梦呓",
+   "factionId": 500010
+  },
+  {
+   "zh": "梦呓",
+   "factionId": 500010
+  },
+  {
+   "zh": "梦呓",
+   "factionId": 500010
+  }
+ ],
+ "Large Crokite, Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "克洛基石，黑赭石，片麻岩大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Large Mercoxit Deposit": [
+  {
+   "zh": "大型基腹断岩储量",
+   "factionId": null
+  }
+ ],
+ "Average Mercoxit Deposit": [
+  {
+   "zh": "中等基腹断岩储量",
+   "factionId": null
+  }
+ ],
+ "Small Bistot Deposit": [
+  {
+   "zh": "双多特石小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Large Bistot Deposit": [
+  {
+   "zh": "双多特石大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Mercoxit Deposit": [
+  {
+   "zh": "小型基腹断岩矿床",
+   "factionId": null
+  }
+ ],
+ "Serpentis Annex": [
+  {
+   "zh": "天蛇附属区",
+   "factionId": 500020
+  }
+ ],
+ "Large Arkonor and Bistot Deposit": [
+  {
+   "zh": "艾克诺岩，双多特石大型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Bistot Deposit": [
+  {
+   "zh": "双多特石中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Average Arkonor and Bistot Deposit": [
+  {
+   "zh": "艾克诺岩，双多特石中型规模矿",
+   "factionId": null
+  }
+ ],
+ "Small Arkonor and Bistot Deposit": [
+  {
+   "zh": "艾克诺岩，双多特石小型规模矿",
+   "factionId": null
+  }
+ ],
+ "Minor Angel Annex": [
+  {
+   "zh": "小型天使附属区",
+   "factionId": 500011
+  }
+ ],
+ "Angel Annex": [
+  {
+   "zh": "天使附属区",
+   "factionId": 500011
+  }
+ ],
+ "Minor Guristas Annex": [
+  {
+   "zh": "小型古斯塔斯附属区",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Annex": [
+  {
+   "zh": "古斯塔斯附属区",
+   "factionId": 500010
+  }
+ ],
+ "Minor Blood Annex": [
+  {
+   "zh": "小型血袭者附属区",
+   "factionId": 500012
+  }
+ ],
+ "Drop": [
+  {
+   "zh": "坠落",
+   "factionId": 500019
+  },
+  {
+   "zh": "坠落",
+   "factionId": 500019
+  },
+  {
+   "zh": "坠落",
+   "factionId": 500019
+  },
+  {
+   "zh": "坠落",
+   "factionId": 500019
+  }
+ ],
+ "Mindflood": [
+  {
+   "zh": "思维冲击",
+   "factionId": 500020
+  },
+  {
+   "zh": "思维冲击",
+   "factionId": 500020
+  },
+  {
+   "zh": "思维冲击",
+   "factionId": 500020
+  },
+  {
+   "zh": "思维冲击",
+   "factionId": 500020
+  }
+ ],
+ "Menacing Mechanics": [
+  {
+   "zh": "机器的威胁",
+   "factionId": 500021
+  },
+  {
+   "zh": "机器的威胁",
+   "factionId": 500021
+  },
+  {
+   "zh": "机器的威胁",
+   "factionId": 500021
+  },
+  {
+   "zh": "机器的威胁",
+   "factionId": 500021
+  }
+ ],
+ "The Drone Roulette": [
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人轮盘赌",
+   "factionId": 500021
+  }
+ ],
+ "Molting Season": [
+  {
+   "zh": "换羽之季",
+   "factionId": 500021
+  },
+  {
+   "zh": "换羽之季",
+   "factionId": 500021
+  },
+  {
+   "zh": "换羽之季",
+   "factionId": 500021
+  },
+  {
+   "zh": "换羽之季",
+   "factionId": 500021
+  }
+ ],
+ "Trouble in Paradise": [
+  {
+   "zh": "天堂里的动乱",
+   "factionId": 500021
+  },
+  {
+   "zh": "天堂里的动乱",
+   "factionId": 500021
+  },
+  {
+   "zh": "天堂里的动乱",
+   "factionId": 500021
+  },
+  {
+   "zh": "天堂里的烦恼",
+   "factionId": 500021
+  }
+ ],
+ "Blood Annex": [
+  {
+   "zh": "血袭者附属区",
+   "factionId": 500012
+  }
+ ],
+ "Minor Sansha Annex": [
+  {
+   "zh": "小型萨沙附属区",
+   "factionId": 500019
+  }
+ ],
+ "Sansha Annex": [
+  {
+   "zh": "萨沙附属区",
+   "factionId": 500019
+  }
+ ],
+ "Minor Serpentis Annex": [
+  {
+   "zh": "小型天蛇附属区",
+   "factionId": 500020
+  }
+ ],
+ "Angel Military Complex": [
+  {
+   "zh": "天使军事基地",
+   "factionId": 500011
+  }
+ ],
+ "Angel Provincial HQ": [
+  {
+   "zh": "天使辖区总部",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Military Complex": [
+  {
+   "zh": "古斯塔斯军事基地",
+   "factionId": 500010
+  }
+ ],
+ "Dominion Surveillance Squad": [
+  {
+   "zh": "主天使侦察中队",
+   "factionId": 500011
+  },
+  {
+   "zh": "主天使侦查中队",
+   "factionId": 500011
+  },
+  {
+   "zh": "主天使侦查中队",
+   "factionId": 500011
+  },
+  {
+   "zh": "主天使侦查中队",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Provincial HQ": [
+  {
+   "zh": "古斯塔斯辖区总部",
+   "factionId": 500010
+  }
+ ],
+ "Blood Military Complex": [
+  {
+   "zh": "血袭者军事基地",
+   "factionId": 500012
+  }
+ ],
+ "Blood Provincial HQ": [
+  {
+   "zh": "血袭者辖区总部",
+   "factionId": 500012
+  }
+ ],
+ "Serpentis Military Complex": [
+  {
+   "zh": "天蛇军用复合体",
+   "factionId": 500020
+  }
+ ],
+ "Serpentis Provincial HQ": [
+  {
+   "zh": "天蛇辖区总部",
+   "factionId": 500020
+  }
+ ],
+ "Sansha Military Complex": [
+  {
+   "zh": "萨沙军用复合体",
+   "factionId": 500019
+  }
+ ],
+ "Sansha Provincial HQ": [
+  {
+   "zh": "萨沙辖区总部",
+   "factionId": 500019
+  }
+ ],
+ "Blood Surveillance Squad": [
+  {
+   "zh": "血袭者侦查中队",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者侦查中队",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者侦查中队",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者侦查中队",
+   "factionId": 500012
+  }
+ ],
+ "The Big Blue": [
+  {
+   "zh": "无尽之蓝",
+   "factionId": 500011
+  },
+  {
+   "zh": "无尽之蓝",
+   "factionId": 500011
+  },
+  {
+   "zh": "无尽之蓝",
+   "factionId": 500011
+  },
+  {
+   "zh": "无尽之蓝",
+   "factionId": 500011
+  }
+ ],
+ "The Rewards of Devotion": [
+  {
+   "zh": "忠贞的代价",
+   "factionId": 500012
+  },
+  {
+   "zh": "忠贞的代价",
+   "factionId": 500012
+  },
+  {
+   "zh": "忠贞的代价",
+   "factionId": 500012
+  },
+  {
+   "zh": "忠贞的代价",
+   "factionId": 500012
+  }
+ ],
+ "Kidnapped!": [
+  {
+   "zh": "绑架！",
+   "factionId": 500010
+  },
+  {
+   "zh": "绑架！",
+   "factionId": 500010
+  },
+  {
+   "zh": "绑架！",
+   "factionId": 500010
+  },
+  {
+   "zh": "绑架",
+   "factionId": 500010
+  }
+ ],
+ "True Power Shipyards": [
+  {
+   "zh": "实力派船坞",
+   "factionId": 500019
+  },
+  {
+   "zh": "实力派船坞",
+   "factionId": 500019
+  },
+  {
+   "zh": "实力派船坞",
+   "factionId": 500019
+  },
+  {
+   "zh": "实力派船坞",
+   "factionId": 500019
+  }
+ ],
+ "Booster R&D": [
+  {
+   "zh": "增效剂研发",
+   "factionId": 500020
+  },
+  {
+   "zh": "增效剂研发",
+   "factionId": 500020
+  },
+  {
+   "zh": "增效剂研发",
+   "factionId": 500020
+  },
+  {
+   "zh": "增效剂研发",
+   "factionId": 500020
+  }
+ ],
+ "Gurista Surveillance Squad": [
+  {
+   "zh": "古斯塔斯侦查中队",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯侦查中队",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯侦查中队",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯侦查中队",
+   "factionId": 500010
+  }
+ ],
+ "Medical Twilight": [
+  {
+   "zh": "医学之光",
+   "factionId": 500012
+  },
+  {
+   "zh": "医学之光",
+   "factionId": 500012
+  },
+  {
+   "zh": "医学之光",
+   "factionId": 500012
+  },
+  {
+   "zh": "医学之光",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Surveillance Squad": [
+  {
+   "zh": "萨沙侦查中队",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙侦查中队",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙侦查中队",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙侦查中队",
+   "factionId": 500019
+  }
+ ],
+ "Guardian Angels Surveillance Squad": [
+  {
+   "zh": "守护天使侦查中队",
+   "factionId": 500020
+  },
+  {
+   "zh": "守护天使侦查中队",
+   "factionId": 500020
+  },
+  {
+   "zh": "守护天使侦查中队",
+   "factionId": 500020
+  },
+  {
+   "zh": "守护天使侦查哨",
+   "factionId": 500020
+  }
+ ],
+ "Jet-Set Hooligans": [
+  {
+   "zh": "太空不良少年",
+   "factionId": 500020
+  },
+  {
+   "zh": "太空不良少年",
+   "factionId": 500020
+  },
+  {
+   "zh": "太空不良少年",
+   "factionId": 500020
+  },
+  {
+   "zh": "太空不良少年",
+   "factionId": 500020
+  }
+ ],
+ "Religious Fury": [
+  {
+   "zh": "宗教狂怒",
+   "factionId": 500012
+  },
+  {
+   "zh": "宗教狂怒",
+   "factionId": 500012
+  },
+  {
+   "zh": "宗教狂怒",
+   "factionId": 500012
+  },
+  {
+   "zh": "宗教狂怒",
+   "factionId": 500012
+  }
+ ],
+ "Angel Owned Station": [
+  {
+   "zh": "天使空间站",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使空间站",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使空间站",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使空间站",
+   "factionId": 500011
+  }
+ ],
+ "Blood Owned Station": [
+  {
+   "zh": "血袭者空间站",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者空间站",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者空间站",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者空间站",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Owned Station": [
+  {
+   "zh": "古斯塔斯空间站",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯空间站",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯空间站",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯空间站",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Owned Station": [
+  {
+   "zh": "萨沙空间站",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙空间站",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙空间站",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙空间站",
+   "factionId": 500019
+  }
+ ],
+ "Consequences Schmonsequences!": [
+  {
+   "zh": "因果报应",
+   "factionId": 500010
+  },
+  {
+   "zh": "因果报应",
+   "factionId": 500010
+  },
+  {
+   "zh": "因果报应",
+   "factionId": 500010
+  },
+  {
+   "zh": "因果报应",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Owned Station": [
+  {
+   "zh": "天蛇空间站",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇空间站",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇空间站",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇空间站",
+   "factionId": 500020
+  }
+ ],
+ "Special Forces": [
+  {
+   "zh": "特种部队",
+   "factionId": 500011
+  },
+  {
+   "zh": "特种部队",
+   "factionId": 500011
+  },
+  {
+   "zh": "特种部队",
+   "factionId": 500011
+  },
+  {
+   "zh": "特殊部队",
+   "factionId": 500011
+  }
+ ],
+ "Fountain of Youth": [
+  {
+   "zh": "青春之泉",
+   "factionId": 500012
+  },
+  {
+   "zh": "青春之泉",
+   "factionId": 500012
+  },
+  {
+   "zh": "青春之泉",
+   "factionId": 500012
+  },
+  {
+   "zh": "青春之泉",
+   "factionId": 500012
+  }
+ ],
+ "No Quarter": [
+  {
+   "zh": "虚无之地",
+   "factionId": 500010
+  },
+  {
+   "zh": "虚无之地",
+   "factionId": 500010
+  },
+  {
+   "zh": "虚无之地",
+   "factionId": 500010
+  },
+  {
+   "zh": "虚无之地",
+   "factionId": 500010
+  }
+ ],
+ "True Power HQ": [
+  {
+   "zh": "实力派总部",
+   "factionId": 500019
+  },
+  {
+   "zh": "实力派总部",
+   "factionId": 500019
+  },
+  {
+   "zh": "实力派",
+   "factionId": 500019
+  },
+  {
+   "zh": "实力派总部",
+   "factionId": 500019
+  }
+ ],
+ "Guristas Powergrid": [
+  {
+   "zh": "古斯塔斯能量网",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯能量网",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯能量网",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯能量网",
+   "factionId": 500010
+  }
+ ],
+ "Sanshas Powergrid": [
+  {
+   "zh": "萨沙能量网",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙能量网",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙能量网",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙能量网",
+   "factionId": 500019
+  }
+ ],
+ "Blood Raider Powergrid": [
+  {
+   "zh": "血袭者能量网",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者能量网",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者能量网",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者能量网",
+   "factionId": 500012
+  }
+ ],
+ "Serpentis Powergrid": [
+  {
+   "zh": "天蛇能量网",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇能量网",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇能量网",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇能量网",
+   "factionId": 500020
+  }
+ ],
+ "Contract Killers": [
+  {
+   "zh": "合同杀手",
+   "factionId": 500020
+  },
+  {
+   "zh": "合同杀手",
+   "factionId": 500020
+  },
+  {
+   "zh": "合同杀手",
+   "factionId": 500020
+  },
+  {
+   "zh": "合同杀手",
+   "factionId": 500020
+  }
+ ],
+ "The Ancient City": [
+  {
+   "zh": "古城",
+   "factionId": 500019
+  },
+  {
+   "zh": "古城",
+   "factionId": 500019
+  },
+  {
+   "zh": "古城",
+   "factionId": 500019
+  },
+  {
+   "zh": "古城",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Secrets": [
+  {
+   "zh": "天蛇秘所",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇秘所",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇秘所",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇秘所",
+   "factionId": 500020
+  }
+ ],
+ "Pioneers Peril": [
+  {
+   "zh": "先锋危机",
+   "factionId": 500011
+  },
+  {
+   "zh": "先锋危机",
+   "factionId": 500011
+  },
+  {
+   "zh": "先锋危机",
+   "factionId": 500011
+  },
+  {
+   "zh": "先锋危机",
+   "factionId": 500011
+  }
+ ],
+ "Colony Under Fire": [
+  {
+   "zh": "殖民地受到攻击",
+   "factionId": 500020
+  },
+  {
+   "zh": "殖民地遇袭",
+   "factionId": 500020
+  },
+  {
+   "zh": "殖民地遇袭",
+   "factionId": 500020
+  },
+  {
+   "zh": "殖民地遇袭",
+   "factionId": 500020
+  }
+ ],
+ "David v Goliath": [
+  {
+   "zh": "大卫与巨人",
+   "factionId": 500019
+  },
+  {
+   "zh": "大卫与巨人",
+   "factionId": 500019
+  },
+  {
+   "zh": "大卫和巨人",
+   "factionId": 500019
+  },
+  {
+   "zh": "大卫和巨人",
+   "factionId": 500019
+  }
+ ],
+ "Pirate's Path": [
+  {
+   "zh": "海盗小径",
+   "factionId": 500010
+  },
+  {
+   "zh": "海盗小径",
+   "factionId": 500010
+  },
+  {
+   "zh": "海盗小径",
+   "factionId": 500010
+  }
+ ],
+ "Pirates Path": [
+  {
+   "zh": "海盗小径",
+   "factionId": 500010
+  }
+ ],
+ "Frontier in Flames": [
+  {
+   "zh": "前线危急",
+   "factionId": 500012
+  },
+  {
+   "zh": "前线危急",
+   "factionId": 500012
+  },
+  {
+   "zh": "前线危急",
+   "factionId": 500012
+  },
+  {
+   "zh": "前线危急",
+   "factionId": 500012
+  }
+ ],
+ "Angel Rally Point": [
+  {
+   "zh": "天使集会点（难度6）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使集会点（难度6）",
+   "factionId": 500011
+  }
+ ],
+ "Angel Refuge": [
+  {
+   "zh": "天使庇护所（难度3）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使庇护所（难度3）",
+   "factionId": 500011
+  }
+ ],
+ "Angel Haven": [
+  {
+   "zh": "天使避难所（难度9）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使避难所（难度9）",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Rally Point": [
+  {
+   "zh": "古斯塔斯集会点（难度6）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯集会点（难度6）",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Rally Point": [
+  {
+   "zh": "天蛇集会点（难度6）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇集会点（难度6）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Rally Point": [
+  {
+   "zh": "血袭者集会点（难度6）",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Rally Point": [
+  {
+   "zh": "萨沙集会点",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙集会点（难度6）",
+   "factionId": 500019
+  }
+ ],
+ "Angel Port": [
+  {
+   "zh": "天使港（难度7）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使港（难度7）",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Port": [
+  {
+   "zh": "古斯塔斯港（难度7）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯港（难度7）",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Port": [
+  {
+   "zh": "天蛇港（难度7）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇港（难度7）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Port": [
+  {
+   "zh": "血袭者港（难度7）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者港（难度7）",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Port": [
+  {
+   "zh": "萨沙港（难度7）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙港（难度7）",
+   "factionId": 500019
+  }
+ ],
+ "Angel Hideaway": [
+  {
+   "zh": "天使藏身处（难度1）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使藏身处（难度1）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使藏身处",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使藏身处",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Hideaway": [
+  {
+   "zh": "古斯塔斯藏身处（难度1）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯藏身处（难度1）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯藏身处",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯藏身处",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Hideaway": [
+  {
+   "zh": "萨沙藏身处（难度1）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙藏身处（难度1）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Hideaway": [
+  {
+   "zh": "天蛇藏身处（难度1）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇藏身处（难度1）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇藏身处",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇藏身处",
+   "factionId": 500020
+  }
+ ],
+ "Blood Hideaway": [
+  {
+   "zh": "血袭者藏身处（难度1）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者藏身处（难度1）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者藏身处",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者藏身处",
+   "factionId": 500012
+  }
+ ],
+ "Angel Hub": [
+  {
+   "zh": "天使老巢（难度8）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使老巢（难度8）",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Hub": [
+  {
+   "zh": "古斯塔斯老巢（难度8）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯老巢（难度8）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Hub": [
+  {
+   "zh": "萨沙老巢（难度8）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙老巢（难度8）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Hub": [
+  {
+   "zh": "天蛇老巢（难度8）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇老巢（难度8）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Hub": [
+  {
+   "zh": "血袭者老巢（难度8）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者老巢（难度8）",
+   "factionId": 500012
+  }
+ ],
+ "Blood Rally Point": [
+  {
+   "zh": "血袭者集会点（难度6）",
+   "factionId": 500012
+  }
+ ],
+ "Drone Cluster": [
+  {
+   "zh": "无人机群",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群",
+   "factionId": 500025
+  },
+  {
+   "zh": "无人机群",
+   "factionId": 500025
+  }
+ ],
+ "Drone Menagerie": [
+  {
+   "zh": "无人机群落",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群落",
+   "factionId": 500021
+  }
+ ],
+ "Drone Herd": [
+  {
+   "zh": "无人机团",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机团",
+   "factionId": 500021
+  }
+ ],
+ "Angel Den": [
+  {
+   "zh": "天使贼窝（难度4）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使贼窝（难度4）",
+   "factionId": 500011
+  }
+ ],
+ "Drone Squad": [
+  {
+   "zh": "无人机小队",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机小队",
+   "factionId": 500021
+  }
+ ],
+ "Guristas Den": [
+  {
+   "zh": "古斯塔斯贼窝（难度4）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯贼窝（难度4）",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Den": [
+  {
+   "zh": "天蛇贼窝（难度4）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇贼窝（难度4）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Den": [
+  {
+   "zh": "血袭者贼窝（难度4）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者贼窝（难度4）",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Den": [
+  {
+   "zh": "萨沙贼窝（难度4）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙贼窝（难度4）",
+   "factionId": 500019
+  }
+ ],
+ "Angel Burrow": [
+  {
+   "zh": "天使隐匿地（难度2）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使隐匿地（难度2）",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Burrow": [
+  {
+   "zh": "古斯塔斯隐匿地（难度2）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯隐匿地（难度2）",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Burrow": [
+  {
+   "zh": "天蛇隐匿地（难度2）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇隐匿地（难度2）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Burrow": [
+  {
+   "zh": "血袭者隐匿地（难度2）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者隐匿地（难度2）",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Burrow": [
+  {
+   "zh": "萨沙隐匿地（难度2）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙隐匿地（难度2）",
+   "factionId": 500019
+  }
+ ],
+ "Angel Yard": [
+  {
+   "zh": "天使船坞（难度5）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使船坞（难度5）",
+   "factionId": 500011
+  }
+ ],
+ "Sansha War Supply Complex": [
+  {
+   "zh": "萨沙补给复合体",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙补给复合体",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Narcotic Warehouses": [
+  {
+   "zh": "天蛇迷幻药贮藏所",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇迷幻药贮藏所",
+   "factionId": 500020
+  }
+ ],
+ "Crimson Hand Supply Depot": [
+  {
+   "zh": "血腥傀儡补给站",
+   "factionId": 500012
+  },
+  {
+   "zh": "血腥傀儡补给站",
+   "factionId": 500012
+  }
+ ],
+ "Angel Military Operations Complex": [
+  {
+   "zh": "天使军用复合体",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使军用复合体",
+   "factionId": 500011
+  }
+ ],
+ "Outgrowth Rogue Drone Hive": [
+  {
+   "zh": "扩张自由无人机母巢",
+   "factionId": 500021
+  },
+  {
+   "zh": "扩张自由无人机母巢",
+   "factionId": 500021
+  },
+  {
+   "zh": "扩张自由无人机母巢",
+   "factionId": 500021
+  }
+ ],
+ "Guristas Scout Outpost": [
+  {
+   "zh": "古斯塔斯侦察哨站",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯侦察哨站",
+   "factionId": 500010
+  }
+ ],
+ "Sansha's Command Relay Outpost": [
+  {
+   "zh": "萨沙司令部",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙司令部",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Phi-Outpost": [
+  {
+   "zh": "天蛇二十一哨站",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇二十一哨站",
+   "factionId": 500020
+  }
+ ],
+ "Mul-Zatah Monastery": [
+  {
+   "zh": "毛—扎塔修道院",
+   "factionId": 500012
+  },
+  {
+   "zh": "毛—扎塔修道院",
+   "factionId": 500012
+  }
+ ],
+ "Rogue Drone Asteroid Infestation": [
+  {
+   "zh": "自由无人机出没的小行星",
+   "factionId": 500021
+  },
+  {
+   "zh": "自由无人机出没的小行星",
+   "factionId": 500021
+  }
+ ],
+ "Angel Cartel Naval Shipyard": [
+  {
+   "zh": "天使海军造船厂",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使海军造船厂",
+   "factionId": 500011
+  }
+ ],
+ "The Maze": [
+  {
+   "zh": "迷魂阵",
+   "factionId": 500010
+  },
+  {
+   "zh": "迷魂阵",
+   "factionId": 500010
+  }
+ ],
+ "Centus Assembly T.P. Co.": [
+  {
+   "zh": "森屠斯“实力派”装配工厂",
+   "factionId": 500019
+  },
+  {
+   "zh": "森屠斯“实力派”装配工厂",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Fleet Shipyard": [
+  {
+   "zh": "天蛇舰队船坞",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇舰队船坞",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Naval Shipyard": [
+  {
+   "zh": "血袭者海军船坞",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者海军船坞",
+   "factionId": 500012
+  }
+ ],
+ "Cartel Prisoner Retention": [
+  {
+   "zh": "天使拘留所",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使拘留所",
+   "factionId": 500011
+  }
+ ],
+ "Pith's Penal Complex": [
+  {
+   "zh": "皮特管教所",
+   "factionId": 500010
+  },
+  {
+   "zh": "皮特管教所",
+   "factionId": 500010
+  }
+ ],
+ "Angel's Red Light District": [
+  {
+   "zh": "天使红灯区",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使红灯区",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Troop Reinvigoration Camp": [
+  {
+   "zh": "古斯塔斯复兴营地",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯复兴营地",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Yard": [
+  {
+   "zh": "古斯塔斯船坞（难度5）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯船坞（难度5）",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Yard": [
+  {
+   "zh": "天蛇船坞（难度5）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇船坞（难度5）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Yard": [
+  {
+   "zh": "血袭者船坞（难度5）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者船坞（难度5）",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Yard": [
+  {
+   "zh": "萨沙船坞（难度5）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙船坞（难度5）",
+   "factionId": 500019
+  }
+ ],
+ "Blood Haven": [
+  {
+   "zh": "血袭者避难所（难度9）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者避难所（难度9）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Haven": [
+  {
+   "zh": "古斯塔斯避难所（难度9）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯避难所（难度9）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Haven": [
+  {
+   "zh": "萨沙避难所（难度9）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙避难所（难度9）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙避难所（难度9）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Haven": [
+  {
+   "zh": "天蛇避难所（难度9）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇避难所（难度9）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Sanctum": [
+  {
+   "zh": "天使圣坛（难度10）",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使圣坛（难度10）",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Refuge": [
+  {
+   "zh": "古斯塔斯庇护所（难度3）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯庇护所（难度3）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Refuge": [
+  {
+   "zh": "萨沙庇护所（难度3）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙庇护所（难度3）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Refuge": [
+  {
+   "zh": "天蛇庇护所（难度3）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇庇护所（难度3）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Refuge": [
+  {
+   "zh": "血袭者庇护所（难度3）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者庇护所（难度3）",
+   "factionId": 500012
+  }
+ ],
+ "Blood Sanctum": [
+  {
+   "zh": "血袭者圣坛（难度10）",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者圣坛（难度10）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Sanctum": [
+  {
+   "zh": "古斯塔斯圣坛（难度10）",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯圣坛（难度10）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Sanctum": [
+  {
+   "zh": "萨沙圣坛（难度10）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙圣坛（难度10）",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙圣坛（难度10）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Sanctum": [
+  {
+   "zh": "天蛇圣坛（难度10）",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇圣坛（难度10）",
+   "factionId": 500020
+  }
+ ],
+ "Drone Collection": [
+  {
+   "zh": "无人机集群",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机集群",
+   "factionId": 500021
+  }
+ ],
+ "Drone Assembly": [
+  {
+   "zh": "无人机集结",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机集结",
+   "factionId": 500021
+  }
+ ],
+ "Drone Gathering": [
+  {
+   "zh": "无人机聚集",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机聚集",
+   "factionId": 500021
+  }
+ ],
+ "Drone Patrol": [
+  {
+   "zh": "无人机巡逻队",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机巡逻队",
+   "factionId": 500021
+  }
+ ],
+ "Drone Horde": [
+  {
+   "zh": "无人机群",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群",
+   "factionId": 500021
+  }
+ ],
+ "Drone Surveillance": [
+  {
+   "zh": "无人机监查",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机监查",
+   "factionId": 500021
+  }
+ ],
+ "Celestial Beacon Ginger TEST": [
+  {
+   "zh": "Celestial Beacon Ginger TEST",
+   "factionId": null
+  }
+ ],
+ "Serpentis Logistical Outpost": [
+  {
+   "zh": "天蛇后勤哨站",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇后勤哨站",
+   "factionId": 500020
+  }
+ ],
+ "Angel Mineral Acquisition Outpost": [
+  {
+   "zh": "天使矿物采集哨站",
+   "factionId": 500011
+  },
+  {
+   "zh": "天使矿物采集哨站",
+   "factionId": 500011
+  }
+ ],
+ "Angel Mineral Acquisition Outpost P2": [
+  {
+   "zh": "天使矿物采集哨站 P2",
+   "factionId": 500011
+  }
+ ],
+ "Serpentis Logistical Outpost P2": [
+  {
+   "zh": "天蛇后勤哨站 P2",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Temple Complex": [
+  {
+   "zh": "血袭者圣殿复合体",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者圣殿复合体",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者圣殿复合体",
+   "factionId": 500012
+  }
+ ],
+ "Angel Domination Fleet Staging Point": [
+  {
+   "zh": "主天使舰队集结点",
+   "factionId": 500011
+  },
+  {
+   "zh": "主天使舰队集结点",
+   "factionId": 500011
+  }
+ ],
+ "Angel Domination Fleet Staging Point 2.": [
+  {
+   "zh": "主天使舰队集结点 2",
+   "factionId": 500011
+  }
+ ],
+ "Angel Domination Fleet Staging Point 3.": [
+  {
+   "zh": "主天使舰队集结点 3",
+   "factionId": 500011
+  }
+ ],
+ "Dread Guristas Fleet Staging Point": [
+  {
+   "zh": "恐惧古斯塔斯舰队集结点",
+   "factionId": 500010
+  },
+  {
+   "zh": "恐惧古斯塔斯舰队集结点",
+   "factionId": 500010
+  }
+ ],
+ "Dread Guristas Fleet Staging Point 2.": [
+  {
+   "zh": "恐惧古斯塔斯舰队集结点 2",
+   "factionId": 500010
+  }
+ ],
+ "Dread Guristas Fleet Staging Point 3": [
+  {
+   "zh": "恐惧古斯塔斯舰队集结点 3",
+   "factionId": 500010
+  }
+ ],
+ "Shadow Serpentis Fleet Staging Point": [
+  {
+   "zh": "暗影天蛇舰队集结点",
+   "factionId": 500020
+  },
+  {
+   "zh": "暗影天蛇舰队集结点",
+   "factionId": 500020
+  }
+ ],
+ "Shadow Serpentis Fleet Staging Point 2": [
+  {
+   "zh": "暗影天蛇舰队集结点 2",
+   "factionId": 500020
+  }
+ ],
+ "Shadow Serpentis Fleet Staging Point 3": [
+  {
+   "zh": "暗影天蛇舰队集结点 3",
+   "factionId": 500020
+  }
+ ],
+ "Derelict Research Complex DA010": [
+  {
+   "zh": "废弃的研究复合体DA010",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DA030": [
+  {
+   "zh": "废弃的研究复合体DA030",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DA050": [
+  {
+   "zh": "废弃的研究复合体DA050",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DC014": [
+  {
+   "zh": "废弃的研究复合体DC014",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DM022": [
+  {
+   "zh": "废弃的研究复合体DM022",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DC042": [
+  {
+   "zh": "废弃的研究复合体DC042",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DG036": [
+  {
+   "zh": "废弃的研究复合体DG036",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DM066": [
+  {
+   "zh": "废弃的研究复合体DM066",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DC070": [
+  {
+   "zh": "废弃的研究复合体DC070",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DG054": [
+  {
+   "zh": "废弃的研究复合体DA054",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DM154": [
+  {
+   "zh": "废弃的研究复合体DM154",
+   "factionId": 500021
+  }
+ ],
+ "Derelict Research Complex DG006": [
+  {
+   "zh": "废弃的研究复合体DG006",
+   "factionId": 500021
+  }
+ ],
+ "7th Fleet Battlestation": [
+  {
+   "zh": "第七舰队战役空间站",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Novice Outpost": [
+  {
+   "zh": "艾玛初级哨站",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Novice Facility": [
+  {
+   "zh": "艾玛初级设施",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Novice Installation": [
+  {
+   "zh": "艾玛初级工事",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Novice Compound": [
+  {
+   "zh": "艾玛初级营地",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Novice Stronghold": [
+  {
+   "zh": "艾玛初级要塞",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small Outpost": [
+  {
+   "zh": "艾玛小型哨站",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small Facility": [
+  {
+   "zh": "艾玛小型设施",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small Installation": [
+  {
+   "zh": "艾玛小型工事",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small Compound": [
+  {
+   "zh": "艾玛小型营地",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small Stronghold": [
+  {
+   "zh": "艾玛小型要塞",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Medium Outpost": [
+  {
+   "zh": "艾玛中型哨站",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Medium Facility": [
+  {
+   "zh": "艾玛中型设施",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Medium Installation": [
+  {
+   "zh": "艾玛中型工事",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Open Compound": [
+  {
+   "zh": "艾玛开放营地",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Open Stronghold": [
+  {
+   "zh": "艾玛开放要塞",
+   "factionId": 500003
+  }
+ ],
+ "Gallente Novice Outpost": [
+  {
+   "zh": "盖伦特初级哨站",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Novice Outpost": [
+  {
+   "zh": "加达里初级哨站",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Novice Facility": [
+  {
+   "zh": "加达里初级设施",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Novice Facility": [
+  {
+   "zh": "盖伦特初级设施",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Novice Installation": [
+  {
+   "zh": "加达里初级工事",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Novice Installation": [
+  {
+   "zh": "盖伦特初级工事",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Novice Compound": [
+  {
+   "zh": "加达里初级营地",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Novice Compound": [
+  {
+   "zh": "盖伦特初级营地",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Novice Stronghold": [
+  {
+   "zh": "加达里初级要塞",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Novice Stronghold": [
+  {
+   "zh": "盖伦特初级要塞",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Small Outpost": [
+  {
+   "zh": "加达里小型哨站",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Small Outpost": [
+  {
+   "zh": "盖伦特小型哨站",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Small Facility": [
+  {
+   "zh": "盖伦特小型设施",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Small Installation": [
+  {
+   "zh": "盖伦特小型工事",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Small Facility": [
+  {
+   "zh": "加达里小型设施",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Small Compound": [
+  {
+   "zh": "盖伦特小型营地",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Small Installation": [
+  {
+   "zh": "加达里小型工事",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Small Compound": [
+  {
+   "zh": "加达里小型营地",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Small Stronghold": [
+  {
+   "zh": "加达里小型要塞",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Medium Outpost": [
+  {
+   "zh": "加达里中型哨站",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Medium Facility": [
+  {
+   "zh": "加达里中型设施",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Medium Installation": [
+  {
+   "zh": "加达里中型工事",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Open Compound": [
+  {
+   "zh": "加达里开放营地",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Open Stronghold": [
+  {
+   "zh": "加达里开放要塞",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Small Stronghold": [
+  {
+   "zh": "盖伦特小型要塞",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Medium Outpost": [
+  {
+   "zh": "盖伦特中型哨站",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Novice Outpost": [
+  {
+   "zh": "米玛塔尔初级哨站",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Novice Facility": [
+  {
+   "zh": "米玛塔尔初级设施",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Novice Installation": [
+  {
+   "zh": "米玛塔尔初级工事",
+   "factionId": 500002
+  }
+ ],
+ "Gallente Medium Facility": [
+  {
+   "zh": "盖伦特中型设施",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Novice Compound": [
+  {
+   "zh": "米玛塔尔初级营地",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Novice Stronghold": [
+  {
+   "zh": "米玛塔尔初级要塞",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Small Outpost": [
+  {
+   "zh": "米玛塔尔小型哨站",
+   "factionId": 500002
+  }
+ ],
+ "Gallente Medium Installation": [
+  {
+   "zh": "盖伦特中型工事",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Small Facility": [
+  {
+   "zh": "米玛塔尔小型设施",
+   "factionId": 500002
+  }
+ ],
+ "Gallente Open Compound": [
+  {
+   "zh": "盖伦特开放营地",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Small Installation": [
+  {
+   "zh": "米玛塔尔小型工事",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Small Compound": [
+  {
+   "zh": "米玛塔尔小型营地",
+   "factionId": 500002
+  }
+ ],
+ "Gallente Open Stronghold": [
+  {
+   "zh": "盖伦特开放要塞",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Small Stronghold": [
+  {
+   "zh": "米玛塔尔小型要塞",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Medium Outpost": [
+  {
+   "zh": "米玛塔尔中型哨站",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Medium Facility": [
+  {
+   "zh": "米玛塔尔中型设施",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Medium Installation": [
+  {
+   "zh": "米玛塔尔中型工事",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Open Compound": [
+  {
+   "zh": "米玛塔尔开放营地",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Open Stronghold": [
+  {
+   "zh": "米玛塔尔开放要塞",
+   "factionId": 500002
+  }
+ ],
+ "CHAIN Mindflood Distribution Base": [
+  {
+   "zh": "CHAIN”思维冲击“增效剂分发集散地",
+   "factionId": 500012
+  }
+ ],
+ "Core Runner Exile Distribution Base": [
+  {
+   "zh": "秘循核心的”游离“增效剂分发集散地",
+   "factionId": 500020
+  }
+ ],
+ "H-PA Crew Crash Distribution Base": [
+  {
+   "zh": "H-PA小组”撞击感“增效体分发集散地",
+   "factionId": 500010
+  }
+ ],
+ "Elohim X-Instinct Distribution Base": [
+  {
+   "zh": "守护神”X本能“增效剂分发集散地",
+   "factionId": 500011
+  }
+ ],
+ "PDW-09FX Frentix Distribution Base": [
+  {
+   "zh": "PDW-09FX \"疯癫“增效剂配送基地",
+   "factionId": 500019
+  }
+ ],
+ "Elohim Sooth Sayer Distribution Base": [
+  {
+   "zh": "守护神”梦呓“增效剂分发集散地",
+   "factionId": 500011
+  }
+ ],
+ "H-PA Crew Blue Pill Distribution Base": [
+  {
+   "zh": "H-PA小组蓝色药丸分发集散地",
+   "factionId": 500010
+  }
+ ],
+ "Core Runner Drop Distribution": [
+  {
+   "zh": "秘循核心的”坠落“增效剂流通",
+   "factionId": 500020
+  }
+ ],
+ "Elohim X-Instinct Production Facility": [
+  {
+   "zh": "守护神”X本能“增效剂生产基地",
+   "factionId": 500011
+  }
+ ],
+ "CHAIN Mindflood Production Facility": [
+  {
+   "zh": "CHAIN”思维冲击“增效剂生产基地",
+   "factionId": 500012
+  }
+ ],
+ "H-PA Crew Crash Production Facility": [
+  {
+   "zh": "H-PA小组”撞击感“增效剂生产基地",
+   "factionId": 500010
+  }
+ ],
+ "PDW-09FX Frentix Production Facility": [
+  {
+   "zh": "PDW-09FX \"疯癫“增效剂制造设施",
+   "factionId": 500019
+  }
+ ],
+ "Core Runner Exile Production Facility": [
+  {
+   "zh": "秘循核心”游离“增效剂生产基地",
+   "factionId": 500020
+  }
+ ],
+ "Elohim Sooth Sayer Production Facility": [
+  {
+   "zh": "守护神”梦呓“增效剂生产基地",
+   "factionId": 500011
+  }
+ ],
+ "H-PA Crew Blue Pill Production Facility": [
+  {
+   "zh": "H-PA小组蓝色药丸生产基地",
+   "factionId": 500010
+  }
+ ],
+ "Core Runner Drop Production Facility": [
+  {
+   "zh": "秘循核心的”坠落“增效剂生产基地",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forsaken Hideaway": [
+  {
+   "zh": "废弃的天使藏身处（难度1）",
+   "factionId": 500011
+  }
+ ],
+ "Angel Hidden Hideaway": [
+  {
+   "zh": "隐秘的天使藏身处（难度1）",
+   "factionId": 500011
+  }
+ ],
+ "Angel Forlorn Hideaway": [
+  {
+   "zh": "荒废的天使藏身处（难度1）",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Forlorn Hideaway": [
+  {
+   "zh": "荒废的古斯塔斯藏身处（难度1）",
+   "factionId": 500010
+  }
+ ],
+ "Blood Raider Forlorn Hideaway": [
+  {
+   "zh": "荒废的血袭者藏身处（难度1）",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Forlorn Hideaway": [
+  {
+   "zh": "荒废的萨沙藏身处（难度1）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forlorn Hideaway": [
+  {
+   "zh": "荒废的天蛇藏身处（难度1）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forlorn Den": [
+  {
+   "zh": "荒废的天使据点",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Forsaken Hideaway": [
+  {
+   "zh": "废弃的血袭者藏身处（难度1）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forsaken Hideaway": [
+  {
+   "zh": "废弃的古斯塔斯藏身处（难度1）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forsaken Hideaway": [
+  {
+   "zh": "废弃的萨沙藏身处（难度1）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forsaken Hideaway": [
+  {
+   "zh": "废弃的天蛇藏身处（难度1）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forsaken Den": [
+  {
+   "zh": "天使遗忘的隐藏所",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Forlorn Den": [
+  {
+   "zh": "荒废的血袭者据点",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forlorn Den": [
+  {
+   "zh": "遭弃的古斯塔斯营地",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forlorn Den": [
+  {
+   "zh": "荒废的萨沙据点",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forlorn Den": [
+  {
+   "zh": "天蛇废弃隐藏处",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forlorn Rally Point": [
+  {
+   "zh": "荒废的天使集会点（难度6）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Hidden Hideaway": [
+  {
+   "zh": "隐秘的血袭者藏身处（难度1）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Hidden Hideaway": [
+  {
+   "zh": "隐秘的古斯塔斯藏身处（难度1）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Hidden Hideaway": [
+  {
+   "zh": "隐秘的萨沙藏身处（难度1）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Hidden Hideaway": [
+  {
+   "zh": "隐秘的天蛇藏身处（难度1）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Forsaken Den": [
+  {
+   "zh": "废弃的血袭者据点",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forsaken Den": [
+  {
+   "zh": "废弃的古斯塔斯据点",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forsaken Den": [
+  {
+   "zh": "萨沙离弃地",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forsaken Den": [
+  {
+   "zh": "天蛇遗忘的隐藏所",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forsaken Rally Point": [
+  {
+   "zh": "废弃的天使集会点（难度6）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Forsaken Rally Point": [
+  {
+   "zh": "废弃的血袭者集会点（难度6）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forsaken Rally Point": [
+  {
+   "zh": "废弃的古斯塔斯集会点（难度6）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forsaken Rally Point": [
+  {
+   "zh": "废弃的萨沙集会点（难度6）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forsaken Rally Point": [
+  {
+   "zh": "废弃的天蛇集会点（难度6）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Hidden Den": [
+  {
+   "zh": "隐秘的天使贼窝（难度4）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Forlorn Rally Point": [
+  {
+   "zh": "荒废的血袭者集会点（难度6）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forlorn Rally Point": [
+  {
+   "zh": "荒废的古斯塔斯集会点（难度6）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forlorn Rally Point": [
+  {
+   "zh": "荒废的萨沙集会点（难度6）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forlorn Rally Point": [
+  {
+   "zh": "荒废的天蛇集会点（难度6）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forlorn Hub": [
+  {
+   "zh": "荒废的天使老巢（难度8）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Forlorn Hub": [
+  {
+   "zh": "荒废的血袭者老巢（难度8）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forlorn Hub": [
+  {
+   "zh": "荒废的古斯塔斯老巢（难度8）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forlorn Hub": [
+  {
+   "zh": "荒废的萨沙老巢（难度8）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forlorn Hub": [
+  {
+   "zh": "荒废的天蛇老巢（难度8）",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Hidden Den": [
+  {
+   "zh": "隐秘的血袭者贼窝（难度4）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Hidden Den": [
+  {
+   "zh": "隐秘的古斯塔斯贼窝（难度4）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Hidden Den": [
+  {
+   "zh": "隐秘的萨沙贼窝（难度4）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Hidden Den": [
+  {
+   "zh": "隐秘的天蛇贼窝（难度4）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Forsaken Hub": [
+  {
+   "zh": "废弃的天使老巢（难度8）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Forsaken Hub": [
+  {
+   "zh": "废弃的血袭者老巢（难度8）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forsaken Hub": [
+  {
+   "zh": "废弃的古斯塔斯老巢（难度8）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forsaken Hub": [
+  {
+   "zh": "废弃的萨沙老巢（难度8）",
+   "factionId": 500019
+  },
+  {
+   "zh": "废弃的萨沙老巢（难度8）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forsaken Hub": [
+  {
+   "zh": "废弃的天蛇老巢（难度8）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Hidden Hub": [
+  {
+   "zh": "隐秘的天使老巢（难度8）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Hidden Hub": [
+  {
+   "zh": "隐秘的血袭者老巢（难度8）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Hidden Hub": [
+  {
+   "zh": "隐秘的古斯塔斯老巢（难度8）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Hidden Hub": [
+  {
+   "zh": "隐秘的萨沙老巢（难度8）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Hidden Hub": [
+  {
+   "zh": "隐秘的天蛇老巢（难度8）",
+   "factionId": 500020
+  }
+ ],
+ "Angel Hidden Rally Point": [
+  {
+   "zh": "隐秘的天使集会点（难度6）",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Hidden Rally Point": [
+  {
+   "zh": "隐秘的血袭者集会点（难度6）",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Hidden Rally Point": [
+  {
+   "zh": "隐秘的古斯塔斯集会点（难度6）",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Hidden Rally Point": [
+  {
+   "zh": "隐秘的萨沙集会点（难度6）",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Hidden Rally Point": [
+  {
+   "zh": "隐秘的天蛇集会点（难度6）",
+   "factionId": 500020
+  }
+ ],
+ "Common Perimeter Deposit OLD": [
+  {
+   "zh": "常见的边域矿床 OLD",
+   "factionId": 500021
+  }
+ ],
+ "Ordinary Perimeter Deposit  OLD": [
+  {
+   "zh": "普通边域矿床 OLD",
+   "factionId": 500021
+  }
+ ],
+ "Core Citadel": [
+  {
+   "zh": "核心基地",
+   "factionId": 500021
+  }
+ ],
+ "Core Bastion": [
+  {
+   "zh": "核心堡垒",
+   "factionId": 500021
+  }
+ ],
+ "Perimeter Ambush Point": [
+  {
+   "zh": "防御圈伏击点",
+   "factionId": 500021
+  }
+ ],
+ "Perimeter Camp": [
+  {
+   "zh": "防御圈军营",
+   "factionId": 500021
+  }
+ ],
+ "Frontier Barracks": [
+  {
+   "zh": "偏远的屏障",
+   "factionId": 500021
+  }
+ ],
+ "Fortification Frontier Stronghold": [
+  {
+   "zh": "偏远的防御要塞",
+   "factionId": 500021
+  }
+ ],
+ "Outpost Frontier Stronghold": [
+  {
+   "zh": "空间站前缘要塞",
+   "factionId": 500021
+  }
+ ],
+ "Perimeter Checkpoint": [
+  {
+   "zh": "边界检查",
+   "factionId": 500021
+  }
+ ],
+ "Perimeter Hangar": [
+  {
+   "zh": "防御圈机库",
+   "factionId": 500021
+  }
+ ],
+ "Core Garrison": [
+  {
+   "zh": "核心兵站",
+   "factionId": 500021
+  }
+ ],
+ "Core Stronghold": [
+  {
+   "zh": "核心要塞",
+   "factionId": 500021
+  }
+ ],
+ "Frontier Command Post": [
+  {
+   "zh": "偏远的指挥站",
+   "factionId": 500021
+  }
+ ],
+ "Unsecured Perimeter Transponder Farm": [
+  {
+   "zh": "不安全的周界应答机阵列",
+   "factionId": 500021
+  }
+ ],
+ "Unsecured Perimeter Information Nexus": [
+  {
+   "zh": "不安全的周界信息节点",
+   "factionId": 500021
+  }
+ ],
+ "The Ruins of Enclave Cohort 27": [
+  {
+   "zh": "包体群27废墟",
+   "factionId": 500021
+  }
+ ],
+ "Sleeper Data Sanctuary": [
+  {
+   "zh": "冬眠者数据圣域",
+   "factionId": 500021
+  }
+ ],
+ "The Line": [
+  {
+   "zh": "长条废墟",
+   "factionId": 500021
+  }
+ ],
+ "Integrated Terminus": [
+  {
+   "zh": "集成终站",
+   "factionId": 500021
+  }
+ ],
+ "The Oruze Construct": [
+  {
+   "zh": "傲怒子修建工程",
+   "factionId": 500021
+  }
+ ],
+ "Phase Catalyst Node": [
+  {
+   "zh": "相催化剂节点",
+   "factionId": 500021
+  }
+ ],
+ "The Mirror": [
+  {
+   "zh": "明镜",
+   "factionId": 500021
+  }
+ ],
+ "Oruze Osobnyk": [
+  {
+   "zh": "傲怒子·欧苏巴尼",
+   "factionId": 500021
+  }
+ ],
+ "Average Frontier Deposit": [
+  {
+   "zh": "普通的偏远矿床",
+   "factionId": 500021
+  }
+ ],
+ "Sleeper Information Sanctum": [
+  {
+   "zh": "冬眠者信息圣地",
+   "factionId": 500021
+  }
+ ],
+ "Solar Cell": [
+  {
+   "zh": "太阳能电池",
+   "factionId": 500021
+  }
+ ],
+ "Common Perimeter Deposit": [
+  {
+   "zh": "常见的边域矿床",
+   "factionId": 500021
+  }
+ ],
+ "Quarantine Area": [
+  {
+   "zh": "隔离区",
+   "factionId": 500021
+  }
+ ],
+ "Isolated Core Deposit": [
+  {
+   "zh": "分散的核心仓库",
+   "factionId": 500021
+  }
+ ],
+ "Unexceptional Frontier Deposit": [
+  {
+   "zh": "普通偏远矿藏",
+   "factionId": 500021
+  }
+ ],
+ "Ordinary Perimeter Deposit": [
+  {
+   "zh": "普通边域矿床",
+   "factionId": 500021
+  }
+ ],
+ "Unusual Core Deposit": [
+  {
+   "zh": "不常见的核心矿层",
+   "factionId": 500021
+  }
+ ],
+ "Infrequent Core Deposit": [
+  {
+   "zh": "罕见的核心矿床",
+   "factionId": 500021
+  }
+ ],
+ "Strange Energy Readings": [
+  {
+   "zh": "奇怪的能量探测读数",
+   "factionId": 500021
+  }
+ ],
+ "Rarified Core Deposit": [
+  {
+   "zh": "精纯核心矿床",
+   "factionId": 500021
+  }
+ ],
+ "Exceptional Core Deposit": [
+  {
+   "zh": "稀有的核心矿床",
+   "factionId": 500021
+  }
+ ],
+ "Uncommon Core Deposit": [
+  {
+   "zh": "少见的核心矿床",
+   "factionId": 500021
+  }
+ ],
+ "Federation Detention Facility FNSBR-106V": [
+  {
+   "zh": "联邦拘留所FNSBR-106V",
+   "factionId": 500004
+  }
+ ],
+ "A Demonstration": [
+  {
+   "zh": "集会",
+   "factionId": 500011
+  }
+ ],
+ "Anomaly Training Site": [
+  {
+   "zh": "异常空间训练场",
+   "factionId": 500021
+  }
+ ],
+ "Ore Training Site": [
+  {
+   "zh": "采矿训练地点",
+   "factionId": 500021
+  }
+ ],
+ "Colossal Asteroid Cluster": [
+  {
+   "zh": "巨型小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Enormous Asteroid Cluster": [
+  {
+   "zh": "庞大型小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Large Asteroid Cluster": [
+  {
+   "zh": "大型小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Medium Asteroid Cluster": [
+  {
+   "zh": "中型小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Small Asteroid Cluster": [
+  {
+   "zh": "小型小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "True Power Provisional Headquarters": [
+  {
+   "zh": "实力派集团临时总部",
+   "factionId": 500021
+  }
+ ],
+ "The Kundalini Manifest": [
+  {
+   "zh": "昆达利尼名册",
+   "factionId": 500019
+  }
+ ],
+ "Override Transfer Array": [
+  {
+   "zh": "压制传输阵列",
+   "factionId": 500019
+  }
+ ],
+ "Nation Mining Colony": [
+  {
+   "zh": "萨沙采矿殖民地",
+   "factionId": 500019
+  }
+ ],
+ "Nation Commander Outpost": [
+  {
+   "zh": "萨沙指挥官哨站",
+   "factionId": 500019
+  }
+ ],
+ "Overwhelmed Civilian Facility": [
+  {
+   "zh": "被压制的平民设施",
+   "factionId": 500019
+  }
+ ],
+ "Nation Commander Stronghold": [
+  {
+   "zh": "萨沙指挥官要塞",
+   "factionId": 500019
+  }
+ ],
+ "Nation Rebirth Facility": [
+  {
+   "zh": "萨沙重生设施",
+   "factionId": 500019
+  }
+ ],
+ "Nation Consolidation Network": [
+  {
+   "zh": "萨沙集成网络",
+   "factionId": 500019
+  }
+ ],
+ "True Creations Research Center": [
+  {
+   "zh": "忠实制造研究中心",
+   "factionId": 500019
+  }
+ ],
+ "Forward Reconnaissance Outpost": [
+  {
+   "zh": "军事情报哨站",
+   "factionId": 500019
+  }
+ ],
+ "Propaganda Cluster": [
+  {
+   "zh": "宣传设施集群",
+   "factionId": 500019
+  }
+ ],
+ "Nation Industrial Proxy": [
+  {
+   "zh": "萨沙工业网络",
+   "factionId": 500019
+  }
+ ],
+ "Distress Beacon": [
+  {
+   "zh": "求救信标",
+   "factionId": 500019
+  }
+ ],
+ "Uroborus": [
+  {
+   "zh": "轮回",
+   "factionId": 500019
+  }
+ ],
+ "ISHAEKA Tactical Response HQ": [
+  {
+   "zh": "ISHAEKA战术应答总部",
+   "factionId": 500006
+  }
+ ],
+ "Dark Blood Fleet Staging Point": [
+  {
+   "zh": "黑暗血袭者舰队集结点",
+   "factionId": 500012
+  },
+  {
+   "zh": "黑暗血袭者舰队集结点",
+   "factionId": 500012
+  }
+ ],
+ "True Sansha Fleet Staging Point": [
+  {
+   "zh": "萨沙爱国者舰队集结点",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙爱国者舰队集结点",
+   "factionId": 500019
+  }
+ ],
+ "Dark Blood Fleet Staging Point, Site 2": [
+  {
+   "zh": "黑暗血袭者舰队集结点，第二区",
+   "factionId": 500012
+  }
+ ],
+ "True Sansha Fleet Staging Point, Site 2": [
+  {
+   "zh": "萨沙爱国者舰队集结点，第二区",
+   "factionId": 500019
+  }
+ ],
+ "Dark Blood Fleet Staging Point, Site 3": [
+  {
+   "zh": "黑暗血袭者舰队集结点，第三区",
+   "factionId": 500012
+  }
+ ],
+ "True Sansha Fleet Staging Point, Site 3": [
+  {
+   "zh": "萨沙爱国者舰队集结点，第三区",
+   "factionId": 500019
+  }
+ ],
+ "Blood Raider Prison Camp": [
+  {
+   "zh": "血袭者监狱",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者监狱",
+   "factionId": 500012
+  }
+ ],
+ "Gurista Military Operations Complex": [
+  {
+   "zh": "古斯塔斯军用复合体",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯军用复合体",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Prison Camp": [
+  {
+   "zh": "萨沙监狱",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙监狱",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Prison Camp": [
+  {
+   "zh": "天蛇监狱",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇监狱",
+   "factionId": 500020
+  }
+ ],
+ "Blood Raider Coordination Center": [
+  {
+   "zh": "血袭者协调中心",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者协调中心",
+   "factionId": 500012
+  }
+ ],
+ "Serpentis Paramilitary Complex": [
+  {
+   "zh": "天蛇民兵设施群",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇民兵设施群",
+   "factionId": 500020
+  }
+ ],
+ "Sansha Military Operations Complex": [
+  {
+   "zh": "萨沙军用复合体",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙军用复合体",
+   "factionId": 500019
+  }
+ ],
+ "Blood Raider Psychotropics Depot": [
+  {
+   "zh": "血袭者精神药物仓库",
+   "factionId": 500012
+  },
+  {
+   "zh": "血袭者精神药物仓库",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Hallucinogen Supply Waypoint": [
+  {
+   "zh": "古斯塔斯迷幻剂供应中转站",
+   "factionId": 500010
+  },
+  {
+   "zh": "古斯塔斯迷幻剂供应中转站",
+   "factionId": 500010
+  }
+ ],
+ "Sansha's Nation Neural Paralytic Facility": [
+  {
+   "zh": "萨沙神经麻痹中心",
+   "factionId": 500019
+  },
+  {
+   "zh": "萨沙神经麻痹中心",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Corporation Hydroponics Site": [
+  {
+   "zh": "天蛇集团水培站点",
+   "factionId": 500020
+  },
+  {
+   "zh": "天蛇集团水培站点",
+   "factionId": 500020
+  }
+ ],
+ "Angel Cartel Occupied Mining Colony": [
+  {
+   "zh": "天使集团占据的采矿殖民地",
+   "factionId": 500011
+  }
+ ],
+ "Sansha's Nation Occupied Mining Colony": [
+  {
+   "zh": "萨沙占据的采矿殖民地",
+   "factionId": 500019
+  }
+ ],
+ "Angel Repurposed Outpost": [
+  {
+   "zh": "天使改良哨站",
+   "factionId": 500011
+  }
+ ],
+ "Blood Raider Intelligence Collection Point": [
+  {
+   "zh": "血袭者情报收集点",
+   "factionId": 500012
+  }
+ ],
+ "Trigger and Event Test Dungeon": [
+  {
+   "zh": "Trigger and Event Test Dungeon",
+   "factionId": 500021
+  }
+ ],
+ "QA Test Escalation Dungeon": [
+  {
+   "zh": "QA Test Escalation Dungeon",
+   "factionId": null
+  },
+  {
+   "zh": "QA Test Escalation Dungeon",
+   "factionId": 500021
+  }
+ ],
+ "Guristas Guerilla Grounds": [
+  {
+   "zh": "古斯塔斯游击队根据地",
+   "factionId": 500010
+  }
+ ],
+ "Blood Raider Human Farm": [
+  {
+   "zh": "血袭者人类养殖场",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Acclimatization Facility": [
+  {
+   "zh": "萨沙奴化设施",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Live Cargo Distribution Facilities": [
+  {
+   "zh": "天蛇货物配送设施",
+   "factionId": 500020
+  }
+ ],
+ "TEST FOR TEAM ROCK": [
+  {
+   "zh": "TEST FOR TEAM ROCK",
+   "factionId": 500021
+  }
+ ],
+ "Blue Ice Belt": [
+  {
+   "zh": "蓝冰带",
+   "factionId": null
+  },
+  {
+   "zh": "蓝冰带",
+   "factionId": null
+  }
+ ],
+ "White Glaze Belt": [
+  {
+   "zh": "白釉冰带",
+   "factionId": null
+  },
+  {
+   "zh": "白釉冰带",
+   "factionId": null
+  }
+ ],
+ "Glacial Mass Belt": [
+  {
+   "zh": "聚合冰带",
+   "factionId": null
+  },
+  {
+   "zh": "白釉冰带",
+   "factionId": null
+  }
+ ],
+ "Clear Icicle Belt": [
+  {
+   "zh": "清冰带",
+   "factionId": null
+  },
+  {
+   "zh": "清冰带",
+   "factionId": null
+  }
+ ],
+ "Thick Blue Ice Belt": [
+  {
+   "zh": "粗蓝冰带",
+   "factionId": null
+  },
+  {
+   "zh": "粗蓝冰带",
+   "factionId": null
+  }
+ ],
+ "Pristine White Glaze Belt": [
+  {
+   "zh": "朴白釉冰带",
+   "factionId": null
+  },
+  {
+   "zh": "朴白釉冰带",
+   "factionId": null
+  }
+ ],
+ "Smooth Glacial Mass Belt": [
+  {
+   "zh": "光滑聚合冰带",
+   "factionId": null
+  },
+  {
+   "zh": "光滑聚合冰带",
+   "factionId": null
+  }
+ ],
+ "Enriched Clear Icicle Belt": [
+  {
+   "zh": "富清冰带",
+   "factionId": null
+  },
+  {
+   "zh": "富清冰带",
+   "factionId": null
+  }
+ ],
+ "Large Potent Asteroid Cluster": [
+  {
+   "zh": "大型巨硕小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Enormous Potent Asteroid Cluster": [
+  {
+   "zh": "庞大型巨硕小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Colossal Potent Asteroid Cluster": [
+  {
+   "zh": "巨型巨硕小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Large Rich Asteroid Cluster": [
+  {
+   "zh": "大型富饶小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Enormous Rich Asteroid Cluster": [
+  {
+   "zh": "庞大型富饶小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Colossal Rich Asteroid Cluster": [
+  {
+   "zh": "巨型富饶小行星集群",
+   "factionId": 500021
+  }
+ ],
+ "Amarr Open Outpost": [
+  {
+   "zh": "艾玛开放哨站",
+   "factionId": 500003
+  }
+ ],
+ "Minmatar Open Outpost": [
+  {
+   "zh": "米玛塔尔开放哨站",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Open Outpost": [
+  {
+   "zh": "加达里开放哨站",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Open Outpost": [
+  {
+   "zh": "盖伦特开放哨站",
+   "factionId": 500004
+  }
+ ],
+ "Besieged Covert Research Facility": [
+  {
+   "zh": "被包围的隐秘研究设施",
+   "factionId": null
+  }
+ ],
+ "Dojo Dungeon": [
+  {
+   "zh": "道场空间",
+   "factionId": 500021
+  }
+ ],
+ "QA Test Dungeon: NPC Effects": [
+  {
+   "zh": "QA Test Dungeon: NPC Effects",
+   "factionId": null
+  }
+ ],
+ "Shattered Debris Field": [
+  {
+   "zh": "破碎之地",
+   "factionId": 500021
+  }
+ ],
+ "Jove Observatory": [
+  {
+   "zh": "朱庇特瞭望台",
+   "factionId": 500024
+  }
+ ],
+ "Shattered Ice Field": [
+  {
+   "zh": "碎裂的冰原",
+   "factionId": 500021
+  }
+ ],
+ "Asteroid Belt Remnants": [
+  {
+   "zh": "小行星带残迹",
+   "factionId": 500021
+  }
+ ],
+ "Amarr Defensive Outpost": [
+  {
+   "zh": "艾玛防御哨站",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Encampment": [
+  {
+   "zh": "艾玛营地",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Battalion": [
+  {
+   "zh": "艾玛军营",
+   "factionId": 500003
+  }
+ ],
+ "Moderate Drifter Influx": [
+  {
+   "zh": "中型流浪者据点",
+   "factionId": 500024
+  }
+ ],
+ "Severe Drifter Influx": [
+  {
+   "zh": "大型流浪者据点",
+   "factionId": 500024
+  }
+ ],
+ "Critical Drifter Influx": [
+  {
+   "zh": "超大型流浪者据点",
+   "factionId": 500024
+  }
+ ],
+ "Defense of the Throne Worlds": [
+  {
+   "zh": "铎沃保卫战",
+   "factionId": 500024
+  }
+ ],
+ "Defense of the Throne Worlds2": [
+  {
+   "zh": "铎沃保卫战 2",
+   "factionId": 500024
+  }
+ ],
+ "Blood Raider Gauntlet": [
+  {
+   "zh": "血袭者训练场",
+   "factionId": 500021
+  },
+  {
+   "zh": "血袭者训练场",
+   "factionId": 500021
+  }
+ ],
+ "Operation Frostline Target": [
+  {
+   "zh": "霜线行动目标",
+   "factionId": 500020
+  }
+ ],
+ "Drifter Sepulcher": [
+  {
+   "zh": "流浪者墓穴",
+   "factionId": 500024
+  }
+ ],
+ "Space Oddity": [
+  {
+   "zh": "空间异象",
+   "factionId": 500021
+  }
+ ],
+ "Guristas Detention Facility": [
+  {
+   "zh": "古斯塔斯拘留设施",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Transportation Facility": [
+  {
+   "zh": "古斯塔斯运输设施",
+   "factionId": 500010
+  }
+ ],
+ "Make Space Great Again": [
+  {
+   "zh": "让新伊甸再次繁荣",
+   "factionId": null
+  }
+ ],
+ "Serpentis Shipyard and Research Facility": [
+  {
+   "zh": "天蛇船厂和研究设施",
+   "factionId": 500020
+  }
+ ],
+ "Serpentis Mobilization Point": [
+  {
+   "zh": "天蛇集结点",
+   "factionId": 500020
+  }
+ ],
+ "Serpentis Transportation Facility": [
+  {
+   "zh": "天蛇运输设施",
+   "factionId": 500020
+  }
+ ],
+ "Serpentis Information Relay": [
+  {
+   "zh": "天蛇情报中继站",
+   "factionId": 500020
+  }
+ ],
+ "Serpentis Sortie": [
+  {
+   "zh": "天蛇堡垒",
+   "factionId": 500020
+  }
+ ],
+ "Angel Sortie": [
+  {
+   "zh": "天使堡垒",
+   "factionId": 500011
+  }
+ ],
+ "Angel Cartel Research Bunker": [
+  {
+   "zh": "天使研究堡垒",
+   "factionId": 500011
+  }
+ ],
+ "Angel Cartel Assembly Point": [
+  {
+   "zh": "天使集结点",
+   "factionId": 500011
+  }
+ ],
+ "Angel Cartel Mining Outpost": [
+  {
+   "zh": "天使采矿哨站",
+   "factionId": 500011
+  }
+ ],
+ "SotS Serpentis Roaming Site": [
+  {
+   "zh": "天蛇之影天蛇战斗地点",
+   "factionId": 500020
+  }
+ ],
+ "SotS Angel Cartel Roaming Site": [
+  {
+   "zh": "天蛇之影天使战斗地点",
+   "factionId": 500011
+  }
+ ],
+ "Purity of the Throne Exaltation Temple": [
+  {
+   "zh": "圣洁王座朝圣神庙",
+   "factionId": 500021
+  }
+ ],
+ "Safe Spot": [
+  {
+   "zh": "安全点",
+   "factionId": 500021
+  }
+ ],
+ "Guardians Gala Rendezvous Point": [
+  {
+   "zh": "守卫节日集会所",
+   "factionId": null
+  }
+ ],
+ "Rogue Swarm Nest": [
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  },
+  {
+   "zh": "无人机群巢穴",
+   "factionId": 500021
+  }
+ ],
+ "Lucky Clash": [
+  {
+   "zh": "幸运碰",
+   "factionId": 500021
+  },
+  {
+   "zh": "幸运碰",
+   "factionId": 500021
+  }
+ ],
+ "Warzone Extraction": [
+  {
+   "zh": "战区开采",
+   "factionId": 500021
+  },
+  {
+   "zh": "战区开采",
+   "factionId": 500021
+  },
+  {
+   "zh": "战区开采",
+   "factionId": 500021
+  }
+ ],
+ "Rogue Swarm Den": [
+  {
+   "zh": "自由蜂巢",
+   "factionId": 500021
+  }
+ ],
+ "Rogue Swarm Lair": [
+  {
+   "zh": "自由老巢",
+   "factionId": 500021
+  }
+ ],
+ "Guardian's Gala": [
+  {
+   "zh": "守护者庆典",
+   "factionId": 500020
+  },
+  {
+   "zh": "守护者庆典",
+   "factionId": 500020
+  }
+ ],
+ "Guardian's Gala VIP": [
+  {
+   "zh": "守护者庆典VIP",
+   "factionId": 500020
+  }
+ ],
+ "Guardians Gala VIPs": [
+  {
+   "zh": "守卫节日VIP",
+   "factionId": 500021
+  },
+  {
+   "zh": "守卫节日VIP",
+   "factionId": 500021
+  }
+ ],
+ "Event Test Site": [
+  {
+   "zh": "活动测试地点",
+   "factionId": 500010
+  }
+ ],
+ "Operation: Conscious Interruption": [
+  {
+   "zh": "行动：思维阻断",
+   "factionId": 500021
+  }
+ ],
+ "Operation: Drifter Interruption": [
+  {
+   "zh": "行动：阻止流浪者",
+   "factionId": 500021
+  },
+  {
+   "zh": "行动：阻止流浪者",
+   "factionId": 500021
+  }
+ ],
+ "Operation: Signal Interruption": [
+  {
+   "zh": "行动：信号阻断",
+   "factionId": 500021
+  }
+ ],
+ "Federation Grand Prix Starting Line": [
+  {
+   "zh": "联邦大奖赛起跑线",
+   "factionId": 500004
+  }
+ ],
+ "Unsanctioned Labor Camp": [
+  {
+   "zh": "非法劳工营地",
+   "factionId": 500003
+  }
+ ],
+ "Soft Penalty": [
+  {
+   "zh": "处罚",
+   "factionId": 500006
+  }
+ ],
+ "Crimson Harvest Fields": [
+  {
+   "zh": "血色收割场",
+   "factionId": 500012
+  }
+ ],
+ "Crimson Gauntlet": [
+  {
+   "zh": "血色试炼",
+   "factionId": 500012
+  },
+  {
+   "zh": "血色试炼",
+   "factionId": 500012
+  },
+  {
+   "zh": "血色试炼",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Excursion": [
+  {
+   "zh": "萨沙远航",
+   "factionId": 500021
+  }
+ ],
+ "BestDungeon...?": [
+  {
+   "zh": "BestDungeon...?",
+   "factionId": 500021
+  }
+ ],
+ "Ice Dwarf": [
+  {
+   "zh": "冰矮星",
+   "factionId": 500018
+  }
+ ],
+ "World Ark Proving Ground": [
+  {
+   "zh": "世界方舟试验场",
+   "factionId": 500021
+  }
+ ],
+ "Dragon's Test Playground (Do not translate)": [
+  {
+   "zh": "Dragon's Test Playground (Do not translate)",
+   "factionId": 500010
+  }
+ ],
+ "VIP Guardian's Gala": [
+  {
+   "zh": "VIP守护者庆典",
+   "factionId": 500020
+  }
+ ],
+ "Dungeon": [
+  {
+   "zh": "死亡复合体",
+   "factionId": 500021
+  }
+ ],
+ "World Ark Proving Grounds": [
+  {
+   "zh": "世界方舟试验场",
+   "factionId": 500021
+  }
+ ],
+ "Major Conduit": [
+  {
+   "zh": "主导管",
+   "factionId": 500021
+  },
+  {
+   "zh": "主导管",
+   "factionId": 500026
+  }
+ ],
+ "Minor Conduit": [
+  {
+   "zh": "次级导管",
+   "factionId": 500021
+  },
+  {
+   "zh": "次级导管",
+   "factionId": 500026
+  },
+  {
+   "zh": "次级导管",
+   "factionId": 500021
+  }
+ ],
+ "Test": [
+  {
+   "zh": "测试",
+   "factionId": null
+  }
+ ],
+ "Emerging Conduit": [
+  {
+   "zh": "新兴导管",
+   "factionId": 500026
+  },
+  {
+   "zh": "新兴导管",
+   "factionId": 500026
+  },
+  {
+   "zh": "新兴导管",
+   "factionId": 500026
+  },
+  {
+   "zh": "新兴导管",
+   "factionId": 500026
+  }
+ ],
+ "Stellar Fleet Deployment Site": [
+  {
+   "zh": "星际舰队部署点",
+   "factionId": 500021
+  },
+  {
+   "zh": "星际舰队部署点",
+   "factionId": 500026
+  },
+  {
+   "zh": "星际舰队部署点",
+   "factionId": 500026
+  },
+  {
+   "zh": "星际舰队部署点",
+   "factionId": 500026
+  },
+  {
+   "zh": "星际舰队部署点",
+   "factionId": 500026
+  }
+ ],
+ "Observatory Flashpoint": [
+  {
+   "zh": "观测站闪点",
+   "factionId": 500021
+  },
+  {
+   "zh": "观测站闪点",
+   "factionId": 500027
+  }
+ ],
+ "SpawnTest": [
+  {
+   "zh": "刷新测试",
+   "factionId": 500021
+  }
+ ],
+ "Survey Supply Cache": [
+  {
+   "zh": "探测补给箱",
+   "factionId": 500021
+  }
+ ],
+ "Yoiul Festival Snowball Exchange": [
+  {
+   "zh": "尤尔节雪球兑换",
+   "factionId": null
+  }
+ ],
+ "Dragonaurs Staging Facility": [
+  {
+   "zh": "圣殿之龙集结设施",
+   "factionId": 500001
+  }
+ ],
+ "PLCEHOLDER What a place for a snark the Bellman cried": [
+  {
+   "zh": "占位符 贝尔曼哭诉：“你真是毒舌啊”",
+   "factionId": 500021
+  }
+ ],
+ "Guardians Gala": [
+  {
+   "zh": "守护者庆典",
+   "factionId": 500020
+  }
+ ],
+ "Guardians Gala VIP": [
+  {
+   "zh": "守护者庆典VIP",
+   "factionId": 500020
+  }
+ ],
+ "Guristas Hunt Outpost": [
+  {
+   "zh": "古斯塔斯猎捕哨站",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Huntmaster Outpost": [
+  {
+   "zh": "古斯塔斯猎捕大师哨站",
+   "factionId": 500010
+  }
+ ],
+ "Amarr Large Outpost": [
+  {
+   "zh": "艾玛大型哨站",
+   "factionId": 500003
+  }
+ ],
+ "Caldari Large Outpost": [
+  {
+   "zh": "加达里大型哨站",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Large Outpost": [
+  {
+   "zh": "盖伦特大型哨站",
+   "factionId": 500004
+  },
+  {
+   "zh": "盖伦特大型哨站",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Large Outpost": [
+  {
+   "zh": "米玛塔尔大型哨站",
+   "factionId": 500002
+  }
+ ],
+ "Stellar Observation Post": [
+  {
+   "zh": "星际观测哨",
+   "factionId": 500027
+  }
+ ],
+ "EDENCOM Forward Post": [
+  {
+   "zh": "伊甸联合防御阵线前沿哨站",
+   "factionId": 500027
+  },
+  {
+   "zh": "伊甸联合防御阵线前沿哨站",
+   "factionId": 500027
+  }
+ ],
+ "EDENCOM Staging Area": [
+  {
+   "zh": "伊甸联合防御阵线集结地点",
+   "factionId": 500027
+  }
+ ],
+ "EDENCOM Production Facility": [
+  {
+   "zh": "伊甸联合防御阵线生产设施",
+   "factionId": null
+  }
+ ],
+ "EDENCOM Research Complex": [
+  {
+   "zh": "伊甸联合防御阵线研究复合体",
+   "factionId": null
+  }
+ ],
+ "EDENCOM Field Base": [
+  {
+   "zh": "伊甸联合防御阵线基地",
+   "factionId": 500027
+  }
+ ],
+ "Upwell Covert Research Facility": [
+  {
+   "zh": "昇威隐秘研究设施",
+   "factionId": 500021
+  }
+ ],
+ "EDENCOM Covert Research Headquarters": [
+  {
+   "zh": "伊甸联合防御阵线隐秘研究总部",
+   "factionId": 500021
+  }
+ ],
+ "Signal Source": [
+  {
+   "zh": "信号源",
+   "factionId": 500026
+  }
+ ],
+ "World Ark Assault Flashpoint": [
+  {
+   "zh": "世界方舟攻击点",
+   "factionId": 500026
+  }
+ ],
+ "Encounter Surveillance System": [
+  {
+   "zh": "事件监测装置",
+   "factionId": 500006
+  }
+ ],
+ "Metaliminal Conduit": [
+  {
+   "zh": "金属极限导管",
+   "factionId": 500026
+  }
+ ],
+ "Accelerator Flashpoint": [
+  {
+   "zh": "加速器闪点",
+   "factionId": 500026
+  }
+ ],
+ "Tetrimon Base": [
+  {
+   "zh": "特里蒙基地",
+   "factionId": 500003
+  },
+  {
+   "zh": "特里蒙基地",
+   "factionId": 500003
+  }
+ ],
+ "Tetrimon Forward Headquarters": [
+  {
+   "zh": "特里蒙前线总部",
+   "factionId": 500003
+  }
+ ],
+ "Crimson Harvest Headquarters": [
+  {
+   "zh": "血色收割总部",
+   "factionId": 500012
+  }
+ ],
+ "Ubiquitous Mineral Field": [
+  {
+   "zh": "常见矿场",
+   "factionId": 500026
+  }
+ ],
+ "Border Rakovene Field": [
+  {
+   "zh": "边境拉克岩矿场",
+   "factionId": 500026
+  }
+ ],
+ "Border Bezdnacine Field": [
+  {
+   "zh": "边境贝兹岩矿场",
+   "factionId": 500026
+  }
+ ],
+ "Internal Rakovene Field": [
+  {
+   "zh": "内部拉克岩矿场",
+   "factionId": 500026
+  }
+ ],
+ "Internal Bezdnacine Field": [
+  {
+   "zh": "内部贝兹岩矿场",
+   "factionId": 500026
+  }
+ ],
+ "Home Mineral Field": [
+  {
+   "zh": "家园矿场",
+   "factionId": 500026
+  }
+ ],
+ "Tetrimon Frontline Base": [
+  {
+   "zh": "特里蒙前线基地",
+   "factionId": 500003
+  }
+ ],
+ "Dark Blood Gauntlet": [
+  {
+   "zh": "黑暗血袭者试炼",
+   "factionId": 500012
+  }
+ ],
+ "Torpid Sleeper Hive": [
+  {
+   "zh": "蛰伏的冬眠者巢穴",
+   "factionId": 500024
+  }
+ ],
+ "Incipient Drone Swarm": [
+  {
+   "zh": "原始无人机蜂群",
+   "factionId": 500025
+  }
+ ],
+ "EDENCOM Scout Fleet": [
+  {
+   "zh": "伊甸联合防御阵线侦察舰队",
+   "factionId": 500027
+  }
+ ],
+ "Convocation Watchpost": [
+  {
+   "zh": "集会观察站",
+   "factionId": 500026
+  }
+ ],
+ "Restless Drifter Hive": [
+  {
+   "zh": "不安宁的冬眠者巢穴",
+   "factionId": null
+  }
+ ],
+ "EDENCOM Expeditionary Force": [
+  {
+   "zh": "伊甸联合防御阵线远征军",
+   "factionId": 500027
+  }
+ ],
+ "Triglavian Barracks": [
+  {
+   "zh": "三神裔兵营",
+   "factionId": 500026
+  }
+ ],
+ "Insomnolent Drifter Hive": [
+  {
+   "zh": "不息的冬眠者巢穴",
+   "factionId": 500021
+  }
+ ],
+ "Hegemonising Drone Swarm": [
+  {
+   "zh": "霸主无人机蜂群",
+   "factionId": 500021
+  }
+ ],
+ "EDENCOM Campaign Group": [
+  {
+   "zh": "伊甸联合防御阵线行动组",
+   "factionId": 500021
+  }
+ ],
+ "Triglavian Proving Field": [
+  {
+   "zh": "三神裔试炼场",
+   "factionId": 500021
+  }
+ ],
+ "Jita 4-4 Exchange": [
+  {
+   "zh": "吉他海四交易所",
+   "factionId": 500021
+  }
+ ],
+ "Fading Volatile Ice Field": [
+  {
+   "zh": "渐融的不稳定冰带",
+   "factionId": null
+  }
+ ],
+ "Wightstorm Forward Base": [
+  {
+   "zh": "风暴之灵前线基地",
+   "factionId": 500019
+  }
+ ],
+ "Fresh Volatile Ice Field": [
+  {
+   "zh": "新生的不稳定冰带",
+   "factionId": null
+  }
+ ],
+ "Friable Volatile Ice Field": [
+  {
+   "zh": "易碎的不稳定冰带",
+   "factionId": null
+  }
+ ],
+ "Wightstorm Muster Point": [
+  {
+   "zh": "风暴之灵集结点",
+   "factionId": 500019
+  }
+ ],
+ "Wightstorm Transit Site": [
+  {
+   "zh": "风暴之灵中转站",
+   "factionId": 500019
+  }
+ ],
+ "AEGIS Secure Transfer Facility": [
+  {
+   "zh": "统合部紧急干预和安全局安全传输设施",
+   "factionId": 500027
+  }
+ ],
+ "AEGIS Secure Capital Construction Forges": [
+  {
+   "zh": "统合部紧急干预和安全局旗舰建造车间",
+   "factionId": 500027
+  }
+ ],
+ "[AIR NPE] Evacuation Point": [
+  {
+   "zh": "[星空会教程] 撤离点",
+   "factionId": 500021
+  }
+ ],
+ "EoM Rogue Capital Shipyard": [
+  {
+   "zh": "EoM自由旗舰船坞",
+   "factionId": null
+  },
+  {
+   "zh": "EoM自由旗舰船坞",
+   "factionId": null
+  },
+  {
+   "zh": "EoM自由旗舰船坞",
+   "factionId": null
+  }
+ ],
+ "Overmind Nursery Grove": [
+  {
+   "zh": "主宰培养地穴",
+   "factionId": 500025
+  },
+  {
+   "zh": "主宰培养地穴",
+   "factionId": 500021
+  }
+ ],
+ "SCC Secure Key Storage": [
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  },
+  {
+   "zh": "商业安全委员会安全密钥储存设施",
+   "factionId": 500006
+  }
+ ],
+ "Escape from Auner Reenactment": [
+  {
+   "zh": "奥尼尔大撤离闪回",
+   "factionId": 500002
+  }
+ ],
+ "Mahti Jailbreak Reenactment": [
+  {
+   "zh": "马哈蒂越狱闪回",
+   "factionId": 500002
+  }
+ ],
+ "Elite Escape from Auner Reenactment": [
+  {
+   "zh": "奥尼尔大撤离闪回",
+   "factionId": 500002
+  },
+  {
+   "zh": "奥尼尔大撤离闪回",
+   "factionId": 500021
+  }
+ ],
+ "Elite Mahti Jailbreak Reenactment": [
+  {
+   "zh": "精英马哈蒂越狱闪回",
+   "factionId": 500002
+  }
+ ],
+ "HS/NS Combat Site": [
+  {
+   "zh": "高安/低安战斗地点",
+   "factionId": 500021
+  },
+  {
+   "zh": "高安/低安战斗地点",
+   "factionId": 500021
+  }
+ ],
+ "Rogue Drone Outgrowth Colony": [
+  {
+   "zh": "无人机扩张殖民地",
+   "factionId": 500021
+  }
+ ],
+ "Scratch Dungeon": [
+  {
+   "zh": "试验复合体",
+   "factionId": 500021
+  }
+ ],
+ "Advanced Drone Outgrowth Colony": [
+  {
+   "zh": "高级无人机扩张殖民地",
+   "factionId": 500021
+  }
+ ],
+ "AIR Mining Adventure Dungeon": [
+  {
+   "zh": "星空会采矿空间",
+   "factionId": 500021
+  }
+ ],
+ "Wightstorm Anchorage": [
+  {
+   "zh": "风暴之灵锚地",
+   "factionId": 500019
+  }
+ ],
+ "Guristas Capital Forge": [
+  {
+   "zh": "古斯塔斯旗舰工场",
+   "factionId": 500010
+  }
+ ],
+ "Smuggler Stargate": [
+  {
+   "zh": "走私者星门",
+   "factionId": 500021
+  }
+ ],
+ "Confiscated Smuggler Stargate": [
+  {
+   "zh": "被收缴的走私犯星门",
+   "factionId": 500006
+  }
+ ],
+ "Smuggler Hideout": [
+  {
+   "zh": "走私犯藏身处",
+   "factionId": 500021
+  }
+ ],
+ "Confiscated Smuggler Hideout": [
+  {
+   "zh": "被收缴的走私犯藏身处",
+   "factionId": 500006
+  }
+ ],
+ "Blood Raider Altar": [
+  {
+   "zh": "血袭者祭坛",
+   "factionId": 500012
+  }
+ ],
+ "Desolate Asteroid Belt": [
+  {
+   "zh": "荒凉的小行星带",
+   "factionId": 500011
+  }
+ ],
+ "Master Battlefield - (Placeholder DNT)": [
+  {
+   "zh": "Master Battlefield - (Placeholder DNT)",
+   "factionId": 500003
+  }
+ ],
+ "Caldari Scout NVY-1": [
+  {
+   "zh": "加达里侦察 NVY-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Scout NVY-2": [
+  {
+   "zh": "加达里侦察NVY-2",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Scout NVY-1": [
+  {
+   "zh": "艾玛侦察 NVY-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Scout NVY-2": [
+  {
+   "zh": "艾玛侦察NVY-2",
+   "factionId": 500003
+  }
+ ],
+ "Gallente Scout NVY-1": [
+  {
+   "zh": "盖伦特侦察 NVY-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Scout NVY-2": [
+  {
+   "zh": "盖伦特侦察NVY-2",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Scout NVY-1": [
+  {
+   "zh": "米玛塔尔侦察 NVY-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Scout NVY-2": [
+  {
+   "zh": "米玛塔尔侦察NVY-2",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Small NVY-1": [
+  {
+   "zh": "加达里小型 NVY-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Small ADV-1": [
+  {
+   "zh": "加达里小型 ADV-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Small NVY-2": [
+  {
+   "zh": "加达里小型NVY-2",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Small ADV-2": [
+  {
+   "zh": "加达里小型ADV-2",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Small NVY-1": [
+  {
+   "zh": "艾玛小型 NVY-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small ADV-1": [
+  {
+   "zh": "艾玛小型 ADV-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small NVY-2": [
+  {
+   "zh": "艾玛小型NVY-2",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Small ADV-2": [
+  {
+   "zh": "艾玛小型ADV-2",
+   "factionId": 500003
+  }
+ ],
+ "Gallente Small NVY-1": [
+  {
+   "zh": "盖伦特小型 NVY-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Small ADV-1": [
+  {
+   "zh": "盖伦特小型 ADV-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Small NVY-2": [
+  {
+   "zh": "盖伦特小型NVY-2",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Small ADV-2": [
+  {
+   "zh": "盖伦特小型ADV-2",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Small NVY-1": [
+  {
+   "zh": "米玛塔尔小型 NVY-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Small ADV-1": [
+  {
+   "zh": "米玛塔尔小型 ADV-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Small NVY-2": [
+  {
+   "zh": "米玛塔尔小型NVY-2",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Small ADV-2": [
+  {
+   "zh": "米玛塔尔小型ADV-2",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Medium NVY-1": [
+  {
+   "zh": "加达里中型 NVY-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Medium ADV-1": [
+  {
+   "zh": "加达里中型 ADV-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Medium NVY-3": [
+  {
+   "zh": "加达里中型NVY-3",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Medium ADV-3": [
+  {
+   "zh": "加达里中型ADV-3",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Medium NVY-1": [
+  {
+   "zh": "艾玛中型 NVY-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Medium ADV-1": [
+  {
+   "zh": "艾玛中型 ADV-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Medium NVY-3": [
+  {
+   "zh": "艾玛中型NVY-3",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Medium ADV-3": [
+  {
+   "zh": "艾玛中型ADV-3",
+   "factionId": 500003
+  }
+ ],
+ "Gallente Medium NVY-1": [
+  {
+   "zh": "盖伦特中型 NVY-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Medium ADV-1": [
+  {
+   "zh": "盖伦特中型 ADV-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Medium NVY-3": [
+  {
+   "zh": "盖伦特中型NVY-3",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Medium ADV-3": [
+  {
+   "zh": "盖伦特中型ADV-3",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Medium NVY-1": [
+  {
+   "zh": "米玛塔尔中型 NVY-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Medium ADV-1": [
+  {
+   "zh": "米玛塔尔中型 ADV-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Medium NVY-3": [
+  {
+   "zh": "米玛塔尔中型NVY-3",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Medium ADV-3": [
+  {
+   "zh": "米玛塔尔中型ADV-3",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Large NVY-1": [
+  {
+   "zh": "加达里大型 NVY-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Large ADV-1": [
+  {
+   "zh": "加达里大型 ADV-1",
+   "factionId": 500001
+  }
+ ],
+ "Caldari Large NVY-4": [
+  {
+   "zh": "加达里大型NVY-4",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Large NVY-1": [
+  {
+   "zh": "艾玛大型 NVY-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Large ADV-1": [
+  {
+   "zh": "艾玛大型 ADV-1",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Large NVY-4": [
+  {
+   "zh": "艾玛大型NVY-4",
+   "factionId": 500003
+  }
+ ],
+ "Union Day Combat Infiltration Challenge": [
+  {
+   "zh": "工会日战斗潜入挑战",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Large NVY-1": [
+  {
+   "zh": "盖伦特大型 NVY-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Large ADV-1": [
+  {
+   "zh": "盖伦特大型 ADV-1",
+   "factionId": 500004
+  }
+ ],
+ "Gallente Large NVY-4": [
+  {
+   "zh": "盖伦特大型NVY-4",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Large NVY-1": [
+  {
+   "zh": "米玛塔尔大型 NVY-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Large ADV-1": [
+  {
+   "zh": "米玛塔尔大型 ADV-1",
+   "factionId": 500002
+  }
+ ],
+ "Minmatar Large NVY-4": [
+  {
+   "zh": "米玛塔尔大型NVY-4",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Open Complex": [
+  {
+   "zh": "加达里开放要塞",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Open Complex": [
+  {
+   "zh": "艾玛开放要塞",
+   "factionId": 500003
+  }
+ ],
+ "Gallente Open Complex": [
+  {
+   "zh": "盖伦特开放要塞",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Open Complex": [
+  {
+   "zh": "米玛塔尔开放要塞",
+   "factionId": 500002
+  }
+ ],
+ "Union Day Combat Challenge": [
+  {
+   "zh": "工会日战斗挑战",
+   "factionId": 500001
+  }
+ ],
+ "Union Day Elite Combat Infiltration Challenge": [
+  {
+   "zh": "工会日精英战斗潜入挑战",
+   "factionId": 500001
+  }
+ ],
+ "Unused": [
+  {
+   "zh": "未使用",
+   "factionId": 500001
+  }
+ ],
+ "Imperial Stellar Observation Data Hub": [
+  {
+   "zh": "帝国星际观测站数据中心",
+   "factionId": 500003
+  }
+ ],
+ "Union Day Elite Combat Challenge": [
+  {
+   "zh": "工会日精英战斗挑战",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Supply Depot": [
+  {
+   "zh": "艾玛补给站",
+   "factionId": 500003
+  }
+ ],
+ "State Strategic Polycrase Cluster": [
+  {
+   "zh": "合众国战略复稀金矿带",
+   "factionId": 500001
+  },
+  {
+   "zh": "合众国战略复稀金矿带",
+   "factionId": 500001
+  }
+ ],
+ "Federal Strategic Moissanite Cluster": [
+  {
+   "zh": "联邦战略军需处碳硅石带",
+   "factionId": 500004
+  },
+  {
+   "zh": "联邦战略军需处碳硅石带",
+   "factionId": 500004
+  }
+ ],
+ "Captured Triglavian Relay (Caldari)": [
+  {
+   "zh": "被夺取的三神裔中继站（加达里）",
+   "factionId": 500001
+  }
+ ],
+ "Captured Triglavian Relay (Gallente)": [
+  {
+   "zh": "被夺取的三神裔中继站（盖伦特）",
+   "factionId": 500004
+  }
+ ],
+ "Republic Stellar Observation Data Hub": [
+  {
+   "zh": "共和国星际观测站数据中心",
+   "factionId": 500002
+  }
+ ],
+ "Node Graph Test Dungeon": [
+  {
+   "zh": "Node Graph Test Dungeon",
+   "factionId": null
+  }
+ ],
+ "Federation Navy Station Harbor": [
+  {
+   "zh": "联邦海军空间站港口",
+   "factionId": 500004
+  },
+  {
+   "zh": "联邦海军空间站港口",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Navy Station Harbor": [
+  {
+   "zh": "加达里海军空间站港口",
+   "factionId": 500001
+  },
+  {
+   "zh": "加达里海军空间站港口",
+   "factionId": 500001
+  }
+ ],
+ "Master Rendezvous Point (DO NOT TRANSLATE)": [
+  {
+   "zh": "Master Rendezvous Point (DO NOT TRANSLATE)",
+   "factionId": 500003
+  }
+ ],
+ "Amarr Battlefield Placeholder": [
+  {
+   "zh": "Amarr Battlefield Placeholder",
+   "factionId": 500003
+  }
+ ],
+ "Minmatar Battlefield Placeholder": [
+  {
+   "zh": "Minmatar Battlefield Placeholder",
+   "factionId": 500002
+  }
+ ],
+ "Gallente Battlefield Placeholder": [
+  {
+   "zh": "Gallente Battlefield Placeholder",
+   "factionId": 500004
+  }
+ ],
+ "Caldari Battlefield Placeholder": [
+  {
+   "zh": "Caldari Battlefield Placeholder",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Battlefield NVY-30": [
+  {
+   "zh": "艾玛战场 NVY-30",
+   "factionId": 500003
+  }
+ ],
+ "Minmatar Battlefield NVY-30": [
+  {
+   "zh": "米玛塔尔战场 NVY-30",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Battlefield NVY-30": [
+  {
+   "zh": "加达里战场 NVY-30",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Battlefield NVY-30": [
+  {
+   "zh": "盖伦特战场 NVY-30",
+   "factionId": 500004
+  }
+ ],
+ "Amarr Rendezvous Point": [
+  {
+   "zh": "艾玛集结点",
+   "factionId": 500003
+  }
+ ],
+ "Minmatar Rendezvous Point": [
+  {
+   "zh": "米玛塔尔集结点",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Rendezvous Point": [
+  {
+   "zh": "加达里集结点",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Rendezvous Point": [
+  {
+   "zh": "盖伦特集结点",
+   "factionId": 500004
+  }
+ ],
+ "Federation Navy Post": [
+  {
+   "zh": "联邦海军哨站",
+   "factionId": 500004
+  }
+ ],
+ "Empire Border Rare Asteroids": [
+  {
+   "zh": "帝国边境稀有小行星",
+   "factionId": 500021
+  }
+ ],
+ "W-Space Blue A0 Rare Asteroids": [
+  {
+   "zh": "虫洞空间蓝色A0稀有小行星",
+   "factionId": 500021
+  }
+ ],
+ "Nullsec Border Rare Asteroids": [
+  {
+   "zh": "零安地区边境稀有小行星",
+   "factionId": 500021
+  }
+ ],
+ "Nullsec Blue A0 Rare Asteroids": [
+  {
+   "zh": "零安地区蓝色A0稀有小行星",
+   "factionId": 500021
+  }
+ ],
+ "Waylaid Imperial Couriers": [
+  {
+   "zh": "拦截帝国快递舰艇",
+   "factionId": 500003
+  },
+  {
+   "zh": "拦截帝国快递舰艇",
+   "factionId": 500003
+  }
+ ],
+ "Besieged Imperial Laboratory": [
+  {
+   "zh": "被包围的帝国实验室",
+   "factionId": 500003
+  },
+  {
+   "zh": "被包围的帝国实验室",
+   "factionId": 500003
+  }
+ ],
+ "Waylaid State Couriers": [
+  {
+   "zh": "拦截合众国快递舰艇",
+   "factionId": 500001
+  },
+  {
+   "zh": "拦截合众国快递舰艇",
+   "factionId": 500001
+  }
+ ],
+ "Waylaid Federation Couriers": [
+  {
+   "zh": "拦截联邦快递舰艇",
+   "factionId": 500004
+  },
+  {
+   "zh": "拦截联邦快递舰艇",
+   "factionId": 500004
+  }
+ ],
+ "Waylaid Republic Couriers": [
+  {
+   "zh": "拦截共和国快递舰艇",
+   "factionId": 500002
+  },
+  {
+   "zh": "拦截共和国快递舰艇",
+   "factionId": 500002
+  }
+ ],
+ "Besieged State Laboratory": [
+  {
+   "zh": "被包围的合众国实验室",
+   "factionId": 500001
+  },
+  {
+   "zh": "被包围的合众国实验室",
+   "factionId": 500001
+  }
+ ],
+ "Besieged Federation Laboratory": [
+  {
+   "zh": "被包围的联邦实验室",
+   "factionId": 500004
+  },
+  {
+   "zh": "被包围的联邦实验室",
+   "factionId": 500004
+  }
+ ],
+ "Besieged Republic Laboratory": [
+  {
+   "zh": "被包围的共和国实验室",
+   "factionId": 500002
+  },
+  {
+   "zh": "被包围的共和国实验室",
+   "factionId": 500002
+  }
+ ],
+ "Imperial Research Data Node": [
+  {
+   "zh": "帝国研究数据节点",
+   "factionId": 500003
+  }
+ ],
+ "State Research Data Node": [
+  {
+   "zh": "合众国研究数据节点",
+   "factionId": 500001
+  }
+ ],
+ "Federation Research Data Node": [
+  {
+   "zh": "联邦研究数据节点",
+   "factionId": 500004
+  }
+ ],
+ "Republic Research Data Node": [
+  {
+   "zh": "共和国研究数据节点",
+   "factionId": 500002
+  }
+ ],
+ "Emergency Aid: Holy Mission": [
+  {
+   "zh": "紧急援助：神圣使命",
+   "factionId": 500021
+  }
+ ],
+ "Nesosilicate Rakovene Field": [
+  {
+   "zh": "岛状硅酸盐拉克岩矿区",
+   "factionId": 500026
+  }
+ ],
+ "SoCT Retrieval Expedition": [
+  {
+   "zh": "理性思维社团回收远征",
+   "factionId": 500017
+  }
+ ],
+ "Guri Malakim Raider Base": [
+  {
+   "zh": "古力·摩拉基穆势力奇袭者基地",
+   "factionId": 500010
+  }
+ ],
+ "Suspicious Signal: Secure the Intel": [
+  {
+   "zh": "可疑信号：保护情报",
+   "factionId": 500021
+  }
+ ],
+ "Metaliminal Meteoroid: Amarr Mining": [
+  {
+   "zh": "超阈限流星体：艾玛矿业",
+   "factionId": 500021
+  }
+ ],
+ "Dread Assault: Blood Raider Temple": [
+  {
+   "zh": "恐惧突击：血袭者圣殿",
+   "factionId": 500021
+  }
+ ],
+ "Guri Malakim Survey Base": [
+  {
+   "zh": "古力·摩拉基穆势力调查基地",
+   "factionId": 500010
+  }
+ ],
+ "Abyssal Artifact Recovery": [
+  {
+   "zh": "深渊文物回收",
+   "factionId": 500021
+  }
+ ],
+ "Raid: Hall of Sacrifice": [
+  {
+   "zh": "突袭：牺牲殿堂",
+   "factionId": 500021
+  }
+ ],
+ "SoCT Survey Expedition": [
+  {
+   "zh": "理性思维社团调查远征",
+   "factionId": 500017
+  }
+ ],
+ "Suspicious Signal: Block the Broadcast": [
+  {
+   "zh": "可疑信号：切断广播",
+   "factionId": 500021
+  }
+ ],
+ "Suspicious Signal: Stop the Sabotage": [
+  {
+   "zh": "可疑信号：阻止破坏行动",
+   "factionId": 500021
+  }
+ ],
+ "Suspicious Signal: Stop the Siphon": [
+  {
+   "zh": "可疑信号：停止吸取",
+   "factionId": 500021
+  }
+ ],
+ "Emergency Aid: Convoy": [
+  {
+   "zh": "紧急援助：护航队",
+   "factionId": 500021
+  }
+ ],
+ "Emergency Aid: Automated Factory": [
+  {
+   "zh": "紧急援助：自动工厂",
+   "factionId": 500021
+  }
+ ],
+ "Raid: Black Market": [
+  {
+   "zh": "突袭：黑市",
+   "factionId": 500021
+  }
+ ],
+ "Raid: Narcotics Lab": [
+  {
+   "zh": "突袭：毒品实验室",
+   "factionId": 500021
+  }
+ ],
+ "Raid: Deserters Hideout": [
+  {
+   "zh": "突袭：逃兵藏身处",
+   "factionId": 500021
+  }
+ ],
+ "Emergency Aid: Clan Holding": [
+  {
+   "zh": "紧急援助：氏族基地",
+   "factionId": 500021
+  }
+ ],
+ "Dread Assault: Occupied Industry": [
+  {
+   "zh": "恐惧突击：被占领的工业",
+   "factionId": 500021
+  }
+ ],
+ "Dread Assault: Primacy Base": [
+  {
+   "zh": "恐惧突击：首领基地",
+   "factionId": 500021
+  }
+ ],
+ "Dread Assault: Cartel Racket": [
+  {
+   "zh": "恐惧突击：企业联合体非法业务",
+   "factionId": 500021
+  }
+ ],
+ "Metaliminal Meteoroid: Caldari Mining": [
+  {
+   "zh": "超阈限流星体：加达里矿业",
+   "factionId": 500021
+  }
+ ],
+ "Metaliminal Meteoroid: Gallente Mining": [
+  {
+   "zh": "超阈限流星体：盖伦特矿业",
+   "factionId": 500021
+  }
+ ],
+ "Metaliminal Meteoroid: Minmatar Mining": [
+  {
+   "zh": "超阈限流星体：米玛塔尔矿业",
+   "factionId": 500021
+  }
+ ],
+ "Angel Small Outpost Raid ADV-1": [
+  {
+   "zh": "天使小型哨站突袭ADV-1",
+   "factionId": 500011
+  }
+ ],
+ "Angel Medium Outpost Raid ADV-1": [
+  {
+   "zh": "天使中型哨站突袭ADV-1",
+   "factionId": 500011
+  }
+ ],
+ "Angel Large Outpost Raid ADV-1": [
+  {
+   "zh": "天使大型哨站突袭ADV-1",
+   "factionId": 500011
+  }
+ ],
+ "Angel Open Outpost Raid ADV-1": [
+  {
+   "zh": "天使开放哨站突袭ADV-1",
+   "factionId": 500011
+  }
+ ],
+ "Angel Small Outpost Raid ADV-2": [
+  {
+   "zh": "天使小型哨站突袭ADV-2",
+   "factionId": 500011
+  }
+ ],
+ "Angel Medium Outpost Raid ADV-3": [
+  {
+   "zh": "天使中型哨站突袭ADV-3",
+   "factionId": 500011
+  }
+ ],
+ "Angel Large Outpost Raid ADV-4": [
+  {
+   "zh": "天使大型哨站突袭ADV-4",
+   "factionId": 500011
+  }
+ ],
+ "Angel Open Outpost Raid ADV-5": [
+  {
+   "zh": "天使开放哨站突袭ADV-5",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Small Outpost Raid ADV-1": [
+  {
+   "zh": "古斯塔斯小型哨站突袭ADV-1",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Medium Outpost Raid ADV-1": [
+  {
+   "zh": "古斯塔斯中型哨站突袭ADV-1",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Large Outpost Raid ADV-1": [
+  {
+   "zh": "古斯塔斯大型哨站突袭ADV-1",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Open Outpost Raid ADV-1": [
+  {
+   "zh": "古斯塔斯开放哨站突袭ADV-1",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Small Outpost Raid ADV-2": [
+  {
+   "zh": "古斯塔斯小型哨站突袭ADV-2",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Medium Outpost Raid ADV-3": [
+  {
+   "zh": "古斯塔斯中型哨站突袭ADV-3",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Large Outpost Raid ADV-4": [
+  {
+   "zh": "古斯塔斯大型哨站突袭ADV-4",
+   "factionId": 500010
+  }
+ ],
+ "Guristas Open Outpost Raid ADV-5": [
+  {
+   "zh": "古斯塔斯开放哨站突袭ADV-5",
+   "factionId": 500010
+  }
+ ],
+ "QA Angel Insurgency Dungeon": [
+  {
+   "zh": "QA天使叛乱死亡空间",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Laundering Facility": [
+  {
+   "zh": "古斯塔斯洗钱设施",
+   "factionId": 500010
+  }
+ ],
+ "Angel Laundering Facility": [
+  {
+   "zh": "天使洗钱设施",
+   "factionId": 500011
+  }
+ ],
+ "Federation Counter-Insurgency Outpost": [
+  {
+   "zh": "联邦平叛哨站",
+   "factionId": 500004
+  }
+ ],
+ "Imperial Counter-Insurgency Outpost": [
+  {
+   "zh": "帝国平叛哨站",
+   "factionId": 500003
+  }
+ ],
+ "Angel Ice Refinery Heist ADV-30": [
+  {
+   "zh": "Angel Ice Refinery Heist ADV-30",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Ice Refinery Heist ADV-30": [
+  {
+   "zh": "Guristas Ice Refinery Heist ADV-30",
+   "factionId": 500010
+  },
+  {
+   "zh": "Guristas Ice Refinery Heist ADV-30",
+   "factionId": 500010
+  }
+ ],
+ "Angel Mining Op Ambush ADV-5": [
+  {
+   "zh": "天使采矿行动伏击ADV-5",
+   "factionId": 500014
+  },
+  {
+   "zh": "天使采矿行动伏击活动ADV-5",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Mining Op Ambush ADV-5": [
+  {
+   "zh": "古斯塔斯采矿行动伏击ADV-5",
+   "factionId": 500014
+  },
+  {
+   "zh": "古斯塔斯采矿行动伏击活动ADV-5",
+   "factionId": 500010
+  }
+ ],
+ "State Counter-Insurgency Outpost": [
+  {
+   "zh": "合众国平叛哨站",
+   "factionId": 500001
+  }
+ ],
+ "Republic Counter-Insurgency Outpost": [
+  {
+   "zh": "共和国平叛哨站",
+   "factionId": 500002
+  }
+ ],
+ "Prototype - Angel Cartel Warehouse Raid": [
+  {
+   "zh": "Prototype - Angel Cartel Warehouse Raid",
+   "factionId": 500011
+  }
+ ],
+ "Treacherous Collapsed Conduit": [
+  {
+   "zh": "危险型崩塌导管",
+   "factionId": 500021
+  }
+ ],
+ "Deepflow Rift": [
+  {
+   "zh": "深流裂隙",
+   "factionId": 500021
+  }
+ ],
+ "Angel Occupied Mine": [
+  {
+   "zh": "天使占据的矿场",
+   "factionId": 500011
+  }
+ ],
+ "Angel Attack Site": [
+  {
+   "zh": "天使攻击地点",
+   "factionId": 500011
+  }
+ ],
+ "Angel Shielded Starbase": [
+  {
+   "zh": "天使护盾加强母星",
+   "factionId": 500011
+  }
+ ],
+ "Escalation Test 1 - Occupied/Infested Mine": [
+  {
+   "zh": "远征测试1 - 已占据/侵袭的矿场",
+   "factionId": 500011
+  }
+ ],
+ "Escalation Test 2 - Attack Site/Drone Enclave": [
+  {
+   "zh": "远征测试2 - 攻击地点/无人机领地",
+   "factionId": 500011
+  }
+ ],
+ "Escalation Test 3 - Shielded/Infested Starbase": [
+  {
+   "zh": "远征测试3 - 已护盾加强/遭到侵袭的母星",
+   "factionId": 500011
+  }
+ ],
+ "Angel Capital Staging": [
+  {
+   "zh": "天使旗舰集结地",
+   "factionId": 500011
+  }
+ ],
+ "Traffic Stop": [
+  {
+   "zh": "交通拦截",
+   "factionId": 500021
+  }
+ ],
+ "Escalation Test 4 - Capital Staging/Hive": [
+  {
+   "zh": "远征测试4 - 旗舰集结地/机巢",
+   "factionId": 500011
+  }
+ ],
+ "Salvage Research": [
+  {
+   "zh": "打捞研究",
+   "factionId": 500021
+  }
+ ],
+ "Stabilize Rift": [
+  {
+   "zh": "稳固裂隙",
+   "factionId": 500021
+  }
+ ],
+ "Angel Forsaken Sanctum": [
+  {
+   "zh": "废弃的天使圣坛",
+   "factionId": 500011
+  }
+ ],
+ "Veldspar Deposit": [
+  {
+   "zh": "凡晶石矿床",
+   "factionId": 500021
+  },
+  {
+   "zh": "凡晶石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Mordunium Deposit": [
+  {
+   "zh": "莫德合金矿床",
+   "factionId": 500021
+  }
+ ],
+ "Kylixium Deposit": [
+  {
+   "zh": "克里石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Griemeer Deposit": [
+  {
+   "zh": "格里米尔矿床",
+   "factionId": 500021
+  }
+ ],
+ "Nocxite Deposit": [
+  {
+   "zh": "诺克希特矿床",
+   "factionId": 500021
+  }
+ ],
+ "Hezorime Deposit": [
+  {
+   "zh": "赫佐利姆矿床",
+   "factionId": 500021
+  }
+ ],
+ "Ueganite Deposit": [
+  {
+   "zh": "尤加石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Blood Occupied Mine": [
+  {
+   "zh": "血袭者占据的矿场",
+   "factionId": 500012
+  }
+ ],
+ "Sansha Occupied Mine": [
+  {
+   "zh": "萨沙占据的矿场",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Occupied Mine": [
+  {
+   "zh": "天蛇占据的矿场",
+   "factionId": 500020
+  }
+ ],
+ "Drone Infested Mine": [
+  {
+   "zh": "无人机侵袭的矿场",
+   "factionId": 500021
+  }
+ ],
+ "Guristas Occupied Mine": [
+  {
+   "zh": "古斯塔斯占据的矿场",
+   "factionId": 500010
+  }
+ ],
+ "Blood Attack Site": [
+  {
+   "zh": "血袭者攻击地点",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Attack Site": [
+  {
+   "zh": "古斯塔斯攻击地点",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Attack Site": [
+  {
+   "zh": "萨沙攻击地点",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Attack Site": [
+  {
+   "zh": "天蛇攻击地点",
+   "factionId": 500020
+  }
+ ],
+ "Germinating Drone Enclave": [
+  {
+   "zh": "建设中的无人机领地",
+   "factionId": 500021
+  }
+ ],
+ "Blood Shielded Starbase": [
+  {
+   "zh": "血袭者护盾加强母星",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Shielded Starbase": [
+  {
+   "zh": "古斯塔斯护盾加强母星",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Shielded Starbase": [
+  {
+   "zh": "萨沙护盾加强母星",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Shielded Starbase": [
+  {
+   "zh": "天蛇护盾加强母星",
+   "factionId": 500020
+  }
+ ],
+ "Drone Infested Starbase": [
+  {
+   "zh": "无人机侵袭的母星",
+   "factionId": 500021
+  }
+ ],
+ "Blood Forsaken Sanctum": [
+  {
+   "zh": "废弃的血袭者圣坛",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Forsaken Sanctum": [
+  {
+   "zh": "废弃的古斯塔斯圣坛",
+   "factionId": 500010
+  }
+ ],
+ "Sansha Forsaken Sanctum": [
+  {
+   "zh": "废弃的萨沙圣坛",
+   "factionId": 500019
+  }
+ ],
+ "Serpentis Forsaken Sanctum": [
+  {
+   "zh": "废弃的天蛇圣坛",
+   "factionId": 500020
+  }
+ ],
+ "Teeming Drone Horde": [
+  {
+   "zh": "蜂拥而至的无人机群",
+   "factionId": 500021
+  }
+ ],
+ "Blood Raider Capital Staging": [
+  {
+   "zh": "血袭者旗舰集结地",
+   "factionId": 500012
+  }
+ ],
+ "Guristas Capital Staging": [
+  {
+   "zh": "古斯塔斯旗舰集结地",
+   "factionId": 500010
+  }
+ ],
+ "Serpentis Capital Staging": [
+  {
+   "zh": "天蛇旗舰集结地",
+   "factionId": 500020
+  }
+ ],
+ "Drone Capital Hive": [
+  {
+   "zh": "无人机旗舰机巢",
+   "factionId": 500021
+  }
+ ],
+ "Sansha Capital Staging": [
+  {
+   "zh": "萨沙旗舰集结地",
+   "factionId": 500019
+  }
+ ],
+ "Shrouded Asteroid Belt": [
+  {
+   "zh": "被掩盖的小行星带",
+   "factionId": 500021
+  }
+ ],
+ "Escalation Test 4 - Shrouded Asteroid Belt": [
+  {
+   "zh": "远征测试4 - 被掩盖的小行星带",
+   "factionId": 500011
+  }
+ ],
+ "Interstitial Ore Deposit": [
+  {
+   "zh": "间质石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Vigilance Point": [
+  {
+   "zh": "警戒点",
+   "factionId": 500024
+  }
+ ],
+ "Zone Test Dungeon (DO NOT TRANSLATE)": [
+  {
+   "zh": "Zone Test Dungeon (DO NOT TRANSLATE)",
+   "factionId": 500024
+  }
+ ],
+ "Small Veldspar Deposit": [
+  {
+   "zh": "小型凡晶石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Small Mordunium Deposit": [
+  {
+   "zh": "小型莫德合金矿床",
+   "factionId": 500021
+  }
+ ],
+ "Small Kylixium Deposit": [
+  {
+   "zh": "小型克里石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Small Griemeer Deposit": [
+  {
+   "zh": "小型格里米尔矿床",
+   "factionId": 500021
+  }
+ ],
+ "Small Nocxite Deposit": [
+  {
+   "zh": "小型诺克希特矿床",
+   "factionId": 500021
+  }
+ ],
+ "Small Hezorime Deposit": [
+  {
+   "zh": "小型赫佐利姆矿床",
+   "factionId": 500021
+  }
+ ],
+ "Small Ueganite Deposit": [
+  {
+   "zh": "小型基腹断岩尤加石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Hrada-Oki Bivouac": [
+  {
+   "zh": "赫拉达·奥基营地",
+   "factionId": 500029
+  }
+ ],
+ "Mercenary Den Test 1": [
+  {
+   "zh": "雇佣兵巢穴测试1",
+   "factionId": 500021
+  }
+ ],
+ "Mercenary Meeting Point": [
+  {
+   "zh": "雇佣兵会合点",
+   "factionId": 500021
+  }
+ ],
+ "Rogue Drone Emergence": [
+  {
+   "zh": "自由无人机出现",
+   "factionId": 500021
+  }
+ ],
+ "Drifter Muster": [
+  {
+   "zh": "流浪者集结",
+   "factionId": 500021
+  }
+ ],
+ "Sansha Raiding Party": [
+  {
+   "zh": "萨沙突袭队",
+   "factionId": 500019
+  }
+ ],
+ "QA NPC Dreadnought Exploit Test": [
+  {
+   "zh": "QA NPC无畏舰开发测试",
+   "factionId": 500011
+  }
+ ],
+ "Deathless Trustbreaker Under Attack": [
+  {
+   "zh": "不死循环弃信者正在遭受攻击",
+   "factionId": 500021
+  }
+ ],
+ "Crisis: Lancer Counter Offensive": [
+  {
+   "zh": "危机：枪骑兵反击",
+   "factionId": 500024
+  }
+ ],
+ "Crisis Resolution: Vigilant Dreamer": [
+  {
+   "zh": "解除危机：警惕级逐梦者",
+   "factionId": 500024
+  }
+ ],
+ "Crisis: Field Rescue": [
+  {
+   "zh": "危机：战地救援",
+   "factionId": 500024
+  }
+ ],
+ "Crisis: Deathless Research Outpost": [
+  {
+   "zh": "危机：永生者研究哨站",
+   "factionId": 500024
+  }
+ ],
+ "Reckoning: Sleeper Forge": [
+  {
+   "zh": "估算：冬眠者锻造",
+   "factionId": 500024
+  }
+ ],
+ "Reckoning: Labyrinth Complex": [
+  {
+   "zh": "Maze (DO NOT TRANSLATE)",
+   "factionId": 500024
+  }
+ ],
+ "Large Veldspar Deposit": [
+  {
+   "zh": "大型凡晶石矿床",
+   "factionId": null
+  }
+ ],
+ "Large Mordunium Deposit": [
+  {
+   "zh": "大型莫德合金矿床",
+   "factionId": 500021
+  }
+ ],
+ "Enormous Mercoxit Deposit": [
+  {
+   "zh": "大型基腹断岩矿床",
+   "factionId": 500021
+  }
+ ],
+ "Large Kylixium Deposit": [
+  {
+   "zh": "大型克里石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Large Griemeer Deposit": [
+  {
+   "zh": "大型格里米尔矿床",
+   "factionId": 500021
+  }
+ ],
+ "Warden Relay-Chainers": [
+  {
+   "zh": "典狱长中继链",
+   "factionId": 500029
+  }
+ ],
+ "Reckoning: Sleeper Foundry": [
+  {
+   "zh": "估算：冬眠者铸造厂",
+   "factionId": 500024
+  }
+ ],
+ "Large Nocxite Deposit": [
+  {
+   "zh": "大型诺克希特矿床",
+   "factionId": 500021
+  }
+ ],
+ "Large Hezorime Deposit": [
+  {
+   "zh": "大型赫佐利姆矿床",
+   "factionId": 500021
+  }
+ ],
+ "Large Ueganite Deposit": [
+  {
+   "zh": "大型尤加石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Reckoning: Nexus Point": [
+  {
+   "zh": "估算：关联节点",
+   "factionId": 500024
+  }
+ ],
+ "Emergent Ruins": [
+  {
+   "zh": "新生废墟",
+   "factionId": 500021
+  }
+ ],
+ "Interrupted Expedition": [
+  {
+   "zh": "中断的远征",
+   "factionId": 500021
+  }
+ ],
+ "Escalation Test 5 - Relic and Data escalation sites": [
+  {
+   "zh": "远征测试5 - 遗迹和数据远征地点",
+   "factionId": 500011
+  }
+ ],
+ "Small Tyranite Deposit": [
+  {
+   "zh": "小型泰拉石矿床",
+   "factionId": 500024
+  }
+ ],
+ "Tyranite Deposit": [
+  {
+   "zh": "泰拉石矿床",
+   "factionId": 500024
+  }
+ ],
+ "Republic Fleet Liberation Outpost": [
+  {
+   "zh": "共和舰队独立哨站",
+   "factionId": 500002
+  }
+ ],
+ "Caldari Navy Eyrie Redoubt": [
+  {
+   "zh": "加达里海军鹰巢堡垒",
+   "factionId": 500001
+  }
+ ],
+ "Imperial Navy Vidette Sanctuary": [
+  {
+   "zh": "帝国海军维德特避难会",
+   "factionId": 500003
+  }
+ ],
+ "Secure Sentinel Fortification": [
+  {
+   "zh": "安全的哨兵防御工事",
+   "factionId": 500027
+  }
+ ],
+ "Azdaja Counter Domain": [
+  {
+   "zh": "阿兹达加反攻星域",
+   "factionId": 500026
+  }
+ ],
+ "Wrath: Locus Point": [
+  {
+   "zh": "怒焰：定位节点",
+   "factionId": 500024
+  }
+ ],
+ "Wrath: Labyrinth Complex": [
+  {
+   "zh": "怒焰：迷宫复合体",
+   "factionId": 500024
+  }
+ ],
+ "Class 2 Hollow Outbreak": [
+  {
+   "zh": "二类空洞爆发",
+   "factionId": 500021
+  }
+ ],
+ "GREAD4": [
+  {
+   "zh": "GREAD4",
+   "factionId": 500021
+  }
+ ],
+ "GREAD5": [
+  {
+   "zh": "GREAD5",
+   "factionId": 500021
+  }
+ ],
+ "Caldari Scout ADV-1": [
+  {
+   "zh": "加达里侦察ADV-1",
+   "factionId": 500001
+  }
+ ],
+ "Amarr Scout ADV-1": [
+  {
+   "zh": "艾玛侦察ADV-1",
+   "factionId": 500003
+  }
+ ],
+ "Gallente Scout ADV-1": [
+  {
+   "zh": "盖伦特侦察ADV-1",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Scout ADV-1": [
+  {
+   "zh": "米玛塔尔侦察ADV-1",
+   "factionId": 500002
+  }
+ ],
+ "Harvest Zombie Site 2": [
+  {
+   "zh": "僵尸收割地点2",
+   "factionId": 500012
+  }
+ ],
+ "Tetrimon Garrison": [
+  {
+   "zh": "特里蒙要塞",
+   "factionId": 500003
+  }
+ ],
+ "Crimson Harvest Sanctuary": [
+  {
+   "zh": "血色收割避难会",
+   "factionId": 500012
+  }
+ ],
+ "Class 3 Hollow Origin": [
+  {
+   "zh": "三类空洞起源",
+   "factionId": 500021
+  }
+ ],
+ "Class 1 Hollow Outbreak": [
+  {
+   "zh": "一类空洞爆发",
+   "factionId": 500021
+  }
+ ],
+ "Deathless Wraith Trader": [
+  {
+   "zh": "不死幽魂贸易官",
+   "factionId": 500027
+  }
+ ],
+ "Phased Field Prototype": [
+  {
+   "zh": "相位矿带原型",
+   "factionId": 500021
+  }
+ ],
+ "QA Test Dungeon Hidden Asteroid Belt": [
+  {
+   "zh": "QA测试死亡空间隐藏小行星带",
+   "factionId": 500021
+  }
+ ],
+ "Phased Field": [
+  {
+   "zh": "相位矿带",
+   "factionId": 500021
+  }
+ ],
+ "Phased Fields - Development": [
+  {
+   "zh": "相位矿带 - 研发",
+   "factionId": 500021
+  }
+ ],
+ "Republic Managed Asteroid Belt": [
+  {
+   "zh": "共和国管理的小行星带",
+   "factionId": 500002
+  },
+  {
+   "zh": "共和国管理的小行星带",
+   "factionId": 500002
+  }
+ ],
+ "Imperial Managed Asteroid Belt": [
+  {
+   "zh": "帝国管理的小行星带",
+   "factionId": 500003
+  },
+  {
+   "zh": "帝国管理的小行星带",
+   "factionId": 500003
+  }
+ ],
+ "State Managed Asteroid Belt": [
+  {
+   "zh": "合众国管理的小行星带",
+   "factionId": 500001
+  },
+  {
+   "zh": "合众国管理的小行星带",
+   "factionId": 500001
+  }
+ ],
+ "Federation Managed Asteroid Belt": [
+  {
+   "zh": "联邦管理的小行星带",
+   "factionId": 500004
+  },
+  {
+   "zh": "联邦管理的小行星带",
+   "factionId": 500004
+  }
+ ],
+ "Hidden Omber Deposit": [
+  {
+   "zh": "隐藏的奥贝尔石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Shrouded Asteroid Field": [
+  {
+   "zh": "被掩盖的小行星带",
+   "factionId": 500021
+  }
+ ],
+ "Escalation Test 4 - Shrouded Asteroid Field": [
+  {
+   "zh": "远征测试4 - 被掩盖的小行星带",
+   "factionId": 500021
+  }
+ ],
+ "Veiled Asteroid Field": [
+  {
+   "zh": "隐秘的小行星带",
+   "factionId": 500021
+  }
+ ],
+ "Hidden Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "隐藏的黑赭石和片麻岩矿床",
+   "factionId": 500021
+  }
+ ],
+ "Hidden Gneiss Deposit": [
+  {
+   "zh": "隐藏的片麻岩矿床",
+   "factionId": 500021
+  }
+ ],
+ "Hidden Crokite, Dark Ochre and Gneiss Deposit": [
+  {
+   "zh": "隐藏的克洛基石、黑赭石和片麻岩矿床",
+   "factionId": 500021
+  }
+ ],
+ "Hidden Crokite and Dark Ochre Deposit": [
+  {
+   "zh": "隐藏的克洛基石和黑赭石矿床",
+   "factionId": 500021
+  }
+ ],
+ "Rampant Drone Fabricator": [
+  {
+   "zh": "猖獗无人机巢穴",
+   "factionId": 500025
+  }
+ ],
+ "ORE Managed Asteroid Belt": [
+  {
+   "zh": "受ORE管理的小行星带",
+   "factionId": 500014
+  }
+ ],
+ "Amarr Moderate NVY-3": [
+  {
+   "zh": "艾玛中型NVY-3",
+   "factionId": 500003
+  }
+ ],
+ "Caldari Moderate NVY-3": [
+  {
+   "zh": "加达里中型NVY-3",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Moderate NVY-3": [
+  {
+   "zh": "盖伦特中型NVY-3",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Moderate NVY-3": [
+  {
+   "zh": "米玛塔尔中型NVY-3",
+   "factionId": 500002
+  }
+ ],
+ "Asteroid Belt": [
+  {
+   "zh": "小行星带",
+   "factionId": 500021
+  },
+  {
+   "zh": "小行星带",
+   "factionId": 500021
+  },
+  {
+   "zh": "小行星带",
+   "factionId": 500021
+  }
+ ],
+ "Imperial Raspite Reserve": [
+  {
+   "zh": "帝国斜钨铅矿储备",
+   "factionId": 500003
+  }
+ ],
+ "Raspite Deposit Tier2": [
+  {
+   "zh": "斜钨铅矿矿床等级2",
+   "factionId": null
+  }
+ ],
+ "State Polycrase Reserve": [
+  {
+   "zh": "合众国复稀金矿储备",
+   "factionId": 500001
+  }
+ ],
+ "Federal Moissanite Reserve": [
+  {
+   "zh": "联邦碳硅石储备",
+   "factionId": 500004
+  }
+ ],
+ "Republic Kangite Reserve": [
+  {
+   "zh": "共和国钪原矿储备",
+   "factionId": 500002
+  }
+ ],
+ "Amarr Scout BSC-1": [
+  {
+   "zh": "艾玛侦察BSC-1",
+   "factionId": 500003
+  }
+ ],
+ "Caldari Scout BSC-1": [
+  {
+   "zh": "加达里侦察BSC-1",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Scout BSC-1": [
+  {
+   "zh": "盖伦特侦察BSC-1",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Scout BSC-1": [
+  {
+   "zh": "米玛塔尔侦察BSC-1",
+   "factionId": 500002
+  }
+ ],
+ "Contested Sanctified FRF ELT-5": [
+  {
+   "zh": "争夺中的圣域野战研究设施ELT-10",
+   "factionId": 500003
+  }
+ ],
+ "Campaign Trail Starting Line": [
+  {
+   "zh": "竞选之路起始线",
+   "factionId": 500004
+  }
+ ],
+ "Contested Eyrie FRF ELT-5": [
+  {
+   "zh": "争夺中的鹰巢野战研究设施ELT-10",
+   "factionId": 500001
+  }
+ ],
+ "Contested Rogue FRF ELT-5": [
+  {
+   "zh": "争夺中的游侠野战研究设施ELT-10",
+   "factionId": 500004
+  }
+ ],
+ "Contested Liberated FRF ELT-5": [
+  {
+   "zh": "争夺中的解放野战研究设施ELT-10",
+   "factionId": 500002
+  }
+ ],
+ "Amarr Small Interceptor-1": [
+  {
+   "zh": "艾玛小型截击舰 -1",
+   "factionId": 500003
+  }
+ ],
+ "Caldari Small Interceptor-1": [
+  {
+   "zh": "加达里小型截击舰 -1",
+   "factionId": 500001
+  }
+ ],
+ "Gallente Small Interceptor-1": [
+  {
+   "zh": "盖伦特小型截击舰 -1",
+   "factionId": 500004
+  }
+ ],
+ "Minmatar Small Interceptor-1": [
+  {
+   "zh": "米玛塔尔小型截击舰 -1",
+   "factionId": 500002
+  }
+ ],
+ "Warpath: War Grid": [
+  {
+   "zh": "战争之路：战争网格",
+   "factionId": null
+  }
+ ],
+ "AIR Epic Arc - Minmatar": [
+  {
+   "zh": "星空会剧情任务 - 米玛塔尔",
+   "factionId": 500002
+  }
+ ],
+ "Warpath: Capital Mayday": [
+  {
+   "zh": "战争之路：旗舰救援",
+   "factionId": null
+  }
+ ],
+ "Warpath: Defense Complex": [
+  {
+   "zh": "战争之路：防御复合体",
+   "factionId": 500021
+  }
+ ],
+ "Warpath: Defense Grid": [
+  {
+   "zh": "战争之路：防御网格",
+   "factionId": 500021
+  }
+ ],
+ "POI: Nemesis Test Center": [
+  {
+   "zh": "目标点：纳美西斯级测试中心",
+   "factionId": null
+  }
+ ],
+ "POI: AEGIS Security Platform": [
+  {
+   "zh": "目标点：统合部紧急干预和安全局安保平台",
+   "factionId": null
+  }
+ ],
+ "AEGIS Joint Operation Center": [
+  {
+   "zh": "统合部紧急干预和安全局联合行动中心",
+   "factionId": 500027
+  }
+ ],
+ "Nemesis Command Outpost": [
+  {
+   "zh": "纳美西斯级指挥哨站",
+   "factionId": null
+  }
+ ],
+ "Upwell Wreckage": [
+  {
+   "zh": "昇威残骸",
+   "factionId": null
+  }
+ ],
+ "Angel Moderate Outpost Raid ADV-3": [
+  {
+   "zh": "天使中型哨站突袭ADV-3",
+   "factionId": 500011
+  }
+ ],
+ "Guristas Moderate Outpost Raid ADV-3": [
+  {
+   "zh": "古斯塔斯中型哨站突袭ADV-3",
+   "factionId": 500010
+  }
+ ],
+ "Criterion of Fitness": [
+  {
+   "zh": "适应性标准",
+   "factionId": 500026
+  }
+ ]
+}

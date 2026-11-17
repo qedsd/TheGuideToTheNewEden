@@ -1,0 +1,122 @@
+[
+ {
+  "sdeKey": 11077,
+  "en": "Drone Capital Hive",
+  "zh": "无人机旗舰机巢",
+  "descZh": "这里原本是联合矿业的一个集结地点，现在已经被无人机占据。现场检测到多架与旗舰实力相当的无人机。",
+  "descEn": "Originally an ORE staging site, this has been overrun by a Drone infestation. Multiple capital-strength drones have been detected.",
+  "factionId": 500021,
+  "faction": 0,
+  "kind": "hive"
+ },
+ {
+  "sdeKey": 11020,
+  "en": "Drone Infested Starbase",
+  "zh": "无人机侵袭的母星",
+  "descZh": "由天使控制的护盾加强母星。建议使用旗舰突袭这个难以攻破的营地。",
+  "descEn": "A shielded starbase controlled by the Angel Cartel. It is recommended that this entrenched encampment be assaulted using capital ships.",
+  "factionId": 500021,
+  "faction": 0,
+  "kind": "infested"
+ },
+ {
+  "sdeKey": 11072,
+  "en": "Serpentis Capital Staging",
+  "zh": "天蛇旗舰集结地",
+  "descZh": "重新装配和维护天蛇旗舰的地点。现场检测到多艘旗舰。",
+  "descEn": "A refitting and maintenance site for Serpentis capital ships. Multiple capitals have been detected on site.",
+  "factionId": 500020,
+  "faction": 1,
+  "kind": "staging"
+ },
+ {
+  "sdeKey": 11019,
+  "en": "Serpentis Shielded Starbase",
+  "zh": "天蛇护盾加强母星",
+  "descZh": "由天使控制的护盾加强母星。建议使用旗舰突袭这个难以攻破的营地。",
+  "descEn": "A shielded starbase controlled by the Angel Cartel. It is recommended that this entrenched encampment be assaulted using capital ships.",
+  "factionId": 500020,
+  "faction": 1,
+  "kind": "starbase"
+ },
+ {
+  "sdeKey": 11069,
+  "en": "Blood Raider Capital Staging",
+  "zh": "血袭者旗舰集结地",
+  "descZh": "重新装配和维护血袭者旗舰的地点。现场检测到多艘旗舰。",
+  "descEn": "A refitting and maintenance site for Blood Raider capital ships. Multiple capitals have been detected on site.",
+  "factionId": 500012,
+  "faction": 2,
+  "kind": "staging"
+ },
+ {
+  "sdeKey": 11013,
+  "en": "Blood Shielded Starbase",
+  "zh": "血袭者护盾加强母星",
+  "descZh": "由血袭者控制的护盾加强母星。建议使用旗舰突袭这个难以攻破的营地。",
+  "descEn": "A shielded starbase controlled by the Blood Raiders. It is recommended that this entrenched encampment be assaulted using capital ships.",
+  "factionId": 500012,
+  "faction": 2,
+  "kind": "starbase"
+ },
+ {
+  "sdeKey": 11079,
+  "en": "Sansha Capital Staging",
+  "zh": "萨沙旗舰集结地",
+  "descZh": "重新装配和维护萨沙旗舰的地点。现场检测到多艘旗舰。",
+  "descEn": "A refitting and maintenance site for Sansha capital ships. Multiple capitals have been detected on site.",
+  "factionId": 500019,
+  "faction": 3,
+  "kind": "staging"
+ },
+ {
+  "sdeKey": 11018,
+  "en": "Sansha Shielded Starbase",
+  "zh": "萨沙护盾加强母星",
+  "descZh": "由萨沙国控制的护盾加强母星。建议使用旗舰突袭这个难以攻破的营地。",
+  "descEn": "A shielded starbase controlled by the Sansha’s Nation. It is recommended that this entrenched encampment be assaulted using capital ships.",
+  "factionId": 500019,
+  "faction": 3,
+  "kind": "starbase"
+ },
+ {
+  "sdeKey": 10689,
+  "en": "Angel Capital Staging",
+  "zh": "天使旗舰集结地",
+  "descZh": "重新装配和维护天使旗舰的地点。现场检测到多艘旗舰。",
+  "descEn": "A refitting and maintenance site for Angel capital ships. Multiple capitals have been detected on site.",
+  "factionId": 500011,
+  "faction": 4,
+  "kind": "staging"
+ },
+ {
+  "sdeKey": 10672,
+  "en": "Angel Shielded Starbase",
+  "zh": "天使护盾加强母星",
+  "descZh": "由天使控制的护盾加强母星。建议使用旗舰突袭这个难以攻破的营地。",
+  "descEn": "A shielded starbase controlled by the Angel Cartel. It is recommended that this entrenched encampment be assaulted using capital ships.",
+  "factionId": 500011,
+  "faction": 4,
+  "kind": "starbase"
+ },
+ {
+  "sdeKey": 11071,
+  "en": "Guristas Capital Staging",
+  "zh": "古斯塔斯旗舰集结地",
+  "descZh": "重新装配和维护古斯塔斯旗舰的地点。现场检测到多艘旗舰。",
+  "descEn": "A refitting and maintenance site for Guristas capital ships. Multiple capitals have been detected on site.",
+  "factionId": 500010,
+  "faction": 5,
+  "kind": "staging"
+ },
+ {
+  "sdeKey": 11015,
+  "en": "Guristas Shielded Starbase",
+  "zh": "古斯塔斯护盾加强母星",
+  "descZh": "由古斯塔斯海盗控制的护盾加强母星。建议使用旗舰突袭这个难以攻破的营地。",
+  "descEn": "A shielded starbase controlled by Guristas Pirates. It is recommended that this entrenched encampment be assaulted using capital ships.",
+  "factionId": 500010,
+  "faction": 5,
+  "kind": "starbase"
+ }
+]

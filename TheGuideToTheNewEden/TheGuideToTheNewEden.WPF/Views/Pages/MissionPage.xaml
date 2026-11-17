@@ -118,6 +118,7 @@
 
                 <Grid>
                     <controls:MarkdownPresenter
+                        BaseFontSize="16"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Markdown="{Binding ContentText, Mode=OneWay}" />
 
