@@ -1,4 +1,4 @@
-# TheGuideToTheNewEden.WPF 重构与更新记录
+﻿# TheGuideToTheNewEden.WPF 重构与更新记录
 - 阶段 351：死亡远征攻略补全——新增 `CombatSite` 表（379 条：DED 评级 50 / 无评级 74 / 远征 76 / 战斗异常 126 / 化学实验室 34 / 遗迹 6 / 三神裔 9 / 特殊 4），wiki 正文全量中文化；DED 页加「分类 / 势力 / 难度」筛选与「社区攻略 / Wiki 数据」双页签；`ded_info` 工具支持分类；删掉死文件 `ded.db`；语言键 +17。
 > 本文档记录 WinUI 3 → WPF 迁移过程中的**全部重构决策与每一次更新**，包含背景、方案、变更明细、问题根因、验证结果与已知限制。
 > 起点：对 WinUI 3 项目做"重构为 WPF"的可行性评估；终点：WPF 版已具备导航框架、完整设置模块、角色功能（授权 + 数据层 + 7 个子页）。
@@ -12777,6 +12777,78 @@ build_sites.py   组装 + 渲染中文 Markdown + 写 static.db（--write-db）
 - SDE 查不到的实体名（废弃建筑 / 加速轨道）保留英文；界面不混排中英时会略显突兀。
 - 归类的"无评级 vs 远征"用 wiki 名称表判定（文本启发式实测只有 62/65/11，不可靠），
   以后新增站点必须补进 `index.json` 才会被正确归类。
+
+## 阶段 352：新增独立功能「攻略 · 异常」（异常 → DED / 旗舰远征 关系表）（2026-11-17）
+
+> 需求演进：先在死亡远征页里加了个「对照表」开关（阶段 352 初版），用户看了之后要求**拆成独立功能**——
+> 异常单独一页，死亡远征保持原样。本节记录最终形态，初版那个开关已经撤掉。
+
+- **新页面** `Views/Pages/AnomalyPage.xaml` + `ViewModels/AnomalyPageViewModel.cs`，只查 `Category = Anomaly` 的 126 条。
+  - **一整张全宽表格**（`ui:DataGrid`，6 列）：中文名 / 英文名 / 难度 / 势力 / **可升级为** / 出现空间；
+    不做左右分栏——用户要的是"一眼看全"，不是又一个阅读器。
+  - 筛选在卡片**右上角**：搜索框（中英文名，350ms 防抖）+ 势力 + 档位，筛完结果整表铺满（不分页）。
+  - 「可升级为」列：有目标 = **可点的蓝字**（`沙沙司令部（3/10）`），没有 = 灰色原文（`8/10`、`?`）；
+    点蓝字或双击整行都跳「死亡远征」。行是 `AnomalyRow`，目标文案由 `CombatSiteTagConverter.TagOf` 拼徽标，
+    与列表、AI 工具共用同一套口径。
+- **跳转**：`Navigation.NavigateToCombatSite(siteId)`（新的静态入口）→ 切到死亡远征页 →
+  该页每次 `Loaded` 取走 `TakePendingCombatSite()` → `DEDPageViewModel.SelectSiteAsync(id)`。
+  这里复用「快速链接」那套"待办 + 每次 Loaded 消费"的做法，因为两个页面都是常驻缓存的。
+- **关键坑（第二次踩）**：`SelectSiteAsync` 不能只把 `Selected` 指过去——列表是 `ListBox.SelectedItem`
+  双向绑定，选中项不在 `Items` 里时 WPF 会把绑定值清回 null、右侧正文立刻空白。
+  所以先把筛选重置成"全部分类 / 全部势力"再 `ReloadAsync(preferId)` 按 Id 选中。
+- **数据：新增 `CombatSite.EscalationId`**（`int`，0 = 无目标）。为什么不用中文名反查：
+  这一轮把 175 条中文名换成了 SDE 官方名（`血袭者精神药品仓库` → `血袭者精神药物仓库`），
+  按名字匹配会**悄悄失效**。构建期改用 **wiki 页名** 匹配（`WikiTitle` → `Id`），改名不影响。
+  - 结果：126 条异常里 **78 条**有可点目标（63 条 DED 评级 + 12 条无评级/舰队集结点 + **3 条旗舰远征**）。
+  - **旗舰远征反向链接**：`Serpentis Hidden Rally Point → Serpentis Capital Staging`、
+    `Serpentis Hub → Serpentis Shielded Starbase`、`Drone Herd → Drone Infested Starbase`。
+    这 3 条在 wiki 上的超链接其实指向别的页（"5/10 Infested Starbase" 的链接挂在 `Outgrowth_Rogue_Drone_Hive_(5/10)` 上，
+    `Serpentis Hub` 的挂在 `Serpentis_Prison_Camp` 上），按**格子文字**判定才是对的，所以用
+    `CAPITAL_SOURCE_SITE`（旗舰英文名 → 来源异常英文名）硬绑，不用 wiki 的 link。
+  - 剩下 48 条没有目标：wiki 就只写了 `8/10`、`?` 这类档位，没有指向任何站点，界面显示一行黄色说明。
+- **死亡远征页还原**：撤掉顶部「对照表」开关与那张汇总卡，恢复「左列表 + 右正文」；
+  只保留两处不碍事的改动（`ReloadAsync(preferId)` 与 `SelectSiteAsync`，供异常页跳转）。
+- **导航**：`攻略` 组下新增「异常」（`Nav.Anomaly`，图标 `NavIcon.anomaly`——暂时复用死亡远征同族图形，
+  等有专属图标再换）；`ManualToolMap` 登记 `guides/anomaly`；新增手册 `Resources/Manuals/zh-CN/guides/anomaly.md`。
+- **主页磁贴**：`HomeFeatureCatalog` 里加了一条 `anomaly`（`SymbolRegular.Scan24`，分组 `Nav.Guides`），简介 `Home.Feature.AnomalyDesc`；磁贴 id 与已有 48 条不重复。
+- **第二轮修订（用户反馈）**：
+  - 中文名**去掉难度后缀**：新增 `Converters/CombatSiteNameConverter`，把 `（难度1）`（SDE 官方名自带）与
+    `（T1·1）`（构建期消重后缀）在**显示层**剥掉；库里的 `TitleCN` 保持官方原名（AI 工具/搜索/导出都要原名）。
+    死亡远征页的列表与右卡标题也一起用了它（两页口径一致）。评级后缀 `（7/10）`/`（无评级）` 不剥——那是评级不是难度。
+  - 「可升级为」列改名 **「远征」**（`AnomalyPage_ColTarget`），与用户心智一致。
+  - **异常自己也能跳**：中文名做成可点蓝字 → 打开该异常的详细页（`OpenSelf`）；「远征」列蓝字仍跳到升级目标；
+    双击整行 = 打开异常自己（原来的双击是跳目标，改掉了）。
+  - 去掉底部那行操作提示，只留「共 N 个异常」；`AnomalyPage_Hint` 键随之中英各删一条。
+- **顺手清掉**：`CoreInitializer` 里那行 `Config.DEDDBPath = ...ded.db`（文件已删，`Config.InitDb` 里对应初始化本来就被注释掉了）。
+- **验证**：
+  - 探针 **9/9 PASS**：两个页面都能构造（XAML 解析 + `StaticResource`）、DataContext 正确、
+    `NavIcon.anomaly` / `Nav.Anomaly` / `AnomalyPage_*` / `DEDPage_CapTag` 资源键全部命中。
+  - 资源键静态审计：AnomalyPage / DEDPage 各 18 个引用，未命中本地字典的只有 4 个 WPF-UI 主题刷子（改动前就在用）。
+  - 语言键：中英各 **3637**、集合一致。
+  - 数据：126 条异常 / 78 条可点目标 / 目标类别分布 63+12+3，与 SQL 直接核对一致。
+  - `dotnet build`：0 错误。
+
+## 阶段 353：重画「异常」「死亡远征」两枚导航图标（2026-11-17）
+
+> 阶段 352 里异常是**借用**死亡远征的图标（同一个 img），两个功能在左侧导航里挨着，看起来像重复项。
+> 这一轮按各自的玩法语义重画：异常 = 扫描出的信号，死亡远征 = 被封在力场里的危险站点。
+
+- **异常**（`nav_anomaly.svg`，青 `#22D3EE`）：一段 3/4 的**扫描弧** + 三个由大到小的**信号点**（大号浅青 `#A5F3FC`、
+  中号主色、小号 `#67E8F9`），读作"探针扫到多个信号"。刻意不用同心圆（那是虫洞/星图的语汇）。
+- **死亡远征**（`nav_ded.svg`，玫红 `#F43F5E`）：**六边形力场罩** + 内嵌**实心三角**（浅玫红 `#FDA4AF`），
+  读作"被封在力场里、里面有东西"。换掉了原来的"鬼脸"（轮廓太像头像，容易和「角色」图标撞）。
+  中途试过两版都被否：① 六边形+警示三角**+中心暗点**——那个点让三角像"眼睛"；② 力场格栅+加速门环
+  （四条发射器 + 空心椭圆环）——**元素太多**，20px 下接近一团。最终就是**两个形状**：六边形框 + 实心三角，
+  去掉芯点，最干净。
+- **工艺**：改的是生成器 `design/branding/icons/_gen_icons.py` 里两条定义，然后
+  `python icons/_gen_icons.py` → `python _svg_to_wpf_icons.py`。
+  但生成器**会重排全部 40+ 枚图标**的 XML（Pen 折行、属性顺序），diff 直接变成 600+ 行格式噪音，
+  所以新增 `design/branding/_splice_nav_icons.py`：把新产出的两段 `DrawingImage` 拼回**原格式**文件，
+  其余字节不动——本次 `NavIcons.xaml` diff 只有 **34 增 / 18 删**，全在这两枚图标上。
+- `_svg_to_wpf_icons.py` 的 `ORDER` 里补了 `("anomaly", "异常")`（此前只在 ICons 列表里，没进 ORDER，生成时会漏掉）。
+- **验证**：两枚图标各自渲染成 PNG（20/24/32/64/128px 五档、亮/暗两套底色）目检通过；
+  对比图留在 `design/branding/icons/preview/pair.png`。`dotnet build` 0 错误。
+
 
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：

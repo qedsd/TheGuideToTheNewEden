@@ -145,6 +145,8 @@ public static class HomeFeatureCatalog
             "Home.Feature.TranslationLocalDesc", HomeFeatureKind.Page, typeof(Views.Pages.LocalTranslationPage)),
 
         // ---------- 攻略 ----------
+        new("anomaly", SymbolRegular.Scan24, "anomaly", "Nav.Anomaly", "Nav.Guides",
+            "Home.Feature.AnomalyDesc", HomeFeatureKind.Page, typeof(Views.Pages.AnomalyPage)),
         new("ded", SymbolRegular.DataSunburst24, "ded", "Nav.DED", "Nav.Guides",
             "Home.Feature.DedDesc", HomeFeatureKind.Page, typeof(Views.Pages.DEDPage)),
         new("mission", SymbolRegular.DocumentOnePage24, "mission", "Nav.Mission", "Nav.Guides",

@@ -11,16 +11,17 @@
 
     <!--
         「攻略 · 死亡远征」页。
-        · 数据：Core/CombatSiteService → Resources/Database/static.db 的 CombatSite 表（379 条）。
+        · 数据：Core/CombatSiteService → Resources/Database/static.db 的 CombatSite 表（391 条）。
         · 左卡 = 搜索 + 列表 + 三个筛选（分类 / 势力 / 难度，难度随分类重建）；
-        · 右卡 = 标题 + 元信息行 + 正文（社区攻略 / Wiki 数据 双页签，只有一侧有内容时不显示页签栏）。
-        · 正文是 Markdown，用自写的 Controls/MarkdownPresenter 渲染（无新增依赖）。
-        · 页面内不显示大标题（左侧导航已高亮当前页，见 REFACTORING.md §10「UI 约定」）。
+          右卡 = 标题 + 元信息 + 正文（社区攻略 / Wiki 数据 双页签）。
+        · 「异常 → DED」的升级关系表在隔壁「攻略 · 异常」页，那边点目标会跳回本页并选中。
+        · 页内不显示大标题（左侧导航已高亮当前页，见 REFACTORING.md §10「UI 约定」）。
     -->
     <Page.Resources>
         <converters:DEDTypeConverter x:Key="DEDType" />
         <converters:CombatSiteCategoryConverter x:Key="SiteCategory" />
         <converters:CombatSiteTagConverter x:Key="SiteTag" />
+        <converters:CombatSiteNameConverter x:Key="SiteName" />
         <converters:NullToVisibilityConverter x:Key="NullToVis" />
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -42,7 +43,7 @@
                     Grid.Row="1"
                     Margin="0,2,0,0"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="{Binding TitleCN}"
+                    Text="{Binding TitleCN, Converter={StaticResource SiteName}}"
                     TextWrapping="Wrap" />
 
                 <Grid Grid.Row="2" Margin="0,2,0,0">
@@ -75,166 +76,168 @@
     </Page.Resources>
 
     <Grid Margin="12">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="340" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="340" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <!--  左：搜索 + 列表 + 筛选  -->
-        <controls:CardControl>
-            <controls:CardControl.Header>
-                <!--  标题带里的 TextElement 是 SemiBold，搜索框显式用常规字重  -->
-                <ui:TextBox
-                    Margin="0,6"
-                    FontWeight="Normal"
-                    PlaceholderText="{DynamicResource DEDPage_SearchTip}"
-                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-            </controls:CardControl.Header>
-
-            <Grid>
-                <ListBox
-                    x:Name="DEDList"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    ItemContainerStyle="{StaticResource StretchListItem}"
-                    ItemTemplate="{StaticResource DEDItemTemplate}"
-                    ItemsSource="{Binding Items}"
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    SelectedItem="{Binding Selected, Mode=TwoWay}"
-                    VirtualizingStackPanel.IsVirtualizing="True"
-                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
-
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{DynamicResource DEDPage_Empty}"
-                    TextAlignment="Center"
-                    TextWrapping="Wrap"
-                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
-            </Grid>
-
-            <controls:CardControl.Footer>
-                <StackPanel HorizontalAlignment="Stretch">
-                    <ComboBox
-                        Margin="0,0,0,6"
-                        HorizontalAlignment="Stretch"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding CategoryOptions}"
-                        SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
-
-                    <ComboBox
-                        Margin="0,0,0,6"
-                        HorizontalAlignment="Stretch"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding FactionOptions}"
-                        SelectedItem="{Binding SelectedFaction, Mode=TwoWay}" />
-
-                    <ComboBox
-                        Margin="0,0,0,6"
-                        HorizontalAlignment="Stretch"
-                        DisplayMemberPath="Label"
-                        ItemsSource="{Binding LevelOptions}"
-                        SelectedItem="{Binding SelectedLevel, Mode=TwoWay}"
-                        Visibility="{Binding IsLevelFilterVisible, Converter={StaticResource BoolToVis}}" />
-
-                    <TextBlock
-                        Margin="0,2,0,0"
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{Binding StatusText}" />
-                </StackPanel>
-            </controls:CardControl.Footer>
-        </controls:CardControl>
-
-        <!--  右：标题 + 元信息 + 正文  -->
-        <Grid Grid.Column="1" Margin="12,0,0,0">
-            <controls:CardControl Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
+            <!--  左：搜索 + 列表 + 筛选  -->
+            <controls:CardControl>
                 <controls:CardControl.Header>
-                    <StackPanel Margin="0,4">
-                        <!--
-                            头部这几行用 RichTextPresenter 而不是 TextBlock：TextBlock 选不中、复制不了，
-                            而站点名/元信息恰恰是玩家最想复制出去的东西（贴群、贴论坛）。
-                            RichTextPresenter = 只读 RichTextBox，能拖选、Ctrl+C、右键复制，
-                            外观（无边框/透明底/无内边距）在控件构造函数里已经抹平，与 TextBlock 观感一致。
-                        -->
-                        <controls:RichTextPresenter
-                            VerticalAlignment="Top"
-                            FontSize="18"
-                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                            Text="{Binding Selected.TitleEN, Mode=OneWay}"
-                            VerticalScrollBarVisibility="Disabled" />
-                        <controls:RichTextPresenter
-                            Margin="0,2,0,0"
-                            VerticalAlignment="Top"
-                            FontSize="15"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding Selected.TitleCN, Mode=OneWay}"
-                            VerticalScrollBarVisibility="Disabled" />
-                        <controls:RichTextPresenter
-                            Margin="0,6,0,0"
-                            VerticalAlignment="Top"
-                            FontSize="13"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding MetaText, Mode=OneWay}"
-                            VerticalScrollBarVisibility="Disabled" />
-                        <controls:RichTextPresenter
-                            Margin="0,2,0,0"
-                            VerticalAlignment="Top"
-                            FontSize="13"
-                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                            Text="{Binding RelationText, Mode=OneWay}"
-                            VerticalScrollBarVisibility="Disabled"
-                            Visibility="{Binding HasRelation, Converter={StaticResource BoolToVis}}" />
-                    </StackPanel>
+                    <!--  标题带里的 TextElement 是 SemiBold，搜索框显式用常规字重  -->
+                    <ui:TextBox
+                        Margin="0,6"
+                        FontWeight="Normal"
+                        PlaceholderText="{DynamicResource DEDPage_SearchTip}"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
                 </controls:CardControl.Header>
 
                 <Grid>
-                    <!--  两侧都有内容：给页签  -->
-                    <TabControl SelectedIndex="{Binding ContentTabIndex, Mode=TwoWay}" Visibility="{Binding ShowTabStrip, Converter={StaticResource BoolToVis}}">
-                        <TabItem Header="{DynamicResource DEDPage_TabCommunity}">
-                            <controls:MarkdownPresenter
-                                Margin="0,6"
-                                BaseFontSize="16"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Markdown="{Binding Selected.CommunityContent, Mode=OneWay}" />
-                        </TabItem>
-                        <TabItem Header="{DynamicResource DEDPage_TabWiki}">
-                            <controls:MarkdownPresenter
-                                Margin="0,6"
-                                BaseFontSize="16"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Markdown="{Binding Selected.WikiContent, Mode=OneWay}" />
-                        </TabItem>
-                    </TabControl>
-
-                    <!--  只有一侧有内容：直接铺满，不显示页签栏  -->
-                    <controls:MarkdownPresenter
-                        BaseFontSize="16"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Markdown="{Binding EffectiveContent, Mode=OneWay}"
-                        Visibility="{Binding ShowTabStrip, Converter={StaticResource InverseBoolToVis}}" />
+                    <ListBox
+                        x:Name="DEDList"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemContainerStyle="{StaticResource StretchListItem}"
+                        ItemTemplate="{StaticResource DEDItemTemplate}"
+                        ItemsSource="{Binding Items}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        SelectedItem="{Binding Selected, Mode=TwoWay}"
+                        VirtualizingStackPanel.IsVirtualizing="True"
+                        VirtualizingStackPanel.VirtualizationMode="Recycling" />
 
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource DEDPage_NoContent}"
+                        Text="{DynamicResource DEDPage_Empty}"
                         TextAlignment="Center"
                         TextWrapping="Wrap"
-                        Visibility="{Binding ShowNoContent, Converter={StaticResource BoolToVis}}" />
+                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
                 </Grid>
+
+                <controls:CardControl.Footer>
+                    <StackPanel HorizontalAlignment="Stretch">
+                        <ComboBox
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Label"
+                            ItemsSource="{Binding CategoryOptions}"
+                            SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+
+                        <ComboBox
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Label"
+                            ItemsSource="{Binding FactionOptions}"
+                            SelectedItem="{Binding SelectedFaction, Mode=TwoWay}" />
+
+                        <ComboBox
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Label"
+                            ItemsSource="{Binding LevelOptions}"
+                            SelectedItem="{Binding SelectedLevel, Mode=TwoWay}"
+                            Visibility="{Binding IsLevelFilterVisible, Converter={StaticResource BoolToVis}}" />
+
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding StatusText}" />
+                    </StackPanel>
+                </controls:CardControl.Footer>
             </controls:CardControl>
 
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{DynamicResource DEDPage_NoSelection}"
-                TextAlignment="Center"
-                TextWrapping="Wrap"
-                Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}" />
+            <!--  右：标题 + 元信息 + 正文  -->
+            <Grid Grid.Column="1" Margin="12,0,0,0">
+                <controls:CardControl Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
+                    <controls:CardControl.Header>
+                        <StackPanel Margin="0,4">
+                            <!--
+                                头部这几行用 RichTextPresenter 而不是 TextBlock：TextBlock 选不中、复制不了，
+                                而站点名/元信息恰恰是玩家最想复制出去的东西（贴群、贴论坛）。
+                                RichTextPresenter = 只读 RichTextBox，能拖选、Ctrl+C、右键复制，
+                                外观（无边框/透明底/无内边距）在控件构造函数里已经抹平，与 TextBlock 观感一致。
+                            -->
+                            <controls:RichTextPresenter
+                                VerticalAlignment="Top"
+                                FontSize="18"
+                                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                Text="{Binding Selected.TitleEN, Mode=OneWay}"
+                                VerticalScrollBarVisibility="Disabled" />
+                            <controls:RichTextPresenter
+                                Margin="0,2,0,0"
+                                VerticalAlignment="Top"
+                                FontSize="15"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Selected.TitleCN, Converter={StaticResource SiteName}, Mode=OneWay}"
+                                VerticalScrollBarVisibility="Disabled" />
+                            <controls:RichTextPresenter
+                                Margin="0,6,0,0"
+                                VerticalAlignment="Top"
+                                FontSize="13"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding MetaText, Mode=OneWay}"
+                                VerticalScrollBarVisibility="Disabled" />
+                            <controls:RichTextPresenter
+                                Margin="0,2,0,0"
+                                VerticalAlignment="Top"
+                                FontSize="13"
+                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                Text="{Binding RelationText, Mode=OneWay}"
+                                VerticalScrollBarVisibility="Disabled"
+                                Visibility="{Binding HasRelation, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </controls:CardControl.Header>
+
+                    <Grid>
+                        <!--  两侧都有内容：给页签  -->
+                        <TabControl SelectedIndex="{Binding ContentTabIndex, Mode=TwoWay}" Visibility="{Binding ShowTabStrip, Converter={StaticResource BoolToVis}}">
+                            <TabItem Header="{DynamicResource DEDPage_TabCommunity}">
+                                <controls:MarkdownPresenter
+                                    Margin="0,6"
+                                    BaseFontSize="16"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Markdown="{Binding Selected.CommunityContent, Mode=OneWay}" />
+                            </TabItem>
+                            <TabItem Header="{DynamicResource DEDPage_TabWiki}">
+                                <controls:MarkdownPresenter
+                                    Margin="0,6"
+                                    BaseFontSize="16"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Markdown="{Binding Selected.WikiContent, Mode=OneWay}" />
+                            </TabItem>
+                        </TabControl>
+
+                        <!--  只有一侧有内容：直接铺满，不显示页签栏  -->
+                        <controls:MarkdownPresenter
+                            BaseFontSize="16"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Markdown="{Binding EffectiveContent, Mode=OneWay}"
+                            Visibility="{Binding ShowTabStrip, Converter={StaticResource InverseBoolToVis}}" />
+
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource DEDPage_NoContent}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding ShowNoContent, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                </controls:CardControl>
+
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource DEDPage_NoSelection}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}" />
+            </Grid>
         </Grid>
     </Grid>
 </Page>

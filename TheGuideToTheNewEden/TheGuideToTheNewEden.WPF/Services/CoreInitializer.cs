@@ -44,7 +44,6 @@ public static class CoreInitializer
 
         Config.DBPath = Path.Combine(baseDir, "Resources", "Database", "main.db");
         Config.StaticDBPath = Path.Combine(baseDir, "Resources", "Database", "static.db");
-        Config.DEDDBPath = Path.Combine(baseDir, "Resources", "Database", "ded.db");
         Config.CacheDBPath = Path.Combine(SettingsService.DataPath, "Configs", "cache.db");
         Config.RegionMapPath = Path.Combine(baseDir, "Resources", "Configs", "RegionMap.json");
         Config.CapitalJumpShipInfoPath = Path.Combine(baseDir, "Resources", "Configs", "CapitalJumpShipInfo.json");

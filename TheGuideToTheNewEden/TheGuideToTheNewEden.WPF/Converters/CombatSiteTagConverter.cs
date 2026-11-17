@@ -24,12 +24,11 @@ public sealed class CombatSiteTagConverter : IValueConverter
         => Application.Current?.TryFindResource(key) as string ?? fallback;
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is not CombatSite site)
-        {
-            return string.Empty;
-        }
+        => value is CombatSite site ? TagOf(site) : string.Empty;
 
+    /// <summary>徽标文案的**唯一口径**（VM 里拼文本也走这里，别在两处各写一份）。</summary>
+    public static string TagOf(CombatSite site)
+    {
         switch ((CombatSiteCategory)site.Category)
         {
             case CombatSiteCategory.DedRated:
@@ -40,6 +39,9 @@ public sealed class CombatSiteTagConverter : IValueConverter
 
             case CombatSiteCategory.Anomaly:
                 return site.Level > 0 ? $"T{site.Tier}·{site.Level}" : $"T{site.Tier}";
+
+            case CombatSiteCategory.CapitalExpedition:
+                return S("DEDPage_CapTag", "旗舰");
 
             default:
                 // 远征 / 化学实验室 / 遗迹 / 三神裔 / 特殊：列表里左边那行**已经是分类名**，

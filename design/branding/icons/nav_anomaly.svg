@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 异常 · Nav.Anomaly -->
+  <path d="M64 16 A48 48 0 1 1 16 64" fill="none" stroke="#22D3EE" stroke-width="10" stroke-linecap="round"/>
+<circle cx="60" cy="52" r="13" fill="#A5F3FC"/>
+<circle cx="88" cy="76" r="9" fill="#22D3EE"/>
+<circle cx="46" cy="90" r="6" fill="#67E8F9"/>
+</svg>

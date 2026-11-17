@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """生成新伊甸漫游指南导航图标：单文件 sprite + 每个图标独立 svg + 预览页"""
 import os, re
 
@@ -196,11 +196,14 @@ ICONS = [
 <path d="M64 36 V98" stroke="#6366F1" stroke-width="7"/>'''),
 
 # ---- 攻略 ----
+("anomaly", "异常", "Nav.Anomaly", "#22D3EE", '''
+<path d="M64 16 A48 48 0 1 1 16 64" fill="none" stroke="#22D3EE" stroke-width="10" stroke-linecap="round"/>
+<circle cx="60" cy="52" r="13" fill="#A5F3FC"/>
+<circle cx="88" cy="76" r="9" fill="#22D3EE"/>
+<circle cx="46" cy="90" r="6" fill="#67E8F9"/>'''),
 ("ded", "死亡远征", "Nav.DED", "#F43F5E", '''
-<path d="M32 56 C32 34 46 22 66 22 C86 22 100 34 100 56 V70 C100 80 92 86 82 86 H50 C40 86 32 80 32 70 Z" fill="none" stroke="#F43F5E" stroke-width="9" stroke-linejoin="round"/>
-<circle cx="54" cy="58" r="8" fill="#F43F5E"/>
-<circle cx="78" cy="58" r="8" fill="#F43F5E"/>
-<path d="M52 86 V102 M64 86 V102 M76 86 V102" stroke="#F43F5E" stroke-width="8" stroke-linecap="round"/>'''),
+<path d="M64 12 L110 38 V90 L64 116 L18 90 V38 Z" fill="none" stroke="#F43F5E" stroke-width="10" stroke-linejoin="round"/>
+<path d="M64 44 L88 86 H40 Z" fill="#FDA4AF"/>'''),
 
 ("mission", "任务攻略", "Nav.Mission", "#F59E0B", '''
 <path d="M38 16 V112" stroke="#F59E0B" stroke-width="9" stroke-linecap="round"/>

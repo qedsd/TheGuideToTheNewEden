@@ -61,6 +61,7 @@ public static class ManualToolMap
         [typeof(Views.Pages.ChannelTranslationPage)] = "translation/channel",
         [typeof(Views.Pages.LocalTranslationPage)] = "translation/local",
         // 攻略 / 虫洞 / 链接 / 星图
+        [typeof(Views.Pages.AnomalyPage)] = "guides/anomaly",
         [typeof(Views.Pages.DEDPage)] = "guides/ded",
         [typeof(Views.Pages.MissionPage)] = "guides/mission",
         [typeof(Views.Pages.WormholePage)] = "wormhole",

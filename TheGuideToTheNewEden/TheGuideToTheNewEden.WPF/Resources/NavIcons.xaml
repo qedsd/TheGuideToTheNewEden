@@ -1141,6 +1141,30 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
+    <!--  异常  -->
+    <DrawingImage x:Key="NavIcon.anomaly">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.Transform>
+                    <ScaleTransform ScaleX="0.15625" ScaleY="0.15625" />
+                </DrawingGroup.Transform>
+                <!--  透明占位：统一固有尺寸，勿删  -->
+                <GeometryDrawing Brush="Transparent" Geometry="M0 0 H128 V128 H0 Z" />
+                <GeometryDrawing Geometry="M64 16 A48 48 0 1 1 16 64">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FF22D3EE" Thickness="12.5" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M47.0,52.0 A13.0,13.0 0 1 0 73.0,52.0 A13.0,13.0 0 1 0 47.0,52.0 Z" Brush="#FFA5F3FC">
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M79.0,76.0 A9.0,9.0 0 1 0 97.0,76.0 A9.0,9.0 0 1 0 79.0,76.0 Z" Brush="#FF22D3EE">
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M40.0,90.0 A6.0,6.0 0 1 0 52.0,90.0 A6.0,6.0 0 1 0 40.0,90.0 Z" Brush="#FF67E8F9">
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
     <!--  死亡远征  -->
     <DrawingImage x:Key="NavIcon.ded">
         <DrawingImage.Drawing>
@@ -1150,27 +1174,12 @@
                 </DrawingGroup.Transform>
                 <!--  透明占位：统一固有尺寸，勿删  -->
                 <GeometryDrawing Brush="Transparent" Geometry="M0 0 H128 V128 H0 Z" />
-                <GeometryDrawing Geometry="M32 56 C32 34 46 22 66 22 C86 22 100 34 100 56 V70 C100 80 92 86 82 86 H50 C40 86 32 80 32 70 Z">
+                <GeometryDrawing Geometry="M64 12 L110 38 V90 L64 116 L18 90 V38 Z">
                     <GeometryDrawing.Pen>
-                        <Pen
-                            Brush="#FFF43F5E"
-                            EndLineCap="Round"
-                            LineJoin="Round"
-                            StartLineCap="Round"
-                            Thickness="11.2" />
+                        <Pen Brush="#FFF43F5E" Thickness="12.5" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
                     </GeometryDrawing.Pen>
                 </GeometryDrawing>
-                <GeometryDrawing Brush="#FFF43F5E" Geometry="M46.0,58.0 A8.0,8.0 0 1 0 62.0,58.0 A8.0,8.0 0 1 0 46.0,58.0 Z" />
-                <GeometryDrawing Brush="#FFF43F5E" Geometry="M70.0,58.0 A8.0,8.0 0 1 0 86.0,58.0 A8.0,8.0 0 1 0 70.0,58.0 Z" />
-                <GeometryDrawing Geometry="M52 86 V102 M64 86 V102 M76 86 V102">
-                    <GeometryDrawing.Pen>
-                        <Pen
-                            Brush="#FFF43F5E"
-                            EndLineCap="Round"
-                            LineJoin="Round"
-                            StartLineCap="Round"
-                            Thickness="10" />
-                    </GeometryDrawing.Pen>
+                <GeometryDrawing Geometry="M64 44 L88 86 H40 Z" Brush="#FFFDA4AF">
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>

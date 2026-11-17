@@ -57,6 +57,16 @@ namespace TheGuideToTheNewEden.Core.DBModels
         /// <summary>可升级/可触发的目标（多选用中文顿号分隔），例如"古斯塔斯侦察哨站 4/10"。</summary>
         public string Escalation { get; set; }
 
+        /// <summary>
+        /// <see cref="Escalation"/> 对应的站点 <see cref="Id"/>；0 表示没有明确目标
+        /// （wiki 上只标了"8/10""?"这种没链接的档位）。
+        /// <para>
+        /// 单独存 Id 而不是运行时去解析中文名：中文名会随 SDE 纠名变化
+        /// （`血袭者精神药品仓库` → `血袭者精神药物仓库`），按名字反查会悄悄失效。
+        /// </para>
+        /// </summary>
+        public int EscalationId { get; set; }
+
         /// <summary>远征的触发来源（无评级复合体名）；其它类别为空。</summary>
         public string Source { get; set; }
 

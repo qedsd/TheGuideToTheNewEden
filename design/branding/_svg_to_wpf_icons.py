@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """把 design/branding/icons/nav_*.svg 转成 WPF ResourceDictionary（DrawingImage 图标资源）。
 
 产出：TheGuideToTheNewEden.WPF/Resources/NavIcons.xaml
@@ -29,7 +29,7 @@ ORDER = [
     ("channelIntel", "频道预警"), ("channelMonitor", "频道监控"), ("channelScan", "频道统计"),
     ("channelMarket", "频道查价"), ("channelTranslation", "频道翻译"), ("gameLogMonitor", "日志监控"),
     ("translationAi", "AI 翻译"), ("translationLocal", "本地词库"),
-    ("ded", "死亡远征"), ("mission", "任务攻略"),
+    ("anomaly", "异常"), ("ded", "死亡远征"), ("mission", "任务攻略"),
     ("toolsIME", "快捷输入"), ("serverPing", "游戏延迟"),
     ("keyboardSpan", "键盘"), ("taskbar", "分屏"),
     ("settings", "设置"),

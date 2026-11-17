@@ -152,6 +152,13 @@ CAPITAL_SOURCE = {
     'Drone Infested Starbase': '无人机 · 组群（Drone Herd）',
 }
 
+# 上表的机器可读版：旗舰英文名 → 来源异常英文名（用于给异常挂 EscalationId）
+CAPITAL_SOURCE_SITE = {
+    'Serpentis Capital Staging': 'Serpentis Hidden Rally Point',
+    'Serpentis Shielded Starbase': 'Serpentis Hub',
+    'Drone Infested Starbase': 'Drone Herd',
+}
+
 CAPITAL_KIND_CN = {
     'staging': '旗舰集结地',
     'hive': '旗舰机巢',
@@ -742,6 +749,7 @@ def build():
             'TitleEN': EN_OVERRIDE_BY_PAGE.get(page_key or '', '')
                        or (o['TitleEN'] if o and o['TitleEN'] else title_en).strip(),
             'Escalation': escalation,
+            'EscalationId': 0,
             'Source': source,
             'Location': location,
             'WikiTitle': page_key or '',
@@ -769,9 +777,10 @@ def build():
             esc_name = PAGE_CN.get(it.get('escalationPage') or '', '') or name_cn(it['escalation'])
             esc = ('%s（%s）' % (esc_name, it['escalation'])) if esc_name != it['escalation'] else it['escalation']
         ship = (page.get('shipLimit') or '').strip().lower()
-        add(3, FACTION_EN.get(it['faction'], -1), 0, tier, level, sec,
-            ship_limit_cn(page.get('shipLimit', '')), it['site'], esc,
-            '', security_cn(sec), it['page'])
+        rec = add(3, FACTION_EN.get(it['faction'], -1), 0, tier, level, sec,
+                  ship_limit_cn(page.get('shipLimit', '')), it['site'], esc,
+                  '', security_cn(sec), it['page'])
+        rec['_escPage'] = it.get('escalationPage') or ''
 
     # --- 无评级复合体 ---
     for it in idx['unrated']:
@@ -857,6 +866,34 @@ def build():
     for old, new, en in renamed:
         print('    %-18s -> %-24s (%s)' % (old, new, en))
 
+    # 升级/触发关系落成 Id：按 wiki 页名匹配（比按中文名匹配可靠——中文名会被 SDE 纠名改掉）
+    by_page = {}
+    for r in records:
+        key = r.get('WikiTitle') or ''
+        if key:
+            by_page.setdefault(key, r['Id'])
+    linked = 0
+    for r in records:
+        esc_page = r.pop('_escPage', '') if '_escPage' in r else ''
+        if esc_page and esc_page in by_page:
+            r['EscalationId'] = by_page[esc_page]
+            linked += 1
+    print('  升级目标已关联 Id：%d 条' % linked)
+
+    # 旗舰远征反向链接：这 3 条异常在 wiki 上就把"可升级为"写成了旗舰远征（没有独立页面，所以上面按页名匹配不到）
+    cap_by_en = {r['TitleEN'].strip(): r for r in records if r['Category'] == 8}
+    cap_linked = 0
+    for cap_en, anom_en in CAPITAL_SOURCE_SITE.items():
+        cap_rec = cap_by_en.get(cap_en)
+        if cap_rec is None:
+            continue
+        for r in records:
+            if r['Category'] == 3 and r['TitleEN'].strip().lower() == anom_en.lower():
+                r['EscalationId'] = cap_rec['Id']
+                r['Escalation'] = '%s（旗舰）' % cap_rec['TitleCN']
+                cap_linked += 1
+    print('  旗舰远征反向链接：%d 条' % cap_linked)
+
     json.dump(records, io.open(os.path.join(HERE, 'sites.json'), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=1)
 
@@ -894,6 +931,7 @@ def write_db(records):
         Escalation TEXT,
         Source TEXT,
         Location TEXT,
+        EscalationId INTEGER NOT NULL DEFAULT 0,
         WikiTitle TEXT,
         CommunityContent TEXT,
         WikiContent TEXT,
@@ -903,10 +941,10 @@ def write_db(records):
     )''')
     cur.executemany(
         'INSERT INTO CombatSite (Id, Category, Faction, Rating, Tier, Level, Security, ShipLimit,'
-        ' TitleCN, TitleEN, Escalation, Source, Location, WikiTitle, CommunityContent, WikiContent,'
-        ' IsStub, CommunityUpdatedAt, WikiUpdatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        ' TitleCN, TitleEN, Escalation, EscalationId, Source, Location, WikiTitle, CommunityContent, WikiContent,'
+        ' IsStub, CommunityUpdatedAt, WikiUpdatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [(r['Id'], r['Category'], r['Faction'], r['Rating'], r['Tier'], r['Level'], r['Security'],
-          r['ShipLimit'], r['TitleCN'], r['TitleEN'], r['Escalation'], r['Source'], r['Location'],
+          r['ShipLimit'], r['TitleCN'], r['TitleEN'], r['Escalation'], r['EscalationId'], r['Source'], r['Location'],
           r['WikiTitle'], r['CommunityContent'], r['WikiContent'], r['IsStub'],
           r['CommunityUpdatedAt'], r['WikiUpdatedAt']) for r in records])
     cur.execute('CREATE INDEX IF NOT EXISTS IX_CombatSite_Category ON CombatSite(Category)')

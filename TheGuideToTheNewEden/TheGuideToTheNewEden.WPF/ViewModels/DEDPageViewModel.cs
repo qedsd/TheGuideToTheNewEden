@@ -268,7 +268,6 @@ public sealed class DEDPageViewModel : INotifyPropertyChanged
             return string.Format(FindString(_isSearchResult ? "DEDPage_SearchSummary" : "DEDPage_Summary"), _items.Count);
         }
     }
-
     public async Task InitAsync()
     {
         if (_initialized)
@@ -278,6 +277,34 @@ public sealed class DEDPageViewModel : INotifyPropertyChanged
 
         _initialized = true;
         await ReloadAsync();
+    }
+
+    /// <summary>
+    /// 选中指定站点（「异常」页点关联站点跳过来时用）。
+    /// <para>
+    /// 只把 <see cref="Selected"/> 指过去是不够的：列表用的是 <c>ListBox.SelectedItem</c> 双向绑定，
+    /// 选中项不在 <c>Items</c> 里时 WPF 会把绑定值清回 null（右侧正文随即被清空）。
+    /// 所以这里先把筛选条件重置成"全部分类 / 全部势力"再重载列表，最后按 Id 选中。
+    /// </para>
+    /// </summary>
+    public async Task SelectSiteAsync(int siteId)
+    {
+        if (siteId <= 0)
+        {
+            return;
+        }
+
+        _searchText = string.Empty;
+        OnPropertyChanged(nameof(SearchText));
+
+        _selectedCategory = CategoryOptions.FirstOrDefault();
+        OnPropertyChanged(nameof(SelectedCategory));
+
+        _selectedFaction = FactionOptions.FirstOrDefault();
+        OnPropertyChanged(nameof(SelectedFaction));
+
+        RebuildLevelOptions();
+        await ReloadAsync(siteId);
     }
 
     // ---------------------------------------------------------------- 选项
@@ -383,7 +410,8 @@ public sealed class DEDPageViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task ReloadAsync()
+    /// <param name="preferId">重载后优先选中的站点 Id（对照表跳转用）；为空则沿用当前选中项。</param>
+    private async Task ReloadAsync(int? preferId = null)
     {
         _loadCts?.Cancel();
         var cts = new CancellationTokenSource();
@@ -427,7 +455,7 @@ public sealed class DEDPageViewModel : INotifyPropertyChanged
             _loadFailed = false;
             _error = string.Empty;
 
-            var previousId = _selected?.Id;
+            var previousId = preferId ?? _selected?.Id;
             _items.Clear();
             foreach (var item in result ?? new List<CombatSite>())
             {

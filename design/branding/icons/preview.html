@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>新伊甸漫游指南 · 导航图标（35 个）</title>
+<title>新伊甸漫游指南 · 导航图标（36 个）</title>
 <style>
   :root { --bg:#F3F6FB; --panel:#FFFFFF; --text:#1B2540; --text2:#5A6B8C; --text3:#8593AE; --stroke:#DDE5F0; --card:#EDF2FA; --shadow:0 2px 10px rgba(27,37,64,.08); }
   html[data-theme="dark"] { --bg:#0D1220; --panel:#141B2E; --text:#EDF1FA; --text2:#9DA9C4; --text3:#6B7791; --stroke:#263050; --card:#1A2238; --shadow:0 2px 12px rgba(0,0,0,.45); }
@@ -214,11 +214,15 @@
 <path d="M64 36 C78 24 98 24 110 30 V92 C98 86 78 86 64 98 Z" fill="none" stroke="#2DD4BF" stroke-width="9" stroke-linejoin="round"/>
 <path d="M64 36 V98" stroke="#6366F1" stroke-width="7"/>
     </symbol>
+    <symbol id="s-anomaly" viewBox="0 0 128 128">
+      <path d="M64 16 A48 48 0 1 1 16 64" fill="none" stroke="#22D3EE" stroke-width="10" stroke-linecap="round"/>
+<circle cx="60" cy="52" r="13" fill="#A5F3FC"/>
+<circle cx="88" cy="76" r="9" fill="#22D3EE"/>
+<circle cx="46" cy="90" r="6" fill="#67E8F9"/>
+    </symbol>
     <symbol id="s-ded" viewBox="0 0 128 128">
-      <path d="M32 56 C32 34 46 22 66 22 C86 22 100 34 100 56 V70 C100 80 92 86 82 86 H50 C40 86 32 80 32 70 Z" fill="none" stroke="#F43F5E" stroke-width="9" stroke-linejoin="round"/>
-<circle cx="54" cy="58" r="8" fill="#F43F5E"/>
-<circle cx="78" cy="58" r="8" fill="#F43F5E"/>
-<path d="M52 86 V102 M64 86 V102 M76 86 V102" stroke="#F43F5E" stroke-width="8" stroke-linecap="round"/>
+      <path d="M64 12 L110 38 V90 L64 116 L18 90 V38 Z" fill="none" stroke="#F43F5E" stroke-width="10" stroke-linejoin="round"/>
+<path d="M64 44 L88 86 H40 Z" fill="#FDA4AF"/>
     </symbol>
     <symbol id="s-mission" viewBox="0 0 128 128">
       <path d="M38 16 V112" stroke="#F59E0B" stroke-width="9" stroke-linecap="round"/>
@@ -258,7 +262,7 @@
 
 <div class="head">
   <div>
-    <h1>导航图标 · 35 个</h1>
+    <h1>导航图标 · 36 个</h1>
     <div class="sub">128 画布 · 扁平 + 线性混合 · 主色描边 + 强调色实心细节 · 已在 20/24/32px 校验可读性</div>
   </div>
   <button class="toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme==='dark' ? 'light' : 'dark'">切换亮 / 暗</button>
@@ -413,6 +417,11 @@
         <div class="kb">Nav.TranslationLocal</div>
       </div>
       <div class="cell">
+        <svg class="ic" viewBox="0 0 128 128"><use href="#anomaly"/></svg>
+        <div class="nm">异常</div>
+        <div class="kb">Nav.Anomaly</div>
+      </div>
+      <div class="cell">
         <svg class="ic" viewBox="0 0 128 128"><use href="#ded"/></svg>
         <div class="nm">死亡远征</div>
         <div class="kb">Nav.DED</div>
@@ -462,8 +471,8 @@
 
 <h2>文件与接入</h2>
 <div class="note">
-  <code>nav-icons.svg</code> — 全量 sprite（一个文件含 35 个 symbol，适合走 DrawingImage / Path 资源合并）<br>
-  <code>nav_*.svg</code> — 每个图标独立文件（35 个，便于单独替换、按需引入）<br>
+  <code>nav-icons.svg</code> — 全量 sprite（一个文件含 36 个 symbol，适合走 DrawingImage / Path 资源合并）<br>
+  <code>nav_*.svg</code> — 每个图标独立文件（36 个，便于单独替换、按需引入）<br>
   <b>尚未改动任何工程代码。</b>后续接入方式（待确认再动）：把 NavigationViewItem 的 SymbolIcon 换成上述矢量，
   或先作为 ResourceDictionary 里的 DrawingImage 引入验证，再批量替换 Icon 属性。
 </div>

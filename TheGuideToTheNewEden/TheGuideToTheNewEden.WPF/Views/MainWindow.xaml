@@ -1,4 +1,4 @@
-<ui:FluentWindow
+﻿<ui:FluentWindow
     x:Class="TheGuideToTheNewEden.WPF.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -309,7 +309,7 @@
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
-                <!--  攻略：死亡远征（DED 空间）/ 任务攻略，两个子项  -->
+                <!--  攻略：异常（升级关系）/ 死亡远征（DED 空间）/ 任务攻略  -->
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Guides}">
                     <ui:NavigationViewItem.Icon>
                         <ui:ImageIcon
@@ -318,6 +318,18 @@
                             Source="{StaticResource NavIcon.guides}" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Anomaly}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:AnomalyPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.anomaly}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+
                         <ui:NavigationViewItem
                             Content="{DynamicResource Nav.DED}"
                             NavigationCacheMode="Required"

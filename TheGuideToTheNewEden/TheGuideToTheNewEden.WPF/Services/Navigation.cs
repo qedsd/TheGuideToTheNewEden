@@ -292,6 +292,37 @@ public static class Navigation
     }
 
     // ==================================================================
+    //  带站点跳转到「死亡远征」（异常页点关联站点）
+    // ==================================================================
+
+    private static int? _pendingCombatSiteId;
+
+    /// <summary>
+    /// 跳转到「死亡远征」页并选中指定站点（同样把主窗口置前）。
+    /// 「异常」页的"关联站点"走这条路：死亡远征页是常驻缓存的，所以待办由它在**每次**
+    /// <c>Loaded</c> 时取走（与快速链接页同一套做法）。
+    /// </summary>
+    public static void NavigateToCombatSite(int siteId)
+    {
+        if (siteId <= 0)
+        {
+            return;
+        }
+
+        _pendingCombatSiteId = siteId;
+        Navigate(typeof(Views.Pages.DEDPage));
+        Activate();
+    }
+
+    /// <summary>取走待选中的站点 Id（死亡远征页每次 Loaded 调用；取到即清空）。</summary>
+    public static int? TakePendingCombatSite()
+    {
+        var pending = _pendingCombatSiteId;
+        _pendingCombatSiteId = null;
+        return pending;
+    }
+
+    // ==================================================================
     //  带搜索跳转到快速链接（AI 助手 links_search）
     // ==================================================================
 
