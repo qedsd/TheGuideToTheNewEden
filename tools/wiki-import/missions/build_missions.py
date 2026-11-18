@@ -143,6 +143,68 @@ def cn_short(value):
     return tr(v)
 
 
+def tr_raw(value):
+    """字段值翻译：先按**原文**查译文缓存（缓存键就是原文的 sha1[:16]），
+    查不到再走 tr()（它会先清 wiki 语法再查一次），最后回退英文。"""
+    raw = str(value or '').strip()
+    if not raw:
+        return ''
+    hit = TRANS.get(key(raw))
+    if hit:
+        return hit
+    return tr(raw)
+
+# 属性字段里常见的"模板化英文"，用规则补齐（这些句子反复出现，走翻译批次不值）
+PHRASE_RULES = [
+    (r'This site contains special ship restrictions\.?', '本设施有特殊船型限制'),
+    (r'This is an important mission,? which will have significant impact on your standings\.?',
+     '这是重要任务，会显著影响你的声望'),
+    (r'Low sec', '低安'),
+    (r'High sec', '高安'),
+    (r'Collateral of ([\d,]+) ISK required', r'需要 \1 ISK 押金'),
+    (r'(\d+)\s*jumps?', r'\1 跳'),
+    (r'bonus', '奖励'),
+    (r'storyline BPC', '故事线蓝图拷贝'),
+    (r'faction standings', '势力声望'),
+    (r'\b(\d+) run\b', r'\1 次'),
+    (r'\((\d+)\s*h(?:ours?)?\)', r'（\1 小时）'),
+]
+
+# 单个词就是"舰型/电子战"时直接映射（ShipSuggestion / ShipLimit / Ewar 列大量出现）
+VALUE_ALIAS = {
+    'none': '', '?': '', 'n/a': '', '-': '',
+    'web': '网子', 'neut': '中和器', 'ecm': 'ECM', 'web paint': '网子 + 目标标记',
+    'point': '反跳', 'scram': '扰频器', 'scrambler': '扰频器',
+    'travel fit': '旅行配置', 't1 cruiser': 'T1 巡洋舰',
+    'blockade runner': '封锁穿越舰',
+}
+
+
+def item_value(raw):
+    """字段值：先走译文，仍是英文则按 SDE 物品名补中文。"""
+    out = clean_value(tr_raw(raw))
+    if out and not CJK_HAS(out):
+        out = annotate_items(out)
+    return out
+
+
+def apply_phrase_rules(text):
+    if not text:
+        return text
+    low = text.strip().lower()
+    alias = VALUE_ALIAS.get(low)
+    if alias is None:
+        # 舰型词复用 NPC 表词典（CLASS_CN 在本文件后面才定义，所以运行时查）
+        alias = CLASS_CN.get(low)
+    if alias is None and low in ('covert ops transport', 'covert ops'):
+        alias = {'covert ops transport': '隐形特勤运输舰', 'covert ops': '隐形特勤舰'}[low]
+    if alias is not None:
+        return alias
+    out = text
+    for pattern, repl in PHRASE_RULES:
+        out = re.sub(pattern, repl, out, flags=re.I)
+    return out
+
 def clean_value(v):
     """infobox 里的字段值可能带 <sup>3</sup> / [[链接]] 之类，落库前清干净。"""
     import re as _re
@@ -160,11 +222,16 @@ def clean_value(v):
         if not m:
             break
         s = s[:m.start()] + ' ' + s[m.end():]
+    # 括号不平衡的模板（`{{ColorSecurityRating` 没闭合）会把后面整段吞掉，直接截断
+    if '{{' in s:
+        cut = s.find('{{')
+        s = s[:cut]
     s = _re.sub(r'</?(sup|sub|span|small|big|br|em|strong|tt|code|nowiki)[^>]*>', '', s, flags=_re.I)
     s = _re.sub(r'\[\[([^\]\|]+)\|([^\]]+)\]\]', r'\2', s)
     s = _re.sub(r'\[\[([^\]]+)\]\]', r'\1', s)
     s = s.replace('&nbsp;', ' ')
-    return s.strip()
+    s = _re.sub(r'\s+', ' ', s).strip()
+    return apply_phrase_rules(s)
 
 
 def faction_of(info):
@@ -333,7 +400,7 @@ def npc_compound_zh(text):
 
 def npc_cell(name):
     """表格"名称"列：有官方中文就 `中文（English）`，没有就只留英文。"""
-    raw = re.sub(r'<!--.*?-->', '', name or '').strip()
+    raw = clean_value(re.sub(r'<!--.*?-->', '', name or '').strip())
     # wiki 里没名字的行会写 `None`，直接留空比显示 None 好
     if raw.lower() in ('none', 'n/a', '-'):
         return ''
@@ -471,6 +538,98 @@ def section_title_cn(title):
     return tr(t)
 
 
+def tr_block(text):
+    """按**行**翻译一段正文：译文缓存是按行建的（导出的就是行），
+    整段查永远查不到，之前因此整段落回英文。"""
+    lines = []
+    for line in (text or '').split('\n'):
+        s = line.strip()
+        if not s:
+            lines.append('')
+            continue
+        # 分类/文件标记漏进正文（`[[Category:COSMOS missions}}`）——直接丢
+        if re.match(r'^\[\[(?:Category|File|Image):', s, re.I) or s.startswith('{{'):
+            continue
+        if CJK_HAS(s) or s.startswith('|'):
+            lines.append(line.rstrip())
+            continue
+        lines.append(tr(s))
+    return '\n'.join(lines).strip()
+
+
+def tr_paragraphs(text):
+    """按空行切段，逐段查译文缓存（缓存键是单段原文）。"""
+    if not text:
+        return ''
+    out = []
+    for para in re.split(r'\n{2,}', text.strip()):
+        p = para.strip()
+        if not p:
+            continue
+        out.append(tr(p) if not CJK_HAS(p) else p)
+    return '\n\n'.join(out)
+
+
+def CJK_HAS(text):
+    return bool(re.search(r'[\u4e00-\u9fff]', text or ''))
+
+
+def annotate_items(text):
+    """物品/舰船名补官方中文：`Dominix, Paladin` → `多米尼克斯级（Dominix）、帕拉丁级（Paladin）`。
+
+    用 SDE types 的官方译名；逗号分隔的逐个处理，查不到就保留英文。
+    """
+    if not text:
+        return text
+    table = npc_name_table()
+
+    def one(part):
+        p = part.strip()
+        if not p:
+            return p
+        # `1 x Gas Cloud Harvester I`：数量前缀要留着，只翻物品名
+        m = re.match(r'^(\d+\s*[x×]\s*)(.+)$', p, re.I)
+        qty, name = (m.group(1), m.group(2).strip()) if m else ('', p)
+        zh = table.get(name.lower())
+        if zh and zh != name:
+            return '%s%s（%s）' % (qty, zh, name)
+        return p
+
+    parts = [p for p in re.split(r'[,，、/]\s*', text) if p.strip()]
+    if len(parts) > 1:
+        return '、'.join(one(p) for p in parts)
+    return one(text)
+
+# `pocket` 在 EVE 里指死亡空间中的一个独立区域，玩家口语叫"一层""二层"。
+# 之前直译成了"口袋"（`Single Pocket` → 单口袋），读起来不知所云。
+POCKET_RULES = [
+    (r'单口袋', '单层区域'),
+    (r'单一无门口袋', '单层无门区域'),
+    (r'奖励口袋', '奖励区域'),
+    (r'第\s*(\d+)\s*口袋', r'第 \1 层'),
+    (r'口袋\s*(\d+)', r'第 \1 层'),
+    (r'第\s*([一二三四五六七八九十]+)\s*口袋', r'第 \1 层'),
+    (r'口袋', '区域'),
+    (r'\bFirst [Pp]ocket\b', '第 1 层'),
+    (r'\bSecond [Pp]ocket\b', '第 2 层'),
+    (r'\bThird [Pp]ocket\b', '第 3 层'),
+    (r'\bFourth [Pp]ocket\b', '第 4 层'),
+    (r'\bFifth [Pp]ocket\b', '第 5 层'),
+    (r'\bSixth [Pp]ocket\b', '第 6 层'),
+    (r'\bSingle [Pp]ocket\b', '单层区域'),
+    (r'\b([Bb]onus) [Pp]ocket\b', '奖励区域'),
+]
+
+
+def fix_terms(text):
+    """渲染后的术语统一（目前只有 pocket → 层/区域）。"""
+    if not text:
+        return text
+    out = text
+    for pattern, repl in POCKET_RULES:
+        out = re.sub(pattern, repl, out)
+    return out
+
 def render(rec):
     """一条任务 → 中文 Markdown 正文。"""
     out = []
@@ -490,6 +649,13 @@ def render(rec):
     raw = rec.get('_Raw') or {}
 
     def val(field):
+        """字段展示值：译文 → 短词词典 → SDE 物品名（`中文（English）`）。"""
+        out2 = val_raw(field)
+        if out2 and not CJK_HAS(out2):
+            out2 = annotate_items(out2)
+        return out2
+
+    def val_raw(field):
         """字段的展示值：先用**原始值**查译文（译文键是原文算的），再清 HTML；
         仍是英文且是短词时退到本地词典（Cruiser → 巡洋舰）。"""
         source = raw.get(field) or rec.get(field) or ''
@@ -533,7 +699,7 @@ def render(rec):
     if rec.get('Briefing'):
         out.append('### 简报')
         out.append('')
-        out.append(rec['Briefing'])
+        out.append(tr_block(rec['Briefing']))
         out.append('')
 
 
@@ -546,14 +712,14 @@ def render(rec):
             out.append('### ' + section_title_cn(sec['title']))
             out.append('')
         if text:
-            out.append(tr(text))
+            out.append(tr_block(text))
             out.append('')
         for table in npcs:
             md = npc_table_md(table)
             if md:
                 out.append(md)
 
-    body = '\n'.join(out).strip()
+    body = fix_terms('\n'.join(out).strip())
     body += '\n\n> 数据来自 EVE University Wiki（CC BY-SA 4.0），同步于 %s。' % SYNC_DATE
 
     if rec.get('Untranslated'):
@@ -692,20 +858,25 @@ def build():
                 'Faction': faction_of(info),
                 'TitleEN': title,
                 'TitleCN': title_cn,
-                'Objective': clean_value(str(info.get('Objective', ''))),
+                # 这 7 个字段是**展示字段**（页面属性区、AI 工具、搜索都读它们），
+                # 必须存译文而不是原文——之前存的是清理后的英文，导致工具与搜索只认英文
+                'Objective': clean_value(tr_raw(info.get('Objective', ''))),
                 'Ewar': ' / '.join(x for x in [
-                    clean_value(str(info.get('WebPoint', ''))),
-                    clean_value(str(info.get('EWAR', '')))] if x),
-                'ShipLimit': clean_value(str(info.get('ShipSizeLimit', ''))),
-                'ShipSuggestion': clean_value(str(info.get('ShipSuggestion', ''))),
-                'Rewards': clean_value(str(info.get('Rewards', ''))),
-                'StandingLoss': clean_value(str(info.get('StandingLoss', ''))),
-                'Extra': clean_value(str(info.get('Extra', ''))),
+                    clean_value(tr_raw(info.get('WebPoint', ''))),
+                    clean_value(tr_raw(info.get('EWAR', '')))] if x),
+                # 这三列经常就是"舰船/物品清单"，没有译文时用 SDE 官方名补成 `中文（English）`
+                'ShipLimit': item_value(info.get('ShipSizeLimit', '')),
+                'ShipSuggestion': item_value(info.get('ShipSuggestion', '')),
+                'Rewards': item_value(info.get('Rewards', '')),
+                'StandingLoss': clean_value(tr_raw(info.get('StandingLoss', ''))),
+                'Extra': clean_value(tr_raw(info.get('Extra', ''))),
                 'Location': location,
                 'Arc': arc,
                 'Variant': '',   # 分段后缀统一由 dedupe_names() 生成
                 'WikiTitle': title,
-                'Briefing': page.get('sdeBriefing') or '',
+                # 简报：SDE 的官方中文优先；没有就用 wiki 的 {{MissionBriefing}}
+                # （正文段落已按段送翻，tr_paragraphs 逐段查译文）
+                'Briefing': page.get('sdeBriefing') or tr_paragraphs(v.get('briefing') or ''),
                 'Sections': sections,
                 '_Raw': {
                     'Objective': str(info.get('Objective', '')).strip(),

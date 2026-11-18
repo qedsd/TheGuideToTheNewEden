@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -249,6 +249,9 @@ public sealed class MissionPageViewModel : INotifyPropertyChanged
         IsLoading = true;
         LoadFailed = false;
         Error = string.Empty;
+        // 状态行（"共 N 项"）是求值时读 _items.Count 的，必须在加载开始/结束各通知一次，
+        // 否则绑定永远停在初始值 0（DED 页有这两行，任务页之前漏了）
+        OnPropertyChanged(nameof(StatusText));
         var previousId = _selected?.Id;
 
         try
@@ -290,6 +293,7 @@ public sealed class MissionPageViewModel : INotifyPropertyChanged
         finally
         {
             IsLoading = false;
+            OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(IsEmpty));
         }
     }

@@ -385,9 +385,23 @@ def convert_html_tables(text):
 
     return '\n'.join(out)
 
+def strip_include_tags(text):
+    """wiki 的 `<includeonly>` / `<noinclude>` 是给模板用的，正文里不该出现。
+
+    不清的话会出现 `<includeonly>=</includeonly>==Details==<includeonly>=</includeonly>`
+    这种把标记漏进正文的情况（16 个任务踩到）。
+    """
+    text = re.sub(r'<noinclude>.*?</noinclude>', '', text, flags=re.S | re.I)
+    text = re.sub(r'</?(?:includeonly|onlyinclude|noinclude)\s*/?>', '', text, flags=re.I)
+    # 去掉残留的 `== Details ==` 标记（不是真正的小节标题）
+    text = re.sub(r'={2,}\s*([^=\n]{2,40}?)\s*={2,}', r'\1', text)
+    return text
+
+
 def paragraphize(text):
     """把一段 wikitext 变成干净的段落/列表行序列。"""
-    t = strip_wiki_markup(strip_leftover_templates(unwrap_templates(strip_templates(text))))
+    t = strip_include_tags(text)
+    t = strip_wiki_markup(strip_leftover_templates(unwrap_templates(strip_templates(t))))
     t = convert_html_tables(t)
     # 转换后仍可能剩孤立的表格收尾符（原文里表格被 NPC 表剥离截断时）
     t = re.sub(r'(?m)^\s*\|}\s*$', '', t)

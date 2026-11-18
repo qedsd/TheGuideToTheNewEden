@@ -13,7 +13,7 @@
         「攻略 · 任务」页（2026-11 重做）。
         · 数据：Core/MissionService → Resources/Database/static.db 的 Mission 表（1313 条，来自 EVE University Wiki 的 Missions 体系）。
         · 左卡 = 搜索 + 列表 + 三个筛选（分类 / 等级 / 势力）；
-          右卡 = 中英标题 + 元信息 + 正文（任务目标 / 属性 / 攻略正文 / NPC 表，全部 Markdown）。
+        右卡 = 中英标题 + 元信息 + 正文（任务目标 / 属性 / 攻略正文 / NPC 表，全部 Markdown）。
         · 与「死亡远征」页同构，用户切功能不用换脑子（见 REFACTORING.md 阶段 354）。
     -->
     <Page.Resources>
@@ -166,7 +166,7 @@
 
                 <Grid>
                     <controls:MarkdownPresenter
-                        BaseFontSize="16"
+                        BaseFontSize="14"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Markdown="{Binding Selected.WikiContent, Mode=OneWay}" />
 
