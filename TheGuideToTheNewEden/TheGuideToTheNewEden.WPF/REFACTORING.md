@@ -12850,6 +12850,210 @@ build_sites.py   组装 + 渲染中文 Markdown + 写 static.db（--write-db）
   对比图留在 `design/branding/icons/preview/pair.png`。`dotnet build` 0 错误。
 
 
+## 阶段 354：任务攻略整体重做（wiki Missions → 1313 条结构化任务）（2026-11-17）
+
+> 用户判断：老的任务攻略"完全不适应了，没有参考价值"——只有 `Level / Title_Zh / Title_En / Content` 四列，
+> 既不能按分类/势力筛，也没有目标、奖励、船型这些结构信息，中文正文实际上是**空的**（405 行 Title_Zh 全为空串）。
+> 授权：可以全删重做。
+
+### 数据：老表 → 新表
+
+- **删掉** `Mission`（旧结构）与 `MissionContent`（旧正文表，405 行）。
+- **新 `Mission` 表**：`Id / Category / Level / MissionType / Faction / TitleEN / TitleCN / Objective / Ewar /
+  ShipLimit / ShipSuggestion / Rewards / StandingLoss / Extra / Location / Arc / Variant / WikiTitle /
+  WikiContent / IsStub / WikiUpdatedAt`——字段直接对齐 wiki 的 `{{Missiondetails}}` 模板。
+- **`MissionCategory` 枚举**（0–9）：安全 / 运输 / 采矿 / 故事线 / 史诗 / 异常(Anomic) / COSMOS / 研发 / 职业代理人 / Circle。
+- **规模**：1230 个 wiki 页面 → **1313 条任务**（同一页面的多等级版本拆成多条，中文名带「（L1）」「（L3）」）。
+  分类分布：安全 725 / 运输 155 / 史诗 190 / 故事线 119 / 职业 45 / 采矿 30 / Circle 30 / 异常 13 / 研发 6。
+
+### 抓取与解析（`Tools/wiki-import/missions/`）
+
+- **用 `action=raw` 抓 wikitext**，不抓渲染后的 HTML：任务页的数据几乎全在 `{{Missiondetails}}` 里，
+  wikitext 就是 k=v（战斗站点那套反过来是抓 HTML，因为数据在渲染后的表格里）。
+- **三种页面形态都要兼容**：单任务页、同页多等级（一个页面多个 `{{Missiondetails}}`，按 infobox 切段）、
+  章节枢纽页（史诗任务线只有 `{{:任务名}}` 转写 → 第二轮按引用页的分类补抓 214 页）。
+- **剥模板**：`MissionLinks` / `NPCTableCSS` / `Missionrelated` / `*EpicArcNav` / `<noinclude>` 等外观与导航块，
+  第一版漏了 `Missionrelated`，正文里残留过 `{{Missionrelated}}`。
+- **NPC 表**：`{{NPCTableHead/Row}}` → 结构化行 → Markdown 表（舰型/数量/名称/备注），7790 行。
+
+### 译文（5066 条片段 / 17.8 万字符）
+
+- 只译**短文本**：任务名 1313、小节标题、NPC 表标题、`Objective/Rewards/Extra/Ewar/船型` 字段值。
+- **大段 walkthrough 不译**（约 100 万字符英文）：体量太大，且结构字段已足够决策；
+  正文顶部不伪装成中文，页面/手册里都写明"叙述段落为 wiki 英文原文"。
+- 译文缓存 key 是 `sha1(原文)[:16]`：改原文自动失效回退英文，不会静默错位。
+- 踩过的坑：**译文键必须用"原始值"算**。第一版先说"先清 HTML 再查译文"，
+  结果 `320.0 m<sup>3</sup>` 清理后 hash 变了，1032 条 `Objective` 全部回退英文。
+  现在 `_Raw` 保留原始值用于查译文、`clean_value()` 只作用于展示。
+
+### 界面
+
+- `MissionPage` 重写为与「死亡远征」同构：左卡搜索 + 列表 + **分类 / 等级 / 势力**三筛选，右卡标题 + 元信息 + Markdown 正文。
+- 列表徽标：任务类型 + `N级`（`MissionLevelConverter` 复用）。
+- 正文结构：`**分类** ｜ **等级** ｜ **类型** ｜ **势力**` → `### 任务目标` → `### 属性` → 各小节 → NPC 表 → wiki 署名。
+- **踩坑**：下拉用 `int.MinValue` 表示"不限"，服务层用 `AnyCategory(-1)/AnyLevel(0)/AnyFaction(-1)`，
+  直接透传会把哨兵值当真实条件 → 结果是 0 行。现在在 VM 里显式映射。
+
+### AI 工具与手册
+
+- `mission_info` 重写：新增 `category` / `faction` 参数，输出改为结构化摘要（L 等级 · 类型 · 目标 · Id）；
+  唯一命中直接返回正文，超长截断并注明。
+- 手册 `guides/mission.md` 重写（分类、筛选、正文结构、为什么部分正文是英文、Anomic 与"异常"的区别）。
+- 管线文档：`Tools/wiki-import/missions/README.md`（5 步、数据结构、译文范围）。
+
+### 验证
+
+- 端到端探针 **10/10 PASS**：`InitDb` → 页面构造 → **1313 条** → 默认选中且中文名 →
+  分类筛选（史诗 190）→ 叠加等级（L4 → 54）→ 英文搜索 `Damsel`（3 条）→ 中文搜索「眼中」（1 条）→
+  正文含中文结构行 → 正文带 wiki 署名。
+- 数据核对：1313 条全部有中文名（9 条原名即英文）；`MissionContent` 已删除；**924 条**带 NPC 表；347 条是 stub（正文 < 400 字，多为纯运输任务）。
+- 正文纯净度：模板残留 **758/1313 → 0/1313**（`{{MessageBox}}` 拆纯文本、`{{m3}}`/`{{Sh}}`/`{{icon}}` 拆成单位与船型、其余兜底删除）。
+
+### 补充（同日）：NPC 表三列错位 + 舰型中文化 + wiki HTML 表格
+
+用户要求「把表格统计的 NPC 类型翻译了（Drone / Structure / Frigate 这些）」，顺着查出四个真问题：
+
+1. **NPC 表整体错位**：`{{NPCTableRow|Frigate|3|Name}}` 的模板体以 `|` 开头，`split_args` 的第一段恒为空串，
+   于是 `pos[0]` 拿到空串、舰型列全空、**名称列掉进了数量列**（7964 行全错）。修掉后舰型值从 1 种变 **57 种**。
+2. **舰型闭集**：57 种（含 `Cruier`、`Frigates`、`Elite Cruiser?` 这类错别字/复数/带问号），
+   新增 `CLASS_CN` 词典直接映射（近 8000 行，量大但闭集，不必走翻译批次）：`Frigate→护卫舰`、`Elite Frigate→精英护卫舰`、
+   `Structure→建筑`、`Drone→无人机`、`Sentry→哨塔`、`Acceleration Gate→加速门` …… 兜底再走译文缓存。
+3. **表标题前缀**：`{{NPCTableHead|建筑}}` 同样以 `|` 开头，之前渲染成 `**|建筑**`；译文缓存里存的是带 `|` 的原文，
+   所以先按原文查、再按去 `|` 的查。
+4. **wiki HTML 表格**（`{|` … `|}` + `!`/`|` 单元格行）在正文里没转：采矿产出表、毒性波次表会露出
+   `! scope="col" | Ore Type` / `| style="text-align: left;" | Scordite` 这种原始语法。
+   新增 `convert_html_tables()`：按 `|-` 攒行、`!` 作表头、剥 `style=` 属性，转成 Markdown 表格。
+   **三个连环坑**：① 之前 `collect_npcs` 会顺手删 `{|`/`|}` 行，把表头删了 → 后面的单元格行没救；
+   ② 判断表格开头用 `startswith('{')` 会把 `{{NPCTemplate}}` 当成表格起点，一路吃到页面末尾；
+   ③ `paragraphize` 最后那个"丢掉以 `|` 开头且以 `|` 结尾的行"（本意是清 wiki 语法）会**把刚转好的 Markdown 表格吃掉**。
+   三处都改成精确判断。现在 **927 条任务**带 Markdown 表（NPC 表 924 + 采矿/波次等）
+- 语言键：中英各 **3671**、集合一致。`dotnet build` 0 错误。
+
+### 补充七（2026-11-18）：名称列不再显示 None、备注里的舰名也中英对照
+
+用户提了两点：名称列出现 `None` 要留空；备注里的舰名也要 `中文（English）`。
+
+1. **None 留空**：wiki 的 NPC 表对"没名字的建筑/炮塔"直接写 `None`，之前原样渲染。
+   现在 `npc_cell` 遇到 `None / N/A / -` 返回空串（**816 个任务**受影响）。
+   踩坑：改动时文件里出现了**两个 `npc_cell` 定义**，后一个被截断没有 `return`，于是返回 `None` 对象，
+   表格里就渲染成字符串 `None`——排查了"看起来改了却没生效"。
+2. **备注列中英对照**：`annotate_npc_names()` 逐 token 做**最长匹配**（从 6 个词往回试），
+   命中的舰名替换成 `中文（English）`。现在 **268 行**备注带对照，例如
+   `Renamed 皇家战士（Imperial Fighter）`、`触发：Triggers spawn for 戈瓦德·阿鲁伯丁（Govarde Alourtine）`。
+3. **两个误伤坑**（都修了）：
+   - 归一化索引把不含 ASCII 的中文名收缩成同一个空键，导致「中和器」被翻成"泰坦会战遗址"。
+     现在只在归一化结果长度 ≥ 3 时才建索引。
+   - 备注里用全量 SDE 表会误伤通用词：`drop`（药剂 Drop→坠落）会被替换成
+     「Random ship will 坠落（drop）Narcotics」，`Heavy Missiles` 会变成技能书「重型导弹概论」。
+     改成**只用任务 NPC 表里真正出现过的舰名**做替换词典。
+
+数据：名称列 **9699 行、70.1% 双语**；备注列 2882 行、268 行含对照；名称列 `None` 归零。探针 5/5 PASS。
+
+### 补充六（2026-11-18）：NPC 表舰名改双语显示
+
+用户反馈「Coreli Initiate/Scout、Blood Raider Sentry Gun 还没有中文」。之前 NPC 表只译了**表头**，
+舰名一律保留英文（当时判断"专有名词不便直译"），但 SDE 里其实有官方译名。
+
+做法：新增 `npc_zh()/npc_cell()`，用 SDE 的 `types.jsonl`（舰船/建筑/炮塔，50713 条中英名）
+和 `npcCharacters.jsonl`（人物，11393 条）建索引，**名称列渲染成 `中文（English）`**，查不到才只留英文。
+
+覆盖率从 0 提到 **70.5% 的表格行**（6844/9702），靠四类归一化：
+1. **归一化索引**：忽略大小写/空格/标点（`Kruul's Pleasure Hub` vs `Kruuls Pleasure Hub`）
+2. **共享前缀简写**：`Guristas Kyoukan/Webifier` = `Guristas Kyoukan` + `Guristas Webifier`；
+   `Belphegor/Mammon Apis` = `Belphegor Apis` + `Mammon Apis`
+3. **方括号注**：`Seven Plebe [Coreli Initiate/Scout]` 译括号里的舰型
+4. **尾部括号注**：`Rogue Miner (Rogue Pirate Grunt)` 去掉注再查
+
+效果举例：
+- `Coreli Initiate/Scout` → **克尔利伊 新人/克尔利伊 侦察员（Coreli Initiate/Scout）**
+- `Blood Raider Sentry Gun` → **血袭者哨站炮塔（Blood Raider Sentry Gun）**
+- `Corpii Collector` → **科必伊 收集者（Corpii Collector）**
+
+剩下 30% 查不到的是 wiki 自造的统称（`Stasis Tower`、`Carrier Support Group 1`）和拼错的名字，
+保留英文原文。探针 5/5 PASS。
+
+### 补充五（2026-11-18）：中文名里出现「A / A」两套并列（用户截图）
+
+用户贴了 `The Audesder War Effort…(8 of 8)` 那条，中文名显示成
+「备战奥德斯代尔，无畏战舰生产设施 （8/8） / 备战奥德斯代尔，无畏战舰生产设施（8/8）」——同一句说了两遍。
+
+根因：SDE 里**同一个英文名挂着两套中文**（`Police Invasion` 有「警方介入」和「警方侵略」），
+`match_sde_missions.py` 把它们用 `' / '.join()` 拼成一个字符串塞进 `name.zh`，于是直接显示出来了。
+
+修了四处：
+1. **不再拼接**：`name.zh` 只取第一套，完整列表留在 `zhAll`（联动 6 条：警方介入、交易数据运送等）。
+2. 构建侧兜底：中文名里只要出现 `" / "` 就只留第一段（防止别的来源再犯）。
+3. **分段号跨段错配**：`Secret Project X (2 of 3)` 被 core 档匹配到 SDE 的 `(1 of 3)`，
+   名字里就出现「秘密项目X（1/3）（2/3）」。匹配器现在校验分段号，对不上就跳过该候选（少认 13 页，值）。
+4. **两个数字叠一起**：同一页多个变体时，SDE 名字里的 `（1/3）` 会和 dedupe 的 `1/N` 打架，
+   改成"多变体页先剥掉 SDE 分段号，统一由 dedupe 生成"；多变体组若能用**势力**区分（`(Blood Raiders)`
+   → 血袭者）就优先用势力，而不是 `（1/3）` 这种序号。
+
+顺手清掉的重复：标题带下划线的畸形副本（`Driving_a_Wedge_-_…`）、
+`Mordus Folly`/`Mordu's Folly`、`Small Misunderstanding` 与 `Small Misunderstanding (1 of 3)`
+（同名中文只留正文最长的一条）。**任务 1723 → 1721，重复中文名 0 条**，探针 8/8 PASS。
+
+### 补充四（2026-11-18）：剩下 190 条逐条核对
+
+自动匹配后还剩 190 页没有官方译名，逐条看下来是三类，新增 `sde_review.py` 把结论固化：
+
+| 处置 | 条数 | 判据 |
+|---|---|---|
+| **对齐**（map） | 59 | 系列按分段号对上（`Flame of Peace (1 of 4)` → `Flame of Peace - Heresy (1 of 4)`）；或手工指定（`Travel to Amarr` → `Travel to the Amarr`） |
+| **保留**（keep） | 40 | SDE 里确实没有：COSMOS 子任务、活动任务、wiki 分支；其中 8 条「制造增效剂」用 `types.jsonl` 的**药剂官方译名**（Blue Pill → 蓝色药丸、Mindflood → 思维冲击） |
+| **剔除**（exclude） | 91 | 不是任务页：用户沙盒 `User:…`、任务线章节页 `X/Chapter 1 - …`、COSMOS 枢纽、系列总览页、`What's In a Name (1 of 5)` 这种与带副标题页重复的旧页面 |
+
+几个坑：
+- **职业代理人那 6 个页面不能剔除**——`Exordium` / `Explorer` / `Enforcer` 一个页面里塞了 7–8 个
+  `{{Missiondetails}}`，正是那 45 条职业任务本体。第一版按"枢纽页"剔掉，任务数直接从 1771 掉到 1678。
+- `apply` 必须**显式清掉**上一轮的 `excluded` 标记，否则改判不生效（踩过一次，任务数不回升）。
+- `Angel Strike` 系列在 SDE 里叫 `Kidnappers Strike`，10 段副标题一模一样，按分段号对齐；
+  其中「流感爆发」SDE 存了两个并列译名，按同系列其它 9 段统一成「绑架者的进攻—流感爆发」。
+
+结果：**1723 条任务、中文名 100%**（0 条纯英文），官方中文简报 1176 条，探针 **15/15 PASS**。
+
+### 补充三（2026-11-18）：用 SDE 官方译名核准全部任务名 + 补官方中文简报
+
+用户提示「SDE 里应该有任务名称官方译名」，查了 `D:\QEDSD\SDE\…-jsonl\missions.jsonl`：
+
+- **2892 条任务，2892 有 `name.en`、2887 有 `name.zh`**——这是客户端里显示的名字，比 LLM 直译、
+  比从旧库猜都可靠。`messages` 里还带**八语种的代理人简报**（含中文），之前因为"英文没翻"被整段丢掉了。
+- 新增 `match_sde_missions.py`，四档逐级放宽 + 一档兜底：
+  | 档位 | 说明 | 命中 |
+  |---|---|---|
+  | exact | 规范化后完全一致 | 812 |
+  | core | 去掉括号注释与标点后一致 | 429 |
+  | core-base | 一对多但只是「同一任务的第 n/m 段」→ 取公共基名（Human Cattle → 人·畜） | 82 |
+  | suffix | wiki 核心名是 SDE 名的后缀（`Undercover Clone - A Little Extra...`） | 21 |
+  | npc | 任务名其实是用**代理人/角色名**命名的 → 查 `npcCharacters.jsonl` 的官方中文名（Aakeo Oshaima → 艾可·奥赛玛） | 259 |
+  **合计 1603/1793 页（89.4%）** 拿到官方中文名；剩下 190 条是枢纽页（Air Show! / After The Seven）与 SDE 没有的条目。
+- 名称优先级最终定为：**SDE 官方译名 > 旧库社区名（288 条）> wiki 直译**。
+- 中文名覆盖率 **1739/1771 = 98.2%**，只剩 32 条纯英文（`Agent Failed (4 of 4)` 这类 SDE 里没有的）。
+- **官方中文简报回来了**：`messages.briefing.zh` 抽出来补进正文 `### 简报` 段，**1176 条**任务受益。
+  简报里的占位符 `{[location]dungeonLocationID.name}` 会清掉。
+- 顺手统一了两处格式：SDE 名字里半角 `(1/5)` 统一成全角 `（1/5）`；多变体页面的后缀改成
+  **等级不同用 `（L2）`，否则用 `（1/5）`**。之前会出现 `危难中的少女（战斗2）`、`Aakeo Oshaima（L2）（运输）`
+  这种叠两层/半斤八两的标签。
+
+### 补充二（同日）：覆盖不全 + 中文名对不上玩家叫法（用户报「腹背受敌 / Enemies Abound」搜不到）
+
+用户反馈"任务明显有缺，比如腹背受敌"，顺着查出三件事：
+
+1. **枚举口径错了**：原来按 wiki 的 10 个分类枚举，`Category:Security missions` 用 `cmlimit=500` 翻页时**漏了一大截**，
+   而真正的史诗任务在 `Category:Epic arc missions`（不是我们抓的 `Category:Epic Arcs`，那个只是章节枢纽）。
+   改成用 MediaWiki 的 `list=embeddedin&eititle=Template:Missiondetails`（谁转写了任务模板谁就是任务页）：
+   **1230 页 → 1793 页**，任务 **1313 → 1771 条**（安全 725→1168、史诗 190→205）。
+   新增 `docs: Tools/wiki-import/missions/fetch_by_template.py`；分类只用来归类（批量 `prop=categories`，50 个标题一批）。
+   被 `{{:任务名}}` 转写的史诗任务页自己没分类 → 按引用页继承分类并记 `arcOf`，否则会全堆进"安全任务"。
+2. **中文名是直译、和游戏内叫法对不上**：`Enemies Abound` 被译成「敌人环伺」，玩家叫「腹背**受敌**」，所以搜不到。
+   旧版任务库里其实有 **405 条社区中文名**（`Title_Zh`），于是分两轮把旧名对齐到新库英文标题（第二轮靠旧库正文里残留的 eve-survival 英文链接逐条印证）：
+   `align_merged.json` **288 条**（第一轮 257 + 第二轮新增 31，冲突 0），构建时**优先用社区名**（`ALIGN`），剩下的才用 wiki 直译。
+   现在 `Enemies Abound` = 腹背受敌（1/5）…（5/5），`A Humble Gift` = 微薄的礼物，`Infiltrated Outposts` = 抢救矿冶设施。
+3. **势力筛选表达不了"打四大种族"**：`Faction` 只映射了 6 个海盗势力，帝国任务全是 `-1`，筛不出来。
+   扩到 **0–9**：0–5 海盗、**6 艾玛 / 7 加达里 / 8 盖伦特 / 9 米玛塔尔**。现在 **353 条**帝国任务可按势力筛。
+   注意 `Human Cattle` 这种"同页 5 个版本"的，中文名会带区分后缀（势力 / 类型），否则列表里 5 行同名。
+
+
 ## 8. 已知限制与待办
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；

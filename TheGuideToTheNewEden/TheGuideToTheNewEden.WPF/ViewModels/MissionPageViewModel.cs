@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,18 +7,23 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.DBModels.Static;
+using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels;
 
 /// <summary>
-/// 任务页 VM：左侧按"等级（1-5 级）"筛选 + 名称搜索的任务列表，右侧是选中任务的攻略正文（Markdown）。
-/// 对应 WinUI 版 <c>MissionViewModel</c> + <c>MissionPage</c> 的代码后置。
+/// 「攻略 · 任务」页 VM。
 /// <para>
-/// 数据来自 Core 的 <c>MissionService</c>（静态库 <c>Resources/Database/static.db</c>）：
-/// 列表按等级或名称查，正文按 <c>Mission.Id</c> 查 <c>MissionContent</c>。
+/// 数据来自 Core 的 <see cref="MissionService"/>（<c>Resources/Database/static.db</c> 的 <c>Mission</c> 表），
+/// 字段对齐 wiki 的 <c>{{Missiondetails}}</c>：分类 / 等级 / 类型 / 势力 / 任务目标 / 电子战 / 船型限制 /
+/// 推荐船型 / 奖励 / 声望损失 / 备注。正文是渲染好的中文 Markdown（简报 + 分节 + NPC 表）。
+/// </para>
+/// <para>
+/// 与「死亡远征」页同构：左卡搜索 + 列表 + 三个筛选（分类 / 等级 / 势力），右卡标题 + 元信息 + 正文。
+/// 老版本只有"按等级列出 + 一段纯文本"，分类和势力都筛不了。
 /// </para>
 /// </summary>
 public sealed class MissionPageViewModel : INotifyPropertyChanged
@@ -28,66 +33,102 @@ public sealed class MissionPageViewModel : INotifyPropertyChanged
     private readonly ObservableCollection<Mission> _items = new();
 
     private Mission? _selected;
-    private int _levelIndex;
+    private FilterOption? _selectedCategory;
+    private FilterOption? _selectedLevel;
+    private FilterOption? _selectedFaction;
     private string _searchText = string.Empty;
     private bool _isLoading;
-    private bool _isContentLoading;
     private bool _loadFailed;
     private bool _isSearchResult;
     private string _error = string.Empty;
-    private string _contentText = string.Empty;
     private bool _initialized;
 
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _loadCts;
-    private CancellationTokenSource? _contentCts;
 
     public MissionPageViewModel()
     {
         LanguageService.LanguageChanged += OnLanguageChanged;
+        RebuildCategoryOptions();
+        RebuildLevelOptions();
+        RebuildFactionOptions();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<Mission> Items => _items;
 
+    /// <summary>分类下拉（第一项"全部分类"）。</summary>
+    public ObservableCollection<FilterOption> CategoryOptions { get; } = new();
+
+    /// <summary>等级下拉（不分等级 + L1–L5）。</summary>
+    public ObservableCollection<FilterOption> LevelOptions { get; } = new();
+
+    /// <summary>势力下拉（不限 + 6 个海盗势力）。</summary>
+    public ObservableCollection<FilterOption> FactionOptions { get; } = new();
+
     public Mission? Selected
     {
         get => _selected;
         set
         {
-            if (Set(ref _selected, value))
+            if (!Set(ref _selected, value))
             {
-                OnPropertyChanged(nameof(HasSelection));
-                OnPropertyChanged(nameof(ShowNoContent));
-                _ = LoadContentAsync(value);
+                return;
             }
+
+            OnPropertyChanged(nameof(HasSelection));
+            OnPropertyChanged(nameof(MetaText));
+            OnPropertyChanged(nameof(HasMeta));
         }
     }
 
     public bool HasSelection => _selected is not null;
-
-    /// <summary>等级下拉的选中索引（0 → 1 级 … 4 → 5 级，与 WinUI 的"需要 +1"一致）。</summary>
-    public int LevelIndex
-    {
-        get => _levelIndex;
-        set
-        {
-            if (Set(ref _levelIndex, value))
-            {
-                _ = ReloadAsync();
-            }
-        }
-    }
 
     public string SearchText
     {
         get => _searchText;
         set
         {
-            if (Set(ref _searchText, value ?? string.Empty))
+            if (Set(ref _searchText, value))
             {
                 QueueSearch();
+            }
+        }
+    }
+
+    public FilterOption? SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            if (Set(ref _selectedCategory, value))
+            {
+                _ = ReloadAsync();
+            }
+        }
+    }
+
+    public FilterOption? SelectedLevel
+    {
+        get => _selectedLevel;
+        set
+        {
+            if (Set(ref _selectedLevel, value))
+            {
+                _ = ReloadAsync();
+            }
+        }
+    }
+
+    public FilterOption? SelectedFaction
+    {
+        get => _selectedFaction;
+        set
+        {
+            if (Set(ref _selectedFaction, value))
+            {
+                _ = ReloadAsync();
             }
         }
     }
@@ -98,59 +139,66 @@ public sealed class MissionPageViewModel : INotifyPropertyChanged
         private set => Set(ref _isLoading, value);
     }
 
-    /// <summary>正文加载中（右侧卡片显示局部等待，不用全局遮罩）。</summary>
-    public bool IsContentLoading
+    public bool LoadFailed
     {
-        get => _isContentLoading;
-        private set
-        {
-            if (Set(ref _isContentLoading, value))
-            {
-                OnPropertyChanged(nameof(ShowNoContent));
-            }
-        }
+        get => _loadFailed;
+        private set => Set(ref _loadFailed, value);
     }
 
-    /// <summary>
-    /// "该任务暂无攻略正文"提示的显隐：**必须等正文加载结束**再判断，否则每次切换任务都会先闪一下这句提示。
-    /// </summary>
-    public bool ShowNoContent => !_isContentLoading && _selected is not null && !HasContent;
-
-    public bool IsEmpty => _items.Count == 0 && !IsLoading;
-
-    /// <summary>选中任务的攻略正文（Markdown 原文，由 <c>MarkdownPresenter</c> 渲染）。</summary>
-    public string ContentText
+    public string Error
     {
-        get => _contentText;
-        private set
-        {
-            if (Set(ref _contentText, value ?? string.Empty))
-            {
-                OnPropertyChanged(nameof(HasContent));
-                OnPropertyChanged(nameof(ShowNoContent));
-            }
-        }
+        get => _error;
+        private set => Set(ref _error, value);
     }
 
-    public bool HasContent => !string.IsNullOrWhiteSpace(_contentText);
+    public bool IsEmpty => !_isLoading && _items.Count == 0;
 
-    public string StatusText
+    /// <summary>右侧元信息：分类 · 等级 · 类型 · 势力（· 任务线）。</summary>
+    public string MetaText
     {
         get
         {
-            if (IsLoading)
+            if (_selected is null)
             {
-                return FindString("MissionPage_Loading");
+                return string.Empty;
             }
 
-            if (_loadFailed)
+            var parts = new List<string>();
+            var cat = MissionCategoryName(_selected.Category);
+            if (!string.IsNullOrEmpty(cat))
             {
-                return string.Format(FindString("MissionPage_LoadFailed"), _error);
+                parts.Add(cat);
             }
 
-            return string.Format(FindString(_isSearchResult ? "MissionPage_SearchSummary" : "MissionPage_Summary"), _items.Count);
+            if (_selected.Level > 0)
+            {
+                parts.Add($"L{_selected.Level}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(_selected.MissionType))
+            {
+                parts.Add(MissionTypeName(_selected.MissionType));
+            }
+
+            if (_selected.Faction >= 0)
+            {
+                parts.Add(FindString(FactionKeyOf(_selected.Faction)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(_selected.Arc))
+            {
+                parts.Add(_selected.Arc);
+            }
+
+            return string.Join(" · ", parts);
         }
     }
+
+    public bool HasMeta => !string.IsNullOrEmpty(MetaText);
+
+    public string StatusText => string.Format(
+        FindString(_isSearchResult ? "DEDPage_SearchSummary" : "MissionPage_Summary"),
+        _items.Count);
 
     public async Task InitAsync()
     {
@@ -163,140 +211,200 @@ public sealed class MissionPageViewModel : INotifyPropertyChanged
         await ReloadAsync();
     }
 
+    // ---------------------------------------------------------------- 取数
     private void QueueSearch()
     {
         _searchCts?.Cancel();
-        var cts = new CancellationTokenSource();
-        _searchCts = cts;
-        _ = RunDebouncedSearchAsync(cts);
-    }
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
 
-    private async Task RunDebouncedSearchAsync(CancellationTokenSource cts)
-    {
-        try
+        _ = Task.Run(async () =>
         {
-            await Task.Delay(SearchDebounceMs, cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
+            try
+            {
+                await Task.Delay(SearchDebounceMs, token);
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
 
-        if (!cts.IsCancellationRequested)
-        {
-            await ReloadAsync();
-        }
+                await Application.Current.Dispatcher.InvokeAsync(() => _ = ReloadAsync());
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+        }, token);
     }
 
     private async Task ReloadAsync()
     {
         _loadCts?.Cancel();
-        var cts = new CancellationTokenSource();
-        _loadCts = cts;
+        _loadCts = new CancellationTokenSource();
+        var token = _loadCts.Token;
 
-        var keyword = _searchText.Trim();
         IsLoading = true;
-        OnPropertyChanged(nameof(StatusText));
-        OnPropertyChanged(nameof(IsEmpty));
+        LoadFailed = false;
+        Error = string.Empty;
+        var previousId = _selected?.Id;
 
         try
         {
-            var result = keyword.Length > 0
-                ? await MissionService.QueryMissionAsync(keyword)
-                : await MissionService.QueryMissionAsync(_levelIndex + 1);
+            // 下拉用 int.MinValue 表示"不限"，服务层用的是 AnyCategory(-1) / AnyLevel(0) / AnyFaction(-1)，
+            // 直接透传会把哨兵值当成真实条件（结果是 0 行，踩过一次）。
+            var category = _selectedCategory is null || _selectedCategory.Key == int.MinValue
+                ? MissionService.AnyCategory
+                : _selectedCategory.Key;
+            var level = _selectedLevel is null || _selectedLevel.Key == int.MinValue
+                ? MissionService.AnyLevel
+                : _selectedLevel.Key;
+            var faction = _selectedFaction is null || _selectedFaction.Key == int.MinValue
+                ? MissionService.AnyFaction
+                : _selectedFaction.Key;
 
-            if (cts.IsCancellationRequested)
+            var list = await MissionService.QueryAsync(category, level, faction, _searchText);
+
+            if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            _isSearchResult = keyword.Length > 0;
-            _loadFailed = false;
-            _error = string.Empty;
-
             _items.Clear();
-            foreach (var item in result ?? new List<Mission>())
+            foreach (var m in list)
             {
-                _items.Add(item);
+                _items.Add(m);
             }
 
-            Selected = _selected is not null && _items.Contains(_selected)
-                ? _selected
-                : _items.FirstOrDefault();
+            _isSearchResult = !string.IsNullOrWhiteSpace(_searchText);
+            Selected = _items.FirstOrDefault(x => x.Id == previousId) ?? _items.FirstOrDefault();
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
-
-            if (!cts.IsCancellationRequested)
-            {
-                _loadFailed = true;
-                _error = ex.Message;
-                _items.Clear();
-                Selected = null;
-            }
+            LoadFailed = true;
+            Error = ex.Message;
         }
         finally
         {
-            if (!cts.IsCancellationRequested)
-            {
-                IsLoading = false;
-                OnPropertyChanged(nameof(StatusText));
-                OnPropertyChanged(nameof(IsEmpty));
-            }
+            IsLoading = false;
+            OnPropertyChanged(nameof(IsEmpty));
         }
     }
 
-    /// <summary>
-    /// 取选中任务的正文。Core 的 <c>QueryMissionContent</c> 是同步的（单行查询），
-    /// 放到线程池上跑，避免在 UI 线程上碰 SQLite（§9 第 37 条）。
-    /// </summary>
-    private async Task LoadContentAsync(Mission? mission)
+    // ---------------------------------------------------------------- 下拉
+    private void RebuildCategoryOptions()
     {
-        _contentCts?.Cancel();
-
-        if (mission is null)
+        var keep = _selectedCategory?.Key ?? int.MinValue;
+        CategoryOptions.Clear();
+        CategoryOptions.Add(new FilterOption(int.MinValue, FindString("MissionPage_AllCategories")));
+        foreach (var c in Enum.GetValues(typeof(MissionCategory)).Cast<MissionCategory>())
         {
-            ContentText = string.Empty;
-            IsContentLoading = false;
-            return;
+            CategoryOptions.Add(new FilterOption((int)c, MissionCategoryName((int)c)));
         }
 
-        var cts = new CancellationTokenSource();
-        _contentCts = cts;
-        IsContentLoading = true;
-
-        try
-        {
-            var id = mission.Id;
-            var content = await Task.Run(() => MissionService.QueryMissionContent(id));
-
-            if (!cts.IsCancellationRequested)
-            {
-                ContentText = content?.Content ?? string.Empty;
-            }
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-
-            if (!cts.IsCancellationRequested)
-            {
-                ContentText = string.Empty;
-                _error = ex.Message;
-            }
-        }
-        finally
-        {
-            if (!cts.IsCancellationRequested)
-            {
-                IsContentLoading = false;
-            }
-        }
+        _selectedCategory = CategoryOptions.FirstOrDefault(o => o.Key == keep) ?? CategoryOptions[0];
+        OnPropertyChanged(nameof(SelectedCategory));
     }
+
+    private void RebuildLevelOptions()
+    {
+        var keep = _selectedLevel?.Key ?? int.MinValue;
+        LevelOptions.Clear();
+        LevelOptions.Add(new FilterOption(int.MinValue, FindString("MissionPage_AllLevels")));
+        for (var i = 1; i <= 5; i++)
+        {
+            LevelOptions.Add(new FilterOption(i, $"L{i}"));
+        }
+
+        _selectedLevel = LevelOptions.FirstOrDefault(o => o.Key == keep) ?? LevelOptions[0];
+        OnPropertyChanged(nameof(SelectedLevel));
+    }
+
+    private void RebuildFactionOptions()
+    {
+        var keep = _selectedFaction?.Key ?? int.MinValue;
+        FactionOptions.Clear();
+        FactionOptions.Add(new FilterOption(int.MinValue, FindString("DEDPage_AllFactions")));
+        // 0–5 海盗势力，6–9 四大帝国（任务里"针对四大种族"那一类）
+        for (var i = 0; i <= 9; i++)
+        {
+            FactionOptions.Add(new FilterOption(i, FindString(FactionKeyOf(i))));
+        }
+
+        _selectedFaction = FactionOptions.FirstOrDefault(o => o.Key == keep) ?? FactionOptions[0];
+        OnPropertyChanged(nameof(SelectedFaction));
+    }
+
+    // ---------------------------------------------------------------- 文案
+    private static string MissionCategoryName(int category)
+    {
+        var key = CategoryKeyOf(category);
+        return key is null ? string.Empty : FindString(key);
+    }
+
+    private static string? CategoryKeyOf(int category) => category switch
+    {
+        (int)MissionCategory.Security => "MissionPage_Cat_Security",
+        (int)MissionCategory.Distribution => "MissionPage_Cat_Distribution",
+        (int)MissionCategory.Mining => "MissionPage_Cat_Mining",
+        (int)MissionCategory.Storyline => "MissionPage_Cat_Storyline",
+        (int)MissionCategory.Epic => "MissionPage_Cat_Epic",
+        (int)MissionCategory.Anomic => "MissionPage_Cat_Anomic",
+        (int)MissionCategory.Cosmos => "MissionPage_Cat_Cosmos",
+        (int)MissionCategory.Rnd => "MissionPage_Cat_Rnd",
+        (int)MissionCategory.Career => "MissionPage_Cat_Career",
+        (int)MissionCategory.Circle => "MissionPage_Cat_Circle",
+        _ => null,
+    };
+
+    /// <summary>wiki 的 Type 原值 → 本地化文案（未登记的原样返回）。</summary>
+    private static string MissionTypeName(string type)
+    {
+        var t = type.Trim();
+        var key = t.ToLowerInvariant() switch
+        {
+            "encounter" => "MissionPage_Type_Encounter",
+            "courier" => "MissionPage_Type_Courier",
+            "mining" => "MissionPage_Type_Mining",
+            "trade" => "MissionPage_Type_Trade",
+            "talk to agent" => "MissionPage_Type_TalkToAgent",
+            "agent interaction" => "MissionPage_Type_AgentInteraction",
+            "storyline(encounter)" => "MissionPage_Type_StorylineEncounter",
+            "storyline(courier)" => "MissionPage_Type_StorylineCourier",
+            "storyline(mining)" => "MissionPage_Type_StorylineMining",
+            "storyline(trade)" => "MissionPage_Type_StorylineTrade",
+            "storyline" => "MissionPage_Type_Storyline",
+            _ => null,
+        };
+        return key is null ? t : FindString(key);
+    }
+
+    private static string FactionKeyOf(int faction) => faction switch
+    {
+        0 => "DEDPage_Drone",
+        1 => "DEDPage_Serpentis",
+        2 => "DEDPage_BloodRaider",
+        3 => "DEDPage_Sansha",
+        4 => "DEDPage_Angel",
+        5 => "DEDPage_Guristas",
+        6 => "MissionPage_Faction_Amarr",
+        7 => "MissionPage_Faction_Caldari",
+        8 => "MissionPage_Faction_Gallente",
+        9 => "MissionPage_Faction_Minmatar",
+        _ => "DEDPage_Drone",
+    };
 
     private void OnLanguageChanged(object? sender, string language)
-        => OnPropertyChanged(nameof(StatusText));
+    {
+        RebuildCategoryOptions();
+        RebuildLevelOptions();
+        RebuildFactionOptions();
+        OnPropertyChanged(nameof(StatusText));
+        OnPropertyChanged(nameof(MetaText));
+    }
 
     private static string FindString(string key)
         => Application.Current?.TryFindResource(key) as string ?? key;

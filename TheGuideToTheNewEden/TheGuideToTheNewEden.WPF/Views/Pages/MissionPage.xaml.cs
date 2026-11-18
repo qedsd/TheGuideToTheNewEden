@@ -5,8 +5,8 @@ using TheGuideToTheNewEden.WPF.ViewModels;
 namespace TheGuideToTheNewEden.WPF.Views.Pages;
 
 /// <summary>
-/// 任务页：左侧"等级筛选 + 名称搜索"的任务列表，右侧是选中任务的攻略正文（Markdown）。
-/// 对应 WinUI 版 <c>Views/MissionPage</c>，数据取自 Core <c>MissionService</c>（<c>Resources/Database/static.db</c>）。
+/// 「攻略 · 任务」页：左侧搜索 + 列表 + 分类/等级/势力筛选，右侧标题与 Markdown 正文。
+/// 数据来自 static.db 的 Mission 表（EVE University Wiki 的 Missions 体系，1313 条）。
 /// </summary>
 public partial class MissionPage : Page
 {
@@ -23,7 +23,7 @@ public partial class MissionPage : Page
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        // 页面是常驻缓存的（NavigationCacheMode=Required），只有第一次进来时查库。
+        // 页面常驻缓存（NavigationCacheMode=Required），数据只查第一次。
         if (_loaded)
         {
             return;

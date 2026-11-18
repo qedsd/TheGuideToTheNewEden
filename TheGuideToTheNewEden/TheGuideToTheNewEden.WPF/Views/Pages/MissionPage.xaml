@@ -4,17 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
-    xmlns:dbmodels="clr-namespace:TheGuideToTheNewEden.Core.DBModels;assembly=TheGuideToTheNewEden.Core"
+    xmlns:dbmodels="clr-namespace:TheGuideToTheNewEden.Core.DBModels.Static;assembly=TheGuideToTheNewEden.Core"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
     <!--
-        任务页（对应 WinUI 版 Views/MissionPage.xaml）：左卡 = 搜索 + 列表 + 等级筛选，右卡 = 选中任务的攻略正文。
-        · 数据来自 Core 的 MissionService（Resources/Database/static.db）：列表按等级/名称查，正文按 Id 查 MissionContent。
-        · 正文是 Markdown（上古 EVEWiki 导出），渲染走自写的 Controls/MarkdownPresenter（无新增依赖）。
-        · 与 WinUI 的差异：AutoSuggestBox → 搜索框 + 就地结果列表；正文加载期间右卡显示页内局部等待；
-          页面内不显示大标题（见 REFACTORING.md §10「UI 约定」）。
+        「攻略 · 任务」页（2026-11 重做）。
+        · 数据：Core/MissionService → Resources/Database/static.db 的 Mission 表（1313 条，来自 EVE University Wiki 的 Missions 体系）。
+        · 左卡 = 搜索 + 列表 + 三个筛选（分类 / 等级 / 势力）；
+          右卡 = 中英标题 + 元信息 + 正文（任务目标 / 属性 / 攻略正文 / NPC 表，全部 Markdown）。
+        · 与「死亡远征」页同构，用户切功能不用换脑子（见 REFACTORING.md 阶段 354）。
     -->
     <Page.Resources>
         <converters:MissionLevelConverter x:Key="MissionLevel" />
@@ -27,30 +27,50 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <TextBlock
                     Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                    Text="{Binding Title_Zh}"
+                    Text="{Binding TitleEN}"
                     TextWrapping="Wrap" />
 
                 <TextBlock
                     Grid.Row="1"
                     Margin="0,2,0,0"
-                    FontSize="12"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{Binding Level, Converter={StaticResource MissionLevel}}" />
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding TitleCN}"
+                    TextWrapping="Wrap" />
+
+                <Grid Grid.Row="2" Margin="0,2,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding MissionType}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="8,0,0,0"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                        Text="{Binding Level, Converter={StaticResource MissionLevel}}" />
+                </Grid>
             </Grid>
         </DataTemplate>
     </Page.Resources>
 
     <Grid Margin="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="340" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  左：搜索 + 列表 + 等级筛选  -->
+        <!--  左：搜索 + 列表 + 筛选  -->
         <controls:CardControl>
             <controls:CardControl.Header>
                 <ui:TextBox
@@ -62,7 +82,6 @@
 
             <Grid>
                 <ListBox
-                    x:Name="MissionList"
                     Background="Transparent"
                     BorderThickness="0"
                     ItemContainerStyle="{StaticResource StretchListItem}"
@@ -86,16 +105,28 @@
             <controls:CardControl.Footer>
                 <StackPanel HorizontalAlignment="Stretch">
                     <ComboBox
+                        Margin="0,0,0,6"
                         HorizontalAlignment="Stretch"
-                        SelectedIndex="{Binding LevelIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="{DynamicResource Mission_Level_1}" />
-                        <ComboBoxItem Content="{DynamicResource Mission_Level_2}" />
-                        <ComboBoxItem Content="{DynamicResource Mission_Level_3}" />
-                        <ComboBoxItem Content="{DynamicResource Mission_Level_4}" />
-                        <ComboBoxItem Content="{DynamicResource Mission_Level_5}" />
-                    </ComboBox>
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding CategoryOptions}"
+                        SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+
+                    <ComboBox
+                        Margin="0,0,0,6"
+                        HorizontalAlignment="Stretch"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding LevelOptions}"
+                        SelectedItem="{Binding SelectedLevel, Mode=TwoWay}" />
+
+                    <ComboBox
+                        Margin="0,0,0,6"
+                        HorizontalAlignment="Stretch"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding FactionOptions}"
+                        SelectedItem="{Binding SelectedFaction, Mode=TwoWay}" />
+
                     <TextBlock
-                        Margin="0,6,0,0"
+                        Margin="0,2,0,0"
                         HorizontalAlignment="Center"
                         FontSize="12"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -104,49 +135,49 @@
             </controls:CardControl.Footer>
         </controls:CardControl>
 
-        <!--  右：正文（未选中时给引导文案）  -->
+        <!--  右：标题 + 元信息 + 正文  -->
         <Grid Grid.Column="1" Margin="12,0,0,0">
             <controls:CardControl Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
                 <controls:CardControl.Header>
-                    <TextBlock
-                        Margin="0,4"
-                        FontSize="18"
-                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                        Text="{Binding Selected.Title_Zh, Mode=OneWay}"
-                        TextWrapping="Wrap" />
+                    <StackPanel Margin="0,4">
+                        <controls:RichTextPresenter
+                            VerticalAlignment="Top"
+                            FontSize="18"
+                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            Text="{Binding Selected.TitleEN, Mode=OneWay}"
+                            VerticalScrollBarVisibility="Disabled" />
+                        <controls:RichTextPresenter
+                            Margin="0,2,0,0"
+                            VerticalAlignment="Top"
+                            FontSize="15"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Selected.TitleCN, Mode=OneWay}"
+                            VerticalScrollBarVisibility="Disabled" />
+                        <controls:RichTextPresenter
+                            Margin="0,6,0,0"
+                            VerticalAlignment="Top"
+                            FontSize="13"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding MetaText, Mode=OneWay}"
+                            VerticalScrollBarVisibility="Disabled"
+                            Visibility="{Binding HasMeta, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
                 </controls:CardControl.Header>
 
                 <Grid>
                     <controls:MarkdownPresenter
                         BaseFontSize="16"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Markdown="{Binding ContentText, Mode=OneWay}" />
-
-                    <!--  正文加载中：页内局部指示（不用全局遮罩，§9 第 39 条）  -->
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Visibility="{Binding IsContentLoading, Converter={StaticResource BoolToVis}}">
-                        <controls:SpinnerIcon
-                            HorizontalAlignment="Center"
-                            FontSize="30"
-                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                            IsActive="{Binding IsContentLoading}" />
-                        <TextBlock
-                            Margin="0,10,0,0"
-                            HorizontalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource MissionPage_ContentLoading}" />
-                    </StackPanel>
+                        Markdown="{Binding Selected.WikiContent, Mode=OneWay}" />
 
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource MissionPage_NoContent}"
+                        Text="{DynamicResource MissionPage_NoSelection}"
                         TextAlignment="Center"
                         TextWrapping="Wrap"
-                        Visibility="{Binding ShowNoContent, Converter={StaticResource BoolToVis}}" />
+                        Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}" />
                 </Grid>
             </controls:CardControl>
 

@@ -1,0 +1,1189 @@
+[
+ {
+  "title": "After The Seven",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Agent Failed (4 of 4)",
+  "action": "keep",
+  "reason": "SDE 无",
+  "sdeZh": "代理人失手"
+ },
+ {
+  "title": "Air Show!",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Amarr Excavators",
+  "action": "map",
+  "sdeEn": "Amarrian Excavators",
+  "sdeZh": "艾玛挖掘者",
+  "reason": "对齐到 SDE：Amarrian Excavators"
+ },
+ {
+  "title": "Angel Strike (Blood Raiders)",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Angel Strike (Guristas Pirates)",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Angel Strike (Sansha's Nation)",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Angel Strike - Ambush in the Dark (1 of 10)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Ambush in the Dark (1 of 10)",
+  "sdeZh": "绑架者的进攻—黑暗中的伏击(1/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Ambush in the Dark (1 of 10)"
+ },
+ {
+  "title": "Angel Strike - Defend the Civilian Convoy (8 of 10) (Blood Raiders)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Defend the Civilian Convoy (8 of 10)",
+  "sdeZh": "绑架者的进攻—守卫平民护航队(8/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Defend the Civilian Convoy (8 of 10)"
+ },
+ {
+  "title": "Angel Strike - Defend the Civilian Convoy (8 of 10) (Guristas Pirates)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Defend the Civilian Convoy (8 of 10)",
+  "sdeZh": "绑架者的进攻—守卫平民护航队(8/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Defend the Civilian Convoy (8 of 10)"
+ },
+ {
+  "title": "Angel Strike - Defend the Civilian Convoy (8 of 10) (Sansha's Nation)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Defend the Civilian Convoy (8 of 10)",
+  "sdeZh": "绑架者的进攻—守卫平民护航队(8/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Defend the Civilian Convoy (8 of 10)"
+ },
+ {
+  "title": "Angel Strike - Incriminating Evidence (5 of 10) (Blood Raiders)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Incriminating Evidence (5 of 10)",
+  "sdeZh": "绑架者的进攻—罪证(5/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Incriminating Evidence (5 of 10)"
+ },
+ {
+  "title": "Angel Strike - Incriminating Evidence (5 of 10) (Guristas Pirates)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Incriminating Evidence (5 of 10)",
+  "sdeZh": "绑架者的进攻—罪证(5/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Incriminating Evidence (5 of 10)"
+ },
+ {
+  "title": "Angel Strike - Incriminating Evidence (5 of 10) (Sansha's Nation)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Incriminating Evidence (5 of 10)",
+  "sdeZh": "绑架者的进攻—罪证(5/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Incriminating Evidence (5 of 10)"
+ },
+ {
+  "title": "Angel Strike - Possible Leads (4 of 10)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Possible Leads (4 of 10)",
+  "sdeZh": "绑架者的进攻—可能的线索(4/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Possible Leads (4 of 10)"
+ },
+ {
+  "title": "Angel Strike - Retrieve the Prisoners (9 of 10) (Blood Raiders)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Retrieve the Prisoners (9 of 10)",
+  "sdeZh": "绑架者的进攻—追回俘虏(9/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Retrieve the Prisoners (9 of 10)"
+ },
+ {
+  "title": "Angel Strike - Retrieve the Prisoners (9 of 10) (Guristas Pirates)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Retrieve the Prisoners (9 of 10)",
+  "sdeZh": "绑架者的进攻—追回俘虏(9/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Retrieve the Prisoners (9 of 10)"
+ },
+ {
+  "title": "Angel Strike - Retrieve the Prisoners (9 of 10) (Sansha's Nation)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - Retrieve the Prisoners (9 of 10)",
+  "sdeZh": "绑架者的进攻—追回俘虏(9/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - Retrieve the Prisoners (9 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Final Battle (10 of 10) (Blood Raiders)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Final Battle (10 of 10)",
+  "sdeZh": "绑架者的进攻—最后的战役(10/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Final Battle (10 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Final Battle (10 of 10) (Guristas Pirates)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Final Battle (10 of 10)",
+  "sdeZh": "绑架者的进攻—最后的战役(10/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Final Battle (10 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Final Battle (10 of 10) (Sansha's Nation)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Final Battle (10 of 10)",
+  "sdeZh": "绑架者的进攻—最后的战役(10/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Final Battle (10 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Flu Outbreak (6 of 10)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Flu Outbreak (6 of 10)",
+  "sdeZh": "绑架者的进攻—流感爆发（6/10）",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Flu Outbreak (6 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Interrogation (2 of 10)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Interrogation (2 of 10)",
+  "sdeZh": "绑架者的进攻—审问(2/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Interrogation (2 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Kidnapping (3 of 10)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Kidnapping (3 of 10)",
+  "sdeZh": "绑架者的进攻—绑架(3/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Kidnapping (3 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Secret Meeting (7 of 10) (Blood Raiders)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Secret Meeting  (7 of 10)",
+  "sdeZh": "绑架者的进攻—秘会(7/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Secret Meeting  (7 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Secret Meeting (7 of 10) (Guristas Pirates)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Secret Meeting  (7 of 10)",
+  "sdeZh": "绑架者的进攻—秘会(7/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Secret Meeting  (7 of 10)"
+ },
+ {
+  "title": "Angel Strike - The Secret Meeting (7 of 10) (Sansha's Nation)",
+  "action": "map",
+  "sdeEn": "Kidnappers Strike - The Secret Meeting  (7 of 10)",
+  "sdeZh": "绑架者的进攻—秘会(7/10)",
+  "reason": "对齐到 SDE：Kidnappers Strike - The Secret Meeting  (7 of 10)"
+ },
+ {
+  "title": "Booster Manufacturing (Blue Pill)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（蓝色药丸）"
+ },
+ {
+  "title": "Booster Manufacturing (Crash)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（克拉什）"
+ },
+ {
+  "title": "Booster Manufacturing (Drop)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（坠落）"
+ },
+ {
+  "title": "Booster Manufacturing (Exile)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（游离）"
+ },
+ {
+  "title": "Booster Manufacturing (Frentix)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（疯癫）"
+ },
+ {
+  "title": "Booster Manufacturing (Mindflood)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（思维冲击）"
+ },
+ {
+  "title": "Booster Manufacturing (Sooth Sayer)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（梦呓）"
+ },
+ {
+  "title": "Booster Manufacturing (X-Instict)",
+  "action": "keep",
+  "reason": "SDE 里这 8 条按产出星系命名（E-8CSQ / 09-4XW…），与 wiki 的药剂名对不上；保留 wiki 名并翻译药剂名",
+  "sdeZh": "制造增效剂（X—本能）"
+ },
+ {
+  "title": "Breaking Tradition - The Shaman’s Abode Part 1 (1 of 3)",
+  "action": "map",
+  "sdeEn": "Breaking Tradition - The Shaman's Abode (1 of 3)",
+  "sdeZh": "打破传统—萨满的住所 (1/3)",
+  "reason": "对齐到 SDE：Breaking Tradition - The Shaman's Abode (1 of 3)"
+ },
+ {
+  "title": "Breaking Tradition - The Shaman’s Abode Part 2 (2 of 3)",
+  "action": "map",
+  "sdeEn": "Breaking Tradition - Maru Report (2 of 3)",
+  "sdeZh": "打破传统—马鲁报告（2/3）",
+  "reason": "对齐到 SDE：Breaking Tradition - Maru Report (2 of 3)"
+ },
+ {
+  "title": "Business Associates - Prologue",
+  "action": "map",
+  "sdeEn": "Business Associates - Prelude",
+  "sdeZh": "生意伙伴—前兆",
+  "reason": "对齐到 SDE：Business Associates - Prelude"
+ },
+ {
+  "title": "Clear the Traderoute",
+  "action": "map",
+  "sdeEn": "Clear the Trade Route",
+  "sdeZh": "清除贸易路线",
+  "reason": "对齐到 SDE：Clear the Trade Route"
+ },
+ {
+  "title": "Clone Delivery (1 of 4)",
+  "action": "keep",
+  "reason": "SDE 无此系列",
+  "sdeZh": "克隆体递送（1/4）"
+ },
+ {
+  "title": "Corpse Dealer - Bring Back the Corpse Part (2 of 3)",
+  "action": "map",
+  "sdeEn": "Corpse Dealer - Bring Back the Goods (2 of 3)",
+  "sdeZh": "尸体商人—回收货物 (2/3)",
+  "reason": "对齐到 SDE：Corpse Dealer - Bring Back the Goods (2 of 3)"
+ },
+ {
+  "title": "Corpse Dealer - Kutill’s Hacker Program Part (3 of 3)",
+  "action": "map",
+  "sdeEn": "Corpse Dealer - Kutill's Hacker Program (3 of 3)",
+  "sdeZh": "尸体商人—库提尔的黑客程序 (3/3)",
+  "reason": "对齐到 SDE：Corpse Dealer - Kutill's Hacker Program (3 of 3)"
+ },
+ {
+  "title": "Corpse Dealer - The Bodypart Trade Part (1 of 3)",
+  "action": "map",
+  "sdeEn": "Corpse Dealer - The Bodypart Trade (1 of 3)",
+  "sdeZh": "尸体商人—器官交易（1/3）",
+  "reason": "对齐到 SDE：Corpse Dealer - The Bodypart Trade (1 of 3)"
+ },
+ {
+  "title": "Curiosity",
+  "action": "keep",
+  "reason": "SDE 无（候选 Curiosity Shop 是另一个任务）",
+  "sdeZh": "好奇心"
+ },
+ {
+  "title": "Driving a Wedge",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Driving a Wedge (Alternate Variant)",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Driving a Wedge - Ammbasidorial Ambush",
+  "action": "map",
+  "sdeEn": "Driving a Wedge - Ambassadorial Ambush (1 of 2)",
+  "sdeZh": "离间——大使的埋伏（1/2）",
+  "reason": "对齐到 SDE：Driving a Wedge - Ambassadorial Ambush (1 of 2)"
+ },
+ {
+  "title": "Driving a Wedge - Consulate Conflagaration",
+  "action": "map",
+  "sdeEn": "Driving a Wedge - Consulate Conflagration (2 of 2)",
+  "sdeZh": "离间——领馆失火（2/2）",
+  "reason": "对齐到 SDE：Driving a Wedge - Consulate Conflagration (2 of 2)"
+ },
+ {
+  "title": "Driving_a_Wedge_-_Ammbasidorial_Ambush",
+  "action": "exclude",
+  "reason": "同一任务的下划线重复页（wiki 标题带 _ 的那份）"
+ },
+ {
+  "title": "Driving_a_Wedge_-_Consulate_Conflagaration",
+  "action": "exclude",
+  "reason": "同一任务的下划线重复页（wiki 标题带 _ 的那份）"
+ },
+ {
+  "title": "Elohim X-Instinct Production Facility",
+  "action": "keep",
+  "reason": "COSMOS 地点页，SDE 无",
+  "sdeZh": "以罗欣 X—本能生产设施"
+ },
+ {
+  "title": "Endless Battle",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "无尽的战斗"
+ },
+ {
+  "title": "Epidemic - Food Relief (2 of 2)",
+  "action": "keep",
+  "reason": "SDE 第 2 段叫 Out of Hand，与 wiki 的 Food Relief 不一致，先保留",
+  "sdeZh": "瘟疫 - 食物救济（2/2）"
+ },
+ {
+  "title": "Fair Play",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "公平竞争"
+ },
+ {
+  "title": "Falling the Nation Comes at a Cost",
+  "action": "map",
+  "sdeEn": "Failing The Nation Comes At A Cost",
+  "sdeZh": "失败的代价",
+  "reason": "对齐到 SDE：Failing The Nation Comes At A Cost"
+ },
+ {
+  "title": "Father And Son",
+  "action": "map",
+  "sdeEn": "Fathers and Sons",
+  "sdeZh": "父与子",
+  "reason": "对齐到 SDE：Fathers and Sons"
+ },
+ {
+  "title": "Flame of Peace",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Flame of Peace (1 of 4)",
+  "action": "map",
+  "sdeEn": "Flame of Peace - Heresy (1 of 4)",
+  "sdeZh": "和平火焰 - 异教(1/4)",
+  "reason": "对齐到 SDE：Flame of Peace - Heresy (1 of 4)"
+ },
+ {
+  "title": "Flame of Peace (2 of 4)",
+  "action": "map",
+  "sdeEn": "Flame of Peace - Scriptures (2 of 4)",
+  "sdeZh": "和平火焰—圣典（2/4）",
+  "reason": "对齐到 SDE：Flame of Peace - Scriptures (2 of 4)"
+ },
+ {
+  "title": "Flame of Peace (3 of 4)",
+  "action": "map",
+  "sdeEn": "Flame of Peace - Cannibalism (3 of 4)",
+  "sdeZh": "和平火焰 – 食人主义(3/4)",
+  "reason": "对齐到 SDE：Flame of Peace - Cannibalism (3 of 4)"
+ },
+ {
+  "title": "Flame of Peace (4 of 4)",
+  "action": "map",
+  "sdeEn": "Flame of Peace - Chosen (4 of 4)",
+  "sdeZh": "和平火焰 – 天择(4/4)",
+  "reason": "对齐到 SDE：Flame of Peace - Chosen (4 of 4)"
+ },
+ {
+  "title": "Ghost Wars - Gloom (3 of 3)",
+  "action": "map",
+  "sdeEn": "Ghost War - Gloom (3 of 3)",
+  "sdeZh": "幽灵战争—阴沉 (3/3)",
+  "reason": "对齐到 SDE：Ghost War - Gloom (3 of 3)"
+ },
+ {
+  "title": "Ghost Wars - Mist (2 of 3)",
+  "action": "map",
+  "sdeEn": "Ghost War - Mist (2 of 3)",
+  "sdeZh": "幽灵战争—迷雾 (2/3)",
+  "reason": "对齐到 SDE：Ghost War - Mist (2 of 3)"
+ },
+ {
+  "title": "Ghost Wars - Shadows (1 of 3)",
+  "action": "map",
+  "sdeEn": "Ghost War - Shadows (1 of 3)",
+  "sdeZh": "幽灵战争—暗影 (1/3)",
+  "reason": "对齐到 SDE：Ghost War - Shadows (1 of 3)"
+ },
+ {
+  "title": "Hidden Truths - Extremely Unfortunate Incident (3 of 3)",
+  "action": "keep",
+  "reason": "SDE 只有第 1 段，wiki 的 2/3 段无对应",
+  "sdeZh": "隐藏的真相 - 极其不幸的事件（3/3）"
+ },
+ {
+  "title": "Hidden Truths - Unfolding a Mystery (2 of 3)",
+  "action": "keep",
+  "reason": "SDE 只有第 1 段，wiki 的 2/3 段无对应",
+  "sdeZh": "隐藏的真相 - 揭开谜团（2/3）"
+ },
+ {
+  "title": "Humble Beginnings",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "卑微的起点"
+ },
+ {
+  "title": "Intaki and Mordus Legion",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "因塔基与莫德团"
+ },
+ {
+  "title": "Khanid Nobleman",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "卡尼德贵族"
+ },
+ {
+  "title": "Labor of Love",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "乐意为之"
+ },
+ {
+  "title": "Lamb Amongst Lions",
+  "action": "map",
+  "sdeEn": "Lamb Among Lions",
+  "sdeZh": "羊入虎口",
+  "reason": "对齐到 SDE：Lamb Among Lions"
+ },
+ {
+  "title": "Mordus Folly",
+  "action": "map",
+  "sdeEn": "Mordu's Folly (1 of 2)",
+  "sdeZh": "莫德的蠢事儿（1/2）",
+  "reason": "对齐到 SDE：Mordu's Folly (1 of 2)"
+ },
+ {
+  "title": "New Frontiers 1-7",
+  "action": "keep",
+  "reason": "wiki 汇总页，SDE 无",
+  "sdeZh": "新边疆 1-7"
+ },
+ {
+  "title": "Nugoeihuvi Servant - Advancing in Rank (1 of 3)",
+  "action": "map",
+  "sdeEn": "Nugoeihuvi Servant - Proving One's Loyalty (1 of 3)",
+  "sdeZh": "证明忠心 (1/3)",
+  "reason": "对齐到 SDE：Nugoeihuvi Servant - Proving One's Loyalty (1 of 3)"
+ },
+ {
+  "title": "Nugoeihuvi Servant - Creating Trust (1 of 3)",
+  "action": "map",
+  "sdeEn": "Nugoeihuvi Servant - Proving One's Loyalty (1 of 3)",
+  "sdeZh": "证明忠心 (1/3)",
+  "reason": "对齐到 SDE：Nugoeihuvi Servant - Proving One's Loyalty (1 of 3)"
+ },
+ {
+  "title": "Pot and Kettle",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Requiem For A Peace - The Redemption (3 of 3)",
+  "action": "map",
+  "sdeEn": "Requiem for a Peace - Sentiment (3 of 3)",
+  "sdeZh": "和平的挽歌—温情 (3/3)",
+  "reason": "对齐到 SDE：Requiem for a Peace - Sentiment (3 of 3)"
+ },
+ {
+  "title": "Secret Project X (2 of 3)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Secret Project X (3 of 3)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Small Misunderstanding",
+  "action": "map",
+  "sdeEn": "Small Misunderstanding (1 of 3)",
+  "sdeZh": "小误会(1/3)",
+  "reason": "对齐到 SDE：Small Misunderstanding (1 of 3)"
+ },
+ {
+  "title": "Smash The Shipyard",
+  "action": "keep",
+  "reason": "SDE 无",
+  "sdeZh": "捣毁船坞"
+ },
+ {
+  "title": "Striking Down Two Flies With One Swing (Angel Catel & Mercenaries)",
+  "action": "map",
+  "sdeEn": "Striking Down Two Flies In One Swing",
+  "sdeZh": "一箭双雕",
+  "reason": "对齐到 SDE：Striking Down Two Flies In One Swing"
+ },
+ {
+  "title": "Striking Down Two Flies With One Swing (Blood Raiders & Mercenaries)",
+  "action": "map",
+  "sdeEn": "Striking Down Two Flies In One Swing",
+  "sdeZh": "一箭双雕",
+  "reason": "对齐到 SDE：Striking Down Two Flies In One Swing"
+ },
+ {
+  "title": "Striking Down Two Flies With One Swing (Serpentis & Mercenaries) (Level 1)",
+  "action": "map",
+  "sdeEn": "Striking Down Two Flies In One Swing",
+  "sdeZh": "一箭双雕",
+  "reason": "对齐到 SDE：Striking Down Two Flies In One Swing"
+ },
+ {
+  "title": "Supplies for the Colonies - For The Police (3 of 3)",
+  "action": "map",
+  "sdeEn": "Supplies For The Colony - For The Police (3 of 3)",
+  "sdeZh": "殖民地的供应品—装备警察(3/3)",
+  "reason": "对齐到 SDE：Supplies For The Colony - For The Police (3 of 3)"
+ },
+ {
+  "title": "Supplies for the Colonies - Transporting the Goods (1 of 3)",
+  "action": "map",
+  "sdeEn": "Supplies For The Colony - Transporting The Goods (1 of 3)",
+  "sdeZh": "殖民地的供应品—运送货物(1/3)",
+  "reason": "对齐到 SDE：Supplies For The Colony - Transporting The Goods (1 of 3)"
+ },
+ {
+  "title": "Supplies for the Colonies - Tricky Terrain (2 of 3)",
+  "action": "map",
+  "sdeEn": "Supplies For The Colony - Tricky Terrain (2 of 3)",
+  "sdeZh": "殖民地的供应品—棘手的地形(2/3)",
+  "reason": "对齐到 SDE：Supplies For The Colony - Tricky Terrain (2 of 3)"
+ },
+ {
+  "title": "The Ani Build-Up - Carrot on a Stick (2 of 3)",
+  "action": "map",
+  "sdeEn": "The Ani Buildup - Carrot On A Stick (2 of 3)",
+  "sdeZh": "安妮大开发—棍子上的萝卜 (2/3)",
+  "reason": "对齐到 SDE：The Ani Buildup - Carrot On A Stick (2 of 3)"
+ },
+ {
+  "title": "The Ani Build-Up - Extra Medical Supplies (1 of 3)",
+  "action": "map",
+  "sdeEn": "The Ani Buildup - Extra Medical Supplies (1 of 3)",
+  "sdeZh": "安妮大开发—额外药品供应(1/3)",
+  "reason": "对齐到 SDE：The Ani Buildup - Extra Medical Supplies (1 of 3)"
+ },
+ {
+  "title": "The Ani Build-Up - Strike em Where it Hurts (3 of 3)",
+  "action": "map",
+  "sdeEn": "The Ani Buildup - Strike 'Em Where It Hurts (3 of 3)",
+  "sdeZh": "安妮大开发—一箭穿心 (3/3)",
+  "reason": "对齐到 SDE：The Ani Buildup - Strike 'Em Where It Hurts (3 of 3)"
+ },
+ {
+  "title": "The Kidnapping",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "The Left Hook",
+  "action": "map",
+  "sdeEn": "A Left Hook",
+  "sdeZh": "左勾拳",
+  "reason": "对齐到 SDE：A Left Hook"
+ },
+ {
+  "title": "The Missing Reporters",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "The Plantation Workers - Extra Hand (3 of 4)",
+  "action": "map",
+  "sdeEn": "The Plantation Workers - Extra Hands (3 of 4)",
+  "sdeZh": "种植园的工人—额外的人手 (3/4)",
+  "reason": "对齐到 SDE：The Plantation Workers - Extra Hands (3 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 2) (1 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - The Disappearance (1 of 4)",
+  "sdeZh": "抗争—失踪（1/4）",
+  "reason": "对齐到 SDE：The Uprising - The Disappearance (1 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 2) (2 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - Strike Them Where It Hurts (2 of 4)",
+  "sdeZh": "抗争—痛击（2/4）",
+  "reason": "对齐到 SDE：The Uprising - Strike Them Where It Hurts (2 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 2) (3 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - The Assault (3 of 4)",
+  "sdeZh": "抗争—袭击（3/4）",
+  "reason": "对齐到 SDE：The Uprising - The Assault (3 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 2) (4 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - Last Stand (4 of 4)",
+  "sdeZh": "抗争—背水一战（4/4）",
+  "reason": "对齐到 SDE：The Uprising - Last Stand (4 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 3) (1 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - The Disappearance (1 of 4)",
+  "sdeZh": "抗争—失踪（1/4）",
+  "reason": "对齐到 SDE：The Uprising - The Disappearance (1 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 3) (2 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - Strike Them Where It Hurts (2 of 4)",
+  "sdeZh": "抗争—痛击（2/4）",
+  "reason": "对齐到 SDE：The Uprising - Strike Them Where It Hurts (2 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 3) (3 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - The Assault (3 of 4)",
+  "sdeZh": "抗争—袭击（3/4）",
+  "reason": "对齐到 SDE：The Uprising - The Assault (3 of 4)"
+ },
+ {
+  "title": "The Uprising (Level 3) (4 of 4)",
+  "action": "map",
+  "sdeEn": "The Uprising - Last Stand (4 of 4)",
+  "sdeZh": "抗争—背水一战（4/4）",
+  "reason": "对齐到 SDE：The Uprising - Last Stand (4 of 4)"
+ },
+ {
+  "title": "Travel to Amarr",
+  "action": "map",
+  "sdeEn": "Travel to the Amarr",
+  "sdeZh": "前往艾玛",
+  "reason": "对齐到 SDE：Travel to the Amarr"
+ },
+ {
+  "title": "Travel to Minmatar",
+  "action": "map",
+  "sdeEn": "Travel to the Minmatar",
+  "sdeZh": "前往米玛塔尔",
+  "reason": "对齐到 SDE：Travel to the Minmatar"
+ },
+ {
+  "title": "Troop Build Up",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "集结部队"
+ },
+ {
+  "title": "Undue Attention",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "过分的关注"
+ },
+ {
+  "title": "Urban Management’s Census - Civilian In Custody (3 of 3)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "User:Hirmuolio Pine/sandbox",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Hirmuolio Pine/sandbox3",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Luxxianna Seraph/Sandbox/Against The Empire",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Luxxianna Seraph/Sandbox/Technological Secrets (Level 3)",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Luxxianna Seraph/Sandbox/Technological Secrets (Level 3) (1 of 3)",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Luxxianna Seraph/Sandbox/Technological Secrets (Level 3) (2 of 3)",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Luxxianna Seraph/Sandbox/Technological Secrets (Level 3) (3 of 3)",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "What's In a Name",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "What's In a Name (1 of 5)",
+  "action": "exclude",
+  "reason": "与带副标题的同一任务页重复（保留 `- \"副标题\"` 那套）"
+ },
+ {
+  "title": "What's In a Name (2 of 5)",
+  "action": "exclude",
+  "reason": "与带副标题的同一任务页重复（保留 `- \"副标题\"` 那套）"
+ },
+ {
+  "title": "What's In a Name (3 of 5)",
+  "action": "exclude",
+  "reason": "与带副标题的同一任务页重复（保留 `- \"副标题\"` 那套）"
+ },
+ {
+  "title": "What's In a Name (4 of 5)",
+  "action": "exclude",
+  "reason": "与带副标题的同一任务页重复（保留 `- \"副标题\"` 那套）"
+ },
+ {
+  "title": "What's In a Name (5 of 5)",
+  "action": "exclude",
+  "reason": "与带副标题的同一任务页重复（保留 `- \"副标题\"` 那套）"
+ },
+ {
+  "title": "What's in a Name",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Whispers In The Dark",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "A New Venture",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "新的冒险"
+ },
+ {
+  "title": "For the Troops",
+  "action": "keep",
+  "reason": "SDE 无",
+  "sdeZh": "犒劳部队"
+ },
+ {
+  "title": "Greater Good",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "更大的利益"
+ },
+ {
+  "title": "Hunting a Heretic",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "New Slaves",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "新的奴隶"
+ },
+ {
+  "title": "Regional Stability",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Save the Trees",
+  "action": "keep",
+  "reason": "SDE 无",
+  "sdeZh": "保护树木"
+ },
+ {
+  "title": "The Major",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Vitoc Vector",
+  "action": "keep",
+  "reason": "COSMOS 子任务，SDE 无",
+  "sdeZh": "崴砣柯带菌者"
+ },
+ {
+  "title": "Another Slave Rescue",
+  "action": "map",
+  "sdeEn": "Another Slave Rescue (1 of 3)",
+  "sdeZh": "另一次劳工救援（1/3）",
+  "reason": "对齐到 SDE：Another Slave Rescue (1 of 3)"
+ },
+ {
+  "title": "Guristas Strike",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Guristas Strike - Final Battle",
+  "action": "map",
+  "sdeEn": "Guristas Strike - The Final Battle (10 of 10)",
+  "sdeZh": "古斯塔斯的进攻—最后的战役(10/10)",
+  "reason": "对齐到 SDE：Guristas Strike - The Final Battle (10 of 10)"
+ },
+ {
+  "title": "Kidnappers Strike",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Kidnappers Strike Part 1-4",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Kidnappers Strike Part 5-10 (Blood Raiders)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名",
+  "sdeZh": "绑架者的进攻 第 5-10 段（血袭者）"
+ },
+ {
+  "title": "Kidnappers Strike Part 5-10 (Guristas Pirates)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名",
+  "sdeZh": "绑架者的进攻 第 5-10 段（古斯塔斯）"
+ },
+ {
+  "title": "Kidnappers Strike Part 5-10 (Sansha's Nation)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名",
+  "sdeZh": "绑架者的进攻 第 5-10 段（萨沙）"
+ },
+ {
+  "title": "Storyline mission reports",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "The Gallente Archaeologist",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "The Numon Claim",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Angel Sound",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Angel Sound/Chapter 1 - Rapture",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Angel Sound/Chapter 2 - Heaven",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Angel Sound/Chapter 2 - Utopia",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Angel Sound/Chapter 3 - Paradise",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Epic Arc Navigation List",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "Fractured Legacy",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Penumbra",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Penumbra/Chapter 1 - Proof of Intent",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Penumbra/Chapter 2 - Blackness Rising",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Penumbra/Chapter 3 - The Bottom Line",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Pirate epic arc advice",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "Right to Rule/Chapter 1: Interference",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Right to Rule/Chapter 2: Spiderweb Politics",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Right to Rule/Chapter 3: Alike Minds",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Right to Rule/Chapter 3: The Old Guard",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Silence Rahsa",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Smash and Grab",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Smash and Grab/Chapter 1: Probation",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Smash and Grab/Chapter 2: For Fun and Profit",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Smash and Grab/Chapter 3: Internal Security (Irichi Path)",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Smash and Grab/Chapter 3: Internal Security (Kori Path)",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Syndication",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "Syndication/Chapter 1 - Impetus",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Syndication/Chapter 2 - Eagle Grip",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Syndication/Chapter 2 - Scoping The Scene",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Syndication/Chapter 3 - Inertia",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars",
+  "action": "exclude",
+  "reason": "任务系列总览页（无独立游戏内任务名）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 1 - Quality of Mercy",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 2 - Automaton Impediment",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 3 - Shadow Puppets",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 4 - Queens And Drones",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 5 - Shifting Foundations",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 6 - A Breach of Trust",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "The Blood-Stained Stars/Chapter 7 - Closing In",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic air fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic amarr fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic caldari fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic gallente fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic minmatar fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic ore fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:JohnPlayerNotSpecial/epic soe fit",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "User:Koris the Second",
+  "action": "exclude",
+  "reason": "用户沙盒/非任务页"
+ },
+ {
+  "title": "Wildfire/Chapter 1 - The Passage",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Wildfire/Chapter 2 - Songs of the Past",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Wildfire/Chapter 3 - Revelation",
+  "action": "exclude",
+  "reason": "任务线章节页（枢纽）"
+ },
+ {
+  "title": "Amarr COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Angel COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Blood Raider COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Caldari COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Gallente COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Guristas COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Minmatar COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Serpentis COSMOS",
+  "action": "exclude",
+  "reason": "COSMOS 枢纽页"
+ },
+ {
+  "title": "Enforcer (Career Agent)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Exordium",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Explorer",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Industrialist (Entrepreneur)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Industrialist (Producer)",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Soldier of Fortune",
+  "action": "keep",
+  "reason": "SDE 无对应条目，保留现有译名"
+ },
+ {
+  "title": "Building Blocks 2",
+  "action": "map",
+  "sdeEn": "Building Blocks (2 of 2)",
+  "sdeZh": "建造模块（2/2）",
+  "reason": "对齐到 SDE：Building Blocks (2 of 2)"
+ }
+]
