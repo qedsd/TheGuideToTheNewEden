@@ -38,10 +38,26 @@
             CornerRadius="4"
             Visibility="Collapsed">
             <StackPanel>
-                <TextBlock
-                    FontSize="11"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{DynamicResource CombatLog_PanelTitle}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource CombatLog_PanelTitle}" />
+                    <ui:Button
+                        x:Name="CombatClearButton"
+                        Grid.Column="1"
+                        Padding="6,1"
+                        Click="OnCombatClearClick"
+                        Content="{DynamicResource CombatLog_Clear}"
+                        FontSize="11"
+                        ToolTip="{DynamicResource CombatLog_Clear}"
+                        Visibility="Collapsed" />
+                </Grid>
                 <ItemsControl x:Name="CombatList" Margin="0,2,0,0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

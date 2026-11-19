@@ -1,4 +1,5 @@
 # TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 358：战斗日志口径修正——毁电 / DPS 不再按固定秒窗口计算，改按**前后两轮的实际间隔**算每秒速率（`毁电 45GJ 22.5GJ/s`、`遥修 123HP 41HP/s`、`承伤 320HP 91.4DPS`）；保留时长同样按实测周期自动延长（下限 5 秒、上限 60 秒），慢周期装备不再闪断；**反跳 / 干扰**这类只在生效时写一条日志的提示改为**常驻**，直到点「清除战斗状态」或停止监控；状态条新增「清除」按钮；语言键 +1。
 - 阶段 357：战斗日志接入多开/日志监控——从游戏日志解析**遥修/毁电/吸电/反跳/ECM/传电/承伤**，按装备组归类（只显示分类）；日志监控新增固定「战斗日志」页签（不落盘、不可删，新配置仍是普通关键词监控），开启后该角色**常开监控小窗**；多开角色名下方新增战斗信息行（绿色遥修/红色承伤等），全局+单项开关与状态徽标；数值显示"最近一次 + 窗口累计"，承伤第二段是实时 DPS；TTL 默认 5 秒、可选 8/10；顺手修掉关键词会话**运行中不跟随日志轮换**的老 bug；日志监控关键词命中也接进叠加层（可选开关，30 秒）；语言键 +34。
 - 阶段 356：预警文字开放独立设置——反馈"预警行字体太小"；根因是旧实现取「角色名字号 × 0.4」而角色名字号本身已随窗口缩放（小窗里再乘一次只剩 ~10px）。改为 `PreviewItem` 上独立的字体/字号/跟随缩放/倍率 + **文字色/背景色**（默认字号 30、跟随缩放、下限 12 DIP），并按用户要求**去掉行首圆点**；设置页「频道预警」卡片新增六行；**鼠标悬停用 ToolTip 浮层显示预警详情**（叠加窗鼠标穿透，改由预览窗按光标位置判定；浮层不占叠加窗高度，下面留给以后的功能）；语言键 +7。
 - 阶段 355：多开预览叠加层——新增 `ChannelIntelAlertCenter`（活跃预警唯一状态源，自动解除/降级从小窗上移）+ `PreviewOverlayHub` 可扩展信息总线；预览窗角色名下方显示频道预警「最近 / 最新」两行（跳数 + Nmin，预警消失即刷新）；全局+单项开关、状态徽标、开始预览缺会话提示；语言键 +15。
@@ -13676,6 +13677,9 @@ WPF 的 `ToolTip` / `MouseEnter` 全用不上；改成可命中又会把预览�
 
 ## 阶段 357：战斗日志（遥修 / 电子战）接入多开与日志监控（2026-11-19）
 
+> 本阶段的数值口径（固定 5 秒窗口 / TTL 到期消失）**已被阶段 358 修正**（按实测轮间隔算速率、一次性提示常驻）；
+> 下面保留当时的决策与实现记录，当前行为以阶段 358 为准。
+
 ### 背景
 
 多开预览的叠加层（阶段 355/356）已经能显示频道预警。用户希望把**游戏日志里的战斗事件**也放上来：
@@ -13709,7 +13713,7 @@ Gamelogs/<角色>.txt（会轮换）
        └─ CombatLogFeedService（每角色一份）
             ├─ CombatLogParser：行 → CombatLogEvent（类型/方向/数值/装备/对方）
             ├─ CombatCategoryResolver：装备名 → TypeID → GroupID → 分类（带缓存 + 词表兜底）
-            └─ CombatLogStateCenter（每角色分类状态：5s 窗口 / 最近单次 / 1s 心跳）
+            └─ CombatLogStateCenter（每角色分类状态：5s 窗口 / 最近单次 / 1s 心跳；阶段 358 改为按实测轮间隔 + 一次性状态常驻）
                  ├─ 日志监控小窗顶部状态条（GameLogMsgWindow）
                  └─ 多开叠加层 CombatLogOverlayProvider（角色名下方）
 ```
@@ -13776,8 +13780,122 @@ Gamelogs/<角色>.txt（会轮换）
    `CombatLogProbe.exe <Gamelogs目录>`，用 `scan-unmatched.txt` 补 `CombatLogVocabulary`；
    `CombatLogDiagnostics` 也会在运行中收集漏网行。
 2. 网子/感应抑阻/武器扰断/目标标记没有日志，显示不了（不是解析问题）。
-3. DPS 窗口 = TTL（5/8/10 秒），TTL 改大后 DPS 更平滑但反应更慢。
+3. ~~DPS 窗口 = TTL（5/8/10 秒），TTL 改大后 DPS 更平滑但反应更慢。~~ **阶段 358 已改为按前后两轮实测间隔计算，见下一阶段。**
 4. 同一角色若同时开多个关键词配置，会各有一个监控窗；每个窗都会显示同一份战斗状态条（数据同源，无重复解析）。
+
+---
+
+## 阶段 358：战斗日志口径修正——按实测轮间隔算速率、一次性提示常驻（2026-11-19）
+
+### 背景（用户反馈）
+
+> "毁电、dps 等计算不合理，现在是固定秒计算，应该取前后两轮战斗计算间隔的；并且现在 5s 就消失对于反跳等
+> 一次性日志提示的明显不合理——这些只有第一次作用上时才会有日志，后面只要对面不停止就不会再刷日志，
+> 现在 5s 过去就会自动消失相关提示。"
+
+### 与用户确认的口径
+
+- **反跳 / 干扰**：一直保留，直到「停止监控」或手动「清除」——不设自动超时。
+- **毁电 / 吸电 / 传电 / 遥修**：第二段改成**每秒速率**（`毁电 45GJ 22.5GJ/s`、`遥修 123HP 41HP/s`），
+  与 DPS 同口径；承伤第二段仍是 DPS。
+
+### 根因（阶段 357 的旧模型）
+
+旧实现把所有数值塞进"最近 `TtlSeconds` 秒"的固定窗口：`DPS = 窗口合计 ÷ 5`、毁电第二段 = 窗口合计；
+TTL 同时还是**唯一的存活判据**。三个后果：
+
+1. 装备周期不是 5 秒的整数倍时，数值随窗口截断忽高忽低；
+2. 慢周期装备（大型中和器 24 秒、部分遥修 12 秒）在 5 秒窗口里常常只有 0～1 次，显示 0 或者闪断；
+3. 反跳 / ECM 只在"作用上"的瞬间写一条日志，5 秒后整行必然消失，而对面的反跳其实一直挂着。
+
+### 新的计算模型
+
+**一、按"轮"分组，按轮间隔算速率**
+
+- 速率的最小单位是「攻击者 + 装备」（`ModuleKey = 装备名 ⟐ 角色名`）：多艘船的毁电、多门炮的伤害各自算再相加，
+  混合武器不会把间隔平均成一个假周期。
+- 同一 key 在 **1 秒内**的多条日志并成**一轮**（EVE 日志时间戳精度 1 秒，一次齐射的时间戳相同），
+  超过 1 秒就是新的一轮；超过 60 秒没有动静则重新起轮（这段空档不计入速率）。
+- 速率 = 最近最多 **3 段间隔**覆盖的合计 ÷ 这几轮之间的**实际秒数**（至少两轮才有第二段数字）。
+  严格"前后两轮"就是 1 段间隔，取 3 段只是为了削掉 1 秒时间戳精度带来的量化抖动。
+
+**二、时间轴用日志时间，不用本机 Now**
+
+`CombatLogEvent.Time`（EVE 日志的 UTC 时间）参与所有间隔与过期计算：同一批被文件监听（300ms 轮询）
+刷进来的多行各有自己的真实时间，轮间隔不会被轮询延迟污染。
+
+**三、保留时长同样按实测**
+
+`保留 = clamp(设置下限, 实测轮间隔 + 1.5 秒, 60 秒)`：
+
+- 单轮分类（还没测到间隔）按设置下限（5/8/10 秒）过期；
+- 实测周期更长的分类自动延长（大型中和器 24 秒 → 约 25.5 秒），不再需要为了不闪断去改 TTL；
+- 上限 60 秒，异常长间隔不会把行留在界面上太久。
+
+**四、一次性状态常驻**
+
+`CombatCategoryDefinition.Sticky`：`scram` / `ecm` 为 true，不按时间消失，只在 `Clear(listener)`（用户点清除）
+或 `Detach`（停止监控）时清除。小窗状态条右上角因此新增「清除战斗状态」按钮。
+
+**五、心跳只在"可见行集合"变化时通知**
+
+行文本不随时间变化，所以 1 秒心跳只需比较可见分类签名；旧实现每秒无条件刷新叠加层/小窗。
+
+### 变更明细
+
+**Core**
+
+- `Services/CombatLog/CombatCategoryResolver.cs`：`CombatCategoryDefinition` 增加第 6 个可选参数
+  `sticky`（默认 false）；`scram` / `ecm` 标为 sticky。
+
+**WPF**
+
+- `Services/CombatLog/CombatLogStateCenter.cs` 重写状态模型：
+  - `CategoryState{ LastSeen, LastValue, LastEvent, LastModuleKey, Modules }` +
+    `ModuleState{ Rounds, LastSeen, LastValue, LastInterval, LastEvent }` + `Round{ Start, Last, Sum, Count }`；
+  - `AddRound` 负责轮分组与 60 秒重置；`RateOf` 算"最近 ≤3 段间隔"的平均速率；
+  - `KeepAliveOf` / `ModuleKeepAliveOf` 给出自适应保留时长；`IsVisible` 对 sticky 分类直接放行；
+  - `Clear(listener)` 语义明确为"手动清除"；新增 `GetKeepAliveSeconds` 便于探针断言；
+  - 文本：`承伤 {last}HP {rate}DPS`、`{分类} {last}{单位} {rate}{单位}/s`，不足两轮只显示单次值；
+  - 详情 ToolTip 改成语言无关的紧凑格式：`毁电 · 中型能量中和器 II · Guardian (Loki) · 45GJ/5s = 9GJ/s · 12:34:56`。
+- `CombatLogRow`：`WindowValue` / `Dps` → `Rate`（每秒速率）+ `IntervalSeconds`（最近实测间隔）。
+- `Views/Windows/GameLogMsgWindow.xaml(.cs)`：状态条标题行改成 `Grid`，右侧加「清除战斗状态」按钮
+  （`CombatLog_Clear`，有行时才显示），点击 `CombatLogStateCenter.Current.Clear(ListenerName)`。
+- `Services/Settings/GameLogsSettingService`：`CombatLogTtlSeconds` 语义改为"最短显示下限"（键名不变，老设置继续有效）。
+- `ViewModels/Channel/GameLogMonitorViewModel`：TTL 选项注释同步为"下限"。
+
+**语言键（zh / en 各 +1，3757 → 3758，键集一致）**
+
+- `CombatLog_Ttl`：显示时长 → **最短显示** / Min show time；
+- `CombatLog_TtlTip`：重写为"下限 + 实测自动延长 + 反跳/干扰保留到清除"；
+- 新增 `CombatLog_Clear`（清除战斗状态 / Clear combat info）；
+- `GamePreviewPage_ShowCombatInfoHint`：改为"最近一次 + 按实测轮间隔算出的每秒速率"。
+
+**手册**
+
+- `Resources/Manuals/zh-CN/channel/log-monitor.md`：战斗日志段落与字段表口径同步（最短显示、速率、一次性提示常驻、清除按钮）。
+- `Resources/Manuals/zh-CN/game-preview.md`：战斗信息叠加段的口径同步。
+
+### 验证
+
+- `probe/OverlayProbe` 的战斗套件按新模型重写（用日志时间构造轮间隔，不依赖真实日志）：
+  - 首轮 → `承伤 100HP`（不足两轮不显示速率）；第二轮 200 伤害、间隔 3 秒 → `承伤 200HP 66.7DPS`，
+    且 `IntervalSeconds = 3`；同一秒内再来两条 50 → 并成一轮 `承伤 300HP 100DPS`（齐射不被拆散）；
+  - `毁电 45GJ 22.5GJ/s`（45GJ / 2 秒）、`遥修 123HP 41HP/s`（123HP / 3 秒）；
+  - **两分钟前**的反跳仍然在行里（不按秒消失），`Clear` 后清空；
+  - 下限 1 秒 + 等 1.2 秒：单轮分类（传电）消失、实测间隔 3 秒的承伤仍在、反跳仍在
+    → "慢周期不闪断 / 一次性提示常驻"两个目标同时成立；
+  - 分类裁剪、挂载/摘除、355/356 的叠加窗尺寸与 ToolTip 断言全部不受影响 —— **全 PASS**。
+- `dotnet build`（WPF + OverlayProbe）：0 错误；语言键 zh/en 各 3758 条、集合一致。
+
+### 已知限制
+
+1. 轮间隔依赖日志时间戳的 1 秒精度：周期越接近 1 秒，量化误差越明显（EVE 现役装备周期都 ≥2 秒，
+   实测 3 秒炮在探针里就是精确 3.0）。
+2. 同一「攻击者 + 装备」的多门同名炮若开火间隔 >1 秒会被算成两轮（间隔变大 → 速率略偏低）；
+   这是"同装备合并"的代价，换来的是同一齐射不会被拆成很多个 0 间隔样本。
+3. 反跳 / 干扰的"结束"无法从日志判断（游戏不写解除日志），只能手动清除或停止监控；
+   若以后想要"战斗安静 N 分钟后自动清除"，可在 `Sticky` 之外再加一个开关。
 
 ---
 
@@ -14765,7 +14883,7 @@ Core/Services/CombatLog/CombatLogParser.cs           日志行 → 事件（结�
 Core/Services/CombatLog/CombatLogVocabulary.cs       中英词表（真实日志校准处）
 Core/Services/CombatLog/CombatCategoryResolver.cs    装备 → TypeID → GroupID → 分类（缓存）
 Core/Services/CombatLog/CombatLogDiagnostics.cs      未识别行收集/导出
-Services/CombatLog/CombatLogStateCenter.cs           每角色分类状态 / 5s 窗口 / 1s DPS
+Services/CombatLog/CombatLogStateCenter.cs           每角色分类状态 / 按实测轮间隔算速率（阶段 358）
 Services/CombatLog/CombatLogFeedService.cs           每角色日志会话 + 战斗小窗
 Services/GamePreview/Overlay/CombatLogOverlayProvider.cs  多开叠加层 provider
 probe/CombatLogProbe/Program.cs                       解析/分类/真实日志扫描探针

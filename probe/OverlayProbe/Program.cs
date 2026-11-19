@@ -140,54 +140,104 @@ internal static class Program
         center.Attach(listener);
         Check("战斗中心已挂载", center.IsAttached(listener), "Attach 后应为 true");
 
-        center.Report(listener, new CombatLogEvent
-        {
-            Kind = CombatEventKind.Damage,
-            Direction = CombatEventDirection.Incoming,
-            CategoryKey = CombatCategories.Damage,
-            Amount = 100,
-            ModuleName = "Focused Medium Pulse Laser II",
-            Pilot = "Guardian",
-            Time = DateTime.UtcNow,
-        });
-        var damageRow = center.GetRows(listener).FirstOrDefault(p => p.Category == CombatCategories.Damage);
-        Check("承伤=100HP 20DPS（5 秒窗口）", damageRow?.Text == "承伤 100HP 20DPS", $"实际 {damageRow?.Text}");
+        var now = DateTime.UtcNow;
 
-        center.Report(listener, new CombatLogEvent
-        {
-            Kind = CombatEventKind.CapacitorNeutralize,
-            Direction = CombatEventDirection.Incoming,
-            CategoryKey = CombatCategories.Neut,
-            Amount = 45,
-            ModuleName = "Medium Energy Neutralizer II",
-            Pilot = "Guardian",
-            Time = DateTime.UtcNow,
-        });
-        var neutRow = center.GetRows(listener).FirstOrDefault(p => p.Category == CombatCategories.Neut);
-        Check("毁电=45GJ 45GJ", neutRow?.Text == "毁电 45GJ 45GJ", $"实际 {neutRow?.Text}");
+        // 承伤：第一轮只有单次值；第二轮出现后速率 = 本轮合计 ÷ 两轮实际间隔（阶段 358 不再除以写死的 5 秒）
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 100,
+            "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-4));
+        var firstDamage = RowOf(center, listener, CombatCategories.Damage);
+        Check("首轮承伤只显示单次值", firstDamage?.Text == "承伤 100HP", $"实际 {firstDamage?.Text}");
+        Check("首轮没有速率（不足两轮）", firstDamage?.Rate is null, $"实际 {firstDamage?.Rate}");
 
-        center.Report(listener, new CombatLogEvent
-        {
-            Kind = CombatEventKind.RemoteRepair,
-            Direction = CombatEventDirection.Incoming,
-            CategoryKey = CombatCategories.Rep,
-            Amount = 123,
-            Time = DateTime.UtcNow,
-        });
-        var repRow = center.GetRows(listener).FirstOrDefault(p => p.Category == CombatCategories.Rep);
-        Check("遥修=123HP 123HP", repRow?.Text == "遥修 123HP 123HP", $"实际 {repRow?.Text}");
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 200,
+            "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
+        var damageRow = RowOf(center, listener, CombatCategories.Damage);
+        Check("承伤速率按实测两轮间隔（200 ÷ 3 秒）", damageRow?.Text == "承伤 200HP 66.7DPS",
+            $"实际 {damageRow?.Text}");
+        Check("承伤记录实测间隔", Math.Abs((damageRow?.IntervalSeconds ?? 0) - 3) < 0.01,
+            $"实际 {damageRow?.IntervalSeconds}");
+
+        // 同一秒内又来两条（同一次齐射的多门炮）：并进同一轮，第一段变成这一轮合计 300HP
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 50,
+            "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 50,
+            "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
+        var volleyRow = RowOf(center, listener, CombatCategories.Damage);
+        Check("同秒多条并成一轮（300HP ÷ 3 秒）", volleyRow?.Text == "承伤 300HP 100DPS",
+            $"实际 {volleyRow?.Text}");
+
+        // 毁电：45GJ 每 2 秒一轮 → 22.5GJ/s
+        ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
+            "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-4));
+        ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
+            "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-2));
+        var neutRow = RowOf(center, listener, CombatCategories.Neut);
+        Check("毁电=45GJ 22.5GJ/s", neutRow?.Text == "毁电 45GJ 22.5GJ/s", $"实际 {neutRow?.Text}");
+
+        // 遥修：123HP 每 3 秒一轮 → 41HP/s
+        ReportCombat(center, listener, CombatEventKind.RemoteRepair, CombatCategories.Rep, 123,
+            "Remote Armor Repairer II", "Guardian", now.AddSeconds(-4));
+        ReportCombat(center, listener, CombatEventKind.RemoteRepair, CombatCategories.Rep, 123,
+            "Remote Armor Repairer II", "Guardian", now.AddSeconds(-1));
+        var repRow = RowOf(center, listener, CombatCategories.Rep);
+        Check("遥修=123HP 41HP/s", repRow?.Text == "遥修 123HP 41HP/s", $"实际 {repRow?.Text}");
+
+        // 反跳：只在作用上时有一条日志，两分钟前那条也要一直留着（不能被 TTL 清掉）
+        ReportCombat(center, listener, CombatEventKind.WarpScramble, CombatCategories.Scram, null,
+            "Warp Scrambler II", "Guardian", now.AddSeconds(-120));
+        var scramRow = RowOf(center, listener, CombatCategories.Scram);
+        Check("反跳不按秒数消失", scramRow?.Text == "反跳", $"实际 {scramRow?.Text}");
 
         center.SetCategoryEnabled(CombatCategories.Damage, false);
-        Check("分类裁剪：承伤隐藏", center.GetRows(listener).All(p => p.Category != CombatCategories.Damage), "关闭后不应有承伤行");
+        Check("分类裁剪：承伤隐藏", center.GetRows(listener).All(p => p.Category != CombatCategories.Damage),
+            "关闭后不应有承伤行");
         center.SetCategoryEnabled(CombatCategories.Damage, true);
 
+        // 保留时长：单轮分类（没有实测间隔）按设置下限过期；有实测间隔的分类不会被下限清掉
+        ReportCombat(center, listener, CombatEventKind.RemoteCapacitor, CombatCategories.CapTransfer, 30,
+            "Remote Capacitor Transmitter II", "Guardian", now);
         center.TtlSeconds = 1;
         Thread.Sleep(1200);
-        Check("1 秒无事件后清空", center.GetRows(listener).Count == 0, string.Join(" | ", center.GetRows(listener).Select(p => p.Text)));
+        var afterTtl = center.GetRows(listener);
+        Check("单轮分类到下限后消失", afterTtl.All(p => p.Category != CombatCategories.CapTransfer),
+            string.Join(" | ", afterTtl.Select(p => p.Text)));
+        Check("实测间隔 3 秒的承伤不会被 1 秒下限清掉", afterTtl.Any(p => p.Category == CombatCategories.Damage),
+            string.Join(" | ", afterTtl.Select(p => p.Text)));
+        Check("反跳仍在（清除前一直保留）", afterTtl.Any(p => p.Category == CombatCategories.Scram),
+            string.Join(" | ", afterTtl.Select(p => p.Text)));
         center.TtlSeconds = 5;
+
+        center.Clear(listener);
+        Check("手动清除后无行", center.GetRows(listener).Count == 0,
+            string.Join(" | ", center.GetRows(listener).Select(p => p.Text)));
 
         center.Detach(listener);
         Check("战斗中心已摘除", !center.IsAttached(listener), "Detach 后应为 false");
+    }
+
+    private static CombatLogRow? RowOf(CombatLogStateCenter center, string listener, string category)
+        => center.GetRows(listener).FirstOrDefault(p => p.Category == category);
+
+    private static void ReportCombat(
+        CombatLogStateCenter center,
+        string listener,
+        CombatEventKind kind,
+        string category,
+        double? amount,
+        string module,
+        string pilot,
+        DateTime time)
+    {
+        center.Report(listener, new CombatLogEvent
+        {
+            Kind = kind,
+            Direction = CombatEventDirection.Incoming,
+            CategoryKey = category,
+            Amount = amount,
+            ModuleName = module,
+            Pilot = pilot,
+            Time = time,
+        });
     }
 
     private static void Report(int systemId, string name, int jumps, IntelChatType type)

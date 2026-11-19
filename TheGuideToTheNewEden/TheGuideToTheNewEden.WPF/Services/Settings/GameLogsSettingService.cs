@@ -20,7 +20,10 @@ public static class GameLogsSettingService
     public static int EVELogsChannelDurationValue { get; set; }
     public static int MaxShowItems { get; set; }
 
-    /// <summary>战斗日志窗口/过期秒数（阶段 357，默认 5；可选 5/8/10）。</summary>
+    /// <summary>
+    /// 战斗日志的"最短显示"秒数（阶段 357，默认 5，可选 5/8/10）。阶段 358 起这是**下限**：
+    /// 状态中心会按实测轮间隔自动延长（慢周期装备不闪断），一次性状态（反跳 / ECM）不按时间消失。
+    /// </summary>
     public static int CombatLogTtlSeconds { get; set; } = 5;
 
     /// <summary>战斗日志启用的分类（空 = 全部）。</summary>

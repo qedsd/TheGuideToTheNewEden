@@ -10,13 +10,14 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
     /// <summary>一个战斗分类的静态定义（展示文案用语言键，见各页面的 Resources/Languages）。</summary>
     public sealed class CombatCategoryDefinition
     {
-        public CombatCategoryDefinition(string key, int priority, bool hasValue, string unit, bool defaultEnabled)
+        public CombatCategoryDefinition(string key, int priority, bool hasValue, string unit, bool defaultEnabled, bool sticky = false)
         {
             Key = key;
             Priority = priority;
             HasValue = hasValue;
             Unit = unit;
             DefaultEnabled = defaultEnabled;
+            Sticky = sticky;
         }
 
         /// <summary>稳定 key（设置落盘、provider 输出都用它）。</summary>
@@ -33,9 +34,15 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
 
         /// <summary>默认是否显示。</summary>
         public bool DefaultEnabled { get; }
+
+        /// <summary>
+        /// 一次性状态（阶段 358）：反跳 / ECM 这类只有"第一次作用上"才会写日志的事件，
+        /// 对面不停止就不会再刷日志，因此不能按超时消失——保留到用户手动清除或停止监控。
+        /// </summary>
+        public bool Sticky { get; }
     }
 
-    /// <summary>战斗分类清单（阶段 357）。</summary>
+    /// <summary>战斗分类清单（阶段 357；阶段 358 增加"一次性状态"标记）。</summary>
     public static class CombatCategories
     {
         public const string Scram = "scram";
@@ -49,9 +56,9 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
         /// <summary>全部分类（按优先级升序）。</summary>
         public static IReadOnlyList<CombatCategoryDefinition> All { get; } = new List<CombatCategoryDefinition>
         {
-            new CombatCategoryDefinition(Scram, 10, false, null, true),
+            new CombatCategoryDefinition(Scram, 10, false, null, true, sticky: true),
             new CombatCategoryDefinition(Neut, 20, true, "GJ", true),
-            new CombatCategoryDefinition(Ecm, 30, false, null, true),
+            new CombatCategoryDefinition(Ecm, 30, false, null, true, sticky: true),
             new CombatCategoryDefinition(Rep, 40, true, "HP", true),
             new CombatCategoryDefinition(Nos, 50, true, "GJ", true),
             new CombatCategoryDefinition(CapTransfer, 60, true, "GJ", true),

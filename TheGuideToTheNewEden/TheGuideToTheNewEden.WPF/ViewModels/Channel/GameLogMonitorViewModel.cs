@@ -124,7 +124,7 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     /// <summary>分类开关（反跳/毁电/…，与日志监控页「战斗日志」页签绑定）。</summary>
     public ObservableCollection<CombatCategoryOption> CombatCategoryOptions { get; } = [];
 
-    /// <summary>TTL 可选值（秒）：默认 5，可改 8/10 避免慢周期装备闪烁。</summary>
+    /// <summary>最短显示秒数（下限；实测周期更长的装备会自动延长，见 <see cref="CombatLogStateCenter"/>）。</summary>
     public IReadOnlyList<int> CombatTtlOptions { get; } = [5, 8, 10];
 
     public int CombatTtlSeconds

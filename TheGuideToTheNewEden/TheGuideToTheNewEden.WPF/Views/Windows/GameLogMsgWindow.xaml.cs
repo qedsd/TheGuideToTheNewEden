@@ -13,8 +13,9 @@ namespace TheGuideToTheNewEden.WPF.Views.Windows;
 /// 置顶小窗（仅关闭按钮，关闭即隐藏），新增消息加粗、上一条恢复正常，自动滚到底部；
 /// 底部"前置游戏"按钮把对应 EVE 客户端窗口切到前台。
 /// <para>
-/// 阶段 357：顶部增加"战斗日志"状态条（分类 + 最新单次值 + 窗口值），数据来自
+/// 阶段 357：顶部增加"战斗日志"状态条（分类 + 最近一次值 + 实测速率），数据来自
 /// <see cref="CombatLogStateCenter"/>；<c>combatOnly</c> 模式下只显示状态条，用于"战斗日志"专属小窗。
+/// 阶段 358：状态条右上角增加"清除战斗状态"（反跳 / ECM 没有结束日志，只能手动收掉）。
 /// </para>
 /// </summary>
 public partial class GameLogMsgWindow : Wpf.Ui.Controls.FluentWindow
@@ -165,6 +166,7 @@ public partial class GameLogMsgWindow : Wpf.Ui.Controls.FluentWindow
         var hasRows = rows.Count > 0;
         CombatPanel.Visibility = hasRows || _combatOnly ? Visibility.Visible : Visibility.Collapsed;
         CombatEmpty.Visibility = hasRows ? Visibility.Collapsed : Visibility.Visible;
+        CombatClearButton.Visibility = hasRows ? Visibility.Visible : Visibility.Collapsed;
         if (_combatOnly && hasRows)
         {
             // 战斗日志专属窗口：有新数据时确保可见（用户手动最小化的情况除外）
@@ -174,6 +176,10 @@ public partial class GameLogMsgWindow : Wpf.Ui.Controls.FluentWindow
             }
         }
     }
+
+    /// <summary>手动清除战斗行：反跳 / ECM 这类一次性状态没有"结束"日志，只能由用户收掉。</summary>
+    private void OnCombatClearClick(object sender, RoutedEventArgs e)
+        => CombatLogStateCenter.Current.Clear(ListenerName);
 
     // ---------- 最小化 ----------
 

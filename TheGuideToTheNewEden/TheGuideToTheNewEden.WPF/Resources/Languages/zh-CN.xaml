@@ -1391,10 +1391,11 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">已启用：点「开始监控」后开始</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">请先打开「启用战斗日志」，再点开始监控</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">未启动</sys:String>
-    <sys:String x:Key="CombatLog_Ttl">显示时长</sys:String>
-    <sys:String x:Key="CombatLog_TtlTip">超过该秒数没有同类新日志就隐藏；慢周期装备（大型中和器等）可改 8/10 秒避免闪烁</sys:String>
+    <sys:String x:Key="CombatLog_Ttl">最短显示</sys:String>
+    <sys:String x:Key="CombatLog_TtlTip">同类事件超过该秒数没有新日志才隐藏；实测周期更长的装备（大型中和器等）自动按周期延长。反跳 / 干扰只在生效时有一条日志，会一直保留到手动清除或停止监控。</sys:String>
     <sys:String x:Key="CombatLog_Categories">显示分类</sys:String>
     <sys:String x:Key="CombatLog_OpenWindow">打开监控窗口</sys:String>
+    <sys:String x:Key="CombatLog_Clear">清除战斗状态</sys:String>
     <sys:String x:Key="CombatLog_PanelTitle">战斗日志（遥修 / 电子战）</sys:String>
     <sys:String x:Key="CombatLog_NoCombat">无战斗</sys:String>
     <sys:String x:Key="CombatLog_NotRunning">战斗日志未启动</sys:String>
@@ -3895,7 +3896,7 @@
     <sys:String x:Key="GamePreviewPage_GroupCombat">战斗信息</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfo">显示战斗信息</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoTip">在角色名下方显示反跳 / 毁电 / 遥修 / 承伤 DPS 等战斗日志分类</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowCombatInfoHint">数据来自日志监控「战斗日志」页签；没启动时只显示状态，不显示行。行内为"最近一次 + 窗口累计"，承伤第二段是 DPS。</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowCombatInfoHint">数据来自日志监控「战斗日志」页签；没启动时只显示状态，不显示行。行内为"最近一次 + 按实测轮间隔算出的每秒速率"，承伤第二段是 DPS；反跳 / 干扰会一直保留到清除。</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusGlobalOff">全局已关闭</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusOff">已关闭</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusNoFeed">未启动战斗日志</sys:String>

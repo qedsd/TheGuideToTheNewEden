@@ -1379,10 +1379,11 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">Enabled: click Start Monitoring</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">Turn on "Enable combat log" before starting monitoring</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">Stopped</sys:String>
-    <sys:String x:Key="CombatLog_Ttl">Display window</sys:String>
-    <sys:String x:Key="CombatLog_TtlTip">Hide after this many seconds without a new event; use 8/10s for slow-cycle modules</sys:String>
+    <sys:String x:Key="CombatLog_Ttl">Min show time</sys:String>
+    <sys:String x:Key="CombatLog_TtlTip">Hide only after this many seconds without a new event. Slower modules (e.g. heavy neutralizers) extend it automatically to their measured cycle. Scram / ECM log only when first applied, so they stay until you clear them or stop monitoring.</sys:String>
     <sys:String x:Key="CombatLog_Categories">Categories</sys:String>
     <sys:String x:Key="CombatLog_OpenWindow">Open Monitor Window</sys:String>
+    <sys:String x:Key="CombatLog_Clear">Clear combat info</sys:String>
     <sys:String x:Key="CombatLog_PanelTitle">Combat Log (remote repair / EWAR)</sys:String>
     <sys:String x:Key="CombatLog_NoCombat">No combat</sys:String>
     <sys:String x:Key="CombatLog_NotRunning">Combat log is not running</sys:String>
@@ -3877,7 +3878,7 @@
     <sys:String x:Key="GamePreviewPage_GroupCombat">Combat info</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfo">Show combat info</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoTip">Show combat log categories (scram / neut / remote rep / incoming DPS) below the character name</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowCombatInfoHint">Data comes from the Combat Log tab of the log monitor. Rows show "latest + window total"; the second damage value is live DPS.</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowCombatInfoHint">Data comes from the Combat Log tab of the log monitor. Rows show the latest value plus a per-second rate from the measured round interval; the second damage value is DPS. Scram / ECM stay until cleared.</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusGlobalOff">Globally off</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusOff">Off</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusNoFeed">Combat log not running</sys:String>
