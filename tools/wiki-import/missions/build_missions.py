@@ -39,7 +39,7 @@ SYNC_DATE = '2026-11-17'
 
 CATEGORY_CN = {
     0: '安全任务', 1: '运输任务', 2: '采矿任务', 3: '故事线任务', 4: '史诗任务',
-    5: '异常任务', 6: 'COSMOS 任务', 7: '研发任务', 8: '职业代理人', 9: 'Circle 任务',
+    5: '异常任务', 6: '空中代理人', 7: '研发任务', 8: '职业代理人', 9: 'Circle 任务',
 }
 
 # 0–5 是海盗势力（与战斗站点同一套编号），6–9 是四大帝国：
@@ -643,6 +643,8 @@ def render(rec):
         meta.append('**势力** %s' % FACTION_CN.get(rec['Faction'], ''))
     if rec['Arc']:
         meta.append('**任务线** %s' % rec['Arc'])
+    if rec.get('Agent'):
+        meta.append('**代理人** %s' % rec['Agent'])
     out.append(' ｜ '.join(meta))
     out.append('')
 
@@ -728,6 +730,11 @@ def render(rec):
 
 
 ALIGN = {}
+# Category:COSMOS missions 的页面清单。这些页面在 wiki 上分类信息不全，抓取时全落成了
+# "安全任务"；构建时按清单改成 COSMOS（界面显示「空中代理人」）。
+COSMOS_FILE = os.path.join(HERE, 'cosmos_missions.json')
+COSMOS_TITLES = set()
+MissionCategoryCosmos = 6
 
 
 def dedupe_names(records):
@@ -787,6 +794,9 @@ def build():
     global TRANS, ALIGN
     TRANS = json.load(io.open(TRANS, encoding='utf-8')) if os.path.exists(TRANS) else {}
     ALIGN = json.load(io.open(ALIGN_FILE, encoding='utf-8')) if os.path.exists(ALIGN_FILE) else {}
+    global COSMOS_TITLES
+    COSMOS_TITLES = ({t.lower() for t in json.load(io.open(COSMOS_FILE, encoding='utf-8'))}
+                     if os.path.exists(COSMOS_FILE) else set())
 
     records = []
     rid = 0
@@ -808,6 +818,8 @@ def build():
         for idx, v in enumerate(variants):
             info = v['info']
             rid += 1
+            # 代理人页（{{Infobox agent}}）的任务名在小节标题里，页面标题是代理人名
+            vtitle = (v.get('missionTitle') or '').strip() or title
 
             level = 0
             raw_level = str(info.get('Level', '')).strip()
@@ -816,19 +828,24 @@ def build():
             elif title_level:
                 level = title_level
 
-            title_en = title
+            title_en = vtitle
             # 中文名优先级：SDE 官方译名 > 旧库社区名 > wiki 直译
             # 分段/等级后缀统一交给 dedupe_names() 处理（否则会叠两层：xxx（L2）（运输））
-            if page.get('sdeZh'):
+            if page.get('sdeZh') and not v.get('missionTitle'):
                 title_cn = re.sub(r'\((\d+)\s*/\s*(\d+)\)', r'（\1/\2）', page['sdeZh'])
                 # 同一 wiki 页里塞了多个变体（`Small Misunderstanding` 有 3 段）时，
                 # SDE 名字里的分段号会和 dedupe 的 1/N 打架 → 去掉分段号，统一由 dedupe 生成
                 if len(variants) > 1:
                     title_cn = re.sub(r'[（(]\s*\d+\s*/\s*\d+\s*[）)]\s*$', '', title_cn).strip()
-            elif title in ALIGN:
-                title_cn = ALIGN[title]
+            elif vtitle in ALIGN:
+                title_cn = ALIGN[vtitle]
             else:
-                title_cn = tr(title) if tr(title) != title else tr(base_title)
+                # 普通页面：先查整页标题，再退到去掉「(Level N)」的页名；
+                # 代理人页（vtitle 是小节标题）不能再退到页名——那会变成"代理人名（1/4）"
+                if vtitle != title:
+                    title_cn = tr(vtitle)
+                else:
+                    title_cn = tr(title) if tr(title) != title else tr(base_title)
 
             # SDE 里同一英文名可能挂两套中文（"警方介入 / 警方侵略"），
             # 之前把它们用 " / " 拼成了中文名（截图里就是这种重复），这里只留第一套
@@ -841,6 +858,9 @@ def build():
                 if m:
                     location = m.group(1).strip()
                     break
+            # 页面开头的 `Agent location:` 更可靠（COSMOS 页都有）
+            if not location:
+                location = page.get('agentLocation') or ''
 
             sections = []
             for sec in v.get('sections') or []:
@@ -852,11 +872,12 @@ def build():
 
             rec = {
                 'Id': rid,
-                'Category': page['cat'],
+                # COSMOS 任务按清单归类（wiki 分类不全，否则会混进"安全任务"）
+                'Category': MissionCategoryCosmos if title.lower() in COSMOS_TITLES else page['cat'],
                 'Level': level,
                 'MissionType': clean_value(str(info.get('Type', ''))),
                 'Faction': faction_of(info),
-                'TitleEN': title,
+                'TitleEN': vtitle,
                 'TitleCN': title_cn,
                 # 这 7 个字段是**展示字段**（页面属性区、AI 工具、搜索都读它们），
                 # 必须存译文而不是原文——之前存的是清理后的英文，导致工具与搜索只认英文
@@ -872,6 +893,7 @@ def build():
                 'Extra': clean_value(tr_raw(info.get('Extra', ''))),
                 'Location': location,
                 'Arc': arc,
+                'Agent': page.get('agent') or '',
                 'Variant': '',   # 分段后缀统一由 dedupe_names() 生成
                 'WikiTitle': title,
                 # 简报：SDE 的官方中文优先；没有就用 wiki 的 {{MissionBriefing}}
@@ -898,6 +920,55 @@ def build():
             if len(rec['WikiContent']) < 400:
                 rec['IsStub'] = 1
             records.append(rec)
+
+    # 追加「没有 {{Missiondetails}} 的 COSMOS 任务页」（cosmos_extra.json，由
+    # fetch_cosmos_missions.py 解析）。这些页的元信息在开头 `Agent: / Agent location:` 行里。
+    known_titles = {r['TitleEN'].lower() for r in records}
+    added = 0
+    for extra_name in ('cosmos_extra.json', 'storyline_extra.json'):
+        extra_file = os.path.join(HERE, extra_name)
+        if not os.path.exists(extra_file):
+            continue
+        for item in json.load(io.open(extra_file, encoding='utf-8')):
+            if item['title'].lower() in known_titles:
+                continue
+            meta = item.get('meta') or {}
+            sections = item.get('sections') or []
+            if not sections and not item.get('briefing'):
+                continue
+            rid += 1
+            rec = {
+                'Id': rid,
+                'Agent': meta.get('agent') or '',
+                'Category': item.get('cat', MissionCategoryCosmos),
+                'Level': 0,
+                'MissionType': '',
+                'Faction': faction_of(meta),
+                'TitleEN': item['title'],
+                'TitleCN': tr(item['title']) if tr(item['title']) != item['title'] else item['title'],
+                'Objective': '',
+                'Ewar': '',
+                'ShipLimit': '',
+                'ShipSuggestion': '',
+                'Rewards': '',
+                'StandingLoss': '',
+                'Extra': meta.get('standing') or '',
+                'Location': meta.get('location') or '',
+                'Arc': meta.get('cosmos') or '',
+                'Variant': '',
+                'WikiTitle': item['title'],
+                'Briefing': tr_paragraphs(item.get('briefing') or ''),
+                'Sections': sections,
+                'IsStub': False,
+                'WikiUpdatedAt': SYNC_DATE,
+                '_Raw': {},
+            }
+            rec['WikiContent'] = render(rec)
+            records.append(rec)
+            known_titles.add(item['title'].lower())
+            added += 1
+    if added:
+        print('  追加补充任务 %d 条' % added)
 
     dedupe_names(records)
 
@@ -929,6 +1000,7 @@ def build():
 SCHEMA = '''
 CREATE TABLE Mission (
     Id INTEGER PRIMARY KEY,
+    Agent TEXT,
     Category INTEGER NOT NULL DEFAULT 0,
     Level INTEGER NOT NULL DEFAULT 0,
     MissionType TEXT,
@@ -960,11 +1032,11 @@ def write_db(records):
     # 老"任务正文"表一并退役（内容已由 WikiContent 覆盖）
     cur.execute('DROP TABLE IF EXISTS MissionContent')
     cur.executemany(
-        'INSERT INTO Mission (Id, Category, Level, MissionType, Faction, TitleEN, TitleCN,'
+        'INSERT INTO Mission (Id, Agent, Category, Level, MissionType, Faction, TitleEN, TitleCN,'
         ' Objective, Ewar, ShipLimit, ShipSuggestion, Rewards, StandingLoss, Extra, Location,'
         ' Arc, Variant, WikiTitle, WikiContent, IsStub, WikiUpdatedAt)'
-        ' VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [(r['Id'], r['Category'], r['Level'], r['MissionType'], r['Faction'], r['TitleEN'],
+        ' VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [(r['Id'], r.get('Agent'), r['Category'], r['Level'], r['MissionType'], r['Faction'], r['TitleEN'],
           r['TitleCN'], r['Objective'], r['Ewar'], r['ShipLimit'], r['ShipSuggestion'],
           r['Rewards'], r['StandingLoss'], r['Extra'], r['Location'], r['Arc'], r['Variant'],
           r['WikiTitle'], r['WikiContent'], r['IsStub'], r['WikiUpdatedAt']) for r in records])

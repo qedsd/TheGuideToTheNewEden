@@ -1,0 +1,57 @@
+﻿<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.Controls.CombatSiteDetailControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <converters:NullToVisibilityConverter x:Key="NullToVis" />
+    </UserControl.Resources>
+
+    <!--
+        「战斗异常」页里每个详情 Tab 的内容：站点名 + Markdown 正文。
+        DataContext 是 CombatSite（由 AnomalyPage 在打开 Tab 时塞进去）。
+        「暂无攻略正文」用 ConverterParameter=Inverse —— NullToVisibilityConverter 默认是
+        "非 null → Visible"，直接绑会让占位文字在**有正文时**显示（补充十九的 bug）。
+    -->
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="0,0,0,8">
+            <controls:RichTextPresenter
+                VerticalAlignment="Top"
+                FontSize="18"
+                Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                Text="{Binding TitleCN, Mode=OneWay}"
+                VerticalScrollBarVisibility="Disabled" />
+            <controls:RichTextPresenter
+                Margin="0,2,0,0"
+                VerticalAlignment="Top"
+                FontSize="15"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding TitleEN, Mode=OneWay}"
+                VerticalScrollBarVisibility="Disabled" />
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <controls:MarkdownPresenter
+                BaseFontSize="16"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Markdown="{Binding WikiContent, Mode=OneWay}" />
+
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource DEDPage_NoContent}"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Visibility="{Binding WikiContent, Converter={StaticResource NullToVis}, ConverterParameter=Inverse}" />
+        </Grid>
+    </Grid>
+</UserControl>

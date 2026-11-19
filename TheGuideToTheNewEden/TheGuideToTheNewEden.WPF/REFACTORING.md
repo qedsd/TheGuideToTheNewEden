@@ -12927,7 +12927,243 @@ build_sites.py   组装 + 渲染中文 Markdown + 写 static.db（--write-db）
    ② 判断表格开头用 `startswith('{')` 会把 `{{NPCTemplate}}` 当成表格起点，一路吃到页面末尾；
    ③ `paragraphize` 最后那个"丢掉以 `|` 开头且以 `|` 结尾的行"（本意是清 wiki 语法）会**把刚转好的 Markdown 表格吃掉**。
    三处都改成精确判断。现在 **927 条任务**带 Markdown 表（NPC 表 924 + 采矿/波次等）
-- 语言键：中英各 **3671**、集合一致。`dotnet build` 0 错误。
+- 语言键：中英各 **3701**、集合一致。`dotnet build` 0 错误。
+
+### 补充二十二（2026-11-18）：双击建了页签却没切过去
+
+用户反馈：双击只新建页签、不自动切换；单击中文名却会切。
+
+根因：双击的**第二次 mouse-up 还没处理完**时就把 `DetailTabs.SelectedItem` 设成新页签，
+这个赋值被随后的输入处理顶回去了。单击名字没这问题——那条路径的事件已经走完。
+
+修法：新增 `SelectTab(TabItem)`，先同步设一次，再 `Dispatcher.BeginInvoke(..., DispatcherPriority.Input)`
+延后一拍再设一次并 `Focus()`。已打开的页签走同一条路径。
+
+**验证**：探针 5/5 —— 用真实路由事件 `Control.MouseDoubleClickEvent` 触发，
+双击后页签 2 个且 `SelectedIndex == 1`；再双击另一行 → 3 个且 `SelectedIndex == 2`。
+
+### 补充二十一（2026-11-18）：战斗异常交互定稿
+
+用户第四次微调，最终交互：
+
+| 操作 | 结果 |
+|---|---|
+| 单击行 | 只选中（不开页签） |
+| **单击中文名** | **本页新开页签看正文** |
+| 双击行 | 同单击中文名（同一站点不重复开） |
+| 点「可升级为」列 | 跳「死亡远征」页看它升级成的站点（唯一会跳页的入口） |
+
+实现：`OnSelfClick` 从 `AnomalyPageViewModel.OpenSelf`（跳页）改成 `OpenSiteTab(row.Id)`（本页开页签）。
+
+**验证**：探针 6/6 —— 单击选中 1 个页签、点中文名 2 个、双击同一站点仍 2 个、
+换一行双击 3 个、点「可升级为」不新增页签。
+
+### 补充二十（2026-11-18）：战斗异常交互再调整 —— 单击选中、双击看正文、点名字跳页
+
+用户第三次调整交互，与补充十九相反的两处：
+
+| 操作 | 补充十九（旧） | 补充二十（现在） |
+|---|---|---|
+| 单击行 | 开页签 | **只选中，不开** |
+| 双击行 | （无） | **开页签看正文** |
+| 单击中文名 | （纯文本） | **跳「死亡远征」页看该异常** |
+| 点「可升级为」 | 跳死亡远征 | 跳死亡远征（不变） |
+
+实现：`DataGrid` 去掉 `SelectionChanged`、改回绑 `MouseDoubleClick`；
+中文名恢复成 `ui:Button` 绑 `OnSelfClick` → `AnomalyPageViewModel.OpenSelf`
+（即 `Navigation.NavigateToCombatSite(row.Id)`）。
+
+**验证**：探针 7/7 —— 起始 1 个页签、单击选中后仍 1 个、双击后 2 个、
+`OnSelfClick`/`OnTargetClick` 都在、`OnSelectionChanged` 已移除。
+
+### 补充十九（2026-11-18）：战斗异常页四处修正
+
+用户试用的四条反馈，逐条改：
+
+1. **势力下拉没有冬眠者** → 加一项「冬眠者」（哨兵值 `-2`），选中时按
+   `Category == WormholeSite` 过滤（虫洞站点的 `Faction` 是 -1，不是具体海盗势力）。下拉 8 项。
+2. **改成"选中某一项就打开"** → 去掉中文名上的按钮，改绑 `DataGrid.SelectionChanged`；
+   选中任意一行就在本页新开/切换到该站点页签。
+3. **点「远征」列要跳死亡远征页** → `OnTargetClick` 改回走 `AnomalyPageViewModel.OpenTarget`
+   （即 `Navigation.NavigateToCombatSite`），不再在本页开页签。
+4. **详情页一直显示「暂无攻略正文」** → `NullToVisibilityConverter` 的语义是
+   **非 null → Visible**，我之前当成"null → Visible"用了，于是正文非空时占位文字反而显示。
+   改成 `ConverterParameter=Inverse`。
+
+**验证**：探针 9/9 —— 下拉 8 项且含冬眠者、筛冬眠者 76 条、回不限 202 条、
+选中一行后页签数 2、详情无占位文字、详情 DataContext 的正文 1,125 字符。
+
+### 补充十八（2026-11-18）：拆出「资源」页 + 「战斗异常」页改成多页签
+
+用户要求把上一轮导入的站点按用途重新分家：
+
+**1. 新功能「资源」（ResourcesPage）** —— 与死亡远征同构的阅读器（左列表 + 分类筛选 / 右 Markdown）。
+数据 = `CombatSite` 的 5 档非战斗站点：战斗遗迹(5) / 数据站点(10) / 矿石站点(11) / 气云站点(12) /
+冰带(13)，共 **171 个**。筛选只有「分类 + 搜索」，没有势力/档位（这几类站点没有敌对势力口径）。
+
+**2. 「异常」改名「战斗异常」（AnomalyPage），改成 TabControl**
+- 第一个 TabItem 固定为**所有异常**（原来的对照表：列表 + 搜索 + 势力/档位筛选），不可关闭；
+- 点某行的名字或「可升级为」列 → **不再跳转死亡远征页**，而是在后面新开一个 TabItem 显示该站点正文，
+  Header = 站点名 + `✕` 关闭按钮（`Segoe Fluent Icons` 的 `\uE711`），已打开的站点重复点击只切换不重开；
+- 虫洞站点(76) 并进同一张列表：分类列显示**冬眠者**、出现空间列显示**虫洞**，
+  所以列表从 126 → **202** 行，排序先异常后虫洞。
+
+**3. 死亡远征页收窄**：分类下拉排除已分出去的 6 档（5/10/11/12/13/14），从 16 项降到 **10 项**。
+
+**验证**：探针 14/14（资源 171、下拉 6 项、矿石筛 66、异常 202、冬眠者 76、虫洞 76、
+首个页签「所有异常」、打开后 2 个页签、重复打开不新增、页签头可关闭、关闭回 1 个）
++ 7/7（死亡远征 10 项且不含矿石/冰带/虫洞、资源手册映射 `guides/resources`）。
+
+### 补充十七（2026-11-18）：三批站点攻略入库（远征 / 遗迹 / 数据 / 矿石 / 气云 / 冰带 / 虫洞）
+
+用户点了"第一、二、三批"全做。新增 `build_extra_sites.py`（`--fetch` / `--fetch-html` /
+`--export` / `--merge` / `--write-db`）+ `CombatSiteCategory` 五个新值：
+
+| 组 | wiki 分类 | CombatSite 分类 | 条数 |
+|---|---|---|---|
+| expedition | Expeditions | 2 远征（补齐） | 96 |
+| relic | Relic sites | 5 战斗遗迹 | 13 |
+| data | Data sites | 10 数据站点（新） | 14 |
+| ore | Ore sites | 11 矿石站点（新） | 66 |
+| gas | Gas sites | 12 气云站点（新） | 71 |
+| ice | Ice belts | 13 冰带（新） | 7 |
+| wormhole | Wormhole sites | 14 虫洞站点（新） | 76 |
+
+另外补了 7 条故事线任务（`Kidnappers Strike` 系列等）→ Mission 1989 → **1996**。
+
+#### 三个必须修的解析问题
+
+1. **wikitext 表格被整块丢弃**：矿石/气云/冰带页面用的是原始 HTML 式表格
+   （`{|` … `! scope="col" | Ore Type` … `|}`），原流程直接扔掉 → 页面只剩一句话。
+   新增 `parse_missions.wikitables_to_md()`，把 `{| |}` 转 Markdown（含 `style="…" | 文本`、
+   `&nbsp;`、`[[链接|文本]]` 清理）。修完矿石页从"一句话"变成完整的矿物成分表。
+2. **虫洞站点页内容全在模板里**：`{{npcwh|wave|Wave 1}}` / `{{npcwh|ssen|2x}}` 这种波次模板，
+   wikitext 解析不出任何东西（`Core Bastion` 原来只有 69 字符）。改为抓**渲染后 HTML**
+   （`--fetch-html`）+ 复用 `parse_incursions` 的表格遍历，同一页变成 2,975 字符的真实波次表。
+3. **跨分类重复**：`Superior Sleeper Cache` 同时挂在 Relic 和 Data 两个分类下，会入两次库。
+   构建时按标题去重（Relic 优先），数据组 19 → 14。
+
+#### 翻译
+
+分三轮跑完：59 批 + 8 批 + 5 批（8 路并行），缓存 **4,969** 条。
+剩余 1,928 条是**故意保留英文**的条目（星域名 `Domain`/`Delve`、`#`、`(Domination Crusher` 这类碎片）。
+
+#### 结果与验证
+
+`CombatSite` **478 → 739**（15 个分类）。探针 **13/13**：七类条数全对、
+分类下拉 16 项（全部 + 15 档）、切「虫洞站点」后 76 条、`Core Bastion` 正文 2,975 字符且含表格。
+
+### 补充十六（2026-11-18）：导入 COSMOS 站点 87 个（③ 第二块）
+
+`Category:COSMOS sites` 共 87 页，之前一条都没进库。它们和 DED 复合体同构
+（`{{CMBSiteInfo}}` 信息框 + NPC 表 + 攻略正文），所以**并进 `CombatSite`**，
+新增枚举值 `CombatSiteCategory.Cosmos = 9`，在「死亡远征」页的分类下拉里显示「空中代理人站点」。
+
+- 抓取/解析：`build_cosmos_sites.py`（`--fetch` / `--export` / `--merge` / `--write-db`），
+  复用 `parse_missions.py` 的 `find_templates` / `parse_info` / `collect_npcs` / `split_sections`。
+- 12 个页面没有 `CMBSiteInfo`（地标/据点类：`Bandit Hideout`、`Port Maphante`、种植园等），
+  也一并收进来，只是属性区为空。
+- 信息框字段里常混 wiki 语法（`{{ColorSecurityRating|{{SystemToSecurity|Otitoh}} }}`、
+  `[https://evemaps… Kenobalana]`），`clean_meta()` 逐层剥掉；势力名另做了中文映射表。
+- 译文 1,114 条；正文 106,630 字符，87 条全部有内容、82 条中文占比达标。
+
+**验证**：探针 5/5 —— 分类下拉 11 项、有「空中代理人站点」、筛选后 87 条、状态行「共 87 项」。
+另 7/7 —— `CombatSiteService.CountByCategoryAsync` 含 9 档且为 87、分类名解析正确。
+
+### 补充十五（2026-11-18）：信息框识别全量核对
+
+用户要求"全部核对一遍"。新增 `audit_infobox.py`：扫全部 raw 页面，找**有 `|Level=` / `|Type=` /
+`|Objective=` 这类字段行、但 parsed.json 里没有 info 的页面**——那就是模板名没认出来的。
+
+第一轮报 205 个，逐个查下去发现**大部分是审计脚本自己的锅**：
+`fetch_cosmos_missions.py` 直接抓的页面用**下划线命名**（`Activist_Fuel_1_of_4.txt`），
+而 index 用真实标题（`Activist Fuel (1 of 4).txt`），两套文件名并存 → 按文件名对不上 →
+误判成"没解析"。处理：
+1. 删掉 91 个与 index 重名的下划线副本；
+2. `adopt_orphans.py`：按文件名反推标题 + API 校验 + 与 `Category:COSMOS missions` 清单归一化比对，
+   把真正的新页面（`Helmi Nakamuta` 等 3 个）改名并补进 index；
+3. 剩下 56 个确认是重复页，直接删。
+
+**核对结果：raw 1990 → 1796 个文件（与 index 一一对应），"有字段但没解析"的页面只剩 2 个**，
+且都是 `User:` 沙盒页（已在 sde_review 里剔除）。
+
+最终数据：任务 **1989**（安全 846 / 运输 147 / 采矿 30 / 故事线 117 / 史诗 207 / 异常 13 /
+空中代理人 548 / 研发 6 / 职业 45 / Circle 30）；有目标 1617（纯英文 30）、有奖励 871（纯英文 113）、
+有代理人 572、有地点 257。
+
+### 补充十四（2026-11-18）：`{{Template:Missiondetails}}` 前缀导致整页字段丢失
+
+用户发现 `Pawns on the Board (5 of 5)` 缺「类型/目标/奖励」——wiki 上明明写着
+`Type=Courier / Objective=Deliver 1x Lord Arachnan's Medal / Rewards=Robikar's Recommendation + …`。
+
+根因：**那个页面的信息框写成了 `{{Template:Missiondetails`**（带 `Template:` 前缀）。
+`find_templates()` 按模板名精确比对，`Template:Missiondetails` 不等于 `Missiondetails`，
+于是整页被当成"没有信息框"，只走了补充解析路径（只有代理人/简报，没有字段）。
+这类页面不止一个：修完 **带 infobox 的页面 1345 → 1522，任务变体 1771 → 1955**。
+
+顺带修的两处：
+- 代理人页/补充页开头的 `Agent: / Agent location:` 行，现在**所有页面**都会解析
+  （之前只对 `{{Infobox agent}}` 页生效），`Location` 也优先用这一行（比正文里正则捞空间站可靠）。
+- `Agent` 字段不再只对代理人页生效。
+
+**结果**：任务 **1925 → 1989**（空中代理人 548），有任务目标 1617、有奖励 871、
+有代理人 572、有地点 257。新字段译文 348 条。目标只剩 30 条、奖励 113 条纯英文（多为物品名）。
+
+样例（`无名小卒（5/5）`）：
+`类型 Courier ｜ 目标 交付 1x Lord Arachnan's Medal（0.1 m3）｜ 奖励 Robikar's Recommendation + Amarr 势力声望 ｜ 代理人 Stem Robikar ｜ 地点 Civic Court Plaza (Aphi)`
+
+### 补充十三（2026-11-18）：空中代理人（COSMOS）第一批 —— 修标题 + 补 204 条任务
+
+按用户定的顺序执行"修误分类 → 补任务 → 补站点 → 代理人"。
+
+**1. 修掉了 112 条"代理人名当任务名"的错数据。**
+wiki 上的 COSMOS 代理人页（`{{Infobox agent}}`）一个页面里塞了该代理人的多条任务，
+小节标题才是任务名（`== The Azure Canyon (1 of 4) ==`）。之前把页面标题（代理人名）当任务名，
+库里就出现「艾可·奥赛玛（1/4）」这种行。现在解析时识别代理人页，**用 infobox 之前最近的小节标题**
+当任务名，并把代理人名写进新列 `Mission.Agent`；渲染时元信息显示「**代理人** X」。
+
+**2. 补了 204 条没有 `{{Missiondetails}}` 的 COSMOS 任务。**
+这批页的结构是开头一行 `Agent: / Agent location: / Standings required:` + `{{MissionBriefing}}` + NPC 表，
+现有解析器抓不到（它只认 `{{Missiondetails}}`）。新增 `fetch_cosmos_missions.py` 单独解析，
+产出 `cosmos_extra.json`，由 `build_missions.py` 追加进 Mission 表（分类固定为空中代理人）。
+
+**结果**：任务 **1721 → 1925**，空中代理人 **340 → 544**，译文缓存 12,894 → 13,400。
+探针 7/7：总数、分类下拉、544 条、搜 `A Storm Brewing` 命中 6 条、元信息带代理人、正文中文简报。
+
+#### 还没做
+
+- COSMOS 站点 86 个（`{{CMBSiteInfo}}`，可复用战斗站点解析器）。
+- 代理人独立条目（246 个）：目前只在任务上挂了 `Agent` 字段，还没有"代理人→其所有任务"的聚合视图。
+
+### 补充十二（2026-11-18）：新增「入侵」功能 + COSMOS 改名「空中代理人」
+
+用户拍板：COSMOS 的筛选项**不要**加帝国/星座/任务类型（保持原有的分类/等级/势力 + 搜索），
+细节放正文；分类中文名定为「**空中代理人**」；然后开始做 ① 入侵 + 快速修正 + ③ 空中代理人。
+
+#### 已完成
+
+1. **COSMOS 任务归类**：`Category:COSMOS missions` 的 334 个页面在 wiki 上分类信息不全，
+   抓取时全落进「安全任务」。新增 `cosmos_list.py` 存清单，构建时按清单归到 COSMOS：
+   **安全任务 1136 → 796，空中代理人 0 → 340**（同一页多版本会拆成多条）。
+   分类中文名 `MissionPage_Cat_Cosmos` 改为「空中代理人」（英文 `COSMOS (Deep Space)`）。
+2. **入侵功能（①）**：
+   - 抓取：`fetch_incursions.py` 抓**渲染后的 HTML**——站点难度、舰队需求、敌人构成这些表
+     都是 `{{incursion sites|...}}` / `{{incursion rats|...}}` 模板生成的，抓 wikitext 只能看到调用。
+   - 解析：`parse_incursions.py` 用 lxml 提 `#mw-content-text`，小节转 `###`，表格转 Markdown。
+     **两个坑**：① lxml 把行包进 `<tbody>`，`./tr` 一行都取不到（表格全空）；
+     ② wiki 的响应式表格会把同一格渲染两遍（`184 184 m`），要去重。
+   - 数据：`build_incursions.py` 生成 `IncursionSite` 表（15 个站点：集结点 4 / 先锋 3 / 突击 3 / 总部 3 / 母舰 2），
+     译文 279 条（`translations_incursions.json`），正文为中文 Markdown。
+   - 界面：`IncursionPage` + `IncursionPageViewModel` + `IncursionService` + `IncursionSite` 模型；
+     导航挂在「攻略」组，主页功能目录加 `incursion` 磁贴；筛选只有**类型 + 搜索**（按用户要求精简）。
+   - 图标暂用 Fluent 的 `Sparkle24`（导航项），没有另做 PNG（原图标管线要画 SVG，后面可补）。
+3. **验证**：探针 7/7 —— 15 个站点、状态行「共 15 个站点」、母舰筛选 2 个、
+   搜「昆达里尼」命中 1、正文有中文小节标题与中文段落。
+
+#### 未完成（下一轮）
+
+- 快速修正里剩下的：补 25 个缺失战斗异常（其中 2 个是 User 沙盒、约 10 个是活动/限时站点）+ 2 个 DED。
+- ③ 空中代理人：COSMOS 站点 87 页、缺失任务 129 页、代理人 246 页。
 
 ### 补充十一（2026-11-18）：任务页底部"共 N 项"永远是 0
 

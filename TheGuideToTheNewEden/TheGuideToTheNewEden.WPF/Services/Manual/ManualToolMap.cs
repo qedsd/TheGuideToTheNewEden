@@ -64,6 +64,7 @@ public static class ManualToolMap
         [typeof(Views.Pages.AnomalyPage)] = "guides/anomaly",
         [typeof(Views.Pages.DEDPage)] = "guides/ded",
         [typeof(Views.Pages.MissionPage)] = "guides/mission",
+        [typeof(Views.Pages.ResourcesPage)] = "guides/resources",
         [typeof(Views.Pages.WormholePage)] = "wormhole",
         [typeof(Views.Pages.LinksPage)] = "links",
         [typeof(Views.Pages.MapPage)] = "map",

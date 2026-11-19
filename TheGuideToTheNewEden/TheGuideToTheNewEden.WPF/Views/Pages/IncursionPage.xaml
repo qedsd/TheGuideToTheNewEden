@@ -1,0 +1,168 @@
+﻿<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.IncursionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:dbmodels="clr-namespace:TheGuideToTheNewEden.Core.DBModels.Static;assembly=TheGuideToTheNewEden.Core"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--
+        「攻略 · 入侵」页。
+        · 数据：Core/IncursionService → static.db 的 IncursionSite 表
+          （EVE University Wiki 的 Category:Incursions sites，15 个站点：集结点 4 / 先锋 3 / 突击 3 / 总部 3 / 母舰 2）。
+        · 站点难度、舰队需求、敌人构成这些表在 wiki 上是模板生成的，抓的是渲染后的 HTML。
+        · 筛选只保留「类型 + 搜索」——帝国 / 星座 / 任务类型这些信息放进正文，不占筛选位。
+    -->
+    <Page.Resources>
+        <converters:NullToVisibilityConverter x:Key="NullToVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <DataTemplate x:Key="IncursionItemTemplate" DataType="{x:Type dbmodels:IncursionSite}">
+            <Grid Margin="0,6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                    Text="{Binding TitleEN}"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,2,0,0"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding TitleCN}"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="2"
+                    Margin="0,2,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding TypeCN}"
+                    TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  左：搜索 + 列表 + 类型筛选  -->
+        <controls:CardControl>
+            <controls:CardControl.Header>
+                <ui:TextBox
+                    Margin="0,6"
+                    FontWeight="Normal"
+                    PlaceholderText="{DynamicResource IncursionPage_SearchTip}"
+                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            </controls:CardControl.Header>
+
+            <Grid>
+                <ListBox
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemContainerStyle="{StaticResource StretchListItem}"
+                    ItemTemplate="{StaticResource IncursionItemTemplate}"
+                    ItemsSource="{Binding Items}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectedItem="{Binding Selected, Mode=TwoWay}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
+
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource IncursionPage_Empty}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+            </Grid>
+
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Stretch">
+                    <ComboBox
+                        Margin="0,0,0,6"
+                        HorizontalAlignment="Stretch"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding TypeOptions}"
+                        SelectedItem="{Binding SelectedType, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Margin="0,2,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding StatusText}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  右：标题 + 元信息 + 正文  -->
+        <Grid Grid.Column="1" Margin="12,0,0,0">
+            <controls:CardControl Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
+                <controls:CardControl.Header>
+                    <StackPanel Margin="0,4">
+                        <controls:RichTextPresenter
+                            VerticalAlignment="Top"
+                            FontSize="18"
+                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            Text="{Binding Selected.TitleEN, Mode=OneWay}"
+                            VerticalScrollBarVisibility="Disabled" />
+                        <controls:RichTextPresenter
+                            Margin="0,2,0,0"
+                            VerticalAlignment="Top"
+                            FontSize="15"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Selected.TitleCN, Mode=OneWay}"
+                            VerticalScrollBarVisibility="Disabled" />
+                        <controls:RichTextPresenter
+                            Margin="0,6,0,0"
+                            VerticalAlignment="Top"
+                            FontSize="13"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding MetaText, Mode=OneWay}"
+                            VerticalScrollBarVisibility="Disabled"
+                            Visibility="{Binding HasMeta, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </controls:CardControl.Header>
+
+                <Grid>
+                    <controls:MarkdownPresenter
+                        BaseFontSize="16"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Markdown="{Binding Selected.Content, Mode=OneWay}" />
+
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource IncursionPage_NoSelection}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}" />
+                </Grid>
+            </controls:CardControl>
+
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource IncursionPage_NoSelection}"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}" />
+        </Grid>
+    </Grid>
+</Page>

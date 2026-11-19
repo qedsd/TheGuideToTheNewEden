@@ -1,0 +1,959 @@
+[
+ {
+  "title": "Distress Beacon",
+  "type": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 3 - 5 pilots1 logistics or spidertankingSites take about 15 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to assist a civilian Orca-class vessel currently being pinned down by Sansha forces. The Orca will be able to escape as soon as you can secure the area.This is a target of opportunity, and has minimal impact on the larger anti-Sansha campaign. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Conventional Sansha attacks upon shipping and trade vessels have been drastically reduced in effectiveness over the last decades, thanks to heightened vigilance and a general increase in fleet preparedness. These factors alone make the new Sansha attacks relatively minor in scale. Although Sansha forces are selecting targets with a newfound sense of opportunism not traditionally demonstrated, they are nonetheless much the same attack patterns experienced in previous years. Adapting to the challenges of smarter target selection and improved military technologies remains the primary concern.\n\nSynopsis from ISHAEKA-0089. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 1 | Jel Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 48 dps 240 hp | 12000 10 - 12 km | 3264 3k ehp |\n| 1 | Lirsautton Parichaya | 125 m | 1400 1,400 m/s | 7500 8 km 158 m/s | 440 dps 6,600 hp | 68750 < 69 km | 25032 25k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 1 | Orkashu Myelen | 53 m | 2760 2,760 m/s | 4500 5 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 2762 3k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 3 | Uitra Telen | 300 m | 1500 1,500 m/s | 30000 30 km 260 m/s | 132 dps 660 hp | 32500 23 - 33 km | 132070 132k ehp |\n| 3 | Vylade Dien | 422 m | 170 m/s | 60000 60 km 170 m/s | -1 (no weapons) | -1 (no weapons) | 274918 275k ehp |\n| 1 | Youl Meten | 33 m | 2550 2,550 m/s | 8000 8 km 410 m/s | 38 dps 192 hp | 12000 10 - 12 km | 3217 3k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets<small |  |  |  |\n| 1 |  | Niarja Myelen Orkashu Myelen Lirsautton ParichayaArnon Epithalamus |  | The Niarja Myelens and Orkashu Myelens because they jam and neut. The Lirsautton Parichayas before the Arnon Epithalamus' if there are many, because of their damage and since they are easy to kill. Other way around if there are fewer Lirsauttons. |\n| 2 |  | Mara Paleo Vylade Dien |  | The Mara because it has remote shield boosting capabilities. The Vylade because it increases the resists for all the other ships. |\n| 3 |  | Romi ThalamusAntem NeoUitra Telen | Eystur RhombenJel RhombenYoul Meten | Romis first as they post the biggest threat, then Antem Neos before Uitras because they do slightly more damage and easier to kill. Eysturs and Jels before Youls despite the web as they are a little bit stronger. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "Initial research didn't show any triggers. The last enemy killed in each wave triggers the next, so there is no risk of accidentally triggering the next wave before you finish your current one."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "There are no special requirements for this site."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are three waves in this site, most spawning around the Civilian Orca, 10 - 15 km away from the warp-in.\n- There are no ships capable of warp disrupting or warp scrambling you in this site, which means you can warp out at any time.\n- None of the Sansha will actually engage the Civilian Orca, so there is no need to protect it, just drive the Sansha off. You can even destroy the Orca, complete the site and still get your reward.\n- There are regular asteroids present in this site. While the amount appears to be random (9 - 63 k units of ore, average about 30 - 35 k units), there will always be the following asteroids: 8 x Concentrated Veldspar, 8 x Massive Scordite, 8 x Scordite and 8 x Veldspar."
+   }
+  ],
+  "chars": 5452
+ },
+ {
+  "title": "Forward Reconnaissance Outpost",
+  "type": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 3 - 5 pilots1 logistics or spidertankingSites take about 15 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to destroy any Sansha vessels defending the transmitter arrays. Once the area is secured, surveillance teams can move in to backhack the Sansha information network.This is a target of opportunity, and has minimal impact on the larger anti-Sansha campaign. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Sansha's Nation forces have established forward outposts for the purpose of reconnaissance and minor communication relays between fleets. Although these outposts play a relatively minor role they are nonetheless contributing to the Nation's larger influence over systems and must be considered equally troubling in this regard.\n\nSynopsis from ISHAEKA-0091. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 1 | Jel Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 48 dps 240 hp | 12000 10 - 12 km | 3264 3k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 1 | Orkashu Myelen | 53 m | 2760 2,760 m/s | 4500 5 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 2762 3k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Niarja Myelen Orkashu Myelen Arnon Epithalamus |  | Because the Niarja Myelen and the Orkashu Myelen jams and neuts. Niarja first since it poses more of a threat. The Arnon also jam but takes longer to kill, so it pays off to kill the Myelens first to reduce jammers. |\n| 2 |  | Mara Paleo |  | The Mara because it has remote shield boosting capabilities. |\n| 3 |  | Antem Neo | Eystur RhombenJel Rhomben | Antem Neos pose no serious threat. Eysturs before Jels as they are a little bit stronger. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "Initial research suggests that some ships are triggers for the next wave and while the exact details hasn't been ironed out, the Mara Paleo is usually a trigger for the next wave.\n\nAll ships will need to be destroyed in order to complete the site, so intentionally forcing the next wave before you finish your current wave isn't advantageous."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "There are no special requirements for this site."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are five waves in this site, with spawns ranging from 25 - 30 km away from the warp-in.\n- There are no ships capable of warp disrupting or warp scrambling you in this site, which means you can warp out at any time.\n- This site has a high number of neuting capable ships with extreme waves having up to six Niarjas, which will quickly drain your capacitor."
+   }
+  ],
+  "chars": 4106
+ },
+ {
+  "title": "Incursion sites",
+  "type": "staging sites",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion links |\n|---|\n| General |\n| Incursions How to find Incursions Constellation layouts Incursion sites History of Incursions |\n| Advanced |\n| Anatomy of Incursions Fitting principles Sansha's Manual Ship progression |\n| EVE University |\n| EVE University Incursion Community |\n| Preparations |\n| Preparing for Incursions Roles in Incursions checklist |\n| Fittings |\n| Vanguard fits |\n| Guides |\n| Selecting a focus Forming a fleet Implant Guide |\n\nSites appear within the constellation as warpable beacons in space, visible to anyone (much like static complexes). With the exception of the staging sites, each beacon has an acceleration gate (or two) leading into the actual incursion site.\n\nUnlike missions where you have loot and bounties the reward is simply tied to the completion of the site. The fleet that contributed the most to the completion of the site will receive a direct payout of ISK and an allotted amount of CONCORD Loyalty Points\n\nTo read about how long an incursion stays up, see the longevity section on the Incursions page."
+   },
+   {
+    "level": 5,
+    "title": "Payout",
+    "text": "The maximum payout, with the exception of staging sites, is determined by the general security of space you are in, high-sec (0.5 - 1.0 space) or low- and null-sec (anything below 0.5 space). The payout is the same for all system within their respective groups, individual system security is irrelevant. Only members of the fleet who are actually on grid when the site is finished counts, so members who stay off grid or warp out before the site is finished will not get paid nor will they count when the reward is calculated.\n\nThe payout for staging sites is different from the others. Only the top 5 contributors to a site gets paid, being in fleet isn't necessary and has no bearing on who gets paid. There are no scaling rewards, if more people are on grid the rest get nothing."
+   },
+   {
+    "level": 5,
+    "title": "Scaling rewards",
+    "text": "In addition the payout scales based on the number of pilots you have in your fleet\n\nIn general the EVE University Incursion Community avoids having more than eleven people in vanguard fleets due to the added risk, but some communities do it for the added speed and increased chance of winning competitions due to having one more fleet member on grid.\n\nThere are five different type of encounters available: Staging, vanguard, assault, headquarter and mothership sites.\n\nThe different systems all have a maximum number of encounter sites available at any given time. When sites are completed their respective beacons will disappear and their point of reference will no longer be interactable or possible to warp to. The site itself will not fully despawn until everyone leaves the grid, including the acceleration gate.\n\nFor easy navigation, a navigation box summarizing the sites with links to the other pages is placed on each page. It is usually visible at the top of the page on the right; except this page, where it is placed at the very bottom."
+   },
+   {
+    "level": 3,
+    "title": "Staging sites",
+    "text": "|  | Fleet of 3 - 5 pilots1 logistics or spidertankingSites take about 15 - 20 minutes |\n|---|---|\n\nThere is only one system with staging sites in them, the staging system (the same system linked in the journal for the constellation). There can be up to five staging sites available at any given time, of the following variety:\n\n- Distress Beacon\n- Forward Reconnaissance Outpost\n- Nation Industrial Proxy (see Additional Information)\n- Propaganda Cluster\n\nPayout:\n\n- 3,500,000 ISK and 400 CONCORD LP (top five contributors)\n\nAdditional Information:\n\n- Being part of the fleet doesn't count for staging sites, the top 3 contributors will get paid regardless if they are fleeted or not.\n- None of the Sansha NPC has Warp Disruptors in staging sites; you are free to warp out at any time.\n- The Nation Industrial Proxy are not sites per se, and do not spawn at beacons. Instead, they are part of the asteroid belts within the staging system."
+   },
+   {
+    "level": 3,
+    "title": "Vanguard sites",
+    "text": "|  | Fleet of 10 - 12 pilots (up to 15 in low/null)2 - 3 logistics neededSites take about 5 - 10 minutes |\n|---|---|\n\nThere's usually three or four vanguard systems per constellation, depending on the size of the constellation. In some of the larger constellations you can have up to six vanguard systems, but they are exceedingly rare. Each system will have up to seven vanguard sites spawned at once and there are three different kind of vanguard sites:\n\n- Nation Commander Outpost\n- Nation Mining Colony (requires Lyavite to complete)\n- Override Transfer Array (preferably run with a hacker)\n\nPayouts:\n\n- 10,395,000 ISK and 1,400 CONCORD LP in highsec for 5 up to 10 people (maximum individual payout).\n\n- 15,000,000 ISK and 2,000 CONCORD LP in low- and nullsec for 5 up to 15 people (maximum payout).\n\nAdditional information:\n\n- Strong focus on handling smaller, faster enemies as these sites feature a lot of frigates and cruisers.\n- Highsec Vanguards may be \"overstacked\" to 11 pilots for a greater total reward, but lower individual."
+   },
+   {
+    "level": 3,
+    "title": "Assault sites",
+    "text": "|  | Fleet of 20 - 21 pilots (up to 30 in low/null)3 - 4 logistics needed5 - 10 snipers neededSites take about 10 - 20 minutes |\n|---|---|\n\nThere are usually one or two assault systems in a constellation but depending on the size of the constellation it can have as many as three assault systems. Each system can have up to five assault sites spawned at once. The assault sites are as follows:\n\n- Nation Commander Stronghold\n- Nation Consolidation Network\n- Overwhelmed Civilian Facility\n\nPayouts:\n\n- 18,200,000 ISK and 3,500 CONCORD LP in highsec for up to 20 people (maximum payout).\n\n- 26,000,000 ISK and 5,000 CONCORD LP for low- and nullsec for up to 30 people (maximum payout).\n\nAdditional information:\n\n- Strong focus on larger ships, range capabilities and being able to handle energy neutralization.\n- Utility energy transfers needs to be available (often provided by Basilisk pilots).\n- Snipers will need to be able to lock up to 120km and apply good damage.\n- The Nation Consolidation Network sites split the fleet with medium-sized ships (battlecruisers, command ships, strategic cruisers, heavy assault ships etc) on one side, battleship-sized ships on the other (logistics and battlecruiser sized ships can go to either side). If you avoid that site there is no need for cruiser-sized ships in your fleet.\n- The Overwhelmed Civilian Facility site can be done without any snipers, if need be."
+   },
+   {
+    "level": 3,
+    "title": "Headquarter sites",
+    "text": "|  | Fleet of 40 pilots (up to 60 in low/null)6 - 10 logistics needed (5+ utility cap needed)10 - 15 snipers neededSites take about 10 - 20 minutes |\n|---|---|\n\nSimilar to there being only one staging system, there is only one headquarter system. The system can have up to five headquarter sites spawned at once, not counting the mothership site. The headquarter sites are as follows:\n\n- Nation Rebirth Facility\n- True Creations Research Center\n- True Power Provisional Headquarters\n\nPayout:\n\n- 31,500,000 ISK and 7,000 CONCORD LP in highsec for 20 up to 40 pilots (maximum payout).\n- 45,000,000 ISK and 10,000 CONCORD LP for low- and nullsec for 20 up to 60 pilots (maximum payout).\n\nAdditional information:\n\n- Strong focus on larger ships, range capabilities, mobility and being able to handle energy neutralization.\n- Utility energy transfers needs to be available (often provided by Basilisk pilots).\n- Snipers will need to be able to lock up to 120km and apply good damage."
+   },
+   {
+    "level": 3,
+    "title": "Mothership sites",
+    "text": "|  | Fleet of 40 - 80 pilots (up to 120 in low/null)10+ logistics needed (5+ utility cap needed)Site takes about 15 - 25 minutes and ends the Incursion |\n|---|---|\n\nThere is only one mothership site per constellation and it will appear in the headquarters system once the constellation influence reaches 0% and a single headquarter site has been run. Finishing this site will end the incursion and the pool of Loyalty Points will be paid out to everyone who ran sites in the constellation, whether they are online or not.\n\n- The Kundalini Manifest (spawns only in highsec and nullsec)\n- Uroborus (spawns only in lowsec)\n\nPayout:\n\n- 63,000,000 ISK and 14,000 CONCORD LP in highsec for 40 up to 80 pilots (maximum payout).\n- 90,000,000 ISK and 20,000 CONCORD LP for low- and nullsec for 40 up to 120 pilots (maximum payout).\n\nLoot:\n\n- Up to three True Sansha faction modules.\n- A Sansha's Nation blueprint copy for one of the following ships: Shadow (fighter bomber) Succubus (faction frigate) Phantasm (faction cruiser) Nightmare (faction battleship) Revenant (faction supercarrier, only drops in lowsec).\n\nAdditional information:\n\n- Strong focus on larger ships, range capabilities, mobility and being able to handle energy neutralization.\n- Utility energy transfers needs to be available (often provided by Basilisk pilots).\n- This site features a bomber run where the mothership periodically calls in a large group of fighter bombers called Lirsautton Parichaya (based on the Shadow)."
+   }
+  ],
+  "chars": 8732
+ },
+ {
+  "title": "Nation Commander Outpost",
+  "type": "vanguards",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 10 - 12 pilots (up to 15 in low/null)2 - 3 logistics neededSites take about 5 - 10 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to destroy the Sansha's Nation fleet amassing here, including any commanders present. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Veterans of the earlier Nation resurgence, those chiefly responsible for coordinating the planetary invasions, have made this mobile fortress their base of operations. DED surveillance has reported a range of key Nation personnel moving in and out of these temporary headquarters, although it is rare for any two to be in the same place at once, suggesting Nation is spreading its expertise across multiple facilities in order to minimize risk.\n\nIntelligence suggests the primary role of these commanders has changed from leading large-scale planetary invasions to covert raids, as well as other special operations outside of the usual assignments handled by the larger Nation force.\n\nSynopsis from ISHAEKA-0073. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 1 | Renyn Meten | 33 m | 2550 2,550 m/s | 9000 9 km 410 m/s | 192 dps 960 hp | 12000 10 - 12 km | 8898 9k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Sansha's Nation Commander | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 1250 1,250 dps 11,250 hp | 70200 < 70 km | 8103 8k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Niarja Myelen |  | Because the Niarja Myelen jams and neuts. |\n| 2 |  | Sansha's Nation Commander Tama Cerebellum |  | The Sansha's Nation Commander first, because the commander does a lot of damage (it also warp disrupts). The Tamas after the commander, as the commander is essentially just a stronger version. |\n| 3 |  | Auga Hypophysis | Schmaeel Medulla | The Auga warp disrupts, webs and does more damage and is easier to kill than the Romi. The Schmaeel because it both warp disrupts and webs, with the web being a potential problem for speed-tanking logistics. |\n| 4 |  | Romi Thalamus | Renyn Meten Eystur Rhomben | Romis pose no real threat.Renyns web and do more damage than Eysturs. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "The last enemy killed triggers the next wave, so there is no risk of accidentally triggering the next wave before you finish your current one."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "There are no special requirements for this site."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are four waves in this site, identifiable by the Romi Thalamus in the first wave, the lack of a Romi Thalamus in the second wave, the Sansha's Nation Commander in the third wave and the complete lack of cruisers in the fourth and final wave.\n- Waves spawn roughly 35 - 40km away from the beacon, although the Sansha will rapidly close the distance to their preferred orbit.\n- The different waves are slightly randomised. The same type of ships will spawn in each wave, but the number of each is randomised."
+   }
+  ],
+  "chars": 4849
+ },
+ {
+  "title": "Nation Commander Stronghold",
+  "type": "assault",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 20 - 21 pilots (up to 30 in low/null)3 - 4 logistics needed5 - 10 snipers neededSites take about 10 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your objective is to locate the Nation commander and assassinate them. Once you have separated the commander from the rest of the Sansha fleet they will scatter and flee. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Intelligence and other supporting evidence have revealed that this facility is being used as a rally point for senior capsuleer commanders within Sansha's Nation. When one of these leaders is killed in combat or their forces routed by capsuleer counterattack, this is where they are re-cloned, and where they retreat to.\n\nIn light of this functionality, the strategic value of these outposts must be considered. By directly attacking the nexus of pro-Nation leadership, capsuleers will be able to limit the level of coordination and efficiency amongst attack squads.\n\nSynopsis from ISHAEKA-0079. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Citizen / SlaveCitizen / Slave | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 5 | Intaki Colliculus | 320 m | 980 m/s | 50000 50 km 140 m/s | 282 dps 2,256 hp | 148050 < 148 km | 315598 316k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 5 | Ostingele Tectum | 530 m | 850 m/s | 40000 40 km 118 m/s | 528 dps 2,640 hp | 65000 45 - 65 km | 289853 290k ehp |\n| 1 | Renyn Meten | 33 m | 2550 2,550 m/s | 9000 9 km 410 m/s | 192 dps 960 hp | 12000 10 - 12 km | 8898 9k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |\n\nAt the end of the site you'll have several other ships potentially spawning:\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 3 | Vylade Dien | 422 m | 170 m/s | 60000 60 km 170 m/s | -1 (no weapons) | -1 (no weapons) | 274918 275k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  |  | Reason |\n|---|---|---|---|---|---|\n| Brawler targets | Sniper targets | Small targets |  |  |  |\n| 1 |  | Citizen / Slave |  |  | Killing the Citizen / Slave when it spawns ends the site. |\n| 2 |  | Arnon Epithalamus |  | Niarja Myelen | The Arnons and Niarjas because they jam. |\n| 3 |  | Auga Hypophysis Deltole Tegmentum | Mara Paleo Intaki Colliculus | Tama Cerebellum Schmaeel Medulla Renyn Meten | Augas because they web and warp disrupts and have weak tanks, Deltoles because they neut, target paints and warp disrupts. The Mara before the Intaki because they have stronger reps and less hit points. Tamas due to their high damage and warp disruption, then Schmaeel before Renyn due to its ability to warp disrupt in addition to webbing. |\n| 4 |  | Ostingele TectumRomi Thalamus | Yulai Crus CerebiAntem Neo | Eystur Rhomben | Ostingeles before Romis as they are easier to hit and do more damage. Yulais before Antems as they are easier to hit and do more damage. Eysturs pose no specific threat. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "The last enemy killed triggers the next wave, so there is no risk of accidentally triggering the next wave before you finish your current one. The only exception is the Citizen / Slave, see below."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "|  | This site requires you to have snipers in your fleet.(able to lock and apply good damage up to 120 km) |\n|---|---|\n|  | This site benefits greatly from having an anchor.(a ship people can anchor up on to stay together) |\n|  | Focus on the Citizen / Slave in the end.(the remainder of the last wave will warp off) |"
+   },
+   {
+    "level": 5,
+    "title": "Snipers",
+    "text": "Several ships in the first wave will initially sit at sniper ranges up to 160 km away from where you land. They will approach you however, and in combination with your fleet moving further into the site it's not critical to have a lock range of 150 km. Having just 120 km will be doable, even if you'll initially have to wait a little for things to come into range."
+   },
+   {
+    "level": 5,
+    "title": "Anchor",
+    "text": "In order to keep the fleet together, everyone within remote shield booster range and so forth. Appoint someone to be your anchor then have the rest of the fleet anchor up on him and use keep at range 2,500 m to make sure they always remain with the anchor (except logistics who would orbit at 5,000 m instead to avoid bumping fleet members). That way only the anchor needs to know where to move and the rest of the fleet would follow suit.\n\nAs for where to go, the Snake Shaped Asteroid is a good compromise for a fleet without propulsion modules. If you approach it until you're within 10 km from it, you'll be in a good position for all the remaining spawns."
+   },
+   {
+    "level": 5,
+    "title": "Citizen / Slave",
+    "text": "Killing the Citizen / Slave that spawns in the fifth and final wave will finish the site and force the remaining forces to warp off. As such there is no need to focus on any other ships in the last wave, just kill the commander as quickly as possible and be done with it.\n\nThe commander will be named either Citizen Astur, Slave 32152, Slave Endoma01, Slave Heavenbound02 or Slave Tama01. It is identical to the Deltole Tegmentum in all but the name."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are five waves in this site, identifiable by the Yulai Crus Cerebi in the first wave, Ostingele Tectums in the second, Antem Neos in the third, Arnon Epithalamus in the fourth and the Citizen / Slave in the fifth and final wave. The first wave spawns 160 km from the beacon, behind the Snake Shaped Asteroid to the right. The second wave spawns 60 km from the beacon, between the L-shaped buildings and the Snake Shaped Asteroid. The third wave spawns 150 km from the beacon, behind the Snake Shaped Asteroid to your left. The fourth wave spawns 20 km from the beacon, a little to the right. The fifth and final wave spawns 50 km from the beacon, to the right side of the L-shaped buildings. The different waves are slightly randomised. The same type of ships will spawn in each wave, but the number of each is randomised. So you will encounter the same type of ships in each site, but the number of ships per type in each individual wave will be slightly different. There will only be one Citizen / Slave however.\n- Moving is not strictly required in this site, but it helps a lot. See Anchor above for an example of how you can move into a more preferred position near the Snake Shaped Asteroid. Should you sit still near the beacon the distance to the first and third wave would remain 150+ km off.\n- Remember to keep an eye on your capacitor if you have prolonged attention from a bunch of Deltole Tegmentums. While their individual neuting is rather small, it adds up. The same goes if you get a lot of Outuni Mesen spawning in the end, along with the Citizen / Slave."
+   }
+  ],
+  "chars": 9177
+ },
+ {
+  "title": "Nation Consolidation Network",
+  "type": "assault",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 20 - 21 pilots (up to 30 in low/null)3 - 4 logistics needed5 - 10 snipers needed4 - 5 command ships/strategic cruisers Sites take about 10 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your objective is to split your forces, clear a path to the Nation's staging area, and destroy the fleet you find there. Sansha defenders have designed their security to separate capsuleer forces, but once both sides have breached the final area you will be able to reunite. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "The newly-acquired ability of Nation forces to override local system control has not yet been fully understood, and as a result, Nation forces are able to drastically affect contested systems over time, reducing the capabilities of capsuleers within their domain of control. Much of the technology used to aid this cause can be found at any of their mobile \"consolidation network\" facilities. This and other intelligence suggests that these complexes are primarily responsible for the initial propagation of system-wide interference.\n\nSynopsis from ISHAEKA-0077. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 5 | Ostingele Tectum | 530 m | 850 m/s | 40000 40 km 118 m/s | 528 dps 2,640 hp | 65000 45 - 65 km | 289853 290k ehp |\n| 1 | Renyn Meten | 33 m | 2550 2,550 m/s | 9000 9 km 410 m/s | 192 dps 960 hp | 12000 10 - 12 km | 8898 9k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n| 3 | Vylade Dien | 422 m | 170 m/s | 60000 60 km 170 m/s | -1 (no weapons) | -1 (no weapons) | 274918 275k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  |  | Reason |\n|---|---|---|---|---|---|\n| Regular targets | Sniper targets | Small targets |  |  |  |\n| 1 |  | Auga Hypophysis |  | Niarja Myelen | The Augas because they are very easy to kill and web as well as warp disrupts. The Niarjas because they jam and neut. |\n| 2 |  | Deltole Tegmentum Vylade Dien | Mara Paleo | Tama Cerebellum Schmaeel Medulla Renyn Meten | Deltoles because they neut, target paints and warp disrupts, then Vylades because they boost resists. The Maras because they remote repair. Tamas due to their high damage and warp disruption, then Schmaeel before Renyn due to its ability to warp disrupt in addition to webbing. |\n| 3 |  | Ostingele TectumRomi Thalamus | Yulai Crus CerebiAntem Neo | Eystur Rhomben | Ostingeles before Romis as they are easier to hit and do more damage. Yulais before Antems as they are easier to hit and do more damage. Eysturs pose no specific threat. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "The acceleration gates leading deeper into this site will be unlocked by the killing all the Sansha in the other side's pocket. So when the cruiser-side finishes their pocket, it unlocks the acceleration gate for the battleship-side, and vice versa. This means that you have to see it through on both sides in order to get to the fourth and final pocket where the sides come together to finish the site off."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "|  | This site splits the fleet up into cruiser- and battleship-sized hulls.(requiring you to have both in your fleet) |\n|---|---|\n|  | This site requires you to have snipers in your fleet.(able to lock and apply good damage up to 120 km) |\n|  | This site benefits greatly from having an anchor for the last pocket.(ship with an above-average tank to go in first) |"
+   },
+   {
+    "level": 5,
+    "title": "Cruiser- and battleship-sized hulls",
+    "text": "The acceleration gates leading deeper into this site has ship restrictions, forcing your fleet to split up based on ship type. Certain ships are allowed to go through either of the gates. Below is a list of ships allowed through either or both sides.\n\n| Cruiser-side Battleship-side Cruisers Frigates Destroyers Battleships Mining barges Large industrials Battlecruisers Logistics Industrials |  |\n|---|---|\n| Cruiser-side | Battleship-side |\n| Cruisers Frigates Destroyers | Battleships Mining barges Large industrials |\n| Battlecruisers Logistics Industrials |  |"
+   },
+   {
+    "level": 5,
+    "title": "Snipers",
+    "text": "Several ships in the last pocket will spawn at sniper ranges up to 150 km away from where you land. While they will slowly approach to their preferred 60 km orbits, it is pretty much critical to have some ships able to lock and apply good damage out to at least 120 km."
+   },
+   {
+    "level": 5,
+    "title": "Anchor",
+    "text": "While not a critical role, having an anchor that goes in first to ensure that the initial full room aggro is directed to them is a safety measure. It helps avoid initial split aggro while you're facing a full wave of Sansha. It also gives people a point of reference for orbiting, to keep the fleet together."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are four pockets separated by acceleration gates. The fleet comes together in the fourth and final pocket, with the gate being called Fleet Staging Area. So be sure to consolidate your fleet when you reach this gate and ready your anchor and logistics on both sides before going in. The different waves are slightly randomised. The same type of ships will spawn in each wave, but the number of each is randomised. So you will encounter the same type of ships in each site, but the number of ships per type in each individual wave will be slightly different.\n- Moving is required in this site, but you will not need a propulsion module unless you want to speed up your completion times. The next acceleration gate is located 50+ km away from where you land in the pocket, so be sure to start moving right away.\n- Remember to keep an eye on your capacitor if you have prolonged attention from a bunch of Deltole Tegmentums. While their individual neuting is rather small, it adds up."
+   }
+  ],
+  "chars": 7826
+ },
+ {
+  "title": "Nation Industrial Proxy",
+  "type": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 3 - 5 pilots1 logistics or spidertankingSites take about 15 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to clear the local asteroid colony of hostile Sansha forces.This is a target of opportunity, and has minimal impact on the larger anti-Sansha campaign. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Small scale Sansha settlements have been reported with increasing frequency since the beginning of the Nation's conventional incursion into empire space and abroad. Although these minor colonies may not appear to pose a significant threat, when considered collectively, they are an undoubtedly serving as a powerful, decentralized auxiliary network of stations and industrial depots. Sansha's plan appears to rely in part on capsuleer apathy, and the presumption that minor annexations such as these will not attract military intervention.\n\nSynopsis from ISHAEKA-0087. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 1 | Lirsautton Parichaya | 125 m | 1400 1,400 m/s | 7500 8 km 158 m/s | 440 dps 6,600 hp | 68750 < 69 km | 25032 25k ehp |\n| 1 | Jel Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 48 dps 240 hp | 12000 10 - 12 km | 3264 3k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 3 | Uitra Telen | 300 m | 1500 1,500 m/s | 30000 30 km 260 m/s | 132 dps 660 hp | 32500 23 - 33 km | 132070 132k ehp |\n| 1 | Youl Meten | 33 m | 2550 2,550 m/s | 8000 8 km 410 m/s | 38 dps 192 hp | 12000 10 - 12 km | 3217 3k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Niarja Myelen Lirsautton ParichayaArnon Epithalamus |  | The Niarja Myelens because they jam and neut. The Lirsautton Parichayas before the Arnon Epithalamus if there are many, because of their damage and since they are easy to kill. Other way around if there are fewer Lirsauttons. |\n| 3 |  | Mara Paleo |  | The Mara because it has remote shield boosting capabilities. |\n| 4 |  | Romi ThalamusAntem NeoUitra Telen | Jel RhombenYoul Meten | Romis first as they post the biggest threat, then Antem Neos before Uitras because they do slightly more damage and easier to kill. Jels before Youls despite the web as they are a little bit stronger. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "The last enemy killed in the first wave triggers the second and last wave, so there is no risk of accidentally triggering the last wave before you finish the first one."
+   },
+   {
+    "level": 3,
+    "title": "Special requirements",
+    "text": "There are no special requirements for this site."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- These sites are not sites per se and do not spawn at beacons. Instead, they are part of the asteroid belts within the staging system. When you initiate warp to an asteroid belt that hasn't been cleared you'll get an incoming transmission just like you do with other sites. Once it has been cleared you get paid and the belt returns to normal. This is by design.\n- There are no ships capable of warp disrupting or warp scrambling, which means you can warp out at any time."
+   }
+  ],
+  "chars": 4543
+ },
+ {
+  "title": "Nation Mining Colony",
+  "type": "vanguards",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 10 - 12 pilots (up to 15 in low/null)2 - 3 logistics neededSites take about 5 - 10 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to destroy the Sansha's Nation battle station. Clearing the area of hostile forces should decloak the Nation's ore refinery. Mine the local Lyavite asteroids and transport the ore to the refinery. The chain reaction caused by refining the explosive ore will tear the battle station apart. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Sansha's Nation has established semi-mobile mining colonies to aid in the harvesting of ore. Due to the unique nature of these operations, which incorporate new mining technologies and hundreds of willing miner slaves, the daily amount of ore extracted from these operations would be sufficient for the replacement of hundreds of battleships. DED's conclusion is that these mining operations are a primary method of supplying the new Nation fleets with replacement vessels.\n\nFurther complicating matters is the demonstrated capability of this colony to disrupt local system-wide services. The exact nature of this technology is unknown, but appears to be dependent upon first establishing a system-wide presence. If the Sansha can be removed quickly, their potential impact upon the affected systems will be limited.\n\nSynopsis from ISHAEKA-0071. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n\nIf you mine the Lyavite, the list of potential ships is expanded.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 1 | Orkashu Myelen | 53 m | 2760 2,760 m/s | 4500 5 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 2762 3k ehp |\n| 3 | Raa Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 80 dps 400 hp | 33000 23 - 33 km | 37998 38k ehp |\n| 1 | Youl Meten | 33 m | 2550 2,550 m/s | 8000 8 km 410 m/s | 38 dps 192 hp | 12000 10 - 12 km | 3217 3k ehp |\n| Everytime you pull ore from the asteroid, there is a chance of a new spawn containing these new or a combination of these and some of the frigates above. |  |  |  |  |  |  |  |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Niarja Myelen |  | Because the Niarja Myelen jams and neuts. |\n| 2 |  | Tama Cerebellum Mara Paleo |  | The Tama warp disrupts and you remove a lot of damage quickly by shooting them first. The Mara is a high priority targets because it remote repairs the other ships. |\n| 3 |  | Auga Hypophysis | Schmaeel Medulla | The Auga warp disrupts, webs and does more damage and is easier to kill than the Romi. The Schmaeel because it both warp disrupts and webs, with the web being a potential problem for speed-tanking logistics. |\n| 4 |  | Romi Thalamus | Eystur Rhomben | Neither Romis nor Eysturs pose any real threat, although multiple Romis will keep the incoming dps high for a while. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "The last enemy killed triggers the next wave, so there is no risk of accidentally triggering the next wave before you finish your current one. Mining ore from the Lyavite asteroid will trigger additional spawns."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "|  | This site requires 255 units of a special ore called Lyavite.(takes up 306 m3 worth of space in your cargo hold) |\n|---|---|\n|  | Requires a range of 65km to effectively hit the Mara Paleo.(orbits someone at 60km, potentially 5km futher away from you) |"
+   },
+   {
+    "level": 5,
+    "title": "Lyavite",
+    "text": "In order to complete this site you will need Lyavite which can be mined from a special asteroid in the site itself or simply brought in with you in the cargo hold for faster site completion. The asteroid with the Lyavite is about 60km away from where you land in the site, which coupled with the fact that you would need mining drones, mining lasers or strip miners to get the ore out of the asteroid, all incursion communities have stopped mining the ore in the site and simply buy it off the market or acquire it themselves from level 2 mining missions.\n\nSee Ore runner for more details on this role."
+   },
+   {
+    "level": 5,
+    "title": "Range",
+    "text": "While it's not critical to fleet safety to be able to hit the Mara Paleo out at 65km (can sometimes be as close at 52-54km if you're at the other end of the warp-in), it will be required to spawn the second wave. So if you find yourself unable to kill the Mara, you can always kill the warp disrupting Schmaeel Medullas and abandon the site."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are three waves in this site, identifiable by the Mara Paleo in the first wave, the lack of any Auga Hypophysis in the second and the reappearance of the Auga for the third and final wave.\n- Waves spawn roughly 70 - 75km away from the beacon, although the Sansha will rapidly close the distance to their preferred orbit.\n- The different waves are slightly randomised. The same type of ships will spawn in each wave, but the number of each is randomised."
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "text": "This site used to feature multiple Veldspar asteroids. These were removed in May 2020, when all mining asteroids were removed from non-mining mission and combat sites. This leaves the single Lyavite asteroid as the only mineable rock in the mining colony."
+   }
+  ],
+  "chars": 7179
+ },
+ {
+  "title": "Nation Rebirth Facility",
+  "type": "headquarters",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Intelligence Reports",
+    "text": "|  | Fleet of 40 pilots (up to 60 in low/null)6 - 10 logistics needed (5+ utility cap needed)10 - 15 snipers neededSites take about 10 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military Intelligence",
+    "text": "Your objective is to destroy the Sansha fleet guarding the cloning facility. You will not be able to destroy the facility itself, your only objective is to remove the defensive fleet."
+   },
+   {
+    "level": 4,
+    "title": "Background Intelligence",
+    "text": "Although many parts of the Nation's cloning process are still not fully documented and understood, a few central aspects of the logistics behind their battlefield applications are clearly visible. Front-line cloning is handled in complexes that self-identify as \"Nation Rebirth Facilities.\" Since this facility enables rapid reinforcement of the Nation's squadrons, its tactical importance must not be underestimated. For its own part, the Nation understands this potential weakness, and has made sure that cloning facilities are both highly mobile and heavily defended.\n\nSynopsis from ISHAEKA-0085. DED Special Operations. Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Rewards",
+    "text": "| High Sec Payout | Low / Null Sec Payout |\n|---|---|\n| 31,500,000 ISK | 45,000,000 ISK |\n| 7,000 CONCORD LP | 10,000 CONCORD LP |\n| For 20-40 pilots | For 30-60 pilots |\n\nRewards decrease significantly for fleet sizes outside of these ranges"
+   },
+   {
+    "level": 3,
+    "title": "Site Overview",
+    "text": "The Nation Rebirth facility has 4 separate waves of Sansha that must all be killed to complete the site. Each new wave is triggered by killing all rats in the previous wave. The amount of movement required in the site is dependent on your role; long range ships will only need to move at most twice. First to get to their initial anchor point after entering site and to kill the rats that spawn that spawn ~100km off in the final wave. Short range ships will need to move for each wave in order be on top of the new spawns. Logistics ships will need to move once to their anchor point which will keep them in range of other ships for all spawns."
+   },
+   {
+    "level": 3,
+    "title": "Completion Requirements",
+    "text": "Kill all enemies in each of the 4 waves."
+   },
+   {
+    "level": 3,
+    "title": "Special Mechanics",
+    "text": "This site has no special mechanics and only requires killing all rats in order to complete it. The only thing worth noting is that in the final wave there is a spawn ~100km away from where all other wave spawns were, so being prepared for this will avoid unwanted delays in site completion."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 5 | Ostingele Tectum | 530 m | 850 m/s | 40000 40 km 118 m/s | 528 dps 2,640 hp | 65000 45 - 65 km | 289853 290k ehp |\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n| 3 | Uitra Telen | 300 m | 1500 1,500 m/s | 30000 30 km 260 m/s | 132 dps 660 hp | 32500 23 - 33 km | 132070 132k ehp |\n| 3 | Vylade Dien | 422 m | 170 m/s | 60000 60 km 170 m/s | -1 (no weapons) | -1 (no weapons) | 274918 275k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |"
+   }
+  ],
+  "chars": 4484
+ },
+ {
+  "title": "Override Transfer Array",
+  "type": "vanguards",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 10 - 12 pilots (up to 15 in low/null)2 - 3 logistics neededSites take about 5 - 10 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your objective is to destroy the Sansha's Nation fleet amassing here. They will be making use of logistics arrays, so disabling them may be advisable. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "One of the most significant evolutions in the Nation's strategy has been the move away from abducting planetary populations. Their new tactical doctrine, which relies in part upon system-wide capsule interference, is clearly focused on limiting the power and influence of the capsuleer class.\n\nThe technology underlying the system-wide capsule overrides is not dissimilar to CONCORD's own Tracking and Response System (TRS). Where it veers into new territory is in the application of new technologies designed to override local resources in ways previously thought impossible. Intelligence gathered by DED operatives strongly suggests that this facility is chiefly responsible for establishing these overrides.\n\nSynopsis from ISHAEKA-0095. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Niarja Myelen |  | Because the Niarja Myelen jams and neuts. |\n| 2 |  | Tama Cerebellum Auga Hypophysis Deltole Tegmentum |  | The Tama warp disrupts and you remove a lot of damage quickly by shooting them first. The Auga warp disrupts, webs and while it does less damage than the Deltole it closes the distance faster and is easier to kill. |\n| 3 |  | Eystur Rhomben |  | Eysturs are to be ignored, they will simply respawn when killed and aren't necessary for site completion. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "With the exception of the Eysturs, the last enemy killed normally triggers the next wave. Sometimes a new wave might be triggered with one or two Tamas left on grid. If that happens, they will still need to be killed for site completion.\n\nYou can completely ignore Eysturs as they are not part of the wave mechanics nor are they necessary to kill for site completion or extraction."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "|  | Requires the use of data analyzer modules to hack the logistics control array.(the logistics control array is roughly 30km away from the spawn point) |\n|---|---|"
+   },
+   {
+    "level": 5,
+    "title": "Hacking",
+    "text": "Hacking is done by approaching&locking up the logistics control array, activating the data analyzer as soon as you get within range and then completing the Hacking Minigame. Once completed you will get a message saying: \"Local Sansha logistics systems subverted. Hostile logistics disabled.\"\n\n- This part can usually be skipped as a a grope of paladins can be use to out-dps the reps\n- Since failing the minigame carries not further consequences, feel free to (within reason) use more speed and less caution than you would at a regular data site.\n- One cycle of your Microwarpdrive should bring you into range to start hacking, it is adviced to 'Turn off Auto-Repeat' so you don't overshoot and move out of the max range of your Data Analyzer.\n- Once hacked the tower will stop repairing for about six minutes, which is usually more than enough for a decent fleet to finish the site. The control array to hack will be available in a clockwise pattern, starting at exactly 90° to your left when you warp in, see the image below."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are three waves in this site, more or less identical in terms of ship composition but they spawn in different positions. Waves spawn roughly 70 km off, with the exception of the third wave that spawns 35 - 40 km away from the beacon. The Sansha will then rapidly close the distance to their preferred orbit. The Eystur Rhombens will spawn, as well as respawn if killed, right in front of the remote logistics station. The first wave spawns on the right side of the remote logistics station. The second wave spawns on the left side of the remote logistics station. The third one above or below the remote logistics station. The different waves are slightly randomised. The same type of ships will spawn in each wave, but the number of each is randomised. So you will encounter the same type of ships in each site, but the number of ships per type in each individual wave will be slightly different. There will only be one Deltole Tegmentum per wave however.\n- Focusing fire is really important at the start of this site to overcome the repairs. Tagging Niarjas, Tamas and Augas as quickly as possible helps ensure that the fleet knows in what order they are to hit their primary targets. This is due to the logistics tower hack, as noted below.\n- Hacking is preferably done by the Scout. This is usually a newbie or cheap alt character attached to the fleet. They will be flying a cheap Heron fit with a data analyzer. There is rarely a shortage of alts, but it can of course be done by logistics fitting a data analyzer if desperate (at the cost of not having as many remote tracking computers). If you hack the tower you probably won't need to continue tagging the Niarjas and Tamas, but tagging the Augas is still helpful.\n- When run with a hacker, this site is usually the fastest of the Vanguard sites and is typically preferred when possible. Note that other factors can play a role in the site decision, such as contesting fleets and their priorities, as well as warp distance from the current site."
+   }
+  ],
+  "chars": 7206
+ },
+ {
+  "title": "Overwhelmed Civilian Facility",
+  "type": "assault",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 20 - 21 pilots (up to 30 in low/null)3 - 4 logistics needed0 - 10 snipers (optional)Sites take about 10 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your objective is to intercept the departing Sansha's Nation fleets and rescue the captured civilians from their smuggler freights. Once you have filled the freighter it will evacuate the remaining civilians and your assignment will be complete. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "Shortly after appearing to change their strategic focus to capsuleers, reports began amassing of Nation forces launching smaller-scale attacks on remote or poorly defended space stations. The purpose of these attacks remains unknown, but may be as simple as serving to bolster their numbers without launching a full-scale planetary invasion. The targets of these invasions are seemingly random, and no commonality between the highly disparate attacks has yet been found.\n\nISHAEKA-0076 has recommended the authorization of capsuleer forces in assisting with these attacks in order to provide the most rapid and effective response available.\n\nSynopsis from ISHAEKA-0075. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 1 | Renyn Meten | 33 m | 2550 2,550 m/s | 9000 9 km 410 m/s | 192 dps 960 hp | 12000 10 - 12 km | 8898 9k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Outuni Mesen | Schmaeel Medulla | Because the Outuni Mesen neuts hard (also warp disrupts and webs). The Schmaeel because it warp disrupts and webs. |\n| 2 |  | Auga Hypophysis Deltole Tegmentum | Renyn Meten | The Auga is much easier to kill compared to the Deltole, it also webs and apply damage better to smaller ships. Killing the Renyn can often be a high priority to remove webbers from the field, allowing people to speed-tank. |\n| 3 |  | Romi Thalamus |  | The Romis pose no specific threat. |\n| 4 |  | Antem Neo |  | Antems can be ignored as killing them isn't necessary for site completion. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "With the exception of the Antem Neos that spawn in the second wave and the Romi Thalamus in the third wave, the last enemy killed triggers the next wave . This means that you can skip the Antems in the second wave.\n\nIn the fourth wave, the Emergency Evacuation Freighter will be unlocked when the majority of the wave is killed. You'll need to kill off all the warp disrupt capable ships, like Deltoles and Augas, but then you have the option of killing only the Romis and Renyns to unlock the freighter, or ignore those and kill only the Anthems instead. So kill whichever is most convenient for you based on your fleet composition."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "|  | This site requires you to pick up 40 Captured Civilians and escort them to the evacuation freighter.(takes up 200 - 300 m3 worth of space in your cargo hold) |\n|---|---|"
+   },
+   {
+    "level": 5,
+    "title": "Civilians",
+    "text": "Finishing off all the short range enemies of each wave spawns a container housing 15 Captured Civilians (5 m3 cargo space each) in it, 45 - 60 (200 - 300 m3 of cargo space) in total depending on whether you kill enough ships in the end to spawn a fourth container or not. The container will drop at the end of each wave, from the last short range Sansha you kill (so there is no risk of an Antem dropping the container 60 km out). You will need a minimum of 40 civilians (200 m3), which means you'll have 5 - 20 spares for the next site depending on how many you pick up (225 - 300 m3).\n\nThe civilians are to be put in the Emergency Evacuation Freighter, which is a stationary object called \"Obelisk\" until all the fourth wave short range enemies or long range enemies are killed (either group will unlock the freighter). This will complete the site, potentially before you can warp out (might still be warp disrupt capable ships on grid).\n\nAssign someone in the fleet to fly around collecting the civilians and once the freighter is unlocked at the end of the site, simply drop the civilians in the freighter (now an interactable container)."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are four waves in this site, identifiable by the lack of Antem Neos in the first wave, the appearance of Antems in the second wave, the appearance of the Outuni Mesen in the third wave and the reappearance of more Antems in the fourth and final wave. They all spawn right in front of where you land in the pocket, sometimes a little above the horizontal plane. The first wave spawns 35 - 40 km ahead. The second wave will have some ships spawning 35 - 40 km out and another group further out at 75 - 80 km. The third wave will spawn some ships 75 - 80 km out and others even further out at 95 - 100 km. The different waves are slightly randomised. The same type of ships will spawn in each wave, but the number of each is randomised. So you will encounter the same type of ships in each site, but the number of ships per type in each individual wave will be slightly different. There will only be one Outuni Mesen however.\n- Moving is not necessary in this site, you can sit still and preserve your tracking. Only orbit if your ship's tank relies on speed to mitigate damage. In a slow fleet with poor damage projection it could help improve your fleet's efficiency to move approximately 20 km forward in order to be closer to the spawns. You will lose some tracking moving into position, but during that time you will be shooting mostly battleships and once you're in position you'll benefit from being 20 km closer to the second, third and fourth spawn.\n- Remember to keep an eye on your capacitor if the Outuni Mesen ever gets within neuting range.\n- This can be completed without having snipers, simply kill everything but the Antem Neos in wave two and four to unlock the freighter.\n- Be sure to kill off all the warp disrupting ships before leaving this site, even if you've already completed the objective and gotten paid."
+   }
+  ],
+  "chars": 7816
+ },
+ {
+  "title": "Propaganda Cluster",
+  "type": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 3 - 5 pilots1 logistics or spidertankingSites take about 15 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to storm the Nation’s media control facility and destroy any defense forces you find there.This is a target of opportunity, and has minimal impact on the larger anti-Sansha campaign. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "The Nation’s influence over system-wide infrastructure is starting to be ruthlessly exploited to the maximum extent possible. Officers in some affected systems are now reporting that Sansha have blocked local news outlets and even emergency broadcast systems from transmitting vital data. Although there are a number of obvious tactical advantages to such a move, the nature and pattern of the Nation’s censorship is neither consistent nor predictable. There may be a more subtle and insidious goal behind these attacks or perhaps their jamming technology is not yet perfected. In either case, these propaganda clusters, although militarily insignificant, nonetheless pose a significant threat to the continued stability of densely populated planets and systems under attack.\n\nSynopsis from ISHAEKA-0093. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 1 | Jel Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 48 dps 240 hp | 12000 10 - 12 km | 3264 3k ehp |\n| 1 | Lirsautton Parichaya | 125 m | 1400 1,400 m/s | 7500 8 km 158 m/s | 440 dps 6,600 hp | 68750 < 69 km | 25032 25k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 3 | Raa Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 80 dps 400 hp | 33000 23 - 33 km | 37998 38k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 3 | Uitra Telen | 300 m | 1500 1,500 m/s | 30000 30 km 260 m/s | 132 dps 660 hp | 32500 23 - 33 km | 132070 132k ehp |\n| 3 | Vylade Dien | 422 m | 170 m/s | 60000 60 km 170 m/s | -1 (no weapons) | -1 (no weapons) | 274918 275k ehp |\n| 1 | Youl Meten | 33 m | 2550 2,550 m/s | 8000 8 km 410 m/s | 38 dps 192 hp | 12000 10 - 12 km | 3217 3k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\n| # |  | Targets for the entire fleet |  | Reason |\n|---|---|---|---|---|\n| Regular targets | Small targets |  |  |  |\n| 1 |  | Niarja Myelen Lirsautton ParichayaArnon Epithalamus |  | Because the Niarja Myelen jams and neuts. The Lirsautton Parichayas before the Arnon Epithalamus' if there are many, because of their damage and since they are easy to kill. Other way around if there are fewer Lirsauttons. |\n| 3 |  | Mara Paleo Vylade Dien |  | The Mara because it has remote shield boosting capabilities. The Vylade because it increases the resists for all the other ships. |\n| 4 |  | Romi ThalamusRaa ThalamusAntem NeoUitra Telen | Jel RhombenYoul Meten | Romis before Raas despite being tankier due to being much stronger. Antem Neos before Uitras because they do slightly more damage and easier to kill. Jels before Youls despite the web as they are a little bit stronger. |"
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "Initial research suggests that some ships are triggers for the next wave and while the exact details hasn't been ironed out, the Romi Thalamus, Uitra Telen, Vylade Dien and Youl Meten are usually among the triggers for wave two and three.\n\nAll ships will need to be destroyed in order to complete the site, so intentionally forcing the next wave before you finish your current wave isn't advantageous."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "There are no special requirements for this site."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- There are four waves in this site, spawning at 25 - 30 km from the warp-in.\n- There are no ships capable of warp disrupting or warp scrambling you in this site, which means you can warp out at any time.\n- This site has a slightly higher alpha than the others, if you get an unusually high number of Lirsautton Parichayas in either wave two or three.\n- The Lirsauttons were initially only seen in the mothership sites, The Kundalini Manifest or Uroborus prior to the Hyperion expansion in August 2014."
+   }
+  ],
+  "chars": 5413
+ },
+ {
+  "title": "The Kundalini Manifest",
+  "type": "mothership site",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 40 - 80 pilots (up to 120 in low/null)10+ logistics needed (5+ utility cap needed)Site takes about 15 - 25 minutes and ends the Incursion |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to locate the Sansha‘s Nation flagship and destroy it. The destruction of this vessel will bring the local incursion to a halt. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "The construction of the first Sansha Supercarrier is believed to have begun as early as ten decades ago, during the slow but steady resurgence of Nation forces in Stain. Various blueprints, technical documents and other evidence suggested a large-scale construction project, although a starship was not the primary suspicion at the time.\n\nThe exact technical specifications of the vessel remain unknown. Limited intelligence suggests improvements made to the jump drive calibrators, allowing unprecedented jump ranges, although this is currently unconfirmed.\n\nThe crew aboard these flagship vessels is constituted of civilians abducted during the initial planetary invasions. During one engagement with the flagship, segments of crew were ejected following an explosion deep inside the hull. DNA analyses of these crew members confirmed their origins.\n\nSynopsis from ISHAEKA-0107. DED Special Operations. Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 5 | Intaki Colliculus | 320 m | 980 m/s | 50000 50 km 140 m/s | 282 dps 2,256 hp | 148050 < 148 km | 315598 316k ehp |\n| 1 | Lirsautton Parichaya | 125 m | 1400 1,400 m/s | 7500 8 km 158 m/s | 440 dps 6,600 hp | 68750 < 69 km | 25032 25k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 1 | Renyn Meten | 33 m | 2550 2,550 m/s | 9000 9 km 410 m/s | 192 dps 960 hp | 12000 10 - 12 km | 8898 9k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n| 5 | The Kundalini Manifest | 14050 14,050 m | 75 m/s | 40000 40 km 75 m/s | -1 (no weapons) | -1 (no weapons) | 13996149 13,996k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works with most fleet compositions.\n\n- Bombers must die! No matter what else is on grid the Lirsautton Parichaya must die quickly. Failure to kill these quickly creates the single most dangerous situation in all of incursions outside of suicide ganking.\n- Arnon Epithalamus, this rat has the ability to jam up to 3 ships potentially wreaking havoc with cap chains and temporarily removing logi from a fight.\n- Outuni Mesen, this rat has very powerful energy neutralisation capable of shutting down a battleship completely. Should you be shield tanked you have a large risk of having your invulns deactivated if you cannot receive cap quickly. A good rule of thumb is you need 1 Large Remote Capacitor Transmitter per outuni to maintain fleet safety.\n- Kundalini, nothing else in site needs to be killed and a normal complement of logi should be adequate to safely tank the site, this allows you to finish the site quickly killing only what poses a threat to the safety of the threat."
+   },
+   {
+    "level": 4,
+    "title": "How to run the site",
+    "text": "- Make sure all logi are flying high-influence fits.\n- Brief the fleet on the dangers of the site, take care to mention the ECM Burst and Bombers.\n- Elect a meatshield with a solid tank. A battleship with 130K EHP or more is recommended.\n- Have full fleet align down gate.\n- Send in meatshield, wait 5 seconds and send in the rest of your fleet.\n- Kill Bombers while sat on the beacon.\n- Follow the killing order while burning to optimal range on the mothership.\n- Take care not to bump the mothership, should it be bumped away it makes it harder to bring in reinforcements.\n- Kill the mothership, remember to stop shooting it to kill rats that spawn if you need to."
+   },
+   {
+    "level": 4,
+    "title": "Other tips for what to kill",
+    "text": "- If your fleet isn't breaking the shield repairs on the mothership you may consider killing Mara Paleos, or using the special site mechanics detailed above.\n- Have your light drone bunny kill some frigates followed by shooting kundalini (Niarja > Tama > Kundalini/ Uroborus).\n- In a contest, you want to follow a different kill order to maximise applied damage. This may vary depending on positioning and composition, it is recommended that you have plenty of experience FCing in incursions and have a good knowledge of the NPCs before attempting to contest a mothership site."
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "This site has no triggers, everything spawns on a random timer with a random amount of rats spawning."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- If you burn 120km forward upon landing you will find yourself at a Logistics Control Array which when hacked interferes with the Sansha ability to repair and forces them to repair the capsuleer fleet inside the site.\n- If you burn 90km forward and 30km left of where the mothership spawns you will find yourself at a container labeled as Central Control Nexus inside of which periodically spawns a Tactical Response Transmitter. If you move this item to the Sansha Control Relay located 15km behind the beacon it will force some of the Sansha rats on grid to warp off. This can be very useful if you have a small fleet to limit the DPS and Mara Paleos on grid at any one time, it should be noted however that this is only a temporary measure as they will warp back after a short time. Moving the Tactical Response Transmitter is usually done by means of a Macharial dragging it behind him in a jetcan by means of a Tractor Beam II.\n- Every couple of minutes the mothership will emit an ECM burst, when this happens it is important that cap chains and reps are established quickly."
+   }
+  ],
+  "chars": 7488
+ },
+ {
+  "title": "True Creations Research Center",
+  "type": "headquarters",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Intelligence Reports",
+    "text": "|  | Fleet of 40 pilots (up to 60 in low/null)6 - 10 logistics needed (5+ utility cap needed)10 - 15 snipers neededSites take about 10 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military Intelligence",
+    "text": "Your objectives are to re-secure the area around the True Creations Research Center and then destroy the station itself. To do this you will first need to make use of a local CONCORD MTAC factory that has been commandeered by Nation forces. Take control of the facility and transport the MTACs to the shield transfer control tower. Once inside, they can recapture the station controls and power down the shields, leaving the research center vulnerable."
+   },
+   {
+    "level": 4,
+    "title": "Background Intelligence",
+    "text": "True Creations is suspected to be chiefly responsible for the re-cloning and implantation of abducted planetside civilians. In addition to this role they spearhead the development and application of new technologies. DED surveillance teams have noted, on repeated occasions now, that True Creations is now deploying mobile research centers directly to the field of battle.\n\nNormally choosing to hide these sorts of centers well from view, this move of theirs is not fully understood. Current research is investigating the potential role these supposedly \"observatory\" facilities are playing in the larger battle. The proximity of these research centers to the front lines is something that will take some time to fully investigate and understand.\n\nSynopsis from ISHAEKA-0083. DED Special Operations. Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Rewards",
+    "text": "| High Sec Payout | Low / Null Sec Payout |\n|---|---|\n| 31,500,000 ISK | 45,000,000 ISK |\n| 7,000 CONCORD LP | 10,000 CONCORD LP |\n| For 20-40 pilots | For 30-60 pilots |\n\nRewards decrease significantly for fleet sizes outside of these ranges"
+   },
+   {
+    "level": 3,
+    "title": "Completion Requirements",
+    "text": "Destroy the Sansha Battletower, killing the rats is not required for completion of the site."
+   },
+   {
+    "level": 3,
+    "title": "Special Mechanics",
+    "text": "This site has several special mechanics that are all important to be aware of for a safe and successful site completion."
+   },
+   {
+    "level": 4,
+    "title": "Delayed Initial Spawns",
+    "text": "When the TCRC site spanws only a small number of rats are present. The spawning of the remainder of the rats is triggered by an uncloaked ship being in the site. Once triggered, the remaining rats spawn in over three waves. It takes ~90 seconds from the time the remaining spawns are triggered for the final wave to spawn.\n\nBecause of the long timer for the final wave to spawn it is possible to warp into the site partway through the spawn process. If this happens it is easy to check for the presence of specific rats to determine how far through the spawn process the site is.\n\n- If there are no rats at all within 40km of the beacon then none of the additional waves have spawned. In this state the site is usually called \"Normal\".\n- If there are Deltoles wihtin 40km of the beacon then the first of the additional waves has spawned. In this state the site is usually called \"Deltoles\".\n- If there are both Deltoles and frigates within 40km of the beacon then two of the additional waves have spawned. In this state the site is usually called \"Frigates\".\n- If there are Outunis present in the site then all the additional waves have spawned. In this state the site is usually called \"Full\"."
+   },
+   {
+    "level": 4,
+    "title": "MTAC",
+    "text": "The shield transfer arrays next to the Sansha battle tower are capable of repairing the tower from near dead to full HP in a matter of seconds. Destroying the tower before the repairs start is not possible so the repairs must be disabled in order to complete the site.\n\nFurther to the left of the shield arrays are two additional structures; a Concord MTAC Factory and a Shield Transfer Control Tower. Taking a MTAC from the factory and placing it in the control tower will prevent the battle tower from being repaired for a short period of time.\n\nMTACs are too large to fit into the cargo hold of any battleship, including marauders, and must be moved from the factory and deposited in the control tower by using a jetcan. MTACs will respawn in the factory at a fast enough rate that it is possible to permanently stop the repairs after the first MTAC is dropped. If you are the pilot moving the MTACs then be careful to not shoot your jetcan. The full length of the timer to create a new jetcan is longer than the duration that a deposited MTAC is effective for"
+   },
+   {
+    "level": 4,
+    "title": "Enemy Respawns",
+    "text": "Many of the enemy groups in this site will respawn on timers after their entire group is destroyed. The respawn timers for battleships are longer than an average fleet should take to complete the site but the respawn timers for frigate and cruisers are very fast. These fast respawning frigates and cruisers include warp disrupting ships in the form of Schmaeels and Augas.\n\nWhile there are several Schmaeels initially present in the site only two of them are respawning. The two that will respawn can be identified by their initial spawn location close to the Shield Transfer Control Tower."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 5 | Intaki Colliculus | 320 m | 980 m/s | 50000 50 km 140 m/s | 282 dps 2,256 hp | 148050 < 148 km | 315598 316k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 5 | Ostingele Tectum | 530 m | 850 m/s | 40000 40 km 118 m/s | 528 dps 2,640 hp | 65000 45 - 65 km | 289853 290k ehp |\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |"
+   }
+  ],
+  "chars": 6783
+ },
+ {
+  "title": "True Power Provisional Headquarters",
+  "type": "headquarter sites",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Intelligence Reports",
+    "text": "|  | Fleet of 40 pilots (up to 60 in low/null)6 - 10 logistics needed (5+ utility cap needed)0 - 15 snipers (optional)Sites take about 10 - 20 minutes |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military Intelligence",
+    "text": "|  | Your objective is to secure a path to True Power's Mobile HQ and then destroy it. You will need to pass through three layers of security before you will arrive at the station. Sansha commanders will attempt to reinforce the area en-masse if you give them time to, so be sure to bring pilots to breach their defenses quickly. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "True Power, the leading corporation within Sansha's Nation, has acquired the means to establish provisional headquarters in areas of their choosing. The exact nature of these operations or how such large complexes are established so quickly remains unknown. The use of mobile nano-factories is strongly suspected, and would help account for the rapidity of setup. It is also possible that rogue drone technology, or even worker drones themselves, are for some reason assisting in the rapid deployment of these battle stations, although this remains unconfirmed.\n\nThe strategic value of these outposts is significant. Nation can re-equip local fighting forces at a moment's notice, transmit instructions and battle reports along secure lines, and rally retreating Nation forces that have been ejected from other strongholds, which are always in close proximity to the larger headquarters for this reason.\n\nSynopsis from ISHAEKA-0081. DED Special Operations.Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Rewards",
+    "text": "| High Sec Payout | Low / Null Sec Payout |\n|---|---|\n| 31,500,000 ISK | 45,000,000 ISK |\n| 7,000 CONCORD LP | 10,000 CONCORD LP |\n| For 20-40 pilots | For 30-60 pilots |\n\nRewards decrease significantly for fleet sizes outside of these ranges"
+   },
+   {
+    "level": 3,
+    "title": "Completion Requirements",
+    "text": "Destroy the True Power Mobile Headquarters in the third room. The structure cannot be destroyed until all the rats in the third room are dead. Killing the final rats causes the Large Collidable Object that initially appears to be the structure to be replaced with a new destructible object.\n\nAccessing the third room requires killing all rats in both of the previous rooms to unlock acceleration gates to the next room. The same mechanic of spawning a new usable object after the final rat dies is present for the acceleration gates in both the first and second rooms."
+   },
+   {
+    "level": 3,
+    "title": "Special Mechanics",
+    "text": "There are no special mechanics related to site completion. In the third room the trigger for each new wave to spawn is the destruction of the final Ostingele Tectum in the previous wave. Ignoring the smaller ships while killing all battleships may lead to significant additional incoming dps."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 5 | Intaki Colliculus | 320 m | 980 m/s | 50000 50 km 140 m/s | 282 dps 2,256 hp | 148050 < 148 km | 315598 316k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 5 | Ostingele Tectum | 530 m | 850 m/s | 40000 40 km 118 m/s | 528 dps 2,640 hp | 65000 45 - 65 km | 289853 290k ehp |\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n| 3 | Vylade Dien | 422 m | 170 m/s | 60000 60 km 170 m/s | -1 (no weapons) | -1 (no weapons) | 274918 275k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |"
+   },
+   {
+    "level": 3,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\n| # |  | Targets for the entire fleet |  |  | Reason |\n|---|---|---|---|---|---|\n| Regular targets | Sniper targets | Small targets |  |  |  |\n| 1 |  | Arnon Epithalamus Outuni Mesen |  | Schmaeel Medulla | The Arnons because they jam and the Outunis due to heavy neuts (also warp disrupts and web). The Schmaeels because they web and warp disrupts. |\n| 2 |  | Auga Hypophysis Deltole Tegmentum Vylade Dien | Mara Paleo | Tama Cerebellum | Augas before Deltoles as they die rapidly and also web, then Vylades because they boost resists. The Maras because they remote repair. Tamas due to their high damage and warp disruption. |\n| 3 |  | Intaki ColliculusOstingele TectumRomi Thalamus | Yulai Crus CerebiAntem Neo | Eystur Rhomben | Intakis because they are logistics then Ostingeles before Romis as they are easier to hit and do more damage. Yulais before Antems as they are easier to hit and do more damage. Eysturs pose no specific threat. |"
+   }
+  ],
+  "chars": 6556
+ },
+ {
+  "title": "Uroborus",
+  "type": "mothership site",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "| Incursion sites |\n|---|\n| Click the title for a summary, or return to Incursions for general information. |\n| Staging sites |\n| Distress Beacon Forward Reconnaissance Outpost Nation Industrial Proxy Propaganda Cluster |\n| Vanguard sites |\n| Nation Commander Outpost Nation Mining Colony Override Transfer Array |\n| Assault sites |\n| Nation Commander Stronghold Nation Consolidation Network Overwhelmed Civilian Facility |\n| Headquarter sites |\n| Nation Rebirth Facility True Creations Research Center True Power Provisional Headquarters |\n| Mothership sites |\n| The Kundalini Manifest Uroborus |"
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "text": ""
+   },
+   {
+    "level": 4,
+    "title": "Force required",
+    "text": "|  | Fleet of 40 - 80 pilots (up to 120 in low/null)10+ logistics needed (5+ utility cap needed)Site takes about 15 - 25 minutes and ends the Incursion |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Military information",
+    "text": "|  | Your primary objective is to locate the Sansha‘s Nation flagship and destroy it. The destruction of this vessel will bring the local incursion to a halt. |\n|---|---|"
+   },
+   {
+    "level": 4,
+    "title": "Background information",
+    "text": "The construction of the first Sansha Supercarrier is believed to have begun as early as ten decades ago, during the slow but steady resurgence of Nation forces in Stain. Various blueprints, technical documents and other evidence suggested a large-scale construction project, although a starship was not the primary suspicion at the time.\n\nThe exact technical specifications of the vessel remain unknown. Limited intelligence suggests improvements made to the jump drive calibrators, allowing unprecedented jump ranges, although this is currently unconfirmed.\n\nThe crew aboard these flagship vessels is constituted of civilians abducted during the initial planetary invasions. During one engagement with the flagship, segments of crew were ejected following an explosion deep inside the hull. DNA analyses of these crew members confirmed their origins.\n\nSynopsis from ISHAEKA-0108. DED Special Operations. Authorized for Capsuleer dissemination."
+   },
+   {
+    "level": 3,
+    "title": "Enemies",
+    "text": "Below is a list of enemies that spawn in this site. See Sansha's Manual for a full list of the incursion rats.\n\n|  | Name | Sig | Speed | Orbit / Speed | Damage / Volley | Range | Effective HP |\n|---|---|---|---|---|---|---|---|\n| 3 | Antem Neo | 184 m | 1350 1,350 m/s | 60000 60 km 205 m/s | 168 dps 840 hp | 176000 146 - 176 km | 87717 88k ehp |\n| 3 | Arnon Epithalamus | 215 m | 1300 1,300 m/s | 50000 50 km 210 m/s | 164 dps 900 hp | 112500 < 113 km | 65415 65k ehp |\n| 3 | Auga Hypophysis | 325 m | 1100 1,100 m/s | 6000 6 km 170 m/s | 480 dps 2,400 hp | 20000 12 - 20 km | 51597 52k ehp |\n| 5 | Deltole Tegmentum | 540 m | 850 m/s | 12000 12 km 118 m/s | 818 dps 4,500 hp | 45000 < 45 km | 179075 179k ehp |\n| 1 | Eystur Rhomben | 49 m | 3360 3,360 m/s | 11000 11 km 560 m/s | 120 dps 600 hp | 12000 10 - 12 km | 9067 9k ehp |\n| 5 | Intaki Colliculus | 320 m | 980 m/s | 50000 50 km 140 m/s | 282 dps 2,256 hp | 148050 < 148 km | 315598 316k ehp |\n| 1 | Lirsautton Parichaya | 125 m | 1400 1,400 m/s | 7500 8 km 158 m/s | 440 dps 6,600 hp | 68750 < 69 km | 25032 25k ehp |\n| 3 | Mara Paleo | 65 m | 2050 2,050 m/s | 60000 60 km 310 m/s | -1 (no weapons) | -1 (no weapons) | 29505 30k ehp |\n| 1 | Niarja Myelen | 53 m | 2760 2,760 m/s | 15000 15 km 405 m/s | -1 (no weapons) | -1 (no weapons) | 3786 4k ehp |\n| 5 | Outuni Mesen | 400 m | 790 m/s | 18000 18 km 110 m/s | 352 dps 1,760 hp | 65000 45 - 65 km | 215104 215k ehp |\n| 1 | Renyn Meten | 33 m | 2550 2,550 m/s | 9000 9 km 410 m/s | 192 dps 960 hp | 12000 10 - 12 km | 8898 9k ehp |\n| 3 | Romi Thalamus | 200 m | 1520 1,520 m/s | 18000 18 km 205 m/s | 320 dps 1,600 hp | 33000 23 - 33 km | 105551 106k ehp |\n| 1 | Schmaeel Medulla | 36 m | 4000 4,000 m/s | 12000 12 km 640 m/s | 50 dps 252 hp | 20000 12 - 20 km | 9234 9k ehp |\n| 1 | Tama Cerebellum | 39 m | 2100 2,100 m/s | 12000 12 km 355 m/s | 300 dps 2,700 hp | 70200 < 70 km | 8103 8k ehp |\n| 5 | Uroborus | 14050 14,050 m | 75 m/s | 40000 40 km 75 m/s | -1 (no weapons) | -1 (no weapons) | 13996149 13,996k ehp |\n| 5 | Yulai Crus Cerebi | 400 m | 800 m/s | 60000 60 km 118 m/s | 397 dps 1,984 hp | 210000 160 - 210 km | 117850 118k ehp |"
+   },
+   {
+    "level": 4,
+    "title": "Priorities",
+    "text": "This is a generic kill order that works no matter what fleet you're running. Certain special doctrines or fleet compositions could change some things in order to optimize their fleet efficiency, so this isn't necessarily the only kill order, but it works.\n\nAs a general rule of thumb, if you cannot shoot the highest priority target due to low damage projection, move on to the next target you can actually hit. Just remember to switch back to a higher priority target if it moves into range later on.\n\nSoon (™)."
+   },
+   {
+    "level": 4,
+    "title": "Triggers",
+    "text": "Soon (™)."
+   },
+   {
+    "level": 4,
+    "title": "Special requirements",
+    "text": "Soon (™)."
+   },
+   {
+    "level": 3,
+    "title": "Hints & tips",
+    "text": "- Soon (™)."
+   }
+  ],
+  "chars": 4572
+ }
+]

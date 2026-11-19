@@ -1,0 +1,624 @@
+[
+ {
+  "title": "Another Slave Rescue",
+  "meta": {},
+  "briefing": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "Another Slave Rescue is a Level 3 Storyline mission chain comprising three sub-missions. It involves combat against the Amarr Empire.\nAmarr standing losses are very minor for ship kills (-0.003 total, compared to +0.422 Gallente standings increase for completion with Social 5).",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 1",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 2",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 3",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Loot",
+    "text": "Loot (parts 1 and 3 combined):\n\n± 9 Mil ISK",
+    "npcs": []
+   }
+  ],
+  "cat": 3
+ },
+ {
+  "title": "Guristas Strike",
+  "meta": {},
+  "briefing": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "Guristas Strike is a 10 part storyline mission mission chain. It consists of 3 courier and 7 encounter missions. Like all storyline missions there is no loyalty points reward for any of the missions. However the faction standings, normally received for storyline missions, are only rewarded to the final mission. The other missions in the chain only increase corporation standings and, unusual for storyline missions, agent standings.",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - Ambush in the Dark (1 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - The Interrogation (2 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - The Kidnapping (3 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - Possible Leads (4 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - Incriminating Evidence (5 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - The Flu Outbreak (6 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - The Secret Meeting (7 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - Defend the Civilian Convoy (8 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - Retrieve the Prisoners (9 of 10)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Guristas Strike - Final Battle (10 of 10)",
+    "text": "",
+    "npcs": []
+   }
+  ],
+  "cat": 3
+ },
+ {
+  "title": "Kidnappers Strike",
+  "meta": {},
+  "briefing": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "Kidnappers Strike is a 10-part storyline mission chain which has multiple faction variants. It includes the following missions:\n\n* Kidnappers Strike Part 1-4\n\n* Kidnappers Strike Part 5-10 (Blood Raiders)\n* Kidnappers Strike Part 5-10 (Guristas Pirates)\n* Kidnappers Strike Part 5-10 (Sansha's Nation)",
+    "npcs": []
+   }
+  ],
+  "cat": 3
+ },
+ {
+  "title": "Kidnappers Strike Part 1-4",
+  "meta": {},
+  "briefing": "I just received news of a grave incident that occurred in <System> a few hours ago. A convoy carrying our esteemed CEO was ambushed by an unusually large and organized pirate strike force. But fortune shone on us tonight, for due to the extraordinary bravery of our CEO's valiant escort team, he managed to escape unharmed, although slightly traumatised as you might expect. We lost many good men in this unfortunate incident, including the commander of our escort team ... may he rest in peace.\n\nNow, I'll get right to the point. We believe the pirates managed to capture some of the crew of the cruiser that was escorting our CEO, for we found the wreckage of their ship close by the encounter location, but there was no trace of the bodies of most of the crew. <Faction> special forces have been called in and are scouring the area for any sign left behind by the pirates, who so far remain at large. We'd like you to help out in the investigation. We know of a popular pirate hideout in <System>. I´ll upload the coordinates to your NeoCom: Please search the area for any clues, and if you take any prisoners, bring them back for interrogation.",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "Kidnappers Strike is a 10-part storyline mission chain that has three variants. Parts 1 to 4 are almost identical across the variants, with only minor differences in the named enemies. The rewards for the entire mission chain include several million ISK, a few attribute/hardwiring implants (worth about 160m), and a sizeable faction standing (around 5.5% or 0.55 in-game representation plus   skill bonus) for a level-3 mission, making this a potentially lengthy but worthwhile endeavor. Note that the courier missions could send you to a station in a low-sec system.",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 1 - Ambush In The Dark",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 3,
+    "title": "Single Pocket",
+    "text": "Rogue Pirates and sentries feature a relatively balanced resistance profile with thermal as the overall most effective damage type to deal against both armor and shield, while Rogue Pirate Raider is weakest to explosive damage. Rogue Pirates deal primarily EM damage, with sentries and Rogue Pirate Raider dealing primarily a mixture of explosive and kinetic damage.",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 2 - The Interrogation",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 3 - The Kidnapping",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 3,
+    "title": "Pocket 1",
+    "text": "This asteroid field has just recently been settled, by a group of pirate freelancers.  A hastily erected mobile habitat floats idly in the midst of the giant rocks, while three groups of mercenary ships lazily orbit various asteroids in defensive positions.  One of the ships clearly has the markings of your target, Drazin Jaruk, who seems to be the leader of this bunch.  You also notice another acceleration gate nearby, which you guess, judging from it's fairly clean exterior, has been only recently installed.  Where it leads to is anyone's guess.\n\nEnemies in the first pocket feature mixed damage and resistance profiles. Mercenary Fighters, Mercenary Lieutenants, and Mercenary Corporals deal kinetic and thermal damage and also are weakest to these damage types. Mercenary Elite Fighters and Mercenary Commanders deal EM damage in addition to these and are weakest to EM damage. Drazin Jaruk and Mercenary Wingmen deal primarily explosive and EM damage, and they are more receptive to thermal damage.",
+    "npcs": []
+   },
+   {
+    "level": 3,
+    "title": "Pocket 2",
+    "text": "I take it that imbecile Drazin led you to us.  Too bad you won't be leaving this area with your ship intact.\nRequires Drazin's Keycard (consumed on use, 3 available) from Habitat structure in Pocket 1. All enemies in Pocket 1 must be destroyed as well.\n\nThere are several versions of this group, depending on the named Cruiser. The Zerak Cheryn version is at 10-20k on warp in and his Gallente cruiser can be extremely harsh at close range and would be best taken out first if you can tank the two webbing frigates. The Kuran 'Scarface' Lonan version (Caldari based) is at 40-50k on warp in and is easy to tank. Please confirm Drazin Jaruk spawn?\n\nIn addition, one of the following will be present:\n\nStorage facility drops 50 metal scraps and trade goods.",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 4 - Possible Leads",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "Part 5 to 10",
+    "text": "Three variants exist for Parts 5 through 10:\n* Blood Raiders (Darkonnen)\n* Guristas Pirates (Komni)\n* Sansha's Nation (Maru)",
+    "npcs": []
+   },
+   {
+    "level": 0,
+    "title": "",
+    "text": "",
+    "npcs": [
+     {
+      "title": "|Group 1 - 10km",
+      "rows": [
+       {
+        "cls": "Cruiser",
+        "count": "2",
+        "name": "Rogue Pirate",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Sentry",
+        "count": "1-2",
+        "name": "Angel Tower Sentry II",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Group 2 - 60km",
+      "rows": [
+       {
+        "cls": "Cruiser",
+        "count": "4",
+        "name": "Rogue Pirate",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Rogue Pirate Raider",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Group 1, 25-35km from warp-in",
+      "rows": [
+       {
+        "cls": "Frigate",
+        "count": "4",
+        "name": "Mercenary Fighter",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "3",
+        "name": "Mercenary Corporal",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Group 2, 40-45km",
+      "rows": [
+       {
+        "cls": "Frigate",
+        "count": "4",
+        "name": "Mercenary Elite Fighter",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "2",
+        "name": "Mercenary Commander",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Group 3, 40-45km",
+      "rows": [
+       {
+        "cls": "Frigate",
+        "count": "2",
+        "name": "Mercenary Wingman",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "2",
+        "name": "Mercenary Lieutenant",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Drazin Jaruk",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Structure",
+        "count": "1",
+        "name": "Habitat",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "",
+      "rows": [
+       {
+        "cls": "Frigate",
+        "count": "2",
+        "name": "Mercenary Wingman",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Mercenary Lieutenant",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "",
+      "rows": [
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Drazin Jaruk/Korrani Salemo",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Kuran 'Scarface' Lonan/Lynk",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Zerak Cheryn",
+        "ewar": "Web",
+        "trigger": "",
+        "note": "EWAR invulnerable"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "cat": 3
+ },
+ {
+  "title": "Storyline mission reports",
+  "meta": {},
+  "briefing": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "This is a list of reported storyline missions.  Note that Storyline mission offers ignore the division of the Storyline Agent; an agent listed in the Station Services window as \"Storyline - Mining\" could give you a combat mission, for example.\n\nEncounter missions only really need the volume column used when bringing something to or from the mission location is part of the objective.\n\n| Name | Volume | Notes |\n|---|---|---|\n| A Cargo With Attitude | 1 | Courier |\n| A Case of Kidnapping (Level 1) | 1 | Encounter |\n| A Case of Kidnapping (Level 4) | 4 | Encounter |\n| A Desperate Rescue | 2 | Courier |\n| A Different Drone | 1 | Courier |\n| 3 | Courier | 4,500 |\n| A Father's Love | ? | Courier |\n| ? | Courier | 4,500 |\n| A Force to be Reckoned with (Angel Cartel) | 3 | Encounter |\n| A Force to be Reckoned with (Blood Raiders) | 3 | Encounter |\n| A Force to be Reckoned with (Serpentis) | 3 | Encounter |\n| A Greener World | 1 | Courier |\n| 3 | Courier | 4,500 |\n| A Little Work On The Side | 1 | Courier |\n| ? | Courier | 4,500 |\n| A Load of Scrap | 2 | Courier |\n| A Piece of History | 1 | Courier |\n| A Special Delivery | 1 | Courier |\n| 2 | Courier | 1,500 |\n| 3 | Courier | 7,500 |\n| 4 | Courier | 40,000 |\n| A Watchful Eye | 1 | Courier |\n| Amarrian Tyrants (Level 1) | 1 | Encounter |\n| Amarrian Tyrants (Level 2) | 2 | Encounter |\n| Amarrian Tyrants (Level 3) | 3 | Encounter |\n| Ambushed Ally | 2 | Encounter |\n| Amphibian Error | 2 | Courier |\n| 4 | Courier | 8,000 |\n| An End to Eavesdropping | 1 | Encounter |\n| Ancient Treasures | 1 | Courier |\n| 3 | Courier | 4500 |\n| Another Slave Rescue | 3 | Mission chain |\n| Black Ops Crisis | 2 | Courier |\n| 4 | Courier | 7,500 |\n| Blood Farm | 4 | Encounter |\n| Brand New Harvesters | 2 | Courier |\n| Clearing a Path | 2 | Encounter |\n| Covering your Tracks (Level 3) | 3 | Encounter |\n| Covering your Tracks (Level 4) | 4 | Encounter |\n| Crowd Control | 4 | Encounter |\n| Culture Clash | 1 | Courier |\n| 3 | Courier | 4,500 |\n| Diplomatic Incident | 4 | Encounter |\n| Dissidents | 4 | Encounter |\n| Ditanium | 1 | Courier |\n| Divine Intervention | 1 | Courier |\n| Eradication | ? | Courier |\n| Evacuation | 1 | Courier |\n| Evolution | 4 | Encounter |\n| Extract The Renegade | 4 | Encounter |\n| Fetching Friends | 2 | Encounter |\n| Fire and Ice | 2 | Courier |\n| 4 | Courier | 8,000 |\n| Forgotten Outpost | 4 | Encounter |\n| Gate to Nowhere | 4 | Encounter |\n| Guristas Strike | 3 | Mission chain |\n| Heart of the Rogue Drone | 2 | Courier |\n| 4 | Courier | 8,000 |\n| Hidden Hope | 4 | Encounter |\n| Hunting Black Dog | 4 | Courier |\n| Id and Egonics, Inc. | 3 | Encounter |\n| Illegal Mining | 4 | Encounter |\n| Innocents In The Crossfire | 4 | Encounter |\n| Insorum Hijacking | 4 | Encounter |\n| Jealous Rivals | 4 | Encounter |\n| Kidnappers Strike | 3 | Mission chain |\n| Lamb Amongst Lions | 4 | Encounter |\n| Materials For War Preparation | 1 | Trade |\n| 2 | Trade | 225 |\n| 3 | Trade | 6,000 |\n| 4 | Trade | 9,600 |\n| 5 | Trade | 12,000 |\n| Matriarch | 4 | Encounter |\n| Nine Tenths Of The Wormhole | 4 | Encounter |\n| Of Fangs and Claws | 1 | Courier |\n| On the Run | 1 | Courier |\n| Operation Doorstop | 2 | Courier |\n| Opiate of the Masses | 2 | Courier |\n| 4 | Courier | 8,000 |\n| Patient Zero | 4 | Encounter |\n| Persistent Enemy | 4 | Encounter |\n| Pieces of the Past | 1 | Courier |\n| Pirate Radio | 3 | Encounter |\n| Prison Transfer | 4 | Encounter |\n| Quota Season | 4 | Encounter |\n| Racetrack Ruckus | 4 | Encounter |\n| Record Cleaning | 4 | Encounter |\n| Search and Rescue | 1 | Encounter |\n| Send the Marines! | 2 | Courier |\n| 4 | Courier | 7,500 |\n| Serpentis Ship Builders | 4 | Encounter |\n| Shifting Rocks | 2 | Courier |\n| 4 | Courier | 8,000 |\n| Shipyard Theft (Angel Cartel) | 4 | Encounter |\n| Shipyard Theft (Blood Raiders) | 4 | Encounter |\n| Shipyard Theft (Guristas Pirates) | 4 | Encounter |\n| Shipyard Theft (Serpentis) | 4 | Encounter |\n| Soothe The Salvage Beast | 4 | Encounter |\n| Stem The Flow | 4 | Encounter |\n| The Blood of Angry Men | 4 | Encounter |\n| The Creeping Cold | 2 | Courier |\n| 4 | Courier | 8,000 |\n| The Essence of Speed | 1 | Courier |\n| The Gallente Archaeologist | 4 | Mission chain |\n| The Governor's Ball | 4 | Courier |\n| The Heir's Favorite Slave | 1 | Encounter |\n| The Mouthy Merc | 4 | Encounter |\n| The Numon Claim | 4 | Mission chain |\n| The State of the Empire | 2 | Courier |\n| 4 | Courier | 8,000 |\n| Their Secret Defense | 2 | Courier |\n| Transaction Data Delivery | 1 | Courier |\n| 2 | Courier | 1 |\n| 4 | Courier | 1 |\n| Unmasking the Traitor | 2 | Courier |\n| Very Important Pirates | 1 | Courier |\n| Warlord Strikes | 4 | Encounter |\n| Wartime Advances | 1 | Courier |\n| 3 | Courier | 4,500 |",
+    "npcs": []
+   }
+  ],
+  "cat": 3
+ },
+ {
+  "title": "The Gallente Archaeologist",
+  "meta": {},
+  "briefing": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "The Gallente Archaeologist is a nine part storyline mission chain.. It consists of encounters with some low volume courier missions in between. The encounters are mostly against Gallente Federation but in part 3 you face Mordu's Legion.\n\nUnlike usually, the Gallente Federation NPCs are weakest against thermal while kinetic is still a good damage to deal. So if you have a bonus towards kinetic (for example Tengu or Cerberus), you still best deal kinetic. The exception are the Federation Navy Orion battleships, which have a very high kinetic resistance and you should always avoid to deal kinetic to them.\n\nThe final mission gives a command mindlink as a reward and in the mission in between you can loot a number of 3% hardwiring implants, gallente faction guns, and a lot of gallente dog tags.",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - The Unsuspecting Traveler (1 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - The Identification (2 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - The Bounty Hunter (3 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - The Results (4 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - Sudden Strike (5 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - Repercussions (6 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - The New Demands (7 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - Final Attempt (8 of 9)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Gallente Archaeologist - The Conclusion (9 of 9)",
+    "text": "",
+    "npcs": []
+   }
+  ],
+  "cat": 3
+ },
+ {
+  "title": "The Numon Claim",
+  "meta": {},
+  "briefing": "",
+  "sections": [
+   {
+    "level": 0,
+    "title": "",
+    "text": "The mission chain contains several near death scenarios, and 5 individual missions. This mission chain is absolutely not meant to be completed for new pilots, especially in solo, although it is absolutely doable with the sufficient knowledge on flying the ship.\n\nRecommended ship:\n* In general a tech 2 or 3 cruiser is appropriate considering these are pirate missions: they take place in and around NPC nullsec so being able quickly warp off when hostiles arrive is valuable.\n* Tengu (tested, and completed)\n* High survivability battleship\n* Small fleet with logi support",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Numon Claim - First Attack (1 of 5)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Numon Claim - Ruffled Feathers (2 of 5)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Numon Claim - Imperial Intervention (3 of 5)",
+    "text": "",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Numon Claim - Split The Fleet (4 of 5)",
+    "text": "Caution: Room 2 warps you into a group containing several webbing frigates (Gamma).\nIn room 2, Captain Yeni Sarum (Named cruiser) drops a 3% implant (controlled bursts for me)",
+    "npcs": []
+   },
+   {
+    "level": 2,
+    "title": "The Numon Claim -Last Stand (5 of 5)",
+    "text": "Room 3 is very dangerous with 3 spider drones, Kazar Numon with a long point and web at the warp in and three very high damage 250km range sentry turrets (Tower Sentry Amarr III) spaced around the room. Named rats in room 3 all drop implants (Gunnery 3%, Small Energy Turret 3%, and Numon Family Heirloom).",
+    "npcs": []
+   },
+   {
+    "level": 0,
+    "title": "",
+    "text": "",
+    "npcs": [
+     {
+      "title": "",
+      "rows": [
+       {
+        "cls": "?",
+        "count": "?",
+        "name": "Mercenary ?",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Sentry",
+        "count": "3-4",
+        "name": "heavy missile tower",
+        "ewar": "",
+        "trigger": "",
+        "note": "Shoots EM missiles"
+       }
+      ]
+     },
+     {
+      "title": "",
+      "rows": [
+       {
+        "cls": "?",
+        "count": "?",
+        "name": "",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Room 1",
+      "rows": [
+       {
+        "cls": "?",
+        "count": "?",
+        "name": "",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Room 2",
+      "rows": [
+       {
+        "cls": "Frigate",
+        "count": "?",
+        "name": "Imperial Navy Gamma",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Cruiser",
+        "count": "1",
+        "name": "Yeni Sarum",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Room 1",
+      "rows": [
+       {
+        "cls": "?",
+        "count": "?",
+        "name": "",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Room 2",
+      "rows": [
+       {
+        "cls": "?",
+        "count": "?",
+        "name": "",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     },
+     {
+      "title": "|Room 3",
+      "rows": [
+       {
+        "cls": "Drone",
+        "count": "3",
+        "name": "Spider drone",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "battleship",
+        "count": "1",
+        "name": "Kazar Numon",
+        "ewar": "Web",
+        "trigger": "",
+        "note": ""
+       },
+       {
+        "cls": "Sentry",
+        "count": "3",
+        "name": "Tower Sentry Amarr III",
+        "ewar": "",
+        "trigger": "",
+        "note": ""
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "cat": 3
+ }
+]

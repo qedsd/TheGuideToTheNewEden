@@ -9,12 +9,11 @@
     ScrollViewer.CanContentScroll="False">
 
     <!--
-        「攻略 · 异常」页：**一张全宽表格**列出 126 条战斗异常 → 它能升级成哪个站点。
-        · 筛选在卡片**右上角**：搜索框（中英文名）+ 势力 + 档位；筛完结果整表铺满。
-        · 点异常自己的名字 → 打开这个异常的详细页；点「远征」列 → 打开它升级成的站点。双击整行 = 前者。
-        · 与死亡远征页刻意不同：那边是"左列表 + 右正文"的阅读器，这里是"一眼看全"的对照表。
-        · 表格样式 GuideTableGrid 的 TargetType 必须是 ui:DataGrid 且 BasedOn 隐式样式，
-        否则会把 Fluent 模板顶掉（REFACTORING 阶段 16）；滚动交给 DataGrid 自己（不外包 ScrollViewer，阶段 294/295）。
+        「攻略 · 战斗异常」页。
+        · 第一个 Tab 固定是「所有异常」= 原来的异常对照表（列表 + 搜索 + 筛选），关不掉。
+        · 点某一行的名字 / 「可升级为」列后，**不再跳转死亡远征页**，而是在后面新开一个 Tab
+          显示该站点正文（Header = 异常名，可手动关闭），行为与 Zkillboard 页一致。
+        · 列表里同时包含虫洞站点：分类显示"冬眠者"，出现空间显示"虫洞"。
     -->
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -68,7 +67,7 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
-        <!--  「远征」单元格：有目标 = 可点文字，没目标 = 灰色原文  -->
+        <!--  「可升级为」单元格：有目标 = 可点（跳「死亡远征」页看详细），没目标 = 灰色原文  -->
         <DataTemplate x:Key="TargetCellTemplate">
             <Grid>
                 <ui:Button
@@ -96,111 +95,123 @@
         </DataTemplate>
     </Page.Resources>
 
-    <controls:CardControl>
-        <controls:CardControl.Header>
-            <!--  右上角过滤：搜索 + 势力 + 档位；标题在左  -->
-            <Grid Margin="0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+    <Grid Margin="8">
+        <TabControl
+            x:Name="DetailTabs"
+            Background="Transparent"
+            BorderThickness="0">
 
-                <TextBlock
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Text="{Binding StatusText}" />
+            <!--  固定页：所有异常（列表 + 搜索 + 筛选）  -->
+            <TabItem Header="{DynamicResource AnomalyPage_TabAll}">
+                <controls:CardControl>
+                    <controls:CardControl.Header>
+                        <Grid Margin="0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                <ui:TextBox
-                    Grid.Column="1"
-                    Width="300"
-                    Margin="16,0,0,0"
-                    HorizontalAlignment="Stretch"
-                    FontWeight="Normal"
-                    PlaceholderText="{DynamicResource AnomalyPage_SearchTip}"
-                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="{Binding StatusText}" />
 
-                <ComboBox
-                    Grid.Column="2"
-                    Width="140"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    DisplayMemberPath="Label"
-                    ItemsSource="{Binding FactionOptions}"
-                    SelectedItem="{Binding SelectedFaction, Mode=TwoWay}" />
+                            <ui:TextBox
+                                Grid.Column="1"
+                                Width="300"
+                                Margin="16,0,0,0"
+                                HorizontalAlignment="Stretch"
+                                FontWeight="Normal"
+                                PlaceholderText="{DynamicResource AnomalyPage_SearchTip}"
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
-                <ComboBox
-                    Grid.Column="3"
-                    Width="110"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    DisplayMemberPath="Label"
-                    ItemsSource="{Binding TierOptions}"
-                    SelectedItem="{Binding SelectedTier, Mode=TwoWay}" />
-            </Grid>
-        </controls:CardControl.Header>
+                            <ComboBox
+                                Grid.Column="2"
+                                Width="140"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="Label"
+                                ItemsSource="{Binding FactionOptions}"
+                                SelectedItem="{Binding SelectedFaction, Mode=TwoWay}" />
 
-        <Grid>
-            <ui:DataGrid
-                Margin="0,6,0,0"
-                ItemsSource="{Binding Items}"
-                MouseDoubleClick="OnRowDoubleClick"
-                Style="{StaticResource GuideTableGrid}">
-                <ui:DataGrid.Columns>
-                    <DataGridTemplateColumn Width="1.1*" Header="{DynamicResource AnomalyPage_ColTitleCN}">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <ui:Button
-                                    Margin="4,2"
-                                    Padding="6,2"
-                                    HorizontalAlignment="Left"
-                                    Appearance="Transparent"
-                                    BorderThickness="0"
-                                    Click="OnSelfClick">
-                                    <TextBlock
-                                        Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
-                                        Text="{Binding TitleCN}"
-                                        TextTrimming="CharacterEllipsis" />
-                                </ui:Button>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn
-                        Width="1.1*"
-                        Binding="{Binding TitleEN}"
-                        ElementStyle="{StaticResource CellSecondary}"
-                        Header="{DynamicResource AnomalyPage_ColTitleEN}" />
-                    <DataGridTextColumn
-                        Width="80"
-                        Binding="{Binding Level}"
-                        ElementStyle="{StaticResource CellAccent}"
-                        Header="{DynamicResource AnomalyPage_ColLevel}" />
-                    <DataGridTextColumn
-                        Width="90"
-                        Binding="{Binding Faction}"
-                        ElementStyle="{StaticResource CellSecondary}"
-                        Header="{DynamicResource AnomalyPage_ColFaction}" />
-                    <DataGridTemplateColumn
-                        Width="1.6*"
-                        CellTemplate="{StaticResource TargetCellTemplate}"
-                        Header="{DynamicResource AnomalyPage_ColTarget}" />
-                    <DataGridTextColumn
-                        Width="110"
-                        Binding="{Binding Location}"
-                        ElementStyle="{StaticResource CellSecondary}"
-                        Header="{DynamicResource AnomalyPage_ColSpace}" />
-                </ui:DataGrid.Columns>
-            </ui:DataGrid>
+                            <ComboBox
+                                Grid.Column="3"
+                                Width="110"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="Label"
+                                ItemsSource="{Binding TierOptions}"
+                                SelectedItem="{Binding SelectedTier, Mode=TwoWay}" />
+                        </Grid>
+                    </controls:CardControl.Header>
 
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Text="{DynamicResource AnomalyPage_Empty}"
-                TextAlignment="Center"
-                TextWrapping="Wrap"
-                Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
-        </Grid>
-    </controls:CardControl>
+                    <Grid>
+                        <ui:DataGrid
+                            x:Name="AnomalyGrid"
+                            Margin="0,6,0,0"
+                            ItemsSource="{Binding Items}"
+                            MouseDoubleClick="OnRowDoubleClick"
+                            Style="{StaticResource GuideTableGrid}">
+                            <ui:DataGrid.Columns>
+                                <DataGridTemplateColumn Width="1.1*" Header="{DynamicResource AnomalyPage_ColTitleCN}">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <!--  单击中文名 → 本页开页签看正文；双击整行同样；只有「可升级为」列跳死亡远征  -->
+                                            <ui:Button
+                                                Margin="4,2"
+                                                Padding="6,2"
+                                                HorizontalAlignment="Left"
+                                                Appearance="Transparent"
+                                                BorderThickness="0"
+                                                Click="OnSelfClick">
+                                                <TextBlock
+                                                    Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                    Text="{Binding TitleCN}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </ui:Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Width="1.1*"
+                                    Binding="{Binding TitleEN}"
+                                    ElementStyle="{StaticResource CellSecondary}"
+                                    Header="{DynamicResource AnomalyPage_ColTitleEN}" />
+                                <DataGridTextColumn
+                                    Width="80"
+                                    Binding="{Binding Level}"
+                                    ElementStyle="{StaticResource CellAccent}"
+                                    Header="{DynamicResource AnomalyPage_ColLevel}" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding Faction}"
+                                    ElementStyle="{StaticResource CellSecondary}"
+                                    Header="{DynamicResource AnomalyPage_ColFaction}" />
+                                <DataGridTemplateColumn
+                                    Width="1.6*"
+                                    CellTemplate="{StaticResource TargetCellTemplate}"
+                                    Header="{DynamicResource AnomalyPage_ColTarget}" />
+                                <DataGridTextColumn
+                                    Width="110"
+                                    Binding="{Binding Location}"
+                                    ElementStyle="{StaticResource CellSecondary}"
+                                    Header="{DynamicResource AnomalyPage_ColSpace}" />
+                            </ui:DataGrid.Columns>
+                        </ui:DataGrid>
+
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource AnomalyPage_Empty}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                </controls:CardControl>
+            </TabItem>
+        </TabControl>
+    </Grid>
 </Page>

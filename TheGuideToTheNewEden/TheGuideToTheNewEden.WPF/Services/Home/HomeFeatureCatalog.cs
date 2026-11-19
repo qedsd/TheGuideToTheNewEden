@@ -151,6 +151,10 @@ public static class HomeFeatureCatalog
             "Home.Feature.DedDesc", HomeFeatureKind.Page, typeof(Views.Pages.DEDPage)),
         new("mission", SymbolRegular.DocumentOnePage24, "mission", "Nav.Mission", "Nav.Guides",
             "Home.Feature.MissionDesc", HomeFeatureKind.Page, typeof(Views.Pages.MissionPage)),
+        new("resources", SymbolRegular.DatabaseSearch24, "resources", "Nav.Resources", "Nav.Guides",
+            "Home.Feature.ResourcesDesc", HomeFeatureKind.Page, typeof(Views.Pages.ResourcesPage)),
+        new("incursion", SymbolRegular.Sparkle24, "incursion", "Nav.Incursion", "Nav.Guides",
+            "Home.Feature.IncursionDesc", HomeFeatureKind.Page, typeof(Views.Pages.IncursionPage)),
 
         // ---------- 虫洞 / 链接 / 星图 / KB / 数据库 ----------
         new("wormhole", SymbolRegular.Target24, "wormhole", "Nav.Wormhole", "Nav.Wormhole",

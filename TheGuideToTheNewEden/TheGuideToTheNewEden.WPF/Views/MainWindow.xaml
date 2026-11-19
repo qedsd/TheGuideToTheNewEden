@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+<ui:FluentWindow
     x:Class="TheGuideToTheNewEden.WPF.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -351,6 +351,26 @@
                                     Width="20"
                                     Height="20"
                                     Source="{StaticResource NavIcon.mission}" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+
+                        <!--  资源：战斗遗迹 / 数据站点 / 矿石 / 气云 / 冰带  -->
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Resources}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ResourcesPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="DatabaseSearch24" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+
+                        <!--  入侵：萨沙入侵站点（集结点 / 先锋 / 突击 / 总部 / 母舰）  -->
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Incursion}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:IncursionPage}">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="Sparkle24" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>

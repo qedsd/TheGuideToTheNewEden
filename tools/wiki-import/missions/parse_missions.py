@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """解析任务页 wikitext → parsed.json。
 
 任务页的骨架（实测三种都要兼容）：
@@ -67,6 +67,13 @@ def find_templates(text, names):
             i = j + 2
             continue
         name = m.group(0).strip()
+        # wiki 上同一个模板有两种写法：`{{Missiondetails` 和 `{{Template:Missiondetails`
+        # （后者少见了但确实存在，`Pawns on the Board (5 of 5)` 就是），不归一化会整页漏掉
+        if name.lower().startswith('template:'):
+            name = name[len('template:'):].strip()
+        if ':' in name and not name.lower().startswith('template:'):
+            # 形如 `Namespace:Foo`，不是我们要的模板
+            pass
         if name.lower() not in {n.lower() for n in names}:
             i = j + 2
             continue
@@ -398,11 +405,74 @@ def strip_include_tags(text):
     return text
 
 
+
+def wikitables_to_md(text):
+    """把 wikitext 表格 `{| ... |}` 转成 Markdown 表格。
+
+    wiki 里的矿物/气云/冰带页面大量用原始 HTML 式表格（`! scope="col" | Ore Type`、
+    `| style="text-align: left;" | Crokite`），原来的流程会把它们整块丢掉。
+    """
+    out = []
+    i = 0
+    while True:
+        start = text.find('{|', i)
+        if start < 0:
+            out.append(text[i:])
+            break
+        out.append(text[i:start])
+        depth, j = 0, start
+        while j < len(text):
+            if text.startswith('{|', j):
+                depth += 1
+                j += 2
+                continue
+            if text.startswith('|}', j):
+                depth -= 1
+                j += 2
+                if depth == 0:
+                    break
+                continue
+            j += 1
+        block = text[start:j]
+        rows = []
+        for line in block.split('\n'):
+            s = line.strip()
+            if not s or s.startswith('{|---') or s == '{|' or s == '|}':
+                continue
+            if s.startswith('|-'):
+                continue
+            if s.startswith('!') or s.startswith('|'):
+                body = s[1:].strip()
+                cells = re.split(r'\s*!!\s*|\s*\|\|\s*', body) if ('!!' in body or '||' in body) else [body]
+                cleaned = []
+                for c in cells:
+                    c = c.strip()
+                    # `style="..." | 文本` / `scope="col" | 文本`
+                    if '|' in c and '=' in c.split('|')[0]:
+                        c = c.split('|', 1)[1].strip()
+                    c = re.sub(r'^\s*(class|style|scope|align|colspan|rowspan|summary|width)\s*=\s*"[^"]*"\s*', '', c)
+                    c = re.sub(r'&nbsp;', ' ', c)
+                    c = re.sub(r'\[\[(?:[^\]|]*\|)?([^\]]+)\]\]', r'\1', c)
+                    c = re.sub(r'\s+', ' ', c).strip()
+                    cleaned.append(c)
+                if any(cleaned):
+                    rows.append(cleaned)
+        if len(rows) >= 2:
+            width = max(len(r) for r in rows)
+            rows = [r + [''] * (width - len(r)) for r in rows]
+            md = ['| ' + ' | '.join(rows[0]) + ' |', '|' + '---|' * width]
+            md += ['| ' + ' | '.join(r) + ' |' for r in rows[1:]]
+            out.append('\n'.join(md) + '\n')
+        i = j
+    return ''.join(out)
+
+
 def paragraphize(text):
     """把一段 wikitext 变成干净的段落/列表行序列。"""
     t = strip_include_tags(text)
     t = strip_wiki_markup(strip_leftover_templates(unwrap_templates(strip_templates(t))))
     t = convert_html_tables(t)
+    t = wikitables_to_md(t)
     # 转换后仍可能剩孤立的表格收尾符（原文里表格被 NPC 表剥离截断时）
     t = re.sub(r'(?m)^\s*\|}\s*$', '', t)
     lines = []
@@ -439,10 +509,30 @@ def parse_page(entry):
     includes = sorted({m.group(1).strip() for m in re.finditer(r'\{\{:([^\}|\}]+)', text)})
 
     infos = find_templates(text, {'Missiondetails', 'MissionDetails'})
+    # 代理人页（`{{Infobox agent}}`）的**页面标题是代理人名**，真正的任务名在
+    # `== 任务名 (n of m) ==` 小节标题里。不处理的话库里会出现一堆"艾可·奥赛玛（1/4）"这种行。
+    is_agent_page = bool(re.search(r'\{\{\s*Infobox agent', text, re.I))
+    agent_name = ''
+    if is_agent_page:
+        m = re.search(r'\|\s*name\s*=\s*([^\|\}\n]+)', text)
+        agent_name = strip_wiki_markup(m.group(1)).strip() if m else entry['title']
+
+    # COSMOS 页开头普遍有这一行：`Agent: [[X]]` / `Agent location: ...` / `Standings required: ...`
+    head = text[:1200]
+    def _meta(pattern):
+        mm = re.search(pattern, head, re.I)
+        return strip_wiki_markup(mm.group(1)).strip(' |') if mm else ''
+    agent_meta = _meta(r'Agent\s*:\s*(?:\[\[)?([^<\n\]]+)')
+    agent_location = _meta(r'Agent location\s*:\s*([^<\n]+)')
+    agent_standing = _meta(r'Standings required\s*:\s*([^<\n]+)')
+    if not agent_name and agent_meta:
+        agent_name = agent_meta
     result = {
         'title': entry['title'], 'cat': entry['cat'], 'catCn': entry['catCn'],
         'file': entry['file'], 'chars': entry['chars'],
         'includes': includes, 'variants': [],
+        'isAgent': is_agent_page, 'agent': agent_name,
+        'agentLocation': agent_location, 'agentStanding': agent_standing,
     }
 
     if not infos:
@@ -482,7 +572,16 @@ def parse_page(entry):
         if npcs:
             sections.append({'level': 0, 'title': '', 'text': '', 'npcs': npcs})
 
-        result['variants'].append({'info': info, 'briefing': briefing, 'sections': sections})
+        # 代理人页：取该 infobox 之前最近的一个 `== 标题 ==` 当任务名
+        mission_title = ''
+        if is_agent_page:
+            heads = [(mm.start(), mm.group(1)) for mm in
+                     re.finditer(r'(?m)^==+\s*([^=\n]+?)\s*==+\s*$', text[:start])]
+            if heads:
+                mission_title = strip_wiki_markup(heads[-1][1]).strip()
+
+        result['variants'].append({'info': info, 'briefing': briefing, 'sections': sections,
+                                   'missionTitle': mission_title})
 
     return result
 

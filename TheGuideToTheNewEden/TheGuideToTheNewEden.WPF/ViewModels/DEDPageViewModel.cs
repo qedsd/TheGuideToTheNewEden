@@ -308,6 +308,17 @@ public sealed class DEDPageViewModel : INotifyPropertyChanged
     }
 
     // ---------------------------------------------------------------- 选项
+    /// <summary>已由其它功能页接手的分类：资源页（5/10/11/12/13）与战斗异常页（14）。</summary>
+    private static readonly HashSet<int> MovedCategories = new()
+    {
+        (int)CombatSiteCategory.RelicSite,
+        (int)CombatSiteCategory.DataSite,
+        (int)CombatSiteCategory.OreSite,
+        (int)CombatSiteCategory.GasSite,
+        (int)CombatSiteCategory.IceBelt,
+        (int)CombatSiteCategory.WormholeSite,
+    };
+
     private void RebuildCategoryOptions()
     {
         var keep = _selectedCategory?.Key ?? int.MinValue;
@@ -315,6 +326,13 @@ public sealed class DEDPageViewModel : INotifyPropertyChanged
         CategoryOptions.Add(new FilterOption(int.MinValue, FindString("DEDPage_AllCategories")));
         foreach (CombatSiteCategory c in Enum.GetValues(typeof(CombatSiteCategory)))
         {
+            // 已经分出去的功能：战斗遗迹/数据/矿石/气云/冰带 归「资源」页，
+            // 虫洞站点 归「战斗异常」页，这里不再重复列出。
+            if (MovedCategories.Contains((int)c))
+            {
+                continue;
+            }
+
             CategoryOptions.Add(new FilterOption((int)c, CombatSiteCategoryConverter.NameOf((int)c)));
         }
 

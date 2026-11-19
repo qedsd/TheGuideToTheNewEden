@@ -30,6 +30,9 @@ public sealed class AnomalyPageViewModel : INotifyPropertyChanged
 {
     private const int SearchDebounceMs = 350;
 
+    /// <summary>「冬眠者」筛选项的哨兵值（不与其他势力 0–5 冲突）。</summary>
+    private const int SleeperFilterKey = -2;
+
     private readonly ObservableCollection<AnomalyRow> _items = new();
     private readonly List<CombatSite> _all = new();
     private readonly Dictionary<int, CombatSite> _byId = new();
@@ -163,9 +166,17 @@ public sealed class AnomalyPageViewModel : INotifyPropertyChanged
         var tier = _selectedTier?.Key ?? int.MinValue;
         var keyword = _searchText.Trim();
 
-        IEnumerable<CombatSite> query = _all.Where(s => s.Category == (int)CombatSiteCategory.Anomaly);
+        // 虫洞站点(14) 也在这张表里：分类显示"冬眠者"、出现空间显示"虫洞"
+        IEnumerable<CombatSite> query = _all.Where(s =>
+            s.Category == (int)CombatSiteCategory.Anomaly
+            || s.Category == (int)CombatSiteCategory.WormholeSite);
 
-        if (faction != int.MinValue)
+        if (faction == SleeperFilterKey)
+        {
+            // 「冬眠者」= 虫洞站点（CombatSite.Faction 是 -1，没有具体海盗势力）
+            query = query.Where(s => s.Category == (int)CombatSiteCategory.WormholeSite);
+        }
+        else if (faction != int.MinValue)
         {
             query = query.Where(s => s.Faction == faction);
         }
@@ -182,23 +193,26 @@ public sealed class AnomalyPageViewModel : INotifyPropertyChanged
                 || (s.TitleEN?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false));
         }
 
-        var list = query.OrderBy(s => s.Tier).ThenBy(s => s.Level).ThenBy(s => s.Faction)
-                        .ThenBy(s => s.TitleCN, StringComparer.Ordinal).ToList();
+        var list = query.OrderBy(s => s.Category).ThenBy(s => s.Tier).ThenBy(s => s.Level)
+                        .ThenBy(s => s.Faction).ThenBy(s => s.TitleCN, StringComparer.Ordinal).ToList();
 
         _items.Clear();
         foreach (var site in list)
         {
             var target = site.EscalationId > 0 && _byId.TryGetValue(site.EscalationId, out var hit) ? hit : null;
+            var isWormhole = site.Category == (int)CombatSiteCategory.WormholeSite;
 
             _items.Add(new AnomalyRow(
                 site.Id,
                 CombatSiteNameConverter.Strip(site.TitleCN) ?? string.Empty,
                 site.TitleEN,
-                site.Level > 0 ? $"T{site.Tier}·{site.Level}" : $"T{site.Tier}",
-                site.Faction >= 0 ? FindString(FactionKeyOf(site.Faction)) : string.Empty,
+                site.Level > 0 ? $"T{site.Tier}·{site.Level}" : (site.Tier > 0 ? $"T{site.Tier}" : string.Empty),
+                isWormhole
+                    ? FindString("AnomalyPage_FactionSleeper")
+                    : (site.Faction >= 0 ? FindString(FactionKeyOf(site.Faction)) : string.Empty),
                 target is null ? site.Escalation ?? string.Empty : DescribeTarget(target),
                 target?.Id ?? 0,
-                site.Location ?? string.Empty));
+                isWormhole ? FindString("AnomalyPage_SpaceWormhole") : site.Location ?? string.Empty));
         }
 
         _isSearchResult = keyword.Length > 0;
@@ -255,6 +269,9 @@ public sealed class AnomalyPageViewModel : INotifyPropertyChanged
         {
             FactionOptions.Add(new FilterOption(i, FindString(FactionKeyOf(i))));
         }
+
+        // 虫洞站点没有海盗势力，单列一项「冬眠者」
+        FactionOptions.Add(new FilterOption(SleeperFilterKey, FindString("AnomalyPage_FactionSleeper")));
 
         _selectedFaction = FactionOptions.FirstOrDefault(o => o.Key == keep) ?? FactionOptions[0];
         OnPropertyChanged(nameof(SelectedFaction));

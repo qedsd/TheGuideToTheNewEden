@@ -26,6 +26,12 @@ public sealed class CombatSiteCategoryConverter : IValueConverter
         (int)CombatSiteCategory.Triglavian => "DEDPage_Cat_Triglavian",
         (int)CombatSiteCategory.Special => "DEDPage_Cat_Special",
         (int)CombatSiteCategory.CapitalExpedition => "DEDPage_Cat_CapitalExpedition",
+        (int)CombatSiteCategory.Cosmos => "DEDPage_Cat_Cosmos",
+        (int)CombatSiteCategory.DataSite => "DEDPage_Cat_DataSite",
+        (int)CombatSiteCategory.OreSite => "DEDPage_Cat_OreSite",
+        (int)CombatSiteCategory.GasSite => "DEDPage_Cat_GasSite",
+        (int)CombatSiteCategory.IceBelt => "DEDPage_Cat_IceBelt",
+        (int)CombatSiteCategory.WormholeSite => "DEDPage_Cat_WormholeSite",
         _ => null,
     };
 

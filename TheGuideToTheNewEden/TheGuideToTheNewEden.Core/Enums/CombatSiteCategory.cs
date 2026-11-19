@@ -44,5 +44,29 @@ namespace TheGuideToTheNewEden.Core.Enums
         /// </para>
         /// </summary>
         CapitalExpedition = 8,
+
+        /// <summary>
+        /// COSMOS 站点（`Category:COSMOS sites`，87 个）。
+        /// <para>
+        /// 这些站点是固定死亡空间（信标 / 可扫描 / 无标记），刷新周期固定，
+        /// 与 DED 复合体同构（`{{CMBSiteInfo}}` + NPC 表），所以并进这张表而不是另开一张。
+        /// </para>
+        /// </summary>
+        Cosmos = 9,
+
+        /// <summary>数据站点（低安/00 的可破译数据遗迹，`Abandoned Research Complex` 一类）。</summary>
+        DataSite = 10,
+
+        /// <summary>矿石站点（小行星带遗迹的矿物构成）。</summary>
+        OreSite = 11,
+
+        /// <summary>气云站点（气云采集目标）。</summary>
+        GasSite = 12,
+
+        /// <summary>冰带（冰矿采集目标）。</summary>
+        IceBelt = 13,
+
+        /// <summary>虫洞站点（J 空间内的冬眠者/漂泊者站点）。</summary>
+        WormholeSite = 14,
     }
 }
