@@ -8,6 +8,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
+using TheGuideToTheNewEden.WPF.Services.CombatLog;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Channel;
@@ -83,6 +84,8 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     private void RebuildItemConfigs()
     {
         ItemConfigs.Clear();
+        // 阶段 357：固定第一个页签为「战斗日志」（不落盘、不可删除），其余是普通关键词监控
+        ItemConfigs.Add(CreateCombatConfig());
         if (Setting is not null)
         {
             foreach (var config in Setting.ItemConfigs.Where(IsVisibleConfig))
@@ -91,8 +94,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             }
         }
 
-        SelectedItemConfig = ItemConfigs.FirstOrDefault();
+        // 默认仍停在普通关键词配置上（避免"打开页面点开始"意外启动战斗日志）；没有普通配置时才落在战斗日志页签
+        SelectedItemConfig = ItemConfigs.FirstOrDefault(p => p.LogType != 2) ?? ItemConfigs.FirstOrDefault();
     }
+
+    /// <summary>「战斗日志」固定页签的占位配置（LogType=2，只用于页签模板切换，不写进配置列表）。</summary>
+    private static GameLogItemConfig CreateCombatConfig()
+        => new GameLogItemConfig(2) { ConfigName = FindString("GameLogMonitorPage_CombatLog") };
 
     private static bool IsVisibleConfig(GameLogItemConfig config)
         => ErrorLogVisible || config.LogType != 1;
@@ -110,6 +118,161 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     /// <summary>选中角色是否正在监控（频道/配置列表的可用性）。</summary>
     public bool SelectedRunning => SelectedGameLogInfo?.Running ?? false;
+
+    // ---------- 战斗日志（阶段 357） ----------
+
+    /// <summary>分类开关（反跳/毁电/…，与日志监控页「战斗日志」页签绑定）。</summary>
+    public ObservableCollection<CombatCategoryOption> CombatCategoryOptions { get; } = [];
+
+    /// <summary>TTL 可选值（秒）：默认 5，可改 8/10 避免慢周期装备闪烁。</summary>
+    public IReadOnlyList<int> CombatTtlOptions { get; } = [5, 8, 10];
+
+    public int CombatTtlSeconds
+    {
+        get => GameLogsSettingService.CombatLogTtlSeconds;
+        set
+        {
+            if (value == GameLogsSettingService.CombatLogTtlSeconds)
+            {
+                return;
+            }
+
+            GameLogsSettingService.SetCombatTtl(value);
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>
+    /// 「战斗日志」开关：只记录"要不要监控"，**不会**因为选中页签/打开开关就自动开始；
+    /// 真正开始要用户点「开始监控」，见 <see cref="StartCombat"/>。关闭时若正在跑会立即停止。
+    /// </summary>
+    public bool CombatEnabled
+    {
+        get => Setting?.CombatEnabled ?? false;
+        set
+        {
+            if (Setting is null || SelectedGameLogInfo is not { } info)
+            {
+                return;
+            }
+
+            if (Setting.CombatEnabled == value)
+            {
+                return;
+            }
+
+            Setting.CombatEnabled = value;
+            SaveSetting();
+
+            if (!value)
+            {
+                CombatLogFeedService.Current.Stop(info.ListenerName);
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CombatStatusText));
+            RefreshRunningState();
+        }
+    }
+
+    public string CombatStatusText
+    {
+        get
+        {
+            if (SelectedGameLogInfo is not { } info)
+            {
+                return string.Empty;
+            }
+
+            if (CombatLogFeedService.Current.IsRunning(info.ListenerName))
+            {
+                return FindString("CombatLog_StatusRunning");
+            }
+
+            return Setting?.CombatEnabled == true
+                ? FindString("CombatLog_StatusNotStarted")
+                : FindString("CombatLog_StatusStopped");
+        }
+    }
+
+    private void BuildCombatCategoryOptions()
+    {
+        CombatCategoryOptions.Clear();
+        foreach (var definition in Core.Services.CombatLog.CombatCategories.All)
+        {
+            CombatCategoryOptions.Add(new CombatCategoryOption(
+                definition.Key,
+                FindString(CategoryLabelKey(definition.Key)),
+                CombatLogStateCenter.Current.IsCategoryEnabled(definition.Key),
+                OnCombatCategoryToggled));
+        }
+    }
+
+    private static string CategoryLabelKey(string category) => category switch
+    {
+        Core.Services.CombatLog.CombatCategories.Scram => "CombatCategory_Scram",
+        Core.Services.CombatLog.CombatCategories.Neut => "CombatCategory_Neut",
+        Core.Services.CombatLog.CombatCategories.Nos => "CombatCategory_Nos",
+        Core.Services.CombatLog.CombatCategories.Ecm => "CombatCategory_Ecm",
+        Core.Services.CombatLog.CombatCategories.Rep => "CombatCategory_Rep",
+        Core.Services.CombatLog.CombatCategories.CapTransfer => "CombatCategory_CapTransfer",
+        Core.Services.CombatLog.CombatCategories.Damage => "CombatCategory_Damage",
+        _ => category,
+    };
+
+    private void OnCombatCategoryToggled(CombatCategoryOption option)
+    {
+        var enabled = CombatCategoryOptions.Where(p => p.Enabled).Select(p => p.Key).ToList();
+        GameLogsSettingService.SetCombatCategories(enabled.Count == 0 ? [] : enabled);
+    }
+
+    public bool StartCombat()
+    {
+        if (SelectedGameLogInfo is not { } info)
+        {
+            PageNotifyService.Error(FindString("General_CharacterUnselected"));
+            return false;
+        }
+
+        if (Setting?.CombatEnabled != true)
+        {
+            PageNotifyService.Warning(FindString("CombatLog_EnableFirst"));
+            return false;
+        }
+
+        if (!CombatLogFeedService.Current.Start(info))
+        {
+            PageNotifyService.Error(FindString("GameLogMonitorPage_AddNotifyServiceFalied"));
+            return false;
+        }
+
+        OnPropertyChanged(nameof(CombatStatusText));
+        RefreshRunningState();
+        return true;
+    }
+
+    public void StopCombat()
+    {
+        if (SelectedGameLogInfo is { } info)
+        {
+            CombatLogFeedService.Current.Stop(info.ListenerName);
+            OnPropertyChanged(nameof(CombatStatusText));
+            RefreshRunningState();
+        }
+    }
+
+    /// <summary>重新打开当前角色的战斗日志小窗。</summary>
+    public void OpenCombatWindow()
+    {
+        if (SelectedGameLogInfo is { } info && CombatLogFeedService.Current.IsRunning(info.ListenerName))
+        {
+            CombatLogFeedService.Current.ShowWindow(info.ListenerName);
+        }
+        else
+        {
+            PageNotifyService.Info(FindString("CombatLog_NotRunning"));
+        }
+    }
 
     /// <summary>日志内容更新（页面着色显示）。</summary>
     public event GameLogItem.ContentUpdate? OnContentUpdate;
@@ -171,6 +334,11 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         }
 
         Setting = setting;
+
+        BuildCombatCategoryOptions();
+        OnPropertyChanged(nameof(CombatEnabled));
+        OnPropertyChanged(nameof(CombatTtlSeconds));
+        OnPropertyChanged(nameof(CombatStatusText));
     }
 
     // ---------- 默认配置 ----------
@@ -245,6 +413,12 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         {
             PageNotifyService.Error(FindString("General_CharacterUnselected"));
             return false;
+        }
+
+        // 「战斗日志」固定页签：走战斗会话，不再要求关键词
+        if (config.LogType == 2)
+        {
+            return StartCombat();
         }
 
         if (config.Keys is not { Count: > 0 })
@@ -322,6 +496,12 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (config.LogType == 2)
+        {
+            StopCombat();
+            return;
+        }
+
         StopSession(config.GUID);
         RefreshRunningState();
         SaveSetting();
@@ -329,6 +509,8 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     public void StopAll()
     {
+        CombatLogFeedService.Current.StopAll();
+
         foreach (var guid in _sessions.Keys.ToList())
         {
             StopSession(guid);
@@ -339,6 +521,7 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             info.Running = false;
         }
 
+        OnPropertyChanged(nameof(CombatStatusText));
         RefreshRunningState();
     }
 
@@ -535,8 +718,15 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     private void RefreshRunningState()
     {
-        Running = _sessions.Count > 0 || GameLogInfos.Any(p => p.Running);
+        foreach (var info in GameLogInfos)
+        {
+            info.Running = _sessions.Values.Any(p => p.Info.ListenerID == info.ListenerID)
+                           || CombatLogFeedService.Current.IsRunning(info.ListenerName);
+        }
+
+        Running = _sessions.Count > 0 || CombatLogFeedService.Current.RunningListeners.Count > 0 || GameLogInfos.Any(p => p.Running);
         OnPropertyChanged(nameof(SelectedRunning));
+        OnPropertyChanged(nameof(CombatStatusText));
     }
 
     private static string FindString(string key) =>
@@ -560,4 +750,38 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+}
+
+/// <summary>「战斗日志」页签里的单个分类开关。</summary>
+public sealed class CombatCategoryOption
+{
+    private readonly Action<CombatCategoryOption> _changed;
+    private bool _enabled;
+
+    public CombatCategoryOption(string key, string label, bool enabled, Action<CombatCategoryOption> changed)
+    {
+        Key = key;
+        Label = label;
+        _enabled = enabled;
+        _changed = changed;
+    }
+
+    public string Key { get; }
+
+    public string Label { get; }
+
+    public bool Enabled
+    {
+        get => _enabled;
+        set
+        {
+            if (_enabled == value)
+            {
+                return;
+            }
+
+            _enabled = value;
+            _changed(this);
+        }
+    }
 }

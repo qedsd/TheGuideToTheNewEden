@@ -14,6 +14,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -27,9 +28,65 @@
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
+        <!--  战斗日志状态条（阶段 357）：由日志监控"战斗日志"开关驱动，与多开叠加层同源  -->
+        <Border
+            x:Name="CombatPanel"
+            Grid.Row="1"
+            Margin="8,0,8,4"
+            Padding="8,6"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="4"
+            Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource CombatLog_PanelTitle}" />
+                <ItemsControl x:Name="CombatList" Margin="0,2,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="SemiBold" Text="{Binding Text}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ColorKey}" Value="warning">
+                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ColorKey}" Value="success">
+                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ColorKey}" Value="info">
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ColorKey}" Value="purple">
+                                                <Setter Property="Foreground" Value="#C084FC" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ColorKey}" Value="normal">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <TextBlock.ToolTip>
+                                    <TextBlock MaxWidth="460" Text="{Binding Detail}" TextWrapping="Wrap" />
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock
+                    x:Name="CombatEmpty"
+                    Margin="0,2,0,0"
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                    Text="{DynamicResource CombatLog_NoCombat}" />
+            </StackPanel>
+        </Border>
+
         <RichTextBox
             x:Name="MsgBox"
-            Grid.Row="1"
+            Grid.Row="2"
             Background="Transparent"
             BorderThickness="0"
             Focusable="False"
@@ -44,7 +101,7 @@
         </RichTextBox>
 
         <ui:Button
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="8"
             HorizontalAlignment="Stretch"
             Appearance="Primary"

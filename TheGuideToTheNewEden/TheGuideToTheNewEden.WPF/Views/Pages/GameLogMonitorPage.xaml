@@ -54,7 +54,7 @@
             </Grid>
         </DataTemplate>
 
-        <!--  配置页签标题：名称 + 关闭  -->
+        <!--  配置页签标题：名称 + 关闭（「战斗日志」固定页签不可关闭）  -->
         <DataTemplate x:Key="ConfigHeaderTemplate">
             <StackPanel Orientation="Horizontal">
                 <TextBlock
@@ -69,7 +69,8 @@
                     Appearance="Transparent"
                     Click="OnCloseConfigClick"
                     Icon="{ui:SymbolIcon Dismiss24}"
-                    ToolTip="{DynamicResource GameLogMonitorPage_RemoveConfig}" />
+                    ToolTip="{DynamicResource GameLogMonitorPage_RemoveConfig}"
+                    Visibility="{Binding LogType, Converter={StaticResource EqualsToVis}, ConverterParameter=0}" />
             </StackPanel>
         </DataTemplate>
 
@@ -148,11 +149,13 @@
                 SelectedItem="{Binding SelectedItemConfig, Mode=TwoWay}">
                 <TabControl.ContentTemplate>
                     <DataTemplate>
-                        <ScrollViewer
-                            Margin="0,6,0,0"
-                            HorizontalScrollBarVisibility="Disabled"
-                            VerticalScrollBarVisibility="Auto">
-                            <StackPanel>
+                        <Grid>
+                            <ScrollViewer
+                                x:Name="NormalContent"
+                                Margin="0,6,0,0"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
                                 <!--  配置信息  -->
                                 <Expander
                                     Margin="0,2"
@@ -301,7 +304,88 @@
                                     </StackPanel>
                                 </Expander>
                             </StackPanel>
-                        </ScrollViewer>
+                            </ScrollViewer>
+
+                            <!--  战斗日志（固定页签）：遥修/电子战，数据同时供多开叠加层与小窗使用  -->
+                            <ScrollViewer
+                                x:Name="CombatContent"
+                                Margin="0,6,0,0"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto"
+                                Visibility="Collapsed">
+                                <StackPanel Margin="12,4,0,4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource CombatLog_Enable}" />
+                                            <ui:ToggleSwitch
+                                                Grid.Column="1"
+                                                IsChecked="{Binding DataContext.CombatEnabled, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}" />
+                                        </Grid>
+
+                                        <TextBlock
+                                            Margin="120,4,0,0"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding DataContext.CombatStatusText, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" />
+
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource CombatLog_Ttl}" />
+                                            <ComboBox
+                                                Grid.Column="1"
+                                                Width="120"
+                                                HorizontalAlignment="Left"
+                                                ItemsSource="{Binding DataContext.CombatTtlOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                SelectedItem="{Binding DataContext.CombatTtlSeconds, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}"
+                                                ToolTip="{DynamicResource CombatLog_TtlTip}" />
+                                        </Grid>
+
+                                        <TextBlock
+                                            Margin="0,10,0,4"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{DynamicResource CombatLog_Categories}" />
+                                        <ItemsControl ItemsSource="{Binding DataContext.CombatCategoryOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox
+                                                        Margin="0,2,16,2"
+                                                        Content="{Binding Label}"
+                                                        IsChecked="{Binding Enabled, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <ui:Button
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Left"
+                                            Click="OnOpenCombatWindowClick"
+                                            Content="{DynamicResource CombatLog_OpenWindow}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding LogType}" Value="2">
+                                <Setter TargetName="NormalContent" Property="Visibility" Value="Collapsed" />
+                                <Setter TargetName="CombatContent" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </TabControl.ContentTemplate>
             </TabControl>

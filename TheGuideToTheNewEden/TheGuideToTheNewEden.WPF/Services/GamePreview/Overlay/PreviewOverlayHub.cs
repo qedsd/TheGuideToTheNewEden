@@ -17,8 +17,10 @@ public sealed class PreviewOverlayHub
 
     private PreviewOverlayHub()
     {
-        // 内置 provider：频道预警（最近 / 最新预警）
+        // 内置 provider：频道预警（最近 / 最新预警）+ 战斗日志（阶段 357）+ 日志监控命中（可选）
         Register(new ChannelIntelOverlayProvider());
+        Register(new CombatLogOverlayProvider());
+        Register(new GameLogMonitorOverlayProvider());
     }
 
     /// <summary>任意 provider 报告"某角色的叠加内容变了"（参数为角色名，null = 全量）。</summary>

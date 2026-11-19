@@ -1755,6 +1755,83 @@
                                 </Border>
                             </StackPanel>
 
+                            <!--  阶段 357：战斗日志叠加（反跳/毁电/遥修/承伤 DPS，依赖日志监控"战斗日志"开关）  -->
+                            <StackPanel Style="{StaticResource WhenWindow}">
+                                <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupCombat}" />
+                                <Border Style="{StaticResource GroupCard}">
+                                    <StackPanel>
+                                        <Grid Style="{StaticResource Row}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Style="{StaticResource RowLabel}"
+                                                Text="{DynamicResource GamePreviewPage_ShowCombatInfo}"
+                                                ToolTip="{DynamicResource GamePreviewPage_ShowCombatInfoTip}" />
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Ellipse
+                                                    Width="6"
+                                                    Height="6"
+                                                    Margin="0,0,6,0"
+                                                    VerticalAlignment="Center"
+                                                    Fill="{Binding Foreground, ElementName=CombatStatusText}" />
+                                                <TextBlock x:Name="CombatStatusText">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="FontSize" Value="12.5" />
+                                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                                                            <Setter Property="Text" Value="{DynamicResource GamePreviewPage_CombatStatusGlobalOff}" />
+                                                            <Style.Triggers>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Setting.ShowCombatInfo}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Text" Value="{DynamicResource GamePreviewPage_CombatStatusOff}" />
+                                                                </MultiDataTrigger>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Setting.ShowCombatInfo}" Value="True" />
+                                                                        <Condition Binding="{Binding SelectedSetting.ShowCombatInfo}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Text" Value="{DynamicResource GamePreviewPage_CombatStatusNoFeed}" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                                </MultiDataTrigger>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Setting.ShowCombatInfo}" Value="True" />
+                                                                        <Condition Binding="{Binding SelectedSetting.ShowCombatInfo}" Value="True" />
+                                                                        <Condition Binding="{Binding SelectedCombatFeedRunning}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Text" Value="{DynamicResource GamePreviewPage_CombatStatusReady}" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                                </MultiDataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                            <ui:ToggleSwitch
+                                                Grid.Column="2"
+                                                AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowCombatInfo}"
+                                                IsChecked="{Binding SelectedSetting.ShowCombatInfo, Mode=TwoWay}"
+                                                ToolTip="{DynamicResource GamePreviewPage_ShowCombatInfoTip}" />
+                                        </Grid>
+                                        <Border Style="{StaticResource RowDivider}" />
+                                        <TextBlock
+                                            Margin="12,8,12,10"
+                                            Style="{StaticResource Hint}"
+                                            Text="{DynamicResource GamePreviewPage_ShowCombatInfoHint}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_ItemHotKey}" />
                             <Border Style="{StaticResource GroupCard}">
                                 <StackPanel Margin="12,10">
@@ -2083,6 +2160,44 @@
                                         AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowIntelAlertGlobal}"
                                         IsChecked="{Binding Setting.ShowIntelAlert, Mode=TwoWay}"
                                         ToolTip="{DynamicResource GamePreviewPage_ShowIntelAlertGlobalTip}" />
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupCombat}" />
+                            <Border Style="{StaticResource GroupCard}">
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Style="{StaticResource RowLabel}"
+                                        Text="{DynamicResource GamePreviewPage_ShowCombatInfoGlobal}"
+                                        ToolTip="{DynamicResource GamePreviewPage_ShowCombatInfoGlobalTip}" />
+                                    <ui:ToggleSwitch
+                                        Grid.Column="1"
+                                        AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowCombatInfoGlobal}"
+                                        IsChecked="{Binding Setting.ShowCombatInfo, Mode=TwoWay}"
+                                        ToolTip="{DynamicResource GamePreviewPage_ShowCombatInfoGlobalTip}" />
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupMonitorHits}" />
+                            <Border Style="{StaticResource GroupCard}">
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Style="{StaticResource RowLabel}"
+                                        Text="{DynamicResource GamePreviewPage_ShowMonitorHits}"
+                                        ToolTip="{DynamicResource GamePreviewPage_ShowMonitorHitsTip}" />
+                                    <ui:ToggleSwitch
+                                        Grid.Column="1"
+                                        AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowMonitorHits}"
+                                        IsChecked="{Binding Setting.ShowMonitorHits, Mode=TwoWay}"
+                                        ToolTip="{DynamicResource GamePreviewPage_ShowMonitorHitsTip}" />
                                 </Grid>
                             </Border>
 

@@ -48,9 +48,32 @@
                         <TextBlock
                             FontFamily="{Binding InfoFontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
                             FontSize="{Binding InfoFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
-                            Foreground="{Binding InfoForeground, RelativeSource={RelativeSource AncestorType=Window}}"
                             Text="{Binding Text}"
-                            TextTrimming="CharacterEllipsis" />
+                            TextTrimming="CharacterEllipsis">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <!-- 默认沿用用户自选色（频道预警行）；带 ColorKey 的战斗日志行按分类着色 -->
+                                    <Setter Property="Foreground" Value="{Binding InfoForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ColorKey}" Value="danger">
+                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ColorKey}" Value="warning">
+                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ColorKey}" Value="success">
+                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ColorKey}" Value="info">
+                                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ColorKey}" Value="purple">
+                                            <Setter Property="Foreground" Value="#C084FC" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

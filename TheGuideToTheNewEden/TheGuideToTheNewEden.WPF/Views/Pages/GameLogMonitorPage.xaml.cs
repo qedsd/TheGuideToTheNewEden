@@ -201,6 +201,9 @@ public partial class GameLogMonitorPage : Page, IAssistantFeatureRuntime
         _viewModel.SelectedGameLogInfo?.LogContents.Clear();
     }
 
+    private void OnOpenCombatWindowClick(object sender, RoutedEventArgs e)
+        => _viewModel.OpenCombatWindow();
+
     private static Brush GetResourceBrush(string key, Brush fallback)
         => Application.Current?.TryFindResource(key) as Brush ?? fallback;
 }

@@ -42,7 +42,8 @@ public sealed record PreviewOverlayItem(
     string Text,
     PreviewOverlaySeverity Severity,
     int Order,
-    string? Detail = null);
+    string? Detail = null,
+    string? ColorKey = null);
 
 /// <summary>
 /// 一次叠加内容查询的上下文：provider 据此决定"这个窗口要不要显示、显示什么"。

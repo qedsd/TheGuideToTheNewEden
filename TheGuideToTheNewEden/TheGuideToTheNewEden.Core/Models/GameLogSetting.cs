@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,13 @@ namespace TheGuideToTheNewEden.Core.Models
     public class GameLogSetting : ObservableObject
     {
         public int ListenerID { get; set; }
+
+        private bool _combatEnabled;
+        /// <summary>战斗日志（遥修/电子战）开关（阶段 357）；打开后日志监控会为该角色启动战斗日志会话并常开小窗。</summary>
+        public bool CombatEnabled
+        {
+            get => _combatEnabled; set => SetProperty(ref _combatEnabled, value);
+        }
 
         private ObservableCollection<GameLogItemConfig> _itemConfigs = new ObservableCollection<GameLogItemConfig>();
         public ObservableCollection<GameLogItemConfig> ItemConfigs

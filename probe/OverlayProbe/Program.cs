@@ -7,8 +7,11 @@ using System.Windows.Media.Imaging;
 using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.Core.Models.CombatLog;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
+using TheGuideToTheNewEden.Core.Services.CombatLog;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
+using TheGuideToTheNewEden.WPF.Services.CombatLog;
 using TheGuideToTheNewEden.WPF.Services.GamePreview.Overlay;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -34,6 +37,7 @@ internal static class Program
         try
         {
             RunCenterChecks();
+            RunCombatCenterChecks();
             var png = RunOverlayWindowChecks();
             File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "probe.log"), Log.ToString());
             Console.WriteLine(Log.ToString());
@@ -125,6 +129,65 @@ internal static class Program
         Check("注销后不监听", !center.IsListening("Probe Pilot"), "注销后应为 false");
         Check("注销触发 ClearedAll", changes.Any(p => p.StartsWith("ClearedAll")), string.Join(" / ", changes));
         Check("注销后无行", hub.GetItems(new PreviewOverlayContext("Probe Pilot", item, global)).Count == 0, "注销后应无行");
+    }
+
+    private static void RunCombatCenterChecks()
+    {
+        var center = CombatLogStateCenter.Current;
+        var listener = "Probe Combat";
+        center.TtlSeconds = 5;
+        center.SetEnabledCategories(CombatCategories.All.Select(p => p.Key));
+        center.Attach(listener);
+        Check("战斗中心已挂载", center.IsAttached(listener), "Attach 后应为 true");
+
+        center.Report(listener, new CombatLogEvent
+        {
+            Kind = CombatEventKind.Damage,
+            Direction = CombatEventDirection.Incoming,
+            CategoryKey = CombatCategories.Damage,
+            Amount = 100,
+            ModuleName = "Focused Medium Pulse Laser II",
+            Pilot = "Guardian",
+            Time = DateTime.UtcNow,
+        });
+        var damageRow = center.GetRows(listener).FirstOrDefault(p => p.Category == CombatCategories.Damage);
+        Check("承伤=100HP 20DPS（5 秒窗口）", damageRow?.Text == "承伤 100HP 20DPS", $"实际 {damageRow?.Text}");
+
+        center.Report(listener, new CombatLogEvent
+        {
+            Kind = CombatEventKind.CapacitorNeutralize,
+            Direction = CombatEventDirection.Incoming,
+            CategoryKey = CombatCategories.Neut,
+            Amount = 45,
+            ModuleName = "Medium Energy Neutralizer II",
+            Pilot = "Guardian",
+            Time = DateTime.UtcNow,
+        });
+        var neutRow = center.GetRows(listener).FirstOrDefault(p => p.Category == CombatCategories.Neut);
+        Check("毁电=45GJ 45GJ", neutRow?.Text == "毁电 45GJ 45GJ", $"实际 {neutRow?.Text}");
+
+        center.Report(listener, new CombatLogEvent
+        {
+            Kind = CombatEventKind.RemoteRepair,
+            Direction = CombatEventDirection.Incoming,
+            CategoryKey = CombatCategories.Rep,
+            Amount = 123,
+            Time = DateTime.UtcNow,
+        });
+        var repRow = center.GetRows(listener).FirstOrDefault(p => p.Category == CombatCategories.Rep);
+        Check("遥修=123HP 123HP", repRow?.Text == "遥修 123HP 123HP", $"实际 {repRow?.Text}");
+
+        center.SetCategoryEnabled(CombatCategories.Damage, false);
+        Check("分类裁剪：承伤隐藏", center.GetRows(listener).All(p => p.Category != CombatCategories.Damage), "关闭后不应有承伤行");
+        center.SetCategoryEnabled(CombatCategories.Damage, true);
+
+        center.TtlSeconds = 1;
+        Thread.Sleep(1200);
+        Check("1 秒无事件后清空", center.GetRows(listener).Count == 0, string.Join(" | ", center.GetRows(listener).Select(p => p.Text)));
+        center.TtlSeconds = 5;
+
+        center.Detach(listener);
+        Check("战斗中心已摘除", !center.IsAttached(listener), "Detach 后应为 false");
     }
 
     private static void Report(int systemId, string name, int jumps, IntelChatType type)

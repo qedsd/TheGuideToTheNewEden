@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -143,7 +143,19 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             foreach(var items in ItemsDic.ToList())
             {
-                if(items.Value.First().IsReplaced(file))
+                // 阶段 357：同一文件可能有多个监听器（同一角色的多个日志监控配置）。
+                // 原来只问第一个 item，其余 item 的 FilePath 不会更新，轮换后它们继续读旧文件。
+                // 现在逐个询问，让每个实现自己把路径切到新文件。
+                var replaced = false;
+                foreach (var item in items.Value)
+                {
+                    if (item.IsReplaced(file))
+                    {
+                        replaced = true;
+                    }
+                }
+
+                if(replaced)
                 {
                     if (FileWatcherDic.TryGetValue(Path.GetDirectoryName(file), out var watcher))
                     {

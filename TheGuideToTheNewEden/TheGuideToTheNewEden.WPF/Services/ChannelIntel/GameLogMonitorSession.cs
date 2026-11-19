@@ -177,6 +177,9 @@ public sealed class GameLogMonitorSession
     /// <summary>弹窗 + 声音 + 托盘通知。</summary>
     private void Notify(string message)
     {
+        // 阶段 357：命中同时写进"最近命中"中心（多开叠加层的可选开关用）
+        CombatLog.GameLogMonitorHitCenter.Current.Report(Info.ListenerName, Config.ConfigName, message);
+
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {

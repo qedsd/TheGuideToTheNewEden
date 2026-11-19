@@ -60,6 +60,8 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         // 阶段 355：频道预警会话启停 → 单项设置里的"是否可以显示预警"状态徽标要立刻变
         Services.ChannelIntel.ChannelIntelAlertCenter.Current.ListenersChanged += OnChannelIntelListenersChanged;
+        // 阶段 357：战斗日志会话启停 → "是否可以显示战斗信息"状态徽标
+        Services.CombatLog.CombatLogFeedService.Current.RunningChanged += OnCombatFeedRunningChanged;
 
         _processMonitor = new System.Windows.Threading.DispatcherTimer
         {
@@ -102,6 +104,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(HasSelection));
                 OnPropertyChanged(nameof(SelectedRunning));
                 OnPropertyChanged(nameof(SelectedIntelSessionRunning));
+                OnPropertyChanged(nameof(SelectedCombatFeedRunning));
 
                 // 选中进程 → 切回"选中项设置"（否则用户点了进程却看不到它的设置）；
                 // 取消选中 → 若正停在已隐藏的"选中项设置"上则回到全局设置，停在分组页签时保持不变
@@ -149,6 +152,29 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public bool HasSelection => _selectedProcess is not null;
+
+    /// <summary>
+    /// 阶段 357：当前选中角色是否在日志监控里启用了"战斗日志"（同名 Listener 的战斗会话）。
+    /// 单项设置"是否可以显示战斗信息"的状态徽标用它。
+    /// </summary>
+    public bool SelectedCombatFeedRunning
+    {
+        get
+        {
+            if (_selectedProcess is not { } process)
+            {
+                return false;
+            }
+
+            var name = process.GetCharacterName();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = process.Setting?.Name;
+            }
+
+            return Services.CombatLog.CombatLogFeedService.Current.IsRunning(name);
+        }
+    }
 
     /// <summary>
     /// 设置区当前应选中的页签索引：0 = 选中项设置、1 = 全局设置、2 = 分组设置、3 = 切换顺序。
@@ -1154,6 +1180,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         _manager.Rebind(process, next);
         OnPropertyChanged(nameof(SelectedSetting));
         OnPropertyChanged(nameof(SelectedIntelSessionRunning));
+                OnPropertyChanged(nameof(SelectedCombatFeedRunning));
         Save();
     }
 
@@ -1179,6 +1206,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         ShowPreviewWindowMode = source.ShowPreviewWindowMode,
         LockAspectRatio = source.LockAspectRatio,
         ShowIntelAlert = source.ShowIntelAlert,
+        ShowCombatInfo = source.ShowCombatInfo,
         AlertOverlayFontFamily = source.AlertOverlayFontFamily,
         AlertOverlayFontSize = source.AlertOverlayFontSize,
         AlertOverlayFollowScale = source.AlertOverlayFollowScale,
@@ -1213,6 +1241,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(SelectedSetting));
         OnPropertyChanged(nameof(SelectedRunning));
         OnPropertyChanged(nameof(SelectedIntelSessionRunning));
+                OnPropertyChanged(nameof(SelectedCombatFeedRunning));
         CheckIntelAlertOnStart(process, setting);
         Save();
         return true;
@@ -1304,7 +1333,15 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     }
 
     private void OnChannelIntelListenersChanged(object? sender, EventArgs e)
-        => OnPropertyChanged(nameof(SelectedIntelSessionRunning));
+    {
+        OnPropertyChanged(nameof(SelectedIntelSessionRunning));
+        OnPropertyChanged(nameof(SelectedCombatFeedRunning));
+    }
+
+    private void OnCombatFeedRunningChanged()
+    {
+        OnPropertyChanged(nameof(SelectedCombatFeedRunning));
+    }
 
     public void StartSelected()
     {
@@ -2018,6 +2055,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         _setting.PropertyChanged -= OnGlobalSettingPropertyChanged;
         Services.ChannelIntel.ChannelIntelAlertCenter.Current.ListenersChanged -= OnChannelIntelListenersChanged;
+        Services.CombatLog.CombatLogFeedService.Current.RunningChanged -= OnCombatFeedRunningChanged;
         GamePreviewSettingService.Current.Save();
         PropertyChanged = null;
     }

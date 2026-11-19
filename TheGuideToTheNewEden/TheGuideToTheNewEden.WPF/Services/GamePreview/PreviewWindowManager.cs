@@ -336,6 +336,7 @@ public sealed class PreviewWindowManager : IDisposable
             item.ShowPreviewWindowMode = source.ShowPreviewWindowMode;
             item.LockAspectRatio = source.LockAspectRatio;
             item.ShowIntelAlert = source.ShowIntelAlert;
+            item.ShowCombatInfo = source.ShowCombatInfo;
             item.AlertOverlayFontFamily = source.AlertOverlayFontFamily;
             item.AlertOverlayFontSize = source.AlertOverlayFontSize;
             item.AlertOverlayFollowScale = source.AlertOverlayFollowScale;

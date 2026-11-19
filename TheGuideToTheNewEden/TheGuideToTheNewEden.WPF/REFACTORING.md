@@ -1,4 +1,5 @@
 # TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 357：战斗日志接入多开/日志监控——从游戏日志解析**遥修/毁电/吸电/反跳/ECM/传电/承伤**，按装备组归类（只显示分类）；日志监控新增固定「战斗日志」页签（不落盘、不可删，新配置仍是普通关键词监控），开启后该角色**常开监控小窗**；多开角色名下方新增战斗信息行（绿色遥修/红色承伤等），全局+单项开关与状态徽标；数值显示"最近一次 + 窗口累计"，承伤第二段是实时 DPS；TTL 默认 5 秒、可选 8/10；顺手修掉关键词会话**运行中不跟随日志轮换**的老 bug；日志监控关键词命中也接进叠加层（可选开关，30 秒）；语言键 +34。
 - 阶段 356：预警文字开放独立设置——反馈"预警行字体太小"；根因是旧实现取「角色名字号 × 0.4」而角色名字号本身已随窗口缩放（小窗里再乘一次只剩 ~10px）。改为 `PreviewItem` 上独立的字体/字号/跟随缩放/倍率 + **文字色/背景色**（默认字号 30、跟随缩放、下限 12 DIP），并按用户要求**去掉行首圆点**；设置页「频道预警」卡片新增六行；**鼠标悬停用 ToolTip 浮层显示预警详情**（叠加窗鼠标穿透，改由预览窗按光标位置判定；浮层不占叠加窗高度，下面留给以后的功能）；语言键 +7。
 - 阶段 355：多开预览叠加层——新增 `ChannelIntelAlertCenter`（活跃预警唯一状态源，自动解除/降级从小窗上移）+ `PreviewOverlayHub` 可扩展信息总线；预览窗角色名下方显示频道预警「最近 / 最新」两行（跳数 + Nmin，预警消失即刷新）；全局+单项开关、状态徽标、开始预览缺会话提示；语言键 +15。
 - 阶段 351：死亡远征攻略补全——新增 `CombatSite` 表（379 条：DED 评级 50 / 无评级 74 / 远征 76 / 战斗异常 126 / 化学实验室 34 / 遗迹 6 / 三神裔 9 / 特殊 4），wiki 正文全量中文化；DED 页加「分类 / 势力 / 难度」筛选与「社区攻略 / Wiki 数据」双页签；`ded_info` 工具支持分类；删掉死文件 `ded.db`；语言键 +17。
@@ -13673,6 +13674,113 @@ WPF 的 `ToolTip` / `MouseEnter` 全用不上；改成可命中又会把预览�
 
 ---
 
+## 阶段 357：战斗日志（遥修 / 电子战）接入多开与日志监控（2026-11-19）
+
+### 背景
+
+多开预览的叠加层（阶段 355/356）已经能显示频道预警。用户希望把**游戏日志里的战斗事件**也放上来：
+"被什么装备打中/被毁电/被遥修"→ 从装备反推分类，只显示分类（同一种电子战下装备很多）。
+
+分析后确认的日志事实（决定了功能边界）：
+
+| 能显示 | 不能显示 |
+| --- | --- |
+| 反跳（warp scramble/disruption）、毁电、吸电、ECM、遥修（收到远程维修）、传电、承伤（含武器名） | **网子、感应抑阻、武器扰断、目标标记**——这些没有日志行，客户端只画图标 |
+
+另外日志正文与装备名会随客户端语言本地化，因此解析器必须"结构优先 + 多语言词表"，不能写死英文。
+
+### 与用户确认的口径
+
+- 遥修 = **收到**别人的远程维修；出向（我修别人/我打别人）不显示。
+- 数值分类显示「**最近一次单次值 + 窗口累计**」：`毁电 45GJ 90GJ`、`遥修 123HP 615HP`；
+  承伤按用户要求为 `320HP 320DPS`（第二段 = 窗口伤害 ÷ 窗口秒数）。
+- 行文本**不带"多久前"**；同类新日志**立即刷新**；窗口内没有同类事件 → 整行消失。
+- TTL 默认 **5 秒**，可选 **8/10 秒**（大型中和器等慢周期装备会出现 1 秒空档，加个旋钮）。
+- 分类可**逐项裁剪**（7 个分类独立开关）。
+- 战斗日志入口固定在日志监控页的 **「战斗日志」TabItem**；新增配置仍只创建普通关键词监控。
+- 开启战斗日志后，该角色的监控小窗**常开**（除非用户手动最小化）；多开的数据源依赖这个开关（与频道预警同模型）。
+- **「启用」只是开关**：不会因为切到该页签/打开开关就自动开始；必须再点「开始监控」才启动战斗日志（开关关闭时点开始会提示先打开）。
+
+### 数据流
+
+```
+Gamelogs/<角色>.txt（会轮换）
+  └─ GameLogItem（日志监控已在用；阶段 357 补上运行中轮换跟随）
+       └─ CombatLogFeedService（每角色一份）
+            ├─ CombatLogParser：行 → CombatLogEvent（类型/方向/数值/装备/对方）
+            ├─ CombatCategoryResolver：装备名 → TypeID → GroupID → 分类（带缓存 + 词表兜底）
+            └─ CombatLogStateCenter（每角色分类状态：5s 窗口 / 最近单次 / 1s 心跳）
+                 ├─ 日志监控小窗顶部状态条（GameLogMsgWindow）
+                 └─ 多开叠加层 CombatLogOverlayProvider（角色名下方）
+```
+
+### 变更明细
+
+**Core**
+
+- 新增 `Models/CombatLog/CombatLogEvent.cs`：`CombatEventKind`（Damage/RemoteRepair/Neutralize/Drain/Scramble/EcmJam/RemoteCapacitor）、
+  `CombatEventDirection`、事件字段（Pilot/Corp/Ship/ModuleName/Amount/Unit/TypeID/GroupID/CategoryKey）。
+- 新增 `Services/CombatLog/CombatLogParser.cs`：去 HTML 标签 → 按 ` - ` 拆「前缀 / 装备 / 命中质量」→
+  词表判类型与方向 → 取数值（GJ/HP/行首伤害，毁电带符号一律取绝对值）与对方实体（`[军团] (舰船)` 解析）。
+  解析失败的 `(combat)` 行进 `CombatLogDiagnostics`（去重、上限 300，可导出补词表）。
+- 新增 `Services/CombatLog/CombatLogVocabulary.cs`：中英双语词表（介词 / 事件短语 / 命中质量 / "你"）。
+  **拿到真实中文日志后只改这里**。
+- 新增 `Services/CombatLog/CombatCategoryResolver.cs`：先查本地化库（中文名）再查主库（英文名）→ TypeID →
+  GroupID → 分类；组名关键词表覆盖 远程维修/传电/中和/吸血/扰频扰断/ECM 组；组匹配不到再用装备名关键词兜底；
+  最后按事件类型兜底。模块名与类型查询结果全部缓存（战斗时每行都会走）。
+- 新增 `Services/CombatLog/CombatCategories.cs`（同文件）：7 个分类的 key/优先级/数值单位/默认开关。
+- 新增 `Models/GameLogSetting.cs` 的 `CombatEnabled`；`GameLogsSettingService` 增 `CombatLogTtlSeconds` /
+  `CombatLogCategories`（`"-"` 表示用户把分类全部取消；空串=默认全开）。
+
+**日志轮换 bug 修复（既有缺陷）**
+
+- 根因：`GameLogItem.IsReplaced` 恒 `false`，`ObservableFileService` 只用第一个 item 判断替换；
+  日志监控页仅在"开始"时刷新文件，运行中换文件就断流。
+- 修复：`GameLogItem.IsReplaced` 按文件名（`yyyyMMdd_HHmmss_角色ID.txt`）判断同角色且更新的文件，
+  命中后更新 `Info.FilePath/StartTime`、自身 `FilePath` 并把偏移归零；`ObservableFileService.Watcher_OnAdded`
+  改为**逐个 item 询问**，让同一文件的多个监听器都切到新文件。关键词会话与战斗日志因此统一跟随最新文件。
+
+**WPF**
+
+- 新增 `Services/CombatLog/CombatLogStateCenter.cs`：每角色一份状态；只收"进"向；5 秒窗口 + 1 秒心跳；
+  `GetRows` 产出 `CombatLogRow{Text, ColorKey, Order, Detail}`；分类开关/语言变化/挂载摘除都会通知。
+- 新增 `Services/CombatLog/CombatLogFeedService.cs`：每角色一个 `GameLogItem` + 一个战斗小窗；
+  `Start/Stop/ShowWindow`；启停触发 `RunningChanged`；开跑前刷新到最新文件。
+- `GameLogMsgWindow`：顶部加战斗状态条（分类行 + 悬停 ToolTip）；`combatOnly` 模式只显示状态条；
+  新数据到来时确保窗口可见（用户手动最小化时除外）；最小化期间临时显示任务栏按钮。
+- 日志监控页：`ItemConfigs` 第一位固定插入 `LogType=2` 的「战斗日志」占位页签（不落盘、不可关闭），
+  页签内容为"启用开关 / 运行状态 / TTL / 分类勾选 / 打开监控窗口"（无 Expander、无长说明）；
+  普通配置内容用 DataTrigger 隐藏。选中该页签点"开始/停止"才启停战斗会话；`CombatEnabled` 只落盘开关状态，
+  不触发启动；关闭开关时若正在跑会停止。
+- 多开：`PreviewItem.ShowCombatInfo`（默认 true）、`PreviewSetting.ShowCombatInfo`（全局覆盖）、
+  单项卡新增「战斗信息」开关 + 四态徽标（全局关/单项关/未启动战斗日志/可显示）；
+  全局设置新增「战斗信息（全局总开关）」。
+- 叠加层：`PreviewOverlayItem` 增加可选 `ColorKey`；`CombatLogOverlayProvider` 把分类行接到
+  `PreviewOverlayHub`（Order=100+优先级）；行模板按 ColorKey 用主题色（危险/警告/成功/信息/紫），
+  频道预警行仍用用户自选色。
+
+- 可选：`GameLogMonitorHitCenter` + `GameLogMonitorOverlayProvider`——日志监控关键词命中写入"最近 30 秒"状态，
+  多开全局开关「显示关键词命中」打开后显示 `监控 {配置名}` 行（默认关闭，避免和战斗行混在一起）。
+
+### 验证
+
+- `probe/CombatLogProbe`：英文/中文结构样本回归（类型/方向/数值/装备/分类）、真实 SDE 的
+  "装备 → GroupID → 分类"（英文 + 本地化中文名各 5 组）、`Gamelogs` 目录扫描（抽真实行/未识别行）。
+- `probe/OverlayProbe` 新增：承伤 `100HP 20DPS`（1 次 100 伤害、5 秒窗口）、毁电/遥修数值、
+  分类裁剪、1 秒 TTL 过期、挂载/摘除；全部 PASS。
+- `dotnet build` WPF：0 错误；语言键 zh/en 各 3757 条、集合一致。
+
+### 已知限制
+
+1. **中文客户端词表待校准**：本机 `Gamelogs` 只有模拟表头（无战斗行）。发布后跑
+   `CombatLogProbe.exe <Gamelogs目录>`，用 `scan-unmatched.txt` 补 `CombatLogVocabulary`；
+   `CombatLogDiagnostics` 也会在运行中收集漏网行。
+2. 网子/感应抑阻/武器扰断/目标标记没有日志，显示不了（不是解析问题）。
+3. DPS 窗口 = TTL（5/8/10 秒），TTL 改大后 DPS 更平滑但反应更慢。
+4. 同一角色若同时开多个关键词配置，会各有一个监控窗；每个窗都会显示同一份战斗状态条（数据同源，无重复解析）。
+
+---
+
 ## 8. 已知限制与待办
 
 - **物品详情（阶段 283）还没做的两块**：
@@ -14648,6 +14756,19 @@ Helpers/AuthHelper.cs                  协议注册/回调等待/回调解析
 Helpers/SerenityAuthHelper.cs          国服授权地址
 Helpers/WindowPlacementHelper.cs       Win32 窗口位置（物理像素）
 Converters/InverseBooleanToVisibilityConverter.cs
+```
+
+### 战斗日志（阶段 357）
+```
+Core/Models/CombatLog/CombatLogEvent.cs              事件类型/方向/字段
+Core/Services/CombatLog/CombatLogParser.cs           日志行 → 事件（结构优先 + 多语言词表）
+Core/Services/CombatLog/CombatLogVocabulary.cs       中英词表（真实日志校准处）
+Core/Services/CombatLog/CombatCategoryResolver.cs    装备 → TypeID → GroupID → 分类（缓存）
+Core/Services/CombatLog/CombatLogDiagnostics.cs      未识别行收集/导出
+Services/CombatLog/CombatLogStateCenter.cs           每角色分类状态 / 5s 窗口 / 1s DPS
+Services/CombatLog/CombatLogFeedService.cs           每角色日志会话 + 战斗小窗
+Services/GamePreview/Overlay/CombatLogOverlayProvider.cs  多开叠加层 provider
+probe/CombatLogProbe/Program.cs                       解析/分类/真实日志扫描探针
 ```
 
 ### 设置模块

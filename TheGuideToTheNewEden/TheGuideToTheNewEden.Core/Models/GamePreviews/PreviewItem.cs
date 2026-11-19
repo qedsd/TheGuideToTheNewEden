@@ -329,6 +329,20 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref showIntelAlert, value);
         }
 
+        private bool showCombatInfo = true;
+        /// <summary>
+        /// 在该预览窗的叠加层显示**战斗日志**信息行（反跳 / 毁电 / 遥修 / 承伤 DPS 等，阶段 357）。
+        /// <para>
+        /// 实际是否显示还取决于全局总开关 <see cref="PreviewSetting.ShowCombatInfo"/>
+        /// 与"该角色是否在日志监控里启用了战斗日志"：全局关闭会覆盖本开关；没有战斗日志会话时只显示状态徽标，不显示行。
+        /// </para>
+        /// </summary>
+        public bool ShowCombatInfo
+        {
+            get => showCombatInfo;
+            set => SetProperty(ref showCombatInfo, value);
+        }
+
         private string alertOverlayFontFamily = "Microsoft YaHei UI";
         /// <summary>
         /// 预警信息行（角色名下方）的字体。与角色名叠加各自独立设置。

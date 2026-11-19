@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +43,26 @@ namespace TheGuideToTheNewEden.Core.Models
 
         public bool IsReplaced(string newfile)
         {
-            return false;
+            // 阶段 357：游戏日志会随会话/跨天新建文件，原实现恒 false → 监控中的会话永远读旧文件
+            // （日志监控页原来只在"开始"时刷新一次，运行中轮换就断流，属于既有缺陷）。
+            // 这里按文件名（yyyyMMdd_HHmmss_角色ID.txt）判断：同角色、更新的时间 → 换成新文件并从 0 读。
+            if (string.IsNullOrWhiteSpace(newfile)
+                || string.Equals(newfile, FilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var fileInfo = GameLogHelper.GetGameLogFileInfo(newfile);
+            if (fileInfo is null || fileInfo.ListenerID != Info.ListenerID || fileInfo.StartTime <= Info.StartTime)
+            {
+                return false;
+            }
+
+            Info.FilePath = newfile;
+            Info.StartTime = fileInfo.StartTime;
+            FilePath = newfile;
+            _fileStreamOffset = 0;
+            return true;
         }
 
         public void Update()

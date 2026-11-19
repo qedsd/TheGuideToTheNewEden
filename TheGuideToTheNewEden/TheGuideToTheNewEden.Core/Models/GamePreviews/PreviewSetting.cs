@@ -274,6 +274,28 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => _showIntelAlert;
             set => SetProperty(ref _showIntelAlert, value);
         }
+
+        private bool _showCombatInfo = true;
+        /// <summary>
+        /// 多开预览窗叠加层的**全局总开关**（阶段 357）：战斗日志信息行（反跳/毁电/遥修/承伤 DPS）。
+        /// <para>关闭时覆盖所有单项设置；打开时由每项的 <see cref="PreviewItem.ShowCombatInfo"/> 决定。</para>
+        /// </summary>
+        public bool ShowCombatInfo
+        {
+            get => _showCombatInfo;
+            set => SetProperty(ref _showCombatInfo, value);
+        }
+
+        private bool _showMonitorHits;
+        /// <summary>
+        /// 多开预览窗叠加层的可选开关（阶段 357）：把**日志监控关键词命中**（如"诱导检测"）也显示成一行。
+        /// <para>默认关闭；命中后保留 30 秒。战斗日志（<see cref="ShowCombatInfo"/>）是另一套开关。</para>
+        /// </summary>
+        public bool ShowMonitorHits
+        {
+            get => _showMonitorHits;
+            set => SetProperty(ref _showMonitorHits, value);
+        }
     }
     public class PreviewHotKeyGroup : ObservableObject
     {
