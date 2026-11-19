@@ -12929,6 +12929,89 @@ build_sites.py   组装 + 渲染中文 Markdown + 写 static.db（--write-db）
    三处都改成精确判断。现在 **927 条任务**带 Markdown 表（NPC 表 924 + 采矿/波次等）
 - 语言键：中英各 **3701**、集合一致。`dotnet build` 0 错误。
 
+### 补充二十五（2026-11-19）：翻译质量抽查与批量修正
+
+新写 `qa_translation.py`（规则扫描 + 随机抽样）与三个修正脚本 `qa_fix.py` / `qa_fix2.py` / `qa_fix3.py`。
+
+#### 抽查发现的真问题（已修）
+
+| 问题 | 数量 | 修法 |
+|---|---|---|
+| `agent` 被译成「特工」 | **153** 处 | 统一替换为「代理人」（抽查确认语境全是代理人，无「间谍」义） |
+| `warp` 被译成「曲速」 | 3 处 | 改「跃迁」（`曲速干扰`→`跃迁干扰`、`微型曲速引擎`→`微型跃迁推进器`） |
+| wiki 标记漏进正文 | `'''` 50 处、`&nbsp;` 4 条、`\|thumb`/`300px` 2 条 | 全部剥掉 |
+| 数字被中文逗号断开 | 若干 | `1、800m3` → `1,800 m3` |
+| 重复字 / 重复句号 | `的的` 5 条、`。。` 11 条 | 直接替换 |
+| **编号步骤整段没翻** | 53 条（含 Sleeper Cache 全部走法） | 之前的统计把 `#` 开头当标题跳过 → 补翻 |
+| 表格里的英文句子 | 10 条（`Libertus is the only variant with tackle` 等） | 逐条给译文 |
+| 「沙沙海盗」错译 | 1 处 | 改「萨沙海盗」 |
+
+#### 判定为"可以保留"（不是缺陷）
+
+| 项 | 数量 | 原因 |
+|---|---|---|
+| 中文句里夹英文 | 809 处 | 绝大多数是**专有名词**：站点名、NPC 舰名、物品名（`Federation Navy Gamma II Support Frigate`） |
+| 「奖金」而非「赏金」 | 20 处 | 语境是任务报酬，语义通顺 |
+| 「沙沙声」「古斯塔斯人」 | 7 处 | 拟声词 / 正常说法 |
+
+#### 最终状态
+
+- 整段英文正文：任务 **0**、入侵 **0**、站点 **1**（内容是两条外链 URL）
+- 表格内含动词的英文单元格：**0**
+- `dotnet build` 0 错误
+
+### 补充二十四（2026-11-19）：英文正文翻译收尾
+
+目标：把库里"整段英文"的正文清掉（用户明确说装配/采矿等新内容块不做）。
+
+新增 `translate_sites.py`（**面向数据库**而不是重跑构建）：
+`--export` 抽英文片段 → agent 翻译 → `--apply` 按行/按单元格替换回 `WikiContent`。
+之所以不走原来的"重跑 build + 译文缓存"：站点正文有三条来源（wikitext / 渲染 HTML / DB 直写），
+重跑容易把后来的修改覆盖掉。
+
+过程中修的两个坑：
+1. **表格单元格里的 NPC 名/数字**不该送去翻译（翻完原样返回，白跑 agent）→ 默认只抽正文行，
+   需要时加 `--cells`。
+2. **列表行漏译**：`*` / `-` / `**` 开头的行之前被当成"非正文"跳过，导致 25 条嵌套列表
+   （波次说明、攻略提示）一直是英文 → 现在按"标记 + 文字"拆开翻译再拼回。
+
+跑量：任务 2 批（12.6k）+ 站点 54 批（477k）+ 补 2 批 + 第二轮 7 批 + 收尾 3 批，共约 **70 批**，
+译文缓存 3,597 → **4,332** 条。
+
+顺手清掉 43 条里残留的 `<!-- … -->` HTML 注释（`(2x State Showato, …)` 这种 wiki 编辑注释）。
+
+#### 结果（按"整段英文"统计：≥8 个英文单词且无中文的行）
+
+| 表 | 收尾前 | 收尾后 |
+|---|---|---|
+| 任务 | 25 条 / 61 行 | **0** |
+| 站点 | 280 条 | **1 条**（内容是两个外链 URL，无需翻译） |
+| 入侵 | 0 | 0 |
+
+`static.db` 11.7 MB，Mission 1996 / CombatSite 739 / IncursionSite 15。
+
+### 补充二十三（2026-11-19）：所谓"6 条缺口"其实是误报
+
+用户让补 6 个"缺页"（3 远征 + 3 COSMOS 站点）。抓下来才发现它们**早就在库里**，
+只是**页面标题 ≠ 库里显示名**：`CombatSite.TitleEN` 存的是信息框的 `|name=`，
+而 wiki 分类给的是页面标题，wiki 上还有拼写错误。对照表：
+
+| wiki 页面标题 | 库里的显示名 | 备注 |
+|---|---|---|
+| `Gurista Productions Shipment` | `Guristas Productions Shipment` | wiki 页面名少个 s |
+| `Serpentis Logistical Outpost Part 2` | `Serpentis Logistiscal Outpost Part 2` | wiki 拼错 Logistiscal |
+| `Shadow Serpentis Fleet Staging Point 2 and part 3` | `Shadow Serpentis Fleet Staging Point 2` | 页面名带 "and part 3" |
+| `Caldari Agent's Hideout` | `Tatumi Areki` | 页面名是"加达里代理人藏身处"，实际站点名是代理人名 |
+| `Roaving Brigands` | `Roaving Grounds` | 页面名与站点名不同 |
+| `Tsuna's Private Compounds` | `Tsuna's Pirvate Compounds` | wiki 拼错 Pirvate |
+
+修的是**统计脚本**（`gap_report.py`）：
+1. 标题归一化（弯引号、标点、`part`/`pl` 后缀）；
+2. 仍匹配不上时，拉一次 raw 读 `|name=`，用信息框名再比一次。
+
+修完远征 3 → **0**，COSMOS 站点 3 → **0**。剩下的小缺口只有 `Data sites` 1 页（`User:` 沙盒）
+和 `Anomic missions` 1 页（分类首页），都不是内容。
+
 ### 补充二十二（2026-11-18）：双击建了页签却没切过去
 
 用户反馈：双击只新建页签、不自动切换；单击中文名却会切。

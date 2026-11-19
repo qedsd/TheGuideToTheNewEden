@@ -8,6 +8,7 @@ IncursionSite）比对 → 输出「页数 / 总KB / 已覆盖 / 缺口页 / 缺
 import io
 import json
 import os
+import re
 import sqlite3
 import sys
 import urllib.parse
@@ -99,13 +100,40 @@ def sizes(titles):
     return out
 
 
+def norm(title):
+    """标题归一化：去标点/弯引号、压空格、去 pl/part 之类后缀差异。
+
+    wiki 上同一站点常有两种写法（`Devil‘s Dig Site` 弯引号、`Tsuna's Pirvate Compounds` 拼错），
+    不归一化会把已在库的页面误报成缺口。
+    """
+    s = (title or '').lower()
+    s = s.replace('\u2018', "'").replace('\u2019', "'").replace('\u201c', '"').replace('\u201d', '"')
+    s = re.sub(r'[^a-z0-9\u4e00-\u9fff]+', ' ', s)
+    s = re.sub(r'\b(part|pl)\b', ' ', s)
+    return re.sub(r'\s+', ' ', s).strip()
+
+
+def infobox_name(title):
+    """页面标题 ≠ 库里的显示名：库里存的是 `{{CMBSiteInfo|name=…}}` 的值，
+    而 wiki 分类给的是页面标题（有时还带拼写错误，如 `Tsuna's Pirvate Compounds`）。
+    缺页兜底：拉一次 raw，读 `|name=` 再比对。"""
+    try:
+        url = 'https://wiki.eveuniversity.org/index.php?' + urllib.parse.urlencode(
+            {'title': title.replace(' ', '_'), 'action': 'raw'})
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+            text = r.read().decode('utf-8', 'replace')
+    except Exception:  # noqa: BLE001
+        return None
+    m = re.search(r'\|\s*name\s*=\s*([^\|\}\n]+)', text)
+    return m.group(1).strip() if m else None
+
+
 def main():
     con = sqlite3.connect(DB)
     known = set()
     for table, col in (('Mission', 'TitleEN'), ('CombatSite', 'TitleEN'),
                        ('IncursionSite', 'TitleEN')):
-        known |= {r[0].strip().lower() for r in con.execute('select %s from %s' % (col, table))
-                  if r[0]}
+        known |= {norm(r[0]) for r in con.execute('select %s from %s' % (col, table)) if r[0]}
     print('库里已有标题 %d 个\n' % len(known))
 
     rows = []
@@ -115,7 +143,16 @@ def main():
             continue
         sz = sizes(titles)
         total_kb = sum(sz.values()) / 1024
-        miss = [t for t in titles if t.lower() not in known]
+        miss = [t for t in titles if norm(t) not in known]
+        if miss:
+            # 兜底：按页面里的 `|name=` 再比一次（标题与显示名不一致的情况）
+            still = []
+            for title in miss:
+                alt = infobox_name(title)
+                if alt and norm(alt) in known:
+                    continue
+                still.append(title)
+            miss = still
         miss_kb = sum(sz.get(t, 0) for t in miss) / 1024
         rows.append({'cat': cat, 'label': label, 'pages': len(titles), 'kb': total_kb,
                      'miss': len(miss), 'miss_kb': miss_kb,
