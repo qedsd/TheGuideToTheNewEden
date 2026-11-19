@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
@@ -3852,4 +3852,28 @@
     <sys:String x:Key="ItemDetail_GoMarket">查看市场详情</sys:String>
     <sys:String x:Key="ItemDetail_NoItem">未找到该物品</sys:String>
     <sys:String x:Key="ItemDetail_SkillLevel">等级 {0}</sys:String>
+
+    <!--  阶段 355：多开预览叠加层（频道预警：最近 / 最新）  -->
+    <sys:String x:Key="GamePreview_OverlayNearest">最近 {0} 跳 · {1}min</sys:String>
+    <sys:String x:Key="GamePreview_OverlayLatest">最新 {0} 跳 · {1}min</sys:String>
+    <sys:String x:Key="GamePreview_OverlayBoth">最近/最新 {0} 跳 · {1}min</sys:String>
+    <sys:String x:Key="GamePreviewPage_GroupIntel">频道预警</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlert">在预览窗显示预警</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertTip">预警行显示在角色名下方：「最近」是当前活跃预警里跳数最小的一条，「最新」是最近收到的一条；数据来自「频道预警」页中同名角色正在运行的预警。全局开关关闭时不显示。</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">预警行显示在角色名下方，数据来自同名角色的频道预警</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayFont">预警文字字体</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayFontSize">预警文字字号</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayFollowScale">预警文字跟随窗口缩放</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayScaleFactor">预警文字缩放倍率</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayForeground">预警文字颜色</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayBackground">预警背景色</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayColorTip">支持透明度（#AARRGGBB：如 #99000000 为半透明黑、#FFFFFFFF 为不透明白）；背景全透明时只显示文字</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusGlobalOff">全局已关闭</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusOff">已关闭</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusNoSession">未启动同名频道预警</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusReady">可显示预警</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobal">显示预警叠加（全局）</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobalTip">关闭后忽略所有单项设置；开启时由每个预览项的开关决定</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelAlertNoSession">「{0}」未启动频道预警，预览窗不会显示预警跳数（可在「频道预警」页启动）</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelAlertNoSessionMany">{0} 个角色未启动频道预警：{1}</sys:String>
 </ResourceDictionary>

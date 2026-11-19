@@ -127,6 +127,25 @@
             </Style.Triggers>
         </Style>
 
+        <!--  阶段 356：预警文字的外观设置只在单项开关打开时出现（关掉时整块隐藏，卡片保持简洁）  -->
+        <Style x:Key="WhenIntelAlert" TargetType="StackPanel">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedSetting.ShowIntelAlert}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="WhenAlertFollowScale" TargetType="StackPanel">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedSetting.AlertOverlayFollowScale}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="WhenTitleBar" TargetType="StackPanel">
             <Setter Property="Visibility" Value="Collapsed" />
             <Style.Triggers>
@@ -1561,6 +1580,181 @@
                                 </Border>
                             </StackPanel>
 
+                            <!--  阶段 355：频道预警叠加（名字下方的信息行）  -->
+                            <StackPanel Style="{StaticResource WhenWindow}">
+                                <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupIntel}" />
+                                <Border Style="{StaticResource GroupCard}">
+                                    <StackPanel>
+                                        <!--
+                                            一行里放完：标签 / 状态（开关边上，表示"是否可以显示预警"） / 开关。
+                                            状态四态：全局关 / 单项关 / 无同名会话 / 可显示，颜色与文字都由触发器给出。
+                                        -->
+                                        <Grid Style="{StaticResource Row}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Style="{StaticResource RowLabel}"
+                                                Text="{DynamicResource GamePreviewPage_ShowIntelAlert}"
+                                                ToolTip="{DynamicResource GamePreviewPage_ShowIntelAlertTip}" />
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Margin="0,0,12,0"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Ellipse
+                                                    Width="6"
+                                                    Height="6"
+                                                    Margin="0,0,6,0"
+                                                    VerticalAlignment="Center"
+                                                    Fill="{Binding Foreground, ElementName=IntelStatusText}" />
+                                                <TextBlock x:Name="IntelStatusText">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="FontSize" Value="12.5" />
+                                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                                                            <Setter Property="Text" Value="{DynamicResource GamePreviewPage_IntelStatusGlobalOff}" />
+                                                            <Style.Triggers>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Setting.ShowIntelAlert}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Text" Value="{DynamicResource GamePreviewPage_IntelStatusOff}" />
+                                                                </MultiDataTrigger>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Setting.ShowIntelAlert}" Value="True" />
+                                                                        <Condition Binding="{Binding SelectedSetting.ShowIntelAlert}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Text" Value="{DynamicResource GamePreviewPage_IntelStatusNoSession}" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                                </MultiDataTrigger>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding Setting.ShowIntelAlert}" Value="True" />
+                                                                        <Condition Binding="{Binding SelectedSetting.ShowIntelAlert}" Value="True" />
+                                                                        <Condition Binding="{Binding SelectedIntelSessionRunning}" Value="True" />
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Text" Value="{DynamicResource GamePreviewPage_IntelStatusReady}" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                                </MultiDataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                            <ui:ToggleSwitch
+                                                Grid.Column="2"
+                                                AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowIntelAlert}"
+                                                IsChecked="{Binding SelectedSetting.ShowIntelAlert, Mode=TwoWay}"
+                                                ToolTip="{DynamicResource GamePreviewPage_ShowIntelAlertTip}" />
+                                        </Grid>
+                                        <Border Style="{StaticResource RowDivider}" />
+
+                                        <!--  阶段 356：预警文字的字体/字号（颜色跟随角色名叠加）  -->
+                                        <StackPanel Style="{StaticResource WhenIntelAlert}">
+                                            <Grid Style="{StaticResource Row}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AlertOverlayFont}" />
+                                                <ComboBox
+                                                    Grid.Column="1"
+                                                    Width="200"
+                                                    ItemsSource="{Binding FontFamilies}"
+                                                    SelectedItem="{Binding SelectedSetting.AlertOverlayFontFamily, Mode=TwoWay}" />
+                                            </Grid>
+                                            <Border Style="{StaticResource RowDivider}" />
+
+                                            <Grid Style="{StaticResource Row}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AlertOverlayFontSize}" />
+                                                <ui:TextBox
+                                                    Grid.Column="1"
+                                                    Width="120"
+                                                    Height="32"
+                                                    Padding="6,3"
+                                                    HorizontalAlignment="Right"
+                                                    ClearButtonEnabled="False"
+                                                    Text="{Binding SelectedSetting.AlertOverlayFontSize, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            </Grid>
+                                            <Border Style="{StaticResource RowDivider}" />
+
+                                            <Grid Style="{StaticResource Row}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AlertOverlayFollowScale}" />
+                                                <ui:ToggleSwitch
+                                                    Grid.Column="1"
+                                                    AutomationProperties.Name="{DynamicResource GamePreviewPage_AlertOverlayFollowScale}"
+                                                    IsChecked="{Binding SelectedSetting.AlertOverlayFollowScale, Mode=TwoWay}" />
+                                            </Grid>
+
+                                            <StackPanel Style="{StaticResource WhenAlertFollowScale}">
+                                                <Border Style="{StaticResource RowDivider}" />
+                                                <Grid Style="{StaticResource Row}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Style="{StaticResource RowLabel}" Text="{DynamicResource GamePreviewPage_AlertOverlayScaleFactor}" />
+                                                    <ui:TextBox
+                                                        Grid.Column="1"
+                                                        Width="120"
+                                                        Height="32"
+                                                        Padding="6,3"
+                                                        HorizontalAlignment="Right"
+                                                        ClearButtonEnabled="False"
+                                                        IsEnabled="{Binding SelectedSetting.AlertOverlayFollowScale}"
+                                                        Text="{Binding SelectedSetting.AlertOverlayScaleFactor, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                                </Grid>
+                                            </StackPanel>
+
+                                            <Border Style="{StaticResource RowDivider}" />
+                                            <Grid Style="{StaticResource Row}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Style="{StaticResource RowLabel}"
+                                                    Text="{DynamicResource GamePreviewPage_AlertOverlayForeground}"
+                                                    ToolTip="{DynamicResource GamePreviewPage_AlertOverlayColorTip}" />
+                                                <pickers:ColorPickerButton Grid.Column="1" Color="{Binding SelectedSetting.AlertOverlayForegroundColor, Mode=TwoWay}" />
+                                            </Grid>
+                                            <Border Style="{StaticResource RowDivider}" />
+
+                                            <Grid Style="{StaticResource Row}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Style="{StaticResource RowLabel}"
+                                                    Text="{DynamicResource GamePreviewPage_AlertOverlayBackground}"
+                                                    ToolTip="{DynamicResource GamePreviewPage_AlertOverlayColorTip}" />
+                                                <pickers:ColorPickerButton Grid.Column="1" Color="{Binding SelectedSetting.AlertOverlayBackgroundColor, Mode=TwoWay}" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <Border Style="{StaticResource RowDivider}" />
+                                        <TextBlock
+                                            Margin="12,8,12,10"
+                                            Style="{StaticResource Hint}"
+                                            Text="{DynamicResource GamePreviewPage_ShowIntelAlertHint}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_ItemHotKey}" />
                             <Border Style="{StaticResource GroupCard}">
                                 <StackPanel Margin="12,10">
@@ -1870,6 +2064,25 @@
                                         AutomationProperties.Name="{DynamicResource GamePreviewPage_UseNativeThumbnailOverlay}"
                                         IsChecked="{Binding Setting.UseNativeThumbnailOverlay, Mode=TwoWay}"
                                         ToolTip="{DynamicResource GamePreviewPage_UseNativeThumbnailOverlayTip}" />
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupIntel}" />
+                            <Border Style="{StaticResource GroupCard}">
+                                <Grid Style="{StaticResource Row}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Style="{StaticResource RowLabel}"
+                                        Text="{DynamicResource GamePreviewPage_ShowIntelAlertGlobal}"
+                                        ToolTip="{DynamicResource GamePreviewPage_ShowIntelAlertGlobalTip}" />
+                                    <ui:ToggleSwitch
+                                        Grid.Column="1"
+                                        AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowIntelAlertGlobal}"
+                                        IsChecked="{Binding Setting.ShowIntelAlert, Mode=TwoWay}"
+                                        ToolTip="{DynamicResource GamePreviewPage_ShowIntelAlertGlobalTip}" />
                                 </Grid>
                             </Border>
 

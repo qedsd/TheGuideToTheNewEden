@@ -313,5 +313,84 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => showPreviewWindowMode;
             set => SetProperty(ref showPreviewWindowMode, value);
         }
+
+        private bool showIntelAlert = true;
+        /// <summary>
+        /// 在该预览窗的叠加层显示**频道预警**信息行（最近 / 最新预警的跳数与多少分钟前）。
+        /// <para>
+        /// 实际是否显示还取决于全局总开关 <see cref="PreviewSetting.ShowIntelAlert"/>
+        /// 与"该角色是否有运行中的频道预警会话"：全局关闭会覆盖本开关；没有同名会话时
+        /// 开始预览会由多开页右下角弹一条提示。
+        /// </para>
+        /// </summary>
+        public bool ShowIntelAlert
+        {
+            get => showIntelAlert;
+            set => SetProperty(ref showIntelAlert, value);
+        }
+
+        private string alertOverlayFontFamily = "Microsoft YaHei UI";
+        /// <summary>
+        /// 预警信息行（角色名下方）的字体。与角色名叠加各自独立设置。
+        /// </summary>
+        public string AlertOverlayFontFamily
+        {
+            get => alertOverlayFontFamily;
+            set => SetProperty(ref alertOverlayFontFamily, value);
+        }
+
+        private double alertOverlayFontSize = 30;
+        /// <summary>
+        /// 预警信息行的字号（DIP，基准值）。默认比角色名小一些但保证可读；
+        /// 开启 <see cref="AlertOverlayFollowScale"/> 时按窗口宽度等比缩放（有下限，不会缩到看不清）。
+        /// </summary>
+        public double AlertOverlayFontSize
+        {
+            get => alertOverlayFontSize;
+            set => SetProperty(ref alertOverlayFontSize, value);
+        }
+
+        private bool alertOverlayFollowScale = true;
+        /// <summary>
+        /// 预警信息行是否跟随预览窗口缩放（拖动/滚轮放大时字号同比放大）。
+        /// </summary>
+        public bool AlertOverlayFollowScale
+        {
+            get => alertOverlayFollowScale;
+            set => SetProperty(ref alertOverlayFollowScale, value);
+        }
+
+        private double alertOverlayScaleFactor = 1;
+        /// <summary>
+        /// 预警信息行跟随缩放的倍率（仅在 <see cref="AlertOverlayFollowScale"/> 为 true 时生效）。
+        /// </summary>
+        public double AlertOverlayScaleFactor
+        {
+            get => alertOverlayScaleFactor;
+            set => SetProperty(ref alertOverlayScaleFactor, value);
+        }
+
+        private Color alertOverlayForegroundColor = Color.White;
+        /// <summary>
+        /// 预警信息行的文字颜色（含透明度，阶段 356 起与角色名叠加各自独立）。
+        /// </summary>
+        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
+        public Color AlertOverlayForegroundColor
+        {
+            get => alertOverlayForegroundColor;
+            set => SetProperty(ref alertOverlayForegroundColor, value);
+        }
+
+        private Color alertOverlayBackgroundColor = Color.FromArgb(153, 0, 0, 0);
+        /// <summary>
+        /// 预警信息行的背景色（含透明度；阶段 356 起与角色名叠加各自独立）。
+        /// <para>只有一种底色（不随"客户端到前台"切换），避免预警行在切窗口时突然变色、影响判读。</para>
+        /// </summary>
+        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
+        public Color AlertOverlayBackgroundColor
+        {
+            get => alertOverlayBackgroundColor;
+            set => SetProperty(ref alertOverlayBackgroundColor, value);
+        }
     }
 }

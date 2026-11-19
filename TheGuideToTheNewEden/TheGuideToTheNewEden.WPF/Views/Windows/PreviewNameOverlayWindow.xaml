@@ -13,13 +13,47 @@
     WindowStartupLocation="Manual"
     WindowStyle="None">
 
-    <Border
-        x:Name="Badge"
+    <!--
+        角色名 + 通用信息行（阶段 355）。
+        信息行由 PreviewOverlayHub 的 provider 产出（第一个是"频道预警"），这里只按严重级别着色，
+        不认识任何具体功能——以后加内容不用改本文件，只加一个 provider。
+        本窗口点击穿透（WS_EX_TRANSPARENT），因此信息行只做展示，不做 tooltip / 点击。
+    -->
+    <StackPanel
+        x:Name="RootPanel"
         Margin="6"
-        Padding="6,2"
-        CornerRadius="4">
-        <TextBlock
-            x:Name="NameText"
-            TextTrimming="CharacterEllipsis" />
-    </Border>
+        Orientation="Vertical">
+
+        <Border
+            x:Name="Badge"
+            Padding="6,2"
+            HorizontalAlignment="Left"
+            CornerRadius="4">
+            <TextBlock x:Name="NameText" TextTrimming="CharacterEllipsis" />
+        </Border>
+
+        <ItemsControl
+            x:Name="InfoList"
+            Margin="0,3,0,0"
+            HorizontalAlignment="Left"
+            Focusable="False"
+            Visibility="Collapsed">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        Margin="0,0,0,2"
+                        Padding="6,1"
+                        Background="{Binding InfoBackground, RelativeSource={RelativeSource AncestorType=Window}}"
+                        CornerRadius="4">
+                        <TextBlock
+                            FontFamily="{Binding InfoFontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
+                            FontSize="{Binding InfoFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                            Foreground="{Binding InfoForeground, RelativeSource={RelativeSource AncestorType=Window}}"
+                            Text="{Binding Text}"
+                            TextTrimming="CharacterEllipsis" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
 </Window>

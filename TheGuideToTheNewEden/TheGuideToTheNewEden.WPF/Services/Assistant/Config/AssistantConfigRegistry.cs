@@ -48,7 +48,7 @@ public static class AssistantConfigRegistry
         new("settings", "settings.json", "应用共用键值设置（只能改已存在的非密钥键）", true, IsSettingsFile: true),
         new("scalper", "ScalperSetting.json", "倒货设置（源/目的市场、价格口径、目标物品、线程数）", true),
         new("appraisal", "AppraisalSetting.json", "估价设置（市场、买卖口径与百分比、历史天数）", true),
-        new("gamepreview", "GamePreviewSetting.json", "多开预览设置（窗口样式、颜色、快捷键、名称叠加）", true),
+        new("gamepreview", "GamePreviewSetting.json", "多开预览设置（窗口样式、颜色、快捷键、名称叠加、预警叠加开关）", true),
         new("map", "MapSettings.json", "星图设置（图层、配色、显示参数、情报开关）", true),
         new("jumpbridge", "JumpBridgeSetting.json", "跳桥配置（星系对、显示开关）", true),
         new("intel", "IntelSettings.json", "频道预警设置（每角色的频道、关键词、声音、范围）", true),

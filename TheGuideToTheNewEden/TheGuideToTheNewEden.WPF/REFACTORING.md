@@ -1,4 +1,6 @@
-﻿# TheGuideToTheNewEden.WPF 重构与更新记录
+# TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 356：预警文字开放独立设置——反馈"预警行字体太小"；根因是旧实现取「角色名字号 × 0.4」而角色名字号本身已随窗口缩放（小窗里再乘一次只剩 ~10px）。改为 `PreviewItem` 上独立的字体/字号/跟随缩放/倍率 + **文字色/背景色**（默认字号 30、跟随缩放、下限 12 DIP），并按用户要求**去掉行首圆点**；设置页「频道预警」卡片新增六行；**鼠标悬停用 ToolTip 浮层显示预警详情**（叠加窗鼠标穿透，改由预览窗按光标位置判定；浮层不占叠加窗高度，下面留给以后的功能）；语言键 +7。
+- 阶段 355：多开预览叠加层——新增 `ChannelIntelAlertCenter`（活跃预警唯一状态源，自动解除/降级从小窗上移）+ `PreviewOverlayHub` 可扩展信息总线；预览窗角色名下方显示频道预警「最近 / 最新」两行（跳数 + Nmin，预警消失即刷新）；全局+单项开关、状态徽标、开始预览缺会话提示；语言键 +15。
 - 阶段 351：死亡远征攻略补全——新增 `CombatSite` 表（379 条：DED 评级 50 / 无评级 74 / 远征 76 / 战斗异常 126 / 化学实验室 34 / 遗迹 6 / 三神裔 9 / 特殊 4），wiki 正文全量中文化；DED 页加「分类 / 势力 / 难度」筛选与「社区攻略 / Wiki 数据」双页签；`ded_info` 工具支持分类；删掉死文件 `ded.db`；语言键 +17。
 > 本文档记录 WinUI 3 → WPF 迁移过程中的**全部重构决策与每一次更新**，包含背景、方案、变更明细、问题根因、验证结果与已知限制。
 > 起点：对 WinUI 3 项目做"重构为 WPF"的可行性评估；终点：WPF 版已具备导航框架、完整设置模块、角色功能（授权 + 数据层 + 7 个子页）。
@@ -13477,7 +13479,202 @@ NPC 舰名（2,706 行）按用户要求**不做**。探针 6/6 PASS。
    注意 `Human Cattle` 这种"同页 5 个版本"的，中文名会带区分后缀（势力 / 类型），否则列表里 5 行同名。
 
 
+## 阶段 355：多开预览叠加层——频道预警「最近 / 最新」两行 + 可扩展信息总线 + 全局/单项开关（2026-11-19）
+
+> 用户需求：把频道预警的内容同步显示到多开预览小窗上，只显示**最近预警**和**最新预警**分别在几跳，
+> 预警消失要同步刷新；角标放在角色名下方、与角色名同一个叠加窗，并且**后续还要往里加别的功能**，
+> 所以要做成可扩展的；总开关放全局，单项也要有（全局关覆盖单项）；单项开关边上要有"能否显示"的状态；
+> 没有同名频道预警时，开始预览要右下角提示。
+
+### 为什么不能"直接读预警小窗"
+
+预警的"活跃状态"原先只存在于 `IntelWindow` 的私有字段里：`_startTimes`（星系 → 起始时间）、
+`IntelMapView` 的 `_intelings/_downgradeds`、以及窗内的 10 秒自动解除/降级定时器。带来两个硬限制：
+
+1. 多开预览没有公开数据源可读；
+2. **没勾"弹窗"（没有预警小窗）时，"活跃预警"这个概念根本不存在**，自动解除也不会跑。
+
+因此本阶段把状态**上移**为一个与窗口无关的中心，并把叠加层做成通用总线。
+
+### 一、新增 `ChannelIntelAlertCenter`（唯一状态源）
+
+`Services/ChannelIntel/ChannelIntelAlertCenter.cs`，单例、全部写入走 UI 线程（非 UI 线程自动调度）。
+
+- 每角色（Listener，忽略大小写）一张表：`systemId → { Content, Channel, Downgraded, LastSeenAt }`；
+- `Report(content, channel)`：Intel → upsert（同星系原地刷新跳数/时间、清降级），Clear → 删除；
+- `ClearSystems / ClearAll / Downgrade`：供星图右键、清除全部、定时器使用；
+- 查询：`GetNearest`（跳数最小，并列取更新）、`GetLatest`（`LastSeenAt` 最大）、`ActiveCount`、`IsListening`、`ActiveListeners`；
+- 事件：`Changed`（增/删/降级/清空）、`ListenersChanged`（会话启停）、`TimeTick`（10 秒心跳，供"Nmin"刷新）；
+- **原先在窗内的自动解除 / 自动降级定时器搬到这里**（10 秒，tick 时现读各角色设置），所以**不开预警小窗也会按时解除**。
+
+接线：`ChannelIntelSession.Observer_OnWarningUpdate` 对 Intel 与 Clear **都**先写中心再走通知；
+`ZkbIntel_OnWarningUpdate` 写中心（`Channel="KB"`）；`IntelWarningService.Add/Remove` 负责
+`Register/Unregister`（覆盖"启动失败只调 Remove"的路径）；本地位置变化时先 `ClearAll` 再重画新范围。
+
+### 二、`IntelWindow` 改成订阅者（行为不变的机械重构）
+
+- 删掉 `_startTimes`、`_autoIntelTimer`、`InitTimer/ClearElapsed/DowngradeElapsed`；
+- 构造时订阅 `center.Changed`，按 `Activated / Cleared / Downgraded / ClearedAll` 分别画
+  `MapView.Intel / Clear / Downgrade / Clear` 并刷新状态点、`TryHideWindow`；
+- 星图右键解除、右下角「清除所有预警」改为调用中心（由事件回流统一重画）；
+- `TryHideWindow`（必要时显示的 30 秒延时隐藏）判据改为 `center.ActiveCount(listener)`；
+- `IntelWarningService.Notify` 只保留声音 + 托盘气泡（原来顺带的"显示小窗 + 画星图"交给事件）。
+
+> 行为对照：点亮/解除/自动解除/降级/必要时隐藏/右键解除/清空/本地位置变化全部一致；
+> 唯一可见差异是"本地位置变化导致清空"现在也会启动 30 秒延时隐藏（更合理）。
+
+### 三、叠加层做成可扩展的信息总线
+
+新增 `Services/GamePreview/Overlay/`：
+
+| 文件 | 职责 |
+|---|---|
+| `PreviewOverlayItem.cs` | 一行信息：`Key / Text / Severity / Order`；`PreviewOverlaySeverity`（Normal / Caution / Critical） |
+| `IPreviewOverlayProvider` | provider 契约：`Key`、`Changed(角色名)`、`GetItems(PreviewOverlayContext)` |
+| `PreviewOverlayHub` | 单例总线：注册 provider、合并并按 `Order` 排序、转发变化（内置注册预警 provider） |
+| `ChannelIntelOverlayProvider.cs`（`Services/ChannelIntel/`） | 第一个 provider：产出「最近 / 最新」两行 |
+
+**扩展方式（写进接口注释）**：以后加日志监控命中、频道监控、星图情报等，只写一个 provider + 注册，
+叠加窗与预览窗的渲染/调度代码一行不用改；需要开关时再在 `PreviewItem` 上加一个 bool 与设置页一行。
+
+### 四、叠加窗（`PreviewNameOverlayWindow`）改造
+
+- 内容由单个名字角标改为纵向 `StackPanel`：**名字角标 + 通用 `ItemsControl` 信息行**；
+- 信息行样式：半透明底（跟随"背景色"设置）+ 文字（跟随"文字颜色"设置）；行首圆点在阶段 356 按用户要求去掉，
+  字号在阶段 355 取"角色名字号的 40%"（**阶段 356 已改为独立设置**）；
+- 窗口仍是**点击穿透**（`WS_EX_TRANSPARENT`），所以信息行只做展示，不做 tooltip/点击（将来要交互需另开非穿透窗）；
+- 新增 DP：`InfoBackground / InfoForeground / InfoFontSize`（供 `DataTemplate` 绑定）；
+  `SetInfoItems()` 空集合即整块隐藏；`SetNameVisible()` 供"带标题栏样式只显示信息行"。
+
+### 五、预览窗接入（`GamePreviewWindow`）
+
+- 角色解析：`Process.GetCharacterName()`，解析不出回退 `Setting.Name`；`Rebind`（重登/换绑）时重解析；
+- 订阅：`PreviewOverlayHub.Changed`（按角色过滤）、`_globalSetting.PropertyChanged`（全局开关）、
+  `Setting.PropertyChanged`（单项开关）；
+- `ScheduleOverlayRefresh()`：脏标记 + `DispatcherPriority.Background` 合并，**情报连发时不会每条消息都重排**；
+- 刷新流程：`Hub.GetItems(context)` → `SetInfoItems` → `UpdateLayout()` → 重新按物理像素 `SetBounds` →
+  需要时 `ShowNameOverlayIfNeeded` + `BringNameOverlayToFront`；
+- **两种显示样式的落点**：
+  - 样式 1（无标题栏）：名字 + 信息行，角色名正下方；
+  - 样式 0（带标题栏）：名字在标题栏，叠加窗**只画信息行**，Y 轴加 `GetChromeHeight()`（物理像素）
+    落到标题栏正下方——视觉上仍在"角色名下方"。
+
+### 六、开关与提示
+
+- `PreviewSetting.ShowIntelAlert`（全局总开关，默认 **开**）：关闭**覆盖所有单项设置**；
+- `PreviewItem.ShowIntelAlert`（单项，默认 **开**，老配置缺字段即开）；
+- 生效 = 全局 && 单项 && 该角色有运行中的预警会话；
+- **单项设置**「频道预警」卡片：一行里 `标签 / 状态徽标 / 开关`，状态四态由 `MultiDataTrigger` 给出：
+  全局已关闭（三级色）、已关闭（三级色）、未启动同名频道预警（橙）、可显示预警（绿）；
+  会话启停时 `GamePreviewViewModel` 监听 `ListenersChanged` 刷新 `SelectedIntelSessionRunning`；
+- **全局设置**新增「频道预警」分组：`显示预警叠加（全局）`；
+- **开始预览提示**：`StartProcess`（单个 / 开始全部 / 自动开始新进程都经过它）里，若生效开关为真且
+  无同名会话，把角色名攒进队列、`Background` 优先级合并后**只弹一条** `PageNotifyService.Warning`
+  （单个：`「角色名」未启动频道预警…`；多个：`N 个角色未启动频道预警：A、B、C`）；
+- 「应用到其余配置」与"同进程切换角色沿用设置"都会带上 `ShowIntelAlert`。
+
+### 七、口径（最近 / 最新）
+
+- **最近**：活跃预警里**跳数最小**的那条（并列取更新的）→ 威胁最近；
+- **最新**：`LastSeenAt` 最大（最近一次收到/刷新）的那条；
+- 两行文字：`最近 {跳} 跳 · {分钟}min` / `最新 {跳} 跳 · {分钟}min`；
+  分钟 = 距该条最后一次收到的本地时间，向下取整，`TimeTick`（10 秒）驱动刷新；
+- 两条指向**同一星系**时合并成一行 `最近/最新 {跳} 跳 · {分钟}min`（避免两行完全相同）；
+- ZKB 击杀默认计入；自动降级的预警不删除，行转普通色（与星图"降级仍保留"一致）。
+
+### 八、验证
+
+- `dotnet build`：**0 错误**（临时输出仅警告，均为既有告警）。
+- 新增一次性探针 `probe/OverlayProbe`（无游戏、无网络）：
+  - 状态中心：登记/大写小写匹配/最近=最小跳/最新=最后收到/同星系原地刷新/解除后最近=最新/注销触发 ClearedAll，**全部 PASS**；
+  - provider：两行产出、单项关=无行、全局关覆盖单项、未登记角色=无行、注销后无行，**全部 PASS**；
+  - 叠加窗：无信息行 267×74 DIP、一行 267×105、两行 267×132（按内容增高），**PASS**；
+    截图 `overlay.png` 目检：名字下方两行「最近 3 跳 · 2min」（红点）/「最新 5 跳 · 0min」（橙点），排版正确。
+- **待实机核验**（需真实客户端，探针覆盖不到）：样式 0 的信息行是否正好落在标题栏下方、切换显示样式、
+  与高亮留白/多屏 DPI 的组合、连续情报下的重排顺滑度、以及第 2 步 `IntelWindow` 的全行为回归。
+
+### 九、已知限制 / 后续
+
+- 信息行为**展示型**（叠加窗点击穿透），不能点击/悬浮提示；要交互需另开非穿透叠加窗。
+- 「最近/最新」同一条时合并成一行（用户已确认此口径）。
+- 单项开关目前是 `PreviewItem` 上的独立 bool；若后续功能很多，可改成"按 provider Key 的开关表"，
+  但总线本身已经通用，不受影响。
+
+---
+
+## 阶段 356：预警文字开放独立设置（字体/字号/配色）（2026-11-19）
+
+> 用户实机截图：预览窗上「最近 2 跳 · 0min / 最新 4 跳 · 0min」两行比角色名小太多，看不清；
+> 要求"像角色名称一样开放设置"。后续同轮追加："预警文字、背景色都要可以独立配色"、"去掉前面的圆点"。
+
+### 根因：字号被"缩放了两次"
+
+阶段 355 里信息行字号 = `GetNameOverlayFontSize(...) × 0.4`（夹 10–28）。而角色名字号本身在
+`NameOverlayFollowScale` 打开时就已经乘过 `窗口宽 / 960`：531px 宽的小窗里角色名 46→25，
+信息行再乘 0.4 只剩 **10px**，正是截图里"糊成一条"的样子。
+
+### 改法：信息行有自己的一整套外观设置
+
+`Core/Models/GamePreviews/PreviewItem.cs` 新增（与角色名叠加各管各的）：
+
+| 属性 | 默认 | 说明 |
+|---|---|---|
+| `AlertOverlayFontFamily` | `Microsoft YaHei UI` | 预警文字字体 |
+| `AlertOverlayFontSize` | **30** | 基准字号（DIP） |
+| `AlertOverlayFollowScale` | true | 是否跟随窗口缩放（与角色名同一基准宽 960） |
+| `AlertOverlayScaleFactor` | 1 | 跟随时的倍率 |
+| `AlertOverlayForegroundColor` | 白色 | 预警文字颜色（`#AARRGGBB`） |
+| `AlertOverlayBackgroundColor` | `#99000000` | 预警背景色（`#AARRGGBB`，全透明＝只要文字） |
+
+- `GamePreviewWindow.GetAlertOverlayFontSize`：按上面四项独立计算（不再从角色名字号派生），
+  并且**有下限 `AlertOverlayMinFontSize = 12` DIP**——小窗口里跟随缩放也不会缩到看不清；
+- `PreviewNameOverlayWindow.ApplyAppearance` 扩展为 8 个参数（名字 4 项 + 信息行 4 项），
+  新增 `InfoFontFamily` 依赖属性；**颜色不再借用角色名的**：
+  名字那套仍按"正常 / 前台高亮"两色切换，预警行固定用自己的一色（切窗口时不会突然变色）；
+- 圆点：阶段 355 每行行首有一个按严重级别着色的圆点，**本轮按用户要求去掉**（行内只留文字）；
+  `PreviewOverlaySeverity` / `Severity` 保留在 provider 契约里但**当前不参与渲染**（注释已写明）；
+- 设置页「频道预警」卡片在开关打开后展开六行：**字体 / 字号 / 跟随窗口缩放 / 缩放倍率 / 文字颜色 / 背景色**
+  （整块用 `WhenIntelAlert` 样式随开关显隐，倍率行随"跟随"显隐；颜色用 `pickers:ColorPickerButton`，与角色名叠加同一套控件）；
+- 「应用到其余配置」与"同进程切换角色沿用设置"都会带上这六项。
+
+### 补充：鼠标悬停显示预警详情（ToolTip 浮层）
+
+> 用户要求："鼠标放上去可以显示相关预警内容"，随后追加"可以改成 ToolTip 吗，现在显示的区域后面准备接入其他内容"。
+
+**障碍**：叠加窗为了不挡拖动/点击，带 `WS_EX_TRANSPARENT`（点击穿透）——它**收不到任何鼠标消息**，
+WPF 的 `ToolTip` / `MouseEnter` 全用不上；改成可命中又会把预览窗的拖动/激活吃掉。
+
+**做法**：悬停检测放在**预览窗**上（叠加窗在它上面但是穿透的，鼠标消息自然落到预览窗）：
+
+1. `PreviewOverlayItem` 增加可选的 `Detail`（多行文本）；`ChannelIntelOverlayProvider` 为每行生成
+   `系统 · 跳数 · 分钟` + `频道 · 发言人: 原文`（ZKB 的频道显示为「击杀」）；
+2. `GamePreviewWindow` 在 `UpdateNameOverlayBounds` 里记下叠加窗的物理矩形，窗口级 `MouseMove` 用
+   `GetCursorPos` 判断光标是否落在该矩形内（物理像素，免 DPI 换算）；
+3. 进入后**延时 350ms** 才弹出（避免划过去就弹）；`MouseLeave` / 开始拖动 / 窗口隐藏 / 无预警时立即收起；
+4. 详情用**标准 WPF `ToolTip` 浮层**（WPF-UI 主题外观），手动 `IsOpen` 打开、`Placement=Relative`
+   挂在信息行上出现在行下方；字体/字号跟预警行对齐（字号夹 12–18），颜色交给主题。
+   不用"叠加窗内加面板"是因为**信息行下方的区域要留给以后的功能**，且浮层不改变叠加窗尺寸、
+   悬停/收起不会引发布局跳动；
+5. 预警内容刷新时若浮层正打开，就地更新文案；没有行则收起；窗口销毁时强制关闭
+   （ToolTip 是独立 popup，不会随窗口自动消失）。
+6. **长内容折行时刻意左对齐**（`TextBlock.TextAlignment = Left`）：`TextAlignment` 是可继承属性，
+   默认样式下长聊天内容折行会走两端对齐，把行内空格（`频道 · 发言人: 内容` 的那几个分隔符）拉得很开，
+   表现为"频道名 / 发言人 / 内容 间隔很远"（用户反馈）；显式左对齐后间距恢复正常。
+   ToolTip 的字体/字号仍跟预警行对齐（字号夹 12–18），颜色交给主题。
+
+### 验证
+
+- `dotnet build`：0 错误；语言键中英各 **3723**、集合一致（+7）。
+- 探针 `probe/OverlayProbe` 增加六项检查并全部 **PASS**：
+  `InfoFontSize == 30`、预警文字色 `#FFFFD640`、预警背景色 `#C8781414`、
+  角色名配色不受影响（`#FFFFFFFF`）、每行都带悬停详情、悬停 ToolTip 打开且**不改变叠加窗高度**
+  （161.6 → 161.6 DIP）；截图目检：名字白字黑底、两行预警黄字深红底、行首无圆点，
+  悬停时标准 ToolTip 浮层出现在行下方（另存 `overlay-tooltip.png` 屏幕抓图）。
+
+---
+
 ## 8. 已知限制与待办
+
 - **物品详情（阶段 283）还没做的两块**：
   1. **效果（effects）**：`dogmaEffects` 只有定义表，`typeDogma.jsonl` 里每个物品的 `dogmaEffects` 没有导入（缺 `typeEffects` 表）；
   2. **精通等级（mastery）**：`masteries` 表已导入但存的是 certificate ID，`certificates` 表没导入，解析不出"精通 0–4 需要哪些技能"。
@@ -14623,7 +14820,13 @@ ViewModels/GamePreview/SwitchOrderEntry.cs       切换顺序行 VM（标题/角
 ViewModels/GamePreview/GroupOrderEntry.cs        分组单独排序行 VM（角色名/运行态/序号/上下移）
 Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（两种样式共用一个窗口类；尺寸锁定游戏客户区比例，阶段 44；
                                                  客户区"可透明"、画面为洞、边框/标题栏实色，阶段 54）
-Views/Windows/PreviewNameOverlayWindow.xaml(.cs) 无标题栏样式下左上角的角色名叠加窗（独立窗口，DWM 缩略图盖不住它）
+Views/Windows/PreviewNameOverlayWindow.xaml(.cs) 无标题栏样式下左上角的角色名叠加窗（独立窗口，DWM 缩略图盖不住它；
+                                                 阶段 355 起角色名下方还有通用信息行，见 Overlay/）
+Services/GamePreview/Overlay/PreviewOverlayItem.cs   叠加信息行模型 + 严重级别（可扩展信息总线的数据契约）
+Services/GamePreview/Overlay/PreviewOverlayHub.cs    叠加信息总线：provider 注册 / 合并排序 / 变化转发
+Services/GamePreview/Overlay/IPreviewOverlayProvider.cs  provider 契约 + 查询上下文（阶段 355）
+Services/ChannelIntel/ChannelIntelOverlayProvider.cs  第一个 provider：频道预警「最近 / 最新」两行
+Services/ChannelIntel/ChannelIntelAlertCenter.cs      活跃预警唯一状态源（增删/降级/自动解除/心跳，阶段 355）
 Views/Pages/GamePreviewPage.xaml(.cs)            多开页（阶段 135：客户端列表 + 设置主列 * + 画面侧栏 260/40 可折叠；
                                                  阶段 136：三页签 选中项设置 / 全局设置 / 分组设置；
                                                  阶段 137：第四页签 切换顺序 = 可排序列表；

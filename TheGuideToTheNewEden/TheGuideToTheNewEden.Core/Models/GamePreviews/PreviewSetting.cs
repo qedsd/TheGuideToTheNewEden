@@ -260,6 +260,20 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 SetProperty(ref _useNativeThumbnailOverlay, value);
             }
         }
+
+        private bool _showIntelAlert = true;
+        /// <summary>
+        /// 多开预览窗叠加层的**全局总开关**（阶段 355）：频道预警信息行。
+        /// <para>
+        /// 关闭时**覆盖所有单项设置**（即使某项打开了也不显示）；打开时由每项的
+        /// <see cref="PreviewItem.ShowIntelAlert"/> 决定。
+        /// </para>
+        /// </summary>
+        public bool ShowIntelAlert
+        {
+            get => _showIntelAlert;
+            set => SetProperty(ref _showIntelAlert, value);
+        }
     }
     public class PreviewHotKeyGroup : ObservableObject
     {

@@ -45,11 +45,9 @@ public partial class IntelWindow : Window
     private NativeMethods.POINT _dragStartCursor;
     private bool _dragCandidate;
     private bool _dragging;
-    private readonly Dictionary<int, DateTime> _startTimes = [];
     private readonly ObservableCollection<IntelChatRow> _chatRows = [];
     private readonly ICollectionView _chatView;
 
-    private DispatcherTimer? _autoIntelTimer;
     private DispatcherTimer? _delayHideTimer;
     private bool _disposed;
     private bool _closing;
@@ -105,7 +103,10 @@ public partial class IntelWindow : Window
         UpdateStatus();
         UpdateChannelHeader();
         UpdateFilterVisual();
-        InitTimer();
+
+        // 阶段 355：活跃预警状态改由 ChannelIntelAlertCenter 统一维护（自动解除/降级也搬了过去），
+        // 本窗只负责按事件画星图 / 刷新状态 / 必要时隐藏。
+        ChannelIntelAlertCenter.Current.Changed += OnAlertChanged;
 
         LocationChanged += OnWindowBoundsChanged;
         SizeChanged += OnWindowBoundsChanged;
@@ -305,31 +306,71 @@ public partial class IntelWindow : Window
 
     // ---------- 预警内容 ----------
 
-    /// <summary>推送一条预警（更新星图与标题状态）。</summary>
-    public void Intel(EarlyWarningContent content, string? channel = null)
+    /// <summary>
+    /// 状态中心的变化回调（阶段 355）：把"活跃预警"翻译成星图与窗口动作。
+    /// 原来这些动作由 <c>IntelWarningService.Notify</c> 与本窗的定时器分别驱动，
+    /// 现在统一由 <see cref="ChannelIntelAlertCenter"/> 的状态事件驱动，本窗不再持有预警状态。
+    /// </summary>
+    private void OnAlertChanged(object? sender, ChannelIntelAlertChange change)
     {
-        MapView.Intel(content);
-        UpdateStatus();
-
-        if (!_disposed)
+        if (_disposed
+            || change is null
+            || !string.Equals(change.Listener, _setting.Listener, StringComparison.OrdinalIgnoreCase))
         {
-            if (content.IntelType == Core.Enums.IntelChatType.Intel)
-            {
-                _startTimes[content.SolarSystemId] = DateTime.Now;
-                ShowWindow();
-            }
-            else if (content.IntelType == Core.Enums.IntelChatType.Clear)
-            {
-                _startTimes.Remove(content.SolarSystemId);
-                UpdateStatus();
-                TryHideWindow();
-            }
+            return;
         }
 
-        // ZKB 击杀不走频道日志，单独补一行到频道列表（频道行本身不重复）。
-        if (string.Equals(channel, "KB", StringComparison.OrdinalIgnoreCase))
+        if (!Dispatcher.CheckAccess())
         {
-            AppendChatRow(IntelChatRow.FromWarning(content, FindString("IntelWindow_KB"), FindString("EarlyWarningPage_Jumps")));
+            Dispatcher.BeginInvoke(() => OnAlertChanged(sender, change));
+            return;
+        }
+
+        switch (change.Kind)
+        {
+            case ChannelIntelAlertChangeKind.Activated:
+                foreach (var alert in change.Alerts)
+                {
+                    MapView.Intel(alert.Content);
+                    if (string.Equals(alert.Channel, "KB", StringComparison.OrdinalIgnoreCase))
+                    {
+                        AppendChatRow(IntelChatRow.FromWarning(
+                            alert.Content,
+                            FindString("IntelWindow_KB"),
+                            FindString("EarlyWarningPage_Jumps")));
+                    }
+                }
+
+                UpdateStatus();
+                ShowWindow();
+                break;
+
+            case ChannelIntelAlertChangeKind.Cleared:
+                var cleared = change.Alerts.Select(p => p.SolarSystemId).ToList();
+                if (cleared.Count > 0)
+                {
+                    MapView.Clear(cleared);
+                    UpdateStatus();
+                    TryHideWindow();
+                }
+
+                break;
+
+            case ChannelIntelAlertChangeKind.Downgraded:
+                var downgraded = change.Alerts.Select(p => p.SolarSystemId).ToList();
+                if (downgraded.Count > 0)
+                {
+                    MapView.Downgrade(downgraded);
+                    UpdateStatus();
+                }
+
+                break;
+
+            case ChannelIntelAlertChangeKind.ClearedAll:
+                MapView.Clear();
+                UpdateStatus();
+                TryHideWindow();
+                break;
         }
     }
 
@@ -439,16 +480,14 @@ public partial class IntelWindow : Window
 
     private void OnSystemClearRequested(object? sender, int systemId)
     {
-        MapView.Clear([systemId]);
-        _startTimes.Remove(systemId);
-        UpdateStatus();
-        TryHideWindow();
+        // 阶段 355：不再自己改画布，交给状态中心 → 事件回流统一刷新（右键解除也要通知预览窗）
+        ChannelIntelAlertCenter.Current.ClearSystems(_setting.Listener, [systemId]);
     }
 
     public void UpdateHome(IntelSolarSystemMap intelMap)
     {
         _intelMap = intelMap;
-        _startTimes.Clear();
+        // 活跃预警由状态中心在"本地位置变化"时清空，这里只重画新范围的星图
         MapView.UpdateHome(intelMap);
         UpdateStatus();
     }
@@ -611,66 +650,13 @@ public partial class IntelWindow : Window
 
     // ---------- 自动解除 / 自动降级 ----------
 
-    private void InitTimer()
-    {
-        _autoIntelTimer?.Stop();
-        if (_setting.AutoClear || _setting.AutoDowngrade)
-        {
-            _autoIntelTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
-            _autoIntelTimer.Tick += (_, _) =>
-            {
-                if (_setting.AutoClear)
-                {
-                    ClearElapsed();
-                }
-
-                if (_setting.AutoDowngrade)
-                {
-                    DowngradeElapsed();
-                }
-            };
-            _autoIntelTimer.Start();
-        }
-    }
-
-    private void ClearElapsed()
-    {
-        var now = DateTime.Now;
-        var remove = _startTimes
-            .Where(p => (now - p.Value).TotalMinutes >= _setting.AutoClearMinute)
-            .Select(p => p.Key)
-            .ToList();
-        foreach (var id in remove)
-        {
-            _startTimes.Remove(id);
-        }
-
-        if (remove.Count > 0)
-        {
-            MapView.Clear(remove);
-            UpdateStatus();
-            TryHideWindow();
-        }
-    }
-
-    private void DowngradeElapsed()
-    {
-        var now = DateTime.Now;
-        var changed = _startTimes
-            .Where(p => (now - p.Value).TotalMinutes >= _setting.AutoDowngradeMinute)
-            .Select(p => p.Key)
-            .ToList();
-        if (changed.Count > 0)
-        {
-            MapView.Downgrade(changed);
-            UpdateStatus();
-        }
-    }
+    // 阶段 355：自动解除 / 自动降级的定时检查已搬到 ChannelIntelAlertCenter
+    // （不再依赖本窗是否存在），本窗只按 Cleared / Downgraded 事件重画。
 
     /// <summary>“必要时显示”模式：全部预警解除后延迟 30 秒隐藏窗口。</summary>
     private void TryHideWindow()
     {
-        if (_setting.OverlapType != 1 || _startTimes.Count != 0)
+        if (_setting.OverlapType != 1 || ChannelIntelAlertCenter.Current.ActiveCount(_setting.Listener) != 0)
         {
             return;
         }
@@ -680,7 +666,7 @@ public partial class IntelWindow : Window
         _delayHideTimer.Tick += (_, _) =>
         {
             _delayHideTimer?.Stop();
-            if (_startTimes.Count == 0 && IsVisible)
+            if (ChannelIntelAlertCenter.Current.ActiveCount(_setting.Listener) == 0 && IsVisible)
             {
                 Hide();
                 IntelWarningService.Current.StopSound(_setting.Listener);
@@ -715,11 +701,7 @@ public partial class IntelWindow : Window
 
 
     private void OnClearClick(object sender, RoutedEventArgs e)
-    {
-        MapView.Clear();
-        _startTimes.Clear();
-        UpdateStatus();
-    }
+        => ChannelIntelAlertCenter.Current.ClearAll(_setting.Listener);
 
     private void OnStopSoundClick(object sender, RoutedEventArgs e)
         => IntelWarningService.Current.StopSound(_setting.Listener);
@@ -784,7 +766,7 @@ public partial class IntelWindow : Window
         ThemeService.ThemeChanged -= ApplyBackdrop;
         MapView.SystemClearRequested -= OnSystemClearRequested;
         MapView.DetachGlobalSetting();
-        _autoIntelTimer?.Stop();
+        ChannelIntelAlertCenter.Current.Changed -= OnAlertChanged;
         _delayHideTimer?.Stop();
         LocationChanged -= OnWindowBoundsChanged;
         SizeChanged -= OnWindowBoundsChanged;

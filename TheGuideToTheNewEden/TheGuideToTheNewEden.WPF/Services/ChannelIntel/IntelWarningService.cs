@@ -61,6 +61,9 @@ public sealed class IntelWarningService
             _sounds.Add(setting.Listener, new SoundNotifyItem(setting.Listener));
         }
 
+        // 阶段 355：会话启动 = 该角色开始"有活跃预警"。即使没开预警小窗也要登记，
+        // 否则多开预览的叠加行、设置页状态徽标都拿不到状态（自动解除也需要它）。
+        ChannelIntelAlertCenter.Current.Register(setting);
         return true;
     }
 
@@ -80,6 +83,7 @@ public sealed class IntelWarningService
             }
 
             _sounds.Remove(listener);
+            ChannelIntelAlertCenter.Current.Unregister(listener);
         }
 
         return true;
@@ -207,12 +211,8 @@ public sealed class IntelWarningService
         {
             lock (_notifyLocker)
             {
-                if (_windows.TryGetValue(listener, out var window))
-                {
-                    window.ShowWindow();
-                    window.Intel(content, channel);
-                }
-
+                // 阶段 355：星图绘制 / 弹窗显示已由 IntelWindow 订阅 ChannelIntelAlertCenter 完成，
+                // 这里只负责声音与系统气泡两条通道。
                 // 不对自己的发言播放声音
                 if (_sounds.TryGetValue(listener, out var sound) && sound.Listener != content.SpeakerName)
                 {

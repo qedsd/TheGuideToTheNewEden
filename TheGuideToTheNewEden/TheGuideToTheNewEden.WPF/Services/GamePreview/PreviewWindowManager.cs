@@ -335,6 +335,13 @@ public sealed class PreviewWindowManager : IDisposable
             item.ShowPreviewWindow = source.ShowPreviewWindow;
             item.ShowPreviewWindowMode = source.ShowPreviewWindowMode;
             item.LockAspectRatio = source.LockAspectRatio;
+            item.ShowIntelAlert = source.ShowIntelAlert;
+            item.AlertOverlayFontFamily = source.AlertOverlayFontFamily;
+            item.AlertOverlayFontSize = source.AlertOverlayFontSize;
+            item.AlertOverlayFollowScale = source.AlertOverlayFollowScale;
+            item.AlertOverlayScaleFactor = source.AlertOverlayScaleFactor;
+            item.AlertOverlayForegroundColor = source.AlertOverlayForegroundColor;
+            item.AlertOverlayBackgroundColor = source.AlertOverlayBackgroundColor;
 
             if (item.ProcessInfo is not { } process)
             {

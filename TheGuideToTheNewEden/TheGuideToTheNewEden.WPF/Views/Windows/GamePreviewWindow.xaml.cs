@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WPF.Helpers.Interop;
 using TheGuideToTheNewEden.WPF.Services.GamePreview;
+using TheGuideToTheNewEden.WPF.Services.GamePreview.Overlay;
 
 namespace TheGuideToTheNewEden.WPF.Views.Windows;
 
@@ -145,6 +146,32 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// <summary>左上角角色名叠加窗（必须在预览窗口之上，见 <see cref="CreateNameOverlay"/>）。</summary>
     private PreviewNameOverlayWindow? _nameOverlay;
 
+    /// <summary>
+    /// 阶段 355：该预览窗对应角色的名字（与"频道预警"会话的 Listener 同名），
+    /// 叠加层的 provider 用它来取数据。标题解析不出时回退到配置里的角色名。
+    /// </summary>
+    private string? _overlayCharacter;
+
+    /// <summary>叠加层刷新是否有排队中 / 是否有新变化（情报连发时合并成一次重排）。</summary>
+    private bool _overlayRefreshQueued;
+
+    private bool _overlayDirty;
+
+    /// <summary>最近一次摆放后叠加窗的屏幕矩形（物理像素），用于判断光标是否落在它上面。</summary>
+    private NativeMethods.RECT _overlayRect;
+
+    /// <summary>光标当前是否在叠加窗上（由预览窗的鼠标消息推断：叠加窗本身鼠标穿透）。</summary>
+    private bool _overlayPointerInside;
+
+    /// <summary>悬停详情是否已展开。</summary>
+    private bool _overlayDetailsVisible;
+
+    /// <summary>最近一次刷新的叠加行（悬停详情的来源）。</summary>
+    private IReadOnlyList<PreviewOverlayItem> _overlayRows = [];
+
+    /// <summary>悬停延时：光标在叠加区域停留一小会儿才展开详情，避免划过去就弹。</summary>
+    private readonly DispatcherTimer _overlayHoverTimer;
+
     private bool _dragCandidate;
     private bool _dragging;
     /// <summary>阶段 345：本次手势是否由“激活键”发起（松开且未拖动则激活）。</summary>
@@ -209,6 +236,21 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         TitleBar.CloseClicked += (_, _) => StopRequested?.Invoke(Setting);
         PreviewMouseWheel += OnPreviewMouseWheel;
         AttachDragHandlers(ThumbnailFrame);
+
+        // 阶段 355：叠加层（角色名下方的信息行）——provider 报告某角色内容变了就刷新，
+        // 单项设置里的开关变化也要立即生效。
+        PreviewOverlayHub.Current.Changed += OnOverlayChanged;
+        Setting.PropertyChanged += Setting_PropertyChanged;
+
+        // 阶段 356：悬停显示预警详情。叠加窗鼠标穿透收不到 hover，只能由本窗（鼠标落在它下面的预览窗）
+        // 按光标位置判断，再让叠加窗在信息行下方展开详情。
+        _overlayHoverTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(350),
+        };
+        _overlayHoverTimer.Tick += OnOverlayHoverTick;
+        MouseMove += OnOverlayHoverMove;
+        MouseLeave += OnOverlayHoverLeave;
     }
 
     // ---------- 生命周期 ----------
@@ -627,9 +669,10 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             && Process.MainWindowHandle == NativeMethods.GetForegroundWindow();
 
         // 角色名叠加窗：内容与大小就绪后摆放（ActualWidth/Height 需在布局之后才有效）；
-        // 带标题栏的样式下它保持隐藏（名字已在标题栏里）
+        // 带标题栏的样式下名字隐藏、只显示信息行（阶段 355）
         CreateNameOverlay();
-        ShowNameOverlayIfNeeded();
+        _overlayCharacter = ResolveOverlayCharacter();
+        RefreshOverlayCore();
         BringNameOverlayToFront();
 
         // 首次布局完成后（尺寸稳定）按游戏客户区比例校正一次：
@@ -663,6 +706,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         _isShowing = false;
         _boundsReady = false;
         _globalSetting.PropertyChanged -= GlobalSetting_PropertyChanged;
+        Setting.PropertyChanged -= Setting_PropertyChanged;
+        PreviewOverlayHub.Current.Changed -= OnOverlayChanged;
+        MouseMove -= OnOverlayHoverMove;
+        MouseLeave -= OnOverlayHoverLeave;
+        _overlayHoverTimer.Stop();
+        _overlayHoverTimer.Tick -= OnOverlayHoverTick;
         _aspectCorrectionTimer.Stop();
         _minimizeWatchTimer.Stop();
         _thumbnailOverlay?.Hide();
@@ -720,6 +769,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ApplyPreviewPlaceholder();
         _minimizeWatchTimer.Start();
         ShowNameOverlayIfNeeded();
+        ScheduleOverlayRefresh();
         BringNameOverlayToFront();
         EnsureTransparentClientArea();
 
@@ -730,6 +780,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     {
         if (_isShowing && IsVisible)
         {
+            HideOverlayDetails();
             _thumbnailOverlay?.Hide();
             _thumbnail.Hide();
             _minimizeWatchTimer.Stop();
@@ -899,6 +950,11 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         {
             ApplyTransparencyMode();
         }
+        else if (e.PropertyName == nameof(PreviewSetting.ShowIntelAlert))
+        {
+            // 全局总开关：关掉即覆盖所有单项设置，立即隐藏信息行
+            ScheduleOverlayRefresh();
+        }
     }
 
     /// <summary>在“原生 layered 画面层”和旧版 DWM 缩略图透明之间切换，立即生效。</summary>
@@ -933,6 +989,15 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         Process = process;
         Setting = setting;
 
+        if (!ReferenceEquals(previousSetting, setting))
+        {
+            previousSetting.PropertyChanged -= Setting_PropertyChanged;
+            setting.PropertyChanged += Setting_PropertyChanged;
+        }
+
+        // 重登 / 换绑：角色名可能变了，叠加层数据源要跟着换（阶段 355）
+        _overlayCharacter = ResolveOverlayCharacter();
+
         ApplyVisuals();
 
         // 阶段 346（修复 1）：换绑到**不同**的配置项时，把该配置里存档的位置尺寸摆上去。
@@ -954,6 +1019,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         ScheduleThumbnailUpdate();
         ScheduleAspectCorrection();
+        ScheduleOverlayRefresh();
     }
 
     public void Recover()
@@ -1108,13 +1174,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         TitleBar.Title = name;
         Title = name;
 
-        // 左上角角色名叠加窗**只在无标题栏样式下显示**：带标题栏时名字已经写在标题栏里了，
-        // 再叠一个角标是重复信息（用户要求）。
-        // 叠加窗本身仍保留，切回无标题栏样式要能立刻用上。
+        // 左上角角色名叠加窗**只在无标题栏样式下显示名字**：带标题栏时名字已经写在标题栏里了，
+        // 再叠一个角标是重复信息（用户要求）。阶段 355 起它同时承载"信息行"（预警等），
+        // 带标题栏样式下只画信息行、位置落在标题栏正下方。
         if (_nameOverlay is not null)
         {
             _nameOverlay.DisplayName = name;
-            ShowNameOverlayIfNeeded();
+            ScheduleOverlayRefresh();
         }
 
         // 高亮由缩略图外框（HighlightColor + 边距）体现；"上边距"在带标题栏的样式下不生效
@@ -1133,8 +1199,8 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     // ---------- 角色名叠加窗 ----------
 
     /// <summary>
-    /// 角色名叠加窗只在"无标题栏样式 + 窗口正在显示"时出现。
-    /// 带标题栏时名字已写在标题栏里，再叠一个角标是重复信息（用户要求）。
+    /// 叠加窗的显隐：名字只在"无标题栏样式"显示（带标题栏时名字在标题栏，重复），
+    /// 信息行（阶段 355）两种样式都显示——带标题栏时落在标题栏正下方。
     /// </summary>
     private void ShowNameOverlayIfNeeded()
     {
@@ -1143,14 +1209,248 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        if (HasTitleBar || !_isShowing)
+        var name = string.IsNullOrWhiteSpace(Setting.Name) ? Process.WindowTitle : Setting.Name;
+        var showName = !HasTitleBar && !string.IsNullOrWhiteSpace(name);
+        _nameOverlay.SetNameVisible(showName);
+
+        // 注意用 IsVisible 而不是 _isShowing：_isShowing 只表示"已启动"，
+        // 隐藏（游戏窗口活动时隐藏 / 手动隐藏）时它仍是 true，而叠加窗必须跟着预览窗一起消失。
+        if (!_isShowing || !IsVisible || (!showName && !_nameOverlay.HasInfoItems))
         {
             _nameOverlay.Hide();
+            // 叠加窗不可见时把悬停状态一并复位，避免"隐藏 → 显示"后详情还留着
+            _overlayPointerInside = false;
+            _overlayHoverTimer.Stop();
+            if (_overlayDetailsVisible)
+            {
+                _overlayDetailsVisible = false;
+                _nameOverlay.SetDetails(null);
+            }
+
             return;
         }
 
         _nameOverlay.Show();
+        // 叠加窗可能是从隐藏状态重新显示（例如带标题栏样式下第一次出现预警行）：
+        // 先强制跑一次布局，ActualWidth/Height 才是新内容（含信息行）的真实尺寸。
+        _nameOverlay.UpdateLayout();
         UpdateNameOverlayBounds();
+    }
+
+    // ---------- 叠加层信息行（阶段 355，可扩展） ----------
+
+    /// <summary>该窗口对应的角色名（标题解析优先，配置名兜底）。</summary>
+    private string? ResolveOverlayCharacter()
+    {
+        var fromTitle = Process.GetCharacterName();
+        return string.IsNullOrWhiteSpace(fromTitle) ? Setting.Name : fromTitle;
+    }
+
+    /// <summary>
+    /// 请求刷新叠加层。情报连发时每来一条都会通知，这里用脏标记 + Background 调度合并，
+    /// 避免每个消息都触发一次"重排 → 重新量宽高 → SetBounds"。
+    /// </summary>
+    private void ScheduleOverlayRefresh()
+    {
+        // 隐藏状态下不刷新：叠加重排会产生布局开销，且 IsVisible=false 时叠加窗本来就该隐藏；
+        // ShowWindow 里会再调一次，恢复显示后立刻是最新数据。
+        if (_stopped || !_isShowing || !IsVisible || _nameOverlay is null)
+        {
+            return;
+        }
+
+        _overlayDirty = true;
+        if (_overlayRefreshQueued)
+        {
+            return;
+        }
+
+        _overlayRefreshQueued = true;
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            _overlayRefreshQueued = false;
+            if (!_overlayDirty || _stopped || _nameOverlay is null)
+            {
+                return;
+            }
+
+            _overlayDirty = false;
+            RefreshOverlayCore();
+        }));
+    }
+
+    private void RefreshOverlayCore()
+    {
+        if (_nameOverlay is null)
+        {
+            return;
+        }
+
+        _overlayCharacter = ResolveOverlayCharacter();
+        var rows = PreviewOverlayHub.Current.GetItems(
+            new PreviewOverlayContext(_overlayCharacter, Setting, _globalSetting));
+        _overlayRows = rows;
+        _nameOverlay.SetInfoItems(rows);
+
+        // 详情跟着最新内容走；没有行就收起
+        if (_overlayDetailsVisible)
+        {
+            var detail = BuildOverlayDetails();
+            if (string.IsNullOrWhiteSpace(detail))
+            {
+                _overlayDetailsVisible = false;
+                _nameOverlay.SetDetails(null);
+            }
+            else
+            {
+                _nameOverlay.SetDetails(detail);
+            }
+        }
+
+        // SizeToContent：内容变了必须重新量一次，再按物理像素摆回去
+        _nameOverlay.UpdateLayout();
+        ShowNameOverlayIfNeeded();
+
+        // 运行时首次出现信息行（叠加窗此前是隐藏的）：确保仍压在预览窗之上
+        if (_nameOverlay is { IsVisible: true })
+        {
+            BringNameOverlayToFront();
+        }
+    }
+
+    // ---------- 悬停详情（阶段 356） ----------
+
+    /// <summary>
+    /// 光标移动：叠加窗是鼠标穿透的，鼠标消息落在它下面的本窗上。
+    /// 这里按屏幕物理坐标判断是否压在叠加窗矩形内，进入后延时展开详情。
+    /// </summary>
+    private void OnOverlayHoverMove(object sender, MouseEventArgs e)
+    {
+        var inside = false;
+        if (!_stopped && _isShowing && IsVisible
+            && !_dragging && _nameOverlay is { IsVisible: true, HasInfoItems: true }
+            && NativeMethods.GetCursorPos(out var cursor))
+        {
+            inside = cursor.X >= _overlayRect.Left && cursor.X < _overlayRect.Right
+                     && cursor.Y >= _overlayRect.Top && cursor.Y < _overlayRect.Bottom;
+        }
+
+        if (inside == _overlayPointerInside)
+        {
+            return;
+        }
+
+        _overlayPointerInside = inside;
+        if (inside)
+        {
+            _overlayHoverTimer.Stop();
+            _overlayHoverTimer.Start();
+        }
+        else
+        {
+            _overlayHoverTimer.Stop();
+            ShowOverlayDetails(false);
+        }
+    }
+
+    private void OnOverlayHoverLeave(object sender, MouseEventArgs e)
+    {
+        _overlayPointerInside = false;
+        _overlayHoverTimer.Stop();
+        ShowOverlayDetails(false);
+    }
+
+    private void OnOverlayHoverTick(object? sender, EventArgs e)
+    {
+        _overlayHoverTimer.Stop();
+        if (_overlayPointerInside)
+        {
+            ShowOverlayDetails(true);
+        }
+    }
+
+    /// <summary>展开 / 收起悬停详情。详情是独立 ToolTip 浮层，不改变叠加窗尺寸，因此无需重排。</summary>
+    private void ShowOverlayDetails(bool show)
+    {
+        if (_nameOverlay is null)
+        {
+            return;
+        }
+
+        if (!show)
+        {
+            if (!_overlayDetailsVisible)
+            {
+                return;
+            }
+
+            _overlayDetailsVisible = false;
+            _nameOverlay.SetDetails(null);
+            return;
+        }
+
+        if (_overlayDetailsVisible)
+        {
+            return;
+        }
+
+        var detail = BuildOverlayDetails();
+        if (string.IsNullOrWhiteSpace(detail))
+        {
+            return;
+        }
+
+        _overlayDetailsVisible = true;
+        _nameOverlay.SetDetails(detail);
+    }
+
+    /// <summary>把各 provider 给出的详情拼起来（provider 自己负责文案与换行）。</summary>
+    private string? BuildOverlayDetails()
+    {
+        if (_overlayRows.Count == 0)
+        {
+            return null;
+        }
+
+        var parts = _overlayRows
+            .Select(p => p.Detail)
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .ToList();
+        return parts.Count == 0 ? null : string.Join("\n\n", parts);
+    }
+
+    private void HideOverlayDetails()
+    {
+        _overlayPointerInside = false;
+        _overlayHoverTimer.Stop();
+        ShowOverlayDetails(false);
+    }
+
+    private void OnOverlayChanged(string? characterName)
+    {
+        // provider 报告的是"某角色变了"：只刷新对应窗口；null 表示全量
+        if (!string.IsNullOrWhiteSpace(characterName)
+            && !string.IsNullOrWhiteSpace(_overlayCharacter)
+            && !string.Equals(characterName, _overlayCharacter, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(characterName) && string.IsNullOrWhiteSpace(_overlayCharacter))
+        {
+            // 窗口还没解析出角色名：先算一次，可能这次就能对上了
+            _overlayCharacter = ResolveOverlayCharacter();
+        }
+
+        ScheduleOverlayRefresh();
+    }
+
+    private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PreviewItem.ShowIntelAlert))
+        {
+            ScheduleOverlayRefresh();
+        }
     }
 
     /// <summary>
@@ -1214,6 +1514,32 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             baseSize * MaxNameOverlayScale);
     }
 
+    /// <summary>预警信息行字号下限：跟随缩放时窗口再小也不会缩到看不清（阶段 356）。</summary>
+    private const double AlertOverlayMinFontSize = 12d;
+
+    /// <summary>
+    /// 预警信息行的**实际字号**（DIP）。
+    /// <para>
+    /// 与角色名各自独立：基准字号取"预警文字字号"设置，跟随窗口缩放时按同一基准宽等比放大，
+    /// 但**有下限**（12 DIP）——旧实现是"角色名字号 × 0.4"，角色名本身已经随窗口缩放，
+    /// 小窗口里再乘一次就缩成了 10px 左右（用户反馈"字体太小"）。
+    /// </para>
+    /// </summary>
+    private double GetAlertOverlayFontSize(int windowWidth)
+    {
+        var baseSize = Math.Max(1d, Setting.AlertOverlayFontSize);
+        if (!Setting.AlertOverlayFollowScale || windowWidth <= 0)
+        {
+            return Math.Max(AlertOverlayMinFontSize, baseSize);
+        }
+
+        var factor = Math.Max(0.1d, Setting.AlertOverlayScaleFactor);
+        return Math.Clamp(
+            baseSize * (windowWidth / (double)NameOverlayReferenceWidth) * factor,
+            Math.Min(AlertOverlayMinFontSize, baseSize),
+            baseSize * MaxNameOverlayScale);
+    }
+
     /// <summary>把角色名叠加窗摆到画面左上角（物理像素，随高亮留白内缩），并同步外观。</summary>
     private void UpdateNameOverlayBounds()
     {
@@ -1240,15 +1566,29 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             Setting.NameOverlayFontFamily,
             GetNameOverlayFontSize(window.Width),
             Setting.NameOverlayForegroundColor,
-            _isSourceForeground ? Setting.NameOverlayBackgroundColorHighlight : Setting.NameOverlayBackgroundColor);
+            _isSourceForeground ? Setting.NameOverlayBackgroundColorHighlight : Setting.NameOverlayBackgroundColor,
+            Setting.AlertOverlayFontFamily,
+            GetAlertOverlayFontSize(window.Width),
+            Setting.AlertOverlayForegroundColor,
+            Setting.AlertOverlayBackgroundColor);
 
         var dpi = VisualTreeHelper.GetDpi(this);
         var thickness = GetHighlightThickness();
-        _nameOverlay.SetBounds(
-            window.Left + (int)Math.Round(thickness.Left * dpi.DpiScaleX),
-            window.Top + (int)Math.Round(thickness.Top * dpi.DpiScaleY),
-            (int)Math.Ceiling(_nameOverlay.ActualWidth * dpi.DpiScaleX),
-            (int)Math.Ceiling(_nameOverlay.ActualHeight * dpi.DpiScaleY));
+        // 带标题栏样式：名字在标题栏里，叠加窗（只画信息行）要落到标题栏**下方**的画面左上角，
+        // 视觉上仍然是"角色名下方"。GetChromeHeight() 给的是物理像素，正好可以直接相加。
+        var topOffset = (int)Math.Round(thickness.Top * dpi.DpiScaleY) + (HasTitleBar ? GetChromeHeight() : 0);
+        var left = window.Left + (int)Math.Round(thickness.Left * dpi.DpiScaleX);
+        var top = window.Top + topOffset;
+        var width = (int)Math.Ceiling(_nameOverlay.ActualWidth * dpi.DpiScaleX);
+        var height = (int)Math.Ceiling(_nameOverlay.ActualHeight * dpi.DpiScaleY);
+        _nameOverlay.SetBounds(left, top, width, height);
+        _overlayRect = new NativeMethods.RECT
+        {
+            Left = left,
+            Top = top,
+            Right = left + width,
+            Bottom = top + height,
+        };
     }
 
     /// <summary>
@@ -1811,6 +2151,9 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         _dragCandidate = isDragButton;
         _activateCandidate = isActivateButton;
         _dragging = false;
+
+        // 开始拖动/点击：收起悬停详情，避免弹层挡着操作
+        HideOverlayDetails();
 
         if (isDragButton)
         {

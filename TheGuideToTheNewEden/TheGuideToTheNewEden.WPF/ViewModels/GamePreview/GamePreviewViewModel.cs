@@ -58,6 +58,9 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         _hotkeys.Pressed += OnHotkeyPressed;
         _foreground.ForegroundChanged += OnForegroundChanged;
 
+        // 阶段 355：频道预警会话启停 → 单项设置里的"是否可以显示预警"状态徽标要立刻变
+        Services.ChannelIntel.ChannelIntelAlertCenter.Current.ListenersChanged += OnChannelIntelListenersChanged;
+
         _processMonitor = new System.Windows.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1),
@@ -98,6 +101,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(CropSummary));
                 OnPropertyChanged(nameof(HasSelection));
                 OnPropertyChanged(nameof(SelectedRunning));
+                OnPropertyChanged(nameof(SelectedIntelSessionRunning));
 
                 // 选中进程 → 切回"选中项设置"（否则用户点了进程却看不到它的设置）；
                 // 取消选中 → 若正停在已隐藏的"选中项设置"上则回到全局设置，停在分组页签时保持不变
@@ -120,6 +124,29 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public PreviewItem? SelectedSetting => _selectedProcess?.Setting;
+
+    /// <summary>
+    /// 阶段 355：当前选中角色是否有**运行中的频道预警会话**（同名 Listener）。
+    /// 单项设置里"是否可以显示预警"的状态徽标用它；打开单项开关时也据此判断。
+    /// </summary>
+    public bool SelectedIntelSessionRunning
+    {
+        get
+        {
+            if (_selectedProcess is not { } process)
+            {
+                return false;
+            }
+
+            var name = process.GetCharacterName();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = process.Setting?.Name;
+            }
+
+            return Services.ChannelIntel.ChannelIntelAlertCenter.Current.IsListening(name);
+        }
+    }
 
     public bool HasSelection => _selectedProcess is not null;
 
@@ -1126,6 +1153,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         _manager.Rebind(process, next);
         OnPropertyChanged(nameof(SelectedSetting));
+        OnPropertyChanged(nameof(SelectedIntelSessionRunning));
         Save();
     }
 
@@ -1150,6 +1178,13 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         ShowPreviewWindow = source.ShowPreviewWindow,
         ShowPreviewWindowMode = source.ShowPreviewWindowMode,
         LockAspectRatio = source.LockAspectRatio,
+        ShowIntelAlert = source.ShowIntelAlert,
+        AlertOverlayFontFamily = source.AlertOverlayFontFamily,
+        AlertOverlayFontSize = source.AlertOverlayFontSize,
+        AlertOverlayFollowScale = source.AlertOverlayFollowScale,
+        AlertOverlayScaleFactor = source.AlertOverlayScaleFactor,
+        AlertOverlayForegroundColor = source.AlertOverlayForegroundColor,
+        AlertOverlayBackgroundColor = source.AlertOverlayBackgroundColor,
         HotKey = source.HotKey,
     };
 
@@ -1177,9 +1212,99 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         OnPropertyChanged(nameof(SelectedSetting));
         OnPropertyChanged(nameof(SelectedRunning));
+        OnPropertyChanged(nameof(SelectedIntelSessionRunning));
+        CheckIntelAlertOnStart(process, setting);
         Save();
         return true;
     }
+
+    /// <summary>
+    /// 阶段 355：开始预览时，若该项（全局 && 单项）打开了"显示预警"却没有同名频道预警会话，
+    /// 右下角提示一次（本轮多个角色合并成一条，避免"开始全部/自动开始"刷屏）。
+    /// </summary>
+    private void CheckIntelAlertOnStart(ProcessInfo process, PreviewItem setting)
+    {
+        if (!_setting.ShowIntelAlert || !setting.ShowIntelAlert)
+        {
+            return;
+        }
+
+        var name = process.GetCharacterName();
+        if (string.IsNullOrWhiteSpace(name) || name.StartsWith('*'))
+        {
+            name = setting.Name;
+        }
+
+        if (string.IsNullOrWhiteSpace(name) || name.StartsWith('*'))
+        {
+            // 还没解析出角色名：无从判断，静默（角色名出来后由对账/换绑再走一次）
+            return;
+        }
+
+        if (Services.ChannelIntel.ChannelIntelAlertCenter.Current.IsListening(name))
+        {
+            return;
+        }
+
+        EnqueueIntelAlertNotice(name);
+    }
+
+    private readonly List<string> _pendingIntelAlertNotices = [];
+    private bool _intelAlertNoticeQueued;
+
+    /// <summary>把"缺预警会话"的角色名攒起来，同一轮只弹一条右下角提示。</summary>
+    private void EnqueueIntelAlertNotice(string name)
+    {
+        if (_pendingIntelAlertNotices.Contains(name, StringComparer.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _pendingIntelAlertNotices.Add(name);
+        if (_intelAlertNoticeQueued)
+        {
+            return;
+        }
+
+        _intelAlertNoticeQueued = true;
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            FlushIntelAlertNotices();
+            return;
+        }
+
+        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(FlushIntelAlertNotices));
+    }
+
+    private void FlushIntelAlertNotices()
+    {
+        _intelAlertNoticeQueued = false;
+        if (_pendingIntelAlertNotices.Count == 0)
+        {
+            return;
+        }
+
+        var names = _pendingIntelAlertNotices.ToList();
+        _pendingIntelAlertNotices.Clear();
+
+        if (names.Count == 1)
+        {
+            PageNotifyService.Warning(string.Format(
+                FindString("GamePreviewPage_IntelAlertNoSession"),
+                names[0]));
+        }
+        else
+        {
+            PageNotifyService.Warning(string.Format(
+                FindString("GamePreviewPage_IntelAlertNoSessionMany"),
+                names.Count,
+                string.Join("、", names)));
+        }
+    }
+
+    private void OnChannelIntelListenersChanged(object? sender, EventArgs e)
+        => OnPropertyChanged(nameof(SelectedIntelSessionRunning));
 
     public void StartSelected()
     {
@@ -1892,6 +2017,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         }
 
         _setting.PropertyChanged -= OnGlobalSettingPropertyChanged;
+        Services.ChannelIntel.ChannelIntelAlertCenter.Current.ListenersChanged -= OnChannelIntelListenersChanged;
         GamePreviewSettingService.Current.Save();
         PropertyChanged = null;
     }

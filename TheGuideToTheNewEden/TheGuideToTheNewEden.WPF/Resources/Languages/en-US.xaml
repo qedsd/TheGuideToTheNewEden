@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
@@ -3834,4 +3834,28 @@
     <sys:String x:Key="ItemDetail_GoMarket">View market details</sys:String>
     <sys:String x:Key="ItemDetail_NoItem">Item not found</sys:String>
     <sys:String x:Key="ItemDetail_SkillLevel">Level {0}</sys:String>
+
+    <!--  Stage 355: multibox preview overlay (channel intel: nearest / latest)  -->
+    <sys:String x:Key="GamePreview_OverlayNearest">Nearest {0}j · {1}min</sys:String>
+    <sys:String x:Key="GamePreview_OverlayLatest">Latest {0}j · {1}min</sys:String>
+    <sys:String x:Key="GamePreview_OverlayBoth">Nearest/Latest {0}j · {1}min</sys:String>
+    <sys:String x:Key="GamePreviewPage_GroupIntel">Channel intel</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlert">Show alerts in preview</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertTip">Alert rows appear below the character name: "Nearest" is the active alert with the fewest jumps, "Latest" is the most recently received one. Data comes from a running channel-intel session of the same character on the Channel intel page. Hidden when the global switch is off.</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">Alert rows appear below the character name, fed by the same character's channel intel session</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayFont">Alert text font</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayFontSize">Alert text size</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayFollowScale">Alert text follows window scale</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayScaleFactor">Alert text scale factor</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayForeground">Alert text color</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayBackground">Alert background</sys:String>
+    <sys:String x:Key="GamePreviewPage_AlertOverlayColorTip">Supports transparency (#AARRGGBB: #99000000 = translucent black, #FFFFFFFF = opaque white); a fully transparent background shows text only</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusGlobalOff">Disabled globally</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusOff">Off</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusNoSession">No channel intel session</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelStatusReady">Alerts available</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobal">Show alert overlay (global)</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobalTip">Off overrides every per-item switch; when on, each preview item decides</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelAlertNoSession">No channel intel session for "{0}"; the preview will not show alert jumps (start one on the Channel intel page)</sys:String>
+    <sys:String x:Key="GamePreviewPage_IntelAlertNoSessionMany">{0} characters have no channel intel session: {1}</sys:String>
 </ResourceDictionary>

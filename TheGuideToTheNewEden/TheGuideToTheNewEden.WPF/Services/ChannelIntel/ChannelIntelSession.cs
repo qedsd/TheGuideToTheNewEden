@@ -404,15 +404,14 @@ public sealed class ChannelIntelSession
         {
             foreach (var ch in news)
             {
+                // 活跃预警状态先写进状态中心（唯一状态源）：预警小窗星图、多开预览的叠加行都订阅它。
+                // 注意 Clear 也必须写进来，否则"预警消失"无法同步到预览窗。
+                ChannelIntelAlertCenter.Current.Report(ch, observer.ChatChanelInfo.ChannelName);
+
                 if (ch.IntelType == IntelChatType.Intel)
                 {
                     var soundSetting = GetSoundSetting(ch.Jumps);
                     IntelWarningService.Current.Notify(observer.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, observer.ChatChanelInfo.ChannelName, ch);
-                }
-                else
-                {
-                    // Clear：只更新预警小窗，不播声音
-                    IntelWarningService.Current.GetIntelWindow(observer.ChatChanelInfo.Listener)?.Intel(ch);
                 }
             }
         });
@@ -465,6 +464,8 @@ public sealed class ChannelIntelSession
                             item.IntelMap = _intelMap;
                         }
 
+                        // 跳数基准变了：旧预警的跳数全部失效，先清空状态中心再由小窗重画新范围
+                        ChannelIntelAlertCenter.Current.ClearAll(Setting.Listener);
                         IntelWarningService.Current.UpdateWindowHome(Setting.Listener, _intelMap);
                     });
                     break;
@@ -489,6 +490,7 @@ public sealed class ChannelIntelSession
                 ? $" {span.TotalMinutes:N1}{FindString("EarlyWarningPage_Befor_Min")}"
                 : $" {span.TotalSeconds:N0}{FindString("EarlyWarningPage_Befor_Sec")}";
             e.Content += desc;
+            ChannelIntelAlertCenter.Current.Report(e, "KB");
             ChannelIntelSoundSetting? soundSetting = GetSoundSetting(e.Jumps);
 
             IntelWarningService.Current.Notify((sender as Core.Intel.ZKBIntel)?.GetListener() ?? Listener, soundSetting, Setting.SystemNotify, "KB", e);
