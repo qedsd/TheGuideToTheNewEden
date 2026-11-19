@@ -30,6 +30,7 @@ ORDER = [
     ("channelMarket", "频道查价"), ("channelTranslation", "频道翻译"), ("gameLogMonitor", "日志监控"),
     ("translationAi", "AI 翻译"), ("translationLocal", "本地词库"),
     ("anomaly", "异常"), ("ded", "死亡远征"), ("mission", "任务攻略"),
+    ("incursion", "入侵"), ("resources", "资源"),
     ("toolsIME", "快捷输入"), ("serverPing", "游戏延迟"),
     ("keyboardSpan", "键盘"), ("taskbar", "分屏"),
     ("settings", "设置"),

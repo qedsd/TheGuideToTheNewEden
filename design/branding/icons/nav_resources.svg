@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 资源 · Nav.Resources：多面矿石晶体（矿石 / 气云 / 冰 / 遗迹） -->
+  <path d="M64 14 L106 50 L64 114 L22 50 Z" fill="none" stroke="#38BDF8" stroke-width="10" stroke-linejoin="round"/>
+<path d="M22 50 H106" stroke="#7DD3FC" stroke-width="9" stroke-linecap="round"/>
+<path d="M64 14 L46 50 L64 114" fill="none" stroke="#BAE6FD" stroke-width="9" stroke-linejoin="round"/>
+</svg>

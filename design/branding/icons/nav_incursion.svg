@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 入侵 · Nav.Incursion：两股攻势向中心星系收拢（区别于"下载"箭头） -->
+  <circle cx="64" cy="64" r="13" fill="#FBCFE8"/>
+<path d="M18 34 L46 64 L18 94" fill="none" stroke="#F472B6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M110 34 L82 64 L110 94" fill="none" stroke="#FB7185" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

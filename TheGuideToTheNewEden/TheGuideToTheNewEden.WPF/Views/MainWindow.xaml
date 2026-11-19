@@ -360,7 +360,10 @@
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:ResourcesPage}">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="DatabaseSearch24" />
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.resources}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
 
@@ -370,7 +373,10 @@
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:IncursionPage}">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="Sparkle24" />
+                                <ui:ImageIcon
+                                    Width="20"
+                                    Height="20"
+                                    Source="{StaticResource NavIcon.incursion}" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>

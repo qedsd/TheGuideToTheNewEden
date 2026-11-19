@@ -12929,6 +12929,36 @@ build_sites.py   组装 + 渲染中文 Markdown + 写 static.db（--write-db）
    三处都改成精确判断。现在 **927 条任务**带 Markdown 表（NPC 表 924 + 采矿/波次等）
 - 语言键：中英各 **3701**、集合一致。`dotnet build` 0 错误。
 
+### 补充二十七（2026-11-19）：入侵页标题栏显示成了 `**类型** 集结点`
+
+用户截图：详情卡片的元信息行原样显示了 Markdown 星号。
+
+原因：`IncursionPageViewModel.MetaText` 返回 `$"**类型** {type}"`——那是给 **Markdown 正文**写的语法，
+而它绑定的控件是 `RichTextPresenter`（纯文本，不走 MarkdownPresenter），星号自然照抄出来。
+
+修法：`MetaText` 只返回类型名（`集结点` / `先锋站点` / …）。正文首行本来就有
+`**类型** 集结点 ｜ **势力** 萨沙国度`（那里是真 Markdown，渲染正常），所以这里不再重复"类型"二字。
+
+顺手核对了其它页面的 `MetaText`（死亡远征 / 任务 / 资源）——都是纯文本拼接，只有入侵这一处踩坑。
+
+**验证**：探针 3/3 —— 元信息为 `集结点`（无星号）、15 条 `TypeCN` 都干净。
+
+### 补充二十六（2026-11-19）：补「入侵」「资源」两枚导航图标
+
+两个新功能此前用的是 Fluent 字体图标（`Sparkle24` / `DatabaseSearch24`），和旁边那排彩色矢量图标不搭。
+按既有管线补上：
+
+1. 画 `design/branding/icons/nav_incursion.svg`（两股攻势收拢到中心星系）与
+   `nav_resources.svg`（多面矿石晶体），沿用 128 坐标、10–12 描边、同一套配色（`#F472B6`/`#FB7185`、`#38BDF8`/`#7DD3FC`）。
+2. `_svg_to_wpf_icons.py` 的 `ORDER` 加两行 → 重跑生成 `NavIcons.xaml`（**40 → 43 枚**，
+   注意实际 SVG 数是 43，README 里的数字一并改了）。
+3. `MainWindow.xaml` 里两个导航项从 `<ui:SymbolIcon>` 换成 `<ui:ImageIcon Source="{StaticResource NavIcon.…}">`。
+   主页磁贴不用改：`HomeFeatureCatalog` 的 `IconKey` 就是 `incursion` / `resources`，会自动取到新图标。
+
+**验证**：探针 5/5 —— 资源字典含 `NavIcon.incursion` / `NavIcon.resources`（Bounds 20×20）、
+两个功能目录条目的 `IconResourceKey` 正确、**所有页面类功能都有对应矢量图标（0 缺失）**。
+另渲染 256px 预览图核对观感。
+
 ### 补充二十五（2026-11-19）：翻译质量抽查与批量修正
 
 新写 `qa_translation.py`（规则扫描 + 随机抽样）与三个修正脚本 `qa_fix.py` / `qa_fix2.py` / `qa_fix3.py`。

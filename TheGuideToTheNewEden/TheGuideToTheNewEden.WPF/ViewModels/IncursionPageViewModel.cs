@@ -153,7 +153,13 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
             }
         }
 
-        /// <summary>右侧元信息：类型（· 篇幅）。</summary>
+        /// <summary>
+        /// 右侧元信息：站点类型（集结点 / 先锋 / 突击 / 总部 / 母舰）。
+        /// <para>
+        /// 这里用的是 `RichTextPresenter`（纯文本），**不能带 Markdown 标记**——
+        /// 之前写成 `**类型** 集结点`，界面上就把星号原样显示出来了（补充二十七修正）。
+        /// </para>
+        /// </summary>
         public string MetaText
         {
             get
@@ -163,8 +169,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
                     return string.Empty;
                 }
 
-                var type = string.IsNullOrWhiteSpace(_selected.TypeCN) ? "入侵站点" : _selected.TypeCN;
-                return $"**类型** {type}";
+                return string.IsNullOrWhiteSpace(_selected.TypeCN) ? "入侵站点" : _selected.TypeCN;
             }
         }
 

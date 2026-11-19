@@ -13,7 +13,7 @@
 | 设计源（本目录） | 转换脚本 | 产物（工程内） | 何时需要重跑 |
 |---|---|---|---|
 | `logo.svg` | `_gen_logo_bitmap.py` | `WPF/Assets/app.ico`<br>`WPF/Assets/logo_32.png`<br>`WPF/Assets/logo_128.png` | 改主 Logo 后 |
-| `icons/nav_*.svg`（40 个） | `_svg_to_wpf_icons.py` | `WPF/Resources/NavIcons.xaml` | 改功能图标后 |
+| `icons/nav_*.svg`（43 个） | `_svg_to_wpf_icons.py` | `WPF/Resources/NavIcons.xaml` | 改功能图标后 |
 | `banner_dark.svg` / `banner_light.svg` | `_svg_to_wpf_banner.py` | `WPF/Resources/BannerBackground.Dark.xaml`<br>`WPF/Resources/BannerBackground.Light.xaml` | 改横幅后 |
 | `BrandBanner.xaml` | 无（工程内已有一份，此为留档） | — | 改主页品牌条时手工同步 |
 
