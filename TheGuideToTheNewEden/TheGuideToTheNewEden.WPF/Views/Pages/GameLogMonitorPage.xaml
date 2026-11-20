@@ -156,154 +156,154 @@
                                 HorizontalScrollBarVisibility="Disabled"
                                 VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
-                                <!--  配置信息  -->
-                                <Expander
-                                    Margin="0,2"
-                                    Background="Transparent"
-                                    Header="{DynamicResource GameLogMonitorPage_Config}"
-                                    IsExpanded="True">
-                                    <Grid Margin="12,4,0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="36" />
-                                            <RowDefinition Height="36" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="120" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Style="{StaticResource LogFieldLabel}" Text="{DynamicResource GameLogMonitorPage_Config_Type}" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="{DynamicResource GameLogMonitorPage_Type_GameLog}" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding LogType}" Value="1">
-                                                            <Setter Property="Text" Value="{DynamicResource GameLogMonitorPage_Type_ErrorLog}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Style="{StaticResource LogFieldLabel}"
-                                            Text="{DynamicResource GameLogMonitorPage_Config_Name}" />
-                                        <ui:TextBox
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            LostFocus="OnConfigFieldLostFocus"
-                                            Text="{Binding ConfigName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                                    </Grid>
-                                </Expander>
-
-                                <!--  监控模式  -->
-                                <Expander
-                                    Margin="0,2"
-                                    Background="Transparent"
-                                    Header="{DynamicResource GameLogMonitorPage_MonitorMode}"
-                                    IsExpanded="True">
-                                    <Grid Margin="12,4,0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="40" />
-                                            <RowDefinition Height="40" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="140" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Style="{StaticResource LogFieldLabel}" Text="{DynamicResource GameLogMonitorPage_MonitorMode}" />
-                                        <ComboBox
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Stretch"
-                                            SelectedIndex="{Binding MonitorMode, Mode=TwoWay}">
-                                            <ComboBoxItem Content="{DynamicResource GameLogMonitorPage_MonitorMode_0}" />
-                                            <ComboBoxItem Content="{DynamicResource GameLogMonitorPage_MonitorMode_1}" />
-                                        </ComboBox>
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Style="{StaticResource LogFieldLabel}"
-                                            Text="{DynamicResource GameLogMonitorPage_DisappearDelay}"
-                                            Visibility="{Binding MonitorMode, Converter={StaticResource EqualsToVis}, ConverterParameter=1}" />
-                                        <ui:NumberBox
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            MaxHeight="32"
-                                            Minimum="1"
-                                            SmallChange="5"
-                                            Visibility="{Binding MonitorMode, Converter={StaticResource EqualsToVis}, ConverterParameter=1}"
-                                            Value="{Binding DisappearDelay, Mode=TwoWay}" />
-                                    </Grid>
-                                </Expander>
-
-                                <!--  通知方式  -->
-                                <Expander
-                                    Margin="0,2"
-                                    Background="Transparent"
-                                    Header="{DynamicResource GameLogMonitorPage_NotifyMode}"
-                                    IsExpanded="True">
-                                    <StackPanel Margin="12,4,0,4">
-                                        <StackPanel Orientation="Horizontal">
-                                            <CheckBox
-                                                MinWidth="110"
-                                                Content="{DynamicResource GameLogMonitorPage_SystemNotify}"
-                                                IsChecked="{Binding SystemNotify, Mode=TwoWay}" />
-                                            <CheckBox
-                                                MinWidth="110"
-                                                Content="{DynamicResource GameLogMonitorPage_WindowNotify}"
-                                                IsChecked="{Binding WindowNotify, Mode=TwoWay}" />
-                                            <CheckBox Content="{DynamicResource GameLogMonitorPage_SoundNotify}" IsChecked="{Binding SoundNotify, Mode=TwoWay}" />
-                                        </StackPanel>
-                                        <CheckBox
-                                            Margin="0,6,0,0"
-                                            Content="{DynamicResource GameLogMonitorPage_RepeatSound}"
-                                            IsChecked="{Binding RepeatSound, Mode=TwoWay}"
-                                            Visibility="{Binding SoundNotify, Converter={StaticResource BoolToVis}}" />
-                                        <Grid Margin="0,8,0,0" Visibility="{Binding SoundNotify, Converter={StaticResource BoolToVis}}">
+                                    <!--  配置信息  -->
+                                    <Expander
+                                        Margin="0,2"
+                                        Background="Transparent"
+                                        Header="{DynamicResource GameLogMonitorPage_Config}"
+                                        IsExpanded="True">
+                                        <Grid Margin="12,4,0,4">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="36" />
+                                                <RowDefinition Height="36" />
+                                            </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="120" />
                                                 <ColumnDefinition />
-                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Style="{StaticResource LogFieldLabel}" Text="{DynamicResource GameLogMonitorPage_SoundFile}" />
-                                            <ui:TextBox
+                                            <TextBlock Style="{StaticResource LogFieldLabel}" Text="{DynamicResource GameLogMonitorPage_Config_Type}" />
+                                            <TextBlock
                                                 Grid.Column="1"
-                                                Margin="0,0,4,0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="{DynamicResource GameLogMonitorPage_Type_GameLog}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding LogType}" Value="1">
+                                                                <Setter Property="Text" Value="{DynamicResource GameLogMonitorPage_Type_ErrorLog}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Style="{StaticResource LogFieldLabel}"
+                                                Text="{DynamicResource GameLogMonitorPage_Config_Name}" />
+                                            <ui:TextBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
                                                 LostFocus="OnConfigFieldLostFocus"
-                                                PlaceholderText="{DynamicResource GameLogMonitorPage_Default}"
-                                                Text="{Binding SoundFile, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                                            <ui:Button
-                                                Grid.Column="2"
-                                                Click="OnPickSoundFileClick"
-                                                Content="{DynamicResource EarlyWarningItemPage_Pick}" />
+                                                Text="{Binding ConfigName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                         </Grid>
-                                    </StackPanel>
-                                </Expander>
+                                    </Expander>
 
-                                <!--  监控关键词  -->
-                                <Expander
-                                    Margin="0,2"
-                                    Background="Transparent"
-                                    Header="{DynamicResource GameLogMonitorPage_NotifyKey}"
-                                    IsExpanded="True">
-                                    <StackPanel Margin="12,4,0,4">
-                                        <TextBlock
-                                            FontSize="11"
-                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                            Text="{DynamicResource GameLogMonitorPage_NotifyKey_Tip}"
-                                            TextWrapping="Wrap" />
-                                        <ui:Button
-                                            Margin="0,6,0,6"
-                                            HorizontalAlignment="Left"
-                                            Click="OnAddKeyClick"
-                                            Content="{DynamicResource GameLogMonitorPage_AddKey}"
-                                            Icon="{ui:SymbolIcon Add24}" />
-                                        <ItemsControl ItemTemplate="{StaticResource KeyRowTemplate}" ItemsSource="{Binding Keys}" />
-                                    </StackPanel>
-                                </Expander>
-                            </StackPanel>
+                                    <!--  监控模式  -->
+                                    <Expander
+                                        Margin="0,2"
+                                        Background="Transparent"
+                                        Header="{DynamicResource GameLogMonitorPage_MonitorMode}"
+                                        IsExpanded="True">
+                                        <Grid Margin="12,4,0,4">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="40" />
+                                                <RowDefinition Height="40" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Style="{StaticResource LogFieldLabel}" Text="{DynamicResource GameLogMonitorPage_MonitorMode}" />
+                                            <ComboBox
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Stretch"
+                                                SelectedIndex="{Binding MonitorMode, Mode=TwoWay}">
+                                                <ComboBoxItem Content="{DynamicResource GameLogMonitorPage_MonitorMode_0}" />
+                                                <ComboBoxItem Content="{DynamicResource GameLogMonitorPage_MonitorMode_1}" />
+                                            </ComboBox>
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Style="{StaticResource LogFieldLabel}"
+                                                Text="{DynamicResource GameLogMonitorPage_DisappearDelay}"
+                                                Visibility="{Binding MonitorMode, Converter={StaticResource EqualsToVis}, ConverterParameter=1}" />
+                                            <ui:NumberBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                MaxHeight="32"
+                                                Minimum="1"
+                                                SmallChange="5"
+                                                Visibility="{Binding MonitorMode, Converter={StaticResource EqualsToVis}, ConverterParameter=1}"
+                                                Value="{Binding DisappearDelay, Mode=TwoWay}" />
+                                        </Grid>
+                                    </Expander>
+
+                                    <!--  通知方式  -->
+                                    <Expander
+                                        Margin="0,2"
+                                        Background="Transparent"
+                                        Header="{DynamicResource GameLogMonitorPage_NotifyMode}"
+                                        IsExpanded="True">
+                                        <StackPanel Margin="12,4,0,4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox
+                                                    MinWidth="110"
+                                                    Content="{DynamicResource GameLogMonitorPage_SystemNotify}"
+                                                    IsChecked="{Binding SystemNotify, Mode=TwoWay}" />
+                                                <CheckBox
+                                                    MinWidth="110"
+                                                    Content="{DynamicResource GameLogMonitorPage_WindowNotify}"
+                                                    IsChecked="{Binding WindowNotify, Mode=TwoWay}" />
+                                                <CheckBox Content="{DynamicResource GameLogMonitorPage_SoundNotify}" IsChecked="{Binding SoundNotify, Mode=TwoWay}" />
+                                            </StackPanel>
+                                            <CheckBox
+                                                Margin="0,6,0,0"
+                                                Content="{DynamicResource GameLogMonitorPage_RepeatSound}"
+                                                IsChecked="{Binding RepeatSound, Mode=TwoWay}"
+                                                Visibility="{Binding SoundNotify, Converter={StaticResource BoolToVis}}" />
+                                            <Grid Margin="0,8,0,0" Visibility="{Binding SoundNotify, Converter={StaticResource BoolToVis}}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Style="{StaticResource LogFieldLabel}" Text="{DynamicResource GameLogMonitorPage_SoundFile}" />
+                                                <ui:TextBox
+                                                    Grid.Column="1"
+                                                    Margin="0,0,4,0"
+                                                    LostFocus="OnConfigFieldLostFocus"
+                                                    PlaceholderText="{DynamicResource GameLogMonitorPage_Default}"
+                                                    Text="{Binding SoundFile, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                                <ui:Button
+                                                    Grid.Column="2"
+                                                    Click="OnPickSoundFileClick"
+                                                    Content="{DynamicResource EarlyWarningItemPage_Pick}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Expander>
+
+                                    <!--  监控关键词  -->
+                                    <Expander
+                                        Margin="0,2"
+                                        Background="Transparent"
+                                        Header="{DynamicResource GameLogMonitorPage_NotifyKey}"
+                                        IsExpanded="True">
+                                        <StackPanel Margin="12,4,0,4">
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource GameLogMonitorPage_NotifyKey_Tip}"
+                                                TextWrapping="Wrap" />
+                                            <ui:Button
+                                                Margin="0,6,0,6"
+                                                HorizontalAlignment="Left"
+                                                Click="OnAddKeyClick"
+                                                Content="{DynamicResource GameLogMonitorPage_AddKey}"
+                                                Icon="{ui:SymbolIcon Add24}" />
+                                            <ItemsControl ItemTemplate="{StaticResource KeyRowTemplate}" ItemsSource="{Binding Keys}" />
+                                        </StackPanel>
+                                    </Expander>
+                                </StackPanel>
                             </ScrollViewer>
 
                             <!--  战斗日志（固定页签）：遥修/电子战，数据同时供多开叠加层与小窗使用  -->
@@ -314,69 +314,83 @@
                                 VerticalScrollBarVisibility="Auto"
                                 Visibility="Collapsed">
                                 <StackPanel Margin="12,4,0,4">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="120" />
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{DynamicResource CombatLog_Enable}" />
-                                            <ui:ToggleSwitch
-                                                Grid.Column="1"
-                                                IsChecked="{Binding DataContext.CombatEnabled, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}" />
-                                        </Grid>
-
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
                                         <TextBlock
-                                            Margin="120,4,0,0"
-                                            FontSize="11"
-                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                            Text="{Binding DataContext.CombatStatusText, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" />
-
-                                        <Grid Margin="0,8,0,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="120" />
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{DynamicResource CombatLog_Ttl}" />
-                                            <ComboBox
-                                                Grid.Column="1"
-                                                Width="120"
-                                                HorizontalAlignment="Left"
-                                                ItemsSource="{Binding DataContext.CombatTtlOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                                                SelectedItem="{Binding DataContext.CombatTtlSeconds, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}"
-                                                ToolTip="{DynamicResource CombatLog_TtlTip}" />
-                                        </Grid>
-
-                                        <TextBlock
-                                            Margin="0,10,0,4"
+                                            VerticalAlignment="Center"
                                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                            Text="{DynamicResource CombatLog_Categories}" />
-                                        <ItemsControl ItemsSource="{Binding DataContext.CombatCategoryOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <WrapPanel />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <CheckBox
-                                                        Margin="0,2,16,2"
-                                                        Content="{Binding Label}"
-                                                        IsChecked="{Binding Enabled, Mode=TwoWay}" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                            Text="{DynamicResource CombatLog_Enable}" />
+                                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding DataContext.CombatEnabled, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}" />
+                                    </Grid>
 
-                                        <ui:Button
-                                            Margin="0,10,0,0"
+                                    <TextBlock
+                                        Margin="120,4,0,0"
+                                        FontSize="11"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding DataContext.CombatStatusText, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" />
+
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{DynamicResource CombatLog_Ttl}" />
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="120"
                                             HorizontalAlignment="Left"
-                                            Click="OnOpenCombatWindowClick"
-                                            Content="{DynamicResource CombatLog_OpenWindow}" />
+                                            ItemsSource="{Binding DataContext.CombatTtlOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            SelectedItem="{Binding DataContext.CombatTtlSeconds, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}"
+                                            ToolTip="{DynamicResource CombatLog_TtlTip}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{DynamicResource CombatLog_ShowShip}" />
+                                        <ui:ToggleSwitch
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Left"
+                                            IsChecked="{Binding DataContext.ShowShipInTitle, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}"
+                                            ToolTip="{DynamicResource CombatLog_ShowShipTip}" />
+                                    </Grid>
+
+                                    <TextBlock
+                                        Margin="0,10,0,4"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{DynamicResource CombatLog_Categories}" />
+                                    <ItemsControl ItemsSource="{Binding DataContext.CombatCategoryOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox
+                                                    Margin="0,2,16,2"
+                                                    Content="{Binding Label}"
+                                                    IsChecked="{Binding Enabled, Mode=TwoWay}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <ui:Button
+                                        Margin="0,10,0,0"
+                                        HorizontalAlignment="Left"
+                                        Click="OnOpenCombatWindowClick"
+                                        Content="{DynamicResource CombatLog_OpenWindow}" />
                                 </StackPanel>
                             </ScrollViewer>
                         </Grid>

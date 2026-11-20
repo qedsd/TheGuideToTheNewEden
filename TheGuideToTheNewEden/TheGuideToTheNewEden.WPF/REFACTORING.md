@@ -13913,8 +13913,51 @@ TTL 同时还是**唯一的存活判据**。三个后果：
 3. 反跳 / 干扰的"结束"无法从日志判断（游戏不写解除日志），只能手动清除或停止监控；
    若以后想要"战斗安静 N 分钟后自动清除"，可在 `Sticky` 之外再加一个开关。
 
----
+## 阶段 359：日志监控窗口重设计 + 标题显示当前舰船（2026-11-20）
 
+**日志监控窗口（`GameLogMsgWindow`）按 design/log-monitor-window.html 重做**
+
+- 战斗区不再是竖排文字：**二值状态**（反跳 / 干扰）用胶囊 + 呼吸点，**数值**（毁电 / 遥修 / 吸电 / 传电 / 承伤）用 2 列卡片；
+  卡片左侧分类色条、最新值 19px 粗体、窗口值/实测速率弱化跟在后面（`45 GJ / 23 GJ/s`、`320 DPS / 200 HP`）。
+- 监控区压缩成单行消息流：`时间 · 频道 · 内容`，最新一条高亮加粗，超长省略；标题只留「命中 N」和清除。
+- 三种状态自适应：都开 = 2×2 卡片 + 消息列表；仅战斗 = 卡片区撑满（2 列 3 行，最后一张奇数占满整行）；仅监控 = 消息列表占满。
+- 无数据：战斗显示「无战斗」、监控显示「暂无命中」；底栏只保留角色、状态点、前置游戏。
+- 窗口 440×380；深/浅色跟随主题资源；反跳/干扰的「清除」缩成右上角 ×（tooltip 说明）。
+
+**标题显示当前舰船类型**
+
+- 游戏日志里没有"自己的船型"（战斗行里的船名都是对方的），只能走 ESI：新增
+  `Services/CombatLog/CharacterShipNameService`，用已授权角色令牌调 `Location.GetCurrentShipAsync`，
+  再经本地 SDE 翻译；按角色缓存 2 分钟（失败缓存 30 秒）。
+- 开关放在**日志监控 → 选中角色 → 战斗日志**页签：`GameLogSetting.ShowShipInTitle`（默认开，zh/en 各新增
+  `CombatLog_ShowShip` / `CombatLog_ShowShipTip` 两个键）；未授权 / 取不到时只显示角色名，不占位、不报错。
+- 切换开关对已打开窗口即时生效（`GameLogMonitorSession.SetShowShipInTitle`、`CombatLogFeedService.SetShowShipInTitle`）；
+  日志窗口和战斗日志专属窗口都支持。
+
+**修正：战斗日志与关键词日志共用窗口（2026-11-20）**
+
+- 原因：战斗会话和关键词会话各建一个 `GameLogMsgWindow`，两个都置顶、都居中，战斗窗口把关键词窗口整个盖住，看起来就是"二选一"。
+- 新增 `Services/CombatLog/GameLogWindowRegistry`：按角色引用计数，一个角色只保留一个窗口；
+  战斗先启动则窗口是"仅战斗"，关键词后到调用 `EnableMonitor()` 原地升级成"战斗 + 监控"，反过来也复用；
+  最后一个使用者停止时才关闭。窗口所有者：`combat` / `monitor:<配置GUID>`。
+- 关键词配置停止时若还有别的关键词会话在用则保留监控区，否则恢复"仅战斗"。
+- 开始任意关键词配置时，若该角色的战斗开关是开的、战斗会话还没跑，会顺带 `StartCombat()`；否则只点关键词的「开始监控」会看不到战斗信息。
+- 战斗区没有内容时不再显示「无战斗」占位：双区窗口整块隐藏、只留命中列表；仅战斗窗口在没有事件时不弹出，事件清空后自动隐藏，避免一片空白。
+- 窗口进一步极简：标题只留「角色名（+ 当前舰船）」，去掉「日志监控 / 配置名 / 游戏日志」；去掉「命中 N」小标题与左下角角色名+监控状态，清空按钮移到右下角（仅监控窗口显示），消息列表从顶部直接开始。
+- 「开始监控 / 停止监控」按钮改为**当前角色全部配置**（等价 `StartAll` / `StopAll`），不再只启停选中页签；顶部「开始全部 / 停止全部」保持不变。
+**日志窗口中英文切换（2026-11-20）**
+
+- 窗口里的固定文案全部改为 `DynamicResource`：`GameLogMsgWindow_Hits` / `GameLogMsgWindow_NoHits` / `GameLogMsgWindow_ShowGame` / `GameLogMsgWindow_ClearCombatTip`（另有 `GameLogMsgWindow_Clear` 备用），无战斗复用 `CombatLog_NoCombat`，监控状态复用 `GameLogMonitorPage_Running`。
+- 底栏「战斗中 / 待战」在代码里改走 `LanguageService.Get("GameLogMsgWindow_Combat"/"GameLogMsgWindow_Waiting")`；窗口订阅 `LanguageService.LanguageChanged`，切换语言时重算标题、战斗卡片文字、状态和空列表占位。
+- 标题改为 `titleProvider`（`SetTitleProvider`）：会话/战斗窗口传入按当前语言重新求值的标题生成器，切换语言后标题也同步；舰船名缓存在 `_shipName`，重算标题时不会丢。
+**验证**
+
+- `probe/LogWindowProbe`：无网络、无游戏依赖，构造状态中心数据后分别渲染
+  「战斗+监控 / 仅战斗 / 仅监控 / 无事件」四张截图；四态布局、卡片换行（奇数最后一张整行）、
+  清除按钮、高亮行均正常。
+- `dotnet build`（WPF + LogWindowProbe）：0 错误；主窗口实测「战斗日志」页签出现「标题显示当前舰船」开关。
+
+---
 ## 8. 已知限制与待办
 
 - **物品详情（阶段 283）还没做的两块**：

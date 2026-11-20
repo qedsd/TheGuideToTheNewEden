@@ -143,6 +143,36 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// 阶段 359：日志监控窗口标题里显示当前舰船类型（ESI 读取，取不到时只显示角色名）。
+    /// 存在该角色的 <see cref="GameLogSetting"/> 里，默认开启。
+    /// </summary>
+    public bool ShowShipInTitle
+    {
+        get => Setting?.ShowShipInTitle ?? true;
+        set
+        {
+            if (Setting is null || Setting.ShowShipInTitle == value)
+            {
+                return;
+            }
+
+            Setting.ShowShipInTitle = value;
+            SaveSetting();
+            OnPropertyChanged();
+
+            if (SelectedGameLogInfo is { } info)
+            {
+                foreach (var session in _sessions.Values.Where(p => p.Info.ListenerID == info.ListenerID))
+                {
+                    session.SetShowShipInTitle(value);
+                }
+
+                CombatLogFeedService.Current.SetShowShipInTitle(info.ListenerID, value);
+            }
+        }
+    }
+
+    /// <summary>
     /// 「战斗日志」开关：只记录"要不要监控"，**不会**因为选中页签/打开开关就自动开始；
     /// 真正开始要用户点「开始监控」，见 <see cref="StartCombat"/>。关闭时若正在跑会立即停止。
     /// </summary>
@@ -453,7 +483,7 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             }
         }
 
-        var session = new GameLogMonitorSession(info, config, filePath);
+        var session = new GameLogMonitorSession(info, config, filePath, ShowShipInTitle);
         if (!session.Start())
         {
             session.Stop();
@@ -463,6 +493,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
         session.OnContentUpdate += Session_OnContentUpdate;
         _sessions[config.GUID] = session;
+
+        // 战斗日志开关是"该角色要不要战斗监控"：开始任意关键词配置时，
+        // 如果开关是开的、战斗会话还没跑，就一并启动，避免"只看到关键词日志"。
+        if (Setting.CombatEnabled && !CombatLogFeedService.Current.IsRunning(info.ListenerName))
+        {
+            StartCombat();
+        }
 
         info.Running = true;
         RefreshRunningState();

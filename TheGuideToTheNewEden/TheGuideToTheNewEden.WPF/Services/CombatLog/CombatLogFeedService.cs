@@ -31,6 +31,18 @@ public sealed class CombatLogFeedService
     private readonly Dictionary<string, Feed> _feeds = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _locker = new();
 
+    /// <summary>切换标题里的舰船显示（对已打开的战斗日志窗口即时生效）。</summary>
+    public void SetShowShipInTitle(long listenerId, bool show)
+    {
+        lock (_locker)
+        {
+            foreach (var feed in _feeds.Values.Where(p => p.Info.ListenerID == listenerId))
+            {
+                feed.Window?.SetShowShip(show);
+            }
+        }
+    }
+
     /// <summary>会话启停（多开状态徽标用）。</summary>
     public event Action? RunningChanged;
 
@@ -127,15 +139,8 @@ public sealed class CombatLogFeedService
         Core.Services.ObservableFileService.Remove(feed.Item);
         CombatLogStateCenter.Current.Detach(listener);
 
-        var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is not null)
-        {
-            dispatcher.Invoke(() =>
-            {
-                feed.Window?.CloseWindow();
-                feed.Window = null;
-            });
-        }
+        GameLogWindowRegistry.Release(listener, "combat");
+        feed.Window = null;
 
         Core.Log.Info($"战斗日志已停止：{listener}");
         RunningChanged?.Invoke();
@@ -176,10 +181,17 @@ public sealed class CombatLogFeedService
         {
             try
             {
-                feed.Window ??= new GameLogMsgWindow(
-                    feed.Info.ListenerName,
-                    $"{FindString("Nav.GameLogMonitor")} - {feed.Info.ListenerName} - {FindString("GameLogMonitorPage_CombatLog")}",
-                    combatOnly: true);
+                if (feed.Window is null)
+                {
+                    var showShip = GameLogInfoSettingService.GetValue(feed.Info.ListenerID)?.ShowShipInTitle ?? true;
+                    Func<string> titleProvider = () => feed.Info.ListenerName;
+                    feed.Window = GameLogWindowRegistry.Acquire(
+                        feed.Info.ListenerName,
+                        "combat",
+                        () => new GameLogMsgWindow(feed.Info.ListenerName, feed.Info.ListenerName, combatOnly: true, showShip: showShip, titleProvider: titleProvider));
+                    feed.Window.SetShowShip(showShip);
+                }
+
                 feed.Window.ShowWindow();
             }
             catch (Exception ex)

@@ -3,20 +3,24 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Width="400"
-    Height="300"
+    Width="440"
+    Height="380"
     ExtendsContentIntoTitleBar="True"
+    ResizeMode="NoResize"
     ShowInTaskbar="False"
     Topmost="True"
     WindowBackdropType="None"
     WindowStartupLocation="CenterScreen">
 
+    <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </ui:FluentWindow.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="42" />
         </Grid.RowDefinitions>
 
         <ui:TitleBar
@@ -28,100 +32,223 @@
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
-        <!--  战斗日志状态条（阶段 357）：由日志监控"战斗日志"开关驱动，与多开叠加层同源  -->
-        <Border
-            x:Name="CombatPanel"
-            Grid.Row="1"
-            Margin="8,0,8,4"
-            Padding="8,6"
-            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            CornerRadius="4"
-            Visibility="Collapsed">
-            <StackPanel>
+        <!--  战斗 / 监控 两块，按启用状态自适应高度  -->
+        <Grid Grid.Row="1" Margin="13,2,13,0">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="CombatRow" Height="Auto" />
+                <RowDefinition x:Name="MonitorRow" Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="CombatArea">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition x:Name="CardsRow" Height="Auto" />
+                </Grid.RowDefinitions>
+
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="11"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource CombatLog_PanelTitle}" />
+                    <ItemsControl x:Name="PillsList" VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Margin="0,0,6,6"
+                                    Padding="8,2"
+                                    Background="{Binding Background}"
+                                    CornerRadius="10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse
+                                            Width="5"
+                                            Height="5"
+                                            VerticalAlignment="Center"
+                                            Fill="{Binding Brush}" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="{Binding Brush}"
+                                            Text="{Binding Label}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
                     <ui:Button
                         x:Name="CombatClearButton"
-                        Grid.Column="1"
                         Padding="6,1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Appearance="Transparent"
                         Click="OnCombatClearClick"
-                        Content="{DynamicResource CombatLog_Clear}"
-                        FontSize="11"
-                        ToolTip="{DynamicResource CombatLog_Clear}"
+                        Content="×"
+                        FontSize="14"
+                        ToolTip="{DynamicResource GameLogMsgWindow_ClearCombatTip}"
                         Visibility="Collapsed" />
                 </Grid>
-                <ItemsControl x:Name="CombatList" Margin="0,2,0,0">
+
+                <ItemsControl
+                    x:Name="CardsList"
+                    Grid.Row="1"
+                    Margin="0,1,0,4"
+                    SizeChanged="OnCardsSizeChanged">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock FontWeight="SemiBold" Text="{Binding Text}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ColorKey}" Value="warning">
-                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding ColorKey}" Value="success">
-                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding ColorKey}" Value="info">
-                                                <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding ColorKey}" Value="purple">
-                                                <Setter Property="Foreground" Value="#C084FC" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding ColorKey}" Value="normal">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                                <TextBlock.ToolTip>
-                                    <TextBlock MaxWidth="460" Text="{Binding Detail}" TextWrapping="Wrap" />
-                                </TextBlock.ToolTip>
-                            </TextBlock>
+                            <Border
+                                Width="{Binding Width}"
+                                Height="{Binding Height}"
+                                MinHeight="58"
+                                Margin="0,0,7,7"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Rectangle
+                                        Fill="{Binding Brush}"
+                                        RadiusX="1.5"
+                                        RadiusY="1.5" />
+                                    <StackPanel Grid.Column="1" Margin="9,6,8,5">
+                                        <TextBlock
+                                            FontSize="10.5"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding Label}" />
+                                        <StackPanel Margin="0,1,0,0" Orientation="Horizontal">
+                                            <TextBlock
+                                                FontSize="19"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Value}" />
+                                            <TextBlock
+                                                Margin="3,0,0,3"
+                                                VerticalAlignment="Bottom"
+                                                FontSize="10"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding Unit}" />
+                                            <TextBlock
+                                                Margin="3,0,0,3"
+                                                VerticalAlignment="Bottom"
+                                                FontSize="10"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding Window}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+            </Grid>
+
+            <Grid x:Name="MonitorArea" Grid.Row="1">
+                <ScrollViewer
+                    x:Name="FeedScroll"
+                    Padding="0,1,0,0"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="FeedList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,1">
+                                    <Border
+                                        Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="5"
+                                        Opacity="0.10"
+                                        Visibility="{Binding IsNew, Converter={StaticResource BoolToVis}}" />
+                                    <Grid Margin="6,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="10.5"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding Time}" />
+                                        <Border
+                                            Grid.Column="1"
+                                            MaxWidth="90"
+                                            Margin="7,0"
+                                            Padding="4,0"
+                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                            CornerRadius="3">
+                                            <TextBlock
+                                                FontSize="9.5"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding Channel}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </Border>
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            FontSize="11.5"
+                                            Text="{Binding Text}"
+                                            TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsNew}" Value="True">
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
                 <TextBlock
-                    x:Name="CombatEmpty"
-                    Margin="0,2,0,0"
+                    x:Name="FeedEmpty"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     FontSize="11"
                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                    Text="{DynamicResource CombatLog_NoCombat}" />
+                    Text="{DynamicResource GameLogMsgWindow_NoHits}"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel
+                Margin="0,0,13,0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <ui:Button
+                    x:Name="FeedClearButton"
+                    Margin="0,0,6,0"
+                    Padding="6,1"
+                    Appearance="Transparent"
+                    Click="OnClearFeedClick"
+                    FontSize="10.5"
+                    Icon="{ui:SymbolIcon Eraser24}"
+                    ToolTip="{DynamicResource GameLogMsgWindow_Clear}" />
+                <ui:Button
+                    x:Name="ShowGameButton"
+                    Padding="10,3"
+                    Appearance="Primary"
+                    Click="OnShowGameClick"
+                    Content="{DynamicResource GameLogMsgWindow_ShowGame}"
+                    FontSize="11" />
             </StackPanel>
-        </Border>
-
-        <RichTextBox
-            x:Name="MsgBox"
-            Grid.Row="2"
-            Background="Transparent"
-            BorderThickness="0"
-            Focusable="False"
-            IsReadOnly="True"
-            VerticalScrollBarVisibility="Auto">
-            <FlowDocument />
-            <RichTextBox.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Click="OnClearClick" Header="{DynamicResource General_Clear}" />
-                </ContextMenu>
-            </RichTextBox.ContextMenu>
-        </RichTextBox>
-
-        <ui:Button
-            Grid.Row="3"
-            Margin="8"
-            HorizontalAlignment="Stretch"
-            Appearance="Primary"
-            Click="OnShowGameClick"
-            Content="{DynamicResource GameLogMonitorPage_ShowGame}" />
+        </Grid>
     </Grid>
 </ui:FluentWindow>

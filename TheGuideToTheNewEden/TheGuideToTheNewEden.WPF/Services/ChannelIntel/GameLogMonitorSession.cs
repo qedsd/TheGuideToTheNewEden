@@ -3,6 +3,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WPF.Helpers;
+using TheGuideToTheNewEden.WPF.Services.CombatLog;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Services.ChannelIntel;
@@ -34,17 +35,26 @@ public sealed class GameLogMonitorSession
     private System.Timers.Timer? _delayTimer;
     private DateTime _lastTriggeredTime = DateTime.MaxValue;
     private readonly object _locker = new();
+    private bool _showShipInTitle;
     private bool _running;
 
     /// <summary>原始内容更新（供页面着色显示）。</summary>
     public event GameLogItem.ContentUpdate? OnContentUpdate;
 
-    public GameLogMonitorSession(GameLogInfo info, GameLogItemConfig config, string filePath)
+    public GameLogMonitorSession(GameLogInfo info, GameLogItemConfig config, string filePath, bool showShipInTitle = true)
     {
         Info = info;
         Config = config;
         FilePath = filePath;
+        _showShipInTitle = showShipInTitle;
         _gameLogItem = new GameLogItem(info, config, filePath);
+    }
+
+    /// <summary>切换标题里的舰船显示（对已打开的窗口即时生效）。</summary>
+    public void SetShowShipInTitle(bool show)
+    {
+        _showShipInTitle = show;
+        _msgWindow?.SetShowShip(show);
     }
 
     /// <summary>开始监控；注册失败返回 false。</summary>
@@ -63,9 +73,13 @@ public sealed class GameLogMonitorSession
         {
             if (Config.WindowNotify)
             {
-                _msgWindow = new GameLogMsgWindow(
+                Func<string> titleProvider = () => Info.ListenerName;
+                _msgWindow = GameLogWindowRegistry.Acquire(
                     Info.ListenerName,
-                    $"{FindString("Nav.GameLogMonitor")} - {Info.ListenerName} - {Config.ConfigName}");
+                    "monitor:" + Config.GUID,
+                    () => new GameLogMsgWindow(Info.ListenerName, Info.ListenerName, showShip: _showShipInTitle, titleProvider: titleProvider));
+                _msgWindow.EnableMonitor();
+                _msgWindow.SetTitleProvider(titleProvider);
                 _msgWindow.OnHided += (_, _) => _sound?.StopSound();
                 _msgWindow.OnShowGameButtonClick += (_, _) =>
                 {
@@ -192,7 +206,7 @@ public sealed class GameLogMonitorSession
             {
                 if (Config.WindowNotify && _msgWindow is not null)
                 {
-                    _msgWindow.Show(message);
+                    _msgWindow.Show(message, Config.ConfigName);
                 }
 
                 if (Config.SoundNotify && _sound is not null)
@@ -243,7 +257,14 @@ public sealed class GameLogMonitorSession
         {
             _sound?.Dispose();
             _sound = null;
-            _msgWindow?.CloseWindow();
+
+            var owner = "monitor:" + Config.GUID;
+            if (!GameLogWindowRegistry.HasOtherMonitorOwner(Info.ListenerName, owner))
+            {
+                _msgWindow?.DisableMonitor();
+            }
+
+            GameLogWindowRegistry.Release(Info.ListenerName, owner);
             _msgWindow = null;
         });
     }

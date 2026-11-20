@@ -19,6 +19,13 @@ namespace TheGuideToTheNewEden.Core.Models
             get => _combatEnabled; set => SetProperty(ref _combatEnabled, value);
         }
 
+        private bool _showShipInTitle = true;
+        /// <summary>阶段 359：日志监控窗口标题里显示当前舰船类型（ESI 读取，取不到时只显示角色名）。</summary>
+        public bool ShowShipInTitle
+        {
+            get => _showShipInTitle; set => SetProperty(ref _showShipInTitle, value);
+        }
+
         private ObservableCollection<GameLogItemConfig> _itemConfigs = new ObservableCollection<GameLogItemConfig>();
         public ObservableCollection<GameLogItemConfig> ItemConfigs
         {

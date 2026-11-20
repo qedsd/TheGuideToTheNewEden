@@ -71,7 +71,10 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" Margin="12" Visibility="{Binding IsConfigured, Converter={StaticResource BoolToVis}}">
+        <Grid
+            Grid.Row="1"
+            Margin="12"
+            Visibility="{Binding IsConfigured, Converter={StaticResource BoolToVis}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="220" />
                 <ColumnDefinition Width="340" />
@@ -81,9 +84,9 @@
             <!--  ============ 左：角色列表 ============  -->
             <controls:CardControl Grid.Column="0" Header="{DynamicResource ChannelTranslationPage_TargetCharacter}">
                 <ListBox
+                    IsSynchronizedWithCurrentItem="False"
                     ItemTemplate="{StaticResource CharacterItemTemplate}"
                     ItemsSource="{Binding Characters}"
-                    IsSynchronizedWithCurrentItem="False"
                     ScrollViewer.CanContentScroll="True"
                     SelectionChanged="OnCharacterSelectionChanged" />
                 <controls:CardControl.Footer>
@@ -159,7 +162,10 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <StackPanel Grid.Row="1" Margin="0,8,0,0" IsEnabled="{Binding SelectedNotRunning}">
+                    <StackPanel
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
+                        IsEnabled="{Binding SelectedNotRunning}">
                         <Border Style="{StaticResource SettingsDivider}" />
                         <CheckBox
                             Margin="0,8,0,0"
@@ -201,9 +207,7 @@
                             Margin="0,8,0,2"
                             Style="{StaticResource TranslationFieldLabel}"
                             Text="{DynamicResource ChannelTranslationPage_Keyword}" />
-                        <ui:TextBox
-                            PlaceholderText="{DynamicResource ChannelTranslationPage_Keyword_Tip}"
-                            Text="{Binding Keyword, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                        <ui:TextBox PlaceholderText="{DynamicResource ChannelTranslationPage_Keyword_Tip}" Text="{Binding Keyword, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
 
                         <!--  翻译方向只读展示：跟着「AI 翻译」页的源/目标语言设置走  -->
                         <TextBlock
@@ -246,9 +250,7 @@
             </controls:CardControl>
 
             <!--  ============ 右：实时译文 ============  -->
-            <controls:CardControl
-                Grid.Column="2"
-                Header="{DynamicResource ChannelTranslationPage_Result}">
+            <controls:CardControl Grid.Column="2" Header="{DynamicResource ChannelTranslationPage_Result}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
