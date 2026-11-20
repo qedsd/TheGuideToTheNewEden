@@ -135,11 +135,13 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
                 return null;
             }
 
-            if (!string.IsNullOrWhiteSpace(ev.ModuleName))
+            // 中文日志：优先用 <localized hint="英文名"> 反查（中文名末尾的 * 已去掉，但仍可能查不到）
+            var lookupName = !string.IsNullOrWhiteSpace(ev.ModuleHintName) ? ev.ModuleHintName : ev.ModuleName;
+            if (!string.IsNullOrWhiteSpace(lookupName))
             {
                 int typeId;
                 int groupId;
-                var category = ResolveByModule(ev.ModuleName, out typeId, out groupId);
+                var category = ResolveByModule(lookupName, out typeId, out groupId);
                 if (typeId > 0)
                 {
                     ev.ModuleTypeId = typeId;

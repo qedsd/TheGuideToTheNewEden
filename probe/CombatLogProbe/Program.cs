@@ -116,10 +116,47 @@ internal static class Program
         Expect(
             "(combat) 你被 张三 [CORP] 干扰 - 多谱干扰器 II",
             CombatEventKind.EcmJam, CombatEventDirection.Incoming, null, null, "多谱干扰器 II", "ecm");
+        // 中文真实日志（2026-11-19，D:\QEDSD\EVE战斗日志）：按「收听者」区分方向
+        Expect(
+            "(combat) 209 来自 QEDSD[I K N](小鹰级*) - <localized hint=\"Anode Light Neutron Particle Cannon I\">阳极轻型中子加农炮 I*</localized> - 命中",
+            CombatEventKind.Damage, CombatEventDirection.Incoming, 209, "HP", "阳极轻型中子加农炮 I", "damage", "Arya D Stark");
+        Expect(
+            "(combat) 209 对 Arya D Stark - <localized hint=\"Anode Light Neutron Particle Cannon I\">阳极轻型中子加农炮 I*</localized> - 命中",
+            CombatEventKind.Damage, CombatEventDirection.Outgoing, 209, "HP", "阳极轻型中子加农炮 I", "damage", "QEDSD");
+        Expect(
+            "(combat) 45 GJ能量中和 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Energy Neutralizer I\">小型能量中和器 I*</localized>",
+            CombatEventKind.CapacitorNeutralize, CombatEventDirection.Incoming, 45, "GJ", "小型能量中和器 I", "neut", "Arya D Stark");
+        Expect(
+            "(combat) 45 GJ能量中和Arya D Stark (涅鲁斯级*) - <localized hint=\"Small Energy Neutralizer I\">小型能量中和器 I*</localized>",
+            CombatEventKind.CapacitorNeutralize, CombatEventDirection.Incoming, 45, "GJ", "小型能量中和器 I", "neut", "QEDSD");
+        Expect(
+            "(combat) -15 GJ被吸取到 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
+            CombatEventKind.CapacitorDrain, CombatEventDirection.Incoming, 15, "GJ", "小型掠能器 I", "nos", "Arya D Stark");
+        Expect(
+            "(combat) +15 GJ被从Arya D Stark (涅鲁斯级*)吸取 - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
+            CombatEventKind.CapacitorDrain, CombatEventDirection.Outgoing, 15, "GJ", "小型掠能器 I", "nos", "QEDSD");
+        Expect(
+            "(combat) 64远程护盾回充增量由 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Ancillary Remote Shield Booster\">小型辅助远程护盾回充增量器*</localized>",
+            CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 64, "HP", "小型辅助远程护盾回充增量器", "rep", "Arya D Stark");
+        Expect(
+            "(combat) 64远程护盾回充增量至Arya D Stark (涅鲁斯级*) - <localized hint=\"Small Ancillary Remote Shield Booster\">小型辅助远程护盾回充增量器*</localized>",
+            CombatEventKind.RemoteRepair, CombatEventDirection.Outgoing, 64, "HP", "小型辅助远程护盾回充增量器", "rep", "QEDSD");
+        Expect(
+            "(combat) 来自 黑鸟级* [I K N] [QEDSD] - 试图跃迁扰频 你！",
+            CombatEventKind.WarpScramble, CombatEventDirection.Incoming, null, null, null, "scram", "Arya D Stark");
+        Expect(
+            "(combat) 狂怒者级* [SHDWC] [MISBE] [piffs] - 试图跃迁扰断 灵感级* [TURKS] [AV-CI] [Arkhe] -",
+            CombatEventKind.WarpScramble, CombatEventDirection.Outgoing, null, null, null, "scram", "QEDSD");
+        Expect(
+            "(combat) <localized hint=\"Magnetometric ECM I\">磁力ECM I*</localized>对 小鹰级* [I K N] [QEDSD] -干扰",
+            CombatEventKind.EcmJam, CombatEventDirection.Outgoing, null, null, "磁力ECM I", "ecm", "Arya D Stark");
+        Expect(
+            "(combat) Arya D Stark (伊毕斯号*)的<localized hint=\"Magnetometric ECM I\">磁力ECM I*</localized>正在干扰你",
+            CombatEventKind.EcmJam, CombatEventDirection.Incoming, null, null, "磁力ECM I", "ecm", "QEDSD");
     }
 
-    private static void ExpectDamage(string line, CombatEventKind kind, CombatEventDirection direction, double amount, string module, string category)
-        => Expect(line, kind, direction, amount, "HP", module, category);
+    private static void ExpectDamage(string line, CombatEventKind kind, CombatEventDirection direction, double amount, string module, string category, string listener = "QEDSD")
+        => Expect(line, kind, direction, amount, "HP", module, category, listener);
 
     private static void Expect(
         string line,
@@ -128,12 +165,13 @@ internal static class Program
         double? amount,
         string unit,
         string module,
-        string category)
+        string category,
+        string listener = "QEDSD")
     {
         // GameLogContent.Create 需要日志行前缀 [ 时间 ]；样本里省略，这里补上
         var logLine = line.TrimStart().StartsWith('[') ? line : $"[ 2026.11.19 17:00:00 ] {line}";
         var content = GameLogContent.Create(logLine);
-        var ev = content is null ? null : CombatLogParser.TryParse(content, "QEDSD");
+        var ev = content is null ? null : CombatLogParser.TryParse(content, listener);
         if (ev is null)
         {
             Fail(line, "解析为 null");
@@ -253,41 +291,89 @@ internal static class Program
         Log.AppendLine();
         Log.AppendLine($"== 扫描真实日志：{folder} ==");
 
-        var files = Directory.GetFiles(folder, "*.txt", SearchOption.TopDirectoryOnly);
+        var files = Directory.GetFiles(folder, "*.txt", SearchOption.TopDirectoryOnly)
+            .Where(p => !Path.GetFileName(p).StartsWith('_'))
+            .ToArray();
         var parsed = new List<string>();
         var unmatched = new List<string>();
+        var ignoredZero = 0;
+        var ignoredMiss = 0;
         foreach (var file in files)
         {
-            foreach (var line in File.ReadLines(file, Encoding.Default))
+            // 每个日志文件按自己的「收听者」判断方向（多角色日志不能混用）
+            var listener = ReadListener(file);
+            if (string.IsNullOrWhiteSpace(listener))
+            {
+                Log.AppendLine($"[SKIP] 无收听者：{file}");
+                continue;
+            }
+
+            foreach (var line in File.ReadLines(file, Encoding.UTF8))
             {
                 if (!line.Contains("(combat)") && !line.Contains("(notify)"))
                 {
                     continue;
                 }
 
+                var isCombat = line.Contains("(combat)");
                 var content = GameLogContent.Create(line);
                 if (content is null)
                 {
                     continue;
                 }
 
-                var ev = CombatLogParser.TryParse(content, "QEDSD");
+                var ev = CombatLogParser.TryParse(content, listener);
                 if (ev is null)
                 {
-                    unmatched.Add(CombatLogParser.NormalizeForDiagnostics(line));
+                    if (isCombat)
+                    {
+                        var normalized = CombatLogParser.NormalizeForDiagnostics(line);
+                        if (normalized.Contains("没有打中") || normalized.Contains("未命中"))
+                        {
+                            ignoredMiss++;
+                        }
+                        else if (System.Text.RegularExpressions.Regex.IsMatch(
+                                     normalized, @"\(combat\)\s*[+-]?0(?:\.0+)?\s*(?:GJ|HP)?"))
+                        {
+                            ignoredZero++;
+                        }
+                        else
+                        {
+                            unmatched.Add($"{listener}|{normalized}");
+                        }
+                    }
+
                     continue;
                 }
 
                 var category = CombatCategoryResolver.Resolve(ev);
-                parsed.Add($"{(int)ev.Kind}|{ev.Direction}|{category}|{ev.Amount?.ToString() ?? "-"}|{ev.Unit ?? "-"}|{ev.ModuleName ?? "-"}|{ev.RawLine}");
+                parsed.Add($"{listener}|{(int)ev.Kind}|{ev.Direction}|{category}|{ev.Amount?.ToString() ?? "-"}|{ev.Unit ?? "-"}|{ev.ModuleName ?? "-"}|{ev.RawLine}");
             }
         }
 
         var outDir = AppContext.BaseDirectory;
         File.WriteAllLines(Path.Combine(outDir, "scan-parsed.txt"), parsed.Distinct().OrderBy(p => p), Encoding.UTF8);
         File.WriteAllLines(Path.Combine(outDir, "scan-unmatched.txt"), unmatched.Distinct().OrderBy(p => p), Encoding.UTF8);
-        Log.AppendLine($"文件 {files.Length} 个；可识别 {parsed.Distinct().Count()} 条，未识别 {unmatched.Distinct().Count()} 条。");
+        Log.AppendLine($"文件 {files.Length} 个；可识别 {parsed.Distinct().Count()} 条，" +
+                       $"未识别 {unmatched.Distinct().Count()} 条（另有 未命中 {ignoredMiss} 行、0 值 {ignoredZero} 行按设计忽略）。");
         Log.AppendLine($"  输出：{Path.Combine(outDir, "scan-parsed.txt")}");
         Log.AppendLine($"  输出：{Path.Combine(outDir, "scan-unmatched.txt")}");
+    }
+
+    /// <summary>日志头：<c>收听者: 名字</c>（中文客户端）或 <c>Listener: Name</c>。</summary>
+    private static string ReadListener(string file)
+    {
+        foreach (var line in File.ReadLines(file, Encoding.UTF8).Take(8))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(
+                line, @"(?:收听者|Listener)\s*[:：]\s*(?<name>.+)$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups["name"].Value.Trim();
+            }
+        }
+
+        return null;
     }
 }

@@ -62,8 +62,11 @@ namespace TheGuideToTheNewEden.Core.Models.CombatLog
 
         public string Ship { get; set; }
 
-        /// <summary>装备名（日志里出现在最后一段；伤害行是武器，遥修行是维修器）。</summary>
+        /// <summary>装备名（日志里出现在最后一段；伤害行是武器，遥修行是维修器）。中文客户端已去掉末尾 *。</summary>
         public string ModuleName { get; set; }
+
+        /// <summary>中文日志 &lt;localized hint="…"&gt; 里的英文装备名（反查分类优先用它）。</summary>
+        public string ModuleHintName { get; set; }
 
         /// <summary>装备反查到的 TypeID / GroupID（查不到为 0）。</summary>
         public int ModuleTypeId { get; set; }

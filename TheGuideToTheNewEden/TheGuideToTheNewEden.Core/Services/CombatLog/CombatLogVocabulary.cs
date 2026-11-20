@@ -80,11 +80,18 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             "drained", "drains", "nosferatu", "吸血", "吸取", "吸电",
         };
 
+        /// <summary>未命中（没有伤害数值，直接忽略）。</summary>
+        public static readonly string[] MissWords =
+        {
+            "完全没有打中", "没有打中", "未命中", "misses", "miss",
+        };
+
         /// <summary>命中质量（伤害行的最后一段）。</summary>
         public static readonly string[] QualityWords =
         {
             "hits", "grazes", "glances off", "penetrates", "smashes", "wrecks", "misses", "miss",
-            "命中", "擦过", "掠过", "擦边", "穿透", "击穿", "重击", "毁灭", "未命中", "偏斜", "偏转",
+            "命中", "轻轻擦过", "擦过", "掠过", "擦边", "穿透", "击穿", "强力一击",
+            "完美一击", "毁灭一击", "毁灭", "未命中", "偏斜", "偏转",
         };
 
         /// <summary>判断一段文本是否是命中质量。</summary>
