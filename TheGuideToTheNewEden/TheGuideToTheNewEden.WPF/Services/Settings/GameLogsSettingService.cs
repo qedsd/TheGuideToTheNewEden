@@ -14,6 +14,8 @@ public static class GameLogsSettingService
         MaxShowItems,
         CombatLogExpireSeconds,
         CombatLogCategories,
+        CombatLogDisabledCategories,
+        CombatLogStatusGreySeconds,
     }
 
     /// <summary>过期时间的合法范围（默认 60 秒，可手输任意秒数）。</summary>
@@ -30,8 +32,15 @@ public static class GameLogsSettingService
     /// </summary>
     public static int CombatLogExpireSeconds { get; set; } = 60;
 
-    /// <summary>战斗日志启用的分类（空 = 全部）。</summary>
-    public static string CombatLogCategories { get; set; } = string.Empty;
+    /// <summary>被用户关掉的分类（阶段 377：存"关闭列表"，空 = 全部开启，新分类自动开启）。</summary>
+    public static string CombatLogDisabledCategories { get; set; } = string.Empty;
+
+    /// <summary>状态类（电子战 / 反跳…）多久没有新日志就变灰（秒，默认 300 = 5 分钟）。</summary>
+    public static int CombatLogStatusGreySeconds { get; set; } = 300;
+
+    /// <summary>状态变灰时间的合法范围。</summary>
+    public const int MinStatusGreySeconds = 10;
+    public const int MaxStatusGreySeconds = 86400;
 
     public static void Initialize()
     {
@@ -47,7 +56,11 @@ public static class GameLogsSettingService
         CombatLogExpireSeconds = ClampExpire(
             SettingsService.GetInt(GameLogKey.CombatLogExpireSeconds.ToString(), 60));
 
-        CombatLogCategories = SettingsService.GetValue(GameLogKey.CombatLogCategories.ToString()) ?? string.Empty;
+        CombatLogDisabledCategories = SettingsService.GetValue(GameLogKey.CombatLogDisabledCategories.ToString()) ?? string.Empty;
+        CombatLogStatusGreySeconds = Math.Clamp(
+            SettingsService.GetInt(GameLogKey.CombatLogStatusGreySeconds.ToString(), 300),
+            MinStatusGreySeconds,
+            MaxStatusGreySeconds);
 
         // 同步到状态中心（设置变化时也会调用 SyncCombatSettings）
         SyncCombatSettings();
@@ -58,12 +71,11 @@ public static class GameLogsSettingService
     {
         var center = CombatLogStateCenter.Current;
         center.ExpireSeconds = CombatLogExpireSeconds;
-        var categories = ParseCategories(CombatLogCategories);
-        // 空字符串 = 从未设置（默认全开）；"-" = 用户主动全部取消
-        var enabled = string.IsNullOrWhiteSpace(CombatLogCategories)
-            ? CombatCategories.All.Select(p => p.Key).ToList()
-            : categories;
-        center.SetEnabledCategories(enabled);
+        center.StatusGreySeconds = CombatLogStatusGreySeconds;
+        var disabled = ParseCategories(CombatLogDisabledCategories).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        center.SetEnabledCategories(CombatCategories.All
+            .Select(p => p.Key)
+            .Where(p => !disabled.Contains(p)));
     }
 
     public static void SetCombatExpire(int seconds)
@@ -76,17 +88,30 @@ public static class GameLogsSettingService
     private static int ClampExpire(int seconds)
         => Math.Clamp(seconds, MinCombatLogExpireSeconds, MaxCombatLogExpireSeconds);
 
+    /// <summary>保存"启用"的分类：内部换算成关闭列表，保证以后新增的分类默认是开启的。</summary>
     public static void SetCombatCategories(IEnumerable<string> categories)
     {
-        var list = categories.ToList();
-        // 全部取消也要能记住：用 "-" 表示"一个都不显示"
-        CombatLogCategories = list.Count == 0 ? "-" : string.Join(',', list);
-        SettingsService.SetValue(GameLogKey.CombatLogCategories.ToString(), CombatLogCategories);
+        var enabled = categories.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var disabled = CombatCategories.All
+            .Select(p => p.Key)
+            .Where(p => !enabled.Contains(p))
+            .ToList();
+        CombatLogDisabledCategories = string.Join(',', disabled);
+        SettingsService.SetValue(GameLogKey.CombatLogDisabledCategories.ToString(), CombatLogDisabledCategories);
+        SyncCombatSettings();
+    }
+
+    public static void SetCombatStatusGreySeconds(int seconds)
+    {
+        CombatLogStatusGreySeconds = Math.Clamp(seconds, MinStatusGreySeconds, MaxStatusGreySeconds);
+        SettingsService.SetValue(
+            GameLogKey.CombatLogStatusGreySeconds.ToString(),
+            CombatLogStatusGreySeconds.ToString());
         SyncCombatSettings();
     }
 
     private static List<string> ParseCategories(string value)
-        => string.IsNullOrWhiteSpace(value) || value == "-"
+        => string.IsNullOrWhiteSpace(value)
             ? []
             : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Where(CombatCategories.IsKnown)
@@ -134,8 +159,22 @@ public static class GameLogsSettingService
                 }
 
                 break;
-            case GameLogKey.CombatLogCategories:
-                CombatLogCategories = value;
+            case GameLogKey.CombatLogDisabledCategories:
+                CombatLogDisabledCategories = value ?? string.Empty;
+                SyncCombatSettings();
+                break;
+            case GameLogKey.CombatLogStatusGreySeconds:
+                if (int.TryParse(value, out var grey))
+                {
+                    CombatLogStatusGreySeconds = Math.Clamp(grey, MinStatusGreySeconds, MaxStatusGreySeconds);
+                    SyncCombatSettings();
+                }
+                else
+                {
+                    Core.Log.Error($"Set {key} invalid data type of {value}");
+                }
+
+                break;
                 SyncCombatSettings();
                 break;
         }

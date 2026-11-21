@@ -360,6 +360,34 @@
                                             Text="{DynamicResource CombatLog_Seconds}" />
                                     </Grid>
 
+                                    <!--  阶段 377：状态类（电子战 / 反跳）多久没有新日志就变灰，默认 300 秒  -->
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{DynamicResource CombatLog_StatusGrey}" />
+                                        <ui:NumberBox
+                                            Grid.Column="1"
+                                            Width="120"
+                                            MaxHeight="32"
+                                            Maximum="86400"
+                                            Minimum="10"
+                                            SmallChange="30"
+                                            ToolTip="{DynamicResource CombatLog_StatusGreyTip}"
+                                            Value="{Binding DataContext.CombatStatusGreySeconds, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{DynamicResource CombatLog_Seconds}" />
+                                    </Grid>
+
                                     <Grid Margin="0,8,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="120" />

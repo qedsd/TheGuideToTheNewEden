@@ -450,7 +450,7 @@ internal static class Program
         center.Attach(ewListener);
         Report(center, ewListener, CombatEventKind.WarpScramble, CombatCategories.Scram, null, "Warp Scrambler II", now.AddSeconds(-5));
         Report(center, ewListener, CombatEventKind.WarpScramble, CombatCategories.Scram, null, "Warp Scrambler II", now.AddSeconds(-5), CombatEventDirection.Outgoing);
-        Report(center, ewListener, CombatEventKind.WarpDisrupt, CombatCategories.ScramDisrupt, null, "Warp Disruptor II", now.AddSeconds(-4));
+        Report(center, ewListener, CombatEventKind.WarpDisrupt, CombatCategories.Scram, null, "Warp Disruptor II", now.AddSeconds(-4));
         Report(center, ewListener, CombatEventKind.StasisWeb, CombatCategories.Web, null, "Stasis Webifier II", now.AddSeconds(-4));
         Report(center, ewListener, CombatEventKind.TargetPainter, CombatCategories.Painter, null, "Target Painter II", now.AddSeconds(-3));
         Report(center, ewListener, CombatEventKind.EcmJam, CombatCategories.Ecm, null, "Multispectral Jammer II", now.AddSeconds(-3), CombatEventDirection.Outgoing);
@@ -461,14 +461,32 @@ internal static class Program
             .GetField("_pills", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
             ?.GetValue(ewWindow) as System.Collections.IEnumerable)?.Cast<CombatPill>().ToList() ?? [];
         var ewLabels = ewPills.Select(p => p.Label).ToList();
-        Check("电子战胶囊分组名齐全",
-            ewLabels.Contains("跃迁扰频器") && ewLabels.Contains("跃迁扰断器") && ewLabels.Contains("ECM")
+        Check("电子战胶囊分组名齐全（扰频/扰断按 SDE 合并）",
+            ewLabels.Count(p => p == "跃迁扰频器") == 2 && ewLabels.Contains("ECM")
             && ewLabels.Contains("停滞缠绕光束") && ewLabels.Contains("目标标记装置"),
             string.Join(",", ewLabels));
         var scramIn = ewPills.FirstOrDefault(p => p.Label == "跃迁扰频器" && p.Brush is SolidColorBrush b && b.Color.R > b.Color.G);
         var scramOut = ewPills.FirstOrDefault(p => p.Label == "跃迁扰频器" && p.Brush is SolidColorBrush b2 && b2.Color.G > b2.Color.R);
         Check("自己施加=绿、别人施加=红", scramIn is not null && scramOut is not null,
             string.Join(",", ewPills.Select(p => $"{p.Label}:{((SolidColorBrush)p.Brush).Color}")));
+        // 阶段 377：其他电子战兜底 + 状态类变灰
+        Report(center, ewListener, CombatEventKind.Unknown, CombatCategories.EwOther, null, "未知力场发生器", now.AddSeconds(-2));
+        center.StatusGreySeconds = 60;
+        Report(center, ewListener, CombatEventKind.WarpDisrupt, CombatCategories.Scram, null, "Warp Disruptor II", now.AddSeconds(-120));
+        var ewWindow2 = new GameLogMsgWindow(ewListener, ewListener, combatOnly: true, showShip: false);
+        ewWindow2.ShowWindow();
+        ewWindow2.UpdateLayout();
+        var ewPills2 = (typeof(GameLogMsgWindow)
+            .GetField("_pills", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.GetValue(ewWindow) as System.Collections.IEnumerable)?.Cast<CombatPill>().ToList() ?? [];
+        Check("认不出的电子战进「其他电子战」胶囊",
+            ewPills2.Any(p => p.Label == "其他电子战"),
+            string.Join(",", ewPills2.Select(p => p.Label)));
+        Check("状态类超过变灰时间后置灰（仍显示）",
+            ewPills2.Any(p => p.Label == "跃迁扰频器" && p.Expired),
+            string.Join(",", ewPills2.Select(p => $"{p.Label}:{p.Expired}")));
+        center.StatusGreySeconds = 300;
+        ewWindow2.CloseWindow();
         Save(ewWindow, "logwindow-ew-groups.png");
         ewWindow.CloseWindow();
         center.Detach(ewListener);

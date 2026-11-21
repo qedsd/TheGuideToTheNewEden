@@ -500,6 +500,7 @@ public partial class GameLogMsgWindow : Window
                         Label = row.Label,
                         Brush = brush,
                         Background = TintOf(brush),
+                        Expired = line.Expired,
                     });
                 }
             }
@@ -686,7 +687,7 @@ public partial class GameLogMsgWindow : Window
     private static string CategoryLabelKey(string category) => category switch
     {
         CombatCategories.Scram => "CombatCategory_Scram",
-        CombatCategories.ScramDisrupt => "CombatCategory_ScramDisrupt",
+        CombatCategories.EwOther => "CombatCategory_EwOther",
         CombatCategories.Neut => "CombatCategory_Neut",
         CombatCategories.Nos => "CombatCategory_Nos",
         CombatCategories.Ecm => "CombatCategory_Ecm",
@@ -703,7 +704,7 @@ public partial class GameLogMsgWindow : Window
     private static Color ColorForCategory(string category) => category switch
     {
         CombatCategories.Scram => Color.FromRgb(0xE5, 0x48, 0x4D),
-        CombatCategories.ScramDisrupt => Color.FromRgb(0xE5, 0x48, 0x4D),
+        CombatCategories.EwOther => Color.FromRgb(0x6B, 0x72, 0x80),
         CombatCategories.Neut => Color.FromRgb(0xF5, 0xA5, 0x24),
         CombatCategories.Nos => Color.FromRgb(0x3B, 0x82, 0xF6),
         CombatCategories.Ecm => Color.FromRgb(0xA8, 0x55, 0xF7),
@@ -750,6 +751,9 @@ public sealed class CombatPill
     public Brush Brush { get; set; } = Brushes.Gray;
 
     public Brush Background { get; set; } = Brushes.Transparent;
+
+    /// <summary>状态类超过「变灰时间」没有新日志：变灰但仍在（只由清除收掉）。</summary>
+    public bool Expired { get; set; }
 }
 
 /// <summary>卡片里的一行数值：数量（大字号）+ 其余说明（小字号）。</summary>

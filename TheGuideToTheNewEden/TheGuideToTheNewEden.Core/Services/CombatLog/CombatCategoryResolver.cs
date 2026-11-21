@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TheGuideToTheNewEden.Core.DBModels;
@@ -46,7 +46,6 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
     public static class CombatCategories
     {
         public const string Scram = "scram";
-        public const string ScramDisrupt = "scram_disrupt";
         public const string Neut = "neut";
         public const string Nos = "nos";
         public const string Ecm = "ecm";
@@ -54,6 +53,7 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
         public const string Painter = "painter";
         public const string WeaponDisrupt = "weapon_disrupt";
         public const string SensorDamp = "sensor_damp";
+        public const string EwOther = "ew_other";
         public const string Rep = "rep";
         public const string CapTransfer = "cap_transfer";
         public const string Damage = "damage";
@@ -62,13 +62,13 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
         public static IReadOnlyList<CombatCategoryDefinition> All { get; } = new List<CombatCategoryDefinition>
         {
             new CombatCategoryDefinition(Scram, 10, false, null, true, sticky: true),
-            new CombatCategoryDefinition(ScramDisrupt, 12, false, null, true, sticky: true),
             new CombatCategoryDefinition(Ecm, 14, false, null, true, sticky: true),
             new CombatCategoryDefinition(Web, 16, false, null, true, sticky: true),
             new CombatCategoryDefinition(Painter, 18, false, null, true, sticky: true),
             new CombatCategoryDefinition(WeaponDisrupt, 19, false, null, true, sticky: true),
             new CombatCategoryDefinition(Neut, 20, true, "GJ", true),
             new CombatCategoryDefinition(SensorDamp, 21, false, null, true, sticky: true),
+            new CombatCategoryDefinition(EwOther, 22, false, null, true, sticky: true),
             new CombatCategoryDefinition(Rep, 40, true, "HP", true),
             new CombatCategoryDefinition(Nos, 50, true, "GJ", true),
             new CombatCategoryDefinition(CapTransfer, 60, true, "GJ", true),
@@ -125,13 +125,10 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             }),
             (CombatCategories.Scram, new[]
             {
+                // SDE 的 52 组同时含扰频器与扰断器（Warp Disruptor II 也在该组），按 SDE 口径合并成一类。
                 "warp scrambler", "warp scramble", "scrambler",
-                "跃迁扰频", "扰频器",
-            }),
-            (CombatCategories.ScramDisrupt, new[]
-            {
                 "warp disruptor", "warp disruption", "warp disrupt", "disruptor probe", "warp disrupter",
-                "跃迁扰断", "跃迁抑阻", "扰断器",
+                "跃迁扰频", "跃迁扰断", "跃迁抑阻", "扰频器", "扰断器",
             }),
             (CombatCategories.Web, new[]
             {
@@ -194,7 +191,7 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             switch (ev.Kind)
             {
                 case CombatEventKind.WarpScramble: fallback = CombatCategories.Scram; break;
-                case CombatEventKind.WarpDisrupt: fallback = CombatCategories.ScramDisrupt; break;
+                case CombatEventKind.WarpDisrupt: fallback = CombatCategories.Scram; break;
                 case CombatEventKind.StasisWeb: fallback = CombatCategories.Web; break;
                 case CombatEventKind.TargetPainter: fallback = CombatCategories.Painter; break;
                 case CombatEventKind.WeaponDisrupt: fallback = CombatCategories.WeaponDisrupt; break;
@@ -206,6 +203,15 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
                 case CombatEventKind.RemoteCapacitor: fallback = CombatCategories.CapTransfer; break;
                 case CombatEventKind.Damage: fallback = CombatCategories.Damage; break;
                 default: fallback = null; break;
+            }
+
+            // 阶段 377：认不出装备、但确实是"效果作用在别人/自己身上"（无具体数值）→ 其他电子战兜底。
+            if (fallback is null
+                && ev.Amount is null
+                && ev.Direction != CombatEventDirection.Unknown
+                && ev.Kind == CombatEventKind.Unknown)
+            {
+                fallback = CombatCategories.EwOther;
             }
 
             ev.CategoryKey = fallback;

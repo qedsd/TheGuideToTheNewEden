@@ -1381,6 +1381,8 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">Enabled: click Start Monitoring</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">Turn on "Enable combat log" before starting monitoring</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">Stopped</sys:String>
+    <sys:String x:Key="CombatLog_StatusGrey">Status fade</sys:String>
+    <sys:String x:Key="CombatLog_StatusGreyTip">Electronic warfare / scram status fades after this many seconds without a new log (still shown, cleared only by Clear all logs); default 300 s</sys:String>
     <sys:String x:Key="CombatLog_Expire">Expire after</sys:String>
     <sys:String x:Key="CombatLog_ExpireTip">A card greys out with an Expired label once its category has had no new log for this many seconds. Rows never disappear; only clearing or stopping monitoring removes them. Scram / ECM have no periodic log and never expire.</sys:String>
     <sys:String x:Key="CombatLog_Seconds">s</sys:String>
@@ -1409,7 +1411,7 @@
     <sys:String x:Key="GameLogMsgWindow_ClearCombatTip">Clear all logs (combat state + keyword hits)</sys:String>
     <sys:String x:Key="CombatLog_NotRunning">Combat log is not running</sys:String>
     <sys:String x:Key="CombatCategory_Scram">Warp Scrambler</sys:String>
-    <sys:String x:Key="CombatCategory_ScramDisrupt">Warp Disruptor</sys:String>
+    <sys:String x:Key="CombatCategory_EwOther">Other EW</sys:String>
     <sys:String x:Key="CombatCategory_Neut">Neut</sys:String>
     <sys:String x:Key="CombatCategory_Nos">Nos</sys:String>
     <sys:String x:Key="CombatCategory_Ecm">ECM</sys:String>

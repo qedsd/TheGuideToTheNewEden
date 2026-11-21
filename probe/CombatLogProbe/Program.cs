@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Models.CombatLog;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
@@ -112,7 +112,7 @@ internal static class Program
             CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 123, "HP", "大型远程装甲维修器 II", "rep");
         Expect(
             "(combat) 跃迁扰断尝试 来自 张三 [CORP] 对你",
-            CombatEventKind.WarpDisrupt, CombatEventDirection.Incoming, null, null, null, "scram_disrupt");
+            CombatEventKind.WarpDisrupt, CombatEventDirection.Incoming, null, null, null, "scram");
         Expect(
             "(combat) 你被 张三 [CORP] 干扰 - 多谱干扰器 II",
             CombatEventKind.EcmJam, CombatEventDirection.Incoming, null, null, "多谱干扰器 II", "ecm");
@@ -179,10 +179,10 @@ internal static class Program
         // 阶段 376：扰断器（长反跳）单独成组
         Expect(
             "(combat) 狂怒者级* [SHDWC] [MISBE] [piffs] - 试图跃迁扰断 灵感级* [TURKS] [AV-CI] [Arkhe] -",
-            CombatEventKind.WarpDisrupt, CombatEventDirection.Outgoing, null, null, null, "scram_disrupt", "QEDSD");
+            CombatEventKind.WarpDisrupt, CombatEventDirection.Outgoing, null, null, null, "scram", "QEDSD");
         Expect(
             "(combat) 来自 黑鸟级* [I K N] [QEDSD] - 试图跃迁扰断 你！",
-            CombatEventKind.WarpDisrupt, CombatEventDirection.Incoming, null, null, null, "scram_disrupt", "Arya D Stark");
+            CombatEventKind.WarpDisrupt, CombatEventDirection.Incoming, null, null, null, "scram", "Arya D Stark");
         // 阶段 376：停滞缠绕光束 / 目标标记装置 / 武器扰断器 / 远程感应抑阻器
         Expect(
             "(combat) 灵感级* [I K N] [QEDSD] - 的 <localized hint=\"Stasis Webifier II\">停滞缠绕光束 II*</localized> 正在缠绕 你",
@@ -196,6 +196,10 @@ internal static class Program
         Expect(
             "(combat) 灵感级* [I K N] [QEDSD] - 的 <localized hint=\"Remote Sensor Dampener II\">远程感应抑阻器 II*</localized> 正在抑制 你",
             CombatEventKind.SensorDamp, CombatEventDirection.Incoming, null, null, "远程感应抑阻器 II", "sensor_damp", "Arya D Stark");
+        // 阶段 377：认不出的电子战装备 → 其他电子战（走兜底，不出错也不丢）
+        Expect(
+            "(combat) 灵感级* [I K N] [QEDSD] - 的 未知力场发生器* 正在压制 你",
+            CombatEventKind.Unknown, CombatEventDirection.Incoming, null, null, null, "ew_other", "Arya D Stark");
         Expect(
             "(combat) <localized hint=\"Magnetometric ECM I\">磁力ECM I*</localized>对 小鹰级* [I K N] [QEDSD] -干扰",
             CombatEventKind.EcmJam, CombatEventDirection.Outgoing, null, null, "磁力ECM I", "ecm", "Arya D Stark");

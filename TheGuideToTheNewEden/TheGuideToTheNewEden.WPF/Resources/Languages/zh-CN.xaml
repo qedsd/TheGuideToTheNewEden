@@ -1393,6 +1393,8 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">已启用：点「开始监控」后开始</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">请先打开「启用战斗日志」，再点开始监控</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">未启动</sys:String>
+    <sys:String x:Key="CombatLog_StatusGrey">状态变灰</sys:String>
+    <sys:String x:Key="CombatLog_StatusGreyTip">电子战 / 反跳这类状态超过该秒数没有新日志就变灰（仍然显示，只由「清除所有日志」收掉）；默认 300 秒</sys:String>
     <sys:String x:Key="CombatLog_Expire">过期时间</sys:String>
     <sys:String x:Key="CombatLog_ExpireTip">某类日志超过该秒数没有更新，卡片置灰并提示「已过期」；行不会消失，只有手动清除或停止监控才会清掉。反跳 / 干扰没有周期日志，不参与过期判断。</sys:String>
     <sys:String x:Key="CombatLog_Seconds">秒</sys:String>
@@ -1421,7 +1423,7 @@
     <sys:String x:Key="GameLogMsgWindow_ClearCombatTip">清除所有日志（战斗状态 + 关键词命中）</sys:String>
     <sys:String x:Key="CombatLog_NotRunning">战斗日志未启动</sys:String>
     <sys:String x:Key="CombatCategory_Scram">跃迁扰频器</sys:String>
-    <sys:String x:Key="CombatCategory_ScramDisrupt">跃迁扰断器</sys:String>
+    <sys:String x:Key="CombatCategory_EwOther">其他电子战</sys:String>
     <sys:String x:Key="CombatCategory_Neut">毁电</sys:String>
     <sys:String x:Key="CombatCategory_Nos">吸电</sys:String>
     <sys:String x:Key="CombatCategory_Ecm">ECM</sys:String>

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Models.CombatLog;
 using TheGuideToTheNewEden.Core.Services.CombatLog;
@@ -219,6 +219,14 @@ public sealed class CombatLogStateCenter
     /// 只有手动清除/停止监控才清。反跳 / ECM 没有周期日志，不参与过期判断。
     /// </summary>
     public int ExpireSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// 状态类（电子战 / 反跳…）多久没有新日志就**变灰**（阶段 377，默认 300 秒 = 5 分钟）；
+    /// 灰了也仍然显示，只由「清除所有日志」收掉。
+    /// </summary>
+    public int StatusGreySeconds { get; set; } = 300;
+
+    private int EffectiveStatusGreySeconds => Math.Clamp(StatusGreySeconds, 10, MaxExpireSeconds);
 
     /// <summary>生效的过期秒数（夹到 1..<see cref="MaxExpireSeconds"/>）。</summary>
     private int EffectiveExpireSeconds => Math.Clamp(ExpireSeconds, 1, MaxExpireSeconds);
@@ -473,13 +481,13 @@ public sealed class CombatLogStateCenter
                         state.Incoming.TryGetValue(typeKey, out var inSide);
                         state.Outgoing.TryGetValue(typeKey, out var outSide);
                         var typeLabel = RepairTypeLabel(repairType);
-                        var incomingLine = BuildLine(inSide, CombatEventDirection.Incoming, null, definition, label, typeLabel, now, expire);
+                        var incomingLine = BuildLine(inSide, CombatEventDirection.Incoming, null, definition, label, typeLabel, now, expire, EffectiveStatusGreySeconds);
                         if (incomingLine is not null)
                         {
                             lines.Add(incomingLine);
                         }
 
-                        var outgoingLine = BuildLine(outSide, CombatEventDirection.Outgoing, null, definition, label, typeLabel, now, expire);
+                        var outgoingLine = BuildLine(outSide, CombatEventDirection.Outgoing, null, definition, label, typeLabel, now, expire, EffectiveStatusGreySeconds);
                         if (outgoingLine is not null)
                         {
                             lines.Add(outgoingLine);
@@ -490,13 +498,13 @@ public sealed class CombatLogStateCenter
                     var unknownKey = SubTypeKeyOf(RemoteRepairType.None);
                     state.Incoming.TryGetValue(unknownKey, out var unknownIn);
                     state.Outgoing.TryGetValue(unknownKey, out var unknownOut);
-                    var unknownIncoming = BuildLine(unknownIn, CombatEventDirection.Incoming, null, definition, label, null, now, expire);
+                    var unknownIncoming = BuildLine(unknownIn, CombatEventDirection.Incoming, null, definition, label, null, now, expire, EffectiveStatusGreySeconds);
                     if (unknownIncoming is not null)
                     {
                         lines.Add(unknownIncoming);
                     }
 
-                    var unknownOutgoing = BuildLine(unknownOut, CombatEventDirection.Outgoing, null, definition, label, null, now, expire);
+                    var unknownOutgoing = BuildLine(unknownOut, CombatEventDirection.Outgoing, null, definition, label, null, now, expire, EffectiveStatusGreySeconds);
                     if (unknownOutgoing is not null)
                     {
                         lines.Add(unknownOutgoing);
@@ -506,13 +514,13 @@ public sealed class CombatLogStateCenter
                 {
                     state.Incoming.TryGetValue(string.Empty, out var inSide);
                     state.Outgoing.TryGetValue(string.Empty, out var outSide);
-                    var incomingLine = BuildLine(inSide, CombatEventDirection.Incoming, null, definition, label, null, now, expire);
+                    var incomingLine = BuildLine(inSide, CombatEventDirection.Incoming, null, definition, label, null, now, expire, EffectiveStatusGreySeconds);
                     if (incomingLine is not null)
                     {
                         lines.Add(incomingLine);
                     }
 
-                    var outgoingLine = BuildLine(outSide, CombatEventDirection.Outgoing, null, definition, label, null, now, expire);
+                    var outgoingLine = BuildLine(outSide, CombatEventDirection.Outgoing, null, definition, label, null, now, expire, EffectiveStatusGreySeconds);
                     if (outgoingLine is not null)
                     {
                         lines.Add(outgoingLine);
@@ -658,7 +666,8 @@ public sealed class CombatLogStateCenter
         string label,
         string? subTypeLabel,
         DateTime now,
-        int expire)
+        int expire,
+        int statusGrey)
     {
         var usedDirection = direction;
         var used = side;
@@ -676,7 +685,8 @@ public sealed class CombatLogStateCenter
             return null;
         }
 
-        var expired = !definition.Sticky && (now - used.LastSeen).TotalSeconds > expire;
+        var greyWindow = definition.Sticky ? statusGrey : expire;
+        var expired = (now - used.LastSeen).TotalSeconds > greyWindow;
         var interval = LastIntervalOf(used);
         var parts = BuildParts(definition, used.LastValue, used.LastRate, subTypeLabel);
         return new CombatLogLineSnapshot
@@ -818,7 +828,7 @@ public sealed class CombatLogStateCenter
     private static string CategoryLabelKey(string category) => category switch
     {
         CombatCategories.Scram => "CombatCategory_Scram",
-        CombatCategories.ScramDisrupt => "CombatCategory_ScramDisrupt",
+        CombatCategories.EwOther => "CombatCategory_EwOther",
         CombatCategories.Neut => "CombatCategory_Neut",
         CombatCategories.Nos => "CombatCategory_Nos",
         CombatCategories.Ecm => "CombatCategory_Ecm",
@@ -835,7 +845,7 @@ public sealed class CombatLogStateCenter
     private static string ColorKeyOf(string category) => category switch
     {
         CombatCategories.Scram => "danger",
-        CombatCategories.ScramDisrupt => "danger",
+        CombatCategories.EwOther => "purple",
         CombatCategories.Neut => "warning",
         CombatCategories.Nos => "info",
         CombatCategories.Ecm => "purple",
@@ -906,7 +916,7 @@ public sealed class CombatLogStateCenter
                 continue;
             }
 
-            keys.Add($"{pair.Key}:{SidesFlag(pair.Value.Incoming, definition, now, expire)}|{SidesFlag(pair.Value.Outgoing, definition, now, expire)}");
+            keys.Add($"{pair.Key}:{SidesFlag(pair.Value.Incoming, definition, now, expire, EffectiveStatusGreySeconds)}|{SidesFlag(pair.Value.Outgoing, definition, now, expire, EffectiveStatusGreySeconds)}");
         }
 
         keys.Sort(StringComparer.OrdinalIgnoreCase);
@@ -914,7 +924,7 @@ public sealed class CombatLogStateCenter
     }
 
     /// <summary>一组同方向、不同子类型的过期状态签名（护盾/装甲/结构各自 0/1/-）。</summary>
-    private static string SidesFlag(Dictionary<string, SideState> sides, CombatCategoryDefinition definition, DateTime now, int expire)
+    private static string SidesFlag(Dictionary<string, SideState> sides, CombatCategoryDefinition definition, DateTime now, int expire, int statusGrey)
     {
         if (sides.Count == 0)
         {
@@ -923,17 +933,18 @@ public sealed class CombatLogStateCenter
 
         return string.Concat(sides
             .OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(p => $"{p.Key}={SideFlag(p.Value, definition, now, expire)}"));
+            .Select(p => $"{p.Key}={SideFlag(p.Value, definition, now, expire, statusGrey)}"));
     }
 
-    private static char SideFlag(SideState side, CombatCategoryDefinition definition, DateTime now, int expire)
+    private static char SideFlag(SideState side, CombatCategoryDefinition definition, DateTime now, int expire, int statusGrey)
     {
         if (!side.HasData)
         {
             return '-';
         }
 
-        return !definition.Sticky && (now - side.LastSeen).TotalSeconds > expire ? '1' : '0';
+        var greyWindow = definition.Sticky ? statusGrey : expire;
+        return (now - side.LastSeen).TotalSeconds > greyWindow ? '1' : '0';
     }
 
     /// <summary>清掉很久没动静的模块（只影响 ToolTip 里的间隔与内存占用，界面数值用的是快照）。</summary>

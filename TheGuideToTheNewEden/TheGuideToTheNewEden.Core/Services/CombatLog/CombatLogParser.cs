@@ -70,6 +70,15 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             var kind = DetectKind(text, out prepositions);
             if (kind == CombatEventKind.Unknown)
             {
+                // 阶段 377：认不出事件类型、但看得出"某装备正在作用于某人"的行 → 兜底为其他电子战。
+                var generic = TryParseUnknownEffect(text, hints, listenerName);
+                if (generic != null)
+                {
+                    generic.Time = content.EVETime;
+                    generic.RawLine = text;
+                    return generic;
+                }
+
                 if (isCombat && text.Length > 0)
                 {
                     CombatLogDiagnostics.ReportUnparsed(text);
@@ -365,6 +374,48 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             return new Segments(
                 string.Join(" - ", parts.Take(moduleIndex)),
                 parts[moduleIndex]);
+        }
+
+        /// <summary>
+        /// 兜底解析：事件类型认不出、但结构像"装备作用于他人"（`某人 的 模块 正在…你` / `模块 对 目标 …`）。
+        /// 分类交由 <see cref="CombatCategoryResolver"/> 兜底为「其他电子战」。
+        /// </summary>
+        private static CombatLogEvent TryParseUnknownEffect(
+            string text,
+            Dictionary<string, string> hints,
+            string listenerName)
+        {
+            var incoming = Regex.Match(text, @"的\s*(?<module>.+?)\s*正在\s*(?<verb>\S+?)\s*你", RegexOptions.IgnoreCase);
+            if (incoming.Success)
+            {
+                var module = CleanName(incoming.Groups["module"].Value);
+                return new CombatLogEvent
+                {
+                    Kind = CombatEventKind.Unknown,
+                    Direction = CombatEventDirection.Incoming,
+                    ModuleName = module,
+                    ModuleHintName = LookupHint(hints, module),
+                };
+            }
+
+            var outgoing = Regex.Match(text, @"(?<module>.+?)\s*对\s*(?<target>.+?)\s*-", RegexOptions.IgnoreCase);
+            if (outgoing.Success)
+            {
+                var target = CleanName(outgoing.Groups["target"].Value);
+                if (!IsYou(target) && !IsListenerPart(target, listenerName))
+                {
+                    var module = CleanName(outgoing.Groups["module"].Value);
+                    return new CombatLogEvent
+                    {
+                        Kind = CombatEventKind.Unknown,
+                        Direction = CombatEventDirection.Outgoing,
+                        ModuleName = module,
+                        ModuleHintName = LookupHint(hints, module),
+                    };
+                }
+            }
+
+            return null;
         }
 
         /// <summary>ECM：出向是「模块 对 目标 … -干扰」，进向是「某人 的 模块 正在干扰 你」。</summary>

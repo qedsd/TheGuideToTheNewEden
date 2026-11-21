@@ -150,6 +150,28 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>状态类（电子战 / 反跳）多久没有新日志就变灰（秒，默认 300 = 5 分钟）。</summary>
+    public double CombatStatusGreySeconds
+    {
+        get => GameLogsSettingService.CombatLogStatusGreySeconds;
+        set
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                return;
+            }
+
+            var seconds = (int)Math.Round(value);
+            if (seconds == GameLogsSettingService.CombatLogStatusGreySeconds)
+            {
+                return;
+            }
+
+            GameLogsSettingService.SetCombatStatusGreySeconds(seconds);
+            OnPropertyChanged();
+        }
+    }
+
     /// <summary>
     /// 阶段 359：日志监控窗口标题里显示当前舰船类型（ESI 读取，取不到时只显示角色名）。
     /// 存在该角色的 <see cref="GameLogSetting"/> 里，默认开启。
@@ -306,7 +328,7 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     private static string CategoryLabelKey(string category) => category switch
     {
         Core.Services.CombatLog.CombatCategories.Scram => "CombatCategory_Scram",
-        Core.Services.CombatLog.CombatCategories.ScramDisrupt => "CombatCategory_ScramDisrupt",
+        Core.Services.CombatLog.CombatCategories.EwOther => "CombatCategory_EwOther",
         Core.Services.CombatLog.CombatCategories.Neut => "CombatCategory_Neut",
         Core.Services.CombatLog.CombatCategories.Nos => "CombatCategory_Nos",
         Core.Services.CombatLog.CombatCategories.Ecm => "CombatCategory_Ecm",
