@@ -112,7 +112,7 @@ internal static class Program
             CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 123, "HP", "大型远程装甲维修器 II", "rep");
         Expect(
             "(combat) 跃迁扰断尝试 来自 张三 [CORP] 对你",
-            CombatEventKind.WarpScramble, CombatEventDirection.Incoming, null, null, null, "scram");
+            CombatEventKind.WarpDisrupt, CombatEventDirection.Incoming, null, null, null, "scram_disrupt");
         Expect(
             "(combat) 你被 张三 [CORP] 干扰 - 多谱干扰器 II",
             CombatEventKind.EcmJam, CombatEventDirection.Incoming, null, null, "多谱干扰器 II", "ecm");
@@ -126,9 +126,14 @@ internal static class Program
         Expect(
             "(combat) 45 GJ能量中和 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Energy Neutralizer I\">小型能量中和器 I*</localized>",
             CombatEventKind.CapacitorNeutralize, CombatEventDirection.Incoming, 45, "GJ", "小型能量中和器 I", "neut", "Arya D Stark");
+        // 施放方日志：名字是被毁电的目标（"角色 (舰船)"），应判为出向
         Expect(
             "(combat) 45 GJ能量中和Arya D Stark (涅鲁斯级*) - <localized hint=\"Small Energy Neutralizer I\">小型能量中和器 I*</localized>",
-            CombatEventKind.CapacitorNeutralize, CombatEventDirection.Incoming, 45, "GJ", "小型能量中和器 I", "neut", "QEDSD");
+            CombatEventKind.CapacitorNeutralize, CombatEventDirection.Outgoing, 45, "GJ", "小型能量中和器 I", "neut", "QEDSD");
+        // 施放方日志也可能直接写自己的名字
+        Expect(
+            "(combat) 45 GJ能量中和QEDSD - <localized hint=\"Small Energy Neutralizer I\">小型能量中和器 I*</localized>",
+            CombatEventKind.CapacitorNeutralize, CombatEventDirection.Outgoing, 45, "GJ", "小型能量中和器 I", "neut", "QEDSD");
         Expect(
             "(combat) -15 GJ被吸取到 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
             CombatEventKind.CapacitorDrain, CombatEventDirection.Incoming, 15, "GJ", "小型掠能器 I", "nos", "Arya D Stark");
@@ -136,17 +141,61 @@ internal static class Program
             "(combat) +15 GJ被从Arya D Stark (涅鲁斯级*)吸取 - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
             CombatEventKind.CapacitorDrain, CombatEventDirection.Outgoing, 15, "GJ", "小型掠能器 I", "nos", "QEDSD");
         Expect(
+            "(combat) -0 GJ被吸取到 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
+            CombatEventKind.CapacitorDrain, CombatEventDirection.Incoming, 0, "GJ", "小型掠能器 I", "nos", "Arya D Stark");
+        Expect(
+            "(combat) +0 GJ被从Arya D Stark (涅鲁斯级*)吸取 - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
+            CombatEventKind.CapacitorDrain, CombatEventDirection.Outgoing, 0, "GJ", "小型掠能器 I", "nos", "QEDSD");
+        Expect(
+            "(combat) -0 GJ被吸取到 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
+            CombatEventKind.CapacitorDrain, CombatEventDirection.Incoming, 0, "GJ", "小型掠能器 I", "nos", "Arya D Stark");
+        Expect(
+            "(combat) +0 GJ被从Arya D Stark (涅鲁斯级*)吸取 - <localized hint=\"Small Energy Nosferatu I\">小型掠能器 I*</localized>",
+            CombatEventKind.CapacitorDrain, CombatEventDirection.Outgoing, 0, "GJ", "小型掠能器 I", "nos", "QEDSD");
+        Expect(
             "(combat) 64远程护盾回充增量由 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Ancillary Remote Shield Booster\">小型辅助远程护盾回充增量器*</localized>",
-            CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 64, "HP", "小型辅助远程护盾回充增量器", "rep", "Arya D Stark");
+            CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 64, "HP", "小型辅助远程护盾回充增量器", "rep", "Arya D Stark",
+            RemoteRepairType.Shield);
         Expect(
             "(combat) 64远程护盾回充增量至Arya D Stark (涅鲁斯级*) - <localized hint=\"Small Ancillary Remote Shield Booster\">小型辅助远程护盾回充增量器*</localized>",
-            CombatEventKind.RemoteRepair, CombatEventDirection.Outgoing, 64, "HP", "小型辅助远程护盾回充增量器", "rep", "QEDSD");
+            CombatEventKind.RemoteRepair, CombatEventDirection.Outgoing, 64, "HP", "小型辅助远程护盾回充增量器", "rep", "QEDSD",
+            RemoteRepairType.Shield);
+        // 阶段 369：三种遥修类型 + 0 值也要解析出来
+        Expect(
+            "(combat) 120远程装甲维修由 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Large Remote Armor Repairer II\">大型远程装甲维修器 II*</localized>",
+            CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 120, "HP", "大型远程装甲维修器 II", "rep", "Arya D Stark",
+            RemoteRepairType.Armor);
+        Expect(
+            "(combat) 90远程结构维修由 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Large Remote Hull Repairer II\">大型远程结构维修器 II*</localized>",
+            CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 90, "HP", "大型远程结构维修器 II", "rep", "Arya D Stark",
+            RemoteRepairType.Hull);
+        Expect(
+            "(combat) 0远程护盾回充增量由 黑鸟级* [I K N] [QEDSD] - - <localized hint=\"Small Ancillary Remote Shield Booster\">小型辅助远程护盾回充增量器*</localized>",
+            CombatEventKind.RemoteRepair, CombatEventDirection.Incoming, 0, "HP", "小型辅助远程护盾回充增量器", "rep", "Arya D Stark",
+            RemoteRepairType.Shield);
         Expect(
             "(combat) 来自 黑鸟级* [I K N] [QEDSD] - 试图跃迁扰频 你！",
             CombatEventKind.WarpScramble, CombatEventDirection.Incoming, null, null, null, "scram", "Arya D Stark");
+        // 阶段 376：扰断器（长反跳）单独成组
         Expect(
             "(combat) 狂怒者级* [SHDWC] [MISBE] [piffs] - 试图跃迁扰断 灵感级* [TURKS] [AV-CI] [Arkhe] -",
-            CombatEventKind.WarpScramble, CombatEventDirection.Outgoing, null, null, null, "scram", "QEDSD");
+            CombatEventKind.WarpDisrupt, CombatEventDirection.Outgoing, null, null, null, "scram_disrupt", "QEDSD");
+        Expect(
+            "(combat) 来自 黑鸟级* [I K N] [QEDSD] - 试图跃迁扰断 你！",
+            CombatEventKind.WarpDisrupt, CombatEventDirection.Incoming, null, null, null, "scram_disrupt", "Arya D Stark");
+        // 阶段 376：停滞缠绕光束 / 目标标记装置 / 武器扰断器 / 远程感应抑阻器
+        Expect(
+            "(combat) 灵感级* [I K N] [QEDSD] - 的 <localized hint=\"Stasis Webifier II\">停滞缠绕光束 II*</localized> 正在缠绕 你",
+            CombatEventKind.StasisWeb, CombatEventDirection.Incoming, null, null, "停滞缠绕光束 II", "web", "Arya D Stark");
+        Expect(
+            "(combat) 灵感级* [I K N] [QEDSD] - 的 <localized hint=\"Target Painter II\">目标标记装置 II*</localized> 正在标记 你",
+            CombatEventKind.TargetPainter, CombatEventDirection.Incoming, null, null, "目标标记装置 II", "painter", "Arya D Stark");
+        Expect(
+            "(combat) 灵感级* [I K N] [QEDSD] - 的 <localized hint=\"Weapon Disruptor II\">武器扰断器 II*</localized> 正在干扰 你",
+            CombatEventKind.WeaponDisrupt, CombatEventDirection.Incoming, null, null, "武器扰断器 II", "weapon_disrupt", "Arya D Stark");
+        Expect(
+            "(combat) 灵感级* [I K N] [QEDSD] - 的 <localized hint=\"Remote Sensor Dampener II\">远程感应抑阻器 II*</localized> 正在抑制 你",
+            CombatEventKind.SensorDamp, CombatEventDirection.Incoming, null, null, "远程感应抑阻器 II", "sensor_damp", "Arya D Stark");
         Expect(
             "(combat) <localized hint=\"Magnetometric ECM I\">磁力ECM I*</localized>对 小鹰级* [I K N] [QEDSD] -干扰",
             CombatEventKind.EcmJam, CombatEventDirection.Outgoing, null, null, "磁力ECM I", "ecm", "Arya D Stark");
@@ -166,7 +215,8 @@ internal static class Program
         string unit,
         string module,
         string category,
-        string listener = "QEDSD")
+        string listener = "QEDSD",
+        RemoteRepairType repairType = RemoteRepairType.None)
     {
         // GameLogContent.Create 需要日志行前缀 [ 时间 ]；样本里省略，这里补上
         var logLine = line.TrimStart().StartsWith('[') ? line : $"[ 2026.11.19 17:00:00 ] {line}";
@@ -200,6 +250,11 @@ internal static class Program
         if (!string.Equals(resolved, category, StringComparison.OrdinalIgnoreCase))
         {
             problems.Add($"category={resolved ?? "null"} 期望 {category}");
+        }
+
+        if (repairType != RemoteRepairType.None && ev.RepairType != repairType)
+        {
+            problems.Add($"repairType={ev.RepairType} 期望 {repairType}");
         }
 
         if (problems.Count > 0)

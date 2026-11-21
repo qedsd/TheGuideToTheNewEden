@@ -19,11 +19,26 @@ namespace TheGuideToTheNewEden.Core.Models.CombatLog
         /// <summary>电容吸取（吸电 / NOS）。</summary>
         CapacitorDrain,
 
-        /// <summary>跃迁扰断 / 扰频（反跳）。</summary>
+        /// <summary>跃迁扰频（反跳）。</summary>
         WarpScramble,
+
+        /// <summary>跃迁扰断 / 跃迁抑阻（长反跳）。</summary>
+        WarpDisrupt,
 
         /// <summary>ECM 干扰。</summary>
         EcmJam,
+
+        /// <summary>停滞缠绕光束（网）。</summary>
+        StasisWeb,
+
+        /// <summary>目标标记装置。</summary>
+        TargetPainter,
+
+        /// <summary>武器扰断器。</summary>
+        WeaponDisrupt,
+
+        /// <summary>远程感应抑阻器。</summary>
+        SensorDamp,
 
         /// <summary>远程电容传输（传电）。</summary>
         RemoteCapacitor,
@@ -40,6 +55,21 @@ namespace TheGuideToTheNewEden.Core.Models.CombatLog
 
         /// <summary>出：你打别人 / 你修别人。</summary>
         Outgoing,
+    }
+
+    /// <summary>遥修的三种类型（护盾 / 装甲 / 结构）；非遥修事件为 <see cref="None"/>。</summary>
+    public enum RemoteRepairType
+    {
+        None = 0,
+
+        /// <summary>护盾（远程护盾回充增量）。</summary>
+        Shield,
+
+        /// <summary>装甲（远程装甲维修）。</summary>
+        Armor,
+
+        /// <summary>结构（远程结构维修）。</summary>
+        Hull,
     }
 
     /// <summary>
@@ -84,5 +114,8 @@ namespace TheGuideToTheNewEden.Core.Models.CombatLog
 
         /// <summary>分类 key（由 <c>CombatCategoryResolver</c> 填充）。</summary>
         public string CategoryKey { get; set; }
+
+        /// <summary>遥修类型（护盾 / 装甲 / 结构）；其它分类为 <see cref="RemoteRepairType.None"/>。</summary>
+        public RemoteRepairType RepairType { get; set; }
     }
 }

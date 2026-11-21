@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
@@ -124,20 +125,27 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     /// <summary>分类开关（反跳/毁电/…，与日志监控页「战斗日志」页签绑定）。</summary>
     public ObservableCollection<CombatCategoryOption> CombatCategoryOptions { get; } = [];
 
-    /// <summary>最短显示秒数（下限；实测周期更长的装备会自动延长，见 <see cref="CombatLogStateCenter"/>）。</summary>
-    public IReadOnlyList<int> CombatTtlOptions { get; } = [5, 8, 10];
-
-    public int CombatTtlSeconds
+    /// <summary>
+    /// 过期时间（秒，默认 60，可手输任意秒数）：某类日志超过该时间没有更新，卡片置灰并提示「已过期」；
+    /// 行不会消失（只有手动清除 / 停止监控才清），反跳 / 干扰不参与过期判断。
+    /// </summary>
+    public double CombatExpireSeconds
     {
-        get => GameLogsSettingService.CombatLogTtlSeconds;
+        get => GameLogsSettingService.CombatLogExpireSeconds;
         set
         {
-            if (value == GameLogsSettingService.CombatLogTtlSeconds)
+            if (double.IsNaN(value) || double.IsInfinity(value))
             {
                 return;
             }
 
-            GameLogsSettingService.SetCombatTtl(value);
+            var seconds = (int)Math.Round(value);
+            if (seconds == GameLogsSettingService.CombatLogExpireSeconds)
+            {
+                return;
+            }
+
+            GameLogsSettingService.SetCombatExpire(seconds);
             OnPropertyChanged();
         }
     }
@@ -170,6 +178,63 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
                 CombatLogFeedService.Current.SetShowShipInTitle(info.ListenerID, value);
             }
         }
+    }
+
+    /// <summary>
+    /// 阶段 361：日志监控窗口背板不透明度（1–100，100 = 完全不透明）。
+    /// 只影响背板，文字与卡片始终实色；拖动滑块时实时生效，落盘做 400ms 合并。
+    /// </summary>
+    public int WindowOpacity
+    {
+        get => Setting?.WindowOpacity ?? 100;
+        set
+        {
+            if (Setting is null)
+            {
+                return;
+            }
+
+            var clamped = Math.Clamp(value, 1, 100);
+            if (Setting.WindowOpacity == clamped)
+            {
+                return;
+            }
+
+            Setting.WindowOpacity = clamped;
+            OnPropertyChanged();
+
+            if (SelectedGameLogInfo is { } info)
+            {
+                foreach (var session in _sessions.Values.Where(p => p.Info.ListenerID == info.ListenerID))
+                {
+                    session.SetWindowOpacity(clamped);
+                }
+
+                CombatLogFeedService.Current.SetWindowOpacity(info.ListenerID, clamped);
+            }
+
+            ScheduleOpacitySave();
+        }
+    }
+
+    private DispatcherTimer? _opacitySaveTimer;
+
+    /// <summary>滑块拖动时合并落盘，避免每一格都写一次 JSON。</summary>
+    private void ScheduleOpacitySave()
+    {
+        if (_opacitySaveTimer is null)
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+            timer.Tick += (_, _) =>
+            {
+                timer.Stop();
+                SaveSetting();
+            };
+            _opacitySaveTimer = timer;
+        }
+
+        _opacitySaveTimer.Stop();
+        _opacitySaveTimer.Start();
     }
 
     /// <summary>
@@ -241,9 +306,14 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     private static string CategoryLabelKey(string category) => category switch
     {
         Core.Services.CombatLog.CombatCategories.Scram => "CombatCategory_Scram",
+        Core.Services.CombatLog.CombatCategories.ScramDisrupt => "CombatCategory_ScramDisrupt",
         Core.Services.CombatLog.CombatCategories.Neut => "CombatCategory_Neut",
         Core.Services.CombatLog.CombatCategories.Nos => "CombatCategory_Nos",
         Core.Services.CombatLog.CombatCategories.Ecm => "CombatCategory_Ecm",
+        Core.Services.CombatLog.CombatCategories.Web => "CombatCategory_Web",
+        Core.Services.CombatLog.CombatCategories.Painter => "CombatCategory_Painter",
+        Core.Services.CombatLog.CombatCategories.WeaponDisrupt => "CombatCategory_WeaponDisrupt",
+        Core.Services.CombatLog.CombatCategories.SensorDamp => "CombatCategory_SensorDamp",
         Core.Services.CombatLog.CombatCategories.Rep => "CombatCategory_Rep",
         Core.Services.CombatLog.CombatCategories.CapTransfer => "CombatCategory_CapTransfer",
         Core.Services.CombatLog.CombatCategories.Damage => "CombatCategory_Damage",
@@ -367,8 +437,10 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
         BuildCombatCategoryOptions();
         OnPropertyChanged(nameof(CombatEnabled));
-        OnPropertyChanged(nameof(CombatTtlSeconds));
+        OnPropertyChanged(nameof(CombatExpireSeconds));
         OnPropertyChanged(nameof(CombatStatusText));
+        OnPropertyChanged(nameof(ShowShipInTitle));
+        OnPropertyChanged(nameof(WindowOpacity));
     }
 
     // ---------- 默认配置 ----------
@@ -750,6 +822,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     public void Dispose()
     {
+        // 透明度滑块可能还在 400ms 合并窗口里，关页面前补一次落盘
+        if (_opacitySaveTimer is { IsEnabled: true })
+        {
+            _opacitySaveTimer.Stop();
+            SaveSetting();
+        }
+
         StopAll();
     }
 

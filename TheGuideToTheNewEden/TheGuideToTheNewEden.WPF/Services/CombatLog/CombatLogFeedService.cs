@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Services.CombatLog;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
@@ -39,6 +39,18 @@ public sealed class CombatLogFeedService
             foreach (var feed in _feeds.Values.Where(p => p.Info.ListenerID == listenerId))
             {
                 feed.Window?.SetShowShip(show);
+            }
+        }
+    }
+
+    /// <summary>切换背板不透明度（阶段 361，对已打开的战斗日志窗口即时生效）。</summary>
+    public void SetWindowOpacity(long listenerId, int opacity)
+    {
+        lock (_locker)
+        {
+            foreach (var feed in _feeds.Values.Where(p => p.Info.ListenerID == listenerId))
+            {
+                feed.Window?.SetWindowOpacity(opacity);
             }
         }
     }
@@ -183,12 +195,21 @@ public sealed class CombatLogFeedService
             {
                 if (feed.Window is null)
                 {
-                    var showShip = GameLogInfoSettingService.GetValue(feed.Info.ListenerID)?.ShowShipInTitle ?? true;
+                    var setting = GameLogInfoSettingService.GetValue(feed.Info.ListenerID);
+                    var showShip = setting?.ShowShipInTitle ?? true;
+                    var opacity = setting?.WindowOpacity ?? 100;
                     Func<string> titleProvider = () => feed.Info.ListenerName;
                     feed.Window = GameLogWindowRegistry.Acquire(
                         feed.Info.ListenerName,
                         "combat",
-                        () => new GameLogMsgWindow(feed.Info.ListenerName, feed.Info.ListenerName, combatOnly: true, showShip: showShip, titleProvider: titleProvider));
+                        () => new GameLogMsgWindow(
+                            feed.Info.ListenerName,
+                            feed.Info.ListenerName,
+                            combatOnly: true,
+                            showShip: showShip,
+                            titleProvider: titleProvider,
+                            windowOpacity: opacity,
+                            settingListenerId: feed.Info.ListenerID));
                     feed.Window.SetShowShip(showShip);
                 }
 

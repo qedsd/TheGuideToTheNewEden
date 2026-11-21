@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models;
@@ -57,6 +57,19 @@ public sealed class GameLogInfoSettingService
         Save();
     }
 
+    /// <summary>更新指定角色窗口的最后位置/尺寸，基于服务端最新对象合并，避免用旧配置覆盖其它设置。</summary>
+    public static void SetWindowBounds(int id, double left, double top, double width, double height)
+    {
+        var setting = Current._values.TryGetValue(id, out var value)
+            ? value
+            : new GameLogSetting { ListenerID = id };
+        setting.WindowLeft = left;
+        setting.WindowTop = top;
+        setting.WindowWidth = width;
+        setting.WindowHeight = height;
+        Current._values[id] = setting;
+        Save();
+    }
     public static void Save()
     {
         var folder = System.IO.Path.GetDirectoryName(Path);

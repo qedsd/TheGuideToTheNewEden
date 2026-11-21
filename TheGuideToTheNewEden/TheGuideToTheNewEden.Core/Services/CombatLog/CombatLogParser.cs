@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -82,8 +82,7 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             string unit;
             var amount = ExtractAmount(kind, text, segments.Prefix, out unit);
             if (kind != CombatEventKind.Damage
-                && kind != CombatEventKind.WarpScramble
-                && kind != CombatEventKind.EcmJam
+                && !IsStatusKind(kind)
                 && amount is null)
             {
                 // 遥修/毁电/吸电/传电没有数值的多半是"装料/维护"之类的行，不是战斗事件
@@ -91,9 +90,12 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             }
 
             if (amount.HasValue && amount.Value <= 0
-                && kind != CombatEventKind.Damage)
+                && kind != CombatEventKind.Damage
+                && kind != CombatEventKind.CapacitorNeutralize
+                && kind != CombatEventKind.CapacitorDrain
+                && kind != CombatEventKind.RemoteRepair)
             {
-                // 中文日志会为"满护盾的遥修 / 吸不到电的掠能器"写 0，显示出来只是噪音
+                // 传电的 0 是无效收益；毁电 / 吸电 / 遥修的 0 仍代表有效战斗结果，必须保留。
                 return null;
             }
 
@@ -114,7 +116,41 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
                 Amount = amount,
                 Unit = unit,
                 RawLine = text,
+                RepairType = kind == CombatEventKind.RemoteRepair
+                    ? DetectRepairType(text, module, hint)
+                    : RemoteRepairType.None,
             };
+        }
+
+        /// <summary>
+        /// 遥修类型判定：中文日志写"远程护盾回充增量 / 远程装甲维修 / 远程结构维修"，
+        /// 英文日志写 Remote Shield/Armor/Hull Repairer。装备名与整行都查一遍，都不命中归为 <see cref="RemoteRepairType.None"/>。
+        /// </summary>
+        private static RemoteRepairType DetectRepairType(string text, string module, string hint)
+        {
+            var haystack = string.Join(" ", new[] { module, hint, text }.Where(p => !string.IsNullOrWhiteSpace(p)));
+
+            if (haystack.Contains("护盾", StringComparison.OrdinalIgnoreCase)
+                || haystack.Contains("Shield", StringComparison.OrdinalIgnoreCase)
+                || haystack.Contains("Extender", StringComparison.OrdinalIgnoreCase))
+            {
+                return RemoteRepairType.Shield;
+            }
+
+            if (haystack.Contains("装甲", StringComparison.OrdinalIgnoreCase)
+                || haystack.Contains("Armor", StringComparison.OrdinalIgnoreCase)
+                || haystack.Contains("Armour", StringComparison.OrdinalIgnoreCase))
+            {
+                return RemoteRepairType.Armor;
+            }
+
+            if (haystack.Contains("结构", StringComparison.OrdinalIgnoreCase)
+                || haystack.Contains("Hull", StringComparison.OrdinalIgnoreCase))
+            {
+                return RemoteRepairType.Hull;
+            }
+
+            return RemoteRepairType.None;
         }
 
         // ---------- 文本归一化 / hint ----------
@@ -183,6 +219,15 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             return string.IsNullOrWhiteSpace(text) ? null : text;
         }
 
+        /// <summary>没有数值的一次性状态类事件（扰频 / 扰断 / ECM / 网 / 标记 / 武器扰断 / 感应抑阻）。</summary>
+        private static bool IsStatusKind(CombatEventKind kind)
+            => kind == CombatEventKind.WarpScramble
+               || kind == CombatEventKind.WarpDisrupt
+               || kind == CombatEventKind.EcmJam
+               || kind == CombatEventKind.StasisWeb
+               || kind == CombatEventKind.TargetPainter
+               || kind == CombatEventKind.WeaponDisrupt
+               || kind == CombatEventKind.SensorDamp;
         private static bool IsNoise(string text)
             => ContainsAny(text, CombatLogVocabulary.MissWords);
 
@@ -190,10 +235,42 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
 
         private static CombatEventKind DetectKind(string text, out string[][] prepositions)
         {
+            // 阶段 376：电子战按**装备分组**区分（扰频 / 扰断 / ECM / 网 / 目标标记 / 武器扰断 / 感应抑阻）。
+            // 顺序很关键：武器扰断 / 感应抑阻先判，避免被"扰断器""干扰"等更宽的词吃掉。
+            if (ContainsAny(text, CombatLogVocabulary.WeaponDisruptWords))
+            {
+                prepositions = new[] { CombatLogVocabulary.ByWords, CombatLogVocabulary.ToWords };
+                return CombatEventKind.WeaponDisrupt;
+            }
+
+            if (ContainsAny(text, CombatLogVocabulary.SensorDampWords))
+            {
+                prepositions = new[] { CombatLogVocabulary.ByWords, CombatLogVocabulary.ToWords };
+                return CombatEventKind.SensorDamp;
+            }
+
+            if (ContainsAny(text, CombatLogVocabulary.WarpDisruptWords))
+            {
+                prepositions = new[] { CombatLogVocabulary.FromWords, CombatLogVocabulary.ToWords };
+                return CombatEventKind.WarpDisrupt;
+            }
+
             if (ContainsAny(text, CombatLogVocabulary.ScramWords))
             {
                 prepositions = new[] { CombatLogVocabulary.FromWords, CombatLogVocabulary.ToWords };
                 return CombatEventKind.WarpScramble;
+            }
+
+            if (ContainsAny(text, CombatLogVocabulary.WebWords))
+            {
+                prepositions = new[] { CombatLogVocabulary.ByWords, CombatLogVocabulary.ToWords };
+                return CombatEventKind.StasisWeb;
+            }
+
+            if (ContainsAny(text, CombatLogVocabulary.PainterWords))
+            {
+                prepositions = new[] { CombatLogVocabulary.ByWords, CombatLogVocabulary.ToWords };
+                return CombatEventKind.TargetPainter;
             }
 
             if (ContainsAny(text, CombatLogVocabulary.EcmWords))
@@ -255,14 +332,19 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
 
         private static Segments SplitSegments(string text, CombatEventKind kind)
         {
-            if (kind == CombatEventKind.WarpScramble)
+            if (kind == CombatEventKind.WarpScramble || kind == CombatEventKind.WarpDisrupt)
             {
                 return new Segments(text, null);
             }
 
-            if (kind == CombatEventKind.EcmJam)
+            if (kind == CombatEventKind.EcmJam
+                || kind == CombatEventKind.StasisWeb
+                || kind == CombatEventKind.TargetPainter
+                || kind == CombatEventKind.WeaponDisrupt
+                || kind == CombatEventKind.SensorDamp)
             {
-                return SplitEcm(text);
+                var ew = SplitEcm(text);
+                return new Segments(ew.Prefix, NormalizeEwModule(ew.Module));
             }
 
             var parts = text.Split(new[] { " - " }, StringSplitOptions.RemoveEmptyEntries)
@@ -315,6 +397,40 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             }
 
             return new Segments(text, null);
+        }
+
+        /// <summary>
+        /// 电子战行的"装备名"清洗：去掉前缀"的"和尾部"正在…你 / 对你"等描述，只留装备本体。
+        /// </summary>
+        private static string NormalizeEwModule(string module)
+        {
+            if (string.IsNullOrWhiteSpace(module))
+            {
+                return module;
+            }
+
+            var text = module.Trim();
+            if (text.StartsWith("的", StringComparison.Ordinal))
+            {
+                text = text.Substring(1).Trim();
+            }
+
+            var cut = text.IndexOf("正在", StringComparison.Ordinal);
+            if (cut > 0)
+            {
+                text = text.Substring(0, cut);
+            }
+
+            foreach (var marker in new[] { " 对", " -", " by ", "你" })
+            {
+                var index = text.IndexOf(marker, StringComparison.Ordinal);
+                if (index > 0)
+                {
+                    text = text.Substring(0, index);
+                }
+            }
+
+            return text.Trim();
         }
 
         // ---------- 数值 ----------
@@ -419,10 +535,28 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
                         match = NeutEnActorRegex.Match(text);
                     }
 
-                    var entity = match.Success ? ParseEntity(match.Groups["actor"].Value) : new Entity(null, null, null);
-                    direction = IsListener(entity.Pilot, listenerName)
-                        ? CombatEventDirection.Outgoing
-                        : CombatEventDirection.Incoming;
+                    var actorText = match.Success ? match.Groups["actor"].Value : null;
+                    var entity = actorText is null ? new Entity(null, null, null) : ParseEntity(actorText);
+                    if (IsListener(entity.Pilot, listenerName))
+                    {
+                        // 施放方的日志里名字就是自己（"45 GJ能量中和 自己名"）。
+                        direction = CombatEventDirection.Outgoing;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(actorText) && actorText.Contains('['))
+                    {
+                        // 受害方日志用 "舰船* [军团] [角色]" 标出施放者。
+                        direction = CombatEventDirection.Incoming;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(actorText))
+                    {
+                        // 施放方日志用 "角色 (舰船*)" 标出被毁电的目标 —— 这是我们的输出，不是承受。
+                        direction = CombatEventDirection.Outgoing;
+                    }
+                    else
+                    {
+                        direction = CombatEventDirection.Incoming;
+                    }
+
                     return entity;
                 }
 
@@ -476,10 +610,15 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
                 }
 
                 case CombatEventKind.WarpScramble:
+                case CombatEventKind.WarpDisrupt:
                     return ResolveScram(text, listenerName, out direction);
 
                 case CombatEventKind.EcmJam:
-                    return ResolveEcm(text, listenerName, out direction);
+                case CombatEventKind.StasisWeb:
+                case CombatEventKind.TargetPainter:
+                case CombatEventKind.WeaponDisrupt:
+                case CombatEventKind.SensorDamp:
+                    return ResolveEw(text, listenerName, out direction);
 
                 default:
                     direction = CombatEventDirection.Unknown;
@@ -545,26 +684,52 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             return ParseEntity(target ?? actor);
         }
 
-        private static Entity ResolveEcm(string text, string listenerName, out CombatEventDirection direction)
+        /// <summary>电子战效果的动词（中英），用于切出"谁对谁施加"。</summary>
+        private static readonly string[] EwVerbs =
         {
-            if (Regex.IsMatch(text, @"干扰\s*你|jammed\s+you", RegexOptions.IgnoreCase))
+            "正在干扰", "正在标记", "正在缠绕", "正在减速", "正在抑制", "正在扰断", "正在扰频",
+            "干扰", "标记", "缠绕", "减速", "抑制", "扰断", "扰频",
+            "jammed", "jamming", "webbed", "painted", "disrupted", "dampened", "scrambled",
+        };
+
+        /// <summary>
+        /// 电子战（ECM / 网 / 目标标记 / 武器扰断 / 感应抑阻）的方向判定：
+        /// 进向是「某人 的 模块 正在…你」，出向是「模块 对 目标 …」或「你 …目标」。
+        /// </summary>
+        private static Entity ResolveEw(string text, string listenerName, out CombatEventDirection direction)
+        {
+            if (IsYou(ExtractTargetAfterVerb(text)))
             {
-                var jamIndex = text.IndexOf("干扰", StringComparison.Ordinal);
-                var before = jamIndex > 0 ? text.Substring(0, jamIndex) : text;
-                var possessive = before.LastIndexOf('的');
                 direction = CombatEventDirection.Incoming;
-                return ParseEntity(possessive >= 0 ? before.Substring(0, possessive) : before);
+                return ParseEntity(ActorBeforeVerb(text));
             }
 
-            // 旧式/英文被动：「你被 X 干扰」
-            var passive = Regex.Match(text, @"被\s*(?<actor>.+?)\s*(?:干扰|jammed)", RegexOptions.IgnoreCase);
+            // 旧式/英文被动：「你被 X 干扰」「You're jammed by X」
+            var passive = Regex.Match(text, @"你\s*被\s*(?<actor>.+?)\s*(?:干扰|标记|缠绕|减速|抑制|jammed|webbed|painted|dampened)",
+                RegexOptions.IgnoreCase);
+            if (!passive.Success)
+            {
+                passive = Regex.Match(text, @"you(?:'re|\s+are|\s+were)\s+(?<verb>\w+)\s+by\s+(?<actor>.+)$",
+                    RegexOptions.IgnoreCase);
+            }
+
             if (passive.Success)
             {
                 direction = CombatEventDirection.Incoming;
                 return ParseEntity(passive.Groups["actor"].Value);
             }
 
-            var to = AfterPhrase(text, "对");
+            // 施放方自述：「你 试图…/你 的 模块…」，或者英文 "you …"
+            var head = CleanName(text.Split(new[] { " - " }, StringSplitOptions.None)[0]);
+            if (head != null && (IsYou(head) || Regex.IsMatch(text, @"^\s*you\b", RegexOptions.IgnoreCase)
+                                 || Regex.IsMatch(text, @"^\s*你", RegexOptions.None)))
+            {
+                var after = ExtractTargetAfterVerb(text);
+                direction = CombatEventDirection.Outgoing;
+                return ParseEntity(after ?? text);
+            }
+
+            var to = AfterPhrase(text, "对") ?? AfterPhrase(text, "to");
             if (to != null)
             {
                 var target = CleanName(to.Split(new[] { " -" }, StringSplitOptions.None)[0]);
@@ -575,7 +740,7 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
                 return entity;
             }
 
-            var by = AfterPhrase(text, "by");
+            var by = AfterPhrase(text, "by") ?? AfterPhrase(text, "来自") ?? AfterPhrase(text, "被");
             if (by != null)
             {
                 direction = CombatEventDirection.Incoming;
@@ -584,6 +749,45 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
 
             direction = CombatEventDirection.Unknown;
             return new Entity(null, null, null);
+        }
+
+        /// <summary>动词后面的目标文本（去掉尾巴上的模块名）。</summary>
+        private static string ExtractTargetAfterVerb(string text)
+        {
+            var (index, length) = BestVerb(text, EwVerbs);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            var rest = text.Substring(index + length);
+            var cut = rest.IndexOf(" -", StringComparison.Ordinal);
+            if (cut >= 0)
+            {
+                rest = rest.Substring(0, cut);
+            }
+
+            return CleanName(rest);
+        }
+
+        /// <summary>动词前面的施放者（去掉"的 模块 正在"这类尾巴）。</summary>
+        private static string ActorBeforeVerb(string text)
+        {
+            var (index, _) = BestVerb(text, EwVerbs);
+            if (index <= 0)
+            {
+                return null;
+            }
+
+            var before = text.Substring(0, index);
+            var possessive = before.LastIndexOf('的');
+            if (possessive > 0)
+            {
+                before = before.Substring(0, possessive);
+            }
+
+            before = CleanName(AfterPhrase(before, "来自") ?? AfterPhrase(before, "from") ?? before);
+            return CleanName(before);
         }
 
         private static bool IsYou(string value)
@@ -730,6 +934,32 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             }
 
             return best;
+        }
+
+        /// <summary>
+        /// 在 <paramref name="words"/> 里挑最匹配的动词：优先**最长**匹配（避免"停滞缠绕光束"里的"缠绕"
+        /// 抢先于"正在缠绕"），同长取最靠前的。
+        /// </summary>
+        private static (int Index, int Length) BestVerb(string text, string[] words)
+        {
+            var bestIndex = -1;
+            var bestLength = 0;
+            foreach (var word in words)
+            {
+                var index = IndexOfWord(text, word);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                if (word.Length > bestLength || (word.Length == bestLength && (bestIndex < 0 || index < bestIndex)))
+                {
+                    bestIndex = index;
+                    bestLength = word.Length;
+                }
+            }
+
+            return (bestIndex, bestLength);
         }
 
         private static int VerbLength(string text, int index)

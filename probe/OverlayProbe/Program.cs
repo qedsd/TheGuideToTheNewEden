@@ -135,27 +135,27 @@ internal static class Program
     {
         var center = CombatLogStateCenter.Current;
         var listener = "Probe Combat";
-        center.TtlSeconds = 5;
+        center.ExpireSeconds = 5;
         center.SetEnabledCategories(CombatCategories.All.Select(p => p.Key));
         center.Attach(listener);
         Check("战斗中心已挂载", center.IsAttached(listener), "Attach 后应为 true");
 
         var now = DateTime.UtcNow;
 
-        // 承伤：第一轮只有单次值；第二轮出现后速率 = 本轮合计 ÷ 两轮实际间隔（阶段 358 不再除以写死的 5 秒）
+        // 伤害：第一轮只有单次值；第二轮出现后速率 = 本轮合计 ÷ 两轮实际间隔（阶段 358 不再除以写死的 5 秒）
         ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 100,
             "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-4));
         var firstDamage = RowOf(center, listener, CombatCategories.Damage);
-        Check("首轮承伤只显示单次值", firstDamage?.Text == "承伤 100HP", $"实际 {firstDamage?.Text}");
-        Check("首轮没有速率（不足两轮）", firstDamage?.Rate is null, $"实际 {firstDamage?.Rate}");
+        Check("首轮伤害只显示单次值", firstDamage?.Text == "伤害 100 HP", $"实际 {firstDamage?.Text}");
+        Check("首轮没有速率（不足两轮）", firstDamage?.Lines[0].Rate is null, $"实际 {firstDamage?.Lines[0].Rate}");
 
         ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 200,
             "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
         var damageRow = RowOf(center, listener, CombatCategories.Damage);
-        Check("承伤速率按实测两轮间隔（200 ÷ 3 秒）", damageRow?.Text == "承伤 200HP 66.7DPS",
+        Check("伤害速率按实测两轮间隔（200 ÷ 3 秒）", damageRow?.Text == "伤害 200 HP 66.7 HP/s",
             $"实际 {damageRow?.Text}");
-        Check("承伤记录实测间隔", Math.Abs((damageRow?.IntervalSeconds ?? 0) - 3) < 0.01,
-            $"实际 {damageRow?.IntervalSeconds}");
+        Check("承伤记录实测间隔", Math.Abs((damageRow?.Lines[0].IntervalSeconds ?? 0) - 3) < 0.01,
+            $"实际 {damageRow?.Lines[0].IntervalSeconds}");
 
         // 同一秒内又来两条（同一次齐射的多门炮）：并进同一轮，第一段变成这一轮合计 300HP
         ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 50,
@@ -163,7 +163,7 @@ internal static class Program
         ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 50,
             "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
         var volleyRow = RowOf(center, listener, CombatCategories.Damage);
-        Check("同秒多条并成一轮（300HP ÷ 3 秒）", volleyRow?.Text == "承伤 300HP 100DPS",
+        Check("同秒多条并成一轮（300HP ÷ 3 秒）", volleyRow?.Text == "伤害 300 HP 100 HP/s",
             $"实际 {volleyRow?.Text}");
 
         // 毁电：45GJ 每 2 秒一轮 → 22.5GJ/s
@@ -172,7 +172,7 @@ internal static class Program
         ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
             "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-2));
         var neutRow = RowOf(center, listener, CombatCategories.Neut);
-        Check("毁电=45GJ 22.5GJ/s", neutRow?.Text == "毁电 45GJ 22.5GJ/s", $"实际 {neutRow?.Text}");
+        Check("毁电=45GJ 22.5GJ/s", neutRow?.Text == "毁电 45 GJ 22.5 GJ/s", $"实际 {neutRow?.Text}");
 
         // 遥修：123HP 每 3 秒一轮 → 41HP/s
         ReportCombat(center, listener, CombatEventKind.RemoteRepair, CombatCategories.Rep, 123,
@@ -180,32 +180,60 @@ internal static class Program
         ReportCombat(center, listener, CombatEventKind.RemoteRepair, CombatCategories.Rep, 123,
             "Remote Armor Repairer II", "Guardian", now.AddSeconds(-1));
         var repRow = RowOf(center, listener, CombatCategories.Rep);
-        Check("遥修=123HP 41HP/s", repRow?.Text == "遥修 123HP 41HP/s", $"实际 {repRow?.Text}");
+        Check("遥修=123HP 41HP/s", repRow?.Text == "遥修 123 HP 41 HP/s", $"实际 {repRow?.Text}");
 
-        // 反跳：只在作用上时有一条日志，两分钟前那条也要一直留着（不能被 TTL 清掉）
+        // 阶段 363：吸电的输出侧单独记（我吸别人）——与"被吸"分开，叠加层仍只显示承受侧
+        ReportCombat(center, listener, CombatEventKind.CapacitorDrain, CombatCategories.Nos, 30,
+            "Small Energy Nosferatu II", "Guardian", now.AddSeconds(-4), CombatEventDirection.Outgoing);
+        ReportCombat(center, listener, CombatEventKind.CapacitorDrain, CombatCategories.Nos, 30,
+            "Small Energy Nosferatu II", "Guardian", now.AddSeconds(-2), CombatEventDirection.Outgoing);
+        var nosOutOnly = RowOf(center, listener, CombatCategories.Nos);
+        Check("吸电：只有输出时没有承受侧", nosOutOnly is { Lines.Count: 1 } && nosOutOnly.Lines[0].Direction == CombatEventDirection.Outgoing,
+            $"lines={nosOutOnly?.Lines.Count}: {string.Join(" | ", nosOutOnly?.Lines.Select(l => l.Text) ?? [])}");
+        Check("吸电：输出侧 30GJ 15GJ/s", nosOutOnly?.Text == "吸电 30 GJ 15 GJ/s",
+            $"实际 {nosOutOnly?.Text}");
+        Check("纯输出行没有输入侧（叠加层不显示）", nosOutOnly is { Lines.Count: 1 } && nosOutOnly.Lines[0].Direction == CombatEventDirection.Outgoing, $"实际 {nosOutOnly?.Text}");
+
+        ReportCombat(center, listener, CombatEventKind.CapacitorDrain, CombatCategories.Nos, 15,
+            "Small Energy Nosferatu II", "Guardian", now.AddSeconds(-3));
+        ReportCombat(center, listener, CombatEventKind.CapacitorDrain, CombatCategories.Nos, 15,
+            "Small Energy Nosferatu II", "Guardian", now.AddSeconds(-1));
+        var nosBoth = RowOf(center, listener, CombatCategories.Nos);
+        Check("吸电：承受 / 输出两侧都在", nosBoth is { Lines.Count: 2 },
+            $"lines={nosBoth?.Lines.Count}: {string.Join(" | ", nosBoth?.Lines.Select(l => l.Text) ?? [])}");
+        Check("吸电：承受侧 15GJ 7.5GJ/s", nosBoth?.Text.Contains("吸电 15 GJ 7.5 GJ/s") == true,
+            $"实际 {nosBoth?.Text}");
+
+        // 反跳：只在作用上时有一条日志，两分钟前那条也要一直留着（过期只影响数值卡片）
         ReportCombat(center, listener, CombatEventKind.WarpScramble, CombatCategories.Scram, null,
             "Warp Scrambler II", "Guardian", now.AddSeconds(-120));
         var scramRow = RowOf(center, listener, CombatCategories.Scram);
-        Check("反跳不按秒数消失", scramRow?.Text == "反跳", $"实际 {scramRow?.Text}");
+        Check("反跳不按秒数消失（显示分组名 跃迁扰频器）", scramRow?.Text == "跃迁扰频器", $"实际 {scramRow?.Text}");
+        Check("反跳不参与过期判断", scramRow?.Expired == false, $"实际 Expired={scramRow?.Expired}");
 
         center.SetCategoryEnabled(CombatCategories.Damage, false);
         Check("分类裁剪：承伤隐藏", center.GetRows(listener).All(p => p.Category != CombatCategories.Damage),
             "关闭后不应有承伤行");
         center.SetCategoryEnabled(CombatCategories.Damage, true);
 
-        // 保留时长：单轮分类（没有实测间隔）按设置下限过期；有实测间隔的分类不会被下限清掉
-        ReportCombat(center, listener, CombatEventKind.RemoteCapacitor, CombatCategories.CapTransfer, 30,
-            "Remote Capacitor Transmitter II", "Guardian", now);
-        center.TtlSeconds = 1;
+        // 阶段 362：过期只置灰、不消失——行一直在，只是 Expired=true 且数值停在最后一次
+        center.ExpireSeconds = 60;
+        Check("未过期：承伤不置灰", RowOf(center, listener, CombatCategories.Damage)?.Expired == false,
+            "60 秒内应为未过期");
+        center.ExpireSeconds = 1;
         Thread.Sleep(1200);
-        var afterTtl = center.GetRows(listener);
-        Check("单轮分类到下限后消失", afterTtl.All(p => p.Category != CombatCategories.CapTransfer),
-            string.Join(" | ", afterTtl.Select(p => p.Text)));
-        Check("实测间隔 3 秒的承伤不会被 1 秒下限清掉", afterTtl.Any(p => p.Category == CombatCategories.Damage),
-            string.Join(" | ", afterTtl.Select(p => p.Text)));
-        Check("反跳仍在（清除前一直保留）", afterTtl.Any(p => p.Category == CombatCategories.Scram),
-            string.Join(" | ", afterTtl.Select(p => p.Text)));
-        center.TtlSeconds = 5;
+        var afterExpire = center.GetRows(listener);
+        var expiredDamage = afterExpire.FirstOrDefault(p => p.Category == CombatCategories.Damage);
+        Check("过期后行不消失（承伤仍在）", expiredDamage is not null,
+            string.Join(" | ", afterExpire.Select(p => p.Text)));
+        Check("过期后标记 Expired", expiredDamage?.Expired == true, $"实际 Expired={expiredDamage?.Expired}");
+        Check("过期后数值停在最后一次", expiredDamage?.Text == "伤害 300 HP 100 HP/s", $"实际 {expiredDamage?.Text}");
+        Check("过期后所有数值卡片都还在", afterExpire.Count >= 4,
+            string.Join(" | ", afterExpire.Select(p => p.Text)));
+        Check("反跳在低过期时间下仍不过期",
+            afterExpire.FirstOrDefault(p => p.Category == CombatCategories.Scram)?.Expired == false,
+            "sticky 分类不参与过期");
+        center.ExpireSeconds = 5;
 
         center.Clear(listener);
         Check("手动清除后无行", center.GetRows(listener).Count == 0,
@@ -226,12 +254,13 @@ internal static class Program
         double? amount,
         string module,
         string pilot,
-        DateTime time)
+        DateTime time,
+        CombatEventDirection direction = CombatEventDirection.Incoming)
     {
         center.Report(listener, new CombatLogEvent
         {
             Kind = kind,
-            Direction = CombatEventDirection.Incoming,
+            Direction = direction,
             CategoryKey = category,
             Amount = amount,
             ModuleName = module,

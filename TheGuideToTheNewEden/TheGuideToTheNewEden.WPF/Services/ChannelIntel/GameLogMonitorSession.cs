@@ -1,9 +1,10 @@
-using System.Windows;
+﻿using System.Windows;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services.CombatLog;
+using TheGuideToTheNewEden.WPF.Services.Settings;
 using TheGuideToTheNewEden.WPF.Views.Windows;
 
 namespace TheGuideToTheNewEden.WPF.Services.ChannelIntel;
@@ -57,6 +58,9 @@ public sealed class GameLogMonitorSession
         _msgWindow?.SetShowShip(show);
     }
 
+    /// <summary>设置窗口背板不透明度（阶段 361；窗口按该角色的设置创建，这里管即时生效）。</summary>
+    public void SetWindowOpacity(int opacity) => _msgWindow?.SetWindowOpacity(opacity);
+
     /// <summary>开始监控；注册失败返回 false。</summary>
     public bool Start()
     {
@@ -73,11 +77,18 @@ public sealed class GameLogMonitorSession
         {
             if (Config.WindowNotify)
             {
+                var opacity = GameLogInfoSettingService.GetValue(Info.ListenerID)?.WindowOpacity ?? 100;
                 Func<string> titleProvider = () => Info.ListenerName;
                 _msgWindow = GameLogWindowRegistry.Acquire(
                     Info.ListenerName,
                     "monitor:" + Config.GUID,
-                    () => new GameLogMsgWindow(Info.ListenerName, Info.ListenerName, showShip: _showShipInTitle, titleProvider: titleProvider));
+                    () => new GameLogMsgWindow(
+                        Info.ListenerName,
+                        Info.ListenerName,
+                        showShip: _showShipInTitle,
+                        titleProvider: titleProvider,
+                        windowOpacity: opacity,
+                        settingListenerId: Info.ListenerID));
                 _msgWindow.EnableMonitor();
                 _msgWindow.SetTitleProvider(titleProvider);
                 _msgWindow.OnHided += (_, _) => _sound?.StopSound();

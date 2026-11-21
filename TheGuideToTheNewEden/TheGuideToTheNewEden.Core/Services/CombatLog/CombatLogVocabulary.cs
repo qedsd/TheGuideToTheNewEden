@@ -41,17 +41,53 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
         public static readonly string[] AllPrepositions =
             FromWords.Concat(ToWords).Distinct().ToArray();
 
-        /// <summary>跃迁扰断 / 扰频（反跳）。</summary>
+        /// <summary>跃迁扰频器（反跳）。</summary>
         public static readonly string[] ScramWords =
         {
-            "warp scramble", "warp scrambl", "warp disruption", "warp disrupt",
-            "跃迁扰断", "跃迁扰频", "跃迁干扰", "反跳", "扰频器", "扰断器",
+            "warp scramble", "warp scrambl", "scrambler",
+            "跃迁扰频", "扰频器", "反跳",
         };
 
-        /// <summary>ECM 干扰。</summary>
+        /// <summary>跃迁扰断器 / 跃迁抑阻（长反跳）。</summary>
+        public static readonly string[] WarpDisruptWords =
+        {
+            "warp disrupt", "warp disruption", "disruptor probe",
+            "跃迁扰断", "跃迁抑阻", "扰断器",
+        };
+
+        /// <summary>ECM 干扰（只认 ECM 专有词，裸"干扰"太泛会误吃别的电子战）。</summary>
         public static readonly string[] EcmWords =
         {
-            "jammed", "jammer", "ecm", "electronic counter", "电子对抗", "干扰",
+            "ecm", "jammer", "jammed", "jamming", "electronic counter",
+            "电子对抗", "电子干扰", "干扰器",
+        };
+
+        /// <summary>停滞缠绕光束（网 / 减速）。</summary>
+        public static readonly string[] WebWords =
+        {
+            "stasis web", "webifier", "webbed", "webified",
+            "停滞缠绕", "缠绕光束", "缠绕", "减速",
+        };
+
+        /// <summary>目标标记装置。</summary>
+        public static readonly string[] PainterWords =
+        {
+            "target painter", "painter", "painted",
+            "目标标记", "标记装置",
+        };
+
+        /// <summary>武器扰断器 / 跟踪扰断。</summary>
+        public static readonly string[] WeaponDisruptWords =
+        {
+            "tracking disruptor", "weapon disruptor", "tracking disruption", "weapon disruption",
+            "武器扰断", "武器干扰", "跟踪扰断",
+        };
+
+        /// <summary>远程感应抑阻器（感应抑阻 / 阻尼）。</summary>
+        public static readonly string[] SensorDampWords =
+        {
+            "sensor dampener", "sensor dampening", "remote sensor dampener", "damper",
+            "感应抑阻", "感应器抑制", "远程感应", "抑阻器",
         };
 
         /// <summary>远程维修（遥修）。</summary>

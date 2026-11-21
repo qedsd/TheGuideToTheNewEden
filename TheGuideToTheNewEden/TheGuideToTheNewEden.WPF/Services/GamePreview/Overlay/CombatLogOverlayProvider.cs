@@ -39,20 +39,33 @@ public sealed class CombatLogOverlayProvider : IPreviewOverlayProvider
             return [];
         }
 
-        var rows = CombatLogStateCenter.Current.GetRows(context.CharacterName);
+        // 阶段 369/370：叠加层只看"输入"侧（别人打你/毁你/吸你/修你）且只显示未过期的行；
+        // 遥修分行时把各类型的输入行拼在一条里（输出行不进叠加层）。
+        var rows = CombatLogStateCenter.Current.GetRows(context.CharacterName)
+            .Where(row => row.Lines.Any(p => p.Direction == Core.Models.CombatLog.CombatEventDirection.Incoming && !p.Expired))
+            .ToList();
         if (rows.Count == 0)
         {
             return [];
         }
 
-        return rows.Select(row => new PreviewOverlayItem(
-            $"combat:{row.Category}",
-            row.Text,
-            SeverityOf(row.ColorKey),
-            100 + row.Order,
-            row.Detail)
+        return rows.Select(row =>
         {
-            ColorKey = row.ColorKey,
+            var text = string.Join(" · ", row.Lines
+                .Where(p => p.Direction == Core.Models.CombatLog.CombatEventDirection.Incoming && !p.Expired)
+                .Select(p => string.IsNullOrWhiteSpace(p.Text) ? row.Label : $"{row.Label} {p.Text}"));
+            var detail = string.Join("\n", row.Lines
+                .Where(p => p.Direction == Core.Models.CombatLog.CombatEventDirection.Incoming && !p.Expired)
+                .Select(p => p.Detail));
+            return new PreviewOverlayItem(
+                $"combat:{row.Category}",
+                text,
+                SeverityOf(row.ColorKey),
+                100 + row.Order,
+                detail)
+            {
+                ColorKey = row.ColorKey,
+            };
         }).ToList();
     }
 

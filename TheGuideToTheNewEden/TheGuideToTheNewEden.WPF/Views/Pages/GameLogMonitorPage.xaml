@@ -332,22 +332,32 @@
                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Text="{Binding DataContext.CombatStatusText, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" />
 
+                                    <!--  阶段 362：过期时间（超时后卡片置灰并提示已过期，不会消失）  -->
                                     <Grid Margin="0,8,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock
                                             VerticalAlignment="Center"
                                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                            Text="{DynamicResource CombatLog_Ttl}" />
-                                        <ComboBox
+                                            Text="{DynamicResource CombatLog_Expire}" />
+                                        <ui:NumberBox
                                             Grid.Column="1"
                                             Width="120"
-                                            HorizontalAlignment="Left"
-                                            ItemsSource="{Binding DataContext.CombatTtlOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                                            SelectedItem="{Binding DataContext.CombatTtlSeconds, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}"
-                                            ToolTip="{DynamicResource CombatLog_TtlTip}" />
+                                            MaxHeight="32"
+                                            Maximum="86400"
+                                            Minimum="1"
+                                            SmallChange="10"
+                                            ToolTip="{DynamicResource CombatLog_ExpireTip}"
+                                            Value="{Binding DataContext.CombatExpireSeconds, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{DynamicResource CombatLog_Seconds}" />
                                     </Grid>
 
                                     <Grid Margin="0,8,0,0">
@@ -364,6 +374,36 @@
                                             HorizontalAlignment="Left"
                                             IsChecked="{Binding DataContext.ShowShipInTitle, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}"
                                             ToolTip="{DynamicResource CombatLog_ShowShipTip}" />
+                                    </Grid>
+
+                                    <!--  阶段 361：窗口背板不透明度（只影响背板，文字与卡片始终实色）  -->
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{DynamicResource CombatLog_WindowOpacity}" />
+                                        <Slider
+                                            Grid.Column="1"
+                                            Margin="0,0,10,0"
+                                            VerticalAlignment="Center"
+                                            IsMoveToPointEnabled="True"
+                                            LargeChange="10"
+                                            Maximum="100"
+                                            Minimum="1"
+                                            SmallChange="1"
+                                            ToolTip="{DynamicResource CombatLog_WindowOpacityTip}"
+                                            Value="{Binding DataContext.WindowOpacity, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            MinWidth="34"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding DataContext.WindowOpacity, RelativeSource={RelativeSource AncestorType={x:Type Page}}, StringFormat={}{0}%}" />
                                     </Grid>
 
                                     <TextBlock

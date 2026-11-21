@@ -1,4 +1,4 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
@@ -1381,10 +1381,20 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">Enabled: click Start Monitoring</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">Turn on "Enable combat log" before starting monitoring</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">Stopped</sys:String>
-    <sys:String x:Key="CombatLog_Ttl">Min show time</sys:String>
-    <sys:String x:Key="CombatLog_TtlTip">Hide only after this many seconds without a new event. Slower modules (e.g. heavy neutralizers) extend it automatically to their measured cycle. Scram / ECM log only when first applied, so they stay until you clear them or stop monitoring.</sys:String>
+    <sys:String x:Key="CombatLog_Expire">Expire after</sys:String>
+    <sys:String x:Key="CombatLog_ExpireTip">A card greys out with an Expired label once its category has had no new log for this many seconds. Rows never disappear; only clearing or stopping monitoring removes them. Scram / ECM have no periodic log and never expire.</sys:String>
+    <sys:String x:Key="CombatLog_Seconds">s</sys:String>
+    <sys:String x:Key="CombatLog_Expired">Expired</sys:String>
+    <sys:String x:Key="CombatLog_Incoming">Incoming</sys:String>
+    <sys:String x:Key="CombatLog_Outgoing">Outgoing</sys:String>
+    <sys:String x:Key="CombatLog_CapGroup">Capacitor</sys:String>
+    <sys:String x:Key="CombatLog_RepShield">Shield</sys:String>
+    <sys:String x:Key="CombatLog_RepArmor">Armor</sys:String>
+    <sys:String x:Key="CombatLog_RepHull">Hull</sys:String>
     <sys:String x:Key="CombatLog_ShowShip">Show current ship in title</sys:String>
     <sys:String x:Key="CombatLog_ShowShipTip">Reads the current ship type via ESI; when unavailable only the character name is shown.</sys:String>
+    <sys:String x:Key="CombatLog_WindowOpacity">Window opacity</sys:String>
+    <sys:String x:Key="CombatLog_WindowOpacityTip">1–100: only the window backdrop fades; text and cards stay opaque; 100 = fully opaque (same as the channel alert window). The window resizes freely with no minimum size.</sys:String>
     <sys:String x:Key="CombatLog_Categories">Categories</sys:String>
     <sys:String x:Key="CombatLog_OpenWindow">Open Monitor Window</sys:String>
     <sys:String x:Key="CombatLog_Clear">Clear combat info</sys:String>
@@ -1396,12 +1406,17 @@
     <sys:String x:Key="GameLogMsgWindow_ShowGame">Focus game</sys:String>
     <sys:String x:Key="GameLogMsgWindow_Combat">In combat</sys:String>
     <sys:String x:Key="GameLogMsgWindow_Waiting">Standby</sys:String>
-    <sys:String x:Key="GameLogMsgWindow_ClearCombatTip">Clear combat state (scram / ECM have no end log)</sys:String>
+    <sys:String x:Key="GameLogMsgWindow_ClearCombatTip">Clear all logs (combat state + keyword hits)</sys:String>
     <sys:String x:Key="CombatLog_NotRunning">Combat log is not running</sys:String>
-    <sys:String x:Key="CombatCategory_Scram">Scram</sys:String>
+    <sys:String x:Key="CombatCategory_Scram">Warp Scrambler</sys:String>
+    <sys:String x:Key="CombatCategory_ScramDisrupt">Warp Disruptor</sys:String>
     <sys:String x:Key="CombatCategory_Neut">Neut</sys:String>
     <sys:String x:Key="CombatCategory_Nos">Nos</sys:String>
     <sys:String x:Key="CombatCategory_Ecm">ECM</sys:String>
+    <sys:String x:Key="CombatCategory_Web">Stasis Webifier</sys:String>
+    <sys:String x:Key="CombatCategory_Painter">Target Painter</sys:String>
+    <sys:String x:Key="CombatCategory_WeaponDisrupt">Weapon Disruptor</sys:String>
+    <sys:String x:Key="CombatCategory_SensorDamp">Sensor Dampener</sys:String>
     <sys:String x:Key="CombatCategory_Rep">Remote Rep</sys:String>
     <sys:String x:Key="CombatCategory_CapTransfer">Cap Transfer</sys:String>
     <sys:String x:Key="CombatCategory_Damage">Damage</sys:String>

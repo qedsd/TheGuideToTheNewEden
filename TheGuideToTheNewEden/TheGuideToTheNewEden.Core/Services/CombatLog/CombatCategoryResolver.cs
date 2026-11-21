@@ -46,9 +46,14 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
     public static class CombatCategories
     {
         public const string Scram = "scram";
+        public const string ScramDisrupt = "scram_disrupt";
         public const string Neut = "neut";
         public const string Nos = "nos";
         public const string Ecm = "ecm";
+        public const string Web = "web";
+        public const string Painter = "painter";
+        public const string WeaponDisrupt = "weapon_disrupt";
+        public const string SensorDamp = "sensor_damp";
         public const string Rep = "rep";
         public const string CapTransfer = "cap_transfer";
         public const string Damage = "damage";
@@ -57,8 +62,13 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
         public static IReadOnlyList<CombatCategoryDefinition> All { get; } = new List<CombatCategoryDefinition>
         {
             new CombatCategoryDefinition(Scram, 10, false, null, true, sticky: true),
+            new CombatCategoryDefinition(ScramDisrupt, 12, false, null, true, sticky: true),
+            new CombatCategoryDefinition(Ecm, 14, false, null, true, sticky: true),
+            new CombatCategoryDefinition(Web, 16, false, null, true, sticky: true),
+            new CombatCategoryDefinition(Painter, 18, false, null, true, sticky: true),
+            new CombatCategoryDefinition(WeaponDisrupt, 19, false, null, true, sticky: true),
             new CombatCategoryDefinition(Neut, 20, true, "GJ", true),
-            new CombatCategoryDefinition(Ecm, 30, false, null, true, sticky: true),
+            new CombatCategoryDefinition(SensorDamp, 21, false, null, true, sticky: true),
             new CombatCategoryDefinition(Rep, 40, true, "HP", true),
             new CombatCategoryDefinition(Nos, 50, true, "GJ", true),
             new CombatCategoryDefinition(CapTransfer, 60, true, "GJ", true),
@@ -115,13 +125,38 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             }),
             (CombatCategories.Scram, new[]
             {
-                "warp scrambler", "warp disruptor", "warp disruption field",
-                "跃迁扰频", "跃迁扰断", "扰频器", "扰断器",
+                "warp scrambler", "warp scramble", "scrambler",
+                "跃迁扰频", "扰频器",
+            }),
+            (CombatCategories.ScramDisrupt, new[]
+            {
+                "warp disruptor", "warp disruption", "warp disrupt", "disruptor probe", "warp disrupter",
+                "跃迁扰断", "跃迁抑阻", "扰断器",
+            }),
+            (CombatCategories.Web, new[]
+            {
+                "stasis webifier", "stasis web", "webifier",
+                "停滞缠绕", "缠绕光束", "缠绕网",
+            }),
+            (CombatCategories.Painter, new[]
+            {
+                "target painter", "painter",
+                "目标标记", "标记装置",
+            }),
+            (CombatCategories.WeaponDisrupt, new[]
+            {
+                "tracking disruptor", "weapon disruptor", "tracking disruption", "weapon disruption",
+                "武器扰断", "武器干扰", "跟踪扰断",
+            }),
+            (CombatCategories.SensorDamp, new[]
+            {
+                "sensor dampener", "sensor dampening", "remote sensor dampener",
+                "感应抑阻", "远程感应抑阻", "抑阻器",
             }),
             (CombatCategories.Ecm, new[]
             {
-                "ecm", "jammer", "electronic countermeasure",
-                "电子对抗", "干扰器",
+                "ecm", "jammer", "electronic countermeasure", "electronic counter",
+                "电子对抗", "电子干扰", "干扰器",
             }),
         };
 
@@ -159,6 +194,11 @@ namespace TheGuideToTheNewEden.Core.Services.CombatLog
             switch (ev.Kind)
             {
                 case CombatEventKind.WarpScramble: fallback = CombatCategories.Scram; break;
+                case CombatEventKind.WarpDisrupt: fallback = CombatCategories.ScramDisrupt; break;
+                case CombatEventKind.StasisWeb: fallback = CombatCategories.Web; break;
+                case CombatEventKind.TargetPainter: fallback = CombatCategories.Painter; break;
+                case CombatEventKind.WeaponDisrupt: fallback = CombatCategories.WeaponDisrupt; break;
+                case CombatEventKind.SensorDamp: fallback = CombatCategories.SensorDamp; break;
                 case CombatEventKind.CapacitorNeutralize: fallback = CombatCategories.Neut; break;
                 case CombatEventKind.CapacitorDrain: fallback = CombatCategories.Nos; break;
                 case CombatEventKind.EcmJam: fallback = CombatCategories.Ecm; break;

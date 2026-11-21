@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -26,6 +26,51 @@ namespace TheGuideToTheNewEden.Core.Models
             get => _showShipInTitle; set => SetProperty(ref _showShipInTitle, value);
         }
 
+        private int _windowOpacity = 100;
+        /// <summary>
+        /// 阶段 361：日志监控窗口背板不透明度（1–100，100 = 完全不透明）。
+        /// 只作用于窗口背板，文字与卡片始终实色（参考频道预警小窗的"不透明度"）。
+        /// </summary>
+        public int WindowOpacity
+        {
+            get => _windowOpacity;
+            set => SetProperty(ref _windowOpacity, Math.Clamp(value, 1, 100));
+        }
+
+        private double? _windowLeft;
+        /// <summary>日志监控窗口上次关闭时的位置 X（WPF DIP；null 表示首次使用）。</summary>
+        public double? WindowLeft
+        {
+            get => _windowLeft;
+            set => SetProperty(ref _windowLeft, IsFinite(value) ? value : null);
+        }
+
+        private double? _windowTop;
+        /// <summary>日志监控窗口上次关闭时的位置 Y（WPF DIP；null 表示首次使用）。</summary>
+        public double? WindowTop
+        {
+            get => _windowTop;
+            set => SetProperty(ref _windowTop, IsFinite(value) ? value : null);
+        }
+
+        private double? _windowWidth;
+        /// <summary>日志监控窗口上次关闭时的宽度（WPF DIP；null 表示首次使用）。</summary>
+        public double? WindowWidth
+        {
+            get => _windowWidth;
+            set => SetProperty(ref _windowWidth, IsFinite(value) && value >= 240 ? value : null);
+        }
+
+        private double? _windowHeight;
+        /// <summary>日志监控窗口上次关闭时的高度（WPF DIP；null 表示首次使用）。</summary>
+        public double? WindowHeight
+        {
+            get => _windowHeight;
+            set => SetProperty(ref _windowHeight, IsFinite(value) && value >= 120 ? value : null);
+        }
+
+        private static bool IsFinite(double? value)
+            => value.HasValue && !double.IsNaN(value.Value) && !double.IsInfinity(value.Value);
         private ObservableCollection<GameLogItemConfig> _itemConfigs = new ObservableCollection<GameLogItemConfig>();
         public ObservableCollection<GameLogItemConfig> ItemConfigs
         {

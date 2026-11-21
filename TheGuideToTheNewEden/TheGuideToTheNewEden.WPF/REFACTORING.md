@@ -1,4 +1,22 @@
-# TheGuideToTheNewEden.WPF 重构与更新记录
+﻿# TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 366：战斗卡**颜色改按"收益 / 伤害"**——伤害红、收益绿、中性黑白（伤害/毁电/吸电的输出=绿、输入=红；遥修/传电的输入=绿、输出=中性）；卡面去掉「输入 / 输出」字样，方向移到 **ToolTip**；反跳 / 干扰显示成「**被反跳 / 被干扰**」；分类名「承伤」改「**伤害**」；语言键 +2。
+- 阶段 376：电子战**按装备分组**显示而非泛称"干扰"：新增 跃迁扰断器 / 停滞缠绕光束 / 目标标记装置 / 武器扰断器 / 远程感应抑阻器 五类（连原 跃迁扰频器 / ECM 共 7 类状态），解析按装备分组词表 + 中英动词切分方向；胶囊直接写分组名，**自己施加=绿、被别人施加=红**，删掉「被…」措辞与出向专用文案；第三方互相干扰方向判不出时丢弃，避免误标。
+- 阶段 375：修正毁电方向——真实中文日志里**施放方**写的是被毁电目标（`角色 (舰船*)`），原先误判为进向导致双方都显示红色；现在带 `[军团]` 的按进向、`角色 (舰船*)` 按出向。吸电 + 传电合并为一张「电容」卡（行尾标 吸电 / 传电），与遥修同一呈现方式。
+- 阶段 374：反跳 / 干扰**两种方向都显示**（进向「被反跳 / 被干扰」红、出向「反跳对方 / 干扰对方」绿）；去掉卡片数量上限（原先双区只显示 4 张，传电这类靠后的分类被裁掉），所有启用分类都按换行 + 滚动展示。
+- 阶段 373：战斗卡片每行的**数量与说明底部对齐**（两个 TextBlock 都 VerticalAlignment=Bottom），小字紧贴数量底线。
+- 阶段 372：战斗卡片**每一行的数量用大字号、说明用小字号**（数量 16 / 行多时 15，单位与每秒 10），突出每次战斗数值；卡片高度按各行数量字号累加。
+- 阶段 371：战斗卡片**同一行等高**（矮卡拉伸到本行最高，只有宽度自适应）；去掉战斗区的固定高度上限（原 260/320），卡片区高度跟随窗口、窗口加高即可看全；一行只剩一张卡时铺满整行。
+- 阶段 370：战斗卡片**等宽自动换行布局**（单卡 150–360 DIP，同一行平分并填满可用宽度，放不下换行，战斗区可滚动）；遥修**输入/输出都列**（最多六行，行多时字号自动缩小）；标题栏清除按钮合并清除战斗行 + 关键词命中（提示改为「清除所有日志」），底部按钮栏取消；关键词命中列表只显示日志原文（去掉时间 / 配置名）。
+- 阶段 369：战斗数值行文统一——所有分类改成「数量 单位　每秒 单位/s」（去掉 `/`，伤害也改成 HP / HP/s）；**遥修按护盾 / 装甲 / 结构分行**（每行末尾标类型，0 值也显示，卡片高度随行数增加）。
+- 阶段 368：过期卡片**只置灰**——卡面右侧不再显示「已过期」小字；悬停提示在过期后由战斗详情改为「已过期」，未过期仍显示输入/输出详情。
+- 阶段 367：日志监控窗口按角色自动记忆位置与尺寸——首次/无设置仍居中 440×380；窗口加载时恢复 Left/Top/Width/Height，限制在当前虚拟桌面；正常状态下位置/尺寸变化经 Dispatcher 合并后保存到 GameLogInfoSettings.json，关闭前再补存；最小化/最大化不覆盖正常状态尺寸。
+- 阶段 365：日志小窗卡片改成**两行等高**——输入 / 输出**同字号**（15px）各占一半高度，输入红、输出绿；只有一行时该行纵向占满并居中；卡片高度 64→68 DIP。
+- 阶段 364：日志小窗交互与方向着色——删掉右下角「前置游戏」按钮，标题栏右侧依次改成「**清除战斗状态**（橡皮擦）/ **前置游戏**（显示器图标）/ 最小化 / 关闭」；每张战斗卡的主数值**始终标明「输入 / 输出」**，**输入红色、输出绿色**（反跳 / 干扰胶囊也标「输入」）；仅战斗窗口隐藏底部条（不再留一条空栏）；语言键值改为「输入 / Incoming」。
+- 阶段 363：战斗日志**区分「承受 / 输出」**——同一个分类按方向各记一份状态（别人打我/毁我/吸我/修我 vs 我打/毁/吸/修别人），日志窗口卡片主数值=承受、第二行小字=输出（只有输出时主数值标「输出」）；多开叠加层仍只显示承受侧；反跳 / 干扰只保留承受侧；顺手把伤害数值格式化里多余的旧字段清掉；语言键 +2。
+- 阶段 362：战斗日志**过期不再自动消失**——行一直保留（只有「清除战斗状态」/停止监控才清），原来的「最短显示 5/8/10 秒」删掉，换成「**过期时间**」（默认 60 秒、可手输任意秒数）；超过该时间没有新日志的卡片**置灰**并在右侧显示小字「已过期」，数值停在最后一次；反跳 / 干扰没有周期日志、不参与过期；多开叠加层只显示未过期的行；语言键 +2。
+- 阶段 361：日志监控小窗**可自由缩放、无最小尺寸**，并新增**背板不透明度**（1–100，参考频道预警小窗：只让背景透明，文字 / 卡片始终实色）；窗口从 `ui:FluentWindow` 改成普通 `Window` + `WindowChrome` + 自绘标题栏（透明与缩放同时成立），设置存在该角色的 `GameLogSetting.WindowOpacity`，日志监控「战斗日志」页签新增滑杆；顺手把「清除战斗状态」的 × 换成橡皮擦图标；语言键 +2。
+- 阶段 360：日志监控小窗显示与高度修正——**开启战斗日志后窗口不再自动隐藏**（没有战斗时显示「无战斗」占位，不再"没数据就不弹、事件清空就隐藏"）；战斗卡片改为**固定高度 64 DIP**（战斗区 ≤260、卡片区 ≤230），不再按剩余空间撑满；双区窗口里没有战斗行时仍把高度让给命中列表。
+- 阶段 359：日志监控窗口重设计——战斗区改为胶囊（反跳 / 干扰）+ 2 列数值卡片（分类色条 + 大号数值 + 速率/窗口值），监控区改为单行消息流（时间 · 频道 · 内容）；标题可显示当前舰船（ESI，开关在「战斗日志」页签）；战斗日志与关键词日志合并成同一个窗口（`GameLogWindowRegistry` 按角色引用计数）。
 - 阶段 358：战斗日志口径修正——毁电 / DPS 不再按固定秒窗口计算，改按**前后两轮的实际间隔**算每秒速率（`毁电 45GJ 22.5GJ/s`、`遥修 123HP 41HP/s`、`承伤 320HP 91.4DPS`）；保留时长同样按实测周期自动延长（下限 5 秒、上限 60 秒），慢周期装备不再闪断；**反跳 / 干扰**这类只在生效时写一条日志的提示改为**常驻**，直到点「清除战斗状态」或停止监控；状态条新增「清除」按钮；语言键 +1。
 - 阶段 357：战斗日志接入多开/日志监控——从游戏日志解析**遥修/毁电/吸电/反跳/ECM/传电/承伤**，按装备组归类（只显示分类）；日志监控新增固定「战斗日志」页签（不落盘、不可删，新配置仍是普通关键词监控），开启后该角色**常开监控小窗**；多开角色名下方新增战斗信息行（绿色遥修/红色承伤等），全局+单项开关与状态徽标；数值显示"最近一次 + 窗口累计"，承伤第二段是实时 DPS；TTL 默认 5 秒、可选 8/10；顺手修掉关键词会话**运行中不跟随日志轮换**的老 bug；日志监控关键词命中也接进叠加层（可选开关，30 秒）；语言键 +34。
 - 阶段 356：预警文字开放独立设置——反馈"预警行字体太小"；根因是旧实现取「角色名字号 × 0.4」而角色名字号本身已随窗口缩放（小窗里再乘一次只剩 ~10px）。改为 `PreviewItem` 上独立的字体/字号/跟随缩放/倍率 + **文字色/背景色**（默认字号 30、跟随缩放、下限 12 DIP），并按用户要求**去掉行首圆点**；设置页「频道预警」卡片新增六行；**鼠标悬停用 ToolTip 浮层显示预警详情**（叠加窗鼠标穿透，改由预览窗按光标位置判定；浮层不占叠加窗高度，下面留给以后的功能）；语言键 +7。
@@ -13942,7 +13960,7 @@ TTL 同时还是**唯一的存活判据**。三个后果：
   最后一个使用者停止时才关闭。窗口所有者：`combat` / `monitor:<配置GUID>`。
 - 关键词配置停止时若还有别的关键词会话在用则保留监控区，否则恢复"仅战斗"。
 - 开始任意关键词配置时，若该角色的战斗开关是开的、战斗会话还没跑，会顺带 `StartCombat()`；否则只点关键词的「开始监控」会看不到战斗信息。
-- 战斗区没有内容时不再显示「无战斗」占位：双区窗口整块隐藏、只留命中列表；仅战斗窗口在没有事件时不弹出，事件清空后自动隐藏，避免一片空白。
+- 战斗区没有内容时不再显示「无战斗」占位：双区窗口整块隐藏、只留命中列表；~~仅战斗窗口在没有事件时不弹出，事件清空后自动隐藏，避免一片空白~~ → **阶段 360 已修正**：仅战斗窗口开启后就显示（无事件时显示「无战斗」），事件清空也不隐藏。
 - 窗口进一步极简：标题只留「角色名（+ 当前舰船）」，去掉「日志监控 / 配置名 / 游戏日志」；去掉「命中 N」小标题与左下角角色名+监控状态，清空按钮移到右下角（仅监控窗口显示），消息列表从顶部直接开始。
 - 「开始监控 / 停止监控」按钮改为**当前角色全部配置**（等价 `StartAll` / `StopAll`），不再只启停选中页签；顶部「开始全部 / 停止全部」保持不变。
 **日志窗口中英文切换（2026-11-20）**
@@ -13956,6 +13974,404 @@ TTL 同时还是**唯一的存活判据**。三个后果：
   「战斗+监控 / 仅战斗 / 仅监控 / 无事件」四张截图；四态布局、卡片换行（奇数最后一张整行）、
   清除按钮、高亮行均正常。
 - `dotnet build`（WPF + LogWindowProbe）：0 错误；主窗口实测「战斗日志」页签出现「标题显示当前舰船」开关。
+
+---
+
+## 阶段 360：日志监控小窗——开启战斗日志不再自动隐藏、战斗 UI 固定高度（2026-11-20）
+
+### 背景（用户反馈）
+
+> "读取最新代码，开启战斗日志时不应该自动隐藏窗口，并且需要给每一个战斗 UI 设置最高高度，
+> 现在会自动占满 UI 空间，应该固定高度。"
+
+### 根因
+
+阶段 359 重做小窗时加了两条"避免一片空白"的规则，用户实际使用时正好相反：
+
+1. `GameLogMsgWindow.ShowWindow()` 里 `if (_combatOnly && GetRows(...).Count == 0) return;`
+   —— 刚点「开始监控」还没有战斗事件，窗口根本不会出现（看起来就是"开了战斗日志，窗口自己没了"）。
+2. `RefreshCombat()` 里"仅战斗 + 行数 0 → `HideWindow()`"——清除战斗状态、或所有分类过期后，窗口自动消失。
+3. `UpdateCardSizes()` 在仅战斗时按 `(CardsList.ActualHeight - rows*7) / rows` 把卡片**均分撑满**整个窗口，
+   分类少的时候一张卡被拉到一百多 DIP，把 UI 空间全占了。
+
+### 与用户确认的口径
+
+- **开启战斗日志就必须有窗口**：没有战斗事件时显示「无战斗」占位，事件清空/手动清除后也不隐藏；
+  只有"停止监控"或用户点关闭才会收掉。
+- **战斗卡片固定高度**：每张卡 64 DIP，战斗区/卡片区各自有最大高度，不再按剩余空间拉伸。
+
+### 变更明细
+
+**`Views/Windows/GameLogMsgWindow.xaml`**
+
+- 卡片 `Height="{Binding Height}" MinHeight="58"` → **固定 `Height="64"`**；去掉 `CombatCard.Height` 属性与高度均分逻辑。
+- `CombatArea` 增加 `MaxHeight="260"` + `VerticalAlignment="Top"`；`CardsList` 增加 `MaxHeight="230"`。
+- 新增 `CombatEmpty`（`CombatLog_NoCombat` 占位，战斗区第 2 行、无战斗时显示）。
+
+**`Views/Windows/GameLogMsgWindow.xaml.cs`**
+
+- `ShowWindow()`：删掉"没有战斗行就 return"的守卫，任何情况下都能把窗口显示出来（供 `CombatLogFeedService.Start`
+  与页签「打开监控窗口」使用）。
+- `RefreshCombat()`：
+  - 删掉"仅战斗 + 无行 → `HideWindow()`"；
+  - `showCombat = attached && (_combatOnly || rows.Count > 0)`：**仅战斗窗口即使没有数据也占位显示**；
+    双区窗口在无战斗行时仍把高度让给命中列表（窗口本身保持可见）；
+  - 保留反方向的"有新战斗行且窗口被手动隐藏/最小化 → 叫回来"。
+- `ApplyLayout(showCombat)`：战斗行用 `Auto`（不再 `Star`），监控行占 `Star`；卡片行不再 `Star`。
+- `UpdateCardSizes()`：只算两列宽度（奇数最后一张整行），不再改高度。
+- `CombatCard` 去掉 `Height`/`_height`（宽度仍需 `INotifyPropertyChanged`）。
+
+### 验证
+
+- `probe/LogWindowProbe` 新增两套断言（写进 `probe.log`）：
+  - 仅战斗（5 张卡）：战斗区实际高度 **242.4 ≤ 260**、每张卡容器高度 **71.2**（64 + 7 间距，不再撑满）、窗口可见；
+  - 仅战斗且**暂无事件**：`ShowWindow()` 后窗口可见、「无战斗」占位 `Visible`、战斗区高度 20（固定，不占满）。
+- 重新生成 `logwindow-combat-only.png` / `logwindow-combat-empty.png` 等 7 张截图目检：
+  卡片紧凑、底部留白（窗口尺寸不变），无事件窗口显示「无战斗」而不是空白/消失。
+- `dotnet build`（WPF + LogWindowProbe）：0 错误。
+
+### 已知限制
+
+- ~~窗口仍是固定 440×380（`ResizeMode="NoResize"`）~~ → **阶段 361 起窗口可自由缩放**：分类很少（例如只有 2 类）时
+  战斗区下方会留白，这是"固定高度"的直接结果；**没有**按内容自动缩窗口。
+- 双区窗口（战斗 + 关键词）在无战斗行时不显示「无战斗」占位，把高度让给命中列表——这是有意保留的
+  阶段 359 行为，避免两块占位同时出现。
+
+---
+
+## 阶段 361：日志监控窗口可自由缩放 + 背板不透明度（2026-11-20）
+
+### 背景（用户反馈）
+
+> "日志窗口需要不限制最小尺寸，并且增加透明度调整，参考频道预警的小窗，可以对背景透明，保持 UI 文字不透明。"
+
+### 方案
+
+**一、窗口改成"可缩放 + 可透明"的自绘窗口**
+
+`ui:FluentWindow` + `ResizeMode="NoResize"` 的固定 440×380 不能自由缩放，也没有"只让背景透明"的能力。
+WPF 里要做背景透明必须 `AllowsTransparency="True"` + `WindowStyle="None"`，而这两项会同时取消原生标题栏与边框，
+所以照 `IntelWindow`（频道预警小窗）的做法改成：
+
+- `Window`（普通窗口）+ `AllowsTransparency="True"` + `Background="Transparent"` + `WindowStyle="None"`；
+- `WindowChrome`（`CaptionHeight=0`、`ResizeBorderThickness=6`、`GlassFrameThickness=0`）把四边 6px 交给系统做缩放；
+- 自绘标题栏（logo + 标题 + 最小化 / 关闭，拖动走 `DragMove()`），替代原来的 `ui:TitleBar`；
+- `MinWidth=0`、`MinHeight=0`：不再限制最小尺寸（实际下限只剩系统的极小值），默认仍是 440×380、居中打开。
+
+**二、背板不透明度（参考频道预警小窗）**
+
+- 所有内容装进一个 `BackdropPlate` Border；代码里按主题背景色 + 设置算 alpha 生成画刷，
+  **只有这一层是半透明的**，文字、卡片、按钮完全不动（与 `IntelWindow.ApplyBackdrop` 同一套做法）。
+- 主题/强调色切换时重算（`ThemeService.ThemeChanged`），否则深色↔浅色后背板颜色会不对。
+- 设置存在该角色的 `GameLogSetting.WindowOpacity`（1–100，默认 100 = 完全不透明；老配置没有该字段按 100 处理，
+  不改变任何现有观感）；日志监控 →「战斗日志」页签新增「窗口不透明度」滑杆 + 百分比，
+  拖动时**实时**推给关键词会话窗口与战斗日志窗口（同一角色共用一个窗口）。
+- 落盘做 400ms 合并（滑块每一格都写一次 JSON 没必要），页面 Dispose 时补一次。
+- 顺手把「清除战斗状态」的 `×` 换成**橡皮擦图标**：自绘标题栏的关闭按钮也是 `×`，两个 `×` 上下相邻容易误点。
+
+### 变更明细
+
+**Core**
+
+- `Core/Models/GameLogSetting.cs`：+ `WindowOpacity`（1–100，`Math.Clamp`，默认 100）。
+
+**WPF**
+
+- `Views/Windows/GameLogMsgWindow.xaml`：普通 `Window` + `WindowChrome` + `BackdropPlate` + 自绘标题栏
+  （最小化 `Subtract12` / 关闭 `Dismiss24`）；底栏背景改透明 + 分隔线（否则半透明时底栏是一块实色）。
+- `Views/Windows/GameLogMsgWindow.xaml.cs`：`SetWindowOpacity` / `ApplyBackdrop` / `OnTitleBarMouseLeftButtonDown`
+  （`DragMove`）/ `OnMinimizeClick` / `OnCloseClick`；`UpdateTitle` 改写成 `Title` + 标题栏 TextBlock。
+- `Services/CombatLog/CombatLogFeedService.cs`：创建窗口时带上该角色的 `WindowOpacity`；新增
+  `SetWindowOpacity(listenerId, value)` 做即时生效。
+- `Services/ChannelIntel/GameLogMonitorSession.cs`：同样按设置创建窗口 + `SetWindowOpacity(value)`。
+- `ViewModels/Channel/GameLogMonitorViewModel.cs`：`WindowOpacity` 属性（实时下发 + 合并落盘），`LoadSetting` 补通知。
+- `Views/Pages/GameLogMonitorPage.xaml`：新增「窗口不透明度」滑杆（1–100）+ 百分比。
+- 语言键：`CombatLog_WindowOpacity` / `CombatLog_WindowOpacityTip`（zh/en 各 **+2**，各 3771 条、键集一致）。
+
+### 验证
+
+- `probe/LogWindowProbe` 新增 5 条断言，全部 PASS：
+  - `ResizeMode=CanResize`、`MinWidth=0`、`MinHeight=0`（可自由缩放、无最小尺寸）；
+  - `AllowsTransparency=True` 且窗口 `Background` alpha=0；
+  - 默认 100 → 背板 alpha=255；`SetWindowOpacity(45)` → 背板 alpha=114（≈45%）；
+  - 标题文字画刷 alpha 与改透明度前一致（**文字不受影响**）。
+- 重新生成 8 张截图；`logwindow-transparent.png` 用彩色渐变当底衬，能直接看出背板半透明而卡片/文字实色。
+- `dotnet build`（WPF + LogWindowProbe）：**0 错误**；zh/en 语言键各 3771 条、集合一致。
+
+### 已知限制
+
+- 窗口大小/位置**没有持久化**（关闭后重开回到 440×380 居中）。要"记住上次尺寸"可以照频道预警小窗
+  把 `WinX/WinY/WinW/WinH` 也存进 `GameLogSetting`，本轮未做。
+- 半透明时卡片仍用主题的 `CardBackgroundFillColorDefaultBrush`（浅色主题本身带一点透明度），
+  不会跟着滑杆一起变淡——这是有意的：保证文字始终可读。
+
+---
+
+## 阶段 362：战斗日志过期不再自动消失——改为置灰 + 「已过期」（2026-11-20）
+
+### 背景（用户反馈）
+
+> "战斗日志自动消失太快了，不要自动消失，除非手动点清除，现在的最小显示时间设置（5s到10s的那个）删了，
+> 增加一个过期时间设置，默认60s，可手动输入任意秒数，上一次相应类型的日志过去指定过期时间后在界面给相应
+> 卡片置灰并右侧小字提示已过期。"
+
+### 根因
+
+阶段 358 把"保留时长"做成了 `max(设置下限, 实测周期 + 1.5 秒)`，超过就直接把整行从状态里**删掉**：
+战斗一停（或者对面换目标/装填），卡片就消失，用户来不及看；而且"消失"和"这条已经旧了"是两回事。
+
+### 方案
+
+**一、过期 = 视觉状态，不是删除**
+
+- `CombatLogStateCenter` 不再根据时间删除分类：行一直保留（直到 `Clear` / `Detach`），
+  只计算 `CombatLogRow.Expired = now - LastSeen > 过期时间`。
+- 数值/速率在过期后**停在最后一次**：`CategoryState.LastRate` 在每次日志进来时算一次快照，
+  过期后直接显示快照（不再依赖会被清理的模块轮次）。模块只做 2 小时的纯内存清理，不影响界面。
+- 1 秒心跳只比较"过期状态签名"（`分类:0/1`），某张卡刚过期/刚恢复时才通知界面重画，
+  不做每秒刷新。
+
+**二、设置项：删掉"最短显示"，换成"过期时间"**
+
+- `GameLogsSettingService`：`CombatLogTtlSeconds`（5/8/10 秒 ComboBox）→ `CombatLogExpireSeconds`
+  （默认 **60** 秒，`1..86400`，手输任意秒数；老设置文件里的旧键自然失效）。
+- 日志监控 →「战斗日志」页签：原来的下拉框换成 `ui:NumberBox`（可手输、带上下箭头）+ 单位「秒」。
+- 状态中心属性 `TtlSeconds` → `ExpireSeconds`。
+
+**三、界面：过期置灰 + 右侧「已过期」**
+
+- 卡片：内容（分类色条 + 标签 + 数值）用 `DataTrigger Binding=Expired` 压到 `Opacity=0.4`，
+  右侧新增 9.5px 小字「已过期」（`CombatLog_Expired`，只在过期时可见、保持实色）。
+- 反跳 / 干扰（`Sticky`）没有周期日志，**不参与过期判断**——保持阶段 358 定下的"常驻"语义。
+- 多开叠加层：只显示未过期的行（实时 HUD 不该被旧数据占着），反跳 / 干扰因为永不过期所以照旧常驻。
+
+### 变更明细
+
+**Core**
+
+- 无（`CombatCategoryDefinition.Sticky` 沿用）。
+
+**WPF**
+
+- `Services/CombatLog/CombatLogStateCenter.cs`：
+  - `CombatLogRow.Expired`；`CategoryState.LastRate`；
+  - `TtlSeconds` → `ExpireSeconds`（默认 60，夹 1..86400）；`EffectiveExpireSeconds`；
+  - `Report` 里更新速率快照 `RateOfRecentModules`；
+  - `GetRows` 不再过滤（全部返回，`Expired` 打标）；
+  - 删除 `KeepAliveOf` / `ModuleKeepAliveOf` / `IsModuleActive` / `IsVisible` / `PruneExpired` /
+    `GetKeepAliveSeconds`；新增 `ExpirySignature` / `PruneStaleModules`（2 小时）。
+- `Services/Settings/GameLogsSettingService.cs`：`CombatLogExpireSeconds` + `SetCombatExpire` + 常量范围；
+  `SyncCombatSettings` 同步 `center.ExpireSeconds`。
+- `ViewModels/Channel/GameLogMonitorViewModel.cs`：`CombatTtlOptions` / `CombatTtlSeconds` →
+  `CombatExpireSeconds`（double，兼容 NumberBox；NaN/∞ 忽略，非法值夹紧）。
+- `Views/Pages/GameLogMonitorPage.xaml`：ComboBox → `ui:NumberBox`（1..86400，可手输）+「秒」。
+- `Views/Windows/GameLogMsgWindow.xaml(.cs)`：卡片模板加过期 DataTrigger（内容压暗 + 右侧小字），
+  `CombatCard.Expired`。
+- `Services/GamePreview/Overlay/CombatLogOverlayProvider.cs`：只喂 `!Expired` 的行。
+- 语言键：删 `CombatLog_Ttl` / `CombatLog_TtlTip`，新增 `CombatLog_Expire` / `CombatLog_ExpireTip` /
+  `CombatLog_Seconds` / `CombatLog_Expired`（zh/en 各 **+2**，各 3773 条、键集一致）。
+
+### 验证
+
+- `probe/OverlayProbe`：战斗断言改成新语义，**42 项全 PASS**：
+  - 反跳不参与过期（`Expired=False`，即使日志在 120 秒前）；
+  - 过期后行**不消失**、`Expired=True`、文本停在 `承伤 300HP 100DPS`；
+  - 所有数值卡片仍在（≥4 行）；手动 `Clear` 后清空。
+- `probe/LogWindowProbe`：新增过期用例（**13 项全 PASS**）——过期行不消失、卡片 `Expired=true`、
+  视觉树里能查到可见的「已过期」TextBlock；截图 `logwindow-expired.png` 目检：内容压暗、右侧小字实色。
+- `dotnet build`（WPF + 两个探针）：0 错误。
+
+### 已知限制
+
+- 过期时间**按分类最后一条日志**计算（不是按"这一轮"）：多个攻击者轮流开火时，只要还有人打你，
+  卡片就不会过期，这符合"上一次相应类型的日志"的字面口径。
+- 反跳 / 干扰没有"解除"日志，只能靠手动清除；如果以后想要"界面里也给反跳加一个过期提示"，
+  可以把它从 `Sticky` 里拿掉，但会与阶段 358 的"对面不停止就不消失"冲突。
+- 多开叠加层不显示过期行——日志窗口保留历史，叠加层只做实时状态。
+
+---
+
+## 阶段 363：战斗日志区分「承受 / 输出」（2026-11-21）
+
+### 背景（用户反馈）
+
+> "现在不会区分自己输出的还是承受的，比如吸电，一个吸一个被吸，两个战斗日志都显示的相同数值，给一个区分两方的方案。"
+
+### 排查结论（**解析没问题，是显示层把出向丢了**）
+
+用仓库自带的 `EVESimulation`（按真实中文客户端行式校准）生成双向日志，再喂 `probe/CombatLogProbe` 扫描，8 类事件的方向全部正确：
+
+```
+nos   进：-15 GJ被吸取到 黑鸟级* [I K N] [Arya D Stark] - - 小型掠能器 I*   → Incoming
+nos   出：+15 GJ被从Arya D Stark ( 黑鸟级* )吸取 - 小型掠能器 I*            → Outgoing
+neut  进：45 GJ能量中和 黑鸟级* [I K N] [Arya D Stark] - - 小型能量中和器 I* → Incoming
+neut  出：45 GJ能量中和QEDSD - 小型能量中和器 I*                            → Outgoing
+```
+
+根因在 `CombatLogStateCenter.Report` 的第一行：`if (ev.Direction == Outgoing) return;`——所有"我打/我毁/我吸/我修别人"的事件都被丢掉了。
+所以吸电的人永远看不到"我吸了对方 45GJ"，两边窗口里能看到的都只有同一条"被吸"记录，数值一样自然分不清。
+
+### 与用户确认的口径
+
+- **同一张卡分两行**：主数值 = 承受（别人作用到我），第二行小字 = 输出（我作用于别人）；卡片数量不变。
+- **全部双向分类都区分**：伤害、毁电、吸电、遥修、传电；反跳 / 干扰仍只看"被反跳 / 被干扰"。
+- 多开叠加层仍只显示**承受**侧（实时 HUD 不需要输出数据）。
+
+### 变更明细
+
+**Core**
+
+- 无（`CombatLogParser` 的方向判定本来就能分两侧，本轮只补了探针打印）。
+
+**WPF**
+
+- `Services/CombatLog/CombatLogStateCenter.cs`：
+  - `CategoryState` 拆成 `Incoming` / `Outgoing` 两个 `SideState`（各自的模块轮次、LastValue/LastRate、LastSeen、过期标记互不影响）；
+  - `Report` 按 `ev.Direction` 落到对应一侧；出向的 sticky 分类（反跳 / ECM）仍然丢弃；
+  - 新增 `CombatLogSideSnapshot`（单侧快照：数值 / 速率 / 间隔 / 过期 / 文本）；
+  - `CombatLogRow`：`Incoming` / `Outgoing` 两侧快照 + `Detail`（两侧各一行 ToolTip）；
+    `Expired` = **所有存在的一侧都过期**；`Text` 仍取承受侧（叠加层兼容）；
+  - 心跳签名改为"分类 + 两侧各自过期状态"，某一侧刚过期/恢复就重画。
+- `Views/Windows/GameLogMsgWindow.xaml(.cs)`：
+  - 卡片主数值取「承受」（没有承受日志时改用输出并在数值前加「输出」标记）；
+  - 有输出时第二行 9.5px 小字：`输出 30GJ · 15GJ/s` / `输出 100DPS · 300HP`；
+  - 承伤仍然主数值显示 DPS、右侧 `/ 200 HP`。
+- `Services/GamePreview/Overlay/CombatLogOverlayProvider.cs`：只喂 `Incoming` 且未过期的行。
+- 语言键：+`CombatLog_Incoming`（承受 / Taken）、+`CombatLog_Outgoing`（输出 / Dealt），zh/en 各 **3775** 条、键集一致。
+
+**验证**
+
+- `probe/LogWindowProbe` 新增 4 条断言（**18 项全 PASS**）：
+  - 伤害两侧都在（`in=承伤 200HP 66.7DPS` / `out=承伤 300HP 100DPS`）；
+  - 吸电 `承受 15GJ 7.5GJ/s`、`输出 30GJ 15GJ/s`；
+  - 吸电卡片主数值 15GJ + 第二行 `输出 30GJ · 15GJ/s`；
+  - 只有输出的传电卡片主数值前带「输出」标记。
+  截图 `logwindow-directions.png` 目检：吸电两张数值、传电带「输出」标记。
+- `probe/OverlayProbe` 新增吸电方向断言（**47 项全 PASS**）：只有输出时 `Incoming` 为空、叠加层文本为空（HUD 不显示输出侧）。
+- `dotnet build`（WPF + 两个探针）：0 错误。
+
+### 已知限制
+
+- 叠加层不显示输出侧（避免 HUD 变宽/变长）；需要的话可以在多开页加个"显示输出"开关。
+- 反跳 / 干扰的出向（我反跳别人）不进状态——与阶段 358「只显示被反跳/被干扰」一致；需要"我反跳了谁"再单独加。
+- 承受/输出共用一个分类开关（关掉"吸电"两侧一起隐藏）。
+
+---
+
+## 阶段 364：日志小窗按钮收进标题栏 + 输入输出明确着色（2026-11-21）
+
+### 背景（用户反馈）
+
+> "去掉右下角的前置游戏按钮，在标题栏最小化按钮左侧增加一个图标按钮，点击可以切换至游戏窗口；
+> 现在各项战斗输入输出还是不明确，比如毁电不会显示是输出还是输入，需要给每一项都明确标出是输入还是输出，
+> 输出使用绿色字体颜色，输入使用红色字体颜色；清除战斗状态的按钮放到标题栏上。"
+
+### 变更明细
+
+**一、按钮位置**
+
+- 删除窗口右下角的「前置游戏」按钮（连带底部那一条 42px 栏）；底部条改成 `Auto` 高度，
+  只在双区/监控窗口显示（里面只剩「清除命中」橡皮擦），仅战斗窗口整条隐藏，内容区直接到底。
+- 标题栏右侧按钮顺序改为：**清除战斗状态**（橡皮擦，有战斗行时才出现）→ **前置游戏**（显示器图标 `Desktop24`）
+  → **最小化** → **关闭**。
+- 「前置游戏」按钮的行为补全：显示层没有外部处理器时（战斗日志专属窗口）直接
+  `GameWindowHelper.BringGameToFront(ListenerName)`；监控会话挂了处理器（还要停声音/系统通知）则交给它。
+
+**二、输入 / 输出明确标出 + 红绿着色**
+
+- 每张数值卡的主数值**始终**带方向词：`输入` / `输出`（阶段 363 只在"主数值是输出"时才标，导致毁电这种
+  只有输入的卡看不出来；现在一律标明）。
+- 颜色：**输入 = 红色**、**输出 = 绿色**，用主题语义色 `SystemFillColorCriticalBrush` / `SystemFillColorSuccessBrush`
+  （浅/深色主题都自适应），通过 `TextElement.Foreground` 继承整行（方向词 + 数值 + 单位 + 速率）；
+  第二行（输出侧）固定绿色。
+- 反跳 / 干扰胶囊（只有输入）在标签后追加红色「输入」。
+- 语言键值：`CombatLog_Incoming` 承受→**输入**（en Taken→Incoming）、`CombatLog_Outgoing` 输出（en Dealt→Outgoing）；
+  Tooltip 里两侧的说明词也随之变成「输入 / 输出」。
+
+### 验证
+
+- `probe/LogWindowProbe` 新增 6 条断言（**24 项全 PASS**）：
+  - 吸电卡片主数值 `输入 15GJ`、第二行 `输出 30GJ · 15GJ/s`；
+  - 输入数值画刷为红（实测 `#FFC42B1C`）、输出画刷为绿（实测 `#FF0F7B0F`）、纯输出主数值也是绿；
+  - `ShowGameButton` / `CombatClearButton` 都在 `TitleBarGrid` 里；仅战斗窗口 `FooterBar` 为 `Collapsed`。
+- 重新生成 `logwindow-directions.png` / `logwindow-combat-empty.png` / `logwindow-monitor-only.png` 目检：
+  标题栏四个按钮、红/绿两行、底部无「前置游戏」。
+- `dotnet build`（WPF + 两个探针）：0 错误；zh/en 语言键各 **3775** 条、集合一致。
+
+### 已知限制
+
+- 颜色是主题语义色而不是纯 `#00FF00` / `#FF0000`：深色主题下更耐看，也跟随系统高对比度设置。
+- 底部条现在只在监控窗口出现；双区窗口里它仍然只承担「清除命中」一件事，没有做别的功能。
+
+---
+
+## 阶段 365：战斗卡片两行等高（2026-11-21）
+
+### 背景（用户反馈）
+
+> "第二行不要小字，输入输出相同字号，各占一半高度，当某一行没有时另外一行居中显示。"
+
+### 变更明细
+
+- 卡片内容从"标签 + 一行大数值 + 一行小字"改成 **两行等高 Grid（`*` / `*`）**：
+  主行（输入，红）/ 副行（输出，绿），**字号都是 15px**（原来是 18px + 9.5px 小字），单位/速率/qps 辅助文字 9.5px。
+- **只有一行时居中**：副行隐藏时主行 `Grid.RowSpan` 由 DataTrigger 从 1 改成 2（`HasSub == False`），
+  内容 `VerticalAlignment=Center` → 占满两行高度并纵向居中。
+- 卡片高度 64 → 68 DIP（两行 15px + 标签 + 内边距），`CardsList` 仍封顶 230、战斗区仍封顶 260。
+- `CombatCard` 不再拼接单行 `SubText`：拆成 `HasSub / SubTag / SubValue / SubUnit / SubSecondary`，与主行同构，
+  这样两行才能用同一套字号与对齐规则。
+- 探针更新：`LogWindowProbe` 断言改成检查 `HasSub`、`SubValue/SubUnit/SubSecondary` 与两行同字号（**25 项全 PASS**）；
+  截图 `logwindow-directions.png` 目检：吸电两行等高、传电单行居中、过期卡片置灰。
+
+### 已知限制
+
+- 两行时每行只有约 23px，数值字号 15px；想再大就得把卡片高度继续加到 76 以上（会挤占监控区）。
+- 主行/副行的顺序固定（输入在上、输出在下）；如果要"按最近活跃方向排序"，需要再改。
+
+---
+
+## 阶段 366：颜色按「收益 / 伤害」而不是输入输出（2026-11-21）
+
+### 背景（用户反馈）
+
+> "反跳、干扰在窗口显示改成被反跳、被干扰，去掉输入、输出文字，改成 ToolTip，承伤改成伤害，
+> 输入输出颜色改成根据实际是收益还伤害决定，比如毁电对于启用装备的一方来说是收益，应该是绿色，
+> 对于被毁电的一方来说是伤害应该显示红色，摇修输入是收益应该是绿色，输出无伤害也无收益，保持中性颜色黑白色。"
+
+### 口径（按用户描述落成规则）
+
+| 分类 | 第一行（输入） | 第二行（输出） |
+| --- | --- | --- |
+| 伤害 / 毁电 / 吸电 | 伤害 → **红** | 收益 → **绿** |
+| 遥修 / 传电 | 收益 → **绿** | 中性（给出去，不是伤害也不是收益）→ **黑白** |
+| 被反跳 / 被干扰（胶囊，只有输入） | 伤害 → **红** | — |
+
+### 变更明细
+
+- 卡面**不再写「输入 / 输出」**：两行只留数值；方向（"输入" / "输出"）放进 **ToolTip**，每条带装备、来源、
+  实测间隔、时间（`CombatLogRow.Detail` 原本就有，阶段 364 重排卡片时把卡片的 ToolTip 弄丢了，这次一并接回来）。
+- `CombatCard` 的 `MainIsOutgoing` / `MainTag` / `SubTag` 换成 `MainTone` / `SubTone`（`harm` / `benefit` / `neutral`），
+  XAML 用 DataTrigger 映射到 `SystemFillColorCriticalBrush` / `SystemFillColorSuccessBrush` / `TextFillColorPrimaryBrush`
+  （中性 = 紧随主题的黑/白，深浅色主题都能看）。
+- 反跳 / 干扰胶囊：显示「**被反跳 / 被干扰**」（新增语言键 `CombatLog_Scrammed` / `CombatLog_Jammed`），
+  颜色统一为伤害红，不再带「输入」小字。
+- 分类名 `CombatCategory_Damage`：「承伤」→「**伤害**」（en 本来就是 Damage）。设置页勾选项、叠加层行文一起变。
+- 卡片 ToolTip 用 `TextBlock TextWrapping=Wrap MaxWidth=360`，长装备名不会把提示撑到屏幕外。
+
+### 验证
+
+- `probe/LogWindowProbe`（**30 项全 PASS**）新增/改写：
+  - 吸电卡 `MainTone=harm`、`SubTone=benefit`；传电（只有输出）`MainTone=neutral`；遥修输入 `MainTone=benefit`；
+  - 颜色实测：伤害 `#FFC42B1C`、收益 `#FF0F7B0F`、中性 = `TextFillColorPrimaryBrush`；
+  - `Detail` 里仍带「输入 / 输出」；胶囊标签为「被反跳 / 被干扰」。
+- `probe/OverlayProbe`（**47 项全 PASS**）：叠加层文本随之变成 `伤害 300HP 100DPS`。
+- `dotnet build`（WPF + 两个探针）：0 错误；zh/en 语言键各 **3777** 条、集合一致。
+
+### 已知限制
+
+- 多开叠加层仍是纯文本（只显示输入侧、不按收益/伤害着色）；要彩色 HUD 需要另外改叠加层样式。
+- 传电输出按"和遥修一样、算中性"处理（用户只点名了遥修）；如果认为"把电给出去也是损失"，把 `ToneOf` 里
+  `CapTransfer` 的 outgoing 改成 `harm` 即可。
 
 ---
 ## 8. 已知限制与待办
