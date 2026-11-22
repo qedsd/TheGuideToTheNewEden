@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Models.CombatLog;
 using TheGuideToTheNewEden.Core.Services.CombatLog;
@@ -68,6 +68,51 @@ public sealed class CombatLogRow
 
     /// <summary>多开叠加层的悬停详情。</summary>
     public string Detail => string.Join("\n", Lines.Select(p => p.Detail));
+}
+
+/// <summary>一种伤害属性的占比（阶段 378：只统计日志里**明确写了属性**的伤害）。</summary>
+public sealed class DamageTypeShare
+{
+    public DamageType Type { get; init; }
+
+    public double Amount { get; init; }
+
+    public double Percent { get; init; }
+}
+
+/// <summary>伤害卡片的一侧（受到 / 输出）。</summary>
+public sealed class DamageSideSnapshot
+{
+    /// <summary>最近一次伤害的数值。</summary>
+    public double LastAmount { get; init; }
+
+    /// <summary>最近一次伤害的时间。</summary>
+    public DateTime? LastAt { get; init; }
+
+    /// <summary>最近 5 秒的瞬时 DPS。</summary>
+    public double DpsNow { get; init; }
+
+    /// <summary>最近 30 秒的平均 DPS。</summary>
+    public double DpsAverage { get; init; }
+
+    /// <summary>本场累计伤害。</summary>
+    public double Total { get; init; }
+
+    /// <summary>本场可识别属性的命中次数（≥5 才显示属性占比）。</summary>
+    public int TypedHits { get; init; }
+
+    /// <summary>四种属性占比（按可识别伤害的数值加权，合计 100%）。</summary>
+    public IReadOnlyList<DamageTypeShare> Types { get; init; } = [];
+
+    public bool HasTypes => TypedHits >= 5 && Types.Count > 0;
+}
+
+/// <summary>伤害卡片（受到 + 输出两侧）。</summary>
+public sealed class DamageCardSnapshot
+{
+    public DamageSideSnapshot Incoming { get; init; } = new();
+
+    public DamageSideSnapshot Outgoing { get; init; } = new();
 }
 
 /// <summary>
@@ -175,8 +220,95 @@ public sealed class CombatLogStateCenter
         public readonly Dictionary<string, SideState> Outgoing = new(StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// 伤害卡片的一侧累计：最近一次、5 秒 / 30 秒窗口、可识别属性占比。
+    /// 只保留最近 30 秒的明细（DPS），本场累计与属性合计单独计。
+    /// </summary>
+    private sealed class DamageAccumulator
+    {
+        private const double WindowSeconds = 30;
+
+        private readonly List<(DateTime At, double Amount)> _recent = [];
+        private readonly Dictionary<DamageType, double> _typed = [];
+
+        private int _typedHits;
+        private double _total;
+        private DateTime? _sessionStart;
+
+        public void Add(DateTime at, double amount, DamageType type)
+        {
+            _sessionStart ??= at;
+            _total += amount;
+            LastAmount = amount;
+            LastAt = at;
+
+            _recent.Add((at, amount));
+            var cut = at.AddSeconds(-WindowSeconds);
+            _recent.RemoveAll(p => p.At < cut);
+
+            if (type != DamageType.None)
+            {
+                _typed.TryGetValue(type, out var sum);
+                _typed[type] = sum + amount;
+                _typedHits++;
+            }
+        }
+
+        public double LastAmount { get; private set; }
+
+        public DateTime? LastAt { get; private set; }
+
+        public DamageSideSnapshot Snapshot(DateTime now)
+        {
+            var cut30 = now.AddSeconds(-WindowSeconds);
+            _recent.RemoveAll(p => p.At < cut30);
+            var cut5 = now.AddSeconds(-5);
+
+            var sum5 = 0d;
+            var sum30 = 0d;
+            foreach (var entry in _recent)
+            {
+                sum30 += entry.Amount;
+                if (entry.At >= cut5)
+                {
+                    sum5 += entry.Amount;
+                }
+            }
+
+
+            var typedTotal = _typed.Values.Sum();
+            var types = typedTotal > 0
+                ? _typed
+                    .Where(p => p.Value > 0)
+                    .OrderByDescending(p => p.Value)
+                    .Select(p => new DamageTypeShare
+                    {
+                        Type = p.Key,
+                        Amount = p.Value,
+                        Percent = p.Value / typedTotal,
+                    })
+                    .ToList()
+                : [];
+
+            return new DamageSideSnapshot
+            {
+                LastAmount = LastAmount,
+                LastAt = LastAt,
+                // 固定除以窗口长度：开局一波伤害按 5 秒 / 30 秒摊平，不会出现"一波 = 天价 DPS"。
+                DpsNow = sum5 / 5.0,
+                DpsAverage = sum30 / 30.0,
+                Total = _total,
+                TypedHits = _typedHits,
+                Types = types,
+            };
+        }
+    }
+
     private readonly object _locker = new();
     private readonly Dictionary<string, Dictionary<string, CategoryState>> _states = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>阶段 378：每个角色的伤害卡片累计（受到 / 输出）。</summary>
+    private readonly Dictionary<string, (DamageAccumulator Incoming, DamageAccumulator Outgoing)> _damage = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _visibleSignatures = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _attached = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _enabledCategories = new(StringComparer.OrdinalIgnoreCase);
@@ -409,6 +541,19 @@ public sealed class CombatLogStateCenter
                 side.LastValue = module.Rounds[^1].Sum;
             }
 
+            // 阶段 378：伤害卡片的数据（最近一次 / 5 秒与 30 秒 DPS / 可识别属性占比）。
+            if (ev.Kind == CombatEventKind.Damage && ev.Amount is { } damage && damage > 0)
+            {
+                if (!_damage.TryGetValue(listener, out var damageSides))
+                {
+                    damageSides = (new DamageAccumulator(), new DamageAccumulator());
+                    _damage[listener] = damageSides;
+                }
+
+                var type = DamageTypeResolver.Resolve(ev.ModuleName, ev.ModuleHintName);
+                (outgoing ? damageSides.Outgoing : damageSides.Incoming).Add(when, damage, type);
+            }
+
             // 速率快照：过期后界面显示的就是最后一次算出来的值（不会因为模块被清理而变空）
             side.LastRate = RateOfRecentModules(side, when);
         }
@@ -432,10 +577,35 @@ public sealed class CombatLogStateCenter
             }
 
             _states[listener] = new Dictionary<string, CategoryState>(StringComparer.OrdinalIgnoreCase);
+            _damage.Remove(listener);
             _visibleSignatures[listener] = string.Empty;
         }
 
         RaiseChanged(listener);
+    }
+
+    /// <summary>阶段 378：伤害卡片快照（受到 / 输出；DPS 5 秒 / 30 秒；可识别属性占比）。</summary>
+    public DamageCardSnapshot GetDamageCard(string? listener)
+    {
+        if (string.IsNullOrWhiteSpace(listener))
+        {
+            return new DamageCardSnapshot();
+        }
+
+        lock (_locker)
+        {
+            if (!_damage.TryGetValue(listener, out var sides))
+            {
+                return new DamageCardSnapshot();
+            }
+
+            var now = DateTime.UtcNow;
+            return new DamageCardSnapshot
+            {
+                Incoming = sides.Incoming.Snapshot(now),
+                Outgoing = sides.Outgoing.Snapshot(now),
+            };
+        }
     }
 
     /// <summary>

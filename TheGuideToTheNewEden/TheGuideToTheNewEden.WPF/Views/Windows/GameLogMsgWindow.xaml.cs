@@ -1,6 +1,7 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -34,10 +35,11 @@ public partial class GameLogMsgWindow : Window
     private string _baseTitle;
     private string? _shipName;
     private Func<string>? _titleProvider;
-    private readonly ObservableCollection<CombatPill> _pills = new();
-    private readonly ObservableCollection<CombatCard> _cards = new();
+    private readonly ObservableCollection<CombatChip> _chips = new();
     private readonly ObservableCollection<FeedRow> _feed = new();
     private bool _closing;
+
+    private DispatcherTimer? _refreshTimer;
     private bool _geometryLoaded;
     private bool _geometrySaveQueued;
     private bool _restoringGeometry;
@@ -79,13 +81,20 @@ public partial class GameLogMsgWindow : Window
         ThemeService.ThemeChanged += ApplyBackdrop;
         UpdateTitle();
 
-        PillsList.ItemsSource = _pills;
-        CardsList.ItemsSource = _cards;
+        PillsList.ItemsSource = _chips;
         FeedList.ItemsSource = _feed;
 
         CombatLogStateCenter.Current.Changed += OnCombatChanged;
         LanguageService.LanguageChanged += OnLanguageChanged;
         RefreshCombat();
+
+        // 阶段 378：DPS 与「N 秒前」需要随时间衰减，1 秒刷新一次（只在窗口可见时）。
+        _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _refreshTimer.Tick += (_, _) =>
+        {
+            if (IsVisible && !_closing) RefreshCombat();
+        };
+        _refreshTimer.Start();
         UpdateFeedState();
 
         if (_showShip)
@@ -316,6 +325,7 @@ public partial class GameLogMsgWindow : Window
         LanguageService.LanguageChanged -= OnLanguageChanged;
         ThemeService.ThemeChanged -= ApplyBackdrop;
         _closing = true;
+        _refreshTimer?.Stop();
         Close();
     }
 
@@ -440,7 +450,7 @@ public partial class GameLogMsgWindow : Window
         // 阶段 370：底部那条按钮栏取消，清除按钮统一在标题栏；这里同步它的可见性。
         UpdateClearButtonVisibility(
             _combatOnly || CombatLogStateCenter.Current.IsAttached(ListenerName),
-            _cards.Count > 0);
+            _chips.Count > 0);
     }
 
     // ---------- 战斗信息 ----------
@@ -475,87 +485,40 @@ public partial class GameLogMsgWindow : Window
         var attached = _combatOnly || CombatLogStateCenter.Current.IsAttached(ListenerName);
         var rows = attached ? CombatLogStateCenter.Current.GetRows(ListenerName) : Array.Empty<CombatLogRow>();
 
-        _pills.Clear();
-        _cards.Clear();
+        _chips.Clear();
         foreach (var row in rows)
         {
             var definition = CombatCategories.Find(row.Category);
-            if (definition is null)
+            if (definition is null || row.Category == CombatCategories.Damage)
             {
+                // 阶段 378：伤害不进胶囊，单独出伤害卡片。
                 continue;
             }
 
-            if (!definition.HasValue)
+            foreach (var line in row.Lines)
             {
-                // 阶段 376：电子战胶囊直接用**装备分组名**（跃迁扰频器 / 跃迁扰断器 / ECM / 停滞缠绕光束 /
-                // 目标标记装置 / 武器扰断器 / 远程感应抑阻器）；自己的装备绿色，被别人施加红色。
-                var harm = GetResourceBrush("SystemFillColorCriticalBrush", Brushes.IndianRed);
-                var good = GetResourceBrush("SystemFillColorSuccessBrush", Brushes.SeaGreen);
-                foreach (var line in row.Lines)
+                var outgoing = line.Direction == CombatEventDirection.Outgoing;
+                var brush = ChipBrush(ToneOf(row.Category, outgoing));
+                var hasValue = !string.IsNullOrWhiteSpace(line.AmountText);
+                _chips.Add(new CombatChip
                 {
-                    var outgoing = line.Direction == CombatEventDirection.Outgoing;
-                    var brush = outgoing ? good : harm;
-                    _pills.Add(new CombatPill
-                    {
-                        Label = row.Label,
-                        Brush = brush,
-                        Background = TintOf(brush),
-                        Expired = line.Expired,
-                    });
-                }
+                    Label = row.Label,
+                    Arrow = outgoing ? "▲" : "▼",
+                    Amount = line.AmountText,
+                    Rest = line.RestText,
+                    FontSize = 11,
+                    RestFontSize = 11,
+                    Brush = brush,
+                    Background = TintOf(brush),
+                    Expired = line.Expired,
+                    Detail = line.Detail,
+                });
             }
         }
 
-        // 阶段 374：不再限制卡片数量（布局会换行 + 滚动），所有启用的分类都显示。
-        var valueRows = rows
-            .Where(p => CombatCategories.Find(p.Category) is { HasValue: true })
-            .ToList();
+        UpdateDamageCard();
 
-        // 阶段 375：吸电 + 传电合并成一张「电容」卡（每行末尾标 吸电 / 传电），与遥修同一呈现方式。
-        var mergedAway = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var row in valueRows)
-        {
-            if (mergedAway.Contains(row.Category))
-            {
-                continue;
-            }
-
-            // 吸电行也要带类型名（合并卡里要能分清 吸电 / 传电）。
-            var lines = BuildCardLines(row, string.Equals(row.Category, CombatCategories.Nos, StringComparison.OrdinalIgnoreCase)
-                ? LanguageService.Get("CombatCategory_Nos")
-                : null);
-            if (lines.Count == 0)
-            {
-                continue;
-            }
-
-            var label = row.Label;
-            if (string.Equals(row.Category, CombatCategories.Nos, StringComparison.OrdinalIgnoreCase))
-            {
-                var transferRow = valueRows.FirstOrDefault(p => string.Equals(p.Category, CombatCategories.CapTransfer, StringComparison.OrdinalIgnoreCase));
-                var transferLines = transferRow is null ? [] : BuildCardLines(transferRow, LanguageService.Get("CombatCategory_CapTransfer"));
-                if (transferLines.Count > 0)
-                {
-                    label = LanguageService.Get("CombatLog_CapGroup");
-                    lines = [.. lines, .. transferLines];
-                    mergedAway.Add(CombatCategories.CapTransfer);
-                }
-            }
-
-            _cards.Add(new CombatCard
-            {
-                Label = label,
-                Detail = row.Detail,
-                Lines = lines,
-                LineFontSize = lines[0].FontSize,
-                Height = CardHeight(lines),
-                Brush = BrushOf(ColorForCategory(row.Category)),
-                Expired = row.Expired,
-            });
-        }
-
-        PillsList.Visibility = _pills.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        CardsList.Visibility = _cards.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        PillsList.Visibility = _chips.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         UpdateClearButtonVisibility(attached, rows.Count > 0);
 
         // 仅战斗窗口：即使没有战斗也占住固定高度并显示「无战斗」（阶段 360：开启后不隐藏）。
@@ -573,6 +536,66 @@ public partial class GameLogMsgWindow : Window
         }
     }
 
+    /// <summary>胶囊颜色：绿 = 对我有益、红 = 对我有害、白 = 我的付出 / 性质不明。</summary>
+    private Brush ChipBrush(string tone) => tone switch
+    {
+        "benefit" => GetResourceBrush("SystemFillColorSuccessBrush", Brushes.SeaGreen),
+        "neutral" => GetResourceBrush("TextFillColorPrimaryBrush", Brushes.White),
+        _ => GetResourceBrush("SystemFillColorCriticalBrush", Brushes.IndianRed),
+    };
+
+    /// <summary>阶段 378：刷新伤害卡片（受到 / 输出两栏，DPS 5 秒 / 30 秒，可识别属性占比）。</summary>
+    private void UpdateDamageCard()
+    {
+        var card = CombatLogStateCenter.Current.GetDamageCard(ListenerName);
+        var incoming = BuildDamageSide(card.Incoming);
+        var outgoing = BuildDamageSide(card.Outgoing);
+        DamageCard.DataContext = new DamageCardVm { Incoming = incoming, Outgoing = outgoing };
+        DamageCard.Visibility = incoming.HasData || outgoing.HasData ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private static DamageSideVm BuildDamageSide(DamageSideSnapshot side)
+    {
+        var hasData = side.LastAt.HasValue;
+        return new DamageSideVm
+        {
+            HasData = hasData,
+            LastText = hasData ? $"{(int)Math.Round(side.LastAmount)} HP" : "—",
+            AgoText = hasData ? FormatAgo(DateTime.UtcNow - side.LastAt!.Value) : string.Empty,
+            DpsText = $"{side.DpsNow:0.#} HP/s · 30s {side.DpsAverage:0.#}",
+            Types = side.HasTypes
+                ? side.Types.Select(p => new DamageTypeVm
+                {
+                    Label = DamageTypeLabel(p.Type),
+                    Percent = p.Percent * 100,
+                    PercentText = $"{p.Percent * 100:0}%",
+                    Brush = BrushOf(DamageTypeColor(p.Type)),
+                }).ToList()
+                : [],
+            TypesVisibility = side.HasTypes ? Visibility.Visible : Visibility.Collapsed,
+        };
+    }
+
+    private static string FormatAgo(TimeSpan span)
+        => span.TotalSeconds < 1 ? "" : $"{(int)span.TotalSeconds} 秒前";
+
+    private static string DamageTypeLabel(DamageType type) => type switch
+    {
+        DamageType.Em => LanguageService.Get("CombatLog_DamageType_Em"),
+        DamageType.Thermal => LanguageService.Get("CombatLog_DamageType_Thermal"),
+        DamageType.Kinetic => LanguageService.Get("CombatLog_DamageType_Kinetic"),
+        DamageType.Explosive => LanguageService.Get("CombatLog_DamageType_Explosive"),
+        _ => string.Empty,
+    };
+
+    private static Color DamageTypeColor(DamageType type) => type switch
+    {
+        DamageType.Em => Color.FromRgb(0x3B, 0x82, 0xF6),
+        DamageType.Thermal => Color.FromRgb(0xEF, 0x44, 0x44),
+        DamageType.Kinetic => Color.FromRgb(0x9C, 0xA3, 0xAF),
+        DamageType.Explosive => Color.FromRgb(0xF5, 0x9E, 0x0B),
+        _ => Color.FromRgb(0x6B, 0x72, 0x80),
+    };
     /// <summary>把一个分类的数值行转成卡片行（阶段 372：每行数量大字、说明小字；可选类型后缀）。</summary>
     private static List<CombatCardLine> BuildCardLines(CombatLogRow row, string? typeSuffix)
     {
@@ -635,7 +658,7 @@ public partial class GameLogMsgWindow : Window
             available *= 0.7;
         }
 
-        CardsScroll.MaxHeight = Math.Max(80, available);
+        ChipsScroll.MaxHeight = Math.Max(80, available);
     }
 
     /// <summary>
@@ -757,6 +780,66 @@ public sealed class CombatPill
 }
 
 /// <summary>卡片里的一行数值：数量（大字号）+ 其余说明（小字号）。</summary>
+/// <summary>阶段 378：顶部胶囊（所有非伤害分类）——分组名 + 方向箭头 + 数值。</summary>
+public sealed class CombatChip
+{
+    public string Label { get; set; } = string.Empty;
+
+    /// <summary>↓ = 作用到我身上；↑ = 我作用到别人。</summary>
+    public string Arrow { get; set; } = string.Empty;
+
+    public string Amount { get; set; } = string.Empty;
+
+    public string Rest { get; set; } = string.Empty;
+
+    public double FontSize { get; set; } = 15;
+
+    public double RestFontSize { get; set; } = 10;
+
+    public Brush Brush { get; set; } = Brushes.Gray;
+
+    public Brush Background { get; set; } = Brushes.Transparent;
+
+    public bool Expired { get; set; }
+
+    public string Detail { get; set; } = string.Empty;
+}
+
+/// <summary>伤害卡片（受到 / 输出两栏）。</summary>
+public sealed class DamageCardVm
+{
+    public DamageSideVm Incoming { get; set; } = new();
+
+    public DamageSideVm Outgoing { get; set; } = new();
+}
+
+/// <summary>伤害卡片的一栏。</summary>
+public sealed class DamageSideVm
+{
+    public bool HasData { get; set; }
+
+    public string LastText { get; set; } = "—";
+
+    public string AgoText { get; set; } = string.Empty;
+
+    public string DpsText { get; set; } = string.Empty;
+
+    public IReadOnlyList<DamageTypeVm> Types { get; set; } = [];
+
+    public Visibility TypesVisibility { get; set; } = Visibility.Collapsed;
+}
+
+/// <summary>一种伤害属性的占比条。</summary>
+public sealed class DamageTypeVm
+{
+    public string Label { get; set; } = string.Empty;
+
+    public double Percent { get; set; }
+
+    public string PercentText { get; set; } = string.Empty;
+
+    public Brush Brush { get; set; } = Brushes.Gray;
+}
 public sealed class CombatCardLine
 {
     /// <summary>数量（如 <c>100</c>）。</summary>

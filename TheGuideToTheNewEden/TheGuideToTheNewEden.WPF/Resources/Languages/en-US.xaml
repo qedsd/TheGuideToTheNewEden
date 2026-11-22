@@ -1381,6 +1381,14 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">Enabled: click Start Monitoring</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">Turn on "Enable combat log" before starting monitoring</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">Stopped</sys:String>
+    <sys:String x:Key="CombatLog_Damage">Damage</sys:String>
+    <sys:String x:Key="CombatLog_DamageReceived">Taken</sys:String>
+    <sys:String x:Key="CombatLog_DamageDealt">Dealt</sys:String>
+    <sys:String x:Key="CombatLog_DamageTypeNote">Typed damage only</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Em">EM</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Thermal">Thermal</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Kinetic">Kinetic</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Explosive">Explosive</sys:String>
     <sys:String x:Key="CombatLog_StatusGrey">Status fade</sys:String>
     <sys:String x:Key="CombatLog_StatusGreyTip">Electronic warfare / scram status fades after this many seconds without a new log (still shown, cleared only by Clear all logs); default 300 s</sys:String>
     <sys:String x:Key="CombatLog_Expire">Expire after</sys:String>

@@ -1393,6 +1393,14 @@
     <sys:String x:Key="CombatLog_StatusNotStarted">已启用：点「开始监控」后开始</sys:String>
     <sys:String x:Key="CombatLog_EnableFirst">请先打开「启用战斗日志」，再点开始监控</sys:String>
     <sys:String x:Key="CombatLog_StatusStopped">未启动</sys:String>
+    <sys:String x:Key="CombatLog_Damage">伤害</sys:String>
+    <sys:String x:Key="CombatLog_DamageReceived">受到</sys:String>
+    <sys:String x:Key="CombatLog_DamageDealt">输出</sys:String>
+    <sys:String x:Key="CombatLog_DamageTypeNote">仅统计可识别类型</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Em">电磁</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Thermal">热能</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Kinetic">动能</sys:String>
+    <sys:String x:Key="CombatLog_DamageType_Explosive">爆炸</sys:String>
     <sys:String x:Key="CombatLog_StatusGrey">状态变灰</sys:String>
     <sys:String x:Key="CombatLog_StatusGreyTip">电子战 / 反跳这类状态超过该秒数没有新日志就变灰（仍然显示，只由「清除所有日志」收掉）；默认 300 秒</sys:String>
     <sys:String x:Key="CombatLog_Expire">过期时间</sys:String>

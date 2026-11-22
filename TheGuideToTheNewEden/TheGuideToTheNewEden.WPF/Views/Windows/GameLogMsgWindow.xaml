@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="TheGuideToTheNewEden.WPF.Views.Windows.GameLogMsgWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -136,7 +136,12 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <ItemsControl x:Name="PillsList" VerticalAlignment="Center">
+                    <!--  阶段 378：所有非伤害分类统一成胶囊（分组名 + 数值），伤害单独一张卡片  -->
+                    <ScrollViewer
+                        x:Name="ChipsScroll"
+                        MaxHeight="150"
+                        VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="PillsList" VerticalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
@@ -159,134 +164,127 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
+                                    <Border.ToolTip>
+                                        <ToolTip MaxWidth="360">
+                                            <TextBlock
+                                                FontSize="11"
+                                                Text="{Binding Detail}"
+                                                TextWrapping="Wrap" />
+                                        </ToolTip>
+                                    </Border.ToolTip>
                                     <StackPanel Orientation="Horizontal">
-                                        <Ellipse
-                                            Width="5"
-                                            Height="5"
-                                            VerticalAlignment="Center"
-                                            Fill="{Binding Brush}" />
                                         <TextBlock
-                                            Margin="5,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="10"
+                                            Foreground="{Binding Brush}"
+                                            Text="{Binding Arrow}" />
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
                                             FontSize="11"
                                             FontWeight="SemiBold"
                                             Foreground="{Binding Brush}"
                                             Text="{Binding Label}" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="{Binding Brush}"
+                                            Text="{Binding Amount}" />
+                                        <TextBlock
+                                            Margin="3,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="{Binding Brush}"
+                                            Text="{Binding Rest}" />
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
-                    <ScrollViewer
-                        x:Name="CardsScroll"
-                        Grid.Row="1"
-                        Margin="0,1,0,4"
-                        VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="CardsList" VerticalAlignment="Top">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <controls:UniformFillPanel
-                                        ItemSpacing="7"
-                                        MaxItemWidth="360"
-                                        MinItemWidth="150"
-                                        RowSpacing="7" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        MinHeight="{Binding Height}"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="8">
-                                        <Border.ToolTip>
-                                            <ToolTip MaxWidth="360">
-                                                <TextBlock
-                                                    FontSize="11"
-                                                    Text="{Binding ToolTipText}"
-                                                    TextWrapping="Wrap" />
-                                            </ToolTip>
-                                        </Border.ToolTip>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="3" />
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <!--  过期后整块内容压暗；卡面不写「已过期」，提示改为「已过期」。  -->
-                                            <Grid Grid.ColumnSpan="2">
-                                                <Grid.Style>
-                                                    <Style TargetType="Grid">
-                                                        <Setter Property="Opacity" Value="1" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Expired}" Value="True">
-                                                                <Setter Property="Opacity" Value="0.4" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Grid.Style>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="3" />
-                                                    <ColumnDefinition />
-                                                </Grid.ColumnDefinitions>
-                                                <Rectangle
-                                                    Fill="{Binding Brush}"
-                                                    RadiusX="1.5"
-                                                    RadiusY="1.5" />
-                                                <Grid Grid.Column="1" Margin="9,4,8,4">
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto" />
-                                                        <RowDefinition Height="*" />
-                                                    </Grid.RowDefinitions>
-                                                    <TextBlock
-                                                        Grid.Row="0"
-                                                        FontSize="10.5"
-                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                        Text="{Binding Label}" />
-                                                    <!--  每行 = 数量（大字号）+ 单位/每秒/类型（小字号），颜色按收益/伤害。  -->
-                                                    <ItemsControl
-                                                        Grid.Row="1"
-                                                        VerticalAlignment="Center"
-                                                        ItemsSource="{Binding Lines}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <StackPanel.Style>
-                                                                        <Style TargetType="StackPanel">
-                                                                            <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding Tone}" Value="benefit">
-                                                                                    <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                                                                </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Tone}" Value="neutral">
-                                                                                    <Setter Property="TextElement.Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </StackPanel.Style>
-                                                                    <TextBlock
-                                                                        VerticalAlignment="Bottom"
-                                                                        FontSize="{Binding FontSize}"
-                                                                        FontWeight="SemiBold"
-                                                                        Text="{Binding Amount}" />
-                                                                    <TextBlock
-                                                                        Margin="4,0,0,0"
-                                                                        VerticalAlignment="Bottom"
-                                                                        FontSize="{Binding RestFontSize}"
-                                                                        Text="{Binding Rest}"
-                                                                        TextTrimming="CharacterEllipsis" />
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </Grid>
-                                            </Grid>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
                     </ScrollViewer>
+
+                    <!--  阶段 379：伤害只有一张卡片，样式与上一版卡片一致（左侧红条 + 标签 + 两栏）  -->
+                    <Border
+                        x:Name="DamageCard"
+                        Grid.Row="1"
+                        Margin="0,2,0,4"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle Fill="{DynamicResource SystemFillColorCriticalBrush}" />
+                            <StackPanel Grid.Column="1" Margin="9,5,8,6">
+                            <TextBlock
+                                FontSize="10.5"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource CombatLog_Damage}" />
+                            <Grid Margin="0,2,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="1" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0" DataContext="{Binding Incoming}">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                        Text="{DynamicResource CombatLog_DamageReceived}" />
+                                    <StackPanel Margin="0,2,0,0" Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="18"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                            Text="{Binding LastText}" />
+                                        <TextBlock
+                                            Margin="6,0,0,2"
+                                            VerticalAlignment="Bottom"
+                                            FontSize="10"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding AgoText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        FontSize="10.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding DpsText}" />
+                                </StackPanel>
+                                <Rectangle Grid.Column="1" Fill="{DynamicResource CardStrokeColorDefaultBrush}" />
+                                <StackPanel Grid.Column="2" Margin="8,0,0,0" DataContext="{Binding Outgoing}">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                        Text="{DynamicResource CombatLog_DamageDealt}" />
+                                    <StackPanel Margin="0,2,0,0" Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="18"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                            Text="{Binding LastText}" />
+                                        <TextBlock
+                                            Margin="6,0,0,2"
+                                            VerticalAlignment="Bottom"
+                                            FontSize="10"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding AgoText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        FontSize="10.5"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding DpsText}" />
+                                </StackPanel>
+                            </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
                     <TextBlock
                         x:Name="CombatEmpty"
