@@ -22,11 +22,61 @@ public enum PreviewOverlaySeverity
 }
 
 /// <summary>
+/// 胶囊的展示形态（阶段 382）。叠加层把 provider 给出的结构化数据排成三种 zone：
+/// 预警（Intel）→ 状态（State）→ 数值（Value / Damage / Rep），溢出时用 <see cref="Overflow"/> 收尾。
+/// </summary>
+public enum PreviewOverlayChipKind
+{
+    /// <summary>频道预警：标签（最近/最新）+ 跳数 + 分钟，配色取用户设置。</summary>
+    Intel,
+
+    /// <summary>一次性战斗状态（反跳 / 干扰 / 网子…）：只有名字，没有数值。</summary>
+    State,
+
+    /// <summary>普通数值（毁电 / 吸电 / 传电）。</summary>
+    Value,
+
+    /// <summary>伤害：比普通数值更醒目（主值更大 + 左侧红脊）。</summary>
+    Damage,
+
+    /// <summary>遥修：主值为各层之和，并带盾/甲/构占比微条。</summary>
+    Rep,
+
+    /// <summary>本行放不下时折叠出来的 <c>+N</c> 胶囊。</summary>
+    Overflow,
+}
+
+/// <summary>
+/// 叠加层胶囊的结构化描述（阶段 382）。由 provider 产出，视图只负责排版与着色，
+/// 不再认识"战斗 / 预警"这些具体功能。
+/// </summary>
+/// <param name="Kind">展示形态，决定模板、圆角与是否带微条。</param>
+/// <param name="Label">胶囊左侧的短标签（预警＝最近/最新；数值＝分类缩写）。</param>
+/// <param name="Value">主值（跳数 / 数值合计），已格式化。</param>
+/// <param name="Unit">单位（跳 / HP / GJ），可空。</param>
+/// <param name="Meta">
+/// 副信息，已格式化：战斗为每秒速率（如 <c>22.5/s</c>），预警为分钟（如 <c>2min</c>）。
+/// 与 <paramref name="Unit"/> 分开，是为了让视图按不同字号排版（单位常与主值同读，速率更小）。
+/// </param>
+/// <param name="Tone">配色语义：<c>harm</c> / <c>benefit</c> / <c>ew</c> / <c>neutral</c> / <c>alert</c>（用户配色）。</param>
+/// <param name="LayerShare">遥修微条的三段占比（盾 / 甲 / 构，0–1，和为 1）；不足三段或全 0 时不画。</param>
+/// <param name="Dimmed">整枚变淡（预警被降级；战斗行过期时不会再送进来）。</param>
+public sealed record PreviewOverlayChip(
+    PreviewOverlayChipKind Kind,
+    string Label,
+    string Value = "",
+    string Unit = "",
+    string Meta = "",
+    string Tone = "neutral",
+    IReadOnlyList<double>? LayerShare = null,
+    bool Dimmed = false);
+
+/// <summary>
 /// 预览窗叠加层的一行信息。<see cref="Text"/> 由 provider 自行本地化好；
-/// 叠加窗只按 <see cref="Severity"/> 着色，不再认识任何具体功能。
+/// 叠加窗只按 <see cref="Chip"/> / <see cref="Severity"/> 排版与着色，不再认识任何具体功能。
 /// </summary>
 /// <param name="Key">稳定标识（同一 provider 内唯一），便于日志排查与后续去重。</param>
-/// <param name="Text">整行文字，例如「最近 3 跳 · 2min」。</param>
+/// <param name="Text">整行文字，例如「最近 3 跳 · 2min」；<see cref="Chip"/> 非空时仅作兜底与无障碍朗读。</param>
 /// <param name="Severity">数据契约里的重要程度（当前不参与渲染）。</param>
 /// <param name="Order">多 provider 混排时的排序号（数值小在上）。</param>
 /// <param name="Detail">
@@ -37,13 +87,16 @@ public enum PreviewOverlaySeverity
 /// 用浮层而不是往叠加窗里加面板：信息行下面的区域留给以后的功能，不能被详情占位。
 /// </para>
 /// </param>
+/// <param name="ColorKey">旧的颜色语义（danger / warning / success / info / purple）；容器升级为胶囊后仅作兼容保留。</param>
+/// <param name="Chip">结构化胶囊；为 <c>null</c> 时按旧的文本行渲染（日志监控命中等低频行）。</param>
 public sealed record PreviewOverlayItem(
     string Key,
     string Text,
     PreviewOverlaySeverity Severity,
     int Order,
     string? Detail = null,
-    string? ColorKey = null);
+    string? ColorKey = null,
+    PreviewOverlayChip? Chip = null);
 
 /// <summary>
 /// 一次叠加内容查询的上下文：provider 据此决定"这个窗口要不要显示、显示什么"。

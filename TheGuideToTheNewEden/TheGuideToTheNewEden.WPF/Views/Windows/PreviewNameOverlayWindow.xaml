@@ -14,10 +14,11 @@
     WindowStyle="None">
 
     <!--
-        角色名 + 通用信息行（阶段 355）。
-        信息行由 PreviewOverlayHub 的 provider 产出（第一个是"频道预警"），这里只按严重级别着色，
-        不认识任何具体功能——以后加内容不用改本文件，只加一个 provider。
-        本窗口点击穿透（WS_EX_TRANSPARENT），因此信息行只做展示，不做 tooltip / 点击。
+        角色名 + 信息叠加层（阶段 355 起；阶段 382 改为"胶囊 HUD"）。
+        信息行由 PreviewOverlayHub 的 provider 产出：
+        ① 带 Chip 的（频道预警 / 战斗信息）→ 画进下面的底板，分三个 zone：预警 → 状态 → 数值；
+        ② 不带 Chip 的（日志监控命中等低频文本行）→ 仍按旧样式逐行显示在名字下面。
+        本窗口点击穿透（WS_EX_TRANSPARENT），所以只做展示，tooltip 由预览窗按光标位置触发。
     -->
     <StackPanel
         x:Name="RootPanel"
@@ -52,7 +53,7 @@
                             TextTrimming="CharacterEllipsis">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
-                                    <!-- 默认沿用用户自选色（频道预警行）；带 ColorKey 的战斗日志行按分类着色 -->
+                                    <!-- 默认沿用用户自选色；带 ColorKey 的战斗日志行按分类着色 -->
                                     <Setter Property="Foreground" Value="{Binding InfoForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding ColorKey}" Value="danger">
@@ -78,5 +79,27 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <!--
+            胶囊 HUD（阶段 382）：固定对比底板 + 左侧威胁脊。
+            底板宽度由预览窗传入的 MaxContentWidth 夹住（见 SetMaxContentWidth），
+            三个 WrapPanel 各自换行；行数预算与 +N 折叠由代码在量完真实宽度后决定。
+        -->
+        <!--
+            阶段 384：底板不再画任何底色 / 边框（胶囊自己已经带底色），只作为三个 zone 的布局容器。
+            这样视觉上只有"名字 + 一串胶囊"，与日志监控小窗的胶囊一致。
+        -->
+        <Border
+            x:Name="Plate"
+            Margin="0,4,0,0"
+            Background="Transparent"
+            BorderThickness="0"
+            Visibility="Collapsed">
+            <StackPanel>
+                <WrapPanel x:Name="IntelPanel" Orientation="Horizontal" />
+                <WrapPanel x:Name="StatePanel" Orientation="Horizontal" />
+                <WrapPanel x:Name="ValuePanel" Orientation="Horizontal" />
+            </StackPanel>
+        </Border>
     </StackPanel>
 </Window>

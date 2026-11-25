@@ -10,7 +10,7 @@ using TheGuideToTheNewEden.WPF.Services.GamePreview.Overlay;
 namespace TheGuideToTheNewEden.WPF.Views.Windows;
 
 /// <summary>
-/// 预览窗口左上角的"角色名 + 通用信息行"叠加窗。
+/// 预览窗口左上角的"角色名 + 信息叠加层"叠加窗。
 /// <para>
 /// <b>为什么必须是独立窗口</b>：DWM 缩略图由系统在窗口自身内容之上合成，
 /// 画在预览窗口里的任何 WPF 元素都会被缩略图盖住（实测：样式 1 的名称条与样式 0 的角标都看不见）。
@@ -22,10 +22,10 @@ namespace TheGuideToTheNewEden.WPF.Views.Windows;
 /// 所以拖动与滚轮缩放不受影响。位置尺寸由 <see cref="GamePreviewWindow"/> 在每次刷新时用物理像素同步。
 /// </para>
 /// <para>
-/// <b>阶段 355 起不再只显示角色名</b>：名字下方是一组"信息行"，内容来自
-/// <see cref="PreviewOverlayHub"/> 的各个 provider（第一个是频道预警的"最近/最新"）。
-/// 本类只按 <see cref="PreviewOverlaySeverity"/> 着色，不认识任何具体功能——
-/// 以后加新内容只需要新增 provider，本文件与预览窗口的渲染逻辑都不用动。
+/// <b>阶段 382</b>：信息行不再是一叠自由文本，而是"胶囊 HUD"——
+/// 带 <see cref="PreviewOverlayChip"/> 的行按 预警 → 状态 → 数值 三个 zone 排进同一块底板，
+/// 放不下的数值胶囊折叠成 <c>+N</c>；没有 Chip 的行（日志监控命中等低频内容）仍按旧文本行显示。
+/// 底板宽度受 <see cref="SetMaxContentWidth"/> 限制，永远夹在预览窗内。
 /// </para>
 /// <para>
 /// 这里刻意用普通 <see cref="Window"/> 而不是 <c>ui:FluentWindow</c>：
@@ -36,21 +36,21 @@ namespace TheGuideToTheNewEden.WPF.Views.Windows;
 /// </summary>
 public sealed partial class PreviewNameOverlayWindow : Window
 {
-    /// <summary>信息行底色（跟随角色名叠加的背景色设置）。</summary>
+    /// <summary>信息行底色（跟随角色名叠加的背景色设置；文本行使用）。</summary>
     public static readonly DependencyProperty InfoBackgroundProperty = DependencyProperty.Register(
         nameof(InfoBackground),
         typeof(Brush),
         typeof(PreviewNameOverlayWindow),
         new PropertyMetadata(Brushes.Transparent));
 
-    /// <summary>信息行文字色（跟随角色名叠加的文字颜色设置）。</summary>
+    /// <summary>信息行文字色（跟随角色名叠加的文字颜色设置；文本行使用）。</summary>
     public static readonly DependencyProperty InfoForegroundProperty = DependencyProperty.Register(
         nameof(InfoForeground),
         typeof(Brush),
         typeof(PreviewNameOverlayWindow),
         new PropertyMetadata(Brushes.White));
 
-    /// <summary>信息行字号（由"预警文字"自己的设置换算，不再从角色名字号派生）。</summary>
+    /// <summary>信息行字号（由"预警文字"自己的设置换算，不再从角色名字号派生；也是整块 HUD 的基准）。</summary>
     public static readonly DependencyProperty InfoFontSizeProperty = DependencyProperty.Register(
         nameof(InfoFontSize),
         typeof(double),
@@ -76,6 +76,20 @@ public sealed partial class PreviewNameOverlayWindow : Window
 
     private readonly TextBlock _detailText;
 
+    /// <summary>最近一次从 hub 收到的全部行（用于颜色/字号变化后重建胶囊）。</summary>
+    private readonly List<PreviewOverlayItem> _items = [];
+
+    /// <summary>预警胶囊共用的画刷：用户改配色时原地改颜色，已建好的胶囊自动跟着变。</summary>
+    private readonly SolidColorBrush _alertForegroundBrush = new(Colors.White);
+    private readonly SolidColorBrush _alertBackgroundBrush = new(Color.FromArgb(153, 0, 0, 0));
+    private readonly SolidColorBrush _alertBorderBrush = new(Colors.White);
+
+    /// <summary>胶囊文字的唯一字号（与日志监控小窗一致：标签 / 数值 / 说明同字号，靠字重区分）。</summary>
+    private double _chipFontSize = 11;
+
+    /// <summary>数值区允许的最大行数（1–3，来自多开全局设置）。</summary>
+    private int _maxValueRows = 2;
+
     public PreviewNameOverlayWindow()
     {
         InitializeComponent();
@@ -98,6 +112,9 @@ public sealed partial class PreviewNameOverlayWindow : Window
             StaysOpen = true,
             UseLayoutRounding = true,
         };
+
+        UpdateChipFontMetrics(InfoFontSize);
+        UpdateAlertBrushes();
     }
 
     /// <summary>左上角显示的角色名；传空则隐藏名字（只留信息行，用于"带标题栏"样式）。</summary>
@@ -143,14 +160,54 @@ public sealed partial class PreviewNameOverlayWindow : Window
     }
 
     /// <summary>
+    /// 叠加层内容的可用宽度（DIP）。传 0 表示不限制（探针与旧路径）。
+    /// <para>
+    /// 预览窗在每次刷新时按"客户区宽 − 12"传入；底板、文本行与角色名都会被它夹住，
+    /// 任何 provider 都不能再把叠加窗撑宽。
+    /// </para>
+    /// </summary>
+    public void SetMaxContentWidth(double width)
+    {
+        var next = width > 0 ? width : double.PositiveInfinity;
+        if (AreClose(RootPanel.MaxWidth, next))
+        {
+            return;
+        }
+
+        RootPanel.MaxWidth = next;
+        RebuildChips();
+    }
+
+    /// <summary>数值区最多显示几行（1–3）。改变时立即重排（折叠结果可能变化）。</summary>
+    public void SetMaxValueRows(int rows)
+    {
+        var next = Math.Clamp(rows, 1, 3);
+        if (next == _maxValueRows)
+        {
+            return;
+        }
+
+        _maxValueRows = next;
+        RebuildChips();
+    }
+
+    /// <summary>
     /// 套用信息行：空集合 = 整块隐藏。调用方随后应自行 <c>UpdateLayout()</c> 并重摆窗口
     /// （<c>SizeToContent</c> 改变了宽高，必须重新按物理像素 <see cref="SetBounds"/>）。
     /// </summary>
     public void SetInfoItems(IReadOnlyList<PreviewOverlayItem>? items)
     {
+        _items.Clear();
         if (items is { Count: > 0 })
         {
-            InfoList.ItemsSource = items;
+            _items.AddRange(items);
+        }
+
+        // 不带 Chip 的行（日志监控命中等）仍走旧文本行模板
+        var textRows = _items.Where(p => p.Chip is null).ToList();
+        if (textRows.Count > 0)
+        {
+            InfoList.ItemsSource = textRows;
             InfoList.Visibility = Visibility.Visible;
         }
         else
@@ -158,10 +215,13 @@ public sealed partial class PreviewNameOverlayWindow : Window
             InfoList.ItemsSource = null;
             InfoList.Visibility = Visibility.Collapsed;
         }
+
+        RebuildChips();
     }
 
     /// <summary>当前是否有信息行（决定"带标题栏样式"下叠加窗是否需要显示）。</summary>
-    public bool HasInfoItems => InfoList.Visibility == Visibility.Visible;
+    public bool HasInfoItems
+        => InfoList.Visibility == Visibility.Visible || Plate.Visibility == Visibility.Visible;
 
     /// <summary>当前是否展开了悬停详情。</summary>
     public bool HasDetails => _detailTip.IsOpen;
@@ -198,10 +258,10 @@ public sealed partial class PreviewNameOverlayWindow : Window
         if (!_detailTip.IsOpen)
         {
             // 出现在信息行正下方，左对齐
-            _detailTip.PlacementTarget = InfoList;
+            _detailTip.PlacementTarget = Plate.Visibility == Visibility.Visible ? Plate : InfoList;
             _detailTip.Placement = PlacementMode.Relative;
             _detailTip.HorizontalOffset = 0;
-            _detailTip.VerticalOffset = InfoList.ActualHeight + 6;
+            _detailTip.VerticalOffset = (Plate.Visibility == Visibility.Visible ? Plate.ActualHeight : InfoList.ActualHeight) + 6;
             _detailTip.IsOpen = true;
         }
     }
@@ -210,14 +270,100 @@ public sealed partial class PreviewNameOverlayWindow : Window
     public Brush NameForeground => NameText.Foreground;
 
     /// <summary>
+    /// 测试 / 排查用：当前可见的胶囊数量（按 zone 统计；Overflow 表示出现了 <c>+N</c>）。
+    /// </summary>
+    public (int Intel, int State, int Value, int Overflow) GetChipCounts()
+    {
+        static int Visible(WrapPanel panel)
+            => panel.Children.OfType<FrameworkElement>().Count(p => p.Visibility == Visibility.Visible && !Equals(p.Tag, "overflow"));
+
+        static int Overflow(WrapPanel panel)
+            => panel.Children.OfType<FrameworkElement>().Count(p => Equals(p.Tag, "overflow"));
+
+        return (Visible(IntelPanel), Visible(StatePanel), Visible(ValuePanel), Overflow(IntelPanel) + Overflow(StatePanel) + Overflow(ValuePanel));
+    }
+
+    /// <summary>测试 / 排查用：HUD 底板的实际宽度 / 高度（DIP）。</summary>
+    public (double Width, double Height) GetPlateSize() => (Plate.ActualWidth, Plate.ActualHeight);
+
+    /// <summary>测试 / 排查用：预警胶囊的前景画刷（应与用户设置的预警文字色一致）。</summary>
+    public Brush AlertChipForeground => _alertForegroundBrush;
+
+    /// <summary>测试 / 排查用：各枚预警胶囊的透明度（降级预警应为 0.55）。</summary>
+    public IReadOnlyList<double> GetIntelChipOpacities()
+        => IntelPanel.Children.OfType<FrameworkElement>().Select(p => p.Opacity).ToList();
+
+    /// <summary>测试 / 排查用：某一段里第一枚可见胶囊的文字颜色（验证统一配色）。</summary>
+    public Brush? GetChipForeground(PreviewOverlayChipKind kind)
+    {
+        var panel = kind switch
+        {
+            PreviewOverlayChipKind.Intel => IntelPanel,
+            PreviewOverlayChipKind.State => StatePanel,
+            _ => ValuePanel,
+        };
+
+        var first = panel.Children.OfType<Border>().FirstOrDefault(p => p.Visibility == Visibility.Visible);
+        return first is null ? null : FirstTextForeground(first);
+    }
+
+    /// <summary>测试 / 排查用：第一枚数值胶囊的外观快照（圆角 / 边框 / 底色 / 文字字号）。</summary>
+    public (double Radius, double BorderThickness, Color? Background, IReadOnlyList<double> FontSizes)? GetChipStyleSnapshot()
+    {
+        var chip = ValuePanel.Children.OfType<Border>().FirstOrDefault(p => p.Visibility == Visibility.Visible);
+        if (chip is null)
+        {
+            return null;
+        }
+
+        var sizes = new List<double>();
+        CollectFontSizes(chip, sizes);
+        return (chip.CornerRadius.TopLeft, chip.BorderThickness.Left, (chip.Background as SolidColorBrush)?.Color, sizes);
+    }
+
+    private static void CollectFontSizes(DependencyObject root, List<double> sizes)
+    {
+        if (root is TextBlock block)
+        {
+            sizes.Add(block.FontSize);
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            CollectFontSizes(VisualTreeHelper.GetChild(root, i), sizes);
+        }
+    }
+
+    private static Brush? FirstTextForeground(DependencyObject root)
+    {
+        if (root is TextBlock block)
+        {
+            return block.Foreground;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var found = FirstTextForeground(VisualTreeHelper.GetChild(root, i));
+            if (found is not null)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// 套用外观设置：角色名的字体/字号/文字色/背景色，以及信息行自己的字体/字号/文字色/背景色。
     /// <para>
     /// 两个颜色都带透明度：背景全透明就等于"只要文字"、文字透明就等于"只要底"，都是用户可自选的正常组合。
     /// 文字色不做自动反差（用户明确指定），默认白色配默认半透明黑底。
     /// </para>
     /// <para>
-    /// 阶段 356：信息行（预警）的字体、字号、**文字色与背景色**都与角色名叠加各自独立——
-    /// 用户希望预警行和名字能分开配色（名字颜色可能有高亮切换，预警行保持固定更好判读）。
+    /// 阶段 356：信息行（预警）的字体、字号、**文字色与背景色**都与角色名叠加各自独立。
+    /// 阶段 382：这两项颜色只作用于预警胶囊；战斗胶囊走主题 tone。
     /// </para>
     /// </summary>
     public void ApplyAppearance(
@@ -255,8 +401,437 @@ public sealed partial class PreviewNameOverlayWindow : Window
         InfoFontFamily = ResolveFontFamily(infoFontFamily) ?? InfoFontFamily;
         InfoFontSize = Math.Max(1, infoFontSize);
 
-        // 字号变了尺寸也随之变，重新量一次（SizeToContent 会跟着更新）
+        UpdateAlertBrushes();
+        var changed = UpdateChipFontMetrics(InfoFontSize);
+        if (changed)
+        {
+            // 字号变了：胶囊的字号是建的时候算好的，需要重建（尺寸会变，SizeToContent 跟着更新）
+            RebuildChips();
+        }
+
         UpdateLayout();
+    }
+
+    /// <summary>把预警画刷更新成当前用户配色（颜色原地修改，已建好的胶囊自动跟随）。</summary>
+    private void UpdateAlertBrushes()
+    {
+        var foreground = (InfoForeground as SolidColorBrush)?.Color ?? Colors.White;
+        var background = (InfoBackground as SolidColorBrush)?.Color ?? Color.FromArgb(153, 0, 0, 0);
+
+        _alertForegroundBrush.Color = foreground;
+        _alertBackgroundBrush.Color = background;
+        // 底色 alpha = 0（用户选"只要文字"）时，边框退回文字色，胶囊仍然看得见
+        _alertBorderBrush.Color = background.A == 0
+            ? foreground
+            : Color.FromArgb(76, foreground.R, foreground.G, foreground.B);
+
+    }
+
+    /// <summary>
+    /// 按基准字号算胶囊字号；与日志监控小窗的胶囊口径一致：**所有文字同一个字号**，
+    /// 靠字重（标签 / 主值 SemiBold、说明 Normal）和颜色区分，不再做三档字号。
+    /// 返回是否发生变化。
+    /// </summary>
+    private bool UpdateChipFontMetrics(double baseSize)
+    {
+        var size = Math.Clamp(baseSize, 12d, 40d);
+        // 默认 30（跟随缩放时 480 窗约 15）→ 11.7 DIP，与日志监控小窗的 11 px 基本一致
+        var chip = Math.Max(11d, size * 0.78);
+        var changed = Math.Abs(chip - _chipFontSize) > 0.01;
+        _chipFontSize = chip;
+        return changed;
+    }
+
+    // ---------- 胶囊构建 ----------
+
+    private void RebuildChips()
+    {
+        IntelPanel.Children.Clear();
+        StatePanel.Children.Clear();
+        ValuePanel.Children.Clear();
+
+        // 折叠要靠真实排版位置判断行数：先让三个 zone 回到可见状态（上一轮可能被折叠成 Collapsed）
+        IntelPanel.Visibility = Visibility.Visible;
+        StatePanel.Visibility = Visibility.Visible;
+        ValuePanel.Visibility = Visibility.Visible;
+        Plate.Visibility = Visibility.Visible;
+
+        var chips = _items.Where(p => p.Chip is not null).ToList();
+        if (chips.Count == 0)
+        {
+            UpdateZoneLayout();
+            Plate.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        foreach (var item in chips.Where(p => p.Chip!.Kind == PreviewOverlayChipKind.Intel).OrderBy(p => p.Order))
+        {
+            IntelPanel.Children.Add(CreateChip(item.Chip!));
+        }
+
+        foreach (var item in chips.Where(p => p.Chip!.Kind == PreviewOverlayChipKind.State).OrderBy(p => p.Order))
+        {
+            StatePanel.Children.Add(CreateChip(item.Chip!));
+        }
+
+        foreach (var item in chips.Where(p => IsValueKind(p.Chip!.Kind)).OrderBy(p => p.Order))
+        {
+            ValuePanel.Children.Add(CreateChip(item.Chip!));
+        }
+
+        // 各 zone 的行数预算：预警 / 状态固定 1 行，数值 1–3 行
+        Fold(IntelPanel, 1);
+        Fold(StatePanel, 1);
+        Fold(ValuePanel, _maxValueRows);
+
+        UpdateZoneLayout();
+        Plate.Visibility = HasChips ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private bool HasChips
+        => IntelPanel.Children.Count > 0 || StatePanel.Children.Count > 0 || ValuePanel.Children.Count > 0;
+
+    private static bool IsValueKind(PreviewOverlayChipKind kind)
+        => kind is PreviewOverlayChipKind.Value or PreviewOverlayChipKind.Damage or PreviewOverlayChipKind.Rep;
+
+    /// <summary>
+    /// 建一枚胶囊。外观与日志监控小窗的战斗胶囊一致（阶段 384）：
+    /// 圆角 10、内边距 8,2、无边框、无左侧色条；标签 / 主值 / 说明**同字号**，
+    /// 标签与主值 SemiBold、说明 Normal；文字色与底色取「叠加层样式」的用户设置。
+    /// </summary>
+    private Border CreateChip(PreviewOverlayChip chip)
+    {
+        var isDamage = chip.Kind == PreviewOverlayChipKind.Damage;
+        var isRep = chip.Kind == PreviewOverlayChipKind.Rep;
+        var isIntel = chip.Kind == PreviewOverlayChipKind.Intel;
+
+        // 默认无边框（与日志监控小窗一致）；只有用户把底色 alpha 设为 0 时才补一圈描边，
+        // 否则胶囊会变成"只剩文字"看不见边界。
+        var outline = _alertBackgroundBrush.Color.A == 0;
+
+        var border = new Border
+        {
+            CornerRadius = new CornerRadius(10),
+            BorderThickness = outline ? new Thickness(1) : new Thickness(0),
+            BorderBrush = outline ? _alertBorderBrush : Brushes.Transparent,
+            Background = _alertBackgroundBrush,
+            Margin = new Thickness(0, 0, 4, 4),
+            SnapsToDevicePixels = true,
+            UseLayoutRounding = true,
+            Opacity = chip.Dimmed ? 0.55 : 1.0,
+            // 单枚胶囊永远不允许比可用宽还宽（极端情况：超长英文标签 + 大字号 + 窄窗）。
+            // 真的放不下时宁可裁掉，也不能把叠加窗撑到预览窗外面。
+            MaxWidth = PanelWidth(),
+            ClipToBounds = true,
+        };
+
+        if (isDamage)
+        {
+            // 折叠时伤害永不优先被砍（见 Fold）
+            border.Tag = "pinned";
+        }
+
+        var content = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 2, 8, 2),
+        };
+
+        if (!string.IsNullOrEmpty(chip.Label))
+        {
+            content.Children.Add(ChipText(chip.Label, FontWeights.SemiBold, isIntel ? 0.85 : 1.0));
+        }
+
+        if (!string.IsNullOrEmpty(chip.Value))
+        {
+            content.Children.Add(ChipText(chip.Value, FontWeights.SemiBold, 1.0, 4));
+        }
+
+        var metaText = ComposeMeta(chip);
+        if (!string.IsNullOrEmpty(metaText))
+        {
+            content.Children.Add(ChipText(metaText, FontWeights.Normal, 0.85, 4));
+        }
+
+        var layerBrush = isRep ? BuildLayerBrush(chip.LayerShare) : null;
+        if (layerBrush is null)
+        {
+            border.Child = content;
+        }
+        else
+        {
+            // 遥修盾/甲/构微条贴在胶囊底边（数据可视化，不是装饰）
+            var grid = new Grid();
+            grid.Children.Add(content);
+            grid.Children.Add(new Border
+            {
+                Height = 2,
+                Background = layerBrush,
+                CornerRadius = new CornerRadius(1),
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Margin = new Thickness(3, 0, 3, 2),
+                IsHitTestVisible = false,
+            });
+            border.Child = grid;
+        }
+
+        return border;
+    }
+
+    /// <summary>胶囊里的一段文字：统一字号，靠字重 / 透明度区分（与日志监控小窗一致）。</summary>
+    private TextBlock ChipText(string text, FontWeight weight, double opacity, double leftMargin = 0)
+        => new()
+        {
+            Text = text,
+            FontFamily = InfoFontFamily,
+            FontSize = _chipFontSize,
+            FontWeight = weight,
+            Foreground = _alertForegroundBrush,
+            Opacity = opacity,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(leftMargin, 0, 0, 0),
+            LineHeight = Math.Round(_chipFontSize * 1.2, 2),
+            LineStackingStrategy = LineStackingStrategy.BlockLineHeight,
+        };
+
+    /// <summary>单位 + 副信息：预警用「跳 · 2min」，战斗用「HP 42/s」。</summary>
+    private static string ComposeMeta(PreviewOverlayChip chip)
+    {
+        if (string.IsNullOrEmpty(chip.Meta))
+        {
+            return chip.Unit;
+        }
+
+        if (string.IsNullOrEmpty(chip.Unit))
+        {
+            return chip.Meta;
+        }
+
+        return chip.Kind == PreviewOverlayChipKind.Intel
+            ? $"{chip.Unit} · {chip.Meta}"
+            : $"{chip.Unit} {chip.Meta}";
+    }
+
+    /// <summary>遥修微条：盾 / 甲 / 构 三段硬边渐变；不足两段或全 0 时返回 null。</summary>
+    private static Brush? BuildLayerBrush(IReadOnlyList<double>? shares)
+    {
+        if (shares is null || shares.Count < 3)
+        {
+            return null;
+        }
+
+        var total = shares[0] + shares[1] + shares[2];
+        if (total <= 0 || shares.Count(p => p > 0) < 2)
+        {
+            return null;
+        }
+
+        var brush = new LinearGradientBrush
+        {
+            StartPoint = new Point(0, 0),
+            EndPoint = new Point(1, 0),
+        };
+
+        var offset = 0d;
+        var colors = new[] { LayerShieldColor, LayerArmorColor, LayerHullColor };
+        for (var i = 0; i < 3; i++)
+        {
+            var share = shares[i] / total;
+            if (share <= 0)
+            {
+                continue;
+            }
+
+            brush.GradientStops.Add(new GradientStop(colors[i], offset));
+            offset = Math.Min(1d, offset + share);
+            brush.GradientStops.Add(new GradientStop(colors[i], offset));
+        }
+
+        brush.Freeze();
+        return brush;
+    }
+
+    private static readonly Color LayerShieldColor = Color.FromRgb(0x5F, 0xA8, 0xE8);
+    private static readonly Color LayerArmorColor = Color.FromRgb(0xD9, 0xB4, 0x5A);
+    private static readonly Color LayerHullColor = Color.FromRgb(0xE0, 0x66, 0x66);
+
+
+    /// <summary>zone 显隐与间距：第一个可见的 zone 不要上间距。</summary>
+    private void UpdateZoneLayout()
+    {
+        var first = true;
+        foreach (var panel in new[] { IntelPanel, StatePanel, ValuePanel })
+        {
+            var has = panel.Children.Count > 0;
+            panel.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
+            if (!has)
+            {
+                continue;
+            }
+
+            panel.Margin = new Thickness(0, first ? 0 : 4, 0, 0);
+            first = false;
+        }
+    }
+
+    // ---------- 行数预算 / +N 折叠（阶段 382） ----------
+
+    /// <summary>
+    /// 把某个 zone 折叠到 maxRows 行：从末尾开始隐藏（伤害 / 溢出标记不参与），
+    /// 追加一枚 <c>+N</c>；如果 +N 自己又撑出一行，就再多折叠一枚。
+    /// </summary>
+    private void Fold(WrapPanel panel, int maxRows)
+    {
+        if (panel.Children.Count == 0)
+        {
+            return;
+        }
+
+        // 移除上一次的 +N，并恢复所有胶囊可见
+        for (var i = panel.Children.Count - 1; i >= 0; i--)
+        {
+            if (panel.Children[i] is FrameworkElement { Tag: "overflow" })
+            {
+                panel.Children.RemoveAt(i);
+            }
+        }
+
+        foreach (FrameworkElement child in panel.Children)
+        {
+            child.Visibility = Visibility.Visible;
+        }
+
+        var width = PanelWidth();
+        var hidden = 0;
+        var guard = 0;
+        while (RowCount(panel, width) > maxRows && guard++ < 64)
+        {
+            var last = LastFoldable(panel);
+            if (last is null)
+            {
+                break;
+            }
+
+            last.Visibility = Visibility.Collapsed;
+            hidden++;
+        }
+
+        if (hidden == 0)
+        {
+            return;
+        }
+
+        var marker = CreateOverflowChip(hidden, out var markerText);
+        panel.Children.Add(marker);
+
+        guard = 0;
+        while (RowCount(panel, width) > maxRows && guard++ < 64)
+        {
+            var next = LastFoldable(panel);
+            if (next is null)
+            {
+                break;
+            }
+
+            next.Visibility = Visibility.Collapsed;
+            hidden++;
+            markerText.Text = $"+{hidden}";
+        }
+    }
+
+    private Border CreateOverflowChip(int count, out TextBlock text)
+    {
+        text = new TextBlock
+        {
+            Text = $"+{count}",
+            FontFamily = InfoFontFamily,
+            FontSize = _chipFontSize,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = new SolidColorBrush(Color.FromArgb(0xBD, 0xFF, 0xFF, 0xFF)),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+
+        return new Border
+        {
+            CornerRadius = new CornerRadius(999),
+            BorderThickness = new Thickness(1),
+            Background = new SolidColorBrush(Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF)),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF)),
+            Padding = new Thickness(7, 1, 7, 1),
+            Margin = new Thickness(0, 0, 4, 4),
+            Child = text,
+            Tag = "overflow",
+        };
+    }
+
+    /// <summary>下一枚可以被折叠的胶囊（从末尾找，跳过 +N 与伤害）。</summary>
+    private static FrameworkElement? LastFoldable(WrapPanel panel)
+    {
+        for (var i = panel.Children.Count - 1; i >= 0; i--)
+        {
+            if (panel.Children[i] is not FrameworkElement child || child.Visibility != Visibility.Visible)
+            {
+                continue;
+            }
+
+            if (Equals(child.Tag, "overflow") || Equals(child.Tag, "pinned"))
+            {
+                continue;
+            }
+
+            return child;
+        }
+
+        return null;
+    }
+
+    /// <summary>量一次并返回 zone 实际占了几行（按每个胶囊的顶边聚类，容差 4 DIP）。</summary>
+    private static int RowCount(WrapPanel panel, double width)
+    {
+        panel.Measure(new Size(Math.Max(1, width), double.PositiveInfinity));
+        panel.Arrange(new Rect(0, 0, Math.Max(1, panel.DesiredSize.Width), Math.Max(1, panel.DesiredSize.Height)));
+
+        var rows = 0;
+        var lastTop = double.NaN;
+        foreach (UIElement child in panel.Children)
+        {
+            if (child.Visibility != Visibility.Visible)
+            {
+                continue;
+            }
+
+            var top = child.TransformToAncestor(panel).Transform(new Point(0, 0)).Y;
+            if (double.IsNaN(lastTop) || Math.Abs(top - lastTop) > 4)
+            {
+                rows++;
+                lastTop = top;
+            }
+        }
+
+        return rows;
+    }
+
+    /// <summary>胶囊可用的宽度：底板已经不带边框/内边距（阶段 384），直接用上限。</summary>
+    private double PanelWidth()
+    {
+        var cap = RootPanel.MaxWidth;
+        if (double.IsInfinity(cap) || cap <= 0)
+        {
+            return 4096;
+        }
+
+        return Math.Max(80, cap);
+    }
+
+    private static bool AreClose(double left, double right)
+    {
+        if (double.IsInfinity(left) || double.IsInfinity(right))
+        {
+            return double.IsInfinity(left) && double.IsInfinity(right);
+        }
+
+        return Math.Abs(left - right) < 0.5;
     }
 
     /// <summary>解析字体名；未安装/非法名称返回 null（调用方保留原字体）。</summary>

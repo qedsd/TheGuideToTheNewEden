@@ -286,6 +286,27 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref _showCombatInfo, value);
         }
 
+        private int _combatOverlayMaxRows = 2;
+        /// <summary>
+        /// 多开预览叠加层的**数值区最多显示几行**（阶段 382，1–3，默认 2）。
+        /// <para>
+        /// 预警行与状态行各固定 1 行，不占这个预算；超出预算的数值胶囊会折叠成「+N」，
+        /// 伤害胶囊永不折叠。窗口很小时把它设成 1 可以少挡画面。
+        /// </para>
+        /// </summary>
+        public int CombatOverlayMaxRows
+        {
+            get => _combatOverlayMaxRows;
+            set
+            {
+                var next = Math.Clamp(value, 1, 3);
+                if (next != _combatOverlayMaxRows)
+                {
+                    SetProperty(ref _combatOverlayMaxRows, next);
+                }
+            }
+        }
+
         private bool _showMonitorHits;
         /// <summary>
         /// 多开预览窗叠加层的可选开关（阶段 357）：把**日志监控关键词命中**（如"诱导检测"）也显示成一行。

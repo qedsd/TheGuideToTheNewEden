@@ -1,4 +1,7 @@
 ﻿# TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 384：多开叠加层去掉多余的底板底色，胶囊外观与日志监控小窗的战斗胶囊对齐——圆角 10、内边距 8×2、无边框、无左侧色条、标签 / 主值 / 说明**同字号**（标签与主值 SemiBold）；文字与底色仍取「叠加层样式」的用户配色，底色全透明时才补一圈描边；`OverlayProbe` 新增外观断言（共 68 项全 PASS）。
+- 阶段 383：多开叠加层**配色统一**——预警胶囊与战斗胶囊共用「叠加层样式」里的字体 / 字号 / 跟随缩放 / 文字颜色 / 背景色；战斗分类语义退化为左侧色条（伤害 3px、其它 2px）与状态胶囊的 tone 描边；设置页把外观设置从「频道预警」卡片移出，独立成「叠加层样式（预警 + 战斗）」组；语言键 +2（共 3813）。
+- 阶段 382：多开预览叠加层**胶囊化重做**——频道预警的两行文本与战斗的整行文本统一改成「预警 → 状态 → 数值」三 zone 的胶囊 HUD（同一块底板、宽度夹在预览窗内、数值区 1–3 行、超出折叠成 `+N`、伤害永不折叠、遥修三层聚合成一枚 + 盾/甲/构微条）；预警沿用用户配色、底色透明时退化为描边、降级变淡；新增「数值最多显示行数」设置；语言键 +17。
 - 阶段 366：战斗卡**颜色改按"收益 / 伤害"**——伤害红、收益绿、中性黑白（伤害/毁电/吸电的输出=绿、输入=红；遥修/传电的输入=绿、输出=中性）；卡面去掉「输入 / 输出」字样，方向移到 **ToolTip**；反跳 / 干扰显示成「**被反跳 / 被干扰**」；分类名「承伤」改「**伤害**」；语言键 +2。
 - 阶段 381：修正伤害 DPS 口径（原先按"会话时长"摊除，开局一波伤害会显示成天价 HP/s；改为固定除以 5 秒 / 30 秒窗口）；胶囊去掉圆点、方向改用三角形 ▼/▲，字号统一 11。
 - 阶段 380：胶囊内文字统一字号（11px，分组名 / 数量 / 说明一致，不再放大数量）。
@@ -14379,6 +14382,191 @@ neut  出：45 GJ能量中和QEDSD - 小型能量中和器 I*                   
   `CapTransfer` 的 outgoing 改成 `harm` 即可。
 
 ---
+## 阶段 382：多开预览叠加层胶囊化——频道预警 + 战斗信息统一 HUD（2026-11-25）
+
+### 背景（用户需求）
+
+> "多开预览小窗口现在也会有战斗日志展示功能，但是 UI 很简陋，展示的文字会很多导致会超出窗口范围，需要参考日志监控的 UI 重新设计"
+> "频道预警可以一块重新设计了，也使用胶囊表示"
+
+先出了 HTML 设计稿（`design/game-preview-combat/index.html`：现状还原 + 1:1 可交互原型 + 规范 + 实现映射），
+确认后按设计落地。现状根因：
+
+1. **宽度没有上限**：`PreviewNameOverlayWindow` 是 `SizeToContent=WidthAndHeight`，`RootPanel` 与每行都没有 `MaxWidth`，
+   内容多宽叠加窗就多宽 → 直接画到预览窗外面（320 窗、遥修 3 层时实测溢出 100+ DIP）。
+2. **整类日志拼成一句**：`CombatLogOverlayProvider` 把同分类多行 `join(" · ")`，遥修 3 层就重复 3 次「遥修 …」。
+3. **没有层级**：分类 / 数值 / 单位 / 速率同字号同色，12 个分类一个长相；预警与战斗共用同一套颜色设置，扫读时分不清。
+4. **纵向失控**：2 行预警 + 12 个分类堆到约 14 行（≈336 DIP），在 270 高的预览窗里盖掉整块画面。
+
+### 口径（与用户确认的设计）
+
+- **三段式**：一块底板里 `预警（1 行，最多 2 枚）→ 状态（1 行，最多 7 枚）→ 数值（1–3 行）`；
+  宽度 = 预览窗客户区宽 − 12，任何 provider 都不能把叠加窗撑宽。
+- **预警胶囊**：标签（最近 / 最新 / 最近最新）+ 跳数主值 + 「跳 · Nmin」；配色沿用阶段 356 的预警文字色 / 背景色；
+  底色 alpha = 0 时退化为描边胶囊；同星系合并成一枚；`Downgraded` 整枚 0.55 不透明。
+- **战斗胶囊**：状态（反跳 / 干扰…）只有名字、圆角 999；数值 = 短分类名 + 主值 + 单位/速率；
+  伤害主值更大 + 左侧 2px 红脊；遥修三层聚合成一枚并带 2px 盾/甲/构微条；配色按 tone（红=受损 / 绿=受益 / 紫=电子战）。
+- **折叠**：数值超出「最多显示行数」从末尾折叠成 `+N`；伤害永不折叠；预警 / 状态行各固定 1 行。
+- **设置语义**：「预警文字字号」成为整块 HUD 的基准；「预警文字色 / 背景色」只作用于预警胶囊（不再染战斗行）；
+  新增全局「数值最多显示行数」（1–3，默认 2）。
+- **字号阶梯**：分类/标签 0.78×、主值 1.13×、单位·速率 0.66×、状态 0.73×，各有下限（10 / 12 / 9.5 / 9.5）。
+- 日志监控命中行（默认关闭的低频开关）不在本次范围，仍走旧文本行模板。
+
+### 变更明细
+
+**契约（WPF）**
+
+- `Services/GamePreview/Overlay/PreviewOverlayItem.cs`：新增 `PreviewOverlayChipKind`（Intel / State / Value / Damage / Rep / Overflow）
+  与 `PreviewOverlayChip(Kind, Label, Value, Unit, Meta, Tone, LayerShare, Dimmed)`；`PreviewOverlayItem` 增加可选 `Chip`
+  （为 null 时仍按旧文本行渲染 → 零破坏）。
+
+**Provider**
+
+- `Services/ChannelIntel/ChannelIntelOverlayProvider.cs`：三处产出都带 `Chip`（标签走新语言键，`Tone="alert"`，`Dimmed=Downgraded`）；
+  整句 `Text` 保留（无障碍 / 旧路径兜底）。
+- `Services/GamePreview/Overlay/CombatLogOverlayProvider.cs`：改为输出结构化胶囊；
+  状态分类用 `HasValue=false` 判定；遥修按层聚合（主值 / 速率 / 微条占比，按 `SubTypeLabel` 认盾/甲/构，速率全 0 时退回最近值；
+  不足两个非零层不画微条）；短标签走 `CombatShort_*`；数值排序改为 伤害 110 / 毁电 120 / 吸电 130 / 遥修 140 / 传电 150。
+
+**视图**
+
+- `Views/Windows/PreviewNameOverlayWindow.xaml`：名字 + 旧文本行之外新增底板（1px 边 + 左侧 2px 威胁脊 + 圆角 6），
+  内部三个 `WrapPanel`（预警 / 状态 / 数值）。
+- `Views/Windows/PreviewNameOverlayWindow.xaml.cs`：
+  - `SetMaxContentWidth(width)` / `SetMaxValueRows(rows)`；`SetInfoItems` 按 `Chip` 分流（有 Chip 进底板，没有的走旧文本行）；
+  - 胶囊在代码里构建（颜色 / 字号 / 圆角 / 红脊 / 微条 / 降级透明度），预警胶囊共用可变的画刷实例——用户改配色时原地生效；
+  - 折叠：先量真实行数（`WrapPanel` 手动 Measure/Arrange，按顶边聚类），从末尾隐藏并追加 `+N`，`+N` 自己撑行时再折一枚；
+  - 威胁脊按 反跳 → 伤害/毁电 → 电子战 → 收益 → 仅预警 选色；空状态整块 `Collapsed`。
+- `Views/Windows/GamePreviewWindow.xaml.cs`：每次刷新把「窗口客户区宽 / DPI − 12」交给叠加层；打开叠加窗时同步行数预算；
+  `Setting_PropertyChanged` 补上 `ShowCombatInfo` 与预警外观（字体/字号/跟随缩放/倍率/文字色/背景色），
+  `GlobalSetting_PropertyChanged` 补上 `ShowCombatInfo` / `CombatOverlayMaxRows`。
+
+**设置与文案**
+
+- `Core/Models/GamePreviews/PreviewSetting.cs`：新增 `CombatOverlayMaxRows`（1–3，默认 2，setter 内 clamp）。
+- `Views/Pages/GamePreviewPage.xaml`：战斗信息全局卡片新增「数值最多显示行数」NumberBox。
+- 语言键 zh/en 各 **+17**（`GamePreviewPage_CombatOverlayRows(+Tip)`、`GamePreview_OverlayTagNearest/Latest/Both`、
+  `CombatShort_*` ×12）；同步改写 `ShowCombatInfoTip/Hint`、`ShowIntelAlertTip` 的措辞。
+
+### 验证
+
+- `dotnet build`（WPF + OverlayProbe）：**0 错误**。
+- `probe/OverlayProbe`：原有 47 项全 PASS（文本行回归：无信息行 74.4、两行 161.6、悬停不改变高度），
+  新增「阶段 382：胶囊 HUD」**13 项全 PASS**：
+  - 三段分区计数（预警 2 / 状态 1 / 数值 4）；
+  - 预警胶囊前景 = 用户文字色 `#FFFFD640`；降级枚 0.55；
+  - 底板 384×138 ≤ 可用宽 420；文本含「最近 / 最新 / 反跳 / 伤害 / 遥修 / 传电」与「HP 41.8/s / GJ 22.5/s」；
+  - 窄窗（300）+ 数值 1 行：出现 `+N`、宽 298.5 ≤ 300、伤害 / 预警 / 状态都还在；
+  - 空状态：底板隐藏且不占高度。
+  - 截图：`chips-wide.png`（宽态：预警 2 + 状态 1 + 数值 4，含遥修微条与伤害红脊）、`chips.png`（窄态折叠 `+2`）。
+- 设计稿：`design/game-preview-combat/index.html`（1:1 可交互原型，改宽度 / 字号 / 行数 / 预警状态实时重排）。
+
+### 已知限制
+
+- **入场动画未做**：叠加层每次刷新会重建胶囊，`Loaded` 淡入会在每秒刷新时闪一次；要做需要稳定容器 + 只对新 key 播放，留待需要时再说。
+- 日志监控命中行仍是旧文本行（低频、默认关闭）。
+- 英文标签更长（`Nearest` / `Disrupt`），320 宽 + 大字号时预警可能折叠成 `+N`（按设计「先折最新」）。
+- 预警胶囊的背景是用户自选色，若选了很亮的底色，会和战斗胶囊的 tone 语义混在一起——这是保留阶段 356 设置的结果，不做自动反差。
+- 行数折叠按真实排版测量（手动 Measure/Arrange），只在内容/宽度/行数变化时发生，不进 1 秒心跳。
+
+---
+
+## 阶段 383：多开叠加层配色统一——预警与战斗共用「叠加层样式」（2026-11-25）
+
+### 背景（用户反馈）
+
+> "多开的战斗日志应该和频道预警的字体颜色、背景颜色等一块设置"
+
+阶段 382 的默认口径是：预警胶囊用用户配色，战斗胶囊用固定 tone（红/绿/紫）。实机观感是两块颜色体系并存，
+用户想一次把字体、文字色、背景色都定了。改成**一套设置管整块叠加层**。
+
+### 口径
+
+- 「叠加层样式（预警 + 战斗）」组里的 **字体 / 字号 / 跟随窗口缩放 / 缩放倍率 / 文字颜色 / 背景色**
+  同时作用于预警胶囊与战斗胶囊（字号仍是整块 HUD 的基准）。
+- 战斗分类语义（红=受损、绿=受益、紫=电子战）**降级为细小标识**：
+  - 数值 / 伤害 / 遥修胶囊：左侧色条，伤害 3px（0xC8），其它 2px（0x9E）；
+  - 状态胶囊（反跳 / ECM…）：tone 描边（0x99），文字与底色仍取用户配色；
+  - 预警胶囊：无额外标识（标签本身说明最近 / 最新）。
+- **背景色 alpha = 0**：预警与战斗一起变成描边胶囊。
+- 设置页：外观设置从「频道预警」卡片移出，独立成组；只要「显示预警」或「显示战斗信息」任一开启就显示该组
+  （两个都关时整组隐藏）。「数值最多显示行数」仍在「战斗信息」全局卡片里。
+
+### 变更明细
+
+- `Views/Windows/PreviewNameOverlayWindow.xaml.cs`：`CreateChip` 统一取 `_alertForegroundBrush` / `_alertBackgroundBrush`；
+  新增左侧色条（数值/伤害/遥修）与状态胶囊 tone 描边；遥修微条改为 `ColumnSpan` 覆盖色条列。
+- `Views/Pages/GamePreviewPage.xaml`：新增 `WhenOverlayChips` 样式（窗口可见 + 预警或战斗任一开启）；
+  把字体/字号/跟随/倍率/文字色/背景色六行从「频道预警」卡片移到新的「叠加层样式」组；「频道预警」卡片只留开关与提示。
+- 语言键 zh/en 各 **+2**（`GamePreviewPage_GroupOverlayStyle`、`GamePreviewPage_OverlayStyleHint`），
+  并把 `GamePreviewPage_AlertOverlay*` 的显示文案改为「叠加层…」；提示语补一句"字体与颜色在下面统一设置"。
+- 手册 `game-preview.md` / `channel/intel.md` 同步：叠加层样式组、共用配色、色条/描边语义。
+
+### 验证
+
+- `dotnet build`：0 错误；zh/en 语言键各 **3813** 条、键集一致、无重复。
+- `probe/OverlayProbe`：**67 项全 PASS**，新增：
+  - 「战斗胶囊与预警共用文字色」：伤害 / 状态胶囊文字色均为用户设置的 `#FFFFD640`；
+  - 「状态胶囊保留 tone 描边」：`#99FF99A4`（深色主题 critical）。
+  - 宽态截图 `chips-wide.png`：预警 2 + 状态 1 + 数值 4，全部用户配色，左侧色条区分伤害 / 毁电 / 遥修 / 传电。
+
+### 已知限制
+
+- 用户把文字色设成单一颜色后，战斗分类只能靠**细色条**区分（这是"一套配色"的代价）；要更强的区分可把色条再加粗。
+- 状态胶囊的 tone 描边在浅色主题下取 `SystemFillColorCritical/Success` 的浅色版本，仍可见。
+- 设计稿 `design/game-preview-combat/index.html` 的"统一配色"部分已按本阶段同步。
+
+---
+
+## 阶段 384：叠加层只保留胶囊底色，胶囊外观与日志监控对齐（2026-11-25）
+
+### 背景（用户反馈）
+
+> "胶囊本身已经带了背景色，现在还会在一行内增加背景色，应该只保留胶囊本身底色，另外胶囊的样式应该和战斗日志的保持一致"
+
+阶段 382/383 的 HUD 在胶囊外还铺了一块半透明底板（含边框 + 左侧威胁脊），而胶囊自己已经带底色——两层底色叠在一起；
+同时胶囊是「圆角 6 + 1px 边框 + 左侧色条 + 三档字号」，与日志监控小窗的战斗胶囊（圆角 10、无边框、同字号）不是一套观感。
+
+### 口径
+
+- **去掉底板视觉**：`Plate` 只作为三个 zone 的布局容器（透明、无边框、无内边距、无威胁脊），画面上只有「名字 + 一串胶囊」。
+- **胶囊外观与日志监控一致**：
+  - 圆角 10、内边距 8×2、**无边框、无左侧色条**；
+  - 标签 / 主值 / 说明**同字号**（`max(11, 叠加层字号 × 0.78)`），标签与主值 SemiBold、说明 Normal；
+  - 文字色 / 底色取「叠加层样式」的用户配色（阶段 383 的结论不变）；
+  - 底色 alpha = 0 时补一圈文字色描边（否则只剩文字看不见边界）；
+  - 遥修保留底部 2px 盾/甲/构微条（数据可视化，不是装饰）。
+- 去掉 tone 的视觉出口（左侧色条 / 状态描边 / 威胁脊）；`PreviewOverlayChip.Tone` 保留在契约里备用，视图不再渲染。
+
+### 变更明细
+
+- `Views/Windows/PreviewNameOverlayWindow.xaml`：`Plate` 改为 `Background=Transparent`、`BorderThickness=0`，删除 `Spine` 列与 Border。
+- `Views/Windows/PreviewNameOverlayWindow.xaml.cs`：
+  - `CreateChip` 统一为日志监控同款（圆角 10 / 无边框 / 8×2 / 同字号）；透明底时加描边；
+  - 字号从四档（label/value/meta/state）合并为一个 `_chipFontSize`；
+  - 删除 `ApplySpine` / `ToneColor` / `ThemeColor` / `WithAlpha` 与 `Spine` 引用；`PanelWidth()` 不再扣底板 chrome；
+  - 新增调试钩子 `GetChipStyleSnapshot()`（圆角 / 边框 / 底色 / 文字字号），替换原来的 `GetStateChipBorderColor()`。
+- 语言键：更新 `GamePreviewPage_OverlayStyleHint`（zh/en）描述；键数不变（3813）。
+- 手册 `game-preview.md` 第 7 条同步"与日志监控同款、不再铺底板"。
+- 设计稿 `design/game-preview-combat/index.html`：CSS/解剖/对照表/R03/R12/R13/状态卡同步；阶段 383 的"色条/描边"表述改为"同款胶囊"。
+
+### 验证
+
+- `dotnet build`（WPF + OverlayProbe）：0 错误。
+- `probe/OverlayProbe`：**68 项全 PASS**，新增：
+  - 「胶囊外观与日志监控一致」：`Radius=10`、`BorderThickness=0`、所有文字字号唯一（11.7）；
+  - 「胶囊底色 = 用户设置的背景色」：`#C8781414`；
+  - 原有折叠 / 宽度 / 遥修聚合 / 预警配色 / 空状态等断言全部保持 PASS。
+- 截图 `chips-wide.png`：名字下方只有胶囊，预警 2 + 状态 1 + 数值 4，无底板。
+
+### 已知限制
+
+- 去掉分类色后，**伤害 / 收益 / 电子战只能靠文字标签区分**（这是用户要求"一套配色 + 同款胶囊"的直接结果）；遥修仍有底部微条。
+- 伤害胶囊不再放大主值、也没有色条，与普通数值胶囊仅差标签；如果以后想恢复强调，可在不放底板的前提下给主值加 1 档字号。
+- 底板去掉后，胶囊直接压在游戏画面上；亮背景下的可读性靠胶囊自身的用户底色（默认 60% 黑底）。
+
+---
+
 ## 8. 已知限制与待办
 
 - **物品详情（阶段 283）还没做的两块**：

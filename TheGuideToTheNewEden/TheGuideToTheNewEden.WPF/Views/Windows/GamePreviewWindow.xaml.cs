@@ -950,9 +950,16 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         {
             ApplyTransparencyMode();
         }
-        else if (e.PropertyName == nameof(PreviewSetting.ShowIntelAlert))
+        else if (e.PropertyName == nameof(PreviewSetting.ShowIntelAlert)
+                 || e.PropertyName == nameof(PreviewSetting.ShowCombatInfo)
+                 || e.PropertyName == nameof(PreviewSetting.CombatOverlayMaxRows))
         {
-            // 全局总开关：关掉即覆盖所有单项设置，立即隐藏信息行
+            // 全局总开关 / 行数预算：立即重排叠加层（关掉即覆盖所有单项设置）
+            if (e.PropertyName == nameof(PreviewSetting.CombatOverlayMaxRows) && _nameOverlay is not null)
+            {
+                _nameOverlay.SetMaxValueRows(_globalSetting.CombatOverlayMaxRows);
+            }
+
             ScheduleOverlayRefresh();
         }
     }
@@ -1447,8 +1454,16 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PreviewItem.ShowIntelAlert))
+        if (e.PropertyName == nameof(PreviewItem.ShowIntelAlert)
+            || e.PropertyName == nameof(PreviewItem.ShowCombatInfo)
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayFontFamily)
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayFontSize)
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayFollowScale)
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayScaleFactor)
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayForegroundColor)
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayBackgroundColor))
         {
+            // 开关 / 预警配色 / 字号变了：立刻重建叠加层（字号与颜色都在胶囊构建时算好）
             ScheduleOverlayRefresh();
         }
     }
@@ -1469,6 +1484,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             Owner = this,
             DisplayName = string.IsNullOrWhiteSpace(Setting.Name) ? Process.WindowTitle : Setting.Name,
         };
+        _nameOverlay.SetMaxValueRows(_globalSetting.CombatOverlayMaxRows);
         _nameOverlay.Show();
     }
 
@@ -1562,6 +1578,14 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         // 底色两段式：平时用"背景色"，该客户端在前台时换成"高亮背景色"。
         // 注意用 _isSourceForeground（真实前台）而不是 _isHighlighted（受"高亮"开关过滤）——
         // 关掉边框高亮不该把文字底色的高亮一起关掉。
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var thickness = GetHighlightThickness();
+
+        // 阶段 382：把"窗口里真正能用的宽度"交给叠加层，它自己决定怎么换行 / 折叠。
+        // 宽高都是物理像素，先换算成 DIP 再减左右留白（每侧 6）。
+        var contentWidth = window.Width / dpi.DpiScaleX - thickness.Left - thickness.Right;
+        _nameOverlay.SetMaxContentWidth(Math.Max(160, contentWidth - 12));
+
         _nameOverlay.ApplyAppearance(
             Setting.NameOverlayFontFamily,
             GetNameOverlayFontSize(window.Width),
@@ -1572,8 +1596,6 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             Setting.AlertOverlayForegroundColor,
             Setting.AlertOverlayBackgroundColor);
 
-        var dpi = VisualTreeHelper.GetDpi(this);
-        var thickness = GetHighlightThickness();
         // 带标题栏样式：名字在标题栏里，叠加窗（只画信息行）要落到标题栏**下方**的画面左上角，
         // 视觉上仍然是"角色名下方"。GetChromeHeight() 给的是物理像素，正好可以直接相加。
         var topOffset = (int)Math.Round(thickness.Top * dpi.DpiScaleY) + (HasTitleBar ? GetChromeHeight() : 0);

@@ -61,7 +61,7 @@ public sealed class ChannelIntelOverlayProvider : IPreviewOverlayProvider
             && latest is not null
             && nearest.SolarSystemId == latest.SolarSystemId)
         {
-            // 同一条既是最近也是最新：合并成一行
+            // 同一条既是最近也是最新：合并成一枚胶囊
             return
             [
                 new PreviewOverlayItem(
@@ -72,7 +72,8 @@ public sealed class ChannelIntelOverlayProvider : IPreviewOverlayProvider
                         ElapsedMinutes(now, latest.LastSeenAt)),
                     Severity(latest, isNearest: true),
                     Order: 0,
-                    Detail: BuildDetail(latest, now)),
+                    Detail: BuildDetail(latest, now),
+                    Chip: BuildChip("GamePreview_OverlayTagBoth", latest, now)),
             ];
         }
 
@@ -87,7 +88,8 @@ public sealed class ChannelIntelOverlayProvider : IPreviewOverlayProvider
                     ElapsedMinutes(now, nearest.LastSeenAt)),
                 Severity(nearest, isNearest: true),
                 Order: 0,
-                Detail: BuildDetail(nearest, now)));
+                Detail: BuildDetail(nearest, now),
+                Chip: BuildChip("GamePreview_OverlayTagNearest", nearest, now)));
         }
 
         if (latest is not null)
@@ -100,11 +102,26 @@ public sealed class ChannelIntelOverlayProvider : IPreviewOverlayProvider
                     ElapsedMinutes(now, latest.LastSeenAt)),
                 Severity(latest, isNearest: false),
                 Order: 1,
-                Detail: BuildDetail(latest, now)));
+                Detail: BuildDetail(latest, now),
+                Chip: BuildChip("GamePreview_OverlayTagLatest", latest, now)));
         }
 
         return rows;
     }
+
+    /// <summary>
+    /// 预警胶囊（阶段 382）：标签（最近 / 最新 / 最近最新）+ 跳数 + 「跳 · Nmin」。
+    /// 配色交给用户设置（<c>Tone = "alert"</c>）；降级时整枚变淡。
+    /// </summary>
+    private static PreviewOverlayChip BuildChip(string tagKey, ChannelIntelAlertInfo alert, DateTime now)
+        => new(
+            PreviewOverlayChipKind.Intel,
+            LanguageService.Get(tagKey),
+            alert.Jumps.ToString(),
+            LanguageService.Get("EarlyWarningPage_Jumps"),
+            $"{ElapsedMinutes(now, alert.LastSeenAt)}min",
+            "alert",
+            Dimmed: alert.Downgraded);
 
     /// <summary>
     /// 悬停详情：第一行给系统 / 跳数 / 时间，第二行给来源频道 + 发言人 + 原文。

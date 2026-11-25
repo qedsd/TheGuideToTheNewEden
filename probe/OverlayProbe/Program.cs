@@ -2,6 +2,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using TheGuideToTheNewEden.Core.Enums;
@@ -39,6 +40,8 @@ internal static class Program
             RunCenterChecks();
             RunCombatCenterChecks();
             var png = RunOverlayWindowChecks();
+            RunProviderChipChecks();
+            RunChipOverlayChecks();
             File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "probe.log"), Log.ToString());
             Console.WriteLine(Log.ToString());
             Console.WriteLine($"PNG: {png}");
@@ -367,6 +370,267 @@ internal static class Program
 
         window.Close();
         return path;
+    }
+
+    /// <summary>
+    /// 阶段 382：两个 provider 真的产出了胶囊（战斗：状态 / 伤害 / 遥修聚合；预警：用户配色标签）。
+    /// </summary>
+    private static void RunProviderChipChecks()
+    {
+        Log.AppendLine();
+        Log.AppendLine("=== 阶段 382：provider 胶囊 ===");
+
+        var center = CombatLogStateCenter.Current;
+        var listener = "Chip Combat";
+        center.SetEnabledCategories(CombatCategories.All.Select(p => p.Key));
+        center.Attach(listener);
+        var now = DateTime.UtcNow;
+
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 200,
+            "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-4));
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 100,
+            "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
+        ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
+            "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-2));
+        ReportCombat(center, listener, CombatEventKind.WarpScramble, CombatCategories.Scram, null,
+            "Warp Scrambler II", "Guardian", now.AddSeconds(-5));
+
+        center.Report(listener, new CombatLogEvent
+        {
+            Kind = CombatEventKind.RemoteRepair,
+            Direction = CombatEventDirection.Incoming,
+            CategoryKey = CombatCategories.Rep,
+            Amount = 45,
+            RepairType = RemoteRepairType.Shield,
+            ModuleName = "Remote Shield Booster II",
+            Pilot = "Logi",
+            Time = now.AddSeconds(-4),
+        });
+        center.Report(listener, new CombatLogEvent
+        {
+            Kind = CombatEventKind.RemoteRepair,
+            Direction = CombatEventDirection.Incoming,
+            CategoryKey = CombatCategories.Rep,
+            Amount = 78,
+            RepairType = RemoteRepairType.Armor,
+            ModuleName = "Remote Armor Repairer II",
+            Pilot = "Logi",
+            Time = now.AddSeconds(-2),
+        });
+
+        var item = new PreviewItem { Name = listener, ShowCombatInfo = true, ShowIntelAlert = false };
+        var global = new PreviewSetting { ShowCombatInfo = true, ShowIntelAlert = false };
+        var rows = PreviewOverlayHub.Current
+            .GetItems(new PreviewOverlayContext(listener, item, global))
+            .Where(p => p.Key.StartsWith("combat:", StringComparison.Ordinal))
+            .ToList();
+
+        Check("战斗 provider：每行都带 Chip", rows.Count >= 4 && rows.All(p => p.Chip is not null),
+            $"{rows.Count} 行 / {rows.Count(p => p.Chip is not null)} 带 Chip");
+
+        var damage = rows.FirstOrDefault(p => p.Key == "combat:damage")?.Chip;
+        Check("战斗 provider：伤害 = Damage 胶囊（短标签 + HP + 速率）",
+            damage is { Kind: PreviewOverlayChipKind.Damage, Label: "伤害", Unit: "HP" } && damage.Meta.EndsWith("/s"),
+            $"{damage?.Kind} / {damage?.Label} / {damage?.Value}{damage?.Unit} {damage?.Meta}");
+
+        var scram = rows.FirstOrDefault(p => p.Key == "combat:scram")?.Chip;
+        Check("战斗 provider：反跳 = 状态胶囊（无值、受损色）",
+            scram is { Kind: PreviewOverlayChipKind.State, Label: "反跳", Tone: "harm" } && string.IsNullOrEmpty(scram.Value),
+            $"{scram?.Kind} / {scram?.Label} / tone={scram?.Tone} / value={scram?.Value}");
+
+        var rep = rows.FirstOrDefault(p => p.Key == "combat:rep")?.Chip;
+        Check("战斗 provider：遥修聚合（主值 45+78=123，微条两段）",
+            rep is { Kind: PreviewOverlayChipKind.Rep, Value: "123", Tone: "benefit" }
+            && rep.LayerShare is { Count: 3 } shares && shares.Count(p => p > 0) == 2,
+            $"{rep?.Value}{rep?.Unit} / shares={string.Join(",", rep?.LayerShare?.Select(p => p.ToString("F2")) ?? [])}");
+
+        center.Detach(listener);
+
+        // 预警 provider：注册一个监听并报两条
+        var intelCenter = ChannelIntelAlertCenter.Current;
+        intelCenter.Register(new ChannelIntelSetting { Listener = "Chip Intel" });
+        intelCenter.Report(new EarlyWarningContent
+        {
+            Listener = "Chip Intel",
+            SolarSystemId = 30000400,
+            SolarSystemName = "4-AA",
+            Jumps = 4,
+            IntelType = IntelChatType.Intel,
+            Content = "4-AA hostile",
+            Time = DateTime.UtcNow,
+        }, "intel");
+        intelCenter.Report(new EarlyWarningContent
+        {
+            Listener = "Chip Intel",
+            SolarSystemId = 30000500,
+            SolarSystemName = "5-BB",
+            Jumps = 5,
+            IntelType = IntelChatType.Intel,
+            Content = "5-BB hostile",
+            Time = DateTime.UtcNow,
+        }, "intel");
+
+        var intelItem = new PreviewItem { Name = "Chip Intel", ShowIntelAlert = true, ShowCombatInfo = false };
+        var intelGlobal = new PreviewSetting { ShowIntelAlert = true, ShowCombatInfo = false };
+        var intelRows = PreviewOverlayHub.Current
+            .GetItems(new PreviewOverlayContext("Chip Intel", intelItem, intelGlobal))
+            .Where(p => p.Key.StartsWith("intel.", StringComparison.Ordinal))
+            .ToList();
+
+        Check("预警 provider：带 Chip 且 Tone=alert",
+            intelRows.Count > 0 && intelRows.All(p => p.Chip is { Kind: PreviewOverlayChipKind.Intel, Tone: "alert" }),
+            string.Join(" | ", intelRows.Select(p => $"{p.Chip?.Label} {p.Chip?.Value}{p.Chip?.Unit} · {p.Chip?.Meta}")));
+        Check("预警 provider：最近 / 最新两枚，标签与跳数正确",
+            intelRows.Count == 2
+            && intelRows.Any(p => p.Chip is { Label: "最近", Value: "4", Unit: "跳" } && p.Chip.Meta.EndsWith("min"))
+            && intelRows.Any(p => p.Chip is { Label: "最新", Value: "5", Unit: "跳" }),
+            string.Join(" | ", intelRows.Select(p => $"{p.Chip?.Label}/{p.Chip?.Value}/{p.Chip?.Meta}")));
+
+        intelCenter.Unregister("Chip Intel");
+    }
+
+    /// <summary>
+    /// 阶段 382：胶囊 HUD——三段分区、宽度夹紧、行数预算与 +N 折叠、预警配色 / 降级。
+    /// </summary>
+    private static void RunChipOverlayChecks()
+    {
+        Log.AppendLine();
+        Log.AppendLine("=== 阶段 382：胶囊 HUD ===");
+
+        var window = new PreviewNameOverlayWindow
+        {
+            DisplayName = "Chip Pilot",
+        };
+        window.SetNameVisible(true);
+        window.ApplyAppearance(
+            "Microsoft YaHei UI",
+            40,
+            System.Drawing.Color.FromArgb(255, 255, 255, 255),
+            System.Drawing.Color.FromArgb(153, 0, 0, 0),
+            "Microsoft YaHei UI",
+            15,
+            System.Drawing.Color.FromArgb(255, 255, 214, 64),
+            System.Drawing.Color.FromArgb(200, 120, 20, 20));
+        window.SetMaxContentWidth(420);
+        window.SetMaxValueRows(2);
+        window.Show();
+        Pump();
+
+        var items = new List<PreviewOverlayItem>
+        {
+            new("intel.nearest", "最近 3 跳 · 2min", PreviewOverlaySeverity.Critical, 0,
+                "Jita · 3 跳 · 2min\n本地频道 · QEDSD: 3 跳 Jita 有敌对",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Intel, "最近", "3", "跳", "2min", "alert")),
+            new("intel.latest", "最新 5 跳 · 0min", PreviewOverlaySeverity.Caution, 1,
+                "Tama · 5 跳 · 0min\n情报频道 · Aria: Tama 一条截击",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Intel, "最新", "5", "跳", "0min", "alert", Dimmed: true)),
+            new("combat:scram", "跃迁扰频器", PreviewOverlaySeverity.Critical, 110, "反跳 · 跃迁扰频器 II · Aria (Loki)",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.State, "反跳", Tone: "harm")),
+            new("combat:damage", "伤害 209 HP 41.8 HP/s", PreviewOverlaySeverity.Critical, 110, "伤害 · 雷神重型导弹 · 209 HP / 5s",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Damage, "伤害", "209", "HP", "41.8/s", "harm")),
+            new("combat:neut", "毁电 45 GJ 22.5 GJ/s", PreviewOverlaySeverity.Critical, 120, "毁电 · 中型能量中和器 II · 45GJ/2s",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Value, "毁电", "45", "GJ", "22.5/s", "harm")),
+            new("combat:rep", "遥修 123 HP 41 HP/s", PreviewOverlaySeverity.Normal, 140, "遥修 · 护盾 45 · 装甲 78 · 41HP/s",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Rep, "遥修", "123", "HP", "41/s", "benefit", [0.37, 0.63, 0])),
+            new("combat:cap", "传电 12 GJ 4 GJ/s", PreviewOverlaySeverity.Normal, 150, "传电 · 远程电容传输器 II · 12GJ/3s",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Value, "传电", "12", "GJ", "4/s", "benefit")),
+        };
+
+        window.SetInfoItems(items);
+        Pump();
+
+        var counts = window.GetChipCounts();
+        Check("三段分区：预警 2 / 状态 1 / 数值 4", counts.Intel == 2 && counts.State == 1 && counts.Value == 4,
+            $"intel={counts.Intel} state={counts.State} value={counts.Value} overflow={counts.Overflow}");
+        Check("预警胶囊沿用用户文字色",
+            window.AlertChipForeground is SolidColorBrush alertFg
+            && alertFg.Color.R == 255 && alertFg.Color.G == 214 && alertFg.Color.B == 64,
+            Describe(window.AlertChipForeground));
+
+        // 阶段 383：预警与战斗共用同一套文字色 / 背景色（tone 只留色条与状态描边）
+        Check("战斗胶囊与预警共用文字色",
+            window.GetChipForeground(PreviewOverlayChipKind.Damage) is SolidColorBrush damageFg
+            && damageFg.Color.R == 255 && damageFg.Color.G == 214 && damageFg.Color.B == 64
+            && window.GetChipForeground(PreviewOverlayChipKind.State) is SolidColorBrush stateFg
+            && stateFg.Color.R == 255 && stateFg.Color.G == 214 && stateFg.Color.B == 64,
+            Describe(window.GetChipForeground(PreviewOverlayChipKind.Damage)) + " / " + Describe(window.GetChipForeground(PreviewOverlayChipKind.State)));
+        var style = window.GetChipStyleSnapshot();
+        Check("胶囊外观与日志监控一致（圆角 10 / 无边框 / 同字号）",
+            style is { Radius: 10, BorderThickness: 0 } && style.Value.FontSizes.Distinct().Count() == 1,
+            style is null ? "null" : $"r={style.Value.Radius} border={style.Value.BorderThickness} fonts={string.Join("/", style.Value.FontSizes.Distinct())}");
+        Check("胶囊底色 = 用户设置的背景色",
+            style?.Background is { } bg && bg.R == 120 && bg.G == 20 && bg.B == 20,
+            style?.Background?.ToString() ?? "null");
+        Check("降级预警变淡（0.55）", window.GetIntelChipOpacities().Any(p => Math.Abs(p - 0.55) < 0.01),
+            string.Join(" / ", window.GetIntelChipOpacities().Select(p => p.ToString("F2"))));
+
+        var wide = window.GetPlateSize();
+        Check("底板宽度不超出可用宽（420）", wide.Width <= 420.5, $"{wide.Width:F1} x {wide.Height:F1}");
+
+        var wideTexts = CollectVisibleTexts(window);
+        Check("三段内容都在（名字 + 标签 + 数值）",
+            wideTexts.Contains("最近") && wideTexts.Contains("最新") && wideTexts.Contains("反跳")
+            && wideTexts.Contains("伤害") && wideTexts.Contains("遥修") && wideTexts.Contains("传电"),
+            string.Join(" | ", wideTexts));
+        Check("胶囊文本带单位与速率", wideTexts.Contains("HP 41.8/s") && wideTexts.Contains("GJ 22.5/s"),
+            string.Join(" | ", wideTexts));
+
+        var widePng = Path.Combine(AppContext.BaseDirectory, "chips-wide.png");
+        SavePng(window, widePng);
+        Log.AppendLine($"  宽态胶囊截图：{widePng}");
+
+        // 窄窗 + 数值只留 1 行：数值折叠成 +N，预警 / 状态 / 伤害不受影响
+        window.SetMaxContentWidth(300);
+        window.SetMaxValueRows(1);
+        Pump();
+
+        counts = window.GetChipCounts();
+        var narrow = window.GetPlateSize();
+        var narrowTexts = CollectVisibleTexts(window);
+        Check("数值区折叠到 1 行并出现 +N", counts.Overflow > 0, $"overflow={counts.Overflow} value={counts.Value}");
+        Check("折叠后底板仍不超出可用宽（300）", narrow.Width <= 300.5, $"{narrow.Width:F1} x {narrow.Height:F1}");
+        Check("伤害永不折叠", narrowTexts.Contains("伤害"), string.Join(" | ", narrowTexts));
+        Check("预警与状态不被数值挤掉", narrowTexts.Contains("最近") && narrowTexts.Contains("反跳"),
+            string.Join(" | ", narrowTexts));
+
+        var chipPng = Path.Combine(AppContext.BaseDirectory, "chips.png");
+        SavePng(window, chipPng);
+        Log.AppendLine($"  胶囊截图：{chipPng}");
+
+        // 空：底板整块隐藏（不是空底板）
+        window.SetInfoItems([]);
+        Pump();
+        Check("没有胶囊时底板隐藏", !window.HasInfoItems, $"HasInfoItems={window.HasInfoItems}");
+        Check("空状态不占高度", window.GetPlateSize().Height < 0.5, $"{window.GetPlateSize().Height:F1}");
+
+        window.Close();
+    }
+
+    /// <summary>收集当前可见的文字（用来断言"哪几枚胶囊被折叠了"）。</summary>
+    private static List<string> CollectVisibleTexts(Window window)
+    {
+        var texts = new List<string>();
+        if (window.Content is not DependencyObject root)
+        {
+            return texts;
+        }
+
+        void Walk(DependencyObject node)
+        {
+            if (node is TextBlock { IsVisible: true } block && !string.IsNullOrWhiteSpace(block.Text))
+            {
+                texts.Add(block.Text);
+            }
+
+            var count = VisualTreeHelper.GetChildrenCount(node);
+            for (var i = 0; i < count; i++)
+            {
+                Walk(VisualTreeHelper.GetChild(node, i));
+            }
+        }
+
+        Walk(root);
+        return texts;
     }
 
     /// <summary>把 ToolTip 里的详情文字单独渲染成图（核对折行 / 间距是否正常）。</summary>
