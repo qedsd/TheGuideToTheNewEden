@@ -383,28 +383,5 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => alertOverlayScaleFactor;
             set => SetProperty(ref alertOverlayScaleFactor, value);
         }
-
-        private Color alertOverlayForegroundColor = Color.White;
-        /// <summary>
-        /// 预警信息行的文字颜色（含透明度，阶段 356 起与角色名叠加各自独立）。
-        /// </summary>
-        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
-        public Color AlertOverlayForegroundColor
-        {
-            get => alertOverlayForegroundColor;
-            set => SetProperty(ref alertOverlayForegroundColor, value);
-        }
-
-        private Color alertOverlayBackgroundColor = Color.FromArgb(153, 0, 0, 0);
-        /// <summary>
-        /// 预警信息行的背景色（含透明度；阶段 356 起与角色名叠加各自独立）。
-        /// <para>只有一种底色（不随"客户端到前台"切换），避免预警行在切窗口时突然变色、影响判读。</para>
-        /// </summary>
-        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
-        public Color AlertOverlayBackgroundColor
-        {
-            get => alertOverlayBackgroundColor;
-            set => SetProperty(ref alertOverlayBackgroundColor, value);
-        }
     }
 }

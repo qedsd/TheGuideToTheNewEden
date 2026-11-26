@@ -1211,8 +1211,6 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         AlertOverlayFontSize = source.AlertOverlayFontSize,
         AlertOverlayFollowScale = source.AlertOverlayFollowScale,
         AlertOverlayScaleFactor = source.AlertOverlayScaleFactor,
-        AlertOverlayForegroundColor = source.AlertOverlayForegroundColor,
-        AlertOverlayBackgroundColor = source.AlertOverlayBackgroundColor,
         HotKey = source.HotKey,
     };
 

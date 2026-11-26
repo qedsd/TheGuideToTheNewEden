@@ -3899,15 +3899,12 @@
     <sys:String x:Key="GamePreviewPage_GroupIntel">Channel intel</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlert">Show alerts in preview</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlertTip">Alerts appear as pills below the character name: "Nearest" is the active alert with the fewest jumps, "Latest" is the most recently received one; both merge into one pill when they point at the same system. Data comes from a running channel-intel session of the same character on the Channel intel page. Hidden when the global switch is off.</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">Alert rows appear below the character name, fed by the same character's channel intel session</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">Alert pills show below the character name, fed by the same character's channel intel session; font and size are shared with combat pills in "Overlay style" below.</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFont">Overlay font</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFontSize">Overlay font size</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFollowScale">Overlay follows window scale</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayScaleFactor">Overlay scale factor</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayForeground">Overlay text color</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayBackground">Overlay background color</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayColorTip">Supports transparency (#AARRGGBB: #99000000 = translucent black, #FFFFFFFF = opaque white); alert and combat pills share this text / background color; a fully transparent background becomes an outline pill</sys:String>
-    <sys:String x:Key="GamePreviewPage_IntelStatusGlobalOff">Disabled globally</sys:String>
+                <sys:String x:Key="GamePreviewPage_IntelStatusGlobalOff">Disabled globally</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusOff">Off</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusNoSession">No channel intel session</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusReady">Alerts available</sys:String>
@@ -3923,7 +3920,7 @@
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoGlobalTip">Off overrides every item; when on, each item's switch decides</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatOverlayRows">Max value rows</sys:String>
         <sys:String x:Key="GamePreviewPage_GroupOverlayStyle">Overlay style (alerts + combat)</sys:String>
-    <sys:String x:Key="GamePreviewPage_OverlayStyleHint">Font, size (also the base size of the whole HUD), follow-scale, text color and background color apply to both alert pills and combat pills. Pills match the combat pills of the log monitor window (radius 10, no border, one font size, bold label/value); there is no extra plate behind them, only the pill backgrounds. A fully transparent background gets a thin outline.</sys:String>
+    <sys:String x:Key="GamePreviewPage_OverlayStyleHint">Font, size (also the base size of the whole HUD), follow-scale and scale factor apply to both alert pills and combat pills. Pill colors come from the category: red=harm, green=benefit, purple=EWAR; alerts use red for nearest, yellow for latest and grey for downgraded. There are no separate text/background color settings. Pills match the combat pills of the log monitor window (radius 10, no border, one font size, bold label/value).</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatOverlayRowsTip">How many rows the value area (damage / neut / remote rep…) may use: 1–3, default 2. The alert row and the state row each take one row and do not count. Overflow collapses into "+N"; damage is never collapsed.</sys:String>
     <sys:String x:Key="GamePreview_OverlayTagNearest">Nearest</sys:String>
     <sys:String x:Key="GamePreview_OverlayTagLatest">Latest</sys:String>

@@ -341,8 +341,6 @@ public sealed class PreviewWindowManager : IDisposable
             item.AlertOverlayFontSize = source.AlertOverlayFontSize;
             item.AlertOverlayFollowScale = source.AlertOverlayFollowScale;
             item.AlertOverlayScaleFactor = source.AlertOverlayScaleFactor;
-            item.AlertOverlayForegroundColor = source.AlertOverlayForegroundColor;
-            item.AlertOverlayBackgroundColor = source.AlertOverlayBackgroundColor;
 
             if (item.ProcessInfo is not { } process)
             {

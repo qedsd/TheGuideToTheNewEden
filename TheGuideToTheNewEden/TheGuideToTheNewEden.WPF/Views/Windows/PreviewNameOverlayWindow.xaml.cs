@@ -36,19 +36,6 @@ namespace TheGuideToTheNewEden.WPF.Views.Windows;
 /// </summary>
 public sealed partial class PreviewNameOverlayWindow : Window
 {
-    /// <summary>信息行底色（跟随角色名叠加的背景色设置；文本行使用）。</summary>
-    public static readonly DependencyProperty InfoBackgroundProperty = DependencyProperty.Register(
-        nameof(InfoBackground),
-        typeof(Brush),
-        typeof(PreviewNameOverlayWindow),
-        new PropertyMetadata(Brushes.Transparent));
-
-    /// <summary>信息行文字色（跟随角色名叠加的文字颜色设置；文本行使用）。</summary>
-    public static readonly DependencyProperty InfoForegroundProperty = DependencyProperty.Register(
-        nameof(InfoForeground),
-        typeof(Brush),
-        typeof(PreviewNameOverlayWindow),
-        new PropertyMetadata(Brushes.White));
 
     /// <summary>信息行字号（由"预警文字"自己的设置换算，不再从角色名字号派生；也是整块 HUD 的基准）。</summary>
     public static readonly DependencyProperty InfoFontSizeProperty = DependencyProperty.Register(
@@ -79,10 +66,6 @@ public sealed partial class PreviewNameOverlayWindow : Window
     /// <summary>最近一次从 hub 收到的全部行（用于颜色/字号变化后重建胶囊）。</summary>
     private readonly List<PreviewOverlayItem> _items = [];
 
-    /// <summary>预警胶囊共用的画刷：用户改配色时原地改颜色，已建好的胶囊自动跟着变。</summary>
-    private readonly SolidColorBrush _alertForegroundBrush = new(Colors.White);
-    private readonly SolidColorBrush _alertBackgroundBrush = new(Color.FromArgb(153, 0, 0, 0));
-    private readonly SolidColorBrush _alertBorderBrush = new(Colors.White);
 
     /// <summary>胶囊文字的唯一字号（与日志监控小窗一致：标签 / 数值 / 说明同字号，靠字重区分）。</summary>
     private double _chipFontSize = 11;
@@ -114,7 +97,6 @@ public sealed partial class PreviewNameOverlayWindow : Window
         };
 
         UpdateChipFontMetrics(InfoFontSize);
-        UpdateAlertBrushes();
     }
 
     /// <summary>左上角显示的角色名；传空则隐藏名字（只留信息行，用于"带标题栏"样式）。</summary>
@@ -132,19 +114,6 @@ public sealed partial class PreviewNameOverlayWindow : Window
         {
             Badge.Visibility = next;
         }
-    }
-
-    /// <summary>信息行底色/文字色/字号（由 <see cref="GamePreviewWindow"/> 按角色名外观与窗口宽度换算后传入）。</summary>
-    public Brush InfoBackground
-    {
-        get => (Brush)GetValue(InfoBackgroundProperty);
-        set => SetValue(InfoBackgroundProperty, value);
-    }
-
-    public Brush InfoForeground
-    {
-        get => (Brush)GetValue(InfoForegroundProperty);
-        set => SetValue(InfoForegroundProperty, value);
     }
 
     public double InfoFontSize
@@ -286,14 +255,12 @@ public sealed partial class PreviewNameOverlayWindow : Window
     /// <summary>测试 / 排查用：HUD 底板的实际宽度 / 高度（DIP）。</summary>
     public (double Width, double Height) GetPlateSize() => (Plate.ActualWidth, Plate.ActualHeight);
 
-    /// <summary>测试 / 排查用：预警胶囊的前景画刷（应与用户设置的预警文字色一致）。</summary>
-    public Brush AlertChipForeground => _alertForegroundBrush;
 
     /// <summary>测试 / 排查用：各枚预警胶囊的透明度（降级预警应为 0.55）。</summary>
     public IReadOnlyList<double> GetIntelChipOpacities()
         => IntelPanel.Children.OfType<FrameworkElement>().Select(p => p.Opacity).ToList();
 
-    /// <summary>测试 / 排查用：某一段里第一枚可见胶囊的文字颜色（验证统一配色）。</summary>
+    /// <summary>测试 / 排查用：某一段里第一枚可见胶囊的文字颜色。</summary>
     public Brush? GetChipForeground(PreviewOverlayChipKind kind)
     {
         var panel = kind switch
@@ -304,7 +271,30 @@ public sealed partial class PreviewNameOverlayWindow : Window
         };
 
         var first = panel.Children.OfType<Border>().FirstOrDefault(p => p.Visibility == Visibility.Visible);
-        return first is null ? null : FirstTextForeground(first);
+        return first is null ? null : FirstTextBlock(first)?.Foreground;
+    }
+
+    /// <summary>测试 / 排查用：按第一段文字（分类短名 / 预警标签）找胶囊的文字颜色。</summary>
+    public Brush? GetChipForegroundByLabel(string label)
+    {
+        foreach (var panel in new[] { IntelPanel, StatePanel, ValuePanel })
+        {
+            foreach (var chip in panel.Children.OfType<Border>())
+            {
+                if (chip.Visibility != Visibility.Visible)
+                {
+                    continue;
+                }
+
+                var text = FirstTextBlock(chip);
+                if (text is not null && string.Equals(text.Text, label, StringComparison.Ordinal))
+                {
+                    return text.Foreground;
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>测试 / 排查用：第一枚数值胶囊的外观快照（圆角 / 边框 / 底色 / 文字字号）。</summary>
@@ -335,17 +325,17 @@ public sealed partial class PreviewNameOverlayWindow : Window
         }
     }
 
-    private static Brush? FirstTextForeground(DependencyObject root)
+    private static TextBlock? FirstTextBlock(DependencyObject root)
     {
         if (root is TextBlock block)
         {
-            return block.Foreground;
+            return block;
         }
 
         var count = VisualTreeHelper.GetChildrenCount(root);
         for (var i = 0; i < count; i++)
         {
-            var found = FirstTextForeground(VisualTreeHelper.GetChild(root, i));
+            var found = FirstTextBlock(VisualTreeHelper.GetChild(root, i));
             if (found is not null)
             {
                 return found;
@@ -356,14 +346,11 @@ public sealed partial class PreviewNameOverlayWindow : Window
     }
 
     /// <summary>
-    /// 套用外观设置：角色名的字体/字号/文字色/背景色，以及信息行自己的字体/字号/文字色/背景色。
+    /// 套用外观设置：角色名的字体/字号/文字色/背景色，以及叠加层的字体/字号。
     /// <para>
-    /// 两个颜色都带透明度：背景全透明就等于"只要文字"、文字透明就等于"只要底"，都是用户可自选的正常组合。
-    /// 文字色不做自动反差（用户明确指定），默认白色配默认半透明黑底。
-    /// </para>
-    /// <para>
-    /// 阶段 356：信息行（预警）的字体、字号、**文字色与背景色**都与角色名叠加各自独立。
-    /// 阶段 382：这两项颜色只作用于预警胶囊；战斗胶囊走主题 tone。
+    /// 阶段 385：叠加层的**文字色 / 背景色不再开放设置**——胶囊颜色由分类 tone 决定
+    /// （红=受损、绿=受益、紫=电子战；预警按 最近 / 最新 / 降级 取 红 / 黄 / 灰），
+    /// 这里只保留字体与字号（字号也是整块 HUD 的基准）。
     /// </para>
     /// </summary>
     public void ApplyAppearance(
@@ -372,9 +359,7 @@ public sealed partial class PreviewNameOverlayWindow : Window
         System.Drawing.Color foregroundColor,
         System.Drawing.Color backgroundColor,
         string? infoFontFamily,
-        double infoFontSize,
-        System.Drawing.Color infoForegroundColor,
-        System.Drawing.Color infoBackgroundColor)
+        double infoFontSize)
     {
         if (!string.IsNullOrWhiteSpace(fontFamily) && !string.Equals(NameText.FontFamily.Source, fontFamily, StringComparison.OrdinalIgnoreCase))
         {
@@ -395,13 +380,10 @@ public sealed partial class PreviewNameOverlayWindow : Window
         NameText.Foreground = foreground;
         Badge.Background = background;
 
-        // 信息行：字体 / 字号 / 文字色 / 背景色都用自己的一套
-        InfoForeground = PreviewColorHelper.ToBrush(infoForegroundColor);
-        InfoBackground = PreviewColorHelper.ToBrush(infoBackgroundColor);
+        // 叠加层：字体 / 字号（颜色由分类 tone 决定，不再有单独设置）
         InfoFontFamily = ResolveFontFamily(infoFontFamily) ?? InfoFontFamily;
         InfoFontSize = Math.Max(1, infoFontSize);
 
-        UpdateAlertBrushes();
         var changed = UpdateChipFontMetrics(InfoFontSize);
         if (changed)
         {
@@ -412,20 +394,6 @@ public sealed partial class PreviewNameOverlayWindow : Window
         UpdateLayout();
     }
 
-    /// <summary>把预警画刷更新成当前用户配色（颜色原地修改，已建好的胶囊自动跟随）。</summary>
-    private void UpdateAlertBrushes()
-    {
-        var foreground = (InfoForeground as SolidColorBrush)?.Color ?? Colors.White;
-        var background = (InfoBackground as SolidColorBrush)?.Color ?? Color.FromArgb(153, 0, 0, 0);
-
-        _alertForegroundBrush.Color = foreground;
-        _alertBackgroundBrush.Color = background;
-        // 底色 alpha = 0（用户选"只要文字"）时，边框退回文字色，胶囊仍然看得见
-        _alertBorderBrush.Color = background.A == 0
-            ? foreground
-            : Color.FromArgb(76, foreground.R, foreground.G, foreground.B);
-
-    }
 
     /// <summary>
     /// 按基准字号算胶囊字号；与日志监控小窗的胶囊口径一致：**所有文字同一个字号**，
@@ -466,17 +434,17 @@ public sealed partial class PreviewNameOverlayWindow : Window
 
         foreach (var item in chips.Where(p => p.Chip!.Kind == PreviewOverlayChipKind.Intel).OrderBy(p => p.Order))
         {
-            IntelPanel.Children.Add(CreateChip(item.Chip!));
+            IntelPanel.Children.Add(CreateChip(item));
         }
 
         foreach (var item in chips.Where(p => p.Chip!.Kind == PreviewOverlayChipKind.State).OrderBy(p => p.Order))
         {
-            StatePanel.Children.Add(CreateChip(item.Chip!));
+            StatePanel.Children.Add(CreateChip(item));
         }
 
         foreach (var item in chips.Where(p => IsValueKind(p.Chip!.Kind)).OrderBy(p => p.Order))
         {
-            ValuePanel.Children.Add(CreateChip(item.Chip!));
+            ValuePanel.Children.Add(CreateChip(item));
         }
 
         // 各 zone 的行数预算：预警 / 状态固定 1 行，数值 1–3 行
@@ -495,26 +463,25 @@ public sealed partial class PreviewNameOverlayWindow : Window
         => kind is PreviewOverlayChipKind.Value or PreviewOverlayChipKind.Damage or PreviewOverlayChipKind.Rep;
 
     /// <summary>
-    /// 建一枚胶囊。外观与日志监控小窗的战斗胶囊一致（阶段 384）：
-    /// 圆角 10、内边距 8,2、无边框、无左侧色条；标签 / 主值 / 说明**同字号**，
-    /// 标签与主值 SemiBold、说明 Normal；文字色与底色取「叠加层样式」的用户设置。
+    /// 建一枚胶囊：外观与日志监控小窗的战斗胶囊一致（圆角 10、无边框、8×2、同字号），
+    /// 颜色恢复为**分类 tone**（阶段 385）：红=受损、绿=受益、紫=电子战、黄=提示、白=中性。
+    /// 预警胶囊没有战斗分类，按 severity（最近 / 最新 / 降级）映射成 红 / 黄 / 灰。
     /// </summary>
-    private Border CreateChip(PreviewOverlayChip chip)
+    private Border CreateChip(PreviewOverlayItem item)
     {
+        var chip = item.Chip!;
         var isDamage = chip.Kind == PreviewOverlayChipKind.Damage;
         var isRep = chip.Kind == PreviewOverlayChipKind.Rep;
         var isIntel = chip.Kind == PreviewOverlayChipKind.Intel;
 
-        // 默认无边框（与日志监控小窗一致）；只有用户把底色 alpha 设为 0 时才补一圈描边，
-        // 否则胶囊会变成"只剩文字"看不见边界。
-        var outline = _alertBackgroundBrush.Color.A == 0;
+        var tone = isIntel ? ToneOfSeverity(item.Severity) : chip.Tone;
+        var foreground = ToneBrush(tone);
 
         var border = new Border
         {
             CornerRadius = new CornerRadius(10),
-            BorderThickness = outline ? new Thickness(1) : new Thickness(0),
-            BorderBrush = outline ? _alertBorderBrush : Brushes.Transparent,
-            Background = _alertBackgroundBrush,
+            BorderThickness = new Thickness(0),
+            Background = ToneSurfaceBrush(tone),
             Margin = new Thickness(0, 0, 4, 4),
             SnapsToDevicePixels = true,
             UseLayoutRounding = true,
@@ -540,18 +507,18 @@ public sealed partial class PreviewNameOverlayWindow : Window
 
         if (!string.IsNullOrEmpty(chip.Label))
         {
-            content.Children.Add(ChipText(chip.Label, FontWeights.SemiBold, isIntel ? 0.85 : 1.0));
+            content.Children.Add(ChipText(chip.Label, FontWeights.SemiBold, isIntel ? 0.85 : 1.0, foreground));
         }
 
         if (!string.IsNullOrEmpty(chip.Value))
         {
-            content.Children.Add(ChipText(chip.Value, FontWeights.SemiBold, 1.0, 4));
+            content.Children.Add(ChipText(chip.Value, FontWeights.SemiBold, 1.0, foreground, 4));
         }
 
         var metaText = ComposeMeta(chip);
         if (!string.IsNullOrEmpty(metaText))
         {
-            content.Children.Add(ChipText(metaText, FontWeights.Normal, 0.85, 4));
+            content.Children.Add(ChipText(metaText, FontWeights.Normal, 0.85, foreground, 4));
         }
 
         var layerBrush = isRep ? BuildLayerBrush(chip.LayerShare) : null;
@@ -580,14 +547,14 @@ public sealed partial class PreviewNameOverlayWindow : Window
     }
 
     /// <summary>胶囊里的一段文字：统一字号，靠字重 / 透明度区分（与日志监控小窗一致）。</summary>
-    private TextBlock ChipText(string text, FontWeight weight, double opacity, double leftMargin = 0)
+    private TextBlock ChipText(string text, FontWeight weight, double opacity, Brush foreground, double leftMargin = 0)
         => new()
         {
             Text = text,
             FontFamily = InfoFontFamily,
             FontSize = _chipFontSize,
             FontWeight = weight,
-            Foreground = _alertForegroundBrush,
+            Foreground = foreground,
             Opacity = opacity,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(leftMargin, 0, 0, 0),
@@ -655,6 +622,60 @@ public sealed partial class PreviewNameOverlayWindow : Window
     private static readonly Color LayerShieldColor = Color.FromRgb(0x5F, 0xA8, 0xE8);
     private static readonly Color LayerArmorColor = Color.FromRgb(0xD9, 0xB4, 0x5A);
     private static readonly Color LayerHullColor = Color.FromRgb(0xE0, 0x66, 0x66);
+
+    /// <summary>预警没有战斗分类：最近=红、最新=黄、降级=灰。</summary>
+    private static string ToneOfSeverity(PreviewOverlaySeverity severity) => severity switch
+    {
+        PreviewOverlaySeverity.Critical => "harm",
+        PreviewOverlaySeverity.Caution => "caution",
+        _ => "neutral",
+    };
+
+    /// <summary>tone → 主题色（与日志监控战斗胶囊同一套：红 / 绿 / 紫 / 黄 / 中性）。</summary>
+    private static Color ToneColor(string tone) => tone switch
+    {
+        "harm" => ThemeColor("SystemFillColorCriticalBrush", Color.FromRgb(0xC4, 0x2B, 0x1C)),
+        "benefit" => ThemeColor("SystemFillColorSuccessBrush", Color.FromRgb(0x0F, 0x7B, 0x0F)),
+        "ew" => Color.FromRgb(0xC0, 0x84, 0xFC),
+        "caution" => ThemeColor("SystemFillColorCautionBrush", Color.FromRgb(0x9D, 0x5D, 0x00)),
+        _ => ThemeColor("TextFillColorPrimaryBrush", Colors.White),
+    };
+
+    private static Color ThemeColor(string key, Color fallback)
+    {
+        try
+        {
+            return Application.Current?.TryFindResource(key) is SolidColorBrush brush ? brush.Color : fallback;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return fallback;
+        }
+    }
+
+    private static Brush ToneBrush(string tone)
+    {
+        var brush = new SolidColorBrush(ToneColor(tone));
+        brush.Freeze();
+        return brush;
+    }
+
+    /// <summary>
+    /// 胶囊底色：把 tone 按 28% 混到深色底上，得到"日志监控胶囊 + 深色背板"合并后的一层实色。
+    /// 叠加层没有底板，必须保证在游戏画面上仍有足够对比。
+    /// </summary>
+    private static Brush ToneSurfaceBrush(string tone)
+    {
+        var color = ToneColor(tone);
+        const double mix = 0.28;
+        var red = (byte)Math.Round(color.R * mix + 0x12 * (1 - mix));
+        var green = (byte)Math.Round(color.G * mix + 0x16 * (1 - mix));
+        var blue = (byte)Math.Round(color.B * mix + 0x1C * (1 - mix));
+        var brush = new SolidColorBrush(Color.FromArgb(0xE6, red, green, blue));
+        brush.Freeze();
+        return brush;
+    }
 
 
     /// <summary>zone 显隐与间距：第一个可见的 zone 不要上间距。</summary>
@@ -742,23 +763,24 @@ public sealed partial class PreviewNameOverlayWindow : Window
 
     private Border CreateOverflowChip(int count, out TextBlock text)
     {
+        var foreground = ToneBrush("neutral");
         text = new TextBlock
         {
             Text = $"+{count}",
             FontFamily = InfoFontFamily,
             FontSize = _chipFontSize,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromArgb(0xBD, 0xFF, 0xFF, 0xFF)),
+            Foreground = foreground,
+            Opacity = 0.8,
             VerticalAlignment = VerticalAlignment.Center,
         };
 
         return new Border
         {
-            CornerRadius = new CornerRadius(999),
-            BorderThickness = new Thickness(1),
-            Background = new SolidColorBrush(Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF)),
-            BorderBrush = new SolidColorBrush(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF)),
-            Padding = new Thickness(7, 1, 7, 1),
+            CornerRadius = new CornerRadius(10),
+            BorderThickness = new Thickness(0),
+            Background = ToneSurfaceBrush("neutral"),
+            Padding = new Thickness(6, 2, 6, 2),
             Margin = new Thickness(0, 0, 4, 4),
             Child = text,
             Tag = "overflow",

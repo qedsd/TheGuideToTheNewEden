@@ -1459,9 +1459,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             || e.PropertyName == nameof(PreviewItem.AlertOverlayFontFamily)
             || e.PropertyName == nameof(PreviewItem.AlertOverlayFontSize)
             || e.PropertyName == nameof(PreviewItem.AlertOverlayFollowScale)
-            || e.PropertyName == nameof(PreviewItem.AlertOverlayScaleFactor)
-            || e.PropertyName == nameof(PreviewItem.AlertOverlayForegroundColor)
-            || e.PropertyName == nameof(PreviewItem.AlertOverlayBackgroundColor))
+            || e.PropertyName == nameof(PreviewItem.AlertOverlayScaleFactor))
         {
             // 开关 / 预警配色 / 字号变了：立刻重建叠加层（字号与颜色都在胶囊构建时算好）
             ScheduleOverlayRefresh();
@@ -1592,9 +1590,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             Setting.NameOverlayForegroundColor,
             _isSourceForeground ? Setting.NameOverlayBackgroundColorHighlight : Setting.NameOverlayBackgroundColor,
             Setting.AlertOverlayFontFamily,
-            GetAlertOverlayFontSize(window.Width),
-            Setting.AlertOverlayForegroundColor,
-            Setting.AlertOverlayBackgroundColor);
+            GetAlertOverlayFontSize(window.Width));
 
         // 带标题栏样式：名字在标题栏里，叠加窗（只画信息行）要落到标题栏**下方**的画面左上角，
         // 视觉上仍然是"角色名下方"。GetChromeHeight() 给的是物理像素，正好可以直接相加。

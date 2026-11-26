@@ -297,17 +297,10 @@ internal static class Program
             System.Drawing.Color.FromArgb(255, 255, 255, 255),
             System.Drawing.Color.FromArgb(153, 0, 0, 0),
             "Microsoft YaHei UI",
-            30,
-            System.Drawing.Color.FromArgb(255, 255, 214, 64),
-            System.Drawing.Color.FromArgb(200, 120, 20, 20));
-        Check("预警文字字号可独立设置", Math.Abs(window.InfoFontSize - 30) < 0.01, $"实际 {window.InfoFontSize}");
-        Check("预警文字色可独立配色",
-            window.InfoForeground is SolidColorBrush fg && fg.Color.G > 200 && fg.Color.R > 200,
-            $"实际 {Describe(window.InfoForeground)}");
-        Check("预警背景色可独立配色",
-            window.InfoBackground is SolidColorBrush bg && bg.Color.R > 100 && bg.Color.A == 200,
-            $"实际 {Describe(window.InfoBackground)}");
-        Check("角色名配色不受预警配色影响",
+            30);
+        Check("叠加层字号可独立设置", Math.Abs(window.InfoFontSize - 30) < 0.01, $"实际 {window.InfoFontSize}");
+        Check("叠加层字体可独立设置", window.InfoFontFamily.Source == "Microsoft YaHei UI", $"实际 {window.InfoFontFamily.Source}");
+        Check("角色名配色不受叠加层设置影响",
             window.NameForeground is SolidColorBrush nfg && nfg.Color.R == 255 && nfg.Color.G == 255 && nfg.Color.B == 255,
             $"实际 {Describe(window.NameForeground)}");
 
@@ -508,9 +501,7 @@ internal static class Program
             System.Drawing.Color.FromArgb(255, 255, 255, 255),
             System.Drawing.Color.FromArgb(153, 0, 0, 0),
             "Microsoft YaHei UI",
-            15,
-            System.Drawing.Color.FromArgb(255, 255, 214, 64),
-            System.Drawing.Color.FromArgb(200, 120, 20, 20));
+            15);
         window.SetMaxContentWidth(420);
         window.SetMaxValueRows(2);
         window.Show();
@@ -542,24 +533,32 @@ internal static class Program
         var counts = window.GetChipCounts();
         Check("三段分区：预警 2 / 状态 1 / 数值 4", counts.Intel == 2 && counts.State == 1 && counts.Value == 4,
             $"intel={counts.Intel} state={counts.State} value={counts.Value} overflow={counts.Overflow}");
-        Check("预警胶囊沿用用户文字色",
-            window.AlertChipForeground is SolidColorBrush alertFg
-            && alertFg.Color.R == 255 && alertFg.Color.G == 214 && alertFg.Color.B == 64,
-            Describe(window.AlertChipForeground));
-
-        // 阶段 383：预警与战斗共用同一套文字色 / 背景色（tone 只留色条与状态描边）
-        Check("战斗胶囊与预警共用文字色",
-            window.GetChipForeground(PreviewOverlayChipKind.Damage) is SolidColorBrush damageFg
-            && damageFg.Color.R == 255 && damageFg.Color.G == 214 && damageFg.Color.B == 64
-            && window.GetChipForeground(PreviewOverlayChipKind.State) is SolidColorBrush stateFg
-            && stateFg.Color.R == 255 && stateFg.Color.G == 214 && stateFg.Color.B == 64,
-            Describe(window.GetChipForeground(PreviewOverlayChipKind.Damage)) + " / " + Describe(window.GetChipForeground(PreviewOverlayChipKind.State)));
+        // 阶段 385：恢复分类色，并去掉单独的文字色 / 背景色设置
+        Check("预警胶囊按严重度着色（最近=红 / 最新=黄）",
+            window.GetChipForegroundByLabel("最近") is SolidColorBrush nearestFg
+            && nearestFg.Color.R == 255 && nearestFg.Color.G == 153
+            && window.GetChipForegroundByLabel("最新") is SolidColorBrush latestFg
+            && latestFg.Color.G > 200 && latestFg.Color.B < 60,
+            Describe(window.GetChipForegroundByLabel("最近")) + " / " + Describe(window.GetChipForegroundByLabel("最新")));
+        Check("战斗胶囊恢复分类色（伤害红 / 遥修绿 / 反跳红）",
+            window.GetChipForegroundByLabel("伤害") is SolidColorBrush damageFg
+            && damageFg.Color.R > 200 && damageFg.Color.G < 200
+            && window.GetChipForegroundByLabel("遥修") is SolidColorBrush repFg
+            && repFg.Color.G > 180 && repFg.Color.R < 160
+            && window.GetChipForegroundByLabel("反跳") is SolidColorBrush scramFg
+            && scramFg.Color.R > 200,
+            string.Join(" ", new[]
+            {
+                Describe(window.GetChipForegroundByLabel("伤害")),
+                Describe(window.GetChipForegroundByLabel("遥修")),
+                Describe(window.GetChipForegroundByLabel("反跳")),
+            }));
         var style = window.GetChipStyleSnapshot();
         Check("胶囊外观与日志监控一致（圆角 10 / 无边框 / 同字号）",
             style is { Radius: 10, BorderThickness: 0 } && style.Value.FontSizes.Distinct().Count() == 1,
             style is null ? "null" : $"r={style.Value.Radius} border={style.Value.BorderThickness} fonts={string.Join("/", style.Value.FontSizes.Distinct())}");
-        Check("胶囊底色 = 用户设置的背景色",
-            style?.Background is { } bg && bg.R == 120 && bg.G == 20 && bg.B == 20,
+        Check("胶囊底色按 tone 混合（不透明深色）",
+            style?.Background is { } bg && bg.A == 0xE6 && bg.R > bg.G && bg.R > bg.B,
             style?.Background?.ToString() ?? "null");
         Check("降级预警变淡（0.55）", window.GetIntelChipOpacities().Any(p => Math.Abs(p - 0.55) < 0.01),
             string.Join(" / ", window.GetIntelChipOpacities().Select(p => p.ToString("F2"))));

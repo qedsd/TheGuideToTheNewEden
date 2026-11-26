@@ -3917,15 +3917,12 @@
     <sys:String x:Key="GamePreviewPage_GroupIntel">频道预警</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlert">在预览窗显示预警</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlertTip">预警以胶囊显示在角色名下方：「最近」是当前活跃预警里跳数最小的一条，「最新」是最近收到的一条；两条指向同一星系时合并成一枚。数据来自「频道预警」页中同名角色正在运行的预警。全局开关关闭时不显示。</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">预警胶囊显示在角色名下方，数据来自同名角色的频道预警；字体与颜色在下面的「叠加层样式」里与战斗胶囊一起设置</sys:String>
+    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">预警胶囊显示在角色名下方，数据来自同名角色的频道预警；字体与字号在下面的「叠加层样式」里与战斗胶囊一起设置</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFont">叠加层字体</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFontSize">叠加层字号</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFollowScale">叠加层跟随窗口缩放</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayScaleFactor">叠加层缩放倍率</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayForeground">叠加层文字颜色</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayBackground">叠加层背景色</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayColorTip">支持透明度（#AARRGGBB：如 #99000000 为半透明黑、#FFFFFFFF 为不透明白）；预警胶囊与战斗胶囊共用这套文字色 / 背景色；背景全透明时显示为描边胶囊</sys:String>
-    <sys:String x:Key="GamePreviewPage_IntelStatusGlobalOff">全局已关闭</sys:String>
+                <sys:String x:Key="GamePreviewPage_IntelStatusGlobalOff">全局已关闭</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusOff">已关闭</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusNoSession">未启动同名频道预警</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusReady">可显示预警</sys:String>
@@ -3941,7 +3938,7 @@
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoGlobalTip">关闭时覆盖所有单项设置；打开时由每项的"显示战斗信息"决定</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatOverlayRows">数值最多显示行数</sys:String>
         <sys:String x:Key="GamePreviewPage_GroupOverlayStyle">叠加层样式（预警 + 战斗）</sys:String>
-    <sys:String x:Key="GamePreviewPage_OverlayStyleHint">这里的字体、字号（也是整块 HUD 的基准）、跟随缩放、文字颜色与背景色同时作用于预警胶囊和战斗胶囊；胶囊外观与日志监控小窗的战斗胶囊一致（圆角 10、无边框、同字号，标签与主值加粗），画面上不再额外加底板；底色全透明时补一圈描边。</sys:String>
+    <sys:String x:Key="GamePreviewPage_OverlayStyleHint">字体、字号（也是整块 HUD 的基准）、跟随缩放与缩放倍率同时作用于预警胶囊和战斗胶囊。胶囊颜色由分类决定：红=受损、绿=受益、紫=电子战；预警取 最近=红 / 最新=黄 / 降级=灰。不再单独设置文字色 / 背景色。外观与日志监控小窗的战斗胶囊一致（圆角 10、无边框、同字号，标签与主值加粗）。</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatOverlayRowsTip">叠加层数值区（伤害 / 毁电 / 遥修…）最多显示几行，1–3，默认 2；预警行与状态行各占 1 行、不参与这个预算。放不下的数值折叠成「+N」，伤害永不折叠。</sys:String>
     <sys:String x:Key="GamePreview_OverlayTagNearest">最近</sys:String>
     <sys:String x:Key="GamePreview_OverlayTagLatest">最新</sys:String>

@@ -35,7 +35,7 @@
     --neutral-bd:rgba(255,255,255,.20);
     --plate:rgba(8,11,16,.42);
     --plate-bd:rgba(255,255,255,.08);
-    --alert-fg:#FFFFFF;
+    --alert-fg:#FFFFFF; --caution:#FCE100;
     --alert-bg:rgba(0,0,0,.6);
     --alert-bd:rgba(255,255,255,.34);
     --shield:#5FA8E8; --armor:#D9B45A; --hull:#E06666;
@@ -143,19 +143,24 @@
   }
   .zone{display:flex;flex-wrap:wrap;align-items:center;gap:4px;max-width:100%}
   .zone:empty{display:none}
+  /* tone：红=受损、绿=受益、紫=电子战、黄=预警最新、白=中性 */
+  .chip[data-tone="harm"]{--tone:var(--harm)}
+  .chip[data-tone="benefit"]{--tone:var(--benefit)}
+  .chip[data-tone="ew"]{--tone:var(--ew)}
+  .chip[data-tone="caution"]{--tone:var(--caution)}
+  .chip[data-tone="neutral"]{--tone:var(--neutral)}
   .chip{flex:none;display:inline-flex;align-items:center;white-space:nowrap;border-radius:10px;
-    padding:2px 8px;background:var(--alert-bg,rgba(0,0,0,.6));color:var(--alert-fg,#fff);
-    font-size:var(--chip-fs);line-height:1.2;border:1px solid transparent}
+    padding:2px 8px;background:color-mix(in srgb,var(--tone,#fff) 28%,#12161c);color:var(--tone,#fff);
+    font-size:var(--chip-fs);line-height:1.2;border:0}
   .chip .l{font-weight:600}
   .chip .v{margin-left:4px;font-weight:600}
   .chip .m{margin-left:4px;font-weight:400;opacity:.85}
   .chip .tag{font-weight:600;opacity:.85}
-  .hud[data-outline="1"] .chip{background:transparent;border-color:var(--alert-fg,#fff)}
   .chip[data-dim="1"]{opacity:.55}
   .chip-rep{position:relative;padding-bottom:4px}
   .chip-rep .layers{position:absolute;left:3px;right:3px;bottom:2px;height:2px;display:flex;gap:0;border-radius:1px;overflow:hidden;background:rgba(108,203,95,.16)}
   .chip-rep .layers i{display:block;height:100%}
-  .chip-more{border-radius:10px;padding:1px 6px;font-size:calc(var(--chip-fs) * .92);font-weight:600;color:rgba(255,255,255,.74);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+  .chip-more{--tone:rgba(255,255,255,.85);background:rgba(255,255,255,.10);border-radius:10px;padding:1px 6px;font-size:calc(var(--chip-fs) * .92);font-weight:600;color:rgba(255,255,255,.85)}
   .hud.compact{gap:3px}
   .hud.compact .chip{padding:1px 6px}
   .hud.compact .chip-rep .layers{display:none}
@@ -261,9 +266,9 @@
     <h1>多开预览的叠加层，<br>从「一叠长句」变成<em>一组胶囊</em></h1>
     <p class="lede">
       参考日志监控小窗的战斗日志 UI（阶段 378–381：胶囊流 + 伤害卡片），把多开预览浮窗里名字下方的两块内容一起重做：
-      <b>频道预警</b>从两行纯文本变成用户配色的胶囊，<b>战斗信息</b>从「整类日志拼成一行」变成状态芯片 + 数值胶囊。
+      <b>频道预警</b>从两行纯文本变成胶囊，<b>战斗信息</b>从「整类日志拼成一行」变成状态芯片 + 数值胶囊。
       宽度永远被窗口夹住，预警 / 状态 / 数值三段各自换行，战斗数值放不下折叠成 <b>+N</b>；
-      <b>预警与战斗共用同一套字体 / 文字色 / 背景色</b>（阶段 383），胶囊外观与日志监控的战斗胶囊保持一致（阶段 384），不再额外加底板。
+      胶囊外观与日志监控一致（圆角 10、无边框、同字号），颜色恢复为<b>分类色</b>（红 / 绿 / 紫，预警最近红 / 最新黄 / 降级灰），不再有单独的文字色 / 背景色设置。
     </p>
     <div class="hero-chips">
       <span class="hchip"><b>参考</b>日志监控小窗 · GameLogMsgWindow</span>
@@ -386,7 +391,7 @@
       </div>
       <div class="card">
         <h3><span class="tag good">3</span>与日志监控同构</h3>
-        <p>圆角、内边距、字号语法与「分类 + 数量 + 单位/速率」的写法都与日志监控一致；整块叠加层共用用户配色，画面上只有胶囊自己的底色。</p>
+        <p>圆角、内边距、字号语法与「分类 + 数量 + 单位/速率」的写法都与日志监控一致；颜色也沿用同一套分类色（红=受损 / 绿=受益 / 紫=电子战），画面上只有胶囊自己的底色。</p>
       </div>
       <div class="card">
         <h3><span class="tag good">4</span>跟随用户字号</h3>
@@ -394,7 +399,7 @@
       </div>
       <div class="card" style="grid-column:1/-1">
         <h3><span class="tag good">5</span>预警也在同一套语法里</h3>
-        <p>频道预警不再是一行自由文本，而是「<b>标签 + 跳数 + 分钟</b>」的胶囊：标签说明这是最近还是最新，跳数是主值（越大字越显眼），分钟是新鲜度。它和战斗胶囊共用同一个宽度上限、同一个字号基准与同一套用户配色，外形也一致；标签与跳数让「情报」和「战斗」一眼可分。</p>
+        <p>频道预警不再是一行自由文本，而是「<b>标签 + 跳数 + 分钟</b>」的胶囊：标签说明这是最近还是最新，跳数是主值，分钟是新鲜度。它和战斗胶囊共用同一个宽度上限、同一个字号基准与同一套外形；预警按严重度取色（最近红 / 最新黄 / 降级灰），和战斗的分类色是同一套语义。</p>
       </div>
     </div>
   </section>
@@ -405,7 +410,7 @@
     <p class="sec-note">
       所有胶囊同一外形：<b>圆角 10、无边框、8×2 内边距、同字号</b>（与日志监控小窗的战斗胶囊一致）。
       状态只有名字，数值是「分类 + 主值 + 单位/速率」，预警多一个「标签」位（最近 / 最新）。
-      文字与底色统一取「叠加层样式」，画面上不再额外铺一层底板。
+      颜色按分类：红=受损、绿=受益、紫=电子战、黄=预警最新；画面上不再额外铺一层底板。
     </p>
 
     <div class="anatomy">
@@ -423,8 +428,8 @@
           <span class="fl">INTEL · 预警胶囊</span>
           <div class="hud" style="--fs:22px;--alert-fg:#FFD640;--alert-bg:rgba(120,20,20,.78);--alert-bd:rgba(255,214,64,.55)">
             <div class="zone">
-              <div class="chip chip-intel"><span class="tag">最近</span><span class="v">3</span><span class="m">跳 · 2min</span></div>
-              <div class="chip chip-intel"><span class="tag">最新</span><span class="v">5</span><span class="m">跳 · 0min</span></div>
+              <div class="chip chip-intel" data-tone="harm"><span class="tag">最近</span><span class="v">3</span><span class="m">跳 · 2min</span></div>
+              <div class="chip chip-intel" data-tone="caution"><span class="tag">最新</span><span class="v">5</span><span class="m">跳 · 0min</span></div>
             </div>
           </div>
         </div>
@@ -475,10 +480,11 @@
         <div><i>07</i><b>溢出芯片</b>：<span class="mono">+N</span>，只在有折叠时出现，中性色</div>
       </div>
       <div class="tokens">
-        <div class="tok"><i style="background:#FFD640"></i><b>用户配色</b><code>#FFD640</code><span>示例：预警 + 战斗共用</span></div>
-        <div class="tok"><i style="background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20)"></i><b>圆角 10</b><code>10 px</code><span>与日志监控胶囊一致</span></div>
-        <div class="tok"><i style="background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.25)"></i><b>内边距</b><code>8 × 2</code><span>无边框</span></div>
-        <div class="tok"><i style="background:transparent;border:1px dashed rgba(255,255,255,.22)"></i><b>底板</b><code>不画</code><span>只保留胶囊自身底色</span></div>
+        <div class="tok"><i style="background:#FF99A4"></i><b>受损</b><code>#FF99A4</code><span>伤害 / 毁电 / 吸电 / 反跳 / 最近</span></div>
+        <div class="tok"><i style="background:#6CCB5F"></i><b>受益</b><code>#6CCB5F</code><span>遥修 / 传电</span></div>
+        <div class="tok"><i style="background:#C084FC"></i><b>电子战</b><code>#C084FC</code><span>ECM / 网子 / 标记 / 扰断 / 抑阻</span></div>
+        <div class="tok"><i style="background:#FCE100"></i><b>提示</b><code>#FCE100</code><span>预警「最新」</span></div>
+        <div class="tok"><i style="background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20)"></i><b>圆角 10</b><code>10 px</code><span>无边框 / 内边距 8×2</span></div>
         <div class="tok"><i style="background:#5FA8E8"></i><b>遥修微条</b><code>盾 / 甲 / 构</code><span>#5FA8E8 / #D9B45A / #E06666</span></div>
       </div>
     </div>
@@ -495,7 +501,7 @@
           <tr><td>遥修</td><td>每层一枚胶囊，最多 6 枚</td><td>1 枚聚合 + 2 px 三层微条，明细进悬停</td></tr>
           <tr><td>分类名</td><td>全称（远程感应抑阻器）</td><td>缩写（抑阻），全称进 ToolTip</td></tr>
           <tr><td>过期</td><td>置灰 +「已过期」</td><td>不显示（叠加层只显示未过期行，沿用现状）</td></tr>
-          <tr><td>配色</td><td>分类色写死在胶囊上（红 / 绿 / 紫）</td><td>预警与战斗共用「叠加层样式」的用户配色；胶囊外观与日志监控一致（圆角 10、无边框、同字号）</td></tr>
+          <tr><td>配色</td><td>分类色（红 / 绿 / 紫）</td><td>同一套分类色（红=受损 / 绿=受益 / 紫=电子战）；预警 最近红 / 最新黄 / 降级灰；没有单独的文字色 / 背景色设置</td></tr>
           <tr><td>布局</td><td>固定窗口宽 + 换行 + 滚动</td><td>窗口宽约束 + 预警/状态/数值三段 + 行数折叠；不再加底板</td></tr>
           <tr><td>尺寸</td><td>440×380 独立窗口，可缩放</td><td>贴预览窗左上角，随窗口缩放、跟字号走</td></tr>
         </tbody>
@@ -590,7 +596,7 @@
       <span>状态<b id="mS">—</b></span>
     </div>
     <p class="sec-note" style="margin-top:8px">
-      示例里的叠加层配色（黄字 / 深红底）取自「叠加层样式」里的文字颜色 / 背景色，预警与战斗胶囊共用；默认白字 + 60% 黑底。把背景 alpha 调成 0 会全部变成描边胶囊（见下一节）。
+      颜色按分类自动取（红 / 绿 / 紫，预警最近红 / 最新黄 / 降级灰），不再有单独的文字色 / 背景色设置；把鼠标停在胶囊上可以看到该条的完整详情。
     </p>
   </section>
 
@@ -694,13 +700,16 @@
         </div>
       </div>
       <div class="card">
-        <h3><span class="tag amber">描边</span>叠加层背景色设为全透明时</h3>
-        <p>「叠加层样式」允许把底色设成全透明（「只要文字」）。预警与战斗胶囊都会退化为描边胶囊：保留一圈边框 + 文字与微条，不会看不见。</p>
-        <div class="win" style="width:100%;height:158px;margin-top:12px;--fs:13px;--namefs:18px;--alert-fg:#FFFFFF;--alert-bg:transparent;--alert-bd:rgba(255,255,255,.55)">
-          <div class="scene"><div class="stars"></div><div class="planet"></div></div>
-          <div class="hud-layer">
-            <div class="name">QEDSD</div>
-            <div class="hud" data-outline="1" data-mock="ol" data-scenario="typical" data-intel="outline" data-rows="1"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
+        <h3><span class="tag amber">分类色</span>红 / 绿 / 紫 / 黄</h3>
+        <p>战斗胶囊按分类着色：伤害 / 毁电 / 吸电 / 反跳 = 红，遥修 / 传电 = 绿，ECM / 网子 / 标记 / 扰断 / 抑阻 = 紫；预警「最近」红、「最新」黄、「降级」灰。颜色取主题资源，<b>不再单独设置文字色 / 背景色</b>。</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <div class="hud" style="--fs:16px">
+            <div class="zone">
+              <div class="chip" data-tone="harm"><span class="l">伤害</span><span class="v">209</span></div>
+              <div class="chip" data-tone="benefit"><span class="l">遥修</span><span class="v">123</span></div>
+              <div class="chip" data-tone="ew">ECM</div>
+              <div class="chip" data-tone="caution"><span class="l">最新</span><span class="v">5</span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -713,7 +722,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
           <div class="hud" style="--fs:16px;--alert-fg:#FFD640;--alert-bg:rgba(120,20,20,.78);--alert-bd:rgba(255,214,64,.55)">
             <div class="zone">
-              <div class="chip chip-intel"><span class="tag">最近/最新</span><span class="v">3</span><span class="m">跳 · 2min</span></div>
+              <div class="chip chip-intel" data-tone="harm"><span class="tag">最近/最新</span><span class="v">3</span><span class="m">跳 · 2min</span></div>
             </div>
           </div>
         </div>
@@ -724,8 +733,8 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
           <div class="hud" style="--fs:16px;--alert-fg:#FFD640;--alert-bg:rgba(120,20,20,.78);--alert-bd:rgba(255,214,64,.55)">
             <div class="zone">
-              <div class="chip chip-intel"><span class="tag">最近</span><span class="v">3</span><span class="m">跳 · 2min</span></div>
-              <div class="chip chip-intel" data-dim="1"><span class="tag">最新</span><span class="v">9</span><span class="m">跳 · 12min</span></div>
+              <div class="chip chip-intel" data-tone="harm"><span class="tag">最近</span><span class="v">3</span><span class="m">跳 · 2min</span></div>
+              <div class="chip chip-intel" data-tone="caution" data-dim="1"><span class="tag">最新</span><span class="v">9</span><span class="m">跳 · 12min</span></div>
             </div>
           </div>
         </div>
@@ -757,7 +766,7 @@
         <p>一块底板内三个 zone，各自换行、互不挤压：<b>预警</b>（1 行，最多 2 枚）→ <b>状态</b>（1 行，最多 7 枚）→ <b>数值</b>（1–3 行）。顺序就是重要顺序：先看「周围有没有人」，再看「我能不能跑」，最后看「我还能撑多久」。</p></div></div>
       <div class="rule"><div class="k">R03</div><div class="b">
         <h3>预警胶囊</h3>
-        <p>标签（最近 / 最新 / 最近最新）+ 跳数主值 + 「跳 · Nmin」；配色与战斗胶囊共用「叠加层样式」的<b>文字色 / 背景色</b>，底色 alpha = 0 时一起退化为<b>描边胶囊</b>（阶段 383）。最近与最新指向同一星系时合并成一枚。降级（Downgraded）整枚 55% 不透明，不消失。</p></div></div>
+        <p>标签（最近 / 最新 / 最近最新）+ 跳数主值 + 「跳 · Nmin」；颜色按严重度：<b>最近=红、最新=黄、降级=灰</b>。最近与最新指向同一星系时合并成一枚。降级（Downgraded）整枚 55% 不透明，不消失。</p></div></div>
       <div class="rule"><div class="k">R04</div><div class="b">
         <h3>行数预算与折叠</h3>
         <p>数值区默认最多 2 行（设置可 1–3），超出折叠成 <code>+N</code>；<b>伤害永不折叠</b>。状态行、预警行各固定 1 行，放不下时从优先级最低的开始折叠（其他 → 抑阻 → 扰断 → 标记 → 网子 → ECM → 反跳；预警先折「最新」）。悬停看全部。</p></div></div>
@@ -784,10 +793,10 @@
         <p>战斗行只显示未过期的（沿用现状）；反跳 / 干扰等 sticky 状态不受过期影响，直到清除或停止监控。预警不设过期——由 IntelWindow 的解除 / 降级机制决定它还在不在。</p></div></div>
       <div class="rule"><div class="k">R12</div><div class="b">
         <h3>设置语义：一套配色，两种标识</h3>
-        <p><b>叠加层样式</b>（字体 / 字号 / 跟随缩放 / 缩放倍率 / 文字颜色 / 背景色）同时作用于预警胶囊与战斗胶囊，字号也是整块 HUD 的基准（名字另有独立设置）。胶囊外观与日志监控小窗的战斗胶囊一致：<b>圆角 10、内边距 8×2、无边框、同字号</b>；不再额外画底板，画面上只有胶囊自己的底色。</p></div></div>
+        <p>「叠加层样式」只剩字体 / 字号 / 跟随缩放 / 缩放倍率，同时作用于预警胶囊与战斗胶囊，字号也是整块 HUD 的基准（名字另有独立设置）。<b>颜色恢复为分类色</b>（红=受损 / 绿=受益 / 紫=电子战；预警 最近红 / 最新黄 / 降级灰），<b>不再提供文字色 / 背景色设置</b>。胶囊外观与日志监控一致：圆角 10、内边距 8×2、无边框、同字号；不再额外画底板。</p></div></div>
       <div class="rule"><div class="k">R13</div><div class="b">
         <h3>主题与对比</h3>
-        <p>胶囊文字 / 底色由用户指定，不做自动反差（沿用现状）；底色全透明时补一圈文字色描边，避免只剩文字。</p></div></div>
+        <p>胶囊颜色来自主题资源（深色 <span class="mono">#FF99A4 / #6CCB5F / #FCE100</span>，浅色 <span class="mono">#C42B1C / #0F7B0F / #9D5D00</span>），底色是 tone 28% 混深色底的一层实色，保证在游戏画面上可读。</p></div></div>
     </div>
   </section>
 
@@ -811,7 +820,7 @@
     <span class="k">string</span> Value = <span class="s">""</span>,
     <span class="k">string</span> Unit = <span class="s">""</span>,
     <span class="k">string</span> Meta = <span class="s">""</span>,    <span class="c">// 速率 22.5GJ/s 或预警的 2min（同用 0.66× 档）</span>
-    <span class="k">string</span> Tone = <span class="s">"neutral"</span>,          <span class="c">// harm / benefit / ew / neutral / alert</span>
+    <span class="k">string</span> Tone = <span class="s">"neutral"</span>,          <span class="c">// harm / benefit / ew / caution / neutral</span>
     IReadOnlyList&lt;<span class="k">double</span>&gt;? LayerShare = <span class="k">null</span>, <span class="c">// 遥修：盾/甲/构 占比</span>
     <span class="k">bool</span> Dimmed = <span class="k">false</span>);                    <span class="c">// 预警被降级 / 行已过期</span>
 
@@ -892,32 +901,28 @@
   &lt;/Border&gt;
 &lt;/StackPanel&gt;</code></pre>
 
-        <div class="code-title" style="margin-top:16px"><span>5 · 预警胶囊模板（按 Tone 选配色）</span><span>样式</span></div>
-        <pre class="code"><code><span class="c">&lt;!-- Tone="alert"：绑定用户设置。AlertBackground / AlertBorder 由 VM 算好：
-     AlertBorder = 底色 alpha=0 ? 文字色 : 文字色 30%；Outline 就是 alpha=0 --&gt;</span>
-&lt;Border x:Name=<span class="s">"Chip"</span> CornerRadius=<span class="s">"6"</span> Padding=<span class="s">"0,2"</span>&gt;
-  &lt;Border.Style&gt;
-    &lt;Style TargetType=<span class="s">"Border"</span>&gt;
-      &lt;Setter Property=<span class="s">"Background"</span> Value=<span class="s">"{Binding AlertBackground}"</span> /&gt;
-      &lt;Setter Property=<span class="s">"BorderBrush"</span> Value=<span class="s">"{Binding AlertBorder}"</span> /&gt;
-      &lt;Style.Triggers&gt;
-        &lt;DataTrigger Binding=<span class="s">"{Binding Outline}"</span> Value=<span class="s">"True"</span>&gt;
-          &lt;Setter Property=<span class="s">"Background"</span> Value=<span class="s">"Transparent"</span> /&gt;
-        &lt;/DataTrigger&gt;
-        &lt;DataTrigger Binding=<span class="s">"{Binding Dimmed}"</span> Value=<span class="s">"True"</span>&gt;
-          &lt;Setter Property=<span class="s">"Opacity"</span> Value=<span class="s">"0.55"</span> /&gt;
-        &lt;/DataTrigger&gt;
-      &lt;/Style.Triggers&gt;
-    &lt;/Style&gt;
-  &lt;/Border.Style&gt;
-&lt;/Border&gt;</code></pre>
+        <div class="code-title" style="margin-top:16px"><span>5 · PreviewNameOverlayWindow.CreateChip</span><span>按 tone 着色</span></div>
+        <pre class="code"><code><span class="c">// 阶段 385：颜色由分类决定；预警按 Severity 映射（最近=harm / 最新=caution / 降级=neutral）</span>
+<span class="k">var</span> tone = isIntel ? ToneOfSeverity(item.Severity) : chip.Tone;
+<span class="k">var</span> border = <span class="k">new</span> Border
+{
+    CornerRadius = <span class="k">new</span> CornerRadius(10),
+    BorderThickness = <span class="k">new</span> Thickness(0),        <span class="c">// 无边框（与日志监控一致）</span>
+    Background = ToneSurfaceBrush(tone),           <span class="c">// tone 28% 混深色底，保证游戏画面上可读</span>
+    Opacity = chip.Dimmed ? 0.55 : 1.0,            <span class="c">// 降级预警变淡</span>
+};
+
+<span class="c">// 文字：ToneBrush(tone)；标签 / 主值 SemiBold、说明 Normal，三者同一字号</span>
+content.Children.Add(ChipText(chip.Label, FontWeights.SemiBold, isIntel ? 0.85 : 1.0, ToneBrush(tone)));
+content.Children.Add(ChipText(chip.Value, FontWeights.SemiBold, 1.0, ToneBrush(tone), 4));
+content.Children.Add(ChipText(metaText, FontWeights.Normal, 0.85, ToneBrush(tone), 4));</code></pre>
 
         <div class="code-title" style="margin-top:16px"><span>6 · GamePreviewWindow.xaml.cs</span><span>宽度传递</span></div>
         <pre class="code"><code><span class="c">// UpdateNameOverlayBounds：把窗口宽度交给叠加层，它自己决定怎么换行</span>
 <span class="k">var</span> clientWidth = (window.Width - thickness.Left - thickness.Right) / dpi.DpiScaleX;
 _nameOverlay.SetMaxContentWidth(Math.Max(160, clientWidth - 12));</code></pre>
 
-        <div class="code-title" style="margin-top:16px"><span>7 · 语言键（zh / en 各 +17）</span><span>短标签</span></div>
+        <div class="code-title" style="margin-top:16px"><span>7 · 语言键（阶段 382 新增 17；阶段 385 删除 3 个颜色键）</span><span>短标签</span></div>
         <pre class="code"><code>CombatShort_Scram          反跳 / Scram
 CombatShort_Ecm            ECM / ECM
 CombatShort_Web            网子 / Web
@@ -987,7 +992,7 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
   </section>
 
   <footer>
-    <div>多开预览 · 预警与战斗 HUD 重设计 · 已落地（阶段 382–384） · 2026-11-25</div>
+    <div>多开预览 · 预警与战斗 HUD 重设计 · 已落地（阶段 382–385） · 2026-11-26</div>
     <div>参考：阶段 378–381 日志监控小窗 / 现状：阶段 355 预警行 · 357–370 战斗行</div>
   </footer>
 </div>
@@ -1061,12 +1066,6 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
       {tag:"latest", jumps:9, minutes:12, dim:true,
        detail:"Tama · 9 跳 · 12min\n情报频道 · Aria: Tama 一条截击（已降级）"}
     ],
-    outline: [
-      {tag:"nearest", jumps:3, minutes:2, dim:false, outline:true,
-       detail:"Jita · 3 跳 · 2min\n本地频道 · QEDSD: 3 跳 Jita 有敌对"},
-      {tag:"latest", jumps:5, minutes:0, dim:false, outline:true,
-       detail:"Tama · 5 跳 · 0min\n情报频道 · Aria: Tama 一条截击"}
-    ],
     none: []
   };
 
@@ -1112,7 +1111,8 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
 
   function makeIntelChip(it){
     var el = document.createElement("div");
-    el.className = "chip chip-intel" + (it.outline ? " outline" : "");
+    el.className = "chip chip-intel";
+    el.dataset.tone = it.tag === "latest" ? "caution" : "harm";
     if (it.dim) el.dataset.dim = "1";
     el.innerHTML = '<span class="tag">' + (INTEL_TAG[it.tag] || it.tag) + '</span>' +
                    '<span class="v">' + it.jumps + '</span>' +

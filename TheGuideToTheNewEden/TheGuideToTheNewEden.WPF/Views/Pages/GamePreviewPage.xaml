@@ -1823,31 +1823,6 @@
                                         </StackPanel>
 
                                         <Border Style="{StaticResource RowDivider}" />
-                                        <Grid Style="{StaticResource Row}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                Style="{StaticResource RowLabel}"
-                                                Text="{DynamicResource GamePreviewPage_AlertOverlayForeground}"
-                                                ToolTip="{DynamicResource GamePreviewPage_AlertOverlayColorTip}" />
-                                            <pickers:ColorPickerButton Grid.Column="1" Color="{Binding SelectedSetting.AlertOverlayForegroundColor, Mode=TwoWay}" />
-                                        </Grid>
-                                        <Border Style="{StaticResource RowDivider}" />
-
-                                        <Grid Style="{StaticResource Row}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                Style="{StaticResource RowLabel}"
-                                                Text="{DynamicResource GamePreviewPage_AlertOverlayBackground}"
-                                                ToolTip="{DynamicResource GamePreviewPage_AlertOverlayColorTip}" />
-                                            <pickers:ColorPickerButton Grid.Column="1" Color="{Binding SelectedSetting.AlertOverlayBackgroundColor, Mode=TwoWay}" />
-                                        </Grid>
-                                        <Border Style="{StaticResource RowDivider}" />
                                         <TextBlock
                                             Margin="12,8,12,10"
                                             Style="{StaticResource Hint}"

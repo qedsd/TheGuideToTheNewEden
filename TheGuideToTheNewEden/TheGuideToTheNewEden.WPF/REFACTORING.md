@@ -1,4 +1,5 @@
 ﻿# TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 385：叠加层恢复**分类色**（红=受损 / 绿=受益 / 紫=电子战；预警 最近=红 / 最新=黄 / 降级=灰），并**去掉单独的文字颜色 / 背景色设置**（`PreviewItem.AlertOverlayForegroundColor/BackgroundColor` 连同设置页两行、三个语言键一起删除，共 3810 键）；胶囊底色改为"tone 混深色底"的一层实色，`OverlayProbe` 67 项全 PASS。
 - 阶段 384：多开叠加层去掉多余的底板底色，胶囊外观与日志监控小窗的战斗胶囊对齐——圆角 10、内边距 8×2、无边框、无左侧色条、标签 / 主值 / 说明**同字号**（标签与主值 SemiBold）；文字与底色仍取「叠加层样式」的用户配色，底色全透明时才补一圈描边；`OverlayProbe` 新增外观断言（共 68 项全 PASS）。
 - 阶段 383：多开叠加层**配色统一**——预警胶囊与战斗胶囊共用「叠加层样式」里的字体 / 字号 / 跟随缩放 / 文字颜色 / 背景色；战斗分类语义退化为左侧色条（伤害 3px、其它 2px）与状态胶囊的 tone 描边；设置页把外观设置从「频道预警」卡片移出，独立成「叠加层样式（预警 + 战斗）」组；语言键 +2（共 3813）。
 - 阶段 382：多开预览叠加层**胶囊化重做**——频道预警的两行文本与战斗的整行文本统一改成「预警 → 状态 → 数值」三 zone 的胶囊 HUD（同一块底板、宽度夹在预览窗内、数值区 1–3 行、超出折叠成 `+N`、伤害永不折叠、遥修三层聚合成一枚 + 盾/甲/构微条）；预警沿用用户配色、底色透明时退化为描边、降级变淡；新增「数值最多显示行数」设置；语言键 +17。
@@ -14564,6 +14565,61 @@ neut  出：45 GJ能量中和QEDSD - 小型能量中和器 I*                   
 - 去掉分类色后，**伤害 / 收益 / 电子战只能靠文字标签区分**（这是用户要求"一套配色 + 同款胶囊"的直接结果）；遥修仍有底部微条。
 - 伤害胶囊不再放大主值、也没有色条，与普通数值胶囊仅差标签；如果以后想恢复强调，可在不放底板的前提下给主值加 1 档字号。
 - 底板去掉后，胶囊直接压在游戏画面上；亮背景下的可读性靠胶囊自身的用户底色（默认 60% 黑底）。
+
+---
+
+## 阶段 385：恢复分类色，去掉单独的文字 / 背景色设置（2026-11-26）
+
+### 背景（用户反馈）
+
+> "恢复分类色（红/绿/紫），去掉单独的背景颜色、文字颜色设置"
+
+阶段 383/384 为了"一套配色"，把所有胶囊都改成用户自选色；用户实际更想要日志监控那种**分类色**，
+并且不想再维护单独的文字色 / 背景色。
+
+### 口径
+
+- 胶囊颜色恢复为 **tone**：
+  - 红（`SystemFillColorCritical`）= 伤害 / 毁电 / 吸电 / 反跳；
+  - 绿（`SystemFillColorSuccess`）= 遥修 / 传电；
+  - 紫（#C084FC）= ECM / 网子 / 标记 / 扰断 / 抑阻 / 其他电子战；
+  - 黄（`SystemFillColorCaution`）= 预警「最新」；
+  - 灰（`TextFillColorPrimary`）= 预警「降级」/ 溢出 `+N`。
+- 预警没有战斗分类，按 **Severity** 映射：最近（Critical）= 红、最新（Caution）= 黄、降级（Normal）= 灰。
+- 去掉 `AlertOverlayForegroundColor` / `AlertOverlayBackgroundColor`：模型、设置页两行、`ApplyAppearance` 的两个参数、
+  相关属性变更监听与三个语言键（`..._AlertOverlayForeground/Background/ColorTip`）全部删除。
+- 胶囊底色改为 **tone 28% 混深色底**的一层实色（alpha 0xE6）：叠加层没有底板，必须在游戏画面上仍有对比。
+- 保留阶段 384 的外观：圆角 10、无边框、8×2、同字号、标签与主值 SemiBold；遥修底部微条不变。
+- 文本行（日志监控命中等低频内容）恢复固定样式：白字 + #99000000 底。
+
+### 变更明细
+
+- `Core/Models/GamePreviews/PreviewItem.cs`：删除两个颜色属性。
+- `ViewModels/GamePreview/GamePreviewViewModel.cs` / `Services/GamePreview/PreviewWindowManager.cs`：删除克隆这两个字段的两行。
+- `Views/Pages/GamePreviewPage.xaml`：删除「叠加层文字颜色 / 背景色」两行（含 ColorTip）。
+- `Views/Windows/GamePreviewWindow.xaml.cs`：`ApplyAppearance` 只传字体 / 字号；删除两个颜色相关的 PropertyChanged。
+- `Views/Windows/PreviewNameOverlayWindow.xaml(.cs)`：删除 `InfoForeground/InfoBackground` DP 与预警画刷；
+  `CreateChip` 按 tone 着色（预警按 Severity），新增 `ToneOfSeverity/ToneColor/ToneBrush/ToneSurfaceBrush`；
+  文本行模板改固定白字 + 半透明黑底；调试钩子改为 `GetChipForegroundByLabel` / `GetChipStyleSnapshot`。
+- 语言键 zh/en 各 **−3**（3813 → 3810），更新 `OverlayStyleHint` 描述。
+- 手册 `game-preview.md` / `channel/intel.md` 同步；设计稿恢复红/绿/紫并删除颜色设置相关文案。
+
+### 验证
+
+- `dotnet build`（WPF + OverlayProbe + LogWindowProbe + AssistantProbe）：0 错误。
+- `probe/OverlayProbe`：**67 项全 PASS**，新增/改写：
+  - 「预警胶囊按严重度着色」：最近 `#FF99A4`、最新 `#FCE100`；
+  - 「战斗胶囊恢复分类色」：伤害 `#FF99A4`、遥修 `#6CCB5F`、反跳 `#FF99A4`；
+  - 「胶囊底色按 tone 混合」：`#E6543B42`（不透明深色）；
+  - 原有圆角 10 / 无边框 / 同字号 / 折叠 / 宽度 / 空状态断言保持 PASS。
+- zh/en 语言键各 3810 条、键集一致、无重复。
+
+### 已知限制
+
+- 分类色来自主题资源：深色主题是 #FF99A4 / #6CCB5F / #FCE100，浅色主题是 #C42B1C / #0F7B0F / #9D5D00；
+  用户不能再自定义（这是本次要求的直接结果）。
+- 预警「最新」是黄色，在极亮的画面上对比度不如红/紫；胶囊底色已加 28% tone 混合，必要时可把 mix 调高。
+- 旧的 `GamePreviewSetting.json` 里仍留着两个颜色字段（反序列化时被忽略），不影响使用。
 
 ---
 
