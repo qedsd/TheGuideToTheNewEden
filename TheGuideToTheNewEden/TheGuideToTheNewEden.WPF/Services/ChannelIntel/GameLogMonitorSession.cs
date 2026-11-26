@@ -1,6 +1,11 @@
-﻿using System.Windows;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.Core.Models.CombatLog;
+using TheGuideToTheNewEden.Core.Services.CombatLog;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services.CombatLog;
@@ -10,45 +15,78 @@ using TheGuideToTheNewEden.WPF.Views.Windows;
 namespace TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 
 /// <summary>
-/// 日志监控会话（对齐 WinUI 版 <c>Models/GameLogMonitor</c>）：一个"角色 + 一个日志配置"对应一个会话。
+/// 日志监控会话（阶段 362）：**一个角色一个会话**，多个 <see cref="GameLogItemConfig"/> 只是同一份
+/// 日志上的不同关键词过滤器，共用同一个 <see cref="GameLogItem"/>、同一个窗口和一个读取线程。
 /// <list type="bullet">
-///   <item>把 Core 的 <see cref="GameLogItem"/> 注册到 <see cref="Core.Services.ObservableFileService"/>（增量读日志、正则标记命中）；</item>
-///   <item><b>模式 0（出现关键词时通知）</b>：命中即通知；</item>
-///   <item><b>模式 1（停止出现关键词后通知）</b>：命中只记录时间，1 秒轮询发现"超过判定间隔没有再命中"才通知一次；</item>
-///   <item>通知走三通道：弹窗（<see cref="GameLogMsgWindow"/>，与频道监控共用）/ 声音（复用 <see cref="SoundNotifyItem"/>）/ 托盘气泡。</item>
+///   <item>一个 <see cref="GameLogItem"/>：合成配置的关键词是所有配置的并集，只负责增量读日志；</item>
+///   <item>每条新日志按各配置自己的正则判断命中；模式 0 命中即通知，模式 1 只记时间由统一定时器判定；</item>
+///   <item>窗口每角色一个，消息标签用配置名区分；声音按配置分别播放；</item>
+///   <item>战斗日志仍由 <see cref="CombatLogFeedService"/> 单独解析，但共用同一个窗口（窗口注册表按角色合并）。</item>
 /// </list>
 /// </summary>
 public sealed class GameLogMonitorSession
 {
     public GameLogInfo Info { get; }
 
-    public GameLogItemConfig Config { get; }
+    public IReadOnlyList<GameLogItemConfig> Configs { get; }
 
-    /// <summary>会话键（配置 GUID，会话内稳定）。</summary>
-    public string Key => Config.GUID;
-
-    /// <summary>实际被监控的文件（游戏日志为日志文件本身；异常日志为同名的线程日志文件）。</summary>
+    /// <summary>实际被监控的文件（游戏日志为日志文件本身）。</summary>
     public string FilePath { get; }
 
+    public int ListenerID => Info.ListenerID;
+
+    private sealed class ConfigState
+    {
+        public DateTime LastTriggeredTime = DateTime.MaxValue;
+    }
+
     private readonly GameLogItem _gameLogItem;
+    private readonly Dictionary<string, ConfigState> _states = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, SoundNotifyItem> _sounds = new(StringComparer.OrdinalIgnoreCase);
     private GameLogMsgWindow? _msgWindow;
-    private SoundNotifyItem? _sound;
     private System.Timers.Timer? _delayTimer;
-    private DateTime _lastTriggeredTime = DateTime.MaxValue;
     private readonly object _locker = new();
     private bool _showShipInTitle;
+    private int _windowOpacity;
     private bool _running;
+    private bool _combatEnabled;
+    private bool _combatAttached;
 
     /// <summary>原始内容更新（供页面着色显示）。</summary>
     public event GameLogItem.ContentUpdate? OnContentUpdate;
 
-    public GameLogMonitorSession(GameLogInfo info, GameLogItemConfig config, string filePath, bool showShipInTitle = true)
+    public GameLogMonitorSession(
+        GameLogInfo info,
+        IReadOnlyList<GameLogItemConfig> configs,
+        string filePath,
+        bool showShipInTitle = true,
+        int windowOpacity = 100,
+        bool combatEnabled = false)
     {
         Info = info;
-        Config = config;
+        Configs = configs ?? Array.Empty<GameLogItemConfig>();
         FilePath = filePath;
         _showShipInTitle = showShipInTitle;
-        _gameLogItem = new GameLogItem(info, config, filePath);
+        _windowOpacity = windowOpacity;
+        _combatEnabled = combatEnabled;
+
+        foreach (var config in Configs)
+        {
+            _states[config.GUID] = new ConfigState();
+        }
+
+        // 一个角色只读一份文件：把各配置的关键词并集交给 GameLogItem，只用于标记 Important；
+        // 真正的"哪条命中哪个配置"在 OnContentUpdate 里按配置自己的正则判断。
+        var monitorConfig = new GameLogItemConfig(0) { ConfigName = "monitor" };
+        foreach (var config in Configs)
+        {
+            foreach (var key in config.Keys)
+            {
+                monitorConfig.Keys.Add(key);
+            }
+        }
+
+        _gameLogItem = new GameLogItem(info, monitorConfig, filePath);
     }
 
     /// <summary>切换标题里的舰船显示（对已打开的窗口即时生效）。</summary>
@@ -58,8 +96,12 @@ public sealed class GameLogMonitorSession
         _msgWindow?.SetShowShip(show);
     }
 
-    /// <summary>设置窗口背板不透明度（阶段 361；窗口按该角色的设置创建，这里管即时生效）。</summary>
-    public void SetWindowOpacity(int opacity) => _msgWindow?.SetWindowOpacity(opacity);
+    /// <summary>设置窗口背板不透明度（阶段 361）。</summary>
+    public void SetWindowOpacity(int opacity)
+    {
+        _windowOpacity = opacity;
+        _msgWindow?.SetWindowOpacity(opacity);
+    }
 
     /// <summary>开始监控；注册失败返回 false。</summary>
     public bool Start()
@@ -75,23 +117,23 @@ public sealed class GameLogMonitorSession
         var dispatcher = Application.Current?.Dispatcher;
         dispatcher?.Invoke(() =>
         {
-            if (Config.WindowNotify)
+            if (Configs.Any(p => p.WindowNotify) || _combatEnabled)
             {
-                var opacity = GameLogInfoSettingService.GetValue(Info.ListenerID)?.WindowOpacity ?? 100;
                 Func<string> titleProvider = () => Info.ListenerName;
                 _msgWindow = GameLogWindowRegistry.Acquire(
                     Info.ListenerName,
-                    "monitor:" + Config.GUID,
+                    "monitor",
                     () => new GameLogMsgWindow(
                         Info.ListenerName,
                         Info.ListenerName,
                         showShip: _showShipInTitle,
                         titleProvider: titleProvider,
-                        windowOpacity: opacity,
-                        settingListenerId: Info.ListenerID));
+                        windowOpacity: _windowOpacity,
+                        settingListenerId: Info.ListenerID,
+                        combatOnly: !Configs.Any(p => p.WindowNotify)));
                 _msgWindow.EnableMonitor();
                 _msgWindow.SetTitleProvider(titleProvider);
-                _msgWindow.OnHided += (_, _) => _sound?.StopSound();
+                _msgWindow.OnHided += (_, _) => StopSounds();
                 _msgWindow.OnShowGameButtonClick += (_, _) =>
                 {
                     GameWindowHelper.BringGameToFront(Info.ListenerName);
@@ -99,13 +141,22 @@ public sealed class GameLogMonitorSession
                 };
             }
 
-            if (Config.SoundNotify)
+            foreach (var config in Configs)
             {
-                _sound = new SoundNotifyItem(Info.ListenerName);
+                if (config.SoundNotify)
+                {
+                    _sounds[config.GUID] = new SoundNotifyItem(Info.ListenerName);
+                }
             }
         });
 
-        if (Config.MonitorMode == 1)
+        if (_combatEnabled)
+        {
+            CombatLogStateCenter.Current.Attach(Info.ListenerName);
+            _combatAttached = true;
+        }
+
+        if (Configs.Any(p => p.MonitorMode == 1))
         {
             StartDelayTimer();
         }
@@ -120,26 +171,37 @@ public sealed class GameLogMonitorSession
             var contents = news as IList<GameLogContent> ?? news.ToList();
             OnContentUpdate?.Invoke(item, contents);
 
-            var important = contents.Where(p => p.Important).ToList();
-            if (important.Count == 0)
+            foreach (var content in contents)
             {
-                return;
-            }
-
-            if (Config.MonitorMode == 0)
-            {
-                // 模式 0：命中即通知
-                foreach (var content in important)
+                var source = content.SourceContent;
+                if (string.IsNullOrEmpty(source))
                 {
-                    Notify(content.SourceContent);
+                    continue;
                 }
-            }
-            else
-            {
-                // 模式 1：只刷新最后命中时间，由定时器判定"已停止触发"
-                lock (_locker)
+
+                if (_combatEnabled)
                 {
-                    _lastTriggeredTime = DateTime.Now;
+                    ParseCombat(content);
+                }
+
+                foreach (var config in Configs)
+                {
+                    if (!Matches(config, source))
+                    {
+                        continue;
+                    }
+
+                    if (config.MonitorMode == 0)
+                    {
+                        Notify(config, source);
+                    }
+                    else if (_states.TryGetValue(config.GUID, out var state))
+                    {
+                        lock (_locker)
+                        {
+                            state.LastTriggeredTime = DateTime.Now;
+                        }
+                    }
                 }
             }
         }
@@ -149,7 +211,71 @@ public sealed class GameLogMonitorSession
         }
     }
 
-    /// <summary>模式 1 的判定定时器：1 秒轮询，超过判定间隔未再命中则通知一次。</summary>
+    private void ParseCombat(GameLogContent content)
+    {
+        try
+        {
+            var ev = CombatLogParser.TryParse(content, Info.ListenerName);
+            if (ev is null)
+            {
+                return;
+            }
+
+            CombatCategoryResolver.Resolve(ev);
+            CombatLogStateCenter.Current.Report(Info.ListenerName, ev);
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+        }
+    }
+
+    /// <summary>运行中切换战斗日志开关：只影响是否解析战斗行，不重启关键词监控。</summary>
+    public void SetCombatEnabled(bool enabled)
+    {
+        if (_combatEnabled == enabled)
+        {
+            return;
+        }
+
+        _combatEnabled = enabled;
+        if (!_running)
+        {
+            return;
+        }
+
+        if (enabled && !_combatAttached)
+        {
+            CombatLogStateCenter.Current.Attach(Info.ListenerName);
+            _combatAttached = true;
+        }
+        else if (!enabled && _combatAttached)
+        {
+            CombatLogStateCenter.Current.Detach(Info.ListenerName);
+            _combatAttached = false;
+        }
+    }
+    private static bool Matches(GameLogItemConfig config, string content)
+    {
+        foreach (var key in config.Keys)
+        {
+            try
+            {
+                if (Regex.IsMatch(content, key.Pattern))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // 单个非法正则不影响其他关键词
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>模式 1 的统一判定定时器：1 秒轮询所有配置，各自超过判定间隔后通知一次。</summary>
     private void StartDelayTimer()
     {
         _delayTimer = new System.Timers.Timer
@@ -161,20 +287,29 @@ public sealed class GameLogMonitorSession
         {
             try
             {
-                var expired = false;
-                lock (_locker)
+                var now = DateTime.Now;
+                foreach (var config in Configs)
                 {
-                    if (_lastTriggeredTime != DateTime.MaxValue
-                        && (DateTime.Now - _lastTriggeredTime).TotalSeconds > Config.DisappearDelay)
+                    if (config.MonitorMode != 1 || !_states.TryGetValue(config.GUID, out var state))
                     {
-                        _lastTriggeredTime = DateTime.MaxValue;
-                        expired = true;
+                        continue;
                     }
-                }
 
-                if (expired)
-                {
-                    Notify(FindString("GameLogMonitorPage_DelayExpireTip"));
+                    bool expired;
+                    lock (_locker)
+                    {
+                        expired = state.LastTriggeredTime != DateTime.MaxValue
+                                  && (now - state.LastTriggeredTime).TotalSeconds > config.DisappearDelay;
+                        if (expired)
+                        {
+                            state.LastTriggeredTime = DateTime.MaxValue;
+                        }
+                    }
+
+                    if (expired)
+                    {
+                        Notify(config, FindString("GameLogMonitorPage_DelayExpireTip"));
+                    }
                 }
             }
             catch (Exception ex)
@@ -199,11 +334,10 @@ public sealed class GameLogMonitorSession
         _delayTimer.Start();
     }
 
-    /// <summary>弹窗 + 声音 + 托盘通知。</summary>
-    private void Notify(string message)
+    /// <summary>弹窗 + 声音 + 托盘通知（按配置自己的通知设置）。</summary>
+    private void Notify(GameLogItemConfig config, string message)
     {
-        // 阶段 357：命中同时写进"最近命中"中心（多开叠加层的可选开关用）
-        CombatLog.GameLogMonitorHitCenter.Current.Report(Info.ListenerName, Config.ConfigName, message);
+        GameLogMonitorHitCenter.Current.Report(Info.ListenerName, config.ConfigName, message);
 
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
@@ -215,22 +349,22 @@ public sealed class GameLogMonitorSession
         {
             try
             {
-                if (Config.WindowNotify && _msgWindow is not null)
+                if (config.WindowNotify && _msgWindow is not null)
                 {
-                    _msgWindow.Show(message, Config.ConfigName);
+                    _msgWindow.Show(message, config.ConfigName);
                 }
 
-                if (Config.SoundNotify && _sound is not null)
+                if (config.SoundNotify && _sounds.TryGetValue(config.GUID, out var sound))
                 {
-                    _sound.Play(new ChannelIntelSoundSetting
+                    sound.Play(new ChannelIntelSoundSetting
                     {
-                        FilePath = Config.SoundFile,
+                        FilePath = config.SoundFile,
                         Volume = 100,
-                        Loop = Config.RepeatSound,
+                        Loop = config.RepeatSound,
                     });
                 }
 
-                if (Config.SystemNotify)
+                if (config.SystemNotify)
                 {
                     NotificationService.Show($"{FindString("Nav.GameLogMonitor")} - {Info.ListenerName}", message);
                 }
@@ -242,16 +376,23 @@ public sealed class GameLogMonitorSession
         });
     }
 
-    /// <summary>停止本次提醒（暂停声音、隐藏弹窗）；不停止监控本身。</summary>
+    /// <summary>用户关闭/隐藏窗口时停掉所有声音。</summary>
     public void StopNotify()
     {
+        StopSounds();
         var dispatcher = Application.Current?.Dispatcher;
-        dispatcher?.Invoke(() =>
-        {
-            _sound?.StopSound();
-            _msgWindow?.HideWindow();
-        });
+        dispatcher?.Invoke(() => _msgWindow?.HideWindow());
     }
+
+    private void StopSounds()
+    {
+        foreach (var sound in _sounds.Values)
+        {
+            sound.StopSound();
+        }
+    }
+
+    public void ShowWindow() => _msgWindow?.ShowWindow();
 
     public void Stop()
     {
@@ -263,19 +404,23 @@ public sealed class GameLogMonitorSession
         _gameLogItem.OnContentUpdate -= GameLogItem_OnContentUpdate;
         Core.Services.ObservableFileService.Remove(_gameLogItem);
 
+        if (_combatAttached)
+        {
+            CombatLogStateCenter.Current.Detach(Info.ListenerName);
+            _combatAttached = false;
+        }
+
         var dispatcher = Application.Current?.Dispatcher;
         dispatcher?.Invoke(() =>
         {
-            _sound?.Dispose();
-            _sound = null;
-
-            var owner = "monitor:" + Config.GUID;
-            if (!GameLogWindowRegistry.HasOtherMonitorOwner(Info.ListenerName, owner))
+            foreach (var sound in _sounds.Values)
             {
-                _msgWindow?.DisableMonitor();
+                sound.Dispose();
             }
 
-            GameLogWindowRegistry.Release(Info.ListenerName, owner);
+            _sounds.Clear();
+            _msgWindow?.DisableMonitor();
+            GameLogWindowRegistry.Release(Info.ListenerName, "monitor");
             _msgWindow = null;
         });
     }

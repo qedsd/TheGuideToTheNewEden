@@ -61,7 +61,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         // 阶段 355：频道预警会话启停 → 单项设置里的"是否可以显示预警"状态徽标要立刻变
         Services.ChannelIntel.ChannelIntelAlertCenter.Current.ListenersChanged += OnChannelIntelListenersChanged;
         // 阶段 357：战斗日志会话启停 → "是否可以显示战斗信息"状态徽标
-        Services.CombatLog.CombatLogFeedService.Current.RunningChanged += OnCombatFeedRunningChanged;
+        Services.CombatLog.CombatLogStateCenter.Current.Changed += OnCombatStateChanged;
 
         _processMonitor = new System.Windows.Threading.DispatcherTimer
         {
@@ -172,7 +172,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                 name = process.Setting?.Name;
             }
 
-            return Services.CombatLog.CombatLogFeedService.Current.IsRunning(name);
+            return Services.CombatLog.CombatLogStateCenter.Current.IsAttached(name);
         }
     }
 
@@ -1338,7 +1338,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(SelectedCombatFeedRunning));
     }
 
-    private void OnCombatFeedRunningChanged()
+    private void OnCombatStateChanged(string listener)
     {
         OnPropertyChanged(nameof(SelectedCombatFeedRunning));
     }
@@ -2055,7 +2055,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
 
         _setting.PropertyChanged -= OnGlobalSettingPropertyChanged;
         Services.ChannelIntel.ChannelIntelAlertCenter.Current.ListenersChanged -= OnChannelIntelListenersChanged;
-        Services.CombatLog.CombatLogFeedService.Current.RunningChanged -= OnCombatFeedRunningChanged;
+        Services.CombatLog.CombatLogStateCenter.Current.Changed -= OnCombatStateChanged;
         GamePreviewSettingService.Current.Save();
         PropertyChanged = null;
     }

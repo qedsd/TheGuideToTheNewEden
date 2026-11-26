@@ -93,9 +93,9 @@ public partial class GameLogMonitorPage : Page, IAssistantFeatureRuntime
         }
     }
 
-    private void OnStartClick(object sender, RoutedEventArgs e) => _viewModel.StartAll();
+    private void OnStartClick(object sender, RoutedEventArgs e) => _viewModel.Start();
 
-    private void OnStopClick(object sender, RoutedEventArgs e) => _viewModel.StopAll();
+    private void OnStopClick(object sender, RoutedEventArgs e) => _viewModel.Stop();
 
     private void OnStopNotifyClick(object sender, RoutedEventArgs e) => _viewModel.StopNotify();
 

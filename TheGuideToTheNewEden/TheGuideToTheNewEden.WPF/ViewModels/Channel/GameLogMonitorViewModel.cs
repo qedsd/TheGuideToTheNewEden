@@ -18,7 +18,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Channel;
 /// 日志监控页：左侧角色列表（每个角色取最新一天的日志文件），中间按配置页签设置监控
 /// （配置信息 / 监控模式 / 通知方式 / 监控关键词），右侧实时显示日志内容（命中关键词的行标红）。
 /// <para>
-/// 监控编排：一个"角色 + 一个配置"对应一个 <see cref="GameLogMonitorSession"/>；
+/// 监控编排：**一个角色对应一个** <see cref="GameLogMonitorSession"/>，角色下的多个配置只是同一份日志上的关键词过滤器；
 /// 配置来源 <c>Configs/GameLogInfoSettings.json</c>（与 WinUI 共用）；文件监听走 Core 的
 /// <see cref="Core.Services.ObservableFileService"/> + <see cref="GameLogItem"/>。
 /// </para>
@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Channel;
 public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 {
     private readonly string _logPath = GameLogsSettingService.GetGamelogsPath();
-    private readonly Dictionary<string, GameLogMonitorSession> _sessions = [];
+    private readonly Dictionary<int, GameLogMonitorSession> _sessions = [];
 
     public ObservableCollection<GameLogInfo> GameLogInfos { get; } = [];
 
@@ -190,14 +190,10 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             SaveSetting();
             OnPropertyChanged();
 
-            if (SelectedGameLogInfo is { } info)
+            if (SelectedGameLogInfo is { } info
+                && _sessions.TryGetValue(info.ListenerID, out var session))
             {
-                foreach (var session in _sessions.Values.Where(p => p.Info.ListenerID == info.ListenerID))
-                {
-                    session.SetShowShipInTitle(value);
-                }
-
-                CombatLogFeedService.Current.SetShowShipInTitle(info.ListenerID, value);
+                session.SetShowShipInTitle(value);
             }
         }
     }
@@ -225,14 +221,10 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             Setting.WindowOpacity = clamped;
             OnPropertyChanged();
 
-            if (SelectedGameLogInfo is { } info)
+            if (SelectedGameLogInfo is { } info
+                && _sessions.TryGetValue(info.ListenerID, out var session))
             {
-                foreach (var session in _sessions.Values.Where(p => p.Info.ListenerID == info.ListenerID))
-                {
-                    session.SetWindowOpacity(clamped);
-                }
-
-                CombatLogFeedService.Current.SetWindowOpacity(info.ListenerID, clamped);
+                session.SetWindowOpacity(clamped);
             }
 
             ScheduleOpacitySave();
@@ -281,9 +273,9 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             Setting.CombatEnabled = value;
             SaveSetting();
 
-            if (!value)
+            if (_sessions.TryGetValue(info.ListenerID, out var session))
             {
-                CombatLogFeedService.Current.Stop(info.ListenerName);
+                session.SetCombatEnabled(value);
             }
 
             OnPropertyChanged();
@@ -301,7 +293,7 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
                 return string.Empty;
             }
 
-            if (CombatLogFeedService.Current.IsRunning(info.ListenerName))
+            if (CombatLogStateCenter.Current.IsAttached(info.ListenerName))
             {
                 return FindString("CombatLog_StatusRunning");
             }
@@ -362,10 +354,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        if (!CombatLogFeedService.Current.Start(info))
+        if (_sessions.TryGetValue(info.ListenerID, out var session))
         {
-            PageNotifyService.Error(FindString("GameLogMonitorPage_AddNotifyServiceFalied"));
-            return false;
+            session.SetCombatEnabled(true);
+        }
+        else
+        {
+            return Start();
         }
 
         OnPropertyChanged(nameof(CombatStatusText));
@@ -377,7 +372,11 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     {
         if (SelectedGameLogInfo is { } info)
         {
-            CombatLogFeedService.Current.Stop(info.ListenerName);
+            if (_sessions.TryGetValue(info.ListenerID, out var session))
+            {
+                session.SetCombatEnabled(false);
+            }
+
             OnPropertyChanged(nameof(CombatStatusText));
             RefreshRunningState();
         }
@@ -386,9 +385,11 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     /// <summary>重新打开当前角色的战斗日志小窗。</summary>
     public void OpenCombatWindow()
     {
-        if (SelectedGameLogInfo is { } info && CombatLogFeedService.Current.IsRunning(info.ListenerName))
+        if (SelectedGameLogInfo is { } info
+            && _sessions.TryGetValue(info.ListenerID, out var session)
+            && CombatLogStateCenter.Current.IsAttached(info.ListenerName))
         {
-            CombatLogFeedService.Current.ShowWindow(info.ListenerName);
+            session.ShowWindow();
         }
         else
         {
@@ -530,22 +531,26 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>开始监控"当前角色的当前配置"。</summary>
+    /// <summary>开始监控"当前角色的全部配置"（关键词配置共用一个会话/窗口，战斗日志按开关启动）。</summary>
     public bool Start()
     {
-        if (SelectedGameLogInfo is not { } info || Setting is null || SelectedItemConfig is not { } config)
+        if (SelectedGameLogInfo is not { } info || Setting is null)
         {
             PageNotifyService.Error(FindString("General_CharacterUnselected"));
             return false;
         }
 
-        // 「战斗日志」固定页签：走战斗会话，不再要求关键词
-        if (config.LogType == 2)
-        {
-            return StartCombat();
-        }
+        return StartCharacter(info, Setting);
+    }
 
-        if (config.Keys is not { Count: > 0 })
+    /// <summary>
+    /// 启动一个角色：该角色的所有关键词配置合并成一个 <see cref="GameLogMonitorSession"/>，
+    /// 战斗开关开着时再启动战斗解析；两者共用同一个窗口。
+    /// </summary>
+    private bool StartCharacter(GameLogInfo info, GameLogSetting setting)
+    {
+        var configs = setting.ItemConfigs.Where(IsVisibleConfig).ToList();
+        if (configs.Count == 0 && !setting.CombatEnabled)
         {
             PageNotifyService.Error(FindString("GameLogMonitorPage_NoneKeyError"));
             return false;
@@ -553,99 +558,103 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
         RefreshLatestGameLogFile(info);
 
-        if (_sessions.ContainsKey(config.GUID))
+        if (!_sessions.TryGetValue(info.ListenerID, out var session))
         {
-            PageNotifyService.Info(FindString("GameLogMonitorPage_Running"));
-            return false;
-        }
-
-        // 目标文件：游戏日志=日志文件本身；异常日志=同名的线程日志文件（由文件名解析出日期_时间）
-        var filePath = info.FilePath;
-        if (config.LogType == 1)
-        {
-            if (!GameLogHelper.GetGameLogDateAndThreadId(info.FilePath, out var date, out var thread))
+            session = new GameLogMonitorSession(
+                info,
+                configs,
+                info.FilePath,
+                setting.ShowShipInTitle,
+                setting.WindowOpacity,
+                setting.CombatEnabled);
+            if (!session.Start())
             {
-                PageNotifyService.Error(string.Format(FindString("GameLogMonitorPage_ThreadFileParseFailed"), info.FilePath));
+                session.Stop();
+                PageNotifyService.Error(FindString("GameLogMonitorPage_AddNotifyServiceFalied"));
                 return false;
             }
 
-            filePath = Path.Combine(Path.GetDirectoryName(info.FilePath)!, $"{date}_{thread}.txt");
-            if (!File.Exists(filePath))
-            {
-                PageNotifyService.Error(string.Format(FindString("GameLogMonitorPage_ThreadFileMissing"), filePath));
-                return false;
-            }
+            session.OnContentUpdate += Session_OnContentUpdate;
+            _sessions[info.ListenerID] = session;
         }
-
-        var session = new GameLogMonitorSession(info, config, filePath, ShowShipInTitle);
-        if (!session.Start())
+        else if (setting.CombatEnabled)
         {
-            session.Stop();
-            PageNotifyService.Error(FindString("GameLogMonitorPage_AddNotifyServiceFalied"));
-            return false;
-        }
-
-        session.OnContentUpdate += Session_OnContentUpdate;
-        _sessions[config.GUID] = session;
-
-        // 战斗日志开关是"该角色要不要战斗监控"：开始任意关键词配置时，
-        // 如果开关是开的、战斗会话还没跑，就一并启动，避免"只看到关键词日志"。
-        if (Setting.CombatEnabled && !CombatLogFeedService.Current.IsRunning(info.ListenerName))
-        {
-            StartCombat();
+            session.SetCombatEnabled(true);
         }
 
         info.Running = true;
         RefreshRunningState();
         SaveSetting();
-        PageNotifyService.Success($"{FindString("GameLogMonitorPage_Start")}：{config.ConfigName}");
+        PageNotifyService.Success($"{FindString("GameLogMonitorPage_Start")}：{info.ListenerName}");
         return true;
     }
 
+    /// <summary>
+    /// 开始全部：遍历所有角色，每个角色启动其全部关键词配置（战斗开关开着时一并启动战斗），
+    /// 不依赖当前是否选中了角色；结束后恢复原来的选中项。
+    /// </summary>
     public void StartAll()
     {
-        if (Setting is null)
+        var original = SelectedGameLogInfo;
+        try
         {
-            return;
-        }
+            foreach (var info in GameLogInfos.ToList())
+            {
+                try
+                {
+                    SelectedGameLogInfo = info;
+                    if (Setting is null)
+                    {
+                        continue;
+                    }
 
-        var current = SelectedItemConfig;
-        foreach (var config in ItemConfigs.ToList())
+                    StartCharacter(info, Setting);
+                }
+                catch (Exception ex)
+                {
+                    // 某个角色的日志文件缺失/配置损坏不应中断其他角色的"开始全部"
+                    Core.Log.Error(ex);
+                }
+            }
+        }
+        finally
         {
-            SelectedItemConfig = config;
-            Start();
+            SelectedGameLogInfo = original;
+            RefreshRunningState();
         }
-
-        SelectedItemConfig = current;
     }
 
-    /// <summary>停止"当前角色的当前配置"。</summary>
+    /// <summary>停止当前角色的全部配置。</summary>
     public void Stop()
     {
-        if (SelectedItemConfig is not { } config)
+        if (SelectedGameLogInfo is { } info)
         {
-            return;
+            StopCharacter(info);
+        }
+    }
+
+    private void StopCharacter(GameLogInfo info)
+    {
+        if (_sessions.Remove(info.ListenerID, out var session))
+        {
+            session.OnContentUpdate -= Session_OnContentUpdate;
+            session.Stop();
         }
 
-        if (config.LogType == 2)
-        {
-            StopCombat();
-            return;
-        }
-
-        StopSession(config.GUID);
+        info.Running = false;
         RefreshRunningState();
         SaveSetting();
     }
 
     public void StopAll()
     {
-        CombatLogFeedService.Current.StopAll();
-
-        foreach (var guid in _sessions.Keys.ToList())
+        foreach (var session in _sessions.Values.ToList())
         {
-            StopSession(guid);
+            session.OnContentUpdate -= Session_OnContentUpdate;
+            session.Stop();
         }
+
+        _sessions.Clear();
 
         foreach (var info in GameLogInfos)
         {
@@ -662,15 +671,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     /// </summary>
     public Task<string> RestartFromSettingsAsync()
     {
-        var running = _sessions
-            .Select(pair => (Guid: pair.Key, ListenerId: pair.Value.Info.ListenerID))
-            .ToList();
+        var running = _sessions.Keys.ToList();
 
         StopAll();
         GameLogInfoSettingService.Reload();
 
         var restarted = 0;
-        foreach (var (guid, listenerId) in running)
+        foreach (var listenerId in running)
         {
             var info = GameLogInfos.FirstOrDefault(p => p.ListenerID == listenerId);
             if (info is null)
@@ -681,39 +688,14 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             // 先置空再赋值：同一个对象不会触发 Setter，也就不会重新 LoadSetting
             SelectedGameLogInfo = null;
             SelectedGameLogInfo = info;
-            SelectedItemConfig = ItemConfigs.FirstOrDefault(config => config.GUID == guid);
-            if (SelectedItemConfig is null)
-            {
-                continue;
-            }
-
-            if (Start())
+            if (Setting is not null && StartCharacter(info, Setting))
             {
                 restarted++;
             }
         }
 
         return Task.FromResult(
-            $"日志监控已重启：停止 {running.Count} 个会话，重读 GameLogInfoSettings.json 后重新开始 {restarted} 个。");
-    }
-
-    private void StopSession(string guid)
-    {
-        if (!_sessions.TryGetValue(guid, out var session))
-        {
-            return;
-        }
-
-        session.OnContentUpdate -= Session_OnContentUpdate;
-        session.Stop();
-        _sessions.Remove(guid);
-
-        // 该角色已无任何配置在跑时清掉"监控中"
-        var info = GameLogInfos.FirstOrDefault(p => p.ListenerID == session.Info.ListenerID);
-        if (info is not null && !_sessions.Values.Any(p => p.Info.ListenerID == info.ListenerID))
-        {
-            info.Running = false;
-        }
+            $"日志监控已重启：停止 {running.Count} 个角色会话，重读 GameLogInfoSettings.json 后重新开始 {restarted} 个。");
     }
 
     private void Session_OnContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news)
@@ -752,7 +734,8 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     /// <summary>停止提醒（声音/弹窗），不停监控。</summary>
     public void StopNotify()
     {
-        if (SelectedItemConfig is { } config && _sessions.TryGetValue(config.GUID, out var session))
+        if (SelectedGameLogInfo is { } info
+            && _sessions.TryGetValue(info.ListenerID, out var session))
         {
             session.StopNotify();
         }
@@ -785,6 +768,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         }
 
         SaveSetting();
+
+        // 新过滤器运行中立即生效
+        if (SelectedGameLogInfo is { } info && _sessions.ContainsKey(info.ListenerID))
+        {
+            StopCharacter(info);
+            StartCharacter(info, Setting);
+        }
     }
 
     /// <summary>删除配置（若在监控中先停止），并立即持久化。</summary>
@@ -795,11 +785,21 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             return;
         }
 
-        StopSession(config.GUID);
         Setting.ItemConfigs.Remove(config);
         ItemConfigs.Remove(config);
         SelectedItemConfig = ItemConfigs.FirstOrDefault();
-        RefreshRunningState();
+
+        // 配置只是过滤器：运行中删除后按新配置重启该角色会话即可生效
+        if (SelectedGameLogInfo is { } info && _sessions.ContainsKey(info.ListenerID))
+        {
+            StopCharacter(info);
+            StartCharacter(info, Setting);
+        }
+        else
+        {
+            RefreshRunningState();
+        }
+
         SaveSetting();
     }
 
@@ -858,11 +858,10 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     {
         foreach (var info in GameLogInfos)
         {
-            info.Running = _sessions.Values.Any(p => p.Info.ListenerID == info.ListenerID)
-                           || CombatLogFeedService.Current.IsRunning(info.ListenerName);
+            info.Running = _sessions.ContainsKey(info.ListenerID);
         }
 
-        Running = _sessions.Count > 0 || CombatLogFeedService.Current.RunningListeners.Count > 0 || GameLogInfos.Any(p => p.Running);
+        Running = _sessions.Count > 0 || GameLogInfos.Any(p => p.Running);
         OnPropertyChanged(nameof(SelectedRunning));
         OnPropertyChanged(nameof(CombatStatusText));
     }
