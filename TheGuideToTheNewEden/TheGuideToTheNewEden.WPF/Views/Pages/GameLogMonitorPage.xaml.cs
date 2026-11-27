@@ -37,9 +37,24 @@ public partial class GameLogMonitorPage : Page, IAssistantFeatureRuntime
         _viewModel.OnContentUpdate += OnContentUpdate;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Loaded += OnLoaded;
+
+        // 阶段 395：页面被缓存复用、再次显示时接管一次自动启动的会话（实时日志 / 运行状态）
+        IsVisibleChanged += (_, e) =>
+        {
+            if (e.NewValue is true)
+            {
+                _viewModel.SyncRunningState();
+            }
+        };
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e) => await _viewModel.InitAsync();
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.InitAsync();
+
+        // 阶段 395：多开预览可能已经自动启动了监控，列表里要显示"运行中"并接管实时日志
+        _viewModel.SyncRunningState();
+    }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {

@@ -1460,8 +1460,7 @@
     <sys:String x:Key="GamePreviewPage_OpenSourceWindow">激活游戏窗口</sys:String>
     <sys:String x:Key="GamePreviewPage_ItemSetting">选中项设置</sys:String>
     <sys:String x:Key="GamePreviewPage_GlobalSetting">全局设置</sys:String>
-    <sys:String x:Key="GamePreviewPage_ItemSettingTip">只作用于当前选中的客户端，修改后立即生效</sys:String>
-    <sys:String x:Key="GamePreviewPage_GroupWindow">预览窗口</sys:String>
+        <sys:String x:Key="GamePreviewPage_GroupWindow">预览窗口</sys:String>
     <sys:String x:Key="GamePreviewPage_GroupActions">操作</sys:String>
     <sys:String x:Key="GamePreviewPage_GroupHighlight">高亮边框</sys:String>
     <sys:String x:Key="GamePreviewPage_GroupDiscovery">客户端发现</sys:String>
@@ -3917,8 +3916,7 @@
     <sys:String x:Key="GamePreviewPage_GroupIntel">频道预警</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlert">在预览窗显示预警</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlertTip">预警以胶囊显示在角色名下方：「最近」是当前活跃预警里跳数最小的一条，「最新」是最近收到的一条；两条指向同一星系时合并成一枚。数据来自「频道预警」页中同名角色正在运行的预警。全局开关关闭时不显示。</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowIntelAlertHint">预警胶囊显示在角色名下方，数据来自同名角色的频道预警；字体与字号在下面的「叠加层样式」里与战斗胶囊一起设置</sys:String>
-    <sys:String x:Key="GamePreviewPage_AlertOverlayFont">叠加层字体</sys:String>
+        <sys:String x:Key="GamePreviewPage_AlertOverlayFont">叠加层字体</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFontSize">叠加层字号</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayFollowScale">叠加层跟随窗口缩放</sys:String>
     <sys:String x:Key="GamePreviewPage_AlertOverlayScaleFactor">叠加层缩放倍率</sys:String>
@@ -3927,20 +3925,16 @@
     <sys:String x:Key="GamePreviewPage_IntelStatusNoSession">未启动同名频道预警</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelStatusReady">可显示预警</sys:String>
     <sys:String x:Key="GamePreviewPage_GroupCombat">战斗信息</sys:String>
+<sys:String x:Key="GamePreviewPage_GroupStrategicInfo">战略信息</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfo">显示战斗信息</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoTip">在角色名下方显示反跳 / 毁电 / 遥修 / 伤害等战斗信息胶囊；数值最多显示行数可调</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowCombatInfoHint">数据来自日志监控「战斗日志」页签；没启动时不显示。叠加层按「状态胶囊（反跳 / 干扰）+ 数值胶囊（伤害 / 毁电 / 遥修…）」排列：数值 = 最近一次 + 按实测轮间隔算出的每秒速率；放不下时折叠成「+N」，伤害永不折叠；反跳 / 干扰会一直保留到清除。字体与颜色在下面的「叠加层样式」里与预警胶囊一起设置。</sys:String>
-    <sys:String x:Key="GamePreviewPage_CombatStatusGlobalOff">全局已关闭</sys:String>
+        <sys:String x:Key="GamePreviewPage_CombatStatusGlobalOff">全局已关闭</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusOff">已关闭</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusNoFeed">未启动战斗日志</sys:String>
     <sys:String x:Key="GamePreviewPage_CombatStatusReady">可显示战斗信息</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoGlobal">战斗信息（全局总开关）</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowCombatInfoGlobalTip">关闭时覆盖所有单项设置；打开时由每项的"显示战斗信息"决定</sys:String>
-    <sys:String x:Key="GamePreviewPage_CombatOverlayRows">数值最多显示行数</sys:String>
-        <sys:String x:Key="GamePreviewPage_GroupOverlayStyle">叠加层样式（预警 + 战斗）</sys:String>
-    <sys:String x:Key="GamePreviewPage_OverlayStyleHint">字体、字号（也是整块 HUD 的基准）、跟随缩放与缩放倍率同时作用于预警胶囊和战斗胶囊。胶囊颜色由分类决定：红=受损、绿=受益、紫=电子战；预警取 最近=红 / 最新=黄 / 降级=灰。不再单独设置文字色 / 背景色。外观与日志监控小窗的战斗胶囊一致（圆角 10、无边框、同字号，标签与主值加粗）。</sys:String>
-    <sys:String x:Key="GamePreviewPage_CombatOverlayRowsTip">叠加层数值区（伤害 / 毁电 / 遥修…）最多显示几行，1–3，默认 2；预警行与状态行各占 1 行、不参与这个预算。放不下的数值折叠成「+N」，伤害永不折叠。</sys:String>
-    <sys:String x:Key="GamePreview_OverlayTagNearest">最近</sys:String>
+                        <sys:String x:Key="GamePreview_OverlayTagNearest">最近</sys:String>
     <sys:String x:Key="GamePreview_OverlayTagLatest">最新</sys:String>
     <sys:String x:Key="GamePreview_OverlayTagBoth">最近/最新</sys:String>
     <sys:String x:Key="CombatShort_Scram">反跳</sys:String>
@@ -3955,11 +3949,7 @@
     <sys:String x:Key="CombatShort_Rep">遥修</sys:String>
     <sys:String x:Key="CombatShort_CapTransfer">传电</sys:String>
     <sys:String x:Key="CombatShort_Damage">伤害</sys:String>
-    <sys:String x:Key="GamePreviewPage_GroupMonitorHits">日志监控命中</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowMonitorHits">显示关键词命中</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowMonitorHitsTip">把日志监控（普通关键词配置）最近 30 秒的命中显示成一行；默认关闭</sys:String>
-    <sys:String x:Key="GameLogMonitorHit_Row">监控 {0}</sys:String>
-    <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobal">显示预警叠加（全局）</sys:String>
+                    <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobal">显示预警叠加（全局）</sys:String>
     <sys:String x:Key="GamePreviewPage_ShowIntelAlertGlobalTip">关闭后忽略所有单项设置；开启时由每个预览项的开关决定</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelAlertNoSession">「{0}」未启动频道预警，预览窗不会显示预警跳数（可在「频道预警」页启动）</sys:String>
     <sys:String x:Key="GamePreviewPage_IntelAlertNoSessionMany">{0} 个角色未启动频道预警：{1}</sys:String>

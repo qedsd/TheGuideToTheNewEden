@@ -45,62 +45,73 @@ public sealed class CombatLogOverlayProvider : IPreviewOverlayProvider
             return [];
         }
 
-        // 阶段 369/370：叠加层只看"输入"侧（别人打你/毁你/吸你/修你）且只显示未过期的行；
-        // 遥修分行时把各层的输入行聚合成一枚胶囊（输出行不进叠加层）。
+        // 阶段 387：与日志监控一致——承受（▼）与输出（▲）两个方向都出胶囊，且只显示未过期的行；
+        // 遥修按方向分别把各层聚合成一枚胶囊（盾/甲/构微条同样按方向算）。
         var rows = CombatLogStateCenter.Current.GetRows(context.CharacterName);
         if (rows.Count == 0)
         {
             return [];
         }
 
-        var items = new List<PreviewOverlayItem>(rows.Count);
+        var items = new List<PreviewOverlayItem>(rows.Count * 2);
         foreach (var row in rows)
         {
-            var incoming = row.Lines
-                .Where(p => p.Direction == CombatEventDirection.Incoming && !p.Expired)
-                .ToList();
-            if (incoming.Count == 0)
-            {
-                continue;
-            }
-
             var definition = CombatCategories.Find(row.Category);
-            var tone = ToneOf(row.Category);
-            var detail = string.Join("\n", incoming.Select(p => p.Detail));
 
-            PreviewOverlayChip chip;
-            if (definition is { HasValue: false })
+            // 阶段 387：与日志监控一致——承受（▼）与输出（▲）两个方向都出胶囊。
+            foreach (var outgoing in new[] { false, true })
             {
-                // 反跳 / 干扰 / 网子…：挂着的一种状态，没有数值。
-                chip = new PreviewOverlayChip(PreviewOverlayChipKind.State, ShortLabel(row.Category), Tone: tone);
-            }
-            else if (string.Equals(row.Category, CombatCategories.Rep, StringComparison.OrdinalIgnoreCase))
-            {
-                chip = BuildRepChip(incoming, definition, tone);
-            }
-            else
-            {
-                var line = incoming[0];
-                var kind = string.Equals(row.Category, CombatCategories.Damage, StringComparison.OrdinalIgnoreCase)
-                    ? PreviewOverlayChipKind.Damage
-                    : PreviewOverlayChipKind.Value;
-                chip = new PreviewOverlayChip(
-                    kind,
-                    ShortLabel(row.Category),
-                    FormatAmount(line.LastValue),
-                    definition?.Unit ?? string.Empty,
-                    FormatRate(line.Rate),
-                    tone);
-            }
+                var direction = outgoing ? CombatEventDirection.Outgoing : CombatEventDirection.Incoming;
+                var lines = row.Lines
+                    .Where(p => p.Direction == direction && !p.Expired)
+                    .ToList();
+                if (lines.Count == 0)
+                {
+                    continue;
+                }
 
-            items.Add(new PreviewOverlayItem(
-                $"combat:{row.Category}",
-                row.Text,
-                SeverityOf(row.ColorKey),
-                OrderOf(row.Category, definition),
-                detail,
-                row.ColorKey,
-                chip));
+                var tone = ToneOf(row.Category, outgoing);
+                var detail = string.Join("\n", lines.Select(p => p.Detail));
+
+                PreviewOverlayChip chip;
+                if (definition is { HasValue: false })
+                {
+                    // 反跳 / 干扰 / 网子…：挂着的一种状态，没有数值。
+                    chip = new PreviewOverlayChip(
+                        PreviewOverlayChipKind.State,
+                        ShortLabel(row.Category),
+                        Tone: tone,
+                        Outgoing: outgoing);
+                }
+                else if (string.Equals(row.Category, CombatCategories.Rep, StringComparison.OrdinalIgnoreCase))
+                {
+                    chip = BuildRepChip(lines, definition, tone, outgoing);
+                }
+                else
+                {
+                    var line = lines[0];
+                    var kind = string.Equals(row.Category, CombatCategories.Damage, StringComparison.OrdinalIgnoreCase)
+                        ? PreviewOverlayChipKind.Damage
+                        : PreviewOverlayChipKind.Value;
+                    chip = new PreviewOverlayChip(
+                        kind,
+                        ShortLabel(row.Category),
+                        FormatAmount(line.LastValue),
+                        definition?.Unit ?? string.Empty,
+                        FormatRate(line.Rate),
+                        tone,
+                        Outgoing: outgoing);
+                }
+
+                items.Add(new PreviewOverlayItem(
+                    $"combat:{row.Category}" + (outgoing ? ".out" : ""),
+                    row.Text,
+                    SeverityOf(row.ColorKey),
+                    OrderOf(row.Category, definition) + (outgoing ? 1 : 0),
+                    detail,
+                    row.ColorKey,
+                    chip));
+            }
         }
 
         return items;
@@ -111,19 +122,20 @@ public sealed class CombatLogOverlayProvider : IPreviewOverlayProvider
     /// 微条 = 各层速率占比（速率全 0 时退回最近值占比）；不足两层的非零层不画微条。
     /// </summary>
     private static PreviewOverlayChip BuildRepChip(
-        IReadOnlyList<CombatLogLineSnapshot> incoming,
+        IReadOnlyList<CombatLogLineSnapshot> lines,
         CombatCategoryDefinition? definition,
-        string tone)
+        string tone,
+        bool outgoing)
     {
         double total = 0;
         var rateSum = 0d;
-        foreach (var line in incoming)
+        foreach (var line in lines)
         {
             total += line.LastValue ?? 0;
             rateSum += line.Rate ?? 0;
         }
 
-        var shares = LayerShares(incoming, rateSum);
+        var shares = LayerShares(lines, rateSum);
         return new PreviewOverlayChip(
             PreviewOverlayChipKind.Rep,
             ShortLabel(CombatCategories.Rep),
@@ -131,7 +143,8 @@ public sealed class CombatLogOverlayProvider : IPreviewOverlayProvider
             definition?.Unit ?? "HP",
             FormatRate(rateSum > 0 ? rateSum : null),
             tone,
-            shares);
+            shares,
+            Outgoing: outgoing);
     }
 
     /// <summary>把遥修的各层行折算成 盾 / 甲 / 构 三段占比；不足两个非零层时返回 null。</summary>
@@ -200,23 +213,34 @@ public sealed class CombatLogOverlayProvider : IPreviewOverlayProvider
         _ => 100 + (definition?.Priority ?? 0),
     };
 
-    /// <summary>胶囊配色语义：红=受损、绿=受益、紫=电子战。</summary>
-    private static string ToneOf(string category) => category switch
+    /// <summary>
+    /// 胶囊配色语义（与日志监控一致：按"对我的收益 / 伤害"而不是方向）：
+    /// 承受 = 红（电子战紫），输出 = 绿；遥修 / 传电给出去是中性白。
+    /// </summary>
+    private static string ToneOf(string category, bool outgoing)
     {
-        CombatCategories.Scram => "harm",
-        CombatCategories.Ecm
-            or CombatCategories.Web
-            or CombatCategories.Painter
-            or CombatCategories.WeaponDisrupt
-            or CombatCategories.SensorDamp
-            or CombatCategories.EwOther => "ew",
-        CombatCategories.Neut
-            or CombatCategories.Nos
-            or CombatCategories.Damage => "harm",
-        CombatCategories.Rep
-            or CombatCategories.CapTransfer => "benefit",
-        _ => "neutral",
-    };
+        if (outgoing)
+        {
+            return category is CombatCategories.Rep or CombatCategories.CapTransfer ? "neutral" : "benefit";
+        }
+
+        return category switch
+        {
+            CombatCategories.Scram => "harm",
+            CombatCategories.Ecm
+                or CombatCategories.Web
+                or CombatCategories.Painter
+                or CombatCategories.WeaponDisrupt
+                or CombatCategories.SensorDamp
+                or CombatCategories.EwOther => "ew",
+            CombatCategories.Neut
+                or CombatCategories.Nos
+                or CombatCategories.Damage => "harm",
+            CombatCategories.Rep
+                or CombatCategories.CapTransfer => "benefit",
+            _ => "neutral",
+        };
+    }
 
     /// <summary>叠加层上的短标签（2 字），完整分类名进悬停详情。</summary>
     private static string ShortLabel(string category) => LanguageService.Get(ShortLabelKey(category));

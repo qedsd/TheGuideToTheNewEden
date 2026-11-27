@@ -172,6 +172,8 @@ internal static class Program
         // 毁电：45GJ 每 2 秒一轮 → 22.5GJ/s
         ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
             "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-4));
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 300,
+            "Focused Medium Pulse Laser II", "Hostile", now.AddSeconds(-3), CombatEventDirection.Outgoing);
         ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
             "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-2));
         var neutRow = RowOf(center, listener, CombatCategories.Neut);
@@ -230,7 +232,7 @@ internal static class Program
         Check("过期后行不消失（承伤仍在）", expiredDamage is not null,
             string.Join(" | ", afterExpire.Select(p => p.Text)));
         Check("过期后标记 Expired", expiredDamage?.Expired == true, $"实际 Expired={expiredDamage?.Expired}");
-        Check("过期后数值停在最后一次", expiredDamage?.Text == "伤害 300 HP 100 HP/s", $"实际 {expiredDamage?.Text}");
+        Check("过期后数值停在最后一次", expiredDamage?.Text.Contains("伤害 300 HP 100 HP/s") == true, $"实际 {expiredDamage?.Text}");
         Check("过期后所有数值卡片都还在", afterExpire.Count >= 4,
             string.Join(" | ", afterExpire.Select(p => p.Text)));
         Check("反跳在低过期时间下仍不过期",
@@ -383,6 +385,8 @@ internal static class Program
             "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-4));
         ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 100,
             "Focused Medium Pulse Laser II", "Guardian", now.AddSeconds(-1));
+        ReportCombat(center, listener, CombatEventKind.Damage, CombatCategories.Damage, 300,
+            "Focused Medium Pulse Laser II", "Hostile", now.AddSeconds(-3), CombatEventDirection.Outgoing);
         ReportCombat(center, listener, CombatEventKind.CapacitorNeutralize, CombatCategories.Neut, 45,
             "Medium Energy Neutralizer II", "Guardian", now.AddSeconds(-2));
         ReportCombat(center, listener, CombatEventKind.WarpScramble, CombatCategories.Scram, null,
@@ -418,8 +422,11 @@ internal static class Program
             .Where(p => p.Key.StartsWith("combat:", StringComparison.Ordinal))
             .ToList();
 
-        Check("战斗 provider：每行都带 Chip", rows.Count >= 4 && rows.All(p => p.Chip is not null),
+        Check("战斗 provider：每行都带 Chip", rows.Count >= 5 && rows.All(p => p.Chip is not null),
             $"{rows.Count} 行 / {rows.Count(p => p.Chip is not null)} 带 Chip");
+        Check("战斗 provider：输出伤害单独出一枚（▲ / 绿色）",
+            rows.FirstOrDefault(p => p.Key == "combat:damage.out")?.Chip is { Kind: PreviewOverlayChipKind.Damage, Outgoing: true, Tone: "benefit" },
+            rows.FirstOrDefault(p => p.Key == "combat:damage.out")?.Chip?.ToString() ?? "null");
 
         var damage = rows.FirstOrDefault(p => p.Key == "combat:damage")?.Chip;
         Check("战斗 provider：伤害 = Damage 胶囊（短标签 + HP + 速率）",
@@ -503,7 +510,7 @@ internal static class Program
             "Microsoft YaHei UI",
             15);
         window.SetMaxContentWidth(420);
-        window.SetMaxValueRows(2);
+        window.SetMaxContentHeight(420);
         window.Show();
         Pump();
 
@@ -516,22 +523,24 @@ internal static class Program
                 "Tama · 5 跳 · 0min\n情报频道 · Aria: Tama 一条截击",
                 Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Intel, "最新", "5", "跳", "0min", "alert", Dimmed: true)),
             new("combat:scram", "跃迁扰频器", PreviewOverlaySeverity.Critical, 110, "反跳 · 跃迁扰频器 II · Aria (Loki)",
-                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.State, "反跳", Tone: "harm")),
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.State, "反跳", Tone: "harm", Outgoing: false)),
             new("combat:damage", "伤害 209 HP 41.8 HP/s", PreviewOverlaySeverity.Critical, 110, "伤害 · 雷神重型导弹 · 209 HP / 5s",
-                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Damage, "伤害", "209", "HP", "41.8/s", "harm")),
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Damage, "伤害", "209", "HP", "41.8/s", "harm", Outgoing: false)),
+            new("combat:damage.out", "伤害 300 HP 50 HP/s", PreviewOverlaySeverity.Normal, 111, "输出 · 雷神重型导弹 · 300 HP / 6s",
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Damage, "伤害", "300", "HP", "50/s", "benefit", Outgoing: true)),
             new("combat:neut", "毁电 45 GJ 22.5 GJ/s", PreviewOverlaySeverity.Critical, 120, "毁电 · 中型能量中和器 II · 45GJ/2s",
-                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Value, "毁电", "45", "GJ", "22.5/s", "harm")),
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Value, "毁电", "45", "GJ", "22.5/s", "harm", Outgoing: false)),
             new("combat:rep", "遥修 123 HP 41 HP/s", PreviewOverlaySeverity.Normal, 140, "遥修 · 护盾 45 · 装甲 78 · 41HP/s",
-                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Rep, "遥修", "123", "HP", "41/s", "benefit", [0.37, 0.63, 0])),
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Rep, "遥修", "123", "HP", "41/s", "benefit", [0.37, 0.63, 0], Outgoing: false)),
             new("combat:cap", "传电 12 GJ 4 GJ/s", PreviewOverlaySeverity.Normal, 150, "传电 · 远程电容传输器 II · 12GJ/3s",
-                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Value, "传电", "12", "GJ", "4/s", "benefit")),
+                Chip: new PreviewOverlayChip(PreviewOverlayChipKind.Value, "传电", "12", "GJ", "4/s", "benefit", Outgoing: false)),
         };
 
         window.SetInfoItems(items);
         Pump();
 
         var counts = window.GetChipCounts();
-        Check("三段分区：预警 2 / 状态 1 / 数值 4", counts.Intel == 2 && counts.State == 1 && counts.Value == 4,
+        Check("三段分区：预警 2 / 状态 1 / 数值 5", counts.Intel == 2 && counts.State == 1 && counts.Value == 5,
             $"intel={counts.Intel} state={counts.State} value={counts.Value} overflow={counts.Overflow}");
         // 阶段 385：恢复分类色，并去掉单独的文字色 / 背景色设置
         Check("预警胶囊按严重度着色（最近=红 / 最新=黄）",
@@ -540,6 +549,9 @@ internal static class Program
             && window.GetChipForegroundByLabel("最新") is SolidColorBrush latestFg
             && latestFg.Color.G > 200 && latestFg.Color.B < 60,
             Describe(window.GetChipForegroundByLabel("最近")) + " / " + Describe(window.GetChipForegroundByLabel("最新")));
+        Check("方向箭头：承受 ▼ / 输出 ▲ 都渲染",
+            CollectVisibleTexts(window).Contains("▼") && CollectVisibleTexts(window).Contains("▲"),
+            string.Join(" | ", CollectVisibleTexts(window)));
         Check("战斗胶囊恢复分类色（伤害红 / 遥修绿 / 反跳红）",
             window.GetChipForegroundByLabel("伤害") is SolidColorBrush damageFg
             && damageFg.Color.R > 200 && damageFg.Color.G < 200
@@ -557,8 +569,8 @@ internal static class Program
         Check("胶囊外观与日志监控一致（圆角 10 / 无边框 / 同字号）",
             style is { Radius: 10, BorderThickness: 0 } && style.Value.FontSizes.Distinct().Count() == 1,
             style is null ? "null" : $"r={style.Value.Radius} border={style.Value.BorderThickness} fonts={string.Join("/", style.Value.FontSizes.Distinct())}");
-        Check("胶囊底色按 tone 混合（不透明深色）",
-            style?.Background is { } bg && bg.A == 0xE6 && bg.R > bg.G && bg.R > bg.B,
+        Check("胶囊底色 = 日志监控同款 12% tone 透明底",
+            style?.Background is { } bg && bg.A == 0x1F && bg.R == 255 && bg.G == 153 && bg.B == 164,
             style?.Background?.ToString() ?? "null");
         Check("降级预警变淡（0.55）", window.GetIntelChipOpacities().Any(p => Math.Abs(p - 0.55) < 0.01),
             string.Join(" / ", window.GetIntelChipOpacities().Select(p => p.ToString("F2"))));
@@ -580,13 +592,13 @@ internal static class Program
 
         // 窄窗 + 数值只留 1 行：数值折叠成 +N，预警 / 状态 / 伤害不受影响
         window.SetMaxContentWidth(300);
-        window.SetMaxValueRows(1);
+        window.SetMaxContentHeight(170);
         Pump();
 
         counts = window.GetChipCounts();
         var narrow = window.GetPlateSize();
         var narrowTexts = CollectVisibleTexts(window);
-        Check("数值区折叠到 1 行并出现 +N", counts.Overflow > 0, $"overflow={counts.Overflow} value={counts.Value}");
+        Check("窗口变矮时折叠出 +N", counts.Overflow > 0, $"overflow={counts.Overflow} value={counts.Value}");
         Check("折叠后底板仍不超出可用宽（300）", narrow.Width <= 300.5, $"{narrow.Width:F1} x {narrow.Height:F1}");
         Check("伤害永不折叠", narrowTexts.Contains("伤害"), string.Join(" | ", narrowTexts));
         Check("预警与状态不被数值挤掉", narrowTexts.Contains("最近") && narrowTexts.Contains("反跳"),

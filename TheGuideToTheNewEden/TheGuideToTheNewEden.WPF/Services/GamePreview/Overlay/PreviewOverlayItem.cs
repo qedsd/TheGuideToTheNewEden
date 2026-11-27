@@ -58,9 +58,13 @@ public enum PreviewOverlayChipKind
 /// 副信息，已格式化：战斗为每秒速率（如 <c>22.5/s</c>），预警为分钟（如 <c>2min</c>）。
 /// 与 <paramref name="Unit"/> 分开，是为了让视图按不同字号排版（单位常与主值同读，速率更小）。
 /// </param>
-/// <param name="Tone">配色语义：<c>harm</c> / <c>benefit</c> / <c>ew</c> / <c>neutral</c> / <c>alert</c>（用户配色）。</param>
+/// <param name="Tone">配色语义：<c>harm</c> / <c>benefit</c> / <c>ew</c> / <c>caution</c> / <c>neutral</c>。</param>
 /// <param name="LayerShare">遥修微条的三段占比（盾 / 甲 / 构，0–1，和为 1）；不足三段或全 0 时不画。</param>
 /// <param name="Dimmed">整枚变淡（预警被降级；战斗行过期时不会再送进来）。</param>
+/// <param name="Outgoing">
+/// 战斗方向：<c>false</c> = 承受（▼）、<c>true</c> = 输出（▲）、<c>null</c> = 无方向（预警等）。
+/// 阶段 387 起叠加层与日志监控一样显示两个方向。
+/// </param>
 public sealed record PreviewOverlayChip(
     PreviewOverlayChipKind Kind,
     string Label,
@@ -69,7 +73,8 @@ public sealed record PreviewOverlayChip(
     string Meta = "",
     string Tone = "neutral",
     IReadOnlyList<double>? LayerShare = null,
-    bool Dimmed = false);
+    bool Dimmed = false,
+    bool? Outgoing = null);
 
 /// <summary>
 /// 预览窗叠加层的一行信息。<see cref="Text"/> 由 provider 自行本地化好；

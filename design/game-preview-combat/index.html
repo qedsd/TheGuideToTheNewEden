@@ -150,12 +150,13 @@
   .chip[data-tone="caution"]{--tone:var(--caution)}
   .chip[data-tone="neutral"]{--tone:var(--neutral)}
   .chip{flex:none;display:inline-flex;align-items:center;white-space:nowrap;border-radius:10px;
-    padding:2px 8px;background:color-mix(in srgb,var(--tone,#fff) 28%,#12161c);color:var(--tone,#fff);
+    padding:2px 8px;background:color-mix(in srgb,var(--tone,#fff) 12%,transparent);color:var(--tone,#fff);
     font-size:var(--chip-fs);line-height:1.2;border:0}
   .chip .l{font-weight:600}
   .chip .v{margin-left:4px;font-weight:600}
   .chip .m{margin-left:4px;font-weight:400;opacity:.85}
   .chip .tag{font-weight:600;opacity:.85}
+  .chip .a{font-weight:600;margin-right:3px;opacity:.9}
   .chip[data-dim="1"]{opacity:.55}
   .chip-rep{position:relative;padding-bottom:4px}
   .chip-rep .layers{position:absolute;left:3px;right:3px;bottom:2px;height:2px;display:flex;gap:0;border-radius:1px;overflow:hidden;background:rgba(108,203,95,.16)}
@@ -274,7 +275,7 @@
       <span class="hchip"><b>参考</b>日志监控小窗 · GameLogMsgWindow</span>
       <span class="hchip"><b>现状</b>PreviewNameOverlayWindow · ChannelIntel / CombatLog OverlayProvider</span>
       <span class="hchip"><b>目标</b>不溢出 / 一眼分级 / 跟随字号</span>
-      <span class="hchip"><b>原型</b>1:1 可交互（宽度、字号、行数、预警状态）</span>
+      <span class="hchip"><b>原型</b>1:1 可交互（宽度、高度、字号、预警状态）</span>
     </div>
     <div class="hero-actions">
       <a class="btn primary" href="#prototype">看 1:1 原型</a>
@@ -410,7 +411,7 @@
     <p class="sec-note">
       所有胶囊同一外形：<b>圆角 10、无边框、8×2 内边距、同字号</b>（与日志监控小窗的战斗胶囊一致）。
       状态只有名字，数值是「分类 + 主值 + 单位/速率」，预警多一个「标签」位（最近 / 最新）。
-      颜色按分类：红=受损、绿=受益、紫=电子战、黄=预警最新；画面上不再额外铺一层底板。
+      颜色按分类：红=受损、绿=受益、紫=电子战、黄=预警最新；方向用 <span class="mono">▼ 承受 / ▲ 输出</span> 标出（与日志监控一致）；画面上不再额外铺一层底板。
     </p>
 
     <div class="anatomy">
@@ -419,8 +420,8 @@
           <span class="fl">STATE · 状态芯片</span>
           <div class="hud" style="--fs:22px;--spine:rgba(255,153,164,.55)">
             <div class="zone">
-              <div class="chip chip-state" data-tone="harm">反跳</div>
-              <div class="chip chip-state" data-tone="ew">ECM</div>
+              <div class="chip chip-state" data-tone="harm"><span class="a">▼</span>反跳</div>
+              <div class="chip chip-state" data-tone="ew"><span class="a">▼</span>ECM</div>
             </div>
           </div>
         </div>
@@ -437,7 +438,7 @@
           <span class="fl">VALUE · 数值胶囊</span>
           <div class="hud" style="--fs:22px">
             <div class="zone">
-              <div class="chip chip-value" data-tone="harm"><span class="l">毁电</span><span class="v">45</span><span class="m">GJ 22.5/s</span></div>
+              <div class="chip chip-value" data-tone="harm"><span class="a">▼</span><span class="l">毁电</span><span class="v">45</span><span class="m">GJ 22.5/s</span></div>
             </div>
           </div>
         </div>
@@ -445,7 +446,7 @@
           <span class="fl">DAMAGE · 伤害胶囊</span>
           <div class="hud" style="--fs:22px">
             <div class="zone">
-              <div class="chip chip-damage" data-tone="harm"><span class="l">伤害</span><span class="v">209</span><span class="m">HP 42/s</span></div>
+              <div class="chip chip-damage" data-tone="harm"><span class="a">▼</span><span class="l">伤害</span><span class="v">209</span><span class="m">HP 42/s</span></div>
             </div>
           </div>
         </div>
@@ -453,7 +454,7 @@
           <span class="fl">REP · 遥修胶囊</span>
           <div class="hud" style="--fs:22px">
             <div class="zone">
-              <div class="chip chip-rep" data-tone="benefit">
+              <div class="chip chip-rep" data-tone="benefit"><span class="a">▼</span>
                 <span class="l">遥修</span><span class="v">123</span><span class="m">HP 41/s</span>
                 <div class="layers"><i style="width:37%;background:var(--shield)"></i><i style="width:63%;background:var(--armor)"></i><i style="width:0;background:var(--hull)"></i></div>
               </div>
@@ -464,7 +465,7 @@
           <span class="fl">OVERFLOW · 溢出</span>
           <div class="hud" style="--fs:22px">
             <div class="zone">
-              <div class="chip chip-value" data-tone="benefit"><span class="l">传电</span><span class="v">12</span><span class="m">GJ 4/s</span></div>
+              <div class="chip chip-value" data-tone="benefit"><span class="a">▼</span><span class="l">传电</span><span class="v">12</span><span class="m">GJ 4/s</span></div>
               <div class="chip chip-more">+2</div>
             </div>
           </div>
@@ -494,7 +495,7 @@
       <table style="margin-top:8px">
         <thead><tr><th style="width:12%">元素</th><th style="width:40%">日志监控小窗（参考）</th><th>多开预览 HUD（本设计）</th></tr></thead>
         <tbody>
-          <tr><td>状态</td><td>胶囊 + 方向三角 <span class="mono">▼/▲</span></td><td>同形，去掉方向（叠加层只显示「进向」），标签缩写为 2 字</td></tr>
+          <tr><td>状态</td><td>胶囊 + 方向三角 <span class="mono">▼/▲</span></td><td>同形，保留 <span class="mono">▼/▲</span>（叠加层与日志监控一样双向），标签缩写为 2 字</td></tr>
           <tr><td>预警</td><td>—（日志监控没有频道预警）</td><td>用户配色胶囊：标签（最近 / 最新）+ 跳数 + 分钟；两行文本 → 同行两枚</td></tr>
           <tr><td>数值</td><td>胶囊：分类 + 数量 + 单位/速率</td><td>同语法、同圆角、同字号；标签与主值 SemiBold</td></tr>
           <tr><td>伤害</td><td>一张卡片：受到 / 输出两栏 + 30s DPS + 属性占比</td><td>一枚胶囊：单次值 + 速率（只显示「受到」一栏）</td></tr>
@@ -502,7 +503,7 @@
           <tr><td>分类名</td><td>全称（远程感应抑阻器）</td><td>缩写（抑阻），全称进 ToolTip</td></tr>
           <tr><td>过期</td><td>置灰 +「已过期」</td><td>不显示（叠加层只显示未过期行，沿用现状）</td></tr>
           <tr><td>配色</td><td>分类色（红 / 绿 / 紫）</td><td>同一套分类色（红=受损 / 绿=受益 / 紫=电子战）；预警 最近红 / 最新黄 / 降级灰；没有单独的文字色 / 背景色设置</td></tr>
-          <tr><td>布局</td><td>固定窗口宽 + 换行 + 滚动</td><td>窗口宽约束 + 预警/状态/数值三段 + 行数折叠；不再加底板</td></tr>
+          <tr><td>布局</td><td>固定窗口宽 + 换行 + 滚动</td><td>窗口宽高约束 + 三段铺满 + 真的放不下才 <span class="mono">+N</span>；不再加底板</td></tr>
           <tr><td>尺寸</td><td>440×380 独立窗口，可缩放</td><td>贴预览窗左上角，随窗口缩放、跟字号走</td></tr>
         </tbody>
       </table>
@@ -511,9 +512,9 @@
 
   <!-- ============ 4. 1:1 原型 ============ -->
   <section class="sec" id="prototype">
-    <div class="sec-head"><span class="idx">04</span><h2>1:1 原型（可拖宽度 / 字号 / 行数 / 场景）</h2><span class="sub">下面的数字都是实时量出来的</span></div>
+    <div class="sec-head"><span class="idx">04</span><h2>1:1 原型（可拖宽度 / 高度 / 字号 / 场景）</h2><span class="sub">下面的数字都是实时量出来的</span></div>
     <p class="sec-note">
-      拖动「窗口宽度」会真的改变预览窗尺寸并触发重排：预警 / 状态 / 数值三段各自换行，数值超过行数上限折叠成 <span class="mono">+N</span>。
+      拖动「窗口宽度」或「窗口高度」会真的改变预览窗尺寸并触发重排：胶囊一直铺到窗口边缘，只有真的放不下才折叠成 <span class="mono">+N</span>；窗口变大时会自动多显示。
       「预警」可以切换成两枚、合并成一枚、降级或关闭，看它和战斗信息怎么共处。
       把鼠标停在 HUD 上可以看到聚合悬停详情（真实实现里由预览窗按光标矩形触发 ToolTip）。
     </p>
@@ -534,11 +535,10 @@
         </div>
       </div>
       <div class="ctl">
-        <span>数值最多行数</span>
-        <div class="seg" id="rowSeg">
-          <button data-rows="1">1</button>
-          <button data-rows="2" class="on">2</button>
-          <button data-rows="3">3</button>
+        <span>窗口高度</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input id="hRange" type="range" min="120" max="420" step="2" value="270">
+          <span class="val" id="hVal">270 px</span>
         </div>
       </div>
       <div class="ctl">
@@ -573,7 +573,7 @@
           </div>
           <div class="hud-layer">
             <div class="name">Arya D Stark</div>
-            <div class="hud" data-mock="play" data-scenario="typical" data-intel="typical" data-rows="2">
+            <div class="hud" data-mock="play" data-scenario="typical" data-intel="typical">
               <div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div>
               <div class="tip"></div>
             </div>
@@ -615,14 +615,14 @@
           </div>
           <div class="hud-layer">
             <div class="name">QEDSD</div>
-            <div class="hud" data-mock="big" data-scenario="brawl" data-intel="typical" data-rows="2">
+            <div class="hud" data-mock="big" data-scenario="brawl" data-intel="typical">
               <div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div>
               <div class="tip"></div>
             </div>
           </div>
         </div>
         <div class="figcap">
-          <div class="t"><b>640 × 360 · 大乱斗</b>：预警 1 行 + 状态 1 行 + 数值 2 行</div>
+          <div class="t"><b>640 × 360 · 大乱斗</b>：预警 / 状态各 1 行，数值铺满剩余高度</div>
           <div class="n" id="bigNote">—</div>
         </div>
       </div>
@@ -637,14 +637,14 @@
           </div>
           <div class="hud-layer">
             <div class="name">Kaho</div>
-            <div class="hud" data-mock="small" data-scenario="typical" data-intel="merged" data-rows="1">
+            <div class="hud" data-mock="small" data-scenario="typical" data-intel="merged">
               <div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div>
               <div class="tip"></div>
             </div>
           </div>
         </div>
         <div class="figcap">
-          <div class="t"><b>320 × 180 · 紧凑档</b>：字号下限 12、数值 1 行；预警合并成 1 枚，整块约 70 DIP 高</div>
+          <div class="t"><b>320 × 180 · 紧凑档</b>：字号下限 12、数值铺满剩余高度；放不下的折叠成 +N</div>
           <div class="n" id="smallNote">—</div>
         </div>
       </div>
@@ -660,7 +660,7 @@
           <div class="scene"><div class="stars"></div><div class="planet"></div></div>
           <div class="hud-layer">
             <div class="name">QEDSD</div>
-            <div class="hud" data-mock="st2" data-scenario="empty" data-intel="typical" data-rows="2"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
+            <div class="hud" data-mock="st2" data-scenario="empty" data-intel="typical"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
           </div>
         </div>
         <div class="figcap"><div class="t"><b>只有预警（无战斗）</b>：只剩预警那一行，不留空行、不占战斗的位置</div></div>
@@ -670,7 +670,7 @@
           <div class="scene"><div class="stars"></div><div class="planet"></div></div>
           <div class="hud-layer">
             <div class="name">QEDSD</div>
-            <div class="hud" data-mock="st1" data-scenario="states" data-intel="none" data-rows="2"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
+            <div class="hud" data-mock="st1" data-scenario="states" data-intel="none"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
           </div>
         </div>
         <div class="figcap"><div class="t"><b>只有一次性状态</b>：没有数值就没有第二行，HUD 只有一行高</div></div>
@@ -680,10 +680,10 @@
           <div class="scene"><div class="stars"></div><div class="planet"></div></div>
           <div class="hud-layer">
             <div class="name">QEDSD</div>
-            <div class="hud" data-mock="st3" data-scenario="typical" data-intel="typical" data-rows="1"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
+            <div class="hud" data-mock="st3" data-scenario="typical" data-intel="typical"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
           </div>
         </div>
-        <div class="figcap"><div class="t"><b>数值上限 1 行</b>：预警与状态照旧，只折叠数值 <span class="mono">+N</span></div></div>
+        <div class="figcap"><div class="t"><b>窗口变矮</b>：预警与状态照旧，数值铺不下才折叠 <span class="mono">+N</span></div></div>
       </div>
     </div>
 
@@ -695,7 +695,7 @@
           <div class="scene" style="background:radial-gradient(70% 70% at 30% 40%,#5b7fa8,#0a121c 70%)"><div class="stars"></div></div>
           <div class="hud-layer">
             <div class="name">QEDSD</div>
-            <div class="hud" data-mock="vb" data-scenario="typical" data-intel="typical" data-rows="1"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
+            <div class="hud" data-mock="vb" data-scenario="typical" data-intel="typical"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
           </div>
         </div>
       </div>
@@ -705,9 +705,9 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
           <div class="hud" style="--fs:16px">
             <div class="zone">
-              <div class="chip" data-tone="harm"><span class="l">伤害</span><span class="v">209</span></div>
-              <div class="chip" data-tone="benefit"><span class="l">遥修</span><span class="v">123</span></div>
-              <div class="chip" data-tone="ew">ECM</div>
+              <div class="chip" data-tone="harm"><span class="a">▼</span><span class="l">伤害</span><span class="v">209</span></div>
+              <div class="chip" data-tone="benefit"><span class="a">▼</span><span class="l">遥修</span><span class="v">123</span></div>
+              <div class="chip" data-tone="ew"><span class="a">▼</span>ECM</div>
               <div class="chip" data-tone="caution"><span class="l">最新</span><span class="v">5</span></div>
             </div>
           </div>
@@ -748,7 +748,7 @@
         <div class="scene"><div class="stars"></div><div class="planet"></div></div>
         <div class="hud-layer">
           <div class="name">QEDSD</div>
-          <div class="hud show-tip" data-mock="tipdemo" data-scenario="typical" data-intel="typical" data-rows="2"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
+          <div class="hud show-tip" data-mock="tipdemo" data-scenario="typical" data-intel="typical"><div class="zone intel"></div><div class="zone states"></div><div class="zone values"></div><div class="tip"></div></div>
         </div>
       </div>
     </div>
@@ -763,13 +763,13 @@
         <p><code>MaxContentWidth = 预览窗客户区宽 / DPI − 12 − 2 × 边框</code>；底板、每一枚胶囊、角色名徽章都受它约束。任何 provider 都不能把叠加窗撑宽。</p></div></div>
       <div class="rule"><div class="k">R02</div><div class="b">
         <h3>三段式：预警 → 状态 → 数值</h3>
-        <p>一块底板内三个 zone，各自换行、互不挤压：<b>预警</b>（1 行，最多 2 枚）→ <b>状态</b>（1 行，最多 7 枚）→ <b>数值</b>（1–3 行）。顺序就是重要顺序：先看「周围有没有人」，再看「我能不能跑」，最后看「我还能撑多久」。</p></div></div>
+        <p>一块底板内三个 zone，各自换行、互不挤压：<b>预警</b>（1 行，最多 2 枚）→ <b>状态</b>（1 行，最多 7 枚）→ <b>数值</b>（1–3 行）。同一分类的 <span class="mono">▼ 承受</span> 与 <span class="mono">▲ 输出</span> 相邻（输出在后，折叠时先折输出）。顺序就是重要顺序：先看「周围有没有人」，再看「我能不能跑」，最后看「我还能撑多久」。</p></div></div>
       <div class="rule"><div class="k">R03</div><div class="b">
         <h3>预警胶囊</h3>
         <p>标签（最近 / 最新 / 最近最新）+ 跳数主值 + 「跳 · Nmin」；颜色按严重度：<b>最近=红、最新=黄、降级=灰</b>。最近与最新指向同一星系时合并成一枚。降级（Downgraded）整枚 55% 不透明，不消失。</p></div></div>
       <div class="rule"><div class="k">R04</div><div class="b">
-        <h3>行数预算与折叠</h3>
-        <p>数值区默认最多 2 行（设置可 1–3），超出折叠成 <code>+N</code>；<b>伤害永不折叠</b>。状态行、预警行各固定 1 行，放不下时从优先级最低的开始折叠（其他 → 抑阻 → 扰断 → 标记 → 网子 → ECM → 反跳；预警先折「最新」）。悬停看全部。</p></div></div>
+        <h3>高度铺满与折叠</h3>
+        <p>不限制行数：胶囊按 <b>预警 → 状态 → 数值</b> 依次铺满可用高度，最后一段用完剩余高度；只有真的放不下才从末尾折叠成 <code>+N</code>（伤害优先保留）。窗口变大 / 变小时整个 HUD 自动重排，尽量多显示。悬停看全部。</p></div></div>
       <div class="rule"><div class="k">R05</div><div class="b">
         <h3>紧凑档</h3>
         <p>可用宽 &lt; 340 或基准字号 &lt; 12.5 时：隐藏速率段（保留单位）、隐藏遥修微条、内边距 −1、间距 4 → 3。不缩小字号（有下限）；预警胶囊不降级（它本来就只有三个词）。</p></div></div>
@@ -781,7 +781,7 @@
         <p>基准 = 预警文字字号（跟随缩放，下限 12）。分类/标签 0.78×、主值 1.13×、单位/速率 0.66×、状态 0.73×，各自有下限（10 / 12 / 9.5 / 9.5）。预警的跳数用主值档，标签与分钟用 0.66× 档。</p></div></div>
       <div class="rule"><div class="k">R08</div><div class="b">
         <h3>空状态与开关</h3>
-        <p>三段都没有可见胶囊就整块不渲染（不是空底板、不是「无战斗」占位）；只有预警时只画预警那一行，只有战斗时只画战斗两段——「显示频道预警」与「显示战斗信息」两个总开关互相独立。日志监控命中行（默认关闭、低频）暂保留旧文本行模板，不在本次胶囊化范围内。</p></div></div>
+        <p>三段都没有可见胶囊就整块不渲染（不是空底板、不是「无战斗」占位）；只有预警时只画预警那一行，只有战斗时只画战斗两段——「显示频道预警」与「显示战斗信息」两个总开关互相独立，且<b>默认关闭</b>（首次使用需手动打开）。关键词命中行已按需求移除（阶段 397），叠加层只保留频道预警与战斗日志。</p></div></div>
       <div class="rule"><div class="k">R09</div><div class="b">
         <h3>悬停详情</h3>
         <p>沿用现有聚合 ToolTip，判定矩形改为底板实际矩形；浮层不改变 HUD 尺寸。顺序与胶囊一致：预警（系统 · 跳数 · 时间 / 频道 · 发言人 · 原文）→ 状态/数值（分类 · 装备 · 来源 (舰船) · 数值/间隔 · 时间）。</p></div></div>
@@ -793,10 +793,10 @@
         <p>战斗行只显示未过期的（沿用现状）；反跳 / 干扰等 sticky 状态不受过期影响，直到清除或停止监控。预警不设过期——由 IntelWindow 的解除 / 降级机制决定它还在不在。</p></div></div>
       <div class="rule"><div class="k">R12</div><div class="b">
         <h3>设置语义：一套配色，两种标识</h3>
-        <p>「叠加层样式」只剩字体 / 字号 / 跟随缩放 / 缩放倍率，同时作用于预警胶囊与战斗胶囊，字号也是整块 HUD 的基准（名字另有独立设置）。<b>颜色恢复为分类色</b>（红=受损 / 绿=受益 / 紫=电子战；预警 最近红 / 最新黄 / 降级灰），<b>不再提供文字色 / 背景色设置</b>。胶囊外观与日志监控一致：圆角 10、内边距 8×2、无边框、同字号；不再额外画底板。</p></div></div>
+        <p>「战略信息」组里只剩字体 / 字号 / 跟随缩放 / 缩放倍率，同时作用于预警胶囊与战斗胶囊，字号也是整块 HUD 的基准（名字另有独立设置）。<b>颜色恢复为分类色</b>（红=受损 / 绿=受益 / 紫=电子战；预警 最近红 / 最新黄 / 降级灰），<b>不再提供文字色 / 背景色设置</b>。胶囊外观与日志监控一致：圆角 10、内边距 8×2、无边框、同字号；不再额外画底板。</p></div></div>
       <div class="rule"><div class="k">R13</div><div class="b">
         <h3>主题与对比</h3>
-        <p>胶囊颜色来自主题资源（深色 <span class="mono">#FF99A4 / #6CCB5F / #FCE100</span>，浅色 <span class="mono">#C42B1C / #0F7B0F / #9D5D00</span>），底色是 tone 28% 混深色底的一层实色，保证在游戏画面上可读。</p></div></div>
+        <p>胶囊颜色来自主题资源（深色 <span class="mono">#FF99A4 / #6CCB5F / #FCE100</span>，浅色 <span class="mono">#C42B1C / #0F7B0F / #9D5D00</span>）；底色是 tone 的 <b>12% 透明底</b>（日志监控同款 TintOf 口径），不是实色块。</p></div></div>
     </div>
   </section>
 
@@ -804,7 +804,7 @@
   <section class="sec" id="impl">
     <div class="sec-head"><span class="idx">08</span><h2>落到 WPF：改哪里</h2><span class="sub">契约扩展 + 视图排版 + 一处宽度传递</span></div>
     <p class="sec-note">
-      默认行为零破坏：<code>PreviewOverlayItem</code> 新增的 <code>Chip</code> 为 <code>null</code> 时仍走旧的文本行模板（日志监控命中行不动）。
+      <code>PreviewOverlayItem</code> 的 <code>Chip</code> 为 <code>null</code> 时仍走旧的文本行模板（当前没有 provider 使用，保留作低频内容的兜底）。
       预警与战斗各自由 provider 输出结构化胶囊，排版与折叠放在 <code>PreviewNameOverlayWindow</code>——因为只有视图知道真实可用宽度。
     </p>
 
@@ -908,7 +908,7 @@
 {
     CornerRadius = <span class="k">new</span> CornerRadius(10),
     BorderThickness = <span class="k">new</span> Thickness(0),        <span class="c">// 无边框（与日志监控一致）</span>
-    Background = ToneSurfaceBrush(tone),           <span class="c">// tone 28% 混深色底，保证游戏画面上可读</span>
+    Background = ToneSurfaceBrush(tone),           <span class="c">// tone 12% 透明底（与日志监控 TintOf 同口径）</span>
     Opacity = chip.Dimmed ? 0.55 : 1.0,            <span class="c">// 降级预警变淡</span>
 };
 
@@ -936,7 +936,7 @@ CombatShort_Rep            遥修 / Rep
 CombatShort_CapTransfer    传电 / Cap
 CombatShort_Damage         伤害 / Dmg
 PreviewCombat_Overflow     +{0}
-GamePreviewPage_CombatOverlayRows    最多显示行数 / Max rows
+
 GamePreview_OverlayTagNearest        最近 / Nearest
 GamePreview_OverlayTagLatest         最新 / Latest
 GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre>
@@ -953,7 +953,7 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
           <tr><td class="mono">Services/GamePreview/Overlay/CombatLogOverlayProvider.cs</td><td>输出结构化胶囊、遥修聚合、短标签、优先级</td><td class="cell-ok">低</td></tr>
           <tr><td class="mono">Views/Windows/PreviewNameOverlayWindow.xaml(.cs)</td><td>底板 + 三个 WrapPanel + 折叠 + MaxContentWidth</td><td class="cell-ok">中（纯 UI）</td></tr>
           <tr><td class="mono">Views/Windows/GamePreviewWindow.xaml.cs</td><td>传入可用宽度；悬停矩形改为底板矩形</td><td class="cell-ok">低</td></tr>
-          <tr><td class="mono">Core/Models/GamePreviews/PreviewSetting.cs</td><td>新增「最多显示行数」（1–3）</td><td class="cell-ok">低</td></tr>
+          <tr><td class="mono">Core/Models/GamePreviews/PreviewSetting.cs</td><td>删除「最多显示行数」（改为按窗口高度铺满）</td><td class="cell-ok">低</td></tr>
         </tbody>
       </table>
     </div>
@@ -966,7 +966,7 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
       <div class="card">
         <div class="checks">
           <div class="check"><span class="box"></span><div><b>宽度不溢出</b>：320 / 480 / 640 三档下，叠加层 <span class="mono">ActualWidth ≤ 客户区宽 − 12</span>，含 12 个分类全开 + 遥修 6 层。</div></div>
-          <div class="check"><span class="box"></span><div><b>行数预算</b>：数值区预算 1/2/3 时占用行数分别不超过 1/2/3；状态行恒为 1 行；折叠数 = <span class="mono">+N</span> 中的 N。</div></div>
+          <div class="check"><span class="box"></span><div><b>高度铺满</b>：HUD 高度不超过预览窗可用高度；窗口变高时多显示、变矮时折叠成 <span class="mono">+N</span>；不设行数上限。</div></div>
           <div class="check"><span class="box"></span><div><b>伤害永不折叠</b>：任何预算与宽度下伤害胶囊可见；状态行超过 1 行时从优先级最低的开始折叠。</div></div>
           <div class="check"><span class="box"></span><div><b>遥修聚合</b>：主值 = 三层之和，微条比例 = 各层速率占比（±0.02），单层时不渲染微条。</div></div>
           <div class="check"><span class="box"></span><div><b>字号阶梯</b>：基准 12 / 15 / 18 时，label / value / meta 的实际字号符合 0.78 / 1.13 / 0.66 且不低于下限。</div></div>
@@ -1021,6 +1021,7 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
       {key:"scram",  detail:"跃迁扰频器 II · Aria (Loki) · 12:34:56"},
       {key:"ecm",    detail:"磁力 ECM II · Kaho (Blackbird) · 12:34:41"},
       {key:"damage", value:209, rate:41.8, detail:"雷神重型导弹 · Arya D Stark (小鹰级) · 209 HP / 5s = 41.8 HP/s · 12:34:58"},
+      {key:"damage", value:300, rate:50, out:true, detail:"输出 · 雷神重型导弹 · 300 HP / 6s = 50 HP/s · 12:34:58"},
       {key:"neut",   value:45,  rate:22.5, detail:"中型能量中和器 II · Guardian (Loki) · 45 GJ / 2s = 22.5 GJ/s · 12:34:52"},
       {key:"rep",    value:123, rate:41,   layers:[0.37,0.63,0], detail:"护盾 45 HP · 装甲 78 HP · 大型远程护盾传输 II · 12:34:50"},
       {key:"captr",  value:12,  rate:4,    detail:"远程电容传输器 II · Guardian (Loki) · 12:34:49"}
@@ -1034,6 +1035,7 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
       {key:"damp",    detail:"远程感应抑阻器 II · Kaho (Blackbird) · 12:34:36"},
       {key:"ewother", detail:"结构干扰器 · Aria (Loki) · 12:34:35"},
       {key:"damage",  value:1402, rate:280.4, detail:"雷神重型导弹 · Arya D Stark (小鹰级) · 1402 HP / 5s = 280.4 HP/s · 12:34:58"},
+      {key:"damage",  value:980,  rate:196,  out:true, detail:"输出 · 雷神重型导弹 · 980 HP / 5s = 196 HP/s · 12:34:58"},
       {key:"neut",    value:180,  rate:45,    detail:"中型能量中和器 II · Guardian (Loki) · 180 GJ / 4s = 45 GJ/s · 12:34:52"},
       {key:"nos",     value:36,   rate:12,    detail:"小型掠能器 II · Kaho (Blackbird) · 36 GJ / 3s = 12 GJ/s · 12:34:51"},
       {key:"rep",     value:386,  rate:128.7, layers:[0.31,0.62,0.07], detail:"护盾 120 HP · 装甲 240 HP · 结构 26 HP · 大型远程护盾传输 II · 12:34:50"},
@@ -1082,7 +1084,8 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
 
     if (cat.kind === "state"){
       el.className = "chip chip-state";
-      el.innerHTML = '<span class="sl">' + cat.short + '</span>';
+      el.dataset.tone = item.out ? "benefit" : cat.tone;
+      el.innerHTML = '<span class="a">' + (item.out ? "\u25B2" : "\u25BC") + '</span><span class="sl">' + cat.short + '</span>';
       return el;
     }
 
@@ -1090,10 +1093,13 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
     var isRep = item.key === "rep";
     el.className = "chip " + (isDamage ? "chip-damage" : isRep ? "chip-rep" : "chip-value");
     if (isDamage) el.dataset.pinned = "1";
+    var tone = item.out ? ((item.key === "rep" || item.key === "captr") ? "neutral" : "benefit") : cat.tone;
+    el.dataset.tone = tone;
 
     var unit = cat.unit || "";
     var meta = compact ? unit : (unit + (item.rate ? " " + fmtRate(item.rate) + "/s" : ""));
-    var html = '<span class="l">' + cat.short + '</span>' +
+    var html = '<span class="a">' + (item.out ? "\u25B2" : "\u25BC") + '</span>' +
+               '<span class="l">' + cat.short + '</span>' +
                '<span class="v">' + item.value + '</span>' +
                (meta ? '<span class="m">' + meta + '</span>' : '');
 
@@ -1175,23 +1181,40 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
     return Math.max(max, cur);
   }
 
-  // 把某个 zone 折叠到 maxRows 行；返回被折叠的枚数。伤害永不折叠，状态可被折叠（低优先级先走）
-  function fitZone(zone, maxRows){
-    var all = Array.prototype.slice.call(zone.children);
+  // 阶段 388：不限制行数，胶囊铺满窗口高度；真的放不下才折叠成 +N
+  // 原型用"行高估算"而不是真实测量：浏览器的布局变化会影响测量结果，
+  // 真实实现（WPF）用 Measure/Arrange 逐枚折叠，这里只需表达行为。
+  function fitHudToHeight(hud, available){
+    var zone = hud.querySelector(".zone.values");
+    var intelZone = hud.querySelector(".zone.intel");
+    var stateZone = hud.querySelector(".zone.states");
+    if (!zone) return 0;
+    var all = Array.prototype.slice.call(zone.children).filter(function(c){ return !c.classList.contains("chip-more"); });
+    all.forEach(function(c){ c.style.display = ""; });
+    Array.prototype.slice.call(zone.querySelectorAll(".chip-more")).forEach(function(m){ m.remove(); });
+
+    var rowH = 26;
+    var used = (rowCountOf(intelZone) + rowCountOf(stateZone)) * rowH;
+    var maxRows = Math.max(0, Math.floor((available - used) / rowH));
     var hidden = [];
+    function lastVisible(){
+      for (var i = all.length - 1; i >= 0; i--){
+        if (all[i].style.display !== "none") return all[i];
+      }
+      return null;
+    }
     function lastFoldable(){
       for (var i = all.length - 1; i >= 0; i--){
         var c = all[i];
         if (c.style.display !== "none" && c.dataset.pinned !== "1") return c;
       }
-      return null;
+      return lastVisible();
     }
     var guard = 0;
     while (rowCountOf(zone) > maxRows && guard++ < 40){
-      var c = lastFoldable();
-      if (!c) break;
-      c.style.display = "none";
-      hidden.push(c);
+      var last = lastFoldable();
+      if (!last) break;
+      last.style.display = "none"; hidden.push(last);
     }
     if (hidden.length){
       var more = document.createElement("div");
@@ -1202,15 +1225,14 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
       while (rowCountOf(zone) > maxRows && guard++ < 40){
         var next = lastFoldable();
         if (!next){ more.remove(); break; }
-        next.style.display = "none";
-        hidden.push(next);
+        next.style.display = "none"; hidden.push(next);
         more.textContent = "+" + hidden.length;
       }
     }
     return hidden.length;
   }
 
-  function renderHud(hud, intel, items, maxRows, compact){
+  function renderHud(hud, intel, items, compact){
     var intelZone = hud.querySelector(".zone.intel");
     var stateZone = hud.querySelector(".zone.states");
     var valZone = hud.querySelector(".zone.values");
@@ -1240,20 +1262,26 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
     states.forEach(function(it){ stateZone.appendChild(makeChip(it, compact)); });
     values.forEach(function(it){ valZone.appendChild(makeChip(it, compact)); });
 
-    var hiddenIntel = fitZone(intelZone, 1);           // 预警固定 1 行
-    var hiddenStates = fitZone(stateZone, 1);          // 状态固定 1 行
-    var hiddenValues = fitZone(valZone, maxRows);      // 数值 1–3 行
+    var winEl = hud.closest(".win");
+    var available = winEl ? Math.max(0, winEl.clientHeight - hud.offsetTop - 12) : 4096;
+
+    // 先贴合宽度再按高度折：宽度变化会改变换行，折完宽度也会变，所以做两轮
+    function hug(){
+      var maxRow = Math.max(rowWidthOf(intelZone), rowWidthOf(stateZone), rowWidthOf(valZone));
+      if (maxRow > 0) hud.style.width = Math.ceil(maxRow + 13) + "px";
+    }
+
+    // 先按完整内容贴合宽度，再按高度折；折完不再收窄，避免"收窄→换行→又变高"的来回
+    hug();
+    var hiddenValues = fitHudToHeight(hud, available);
+
     var rows = (intelZone.children.length ? 1 : 0)
              + (stateZone.children.length ? 1 : 0)
              + rowCountOf(valZone);
 
-    // 底板贴合最宽的一行（+ 左右 padding 9 + 边框 3，留 1px 取整余量）
-    var maxRow = Math.max(rowWidthOf(intelZone), rowWidthOf(stateZone), rowWidthOf(valZone));
-    if (maxRow > 0) hud.style.width = Math.ceil(maxRow + 13) + "px";
-
     return {
       rows: rows,
-      hidden: hiddenIntel + hiddenStates + hiddenValues,
+      hidden: hiddenValues,
       w: hud.offsetWidth,
       h: hud.offsetHeight,
       states: states.length,
@@ -1266,11 +1294,10 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
     if (!hud) return;
     var scen = SCEN[hud.dataset.scenario] || [];
     var intel = INTEL[hud.dataset.intel || "none"] || [];
-    var maxRows = parseInt(hud.dataset.rows || "2", 10);
     var fs = parseFloat(getComputedStyle(win).getPropertyValue("--fs")) || 15;
     var width = win.clientWidth;
     var compact = fs < 12.5 || width < 340;
-    var res = renderHud(hud, intel, scen, maxRows, compact);
+    var res = renderHud(hud, intel, scen, compact);
     win.dataset.rows = res.rows;
     win.dataset.hidden = res.hidden;
     win.dataset.hudw = res.w;
@@ -1345,20 +1372,20 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
   // ---- 交互原型 ----
   var play = document.getElementById("playWin");
   var hud = play.querySelector("[data-mock]");
-  var state = {w:480, fs:15, rows:2, scen:"typical", intel:"typical"};
+  var state = {w:480, h:270, fs:15, scen:"typical", intel:"typical"};
 
   function applyPlay(){
     play.style.width = state.w + "px";
-    play.style.height = Math.round(state.w * 9 / 16) + "px";
+    play.style.height = state.h + "px";
     play.style.setProperty("--fs", state.fs + "px");
     play.style.setProperty("--namefs", Math.max(13, Math.round(state.fs * 1.55)) + "px");
-    hud.dataset.rows = state.rows;
     var scen = SCEN[state.scen];
     var intel = INTEL[state.intel] || [];
     var compact = state.fs < 12.5 || state.w < 340;
-    var res = renderHud(hud, intel, scen, state.rows, compact);
+    var res = renderHud(hud, intel, scen, compact);
 
-    document.getElementById("wVal").textContent = state.w + " × " + Math.round(state.w * 9 / 16);
+    document.getElementById("wVal").textContent = state.w + " × " + state.h;
+    document.getElementById("hVal").textContent = state.h + " px";
     document.getElementById("fVal").textContent = state.fs.toFixed(1) + " DIP";
     document.getElementById("mW").textContent = res.w + " px";
     document.getElementById("mH").textContent = res.h + " px";
@@ -1370,7 +1397,7 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
     var note = document.getElementById("playNote");
     var over = res.w > Math.max(0, state.w - 12);
     note.textContent = (over ? "超出可用宽 " + (res.w - (state.w - 12)) + " px" : "宽度 " + res.w + " / 可用 " + (state.w - 12)) +
-                       " · 紧凑 " + (compact ? "开" : "关") + " · 预警/状态各 1 行";
+                       " · 紧凑 " + (compact ? "开" : "关") + " · 窗口高 " + state.h + " px";
     note.style.color = over ? "var(--red)" : "var(--faint)";
   }
 
@@ -1380,13 +1407,8 @@ GamePreview_OverlayTagBoth           最近/最新 / Nearest·Latest</code></pre
   document.getElementById("fRange").addEventListener("input", function(e){
     state.fs = parseFloat(e.target.value); applyPlay();
   });
-  Array.prototype.forEach.call(document.querySelectorAll("#rowSeg button"), function(btn){
-    btn.addEventListener("click", function(){
-      Array.prototype.forEach.call(btn.parentNode.children, function(b){ b.classList.remove("on"); });
-      btn.classList.add("on");
-      state.rows = parseInt(btn.dataset.rows, 10);
-      applyPlay();
-    });
+  document.getElementById("hRange").addEventListener("input", function(e){
+    state.h = parseInt(e.target.value, 10); applyPlay();
   });
   Array.prototype.forEach.call(document.querySelectorAll("#intelSeg button"), function(btn){
     btn.addEventListener("click", function(){

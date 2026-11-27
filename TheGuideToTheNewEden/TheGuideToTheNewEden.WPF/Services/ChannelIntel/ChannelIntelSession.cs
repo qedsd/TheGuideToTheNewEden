@@ -72,7 +72,50 @@ public sealed class ChannelIntelSession
         Setting.LocationID = system.SolarSystemID;
     }
 
-    public bool Running { get; private set; }
+    private bool _running;
+
+    /// <summary>会话是否在运行（阶段 396：核心监控就绪即为 true，不等 observers / ZKB）。</summary>
+    public bool Running
+    {
+        get => _running;
+        private set
+        {
+            if (_running == value)
+            {
+                return;
+            }
+
+            _running = value;
+            RaiseStartedChanged();
+        }
+    }
+
+    /// <summary>阶段 396：运行状态变化（页面 / 叠加层据此立刻刷新，不必等 Start 全部返回）。</summary>
+    public event EventHandler? RunningChanged;
+
+    private void RaiseStartedChanged() => RunningChanged?.Invoke(this, EventArgs.Empty);
+
+    /// <summary>阶段 396：后台启动 KB 预警订阅，失败不影响主会话。</summary>
+    private async Task StartZkbAsync(Core.Intel.ZKBIntel zkb)
+    {
+        try
+        {
+            if (await zkb.Start())
+            {
+                zkb.OnError += ZKBIntel_OnError;
+                zkb.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                Core.Log.Info($"频道预警 {Listener}：KB 预警已订阅");
+            }
+            else
+            {
+                Core.Log.Error($"{Listener}: {FindString("ChannelIntelPage_StartZKBFaild")}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+        }
+    }
 
     /// <summary>原始频道消息（页面"频道内容"页签显示）。</summary>
     public event EventHandler<IEnumerable<IntelChatContent>>? ChatContentEvent;
@@ -287,6 +330,27 @@ public sealed class ChannelIntelSession
 
     public async Task Start()
     {
+        // 阶段 392：并发/重复启动直接忽略——重复 Start 会清空 observers 并在
+        // IntelWarningService.Add 时报"相同角色名称WarningWindow"，让已经跑起来的会话也一起坏掉。
+        if (Running)
+        {
+            return;
+        }
+
+        try
+        {
+            await StartCore();
+        }
+        catch
+        {
+            // 阶段 396：Running 现在提前置位，失败要回滚，否则界面会一直显示"运行中"
+            Running = false;
+            throw;
+        }
+    }
+
+    private async Task StartCore()
+    {
         if (Setting.LocationID <= 0)
         {
             throw new Exception($"{Listener}: {FindString("ChannelIntelPage_Error_NoLocaction")}");
@@ -296,6 +360,11 @@ public sealed class ChannelIntelSession
         {
             throw new Exception($"{Listener}: {FindString("ChannelIntelPage_Error_SystemNotSupport")}");
         }
+
+        // 阶段 396：便宜的校验过了就先置运行中——后面刷新聊天日志 / 构建星图 / 加监控可能耗时数秒，
+        // 不能让界面（和叠加层）一直显示"未启动"。任何失败都会在 Start 的 catch 里回滚。
+        Running = true;
+        Core.Log.Info($"频道预警 {Listener}：开始启动（已置运行中）");
 
         // 游戏重开/跨天后聊天日志会换新文件；开始前把缓存里的旧文件路径更新到最新日志。
         await ChatlogChannelRefreshService.RefreshAsync(Listener, ChatChanelInfos);
@@ -319,13 +388,18 @@ public sealed class ChannelIntelSession
             Setting.LocationID,
             jumps);
         Core.EVEHelpers.SolarSystemPosHelper.ResetXY(_intelMap.GetAllSolarSystem());
+        Core.Log.Info($"频道预警 {Listener}：星图就绪，开始注册预警服务");
         if (!IntelWarningService.Current.Add(Setting, _intelMap))
         {
             throw new Exception(FindString("ChannelIntelPage_Error_WarningServiceError"));
         }
 
+
+        var observerIndex = 0;
         foreach (var ch in checkedItems)
         {
+            observerIndex++;
+            Core.Log.Info($"频道预警 {Listener}：添加频道监控 {observerIndex}/{checkedItems.Count}（{ch.ChannelID}）");
             var observer = new ChannelIntelObserver(ch.Info, Setting)
             {
                 IntelMap = _intelMap,
@@ -364,16 +438,9 @@ public sealed class ChannelIntelSession
 
         if (Setting.SubZKB)
         {
+            // 阶段 396：KB 预警要走网络订阅，不能阻塞"运行中"状态——后台启动，失败只记日志
             _zkbIntel = new Core.Intel.ZKBIntel(Setting, _intelMap);
-            if (await _zkbIntel.Start())
-            {
-                _zkbIntel.OnError += ZKBIntel_OnError;
-                _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
-            }
-            else
-            {
-                throw new Exception(FindString("ChannelIntelPage_StartZKBFaild"));
-            }
+            _ = StartZkbAsync(_zkbIntel);
         }
 
         var intelWindow = IntelWarningService.Current.GetIntelWindow(Setting.Listener);
@@ -385,7 +452,7 @@ public sealed class ChannelIntelSession
         // 注册到星图的情报聚合器（"无视跳数"旁路的消费方）
         Services.Map.ChannelIntelManager.Current.Register(this);
 
-        Running = true;
+        Core.Log.Info($"频道预警 {Listener}：启动完成");
         SaveSetting();
     }
 

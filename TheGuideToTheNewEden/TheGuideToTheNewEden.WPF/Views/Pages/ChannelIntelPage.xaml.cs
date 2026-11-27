@@ -63,6 +63,14 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
         _viewModel.ChatContents.CollectionChanged += ChatContents_CollectionChanged;
         _viewModel.ZKBIntelContents.CollectionChanged += ZKBIntelContents_CollectionChanged;
         Loaded += OnLoaded;
+        // 阶段 394：页面被缓存复用、再次显示时也要刷新一次运行状态
+        IsVisibleChanged += (_, e) =>
+        {
+            if (e.NewValue is true)
+            {
+                _viewModel.SyncRunningState();
+            }
+        };
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -76,6 +84,8 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
             Core.Log.Error(ex);
         }
 
+        // 阶段 394：多开预览会自动启动预警，进本页时先把共享会话的运行状态刷一遍
+        _viewModel.SyncRunningState();
         UpdateRoleCount();
         UpdateSelectedHeader();
         ApplyRoleFilter();
@@ -98,10 +108,11 @@ public partial class ChannelIntelPage : Page, IAssistantFeatureRuntime
             case nameof(ChannelIntelViewModel.Characters):
                 Dispatcher.BeginInvoke(() =>
                 {
+                    // 阶段 394：角色列表刚建好时再同步一次运行状态（自动启动的会话可能更早）
+                    _viewModel.SyncRunningState();
                     UpdateRoleCount();
                     ApplyRoleFilter();
                     EnsureFirstCharacterSelected();
-                    
                 });
                 break;
             case nameof(ChannelIntelViewModel.Running):

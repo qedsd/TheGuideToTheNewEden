@@ -337,8 +337,6 @@ public sealed class GameLogMonitorSession
     /// <summary>弹窗 + 声音 + 托盘通知（按配置自己的通知设置）。</summary>
     private void Notify(GameLogItemConfig config, string message)
     {
-        GameLogMonitorHitCenter.Current.Report(Info.ListenerName, config.ConfigName, message);
-
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {

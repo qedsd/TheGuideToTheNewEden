@@ -127,29 +127,6 @@
             </Style.Triggers>
         </Style>
 
-        <!--
-            阶段 383：叠加层样式（字体 / 字号 / 颜色）对**预警胶囊与战斗胶囊**同时生效，
-            只要其中任意一个开关打开就显示这组设置（两个都关时整组隐藏）。
-        -->
-        <Style x:Key="WhenOverlayChips" TargetType="StackPanel">
-            <Setter Property="Visibility" Value="Collapsed" />
-            <Style.Triggers>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding SelectedSetting.ShowPreviewWindow}" Value="True" />
-                        <Condition Binding="{Binding SelectedSetting.ShowIntelAlert}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding SelectedSetting.ShowPreviewWindow}" Value="True" />
-                        <Condition Binding="{Binding SelectedSetting.ShowCombatInfo}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-            </Style.Triggers>
-        </Style>
 
         <Style x:Key="WhenAlertFollowScale" TargetType="StackPanel">
             <Setter Property="Visibility" Value="Collapsed" />
@@ -1145,7 +1122,6 @@
                         HorizontalScrollBarVisibility="Disabled"
                         VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,0,0,4">
-                            <TextBlock Style="{StaticResource Hint}" Text="{DynamicResource GamePreviewPage_ItemSettingTip}" />
 
                             <!--  操作：对这个客户端的一次性动作（原来是底栏一排纯图标按钮）  -->
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupActions}" />
@@ -1595,9 +1571,9 @@
                                 </Border>
                             </StackPanel>
 
-                            <!--  阶段 355：频道预警叠加（名字下方的信息行）  -->
+                            <!--  阶段 389：频道预警 / 战斗信息 / 叠加层样式合并为「战略信息」（去掉长段说明）  -->
                             <StackPanel Style="{StaticResource WhenWindow}">
-                                <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupIntel}" />
+                                <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupStrategicInfo}" />
                                 <Border Style="{StaticResource GroupCard}">
                                     <StackPanel>
                                         <!--
@@ -1667,21 +1643,7 @@
                                                 IsChecked="{Binding SelectedSetting.ShowIntelAlert, Mode=TwoWay}"
                                                 ToolTip="{DynamicResource GamePreviewPage_ShowIntelAlertTip}" />
                                         </Grid>
-
                                         <Border Style="{StaticResource RowDivider}" />
-                                        <TextBlock
-                                            Margin="12,8,12,10"
-                                            Style="{StaticResource Hint}"
-                                            Text="{DynamicResource GamePreviewPage_ShowIntelAlertHint}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-
-                            <!--  阶段 357：战斗日志叠加（反跳/毁电/遥修/承伤 DPS，依赖日志监控"战斗日志"开关）  -->
-                            <StackPanel Style="{StaticResource WhenWindow}">
-                                <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupCombat}" />
-                                <Border Style="{StaticResource GroupCard}">
-                                    <StackPanel>
                                         <Grid Style="{StaticResource Row}">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -1746,19 +1708,6 @@
                                                 ToolTip="{DynamicResource GamePreviewPage_ShowCombatInfoTip}" />
                                         </Grid>
                                         <Border Style="{StaticResource RowDivider}" />
-                                        <TextBlock
-                                            Margin="12,8,12,10"
-                                            Style="{StaticResource Hint}"
-                                            Text="{DynamicResource GamePreviewPage_ShowCombatInfoHint}" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-
-                            <!--  阶段 383：叠加层样式（预警胶囊 + 战斗胶囊共用字体 / 字号 / 文字色 / 背景色）  -->
-                            <StackPanel Style="{StaticResource WhenOverlayChips}">
-                                <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupOverlayStyle}" />
-                                <Border Style="{StaticResource GroupCard}">
-                                    <StackPanel>
                                         <Grid Style="{StaticResource Row}">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -1821,12 +1770,6 @@
                                                     Text="{Binding SelectedSetting.AlertOverlayScaleFactor, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                             </Grid>
                                         </StackPanel>
-
-                                        <Border Style="{StaticResource RowDivider}" />
-                                        <TextBlock
-                                            Margin="12,8,12,10"
-                                            Style="{StaticResource Hint}"
-                                            Text="{DynamicResource GamePreviewPage_OverlayStyleHint}" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -2180,47 +2123,8 @@
                                             IsChecked="{Binding Setting.ShowCombatInfo, Mode=TwoWay}"
                                             ToolTip="{DynamicResource GamePreviewPage_ShowCombatInfoGlobalTip}" />
                                     </Grid>
-                                    <!--  阶段 382：叠加层数值区最多几行（预警 / 状态行不占这个预算）  -->
-                                    <Border Style="{StaticResource RowDivider}" />
-                                    <Grid Style="{StaticResource Row}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            Style="{StaticResource RowLabel}"
-                                            Text="{DynamicResource GamePreviewPage_CombatOverlayRows}"
-                                            ToolTip="{DynamicResource GamePreviewPage_CombatOverlayRowsTip}" />
-                                        <ui:NumberBox
-                                            Grid.Column="1"
-                                            Width="140"
-                                            ClearButtonEnabled="False"
-                                            Maximum="3"
-                                            Minimum="1"
-                                            SmallChange="1"
-                                            ToolTip="{DynamicResource GamePreviewPage_CombatOverlayRowsTip}"
-                                            Value="{Binding Setting.CombatOverlayMaxRows, Mode=TwoWay}" />
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
 
-                            <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_GroupMonitorHits}" />
-                            <Border Style="{StaticResource GroupCard}">
-                                <Grid Style="{StaticResource Row}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        Style="{StaticResource RowLabel}"
-                                        Text="{DynamicResource GamePreviewPage_ShowMonitorHits}"
-                                        ToolTip="{DynamicResource GamePreviewPage_ShowMonitorHitsTip}" />
-                                    <ui:ToggleSwitch
-                                        Grid.Column="1"
-                                        AutomationProperties.Name="{DynamicResource GamePreviewPage_ShowMonitorHits}"
-                                        IsChecked="{Binding Setting.ShowMonitorHits, Mode=TwoWay}"
-                                        ToolTip="{DynamicResource GamePreviewPage_ShowMonitorHitsTip}" />
-                                </Grid>
+                                </StackPanel>
                             </Border>
 
                             <TextBlock Style="{StaticResource GroupTitle}" Text="{DynamicResource GamePreviewPage_Behavior}" />

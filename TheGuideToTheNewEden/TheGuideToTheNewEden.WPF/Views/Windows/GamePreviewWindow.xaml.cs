@@ -242,6 +242,9 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         PreviewOverlayHub.Current.Changed += OnOverlayChanged;
         Setting.PropertyChanged += Setting_PropertyChanged;
 
+        // 阶段 390：预览窗一出现，就尝试把该角色的频道预警 / 日志监控拉起来（失败静默）
+        TryAutoStartMonitors();
+
         // 阶段 356：悬停显示预警详情。叠加窗鼠标穿透收不到 hover，只能由本窗（鼠标落在它下面的预览窗）
         // 按光标位置判断，再让叠加窗在信息行下方展开详情。
         _overlayHoverTimer = new DispatcherTimer(DispatcherPriority.Background)
@@ -951,15 +954,9 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             ApplyTransparencyMode();
         }
         else if (e.PropertyName == nameof(PreviewSetting.ShowIntelAlert)
-                 || e.PropertyName == nameof(PreviewSetting.ShowCombatInfo)
-                 || e.PropertyName == nameof(PreviewSetting.CombatOverlayMaxRows))
+                 || e.PropertyName == nameof(PreviewSetting.ShowCombatInfo))
         {
-            // 全局总开关 / 行数预算：立即重排叠加层（关掉即覆盖所有单项设置）
-            if (e.PropertyName == nameof(PreviewSetting.CombatOverlayMaxRows) && _nameOverlay is not null)
-            {
-                _nameOverlay.SetMaxValueRows(_globalSetting.CombatOverlayMaxRows);
-            }
-
+            // 全局总开关：立即重排叠加层（关掉即覆盖所有单项设置）
             ScheduleOverlayRefresh();
         }
     }
@@ -1455,6 +1452,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(PreviewItem.ShowIntelAlert)
+            || e.PropertyName == nameof(PreviewItem.ShowCombatInfo))
+        {
+            TryAutoStartMonitors();
+        }
+
+        if (e.PropertyName == nameof(PreviewItem.ShowIntelAlert)
             || e.PropertyName == nameof(PreviewItem.ShowCombatInfo)
             || e.PropertyName == nameof(PreviewItem.AlertOverlayFontFamily)
             || e.PropertyName == nameof(PreviewItem.AlertOverlayFontSize)
@@ -1464,6 +1467,29 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             // 开关 / 预警配色 / 字号变了：立刻重建叠加层（字号与颜色都在胶囊构建时算好）
             ScheduleOverlayRefresh();
         }
+    }
+
+    /// <summary>
+    /// 阶段 390：预览窗出现、或「频道预警 / 战斗信息」开关打开时，尽力自动启动对应功能的会话，
+    /// 让叠加层不需要用户先去两个功能页手动点「开始」。失败只记日志（例如没有聊天日志 / 游戏日志）。
+    /// </summary>
+    private void TryAutoStartMonitors()
+    {
+        if (!Setting.ShowPreviewWindow)
+        {
+            return;
+        }
+
+        var name = string.IsNullOrWhiteSpace(Setting.Name) ? _overlayCharacter : Setting.Name;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        TheGuideToTheNewEden.WPF.Services.GamePreview.PreviewMonitorAutoStart.TryStart(
+            name,
+            Setting.ShowIntelAlert && _globalSetting.ShowIntelAlert,
+            Setting.ShowCombatInfo && _globalSetting.ShowCombatInfo);
     }
 
     /// <summary>
@@ -1482,8 +1508,10 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             Owner = this,
             DisplayName = string.IsNullOrWhiteSpace(Setting.Name) ? Process.WindowTitle : Setting.Name,
         };
-        _nameOverlay.SetMaxValueRows(_globalSetting.CombatOverlayMaxRows);
         _nameOverlay.Show();
+
+        // 名字 / 窗口都已就位，再试一次自动启动（构造时可能还解析不到角色名）
+        TryAutoStartMonitors();
     }
 
     private void DestroyNameOverlay()
@@ -1579,10 +1607,17 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         var dpi = VisualTreeHelper.GetDpi(this);
         var thickness = GetHighlightThickness();
 
-        // 阶段 382：把"窗口里真正能用的宽度"交给叠加层，它自己决定怎么换行 / 折叠。
-        // 宽高都是物理像素，先换算成 DIP 再减左右留白（每侧 6）。
+        // 阶段 382 / 388：把"窗口里真正能用的宽 / 高"交给叠加层，它自己决定怎么换行 / 折叠。
+        // 宽高都是物理像素，先换算成 DIP 再减留白（每侧 6）；带标题栏时再扣掉标题栏高度。
         var contentWidth = window.Width / dpi.DpiScaleX - thickness.Left - thickness.Right;
+        var contentHeight = window.Height / dpi.DpiScaleY - thickness.Top - thickness.Bottom;
+        if (HasTitleBar)
+        {
+            contentHeight -= GetChromeHeight() / dpi.DpiScaleY;
+        }
+
         _nameOverlay.SetMaxContentWidth(Math.Max(160, contentWidth - 12));
+        _nameOverlay.SetMaxContentHeight(Math.Max(80, contentHeight - 12));
 
         _nameOverlay.ApplyAppearance(
             Setting.NameOverlayFontFamily,

@@ -1,4 +1,16 @@
 ﻿# TheGuideToTheNewEden.WPF 重构与更新记录
+- 阶段 397：按需求**移除多开里的「日志监控命中」功能**（`GameLogMonitorOverlayProvider`、`GameLogMonitorHitCenter`、`PreviewSetting.ShowMonitorHits`、设置页整组与 4 个语言键，3804 → **3800**），并把「频道预警 / 战斗信息」的**单项与全局开关默认改为关闭**（首次启用需手动打开）。
+- 阶段 396：修复「多开两个角色只显示一个在预警」——`ChannelIntelSession.Running` 原来在 `Start()` **全部结束时**才置位，而启动过程包含刷新聊天日志、构建星图、逐个加频道监控、订阅 KB 网络流，第二个角色常常几秒甚至十几秒没走完，界面就一直显示「未启动」；改为**通过廉价校验后立即置运行中**（失败回滚）、`RunningChanged` 事件即时广播，KB 订阅改后台不阻塞，并补了阶段日志。
+- 阶段 395：修复「多开自动启动的监控在功能页看不到实时日志」——内容回调原来挂在**启动它的那个 VM 实例**上，页面 VM 既没订阅、列表里也不是会话持有的 `GameLogInfo`；改为**会话级单点回调 + 静态广播**，页面打开/可见时接管运行中的会话（日志监控与频道预警都做了），并避免多实例重复订阅导致日志翻倍。
+- 阶段 394：修复自动启动后频道预警页角色状态仍不显示——自动启动用预览拿到的名字建会话（可能与聊天日志里的规范名大小写不同），页面按规范名查不到；改为**用聊天日志里的规范角色名建会话**、会话字典改为 `OrdinalIgnoreCase`，并在角色列表刷新后同步；新增"状态同步"诊断日志。
+- 阶段 393：自动启动后频道预警页状态不同步 & 误弹「没有打开预警」——①启动检查延后 5 秒再确认（自动启动需要时间）；②"运行中"改以静态会话为准，并在会话启停后广播 `SharedSessionsChanged`，底部「停止所有预警」按钮与角色列表状态立即可见。
+- 阶段 392：修复频道预警"一直启动不了"——自动启动与窗口构造/叠加窗创建会**并发**对同一会话调用 `Start()`，第二次会清空 observers 并在 `IntelWarningService.Add` 报「相同角色名称WarningWindow / 添加预警服务失败」，把已经启动的会话也弄坏；改为按监听者串行化（`SemaphoreSlim`）+ `Running` 守卫 + 会话字典加锁，`Chip` 侧同步诊断日志。
+- 阶段 391：修复多开预览自动启动时的并发崩溃——`SolarSystemPosHelper.PositionDic` 的懒加载没有加锁，多个预警会话同时取星图会重复 `Add` 同一个星系（`ArgumentException: An item with the same key has already been added`）；改为加锁构建、构建完整后再发布。
+- 阶段 390：开始多开预览时**尝试自动启动**同名角色的频道预警 / 战斗日志监控（`PreviewMonitorAutoStart`）；两个会话字典改为静态共享，页面 VM 与预览自动启动不再各开一份；启动失败只记日志、不打扰预览。
+- 阶段 389：多开预览页把「频道预警 / 战斗信息 / 叠加层样式」三组合并为**「战略信息」**一组（一个卡片、六个开关行），删掉三组的长段说明（3 个 Hint 键 + 1 个组标题键，3808 → **3805**）；合并后整组在选中预览窗时始终可见（不再依赖两个开关同时打开才出现）。
+- 阶段 388：叠加层**取消行数上限**——按窗口可用高度从 预警 → 状态 → 数值 依次铺满，真的放不下才折叠成 `+N`；窗口放大 / 缩小自动重排、尽量多显示。删除「最多显示行数」设置（模型 / 设置页 / 2 个语言键），`PreviewNameOverlayWindow` 改为高度预算（`SetMaxContentHeight`），语言键 3810 → **3808**。
+- 阶段 387：叠加层战斗胶囊**恢复双向**——与日志监控一致，承受（▼）与输出（▲）都出胶囊；输出伤害 / 毁电 / 吸电为绿色（收益），遥修 / 传电的输出为中性白，承受侧仍为红 / 紫；`PreviewOverlayChip` 增加 `Outgoing`，`OverlayProbe` 69 项全 PASS。
+- 阶段 386：叠加层胶囊**底色回到日志监控口径**——由阶段 385 的"tone 28% 混深色底"不透明实色（0xE6）改为 **tone 12% alpha 透明底（0x1F）**，与 `GameLogMsgWindow` 的 `TintOf` 完全一致；文字仍是 tone 色，外观（圆角 10 / 无边框 / 同字号）不变。
 - 阶段 385：叠加层恢复**分类色**（红=受损 / 绿=受益 / 紫=电子战；预警 最近=红 / 最新=黄 / 降级=灰），并**去掉单独的文字颜色 / 背景色设置**（`PreviewItem.AlertOverlayForegroundColor/BackgroundColor` 连同设置页两行、三个语言键一起删除，共 3810 键）；胶囊底色改为"tone 混深色底"的一层实色，`OverlayProbe` 67 项全 PASS。
 - 阶段 384：多开叠加层去掉多余的底板底色，胶囊外观与日志监控小窗的战斗胶囊对齐——圆角 10、内边距 8×2、无边框、无左侧色条、标签 / 主值 / 说明**同字号**（标签与主值 SemiBold）；文字与底色仍取「叠加层样式」的用户配色，底色全透明时才补一圈描边；`OverlayProbe` 新增外观断言（共 68 项全 PASS）。
 - 阶段 383：多开叠加层**配色统一**——预警胶囊与战斗胶囊共用「叠加层样式」里的字体 / 字号 / 跟随缩放 / 文字颜色 / 背景色；战斗分类语义退化为左侧色条（伤害 3px、其它 2px）与状态胶囊的 tone 描边；设置页把外观设置从「频道预警」卡片移出，独立成「叠加层样式（预警 + 战斗）」组；语言键 +2（共 3813）。
@@ -14622,6 +14634,493 @@ neut  出：45 GJ能量中和QEDSD - 小型能量中和器 I*                   
 - 旧的 `GamePreviewSetting.json` 里仍留着两个颜色字段（反序列化时被忽略），不影响使用。
 
 ---
+
+## 阶段 386：胶囊底色改回日志监控的 12% 透明 tint（2026-11-27）
+
+### 背景（用户反馈）
+
+> "胶囊背景颜色太深了，和日志监控里面的不一样"
+
+阶段 385 为了让胶囊在没有底板的情况下仍压得住游戏画面，把底色做成了 **tone 28% 混深色底的不透明实色**
+（`#E6543B42` 这类）。实机观感是一块块实心深色，和日志监控小窗里"浅色半透明 tint"的胶囊不是一回事。
+
+### 口径
+
+- 胶囊底色直接采用日志监控同款：`Color.FromArgb(0x1F, tone.R, tone.G, tone.B)`（12% alpha，`GameLogMsgWindow.TintOf`），
+  不再混深色底、不再不透明。
+- 文字仍取 tone；圆角 10、无边框、8×2、同字号等阶段 384/385 的外观不变。
+- 叠加层仍然没有底板——胶囊只有这一层 12% 的 tint，透出的是游戏画面本身。
+
+### 变更
+
+- `Views/Windows/PreviewNameOverlayWindow.xaml.cs`：`ToneSurfaceBrush` 改为 12% alpha 单色（去掉 mix 计算）。
+- `probe/OverlayProbe`：底色断言改为 `A=0x1F` 且 RGB = 分类色（伤害 → `#1FFF99A4`）。
+- 设计稿 CSS 改为 `color-mix(in srgb, var(--tone) 12%, transparent)`，文档/注释同步。
+
+### 验证
+
+- `dotnet build`：0 错误（应用正在运行、`bin` 被占用时用 `-p:OutputPath=.tmp\build\` 完成编译与探针运行）。
+- `probe/OverlayProbe`：**67 项全 PASS**，其中「胶囊底色 = 日志监控同款 12% tone 透明底：`#1FFF99A4`」。
+- zh/en 语言键仍各 3810 条（本次不动文案键）。
+
+### 已知限制
+
+- 12% 透明底在**极亮**的游戏画面（恒星、爆炸白闪）上对比会变弱；文字本身是 tone 色，仍可读，
+  必要时只能在"更透"和"更压得住"之间取舍（日志监控也是这个透明度，因为它有窗口背板；叠加层没有）。
+
+---
+
+## 阶段 387：叠加层恢复双向战斗信息（▼ 承受 / ▲ 输出）（2026-11-27）
+
+### 背景（用户反馈）
+
+> "没有显示输出伤害，日志监控里面的是有输出伤害的"
+
+阶段 369/370 起，叠加层刻意只显示"输入侧"，输出只在日志监控小窗里看。用户对比日志监控后发现叠加层缺少输出伤害，
+要求补上。
+
+### 口径
+
+- 与日志监控一致：**同一分类的承受（▼）与输出（▲）各出一枚胶囊**，相邻排列（输出排在承受之后，折叠时先折输出）。
+- 颜色按"对我的收益 / 伤害"（不是按方向）：
+  - 承受：伤害 / 毁电 / 吸电 / 反跳 = 红；ECM / 网子 / 标记 / 扰断 / 抑阻 = 紫；遥修 / 传电 = 绿；
+  - 输出：伤害 / 毁电 / 吸电 / 反跳 / 干扰 = 绿；遥修 / 传电 = 中性白。
+- 箭头：`▼` 承受、`▲` 输出（与日志监控的三角一致）；预警胶囊没有箭头。
+- 遥修按方向分别聚合（各方向的盾/甲/构微条独立计算）。
+- 其它不变：圆角 10、无边框、8×2、同字号、12% tint 底色、行数预算与 `+N` 折叠。
+
+### 变更明细
+
+- `Services/GamePreview/Overlay/PreviewOverlayItem.cs`：`PreviewOverlayChip` 增加 `bool? Outgoing`（null = 无方向）。
+- `Services/GamePreview/Overlay/CombatLogOverlayProvider.cs`：每个分类按 Incoming / Outgoing 各生成一枚；
+  `ToneOf(category, outgoing)`；`BuildRepChip` 增加方向参数；编号 +1 区分输出；key 追加 `.out`。
+- `Views/Windows/PreviewNameOverlayWindow.xaml.cs`：`CreateChip` 在标签前渲染 `▼/▲`（同字号，避免破坏"同字号"外观）。
+- `probe/OverlayProbe`：provider 增加输出伤害断言（`combat:damage.out`，`Tone=benefit`、`Outgoing=true`）；
+  叠加层增加输出胶囊与"▼/▲ 都渲染"断言；中心"过期后数值停在最后一次"改为包含匹配（行文本现在含两侧）。
+
+### 验证
+
+- `dotnet build`：0 错误（应用运行占用 `bin` 时用 `-p:OutputPath=.tmp\build\`）。
+- `probe/OverlayProbe`：**69 项全 PASS**，含：
+  - 「战斗 provider：输出伤害单独出一枚（▲ / 绿色）」；
+  - 「方向箭头：承受 ▼ / 输出 ▲ 都渲染」；
+  - 三段计数更新为 预警 2 / 状态 1 / 数值 5。
+- 设计稿原型也加了输出伤害样本与 ▼/▲。
+
+### 已知限制
+
+- 分类多、双向都开时数值胶囊会翻倍，2 行预算下更容易出现 `+N`；需要看全部时把「数值最多显示行数」调到 3。
+- 状态类（反跳 / ECM…）也双向显示：反跳对方显示为绿色 `▲ 反跳`。
+
+---
+
+## 阶段 388：叠加层按窗口高度铺满，取消行数上限（2026-11-27）
+
+### 背景（用户需求）
+
+> "不限制显示行数，让胶囊可以铺满整个窗口，当胶囊太多窗口显示不下时再使用 +X 表示还有更多，
+> 用户调整窗口大小后动态调整 UI 最大可能显示剩余的胶囊"
+
+之前「数值最多显示行数」是固定 1–3 行，窗口再高也只显示那么多；窗口变矮时又会把胶囊顶到画面外。
+
+### 口径
+
+- **不设行数上限**：胶囊按 预警 → 状态 → 数值 依次铺满可用高度，数值一直排到窗口底边。
+- 可用高度 = 预览窗客户区高 − 上下留白（12）− 标题栏（带标题栏样式）− 名字 / 文本行 / 间距；
+  胶囊总高超出才从末尾折叠成 `+N`（伤害优先保留）。
+- **随窗口缩放动态重排**：拖动改变窗口大小 → 重新计算高度 → 能多显示就多显示，少了才折叠。
+- 删除「最多显示行数」：`PreviewSetting.CombatOverlayMaxRows`、设置页的 NumberBox、两个语言键
+  （`GamePreviewPage_CombatOverlayRows(+Tip)`）全部移除；`PreviewNameOverlayWindow.SetMaxValueRows` 删除。
+
+### 变更明细
+
+- `Views/Windows/PreviewNameOverlayWindow.xaml.cs`：
+  - `SetMaxContentHeight(height)`（同时设 `RootPanel.MaxHeight`）；删除 `SetMaxValueRows` / `_maxValueRows`；
+  - `RebuildChips` 改为顺序高度预算：`FoldToHeight(Intel)` → 扣高 → `FoldToHeight(State)` → 扣高 → `FoldToHeight(Value)`；
+  - `FoldToHeight(panel, maxHeight)` 用测量高度折叠（`MeasureHeight`），删除 `RowCount`；
+  - `AvailableChipHeight()` 扣掉名字 / 文本行 / 间距；`HasChips` 与 zone 显隐改为按"可见"判断。
+- `Views/Windows/GamePreviewWindow.xaml.cs`：每次刷新把「客户区高 − 12 − 标题栏」传给叠加层；
+  删除 `SetMaxValueRows` 调用与 `CombatOverlayMaxRows` 的属性变更监听。
+- `Core/Models/GamePreviews/PreviewSetting.cs`：删除 `CombatOverlayMaxRows`。
+- `Views/Pages/GamePreviewPage.xaml`：删除「数值最多显示行数」一行。
+- 语言键 zh/en 各 **−2**（3810 → 3808）；`ShowCombatInfoHint` 改为"铺满窗口、放不下才 +N、随窗口重排"。
+- 手册 `game-preview.md` 同步（删除设置表行数行）。
+- 设计稿原型：把「数值最多行数」换成「窗口高度」滑杆，JS 改为按高度折叠。
+
+### 验证
+
+- `dotnet build`：0 错误（应用运行占用 `bin` 时用 `-p:OutputPath=.tmp\build\`）。
+- `probe/OverlayProbe`：**69 项全 PASS**；「窗口变矮时折叠出 +N」验证 170 DIP 高度下 value=4、overflow=1；
+  宽态 420 高度下 5 枚数值全部显示。
+- zh/en 语言键各 3808 条、键集一致、无重复。
+
+### 已知限制
+
+- 极端小的窗口（高度 < 名字 + 一行胶囊）时没有空间显示 `+N`，该 zone 会整体让位（宁可空着也不盖出窗口）。
+- 伤害仍是"最后才折"：其它胶囊折完后仍放不下时，`LastVisible` 兜底把伤害也让位，避免把叠加窗撑出窗口。
+- 文本行（日志监控命中）也占高度预算；开得多了胶囊空间会相应减少。
+- 每次刷新都会重新测量折叠（内容/尺寸变化时），开销是几个胶囊的 Measure，可忽略。
+
+---
+
+## 阶段 389：三个叠加层设置组合并为「战略信息」（2026-11-27）
+
+### 背景（用户需求）
+
+> "把角色预警、战斗信息、叠加层样式三个设置合并一起，名字叫战略信息，去掉各自种大串文字描述"
+
+每个角色原来有三张连续的小卡片（频道预警 / 战斗信息 / 叠加层样式），每张卡片下面还有一段长说明；
+设置项不多，说明却很占地方。
+
+### 口径
+
+- 三组合并为一个组 **「战略信息」**，一个 `GroupCard` 里依次排：
+  频道预警（开关 + 状态）→ 战斗信息（开关 + 状态）→ 叠加层字体 → 字号 → 跟随缩放 → 缩放倍率。
+- **删掉三张卡片底部的长段说明**（`ShowIntelAlertHint` / `ShowCombatInfoHint` / `OverlayStyleHint`），
+  行内 ToolTip 保留（悬停仍能看到说明）。
+- 可见性：合并后整组改用 `WhenWindow`（选中且显示预览窗就可见），不再依赖"两个开关至少开一个"——
+  否则两个都关时整组隐藏，用户没法再打开。
+- 删除不再使用的 `WhenOverlayChips` 样式与 `GamePreviewPage_GroupOverlayStyle` 键。
+
+### 变更明细
+
+- `Views/Pages/GamePreviewPage.xaml`：三个 `StackPanel` 合并为一个；去掉 3 处 `RowDivider + Hint`；
+  组标题改为 `GamePreviewPage_GroupStrategicInfo`；删除 `WhenOverlayChips` 样式。
+- 语言键 zh/en：新增 `GamePreviewPage_GroupStrategicInfo`（战略信息 / Strategic info）；
+  删除 `GroupOverlayStyle`、`ShowIntelAlertHint`、`ShowCombatInfoHint`、`OverlayStyleHint` 四个键；
+  3808 → **3805**。
+- 手册 `game-preview.md`、设计稿 `index.html` 里的「叠加层样式」组名同步为「战略信息」。
+
+### 验证
+
+- `dotnet build`：0 错误（应用运行占用 `bin` 时用 `-p:OutputPath=.tmp\build\`）。
+- zh/en 语言键各 3805 条、键集一致、无重复。
+- 行内开关、状态触发器、字体/字号绑定全部沿用原控件，绑定路径未变。
+
+### 已知限制
+
+- 三张卡片的先后顺序即设置项的先后顺序（预警 → 战斗 → 外观）；如果以后想加回分组标题，只能再拆卡。
+- 长说明删掉后，新用户需要悬停看 ToolTip；对应的说明文案仍保留在语言文件里（ToolTip 键）。
+
+---
+
+## 阶段 390：多开预览自动拉起频道预警 / 日志监控（2026-11-27）
+
+### 背景（用户需求）
+
+> "启用频道预警、战斗日志时，开启多开预览应该尝试自动启动频道预警、日志监控"
+
+原来预览窗的预警 / 战斗胶囊完全依赖两个功能页里手动点「开始」；没启动时叠加层只显示「未启动」之类的状态。
+
+### 口径
+
+- 预览窗出现、或某预览项的「频道预警 / 战斗信息」开关打开时，按角色名**尝试**启动：
+  - 频道预警：对应 <see cref="ChannelIntelSession"/>（已运行则跳过）；
+  - 战斗日志：对应 <see cref="GameLogMonitorSession"/>（`CombatEnabled = true`，已运行则只补开战斗）。
+- 是否尝试还看全局总开关（`PreviewSetting.ShowIntelAlert / ShowCombatInfo`），与叠加层显示条件一致。
+- **尽力而为**：找不到聊天日志 / 游戏日志 / 同名角色时静默失败（只写日志），不影响预览。
+- 自动启动不弹「等待 / 启动成功」提示（`quiet: true`），避免开预览时刷一串 toast；
+  手动在功能页启动的行为与提示不变。
+
+### 变更明细
+
+- 新增 `Services/GamePreview/PreviewMonitorAutoStart.cs`：懒加载一个 `ChannelIntelViewModel` / `GameLogMonitorViewModel`
+  （即使功能页从未打开过也能用），分别调用 `EnsureIntelStartedForPreviewAsync` / `EnsureCombatStartedForPreviewAsync`。
+- `ChannelIntelViewModel` / `GameLogMonitorViewModel`：会话字典改为 `static`（页面 VM 与自动启动共享，避免为同一角色开两份会话）；
+  Intel 侧在初始化角色列表时把已在运行的会话状态同步回 `Running`；新增两个 `Ensure...ForPreviewAsync`；
+  `StartAsync` / `StartCharacter` / `InitAsync` 增加 `quiet` 参数（跳过提示）。
+- `Views/Windows/GamePreviewWindow.xaml.cs`：构造、创建叠加窗、两个开关变化时调用 `TryAutoStartMonitors()`。
+- 手册 `game-preview.md` / `channel/intel.md` 的「没启动就没有胶囊」说明改为「会尝试自动启动」。
+
+### 验证
+
+- `dotnet build`：0 错误。
+- `OverlayProbe`：69 项全 PASS（自动启动不进入探针的渲染路径；本次改的是会话编排）。
+- 语言键不变。
+
+### 已知限制
+
+- 自动启动依赖本机聊天日志 / 游戏日志里的同名角色；日志缺失时不会启动（与手动启动的失败条件一致）。
+- 页面 VM 与自动启动的 VM 共享会话，但页面上的「运行中」状态只在页面初始化 / 手动刷新时同步；
+  自动启动后打开功能页，可能需要点一次刷新才看到运行状态（会话本身已经在跑）。
+- 静态会话在应用退出前一直存在；这符合"监控是全局的"这一语义。
+
+---
+
+## 阶段 391：修复星图位置表并发初始化崩溃（2026-11-27）
+
+### 现象
+
+开始多开预览后抛出：
+
+```
+System.ArgumentException: An item with the same key has already been added. Key: 30000002
+  at SolarSystemPosHelper.get_PositionDic() ... 第 43 行
+  at SolarSystemPosHelper.GetIntelSolarSystemMap(...) ... 第 59 行
+  at SolarSystemPosHelper.<GetIntelSolarSystemMapAsync>b__0()
+```
+
+### 根因
+
+阶段 390 的自动启动会**并发**拉起多个频道预警会话，每个会话都会调用
+`GetIntelSolarSystemMapAsync`（`Task.Run` 在线程池上执行）去取星图。
+`SolarSystemPosHelper.PositionDic` 的懒加载是"先判断 `positionDic == null` 再构建"，没有加锁：
+两个线程同时看到 null，就会各建一份并把同一个星系 `Add` 两次，后一个抛重复键异常。
+
+### 修复
+
+- `SolarSystemPosHelper.PositionDic` 改为 **双检锁**：读到已发布实例直接返回；否则在锁内构建。
+- 构建过程放进 `BuildPositionDic()`，用局部字典构建完整后**一次性赋值发布**——
+  读线程永远看不到"只填了一半"的字典。
+- 构建只发生一次，后续 `TryGetValue` / `Values` 都是只读并发访问（不需要再加锁）。
+
+### 验证
+
+- `dotnet build`（Core + WPF + 探针）：0 错误。
+- `OverlayProbe`：69 项全 PASS。
+
+### 备注
+
+Core 项目是 `netstandard2.1`（C# 8），所以锁对象用 `new object()`、判空用 `== null`，
+不能用目标类型 `new()` 或 `is not null`。
+
+## 阶段 392：修复频道预警并发重复启动（2026-11-27）
+
+### 现象
+
+开始多开预览后，频道预警始终起不来；日志里每个角色出现两次「频道预警启动」，随后：
+
+```
+ERROR: 存在相同角色名称WarningWindow
+ERROR: System.Exception: 添加预警服务失败
+   at ChannelIntelSession.Start() ... 第 324 行
+   at ChannelIntelViewModel.StartAsync(...)
+```
+
+### 根因
+
+阶段 390 的自动启动从三个位置触发（窗口构造、创建叠加窗、开关变化），同一个角色会被**并发**调用
+`ChannelIntelViewModel.StartAsync`。`StartAsync` 没有串行化，两次调用都对**同一个** session 执行 `Start()`：
+
+1. 第一次 `Start()` 成功，`Running = true`、observers 注册好；
+2. 第二次 `Start()` 先 `_observers.Clear()`（把第一次的监听清掉），再 `IntelWarningService.Add` →
+   同名预警窗口已存在 → 返回 false → 抛「添加预警服务失败」。
+
+结果：会话被第二次调用"拆掉"后失败，第一次的成功也白费，`Running` 停在 false，叠加层一直没有预警。
+
+### 修复
+
+- `ChannelIntelViewModel.StartAsync`：按监听者用静态 `SemaphoreSlim` 串行化；拿到锁后如果 `session.Running`
+  直接按成功返回（绝不重复 Start）。
+- `ChannelIntelSession.Start()`：入口加 `if (Running) return;` 兜底。
+- `_sessions` 是静态共享的：`GetSession`（取或建）与会话状态同步都放进 `lock (_sessions)`，
+  避免并发建出两份同名会话。
+- `GameLogMonitorViewModel.StartCharacter`：同样用静态锁串行化，避免并发创建两个监控窗口。
+- `Ensure...ForPreviewAsync` 失败时输出诊断日志（聊天日志里没有该角色 / 没有游戏日志）。
+
+### 验证
+
+- `dotnet build`：0 错误。
+- `OverlayProbe`：69 项全 PASS。
+- 复跑日志检查：每个角色只应出现一次「频道预警启动」，不再出现「相同角色名称WarningWindow」。
+
+### 已知限制
+
+- 自动启动仍依赖聊天日志 / 游戏日志里的同名角色与本机设置；缺失时只记日志、不启动。
+- 如果之前某次失败留下了同名预警窗口，应用重启后即可恢复（窗口是进程内的）。
+
+---
+
+## 阶段 393：修复自动启动后的状态同步与误提示（2026-11-27）
+
+### 现象
+
+多开预览已经能把频道预警自动启动起来，但：
+
+1. 右下角仍弹「没有打开预警」提示——预览的启动检查在自动启动完成之前就执行了；
+2. 进入「频道预警」页，角色显示运行中，但底部的「停止所有预警」按钮不出现，只有「开始全部」——
+   `Running` 是按 `Characters.Any(p => p.Running)` 算的，而自动启动更新的是另一个 VM 实例的角色对象。
+
+### 修复
+
+- `GamePreviewViewModel.CheckIntelAlertOnStart`：先等 5 秒再确认 `IsListening`，
+  自动启动一般 1–2 秒完成，不会再"刚启动就报没打开"；确实没起来才提示。
+- `ChannelIntelViewModel`：
+  - `SelectedRunning` 改以共享的 `Session.Running` 为准；
+  - `RefreshRunningState` 改为 `_sessions.Values.Any(p => p.Running) || Characters.Any(...)`；
+  - 新增 `SharedSessionsChanged` 静态事件：任何实例启动 / 停止会话后广播，
+    所有实例（页面 VM 与自动启动 VM）都在 UI 线程 `SyncRunningFromSessions()`，
+    角色列表状态、底部「停止所有预警」按钮、选中项的开始/停止按钮立即刷新；
+  - 同时仍订阅 `ChannelIntelAlertCenter.ListenersChanged`（停止/注销时也能同步）。
+
+### 验证
+
+- `dotnet build`：0 错误。
+- `OverlayProbe`：69 项全 PASS。
+
+### 备注
+
+静态事件未做退订（VM 实例很少：一个页面 + 一个自动启动器），影响可忽略。
+
+## 阶段 394：频道预警自动启动后的角色状态同步（2026-11-27）
+
+### 现象
+
+自动启动成功后，进入「频道预警」页，角色列表里的「运行中」/绿点仍不显示（底部按钮已在 393 修复）。
+
+### 根因
+
+自动启动用**预览窗拿到的名字**调用 `GetSession(listener)` 建会话，而「频道预警」页的角色列表来自聊天日志目录，
+按**聊天日志里的规范角色名**查会话。两者只要大小写/空白有任何差异，就是两个不同的 key：
+页面按自己的名字 `TryGetValue` 不到自动启动的会话，状态一直是「待命」。
+
+### 修复
+
+- `EnsureIntelStartedForPreviewAsync`：找到角色后改用 `character.Name`（规范名）建会话。
+- `_sessions` 字典改为 `StringComparer.OrdinalIgnoreCase`，两边名字大小写不同也能命中。
+- `RefreshCharactersAsync` 完成后也同步一次运行状态（刷新按钮/自动刷新不会丢状态）。
+- **页面显示时确定性同步**（不依赖事件时序）：新增公开方法 `SyncRunningState()`，
+  `ChannelIntelPage` 在 `Loaded`、`IsVisibleChanged`（变为可见）以及角色列表变化后各调用一次。
+  这样无论自动启动发生在页面创建之前还是之后，进页面看到的都是共享会话的真实状态。
+- `SyncRunningFromSessions` 增加诊断日志：`频道预警状态同步：角色列表 N，共享会话 M，运行中 K`。
+
+### 验证
+
+- `dotnet build`：0 错误。
+- `OverlayProbe`：69 项全 PASS。
+
+### 下一步
+
+如果仍不显示，日志里那行「频道预警状态同步：角色列表 …，共享会话 …，运行中 …」会说明是
+"会话没建出来"（0）还是"名字对不上"（M>0 但列表仍待命）。
+
+## 阶段 395：自动启动的监控在功能页看不到实时内容（2026-11-27）
+
+### 现象
+
+多开预览自动启动日志监控后，进入「日志监控」页看不到实时日志（频道预警页同理，只是用户先发现日志监控）。
+
+### 根因
+
+会话是静态共享的（阶段 390），但**内容回调挂在启动它的那个 VM 实例上**：
+
+- `GameLogMonitorSession.OnContentUpdate` 在 `StartCharacter` 里 `+= Session_OnContentUpdate`，
+  那是**自动启动 VM** 的实例方法；页面 VM 从未订阅，所以没人往页面数据里写。
+- 页面 VM 的 `GameLogInfos` 由 `InitAsync` 重新扫描日志目录生成**新的** `GameLogInfo`，
+  和会话持有的那个不是同一个对象；页面的实时日志读的是 `SelectedGameLogInfo.LogContents`，
+  而内容写进的是会话那个 `Info.LogContents`。
+
+### 修复（日志监控）
+
+- 内容回调改为**会话级单点**：`EnsureContentAttached` / `DetachContent` 用静态表记录已挂的会话，
+  保证每个会话只挂一次（否则多 VM 订阅会让同一条日志被追加多次）。
+- 回调里写 `item.Info.LogContents` 后，通过静态事件 `ContentUpdated` 广播；
+  每个 VM 实例在构造函数里订阅，按 `SelectedGameLogInfo` 过滤后触发自己的 `OnContentUpdate`（页面据此滚动刷新）。
+- 新增 `AdoptRunningSessions()`：把静态 `_sessions` 里的会话接管到本 VM——
+  **把列表项替换成会话持有的 `GameLogInfo`**（实时日志写在它身上）、挂内容回调、标记 `Running`，
+  并保持当前选中项指向会话对象。
+- `InitAsync` 末尾、`SyncRunningState()`（页面 `Loaded` / `IsVisibleChanged` 调用）都会接管一次，
+  不依赖事件时序；启动 / 停止后广播 `SharedSessionsChanged`，其它 VM 实例即时刷新。
+- `GameLogMonitorPage`：`Loaded` 后与 `IsVisibleChanged` 时调用 `SyncRunningState()`。
+
+### 修复（频道预警，同源问题）
+
+- 新增实例级 `_attachedListeners` + `AdoptRunningSessions()`：订阅运行中会话的
+  `ChatContentEvent` / `ZKBIntelEvent` / `OnZKBError`，页面「频道内容」才能看到实时消息。
+- 因为可能同时接管多个角色的会话，`Session_ChatContentEvent` 增加"只收当前选中角色"的过滤，避免串台。
+- `SyncRunningState()` 先接管再同步运行状态。
+
+### 验证
+
+- `dotnet build`（Core + WPF + 探针）：0 错误。
+- `OverlayProbe`：69 项全 PASS；语言键 zh/en 各 3804 条、无重复。
+
+### 已知限制
+
+- 静态 `_contentAttached` 只增不减（会话停止时 `DetachContent` 会移除，重启会重新挂），符合"每个会话一份"的语义。
+- 页面显示的是"接管之后"新产生的日志；接管前会话已积累的内容在 `LogContents` 里，
+  选中角色时 `RebuildContents` 会按已积累内容重绘，不会丢。
+
+## 阶段 396：频道预警"两个角色只有一个显示运行中"（2026-11-27）
+
+### 现象
+
+多开两个角色，自动启动后进入「频道预警」页：一个显示运行中，另一个显示未启动。
+
+### 定位
+
+日志里能直接看到（18:02 那次）：
+
+```
+18:02:02.697 频道预警启动 QEDSD：位置 30000001，4 跳
+18:02:02.698 频道预警启动 Arya C Stark：位置 30000772，4 跳
+18:02:03.174 频道预警状态同步：角色列表 3，共享会话 2，运行中 1
+18:02:06.893 频道预警状态同步：角色列表 3，共享会话 2，运行中 1   ← 一直是 1
+```
+
+两个会话对象都建出来了（共享会话 2），但只有一个 `Running == true`，而且**没有异常**——
+说明第二个 `Start()` 还在执行中。原因是 `Running = true` 写在 `Start()` 的**最末尾**，
+而 `Start()` 中间要做：刷新聊天日志文件、构建 4 跳星图（含 `GC.Collect()`）、
+逐个添加频道监控（每个都查一次星系名）、订阅 KB 击杀流（网络）。这些加起来几秒到十几秒，
+期间界面只能显示「未启动」。
+
+### 修复
+
+- `ChannelIntelSession`：
+  - 通过两个廉价校验（有位置、非特殊星系）后**立即** `Running = true` 并写日志
+    `频道预警 <角色>：开始启动（已置运行中）`；后续任何异常都在 `Start()` 的 catch 里**回滚为 false** 再抛。
+  - `Running` 改为带 `RunningChanged` 事件的属性；`Start()` 拆成 `Start/StartCore` 以便统一回滚。
+  - KB 预警（`SubZKB`）改为 `StartZkbAsync` 后台订阅，**不再阻塞**主会话状态；失败只记日志。
+  - 补阶段日志：星图就绪 / 注册预警服务 / `添加频道监控 i/N（频道 ID）` / 启动完成。
+- `ChannelIntelViewModel.GetSession`：创建会话时订阅 `RunningChanged → NotifySessionsChanged()`，
+  状态一变化立刻广播给所有实例（页面、自动启动 VM），不用等 `Start()` 返回。
+
+### 验证
+
+- `dotnet build`（Core + WPF + 探针）：0 错误。
+- `OverlayProbe`：69 项全 PASS。
+
+### 备注
+
+若之后再出现"某个角色一直不进入运行中"，日志里的阶段行会指出卡在
+`星图就绪` / `添加频道监控 i/N` / `启动完成` 的哪一段（KB 订阅已不在关键路径上）。
+
+## 阶段 397：移除多开的关键词命中行，预警 / 战斗开关默认关闭（2026-11-27）
+
+### 需求
+
+> "去掉多开里面显示关键词命中功能，另外把开启频道日志、战斗日志开关默认设置为不开启"
+
+### 移除「日志监控命中」
+
+- 删除 `Services/GamePreview/Overlay/GameLogMonitorOverlayProvider.cs`
+  （`PreviewOverlayHub` 里的注册一并删除）。
+- 删除 `Services/CombatLog/GameLogMonitorHitCenter.cs` 与 `GameLogMonitorSession.Notify` 里的 `Report(...)`
+  （该中心只为叠加层那一行服务；日志监控自己的窗口/通知不受影响）。
+- 删除 `PreviewSetting.ShowMonitorHits`；删除「全局设置 → **日志监控命中**」整组（一个开关行）。
+- 删除语言键：`GamePreviewPage_GroupMonitorHits` / `GamePreviewPage_ShowMonitorHits` /
+  `GamePreviewPage_ShowMonitorHitsTip` / `GameLogMonitorHit_Row`（zh/en 各 −4，3804 → **3800**）。
+- 手册 `game-preview.md` 删除「显示关键词命中」一条并重排全局设置编号。
+
+### 默认关闭
+
+- `PreviewSetting`：`_showIntelAlert` / `_showCombatInfo` 默认 `true` → `false`（全局总开关）。
+- `PreviewItem`：`showIntelAlert` / `showCombatInfo` 默认 `true` → `false`（单项开关）。
+- 手册对应两条各补一句「默认关闭」。
+
+> 只影响**新配置**；已保存的 `GamePreviewSetting.json` / 预览项配置里已有显式值，升级后行为不变
+> （想恢复默认就在设置页手动关掉，或删掉配置重新生成）。
+
+### 验证
+
+- `dotnet build`（Core + WPF + OverlayProbe + LogWindowProbe + AssistantProbe）：0 错误。
+- `OverlayProbe`：69 项全 PASS；`LogWindowProbe`：0 FAIL。
+- 语言键 zh/en 各 3800 条、键集一致、无重复。
+
+### 备注
+
+叠加上层现在只有两个 provider（频道预警 / 战斗日志）；`PreviewOverlayItem.Text` 的旧文本行模板仍保留
+（供以后低频内容使用），但当前没有 provider 会产出它。
 
 ## 8. 已知限制与待办
 

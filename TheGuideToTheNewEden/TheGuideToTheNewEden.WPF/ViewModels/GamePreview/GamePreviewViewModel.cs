@@ -1268,12 +1268,25 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        if (Services.ChannelIntel.ChannelIntelAlertCenter.Current.IsListening(name))
+        // 阶段 393：开始预览时会尝试自动启动同名预警（启动要一两秒）——延后确认，
+        // 避免"刚自动启动、会话还没 Add 完"就弹"没有打开预警"的提示。
+        _ = Task.Run(async () =>
         {
-            return;
-        }
+            await Task.Delay(5000);
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher is null)
+            {
+                return;
+            }
 
-        EnqueueIntelAlertNotice(name);
+            await dispatcher.InvokeAsync(() =>
+            {
+                if (!Services.ChannelIntel.ChannelIntelAlertCenter.Current.IsListening(name))
+                {
+                    EnqueueIntelAlertNotice(name);
+                }
+            });
+        });
     }
 
     private readonly List<string> _pendingIntelAlertNotices = [];

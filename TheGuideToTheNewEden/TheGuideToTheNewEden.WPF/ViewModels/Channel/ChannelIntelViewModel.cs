@@ -30,7 +30,8 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
 {
     private readonly string _logPath;
     private readonly Dictionary<string, List<ChatChanelInfoItem>> _listenerChannelDic = [];
-    private readonly Dictionary<string, ChannelIntelSession> _sessions = [];
+    /// <summary>阶段 390：会话按角色名全局共享（页面 VM / 预览自动启动共用，避免重复会话）。</summary>
+    private static readonly Dictionary<string, ChannelIntelSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _chatQueueLock = new();
     private readonly Queue<IntelChatContent> _pendingChatContents = new();
     private readonly Queue<EarlyWarningContent> _pendingZkbContents = new();
@@ -99,7 +100,7 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     public bool HasSession => Session is not null;
 
     /// <summary>选中角色是否正在预警（停止按钮/设置区可用性的状态源）。</summary>
-    public bool SelectedRunning => SelectedCharacter?.Running ?? false;
+    public bool SelectedRunning => Session?.Running ?? SelectedCharacter?.Running ?? false;
 
     /// <summary>选中角色未在预警（开始按钮显隐）。与 <see cref="SelectedRunning"/> 同源计算，
     /// 两者必须在同一处一起通知——否则绑定到漏通知的那个会静默保持控件默认值（按钮常显）。</summary>
@@ -126,6 +127,39 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         InitNameDbs();
         _ = InitSolarSystemsAsync();
         _ = InitDicAsync();
+
+        // 阶段 393：预警会话被自动启动 / 停止时，页面上的"运行中"与底部按钮跟着变
+        ChannelIntelAlertCenter.Current.ListenersChanged += OnIntelListenersChanged;
+        SharedSessionsChanged += OnSharedSessionsChanged;
+    }
+
+    /// <summary>阶段 393：会话启停后通知所有 VM 实例刷新（页面 VM 与自动启动 VM 共用静态会话）。</summary>
+    private static event Action? SharedSessionsChanged;
+
+    private static void NotifySessionsChanged() => SharedSessionsChanged?.Invoke();
+
+    private void OnSharedSessionsChanged()
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            SyncRunningFromSessions();
+            return;
+        }
+
+        dispatcher.BeginInvoke(new Action(SyncRunningFromSessions));
+    }
+
+    private void OnIntelListenersChanged(object? sender, EventArgs e)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || !dispatcher.CheckAccess())
+        {
+            dispatcher?.BeginInvoke(new Action(SyncRunningFromSessions));
+            return;
+        }
+
+        SyncRunningFromSessions();
     }
 
     private void InitNameDbs()
@@ -144,6 +178,9 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     {
         await LoadListenerChannelDicAsync();
         Characters = [.. _listenerChannelDic.Keys.Select(CreateListener)];
+
+        // 阶段 390/393：会话是静态共享的，可能已被"多开预览自动启动"拉起——把运行状态同步回列表
+        SyncRunningFromSessions();
         OnPropertyChanged(nameof(Characters));
     }
 
@@ -211,19 +248,26 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
 
     private ChannelIntelSession GetSession(string name)
     {
-        if (_sessions.TryGetValue(name, out var session))
+        // 阶段 392：会话字典是静态共享的，取/建都要在同一把锁里，避免并发建出两份同名会话
+        lock (_sessions)
         {
-            return session;
-        }
+            if (_sessions.TryGetValue(name, out var session))
+            {
+                return session;
+            }
 
-        var created = new ChannelIntelSession(
-            name,
-            _listenerChannelDic.TryGetValue(name, out var channels) ? channels : [],
-            MapSolarSystems,
-            NameDbs);
-        created.WindowStopRequested += Session_WindowStopRequested;
-        _sessions.Add(name, created);
-        return created;
+            var created = new ChannelIntelSession(
+                name,
+                _listenerChannelDic.TryGetValue(name, out var channels) ? channels : [],
+                MapSolarSystems,
+                NameDbs);
+            created.WindowStopRequested += Session_WindowStopRequested;
+
+            // 阶段 396：会话一置为运行中立刻广播，界面不用等 Start 全部返回
+            created.RunningChanged += (_, _) => NotifySessionsChanged();
+            _sessions.Add(name, created);
+            return created;
+        }
     }
 
     private void Session_WindowStopRequested(object? sender, EventArgs e)
@@ -244,25 +288,66 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         session.ChatContentEvent -= Session_ChatContentEvent;
         session.ZKBIntelEvent -= Session_ZKBIntelEvent;
         session.OnZKBError -= Session_OnZKBError;
+        _attachedListeners.Remove(session.Listener);
     }
 
-    private async Task<bool> StartAsync(ChannelIntelSession? session, ChannelIntelListener? listener)
+    /// <summary>阶段 395：本 VM 已订阅内容的会话（按角色名），避免重复订阅。</summary>
+    private readonly HashSet<string> _attachedListeners = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>阶段 392：同一角色的启动串行化，避免并发 Start 把同一会话启动两次。</summary>
+    private static readonly Dictionary<string, SemaphoreSlim> _startGates = new(StringComparer.OrdinalIgnoreCase);
+
+    private static SemaphoreSlim StartGateOf(string listener)
+    {
+        lock (_startGates)
+        {
+            if (!_startGates.TryGetValue(listener, out var gate))
+            {
+                gate = new SemaphoreSlim(1, 1);
+                _startGates[listener] = gate;
+            }
+
+            return gate;
+        }
+    }
+
+    private async Task<bool> StartAsync(ChannelIntelSession? session, ChannelIntelListener? listener, bool quiet = false)
     {
         if (session is null || listener is null)
         {
-            PageNotifyService.Error(FindString("General_CharacterUnselected"));
+            if (!quiet)
+            {
+                PageNotifyService.Error(FindString("General_CharacterUnselected"));
+            }
+
             return false;
         }
 
-        PageNotifyService.ShowWaiting($"{FindString("ChannelIntelPage_Start")}：{session.Listener}");
+        var gate = StartGateOf(session.Listener);
+        await gate.WaitAsync();
         try
         {
+            // 排队期间可能已被另一次调用启动：直接按成功返回，绝不再 Start 一遍
+            if (session.Running)
+            {
+                listener.Running = true;
+                RefreshRunningState();
+                return true;
+            }
+
+            if (!quiet)
+            {
+                PageNotifyService.ShowWaiting($"{FindString("ChannelIntelPage_Start")}：{session.Listener}");
+            }
+
             await session.Start();
             listener.Running = true;
+            NotifySessionsChanged();
             UnsubscribeEvents(session);
             session.ChatContentEvent += Session_ChatContentEvent;
             session.ZKBIntelEvent += Session_ZKBIntelEvent;
             session.OnZKBError += Session_OnZKBError;
+            _attachedListeners.Add(session.Listener);
             RefreshRunningState();
             OnPropertyChanged(nameof(SelectedRunning));
             OnPropertyChanged(nameof(SelectedNotRunning));
@@ -272,13 +357,58 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
         {
             IntelWarningService.Current.Remove(session.Listener);
             Core.Log.Error(ex);
-            PageNotifyService.Error(ex.Message);
+            if (!quiet)
+            {
+                PageNotifyService.Error(ex.Message);
+            }
+
             return false;
         }
         finally
         {
-            PageNotifyService.HideWaiting();
+            gate.Release();
+            if (!quiet)
+            {
+                PageNotifyService.HideWaiting();
+            }
         }
+    }
+
+    /// <summary>
+    /// 阶段 390：多开预览开始显示该角色时，尝试自动启动它的频道预警。
+    /// <para>已运行直接成功；会话列表还在加载时最多等 3 秒；找不到同名角色（无聊天日志）返回 false。</para>
+    /// </summary>
+    public async Task<bool> EnsureIntelStartedForPreviewAsync(string listener)
+    {
+        if (string.IsNullOrWhiteSpace(listener))
+        {
+            return false;
+        }
+
+        lock (_sessions)
+        {
+            if (_sessions.TryGetValue(listener, out var running) && running.Running)
+            {
+                return true;
+            }
+        }
+
+        for (var i = 0; i < 30 && Characters.Count == 0; i++)
+        {
+            await Task.Delay(100);
+        }
+
+        var character = Characters.FirstOrDefault(
+            p => string.Equals(p.Name, listener, StringComparison.OrdinalIgnoreCase));
+        if (character is null)
+        {
+            Core.Log.Info($"多开预览：频道预警自动启动跳过 {listener}（聊天日志里没有该角色）");
+            return false;
+        }
+
+        // 阶段 394：必须用**聊天日志里的规范角色名**建会话——预览拿到的名字可能大小写不同，
+        // 直接拿输入名建会话会让频道预警页按自己的名字查不到这个"运行中"的会话。
+        return await StartAsync(GetSession(character.Name), character, quiet: true);
     }
 
     public Task StartAsync() => StartAsync(Session, SelectedCharacter);
@@ -343,6 +473,7 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     {
         UnsubscribeEvents(session);
         session.Stop();
+        NotifySessionsChanged();
         var listener = Characters.FirstOrDefault(p => p.Name == session.Listener);
         if (listener is not null)
         {
@@ -355,7 +486,72 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     }
 
     private void RefreshRunningState()
-        => Running = Characters.Any(p => p.Running);
+    {
+        // 阶段 393：会话是静态共享的，可能由多开预览自动启动——"是否有人在预警"以会话为准，
+        // 否则从预览页回来时底部只显示"开始全部"，看不到"停止所有预警"。
+        lock (_sessions)
+        {
+            Running = _sessions.Values.Any(p => p.Running) || Characters.Any(p => p.Running);
+        }
+    }
+
+    /// <summary>
+    /// 阶段 394：页面可见 / 角色列表变化时，主动把共享会话的运行状态刷到角色列表。
+    /// 不依赖事件时序——哪怕自动启动发生在页面创建之前、或通知被并发吞掉，这里也会纠正一次。
+    /// </summary>
+    public void SyncRunningState()
+    {
+        AdoptRunningSessions();
+        SyncRunningFromSessions();
+    }
+
+    /// <summary>
+    /// 阶段 395：把**已经在运行**的共享会话接管到本 VM（多开预览自动启动的那些）——
+    /// 订阅聊天 / ZKB 内容，页面的"频道内容"才能看到实时消息。
+    /// </summary>
+    private void AdoptRunningSessions()
+    {
+        List<ChannelIntelSession> sessions;
+        lock (_sessions)
+        {
+            sessions = _sessions.Values.ToList();
+        }
+
+        foreach (var session in sessions)
+        {
+            if (!session.Running || !_attachedListeners.Add(session.Listener))
+            {
+                continue;
+            }
+
+            session.ChatContentEvent += Session_ChatContentEvent;
+            session.ZKBIntelEvent += Session_ZKBIntelEvent;
+            session.OnZKBError += Session_OnZKBError;
+            Core.Log.Info($"频道预警：接管运行中的会话 {session.Listener}（实时内容）");
+        }
+    }
+
+    /// <summary>把静态会话的运行状态同步到角色列表（多开预览自动启动后也能显示为运行中）。</summary>
+    private void SyncRunningFromSessions()
+    {
+        int sessionCount;
+        int runningCount;
+        lock (_sessions)
+        {
+            sessionCount = _sessions.Count;
+            runningCount = _sessions.Values.Count(p => p.Running);
+            foreach (var character in Characters)
+            {
+                character.Running = _sessions.TryGetValue(character.Name, out var session) && session.Running;
+            }
+        }
+
+        Core.Log.Info($"频道预警状态同步：角色列表 {Characters.Count}，共享会话 {sessionCount}，运行中 {runningCount}");
+
+        RefreshRunningState();
+        OnPropertyChanged(nameof(SelectedRunning));
+        OnPropertyChanged(nameof(SelectedNotRunning));
+    }
 
     public void RestorePos()
     {
@@ -410,6 +606,9 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
                     Characters.Add(CreateListener(item.Key));
                 }
             }
+
+            // 阶段 394：刷新角色列表后同步共享会话的运行状态
+            SyncRunningFromSessions();
 
             SelectedCharacter = null;
         }
@@ -483,6 +682,14 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
     {
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null || e is null)
+        {
+            return;
+        }
+
+        // 阶段 395：可能同时接管多个角色的会话，这里只收当前选中角色的内容（避免串台）
+        if (sender is ChannelIntelSession source
+            && Session is not null
+            && !string.Equals(source.Listener, Session.Listener, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }

@@ -261,7 +261,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
-        private bool _showIntelAlert = true;
+        private bool _showIntelAlert;
         /// <summary>
         /// 多开预览窗叠加层的**全局总开关**（阶段 355）：频道预警信息行。
         /// <para>
@@ -275,7 +275,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref _showIntelAlert, value);
         }
 
-        private bool _showCombatInfo = true;
+        private bool _showCombatInfo;
         /// <summary>
         /// 多开预览窗叠加层的**全局总开关**（阶段 357）：战斗日志信息行（反跳/毁电/遥修/承伤 DPS）。
         /// <para>关闭时覆盖所有单项设置；打开时由每项的 <see cref="PreviewItem.ShowCombatInfo"/> 决定。</para>
@@ -284,38 +284,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             get => _showCombatInfo;
             set => SetProperty(ref _showCombatInfo, value);
-        }
-
-        private int _combatOverlayMaxRows = 2;
-        /// <summary>
-        /// 多开预览叠加层的**数值区最多显示几行**（阶段 382，1–3，默认 2）。
-        /// <para>
-        /// 预警行与状态行各固定 1 行，不占这个预算；超出预算的数值胶囊会折叠成「+N」，
-        /// 伤害胶囊永不折叠。窗口很小时把它设成 1 可以少挡画面。
-        /// </para>
-        /// </summary>
-        public int CombatOverlayMaxRows
-        {
-            get => _combatOverlayMaxRows;
-            set
-            {
-                var next = Math.Clamp(value, 1, 3);
-                if (next != _combatOverlayMaxRows)
-                {
-                    SetProperty(ref _combatOverlayMaxRows, next);
-                }
-            }
-        }
-
-        private bool _showMonitorHits;
-        /// <summary>
-        /// 多开预览窗叠加层的可选开关（阶段 357）：把**日志监控关键词命中**（如"诱导检测"）也显示成一行。
-        /// <para>默认关闭；命中后保留 30 秒。战斗日志（<see cref="ShowCombatInfo"/>）是另一套开关。</para>
-        /// </summary>
-        public bool ShowMonitorHits
-        {
-            get => _showMonitorHits;
-            set => SetProperty(ref _showMonitorHits, value);
         }
     }
     public class PreviewHotKeyGroup : ObservableObject

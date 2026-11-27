@@ -314,7 +314,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref showPreviewWindowMode, value);
         }
 
-        private bool showIntelAlert = true;
+        private bool showIntelAlert;
         /// <summary>
         /// 在该预览窗的叠加层显示**频道预警**信息行（最近 / 最新预警的跳数与多少分钟前）。
         /// <para>
@@ -329,7 +329,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref showIntelAlert, value);
         }
 
-        private bool showCombatInfo = true;
+        private bool showCombatInfo;
         /// <summary>
         /// 在该预览窗的叠加层显示**战斗日志**信息行（反跳 / 毁电 / 遥修 / 承伤 DPS 等，阶段 357）。
         /// <para>

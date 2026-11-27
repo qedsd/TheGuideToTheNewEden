@@ -14,38 +14,67 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
     public static class SolarSystemPosHelper
     {
+        private static readonly object PositionDicLock = new object();
         private static Dictionary<int, SolarSystemPosition> positionDic;
+
+        /// <summary>
+        /// 全部星系的位置表（首次访问时构建，只构建一次）。
+        /// <para>
+        /// 阶段 390：多开预览会并发启动多个频道预警会话，而每个会话都会走
+        /// <see cref="GetIntelSolarSystemMapAsync"/>（线程池）来取星图——原来这里的
+        /// "先判断 null 再构建"没有加锁，两个线程会同时构建、后一个在 Add 时抛
+        /// "An item with the same key has already been added"。现在用锁保证只构建一次，
+        /// 并且**构建完整后才发布**（读线程永远看不到半成品）。
+        /// </para>
+        /// </summary>
         public static Dictionary<int, SolarSystemPosition> PositionDic
         {
             get
             {
-                if (positionDic == null)
+                var current = positionDic;
+                if (current != null)
                 {
-                    var allJumpsDict = Core.Services.DB.MapSolarSystemJumpService.QueryAll().GroupBy(p => p.FromSolarSystemID).ToDictionary(p => p.Key);
-                    var mapSolarSystems = Core.Services.DB.MapSolarSystemService.QueryAll().Where(p => !p.IsSpecial()).ToDictionary(p => p.SolarSystemID);
-                    positionDic = new Dictionary<int, SolarSystemPosition>();
-                    var maxY = mapSolarSystems.Max(p => p.Value.Y2);
-                    foreach (var mapSolarSystem in mapSolarSystems.Values)
-                    {
-                        if (allJumpsDict.TryGetValue(mapSolarSystem.SolarSystemID, out var jumps))
-                        {
-                            SolarSystemPosition pos = new SolarSystemPosition()
-                            {
-                                X = mapSolarSystem.X,
-                                Y = mapSolarSystem.Y,
-                                Z = mapSolarSystem.Z,
-                                X2 = mapSolarSystem.X2,
-                                Y2 = maxY - mapSolarSystem.Y2,//游戏原点在左下角，软件原点在左上角，需要将Y轴翻转
-                                SolarSystemID = mapSolarSystem.SolarSystemID,
-                                SolarSystemName = mapSolarSystem.SolarSystemName,
-                                JumpTo = jumps.Select(p => p.ToSolarSystemID).ToList(),
-                            };
-                            positionDic.Add(pos.SolarSystemID, pos);
-                        }
-                    }
+                    return current;
                 }
-                return positionDic;
+
+                lock (PositionDicLock)
+                {
+                    if (positionDic == null)
+                    {
+                        positionDic = BuildPositionDic();
+                    }
+
+                    return positionDic;
+                }
             }
+        }
+
+        private static Dictionary<int, SolarSystemPosition> BuildPositionDic()
+        {
+            var allJumpsDict = Core.Services.DB.MapSolarSystemJumpService.QueryAll().GroupBy(p => p.FromSolarSystemID).ToDictionary(p => p.Key);
+            var mapSolarSystems = Core.Services.DB.MapSolarSystemService.QueryAll().Where(p => !p.IsSpecial()).ToDictionary(p => p.SolarSystemID);
+            var built = new Dictionary<int, SolarSystemPosition>();
+            var maxY = mapSolarSystems.Max(p => p.Value.Y2);
+            foreach (var mapSolarSystem in mapSolarSystems.Values)
+            {
+                if (allJumpsDict.TryGetValue(mapSolarSystem.SolarSystemID, out var jumps))
+                {
+                    SolarSystemPosition pos = new SolarSystemPosition()
+                    {
+                        X = mapSolarSystem.X,
+                        Y = mapSolarSystem.Y,
+                        Z = mapSolarSystem.Z,
+                        X2 = mapSolarSystem.X2,
+                        Y2 = maxY - mapSolarSystem.Y2,//游戏原点在左下角，软件原点在左上角，需要将Y轴翻转
+                        SolarSystemID = mapSolarSystem.SolarSystemID,
+                        SolarSystemName = mapSolarSystem.SolarSystemName,
+                        JumpTo = jumps.Select(p => p.ToSolarSystemID).ToList(),
+                    };
+                    built.Add(pos.SolarSystemID, pos);
+                }
+            }
+
+            return built;
         }
         public static async Task<IntelSolarSystemMap> GetIntelSolarSystemMapAsync(int centerId, int jumps)
         {

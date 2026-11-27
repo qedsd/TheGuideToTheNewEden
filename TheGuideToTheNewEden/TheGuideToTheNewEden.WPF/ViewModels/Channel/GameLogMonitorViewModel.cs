@@ -28,9 +28,121 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Channel;
 public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 {
     private readonly string _logPath = GameLogsSettingService.GetGamelogsPath();
-    private readonly Dictionary<int, GameLogMonitorSession> _sessions = [];
+    /// <summary>阶段 390：会话按角色 ID 全局共享（页面 VM / 预览自动启动共用，避免重复会话）。</summary>
+    private static readonly Dictionary<int, GameLogMonitorSession> _sessions = [];
 
     public ObservableCollection<GameLogInfo> GameLogInfos { get; } = [];
+
+    public GameLogMonitorViewModel()
+    {
+        // 阶段 395：内容由"会话 → 静态广播 → 各 VM"转发，页面 VM 才能看到自动启动会话的实时日志
+        ContentUpdated += OnSharedContentUpdated;
+        SharedSessionsChanged += OnSharedSessionsChanged;
+    }
+
+    /// <summary>阶段 395：会话产出新日志（静态广播，所有 VM 实例都能收到）。</summary>
+    private static event Action<GameLogItem, IReadOnlyList<GameLogContent>>? ContentUpdated;
+
+    /// <summary>阶段 395：任何实例启动 / 停止会话后通知其它实例刷新状态并接管内容。</summary>
+    private static event Action? SharedSessionsChanged;
+
+    private static void NotifySessionsChanged() => SharedSessionsChanged?.Invoke();
+
+    /// <summary>已被静态挂上内容回调的会话（按角色 ID），避免多个 VM 重复订阅导致日志翻倍。</summary>
+    private static readonly HashSet<int> _contentAttached = [];
+
+    private static void EnsureContentAttached(GameLogMonitorSession session)
+    {
+        lock (_contentAttached)
+        {
+            if (!_contentAttached.Add(session.ListenerID))
+            {
+                return;
+            }
+
+            session.OnContentUpdate += Session_OnContentUpdateStatic;
+        }
+    }
+
+    private static void DetachContent(GameLogMonitorSession session)
+    {
+        lock (_contentAttached)
+        {
+            if (_contentAttached.Remove(session.ListenerID))
+            {
+                session.OnContentUpdate -= Session_OnContentUpdateStatic;
+            }
+        }
+    }
+
+    private void OnSharedContentUpdated(GameLogItem item, IReadOnlyList<GameLogContent> contents)
+    {
+        if (SelectedGameLogInfo is not null && item.Info.ListenerID == SelectedGameLogInfo.ListenerID)
+        {
+            OnContentUpdate?.Invoke(item, contents);
+        }
+    }
+
+    private void OnSharedSessionsChanged()
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            AdoptRunningSessions();
+            return;
+        }
+
+        dispatcher.BeginInvoke(new Action(AdoptRunningSessions));
+    }
+
+    /// <summary>
+    /// 阶段 395：把静态共享会话接管到本 VM —— 角色列表换成会话持有的 <see cref="GameLogInfo"/>
+    /// （实时日志写在它身上）、挂上内容回调、标记运行中。页面打开 / 自动启动后都能看到实时日志。
+    /// </summary>
+    private void AdoptRunningSessions()
+    {
+        List<GameLogMonitorSession> sessions;
+        lock (_sessions)
+        {
+            sessions = _sessions.Values.ToList();
+        }
+
+        var selectedId = SelectedGameLogInfo?.ListenerID;
+        foreach (var session in sessions)
+        {
+            var info = session.Info;
+            var existing = GameLogInfos.FirstOrDefault(p => p.ListenerID == info.ListenerID);
+            if (existing is not null && !ReferenceEquals(existing, info))
+            {
+                var index = GameLogInfos.IndexOf(existing);
+                GameLogInfos[index] = info;
+            }
+            else if (existing is null)
+            {
+                GameLogInfos.Add(info);
+            }
+
+            info.Running = true;
+            EnsureContentAttached(session);
+
+            // 选中的那一项被换成会话对象后，选中引用要跟着换，否则页面拿不到实时日志
+            if (selectedId is { } id && id == info.ListenerID && !ReferenceEquals(SelectedGameLogInfo, info))
+            {
+                SelectedGameLogInfo = info;
+            }
+        }
+
+        RefreshRunningState();
+        OnPropertyChanged(nameof(SelectedRunning));
+        OnPropertyChanged(nameof(CombatStatusText));
+    }
+
+    /// <summary>阶段 395：页面可见时主动接管一次，不依赖事件时序。</summary>
+    public void SyncRunningState()
+    {
+        AdoptRunningSessions();
+        RefreshRunningState();
+    }
 
     private GameLogInfo? _selectedGameLogInfo;
 
@@ -402,9 +514,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
 
     // ---------- 初始化 ----------
 
-    public async Task InitAsync()
+    public async Task InitAsync(bool quiet = false)
     {
-        PageNotifyService.ShowWaiting(FindString("General_RefreshList"));
+        if (!quiet)
+        {
+            PageNotifyService.ShowWaiting(FindString("General_RefreshList"));
+        }
+
         try
         {
             var runningInfos = GameLogInfos.Where(p => p.Running).ToDictionary(p => p.ListenerID);
@@ -429,11 +545,17 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             }
 
             SelectedGameLogInfo = null;
+
+            // 阶段 395：多开预览自动启动的会话要接管过来（否则页面只有空列表、看不到实时日志）
+            AdoptRunningSessions();
             RefreshRunningState();
         }
         finally
         {
-            PageNotifyService.HideWaiting();
+            if (!quiet)
+            {
+                PageNotifyService.HideWaiting();
+            }
         }
     }
 
@@ -547,12 +669,27 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     /// 启动一个角色：该角色的所有关键词配置合并成一个 <see cref="GameLogMonitorSession"/>，
     /// 战斗开关开着时再启动战斗解析；两者共用同一个窗口。
     /// </summary>
-    private bool StartCharacter(GameLogInfo info, GameLogSetting setting)
+    /// <summary>阶段 392：同一角色的启动串行化，避免并发创建两个监控会话/窗口。</summary>
+    private static readonly object StartLock = new object();
+
+    private bool StartCharacter(GameLogInfo info, GameLogSetting setting, bool quiet = false)
+    {
+        lock (StartLock)
+        {
+            return StartCharacterCore(info, setting, quiet);
+        }
+    }
+
+    private bool StartCharacterCore(GameLogInfo info, GameLogSetting setting, bool quiet)
     {
         var configs = setting.ItemConfigs.Where(IsVisibleConfig).ToList();
         if (configs.Count == 0 && !setting.CombatEnabled)
         {
-            PageNotifyService.Error(FindString("GameLogMonitorPage_NoneKeyError"));
+            if (!quiet)
+            {
+                PageNotifyService.Error(FindString("GameLogMonitorPage_NoneKeyError"));
+            }
+
             return false;
         }
 
@@ -570,11 +707,15 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             if (!session.Start())
             {
                 session.Stop();
-                PageNotifyService.Error(FindString("GameLogMonitorPage_AddNotifyServiceFalied"));
+                if (!quiet)
+                {
+                    PageNotifyService.Error(FindString("GameLogMonitorPage_AddNotifyServiceFalied"));
+                }
+
                 return false;
             }
 
-            session.OnContentUpdate += Session_OnContentUpdate;
+            EnsureContentAttached(session);
             _sessions[info.ListenerID] = session;
         }
         else if (setting.CombatEnabled)
@@ -585,8 +726,64 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         info.Running = true;
         RefreshRunningState();
         SaveSetting();
-        PageNotifyService.Success($"{FindString("GameLogMonitorPage_Start")}：{info.ListenerName}");
+        NotifySessionsChanged();
+        if (!quiet)
+        {
+            PageNotifyService.Success($"{FindString("GameLogMonitorPage_Start")}：{info.ListenerName}");
+        }
+
         return true;
+    }
+
+    /// <summary>
+    /// 阶段 390：多开预览开始显示该角色时，尝试自动启动它的战斗日志监控。
+    /// <para>已运行（含只有战斗的会话）直接复用；找不到该角色的游戏日志返回 false。</para>
+    /// </summary>
+    public async Task<bool> EnsureCombatStartedForPreviewAsync(string listener)
+    {
+        if (string.IsNullOrWhiteSpace(listener))
+        {
+            return false;
+        }
+
+        if (GameLogInfos.Count == 0)
+        {
+            await InitAsync(quiet: true);
+        }
+
+        var info = GameLogInfos.FirstOrDefault(
+            p => string.Equals(p.ListenerName, listener, StringComparison.OrdinalIgnoreCase));
+        if (info is null)
+        {
+            Core.Log.Info($"多开预览：日志监控自动启动跳过 {listener}（没有找到该角色的游戏日志）");
+            return false;
+        }
+
+        if (_sessions.TryGetValue(info.ListenerID, out var running))
+        {
+            running.SetCombatEnabled(true);
+            info.Running = true;
+            EnsureContentAttached(running);
+            RefreshRunningState();
+            NotifySessionsChanged();
+            return true;
+        }
+
+        var setting = GameLogInfoSettingService.GetValue(info.ListenerID);
+        if (setting is null)
+        {
+            setting = new GameLogSetting { ListenerID = info.ListenerID };
+            setting.ItemConfigs.Add(CreateGameLogConfig());
+        }
+
+        setting.CombatEnabled = true;
+        var started = StartCharacter(info, setting, quiet: true);
+        if (started)
+        {
+            NotifySessionsChanged();
+        }
+
+        return started;
     }
 
     /// <summary>
@@ -637,20 +834,21 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
     {
         if (_sessions.Remove(info.ListenerID, out var session))
         {
-            session.OnContentUpdate -= Session_OnContentUpdate;
+            DetachContent(session);
             session.Stop();
         }
 
         info.Running = false;
         RefreshRunningState();
         SaveSetting();
+        NotifySessionsChanged();
     }
 
     public void StopAll()
     {
         foreach (var session in _sessions.Values.ToList())
         {
-            session.OnContentUpdate -= Session_OnContentUpdate;
+            DetachContent(session);
             session.Stop();
         }
 
@@ -698,9 +896,13 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
             $"日志监控已重启：停止 {running.Count} 个角色会话，重读 GameLogInfoSettings.json 后重新开始 {restarted} 个。");
     }
 
-    private void Session_OnContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news)
+    /// <summary>
+    /// 阶段 395：内容是**会话级**的单点回调（每个会话只挂一次），负责写入 LogContents 再广播给各 VM；
+    /// 原来挂在 VM 实例上，自动启动的会话写不进页面 VM 的数据，页面就看不到实时日志。
+    /// </summary>
+    private static void Session_OnContentUpdateStatic(GameLogItem item, IEnumerable<GameLogContent> news)
     {
-        var contents = news as IList<GameLogContent> ?? news.ToList();
+        var contents = (news as IList<GameLogContent> ?? news.ToList()).ToList();
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
@@ -713,11 +915,7 @@ public sealed class GameLogMonitorViewModel : INotifyPropertyChanged
         {
             item.Info.LogContents.AddRange(contents);
             TrimContents(item.Info);
-
-            if (SelectedGameLogInfo is not null && item.Info.ListenerID == SelectedGameLogInfo.ListenerID)
-            {
-                OnContentUpdate?.Invoke(item, contents);
-            }
+            ContentUpdated?.Invoke(item, contents);
         });
     }
 
